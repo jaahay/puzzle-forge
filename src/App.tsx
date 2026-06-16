@@ -12,6 +12,7 @@ import type {
 } from "./catalog/types";
 
 const makeRequestId = () => Math.random().toString(36).slice(2);
+const makeRandomSeed = () => `random-${Date.now().toString(36)}-${makeRequestId().slice(0, 6)}`;
 
 const rankValues: Record<PlayingCard["rank"], number> = {
   ace: 1,
@@ -654,6 +655,19 @@ export const App = () => {
     }
   };
 
+  const handleFinished = () => {
+    if (!puzzle) {
+      return;
+    }
+
+    const progressCount = puzzle.kind === "grid" ? gridCells?.filter((cell) => !cell.locked && cell.value).length ?? 0 : null;
+    setStatusMessage(
+      progressCount === null
+        ? `${puzzle.title} marked finished.`
+        : `${puzzle.title} marked finished with ${progressCount} filled cell(s).`,
+    );
+  };
+
   useEffect(() => {
     const handleMessage = (event: MessageEvent<PuzzleGenerationResponse>) => {
       if (event.data.requestId !== activeRequestId.current) {
@@ -701,7 +715,7 @@ export const App = () => {
     );
   };
 
-  const generate = () => {
+  const generate = (seedOverride?: string) => {
     if (!selectedPuzzleIsGeneratable) {
       setStatusMessage(`${selectedDefinition.title} is planned, not generatable yet.`);
       return;
@@ -711,7 +725,7 @@ export const App = () => {
     const request: PuzzleGenerationRequest = {
       requestId,
       puzzleId: selectedPuzzleId,
-      seed,
+      seed: seedOverride ?? seed,
       width,
       height,
     };
@@ -722,6 +736,12 @@ export const App = () => {
     setSelectedGridCell(null);
     setStatusMessage(`Generating ${selectedDefinition.title}...`);
     worker.postMessage(request);
+  };
+
+  const randomize = () => {
+    const randomSeed = makeRandomSeed();
+    setSeed(randomSeed);
+    generate(randomSeed);
   };
 
   useEffect(() => {
@@ -804,9 +824,14 @@ export const App = () => {
               />
             </label>
 
-            <button type="button" onClick={generate} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-              {isGenerating ? "Generating..." : "Generate"}
-            </button>
+            <div class="control-actions">
+              <button type="button" onClick={() => generate()} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
+                {isGenerating ? "Generating..." : "Generate"}
+              </button>
+              <button type="button" onClick={randomize} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
+                Randomize
+              </button>
+            </div>
           </div>
 
           <p class="status-line" aria-live="polite">{statusMessage}</p>
@@ -834,6 +859,12 @@ export const App = () => {
                   onCellClick={handleGridCellClick}
                 />
               ) : null}
+
+              <div class="puzzle-actions">
+                <button type="button" onClick={handleFinished}>
+                  Finished
+                </button>
+              </div>
 
               <ul class="notes-list">
                 {puzzle.notes.map((note) => (
