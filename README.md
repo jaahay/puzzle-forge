@@ -2,6 +2,8 @@
 
 Generate, solve, and experiment with procedural logic puzzles.
 
+The app is structured as a catalog-first puzzle destination suitable for a `puzzles.*` subdomain. Sudoku, Nonogram, Wordle-like puzzles, and future engines share one catalog shell while keeping each puzzle generator isolated.
+
 ## Stack
 
 - Vite
@@ -41,20 +43,39 @@ Preview the production bundle locally:
 npm run preview
 ```
 
-## App structure
+## Catalog model
 
-The starter app renders a small puzzle workbench:
+Puzzle metadata lives in `src/catalog/puzzleCatalog.ts`. Each catalog entry declares its id, title, status, tags, category, and supported dimensions. The UI renders the catalog first, then shows a generation workspace for the selected puzzle.
 
-- `src/App.tsx` owns the Preact UI, puzzle controls, worker lifecycle, and grid rendering.
-- `src/lib/puzzles.ts` defines the shared puzzle types and deterministic puzzle generation.
-- `src/workers/puzzleWorker.ts` runs puzzle generation away from the main UI thread.
-- `src/main.tsx` mounts the Preact app into `index.html`.
-- `src/styles.css` contains the responsive app shell and puzzle grid styling.
+Initial catalog entries:
+
+- Sudoku
+- Nonogram
+- Wordle-like
+- Logic Grid
+- KenKen
+- Minesweeper
+- Slitherlink
+
+Only playable and prototype entries have generators today. Planned entries are visible in the catalog but disabled for generation until their engine exists.
+
+## Generator model
+
+Puzzle engines live under `src/games/<puzzle>/generate.ts`. Shared generation helpers live in `src/games/shared.ts`, and `src/games/registry.ts` maps catalog ids to concrete generators.
+
+Current generators:
+
+- `src/games/sudoku/generate.ts`
+- `src/games/nonogram/generate.ts`
+- `src/games/wordle/generate.ts`
+- `src/games/logicGrid/generate.ts`
+
+Each generator returns a shared `GeneratedPuzzle` shape from `src/catalog/types.ts`, so the UI can render a common preview grid while puzzle-specific engines evolve independently.
 
 ## Worker contract
 
-The UI posts a puzzle request to the worker with a request id, seed, width, and height. The worker generates a bounded puzzle model and posts a response with the same id plus the generated puzzle. The UI ignores stale responses so rapid seed or size changes do not render out-of-date work.
+The UI posts a `PuzzleGenerationRequest` to `src/workers/puzzleWorker.ts` with a request id, puzzle id, seed, width, and height. The worker calls the registry, returns a `PuzzleGenerationResponse`, and includes the same request id so the UI can ignore stale responses.
 
-## Generation model
+## Product direction
 
-Puzzle generation is deterministic for a given seed and board size. Dimensions are clamped to a 4 by 4 minimum and a 12 by 12 maximum. Generated cells include a row, column, numeric value, and locked flag. The checksum gives a compact way to compare two generated puzzle layouts.
+The branch now targets a catalog destination rather than a single puzzle workbench. Future work should add richer per-puzzle renderers, puzzle-specific settings, curated Wordle dictionaries, Nonogram clue derivation, Sudoku uniqueness checks, and eventually deployment configuration for the chosen `puzzles.*` host.
