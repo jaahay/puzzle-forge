@@ -263,6 +263,13 @@ label {
   font-weight: 800;
 }
 
+input.cell-input {
+  min-height: 3rem;
+  padding: 0;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 .cell.interactive-cell {
   cursor: pointer;
   transition:
@@ -272,14 +279,16 @@ label {
 }
 
 .cell.interactive-cell:hover,
-.cell.interactive-cell:focus-visible {
+.cell.interactive-cell:focus-visible,
+.cell-input.interactive-cell:focus {
   border-color: #a7f3d0;
   box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.28);
   outline: none;
   transform: translateY(-1px);
 }
 
-.cell:disabled {
+.cell:disabled,
+.cell-input:disabled {
   cursor: default;
   opacity: 1;
 }
@@ -317,8 +326,9 @@ label {
   box-shadow: none;
 }
 
-.grid.wordle .cell {
+.grid.word-guess .cell {
   min-height: 4rem;
+  font-size: 1.3rem;
   text-transform: uppercase;
 }
 

@@ -1,7 +1,7 @@
 export type PuzzleId =
   | "sudoku"
   | "nonogram"
-  | "wordle"
+  | "word-guess"
   | "logic-grid"
   | "klondike-solitaire"
   | "peg-solitaire"
@@ -93,6 +93,7 @@ type BaseGeneratedPuzzle = {
 export type GridGeneratedPuzzle = BaseGeneratedPuzzle & {
   kind: "grid";
   cells: PuzzleCell[];
+  answerKey?: string[];
 };
 
 export type CardGeneratedPuzzle = BaseGeneratedPuzzle & {

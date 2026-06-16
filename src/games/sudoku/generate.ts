@@ -9,6 +9,7 @@ export const generateSudoku: PuzzleGenerator = ({ seed }) => {
   const random = createRandom(`sudoku:${normalizedSeed}`);
   const digitOffset = Math.floor(random() * BOARD_SIZE);
   const clueDensity = 0.42 + random() * 0.16;
+  const answerKey: string[] = [];
 
   const cells = Array.from({ length: BOARD_SIZE * BOARD_SIZE }, (_, index) => {
     const row = Math.floor(index / BOARD_SIZE);
@@ -16,6 +17,8 @@ export const generateSudoku: PuzzleGenerator = ({ seed }) => {
     const pattern = (row * BOX_SIZE + Math.floor(row / BOX_SIZE) + column + digitOffset) % BOARD_SIZE;
     const value = String(pattern + 1);
     const locked = random() < clueDensity || (row === column && random() < 0.7);
+
+    answerKey.push(value);
 
     return {
       row,
@@ -35,8 +38,9 @@ export const generateSudoku: PuzzleGenerator = ({ seed }) => {
     width: BOARD_SIZE,
     height: BOARD_SIZE,
     cells,
+    answerKey,
     notes: [
-      "Click open cells to cycle digits, then use Finished when you want to mark the attempt complete.",
+      "Type digits 1-9 into open cells, then use Check to judge the completed grid.",
       "Generator uses a valid base grid pattern with seeded digit rotation; uniqueness and difficulty grading are future work.",
     ],
   });

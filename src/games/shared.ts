@@ -53,6 +53,7 @@ export const createGeneratedPuzzle = ({
   height,
   cells,
   notes,
+  answerKey,
 }: {
   id: string;
   puzzleId: PuzzleId;
@@ -62,6 +63,7 @@ export const createGeneratedPuzzle = ({
   height: number;
   cells: PuzzleCell[];
   notes: string[];
+  answerKey?: string[];
 }): GridGeneratedPuzzle => ({
   kind: "grid",
   id,
@@ -71,6 +73,7 @@ export const createGeneratedPuzzle = ({
   width,
   height,
   cells,
+  answerKey,
   checksum: makeChecksum(cells),
   createdAt: new Date().toISOString(),
   notes,

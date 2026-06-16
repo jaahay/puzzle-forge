@@ -5,51 +5,36 @@ const WORDS = ["FORGE", "LOGIC", "GRIDS", "CLUES", "SOLVE", "BRAIN", "LEVEL", "C
 const ROWS = 6;
 const COLUMNS = 5;
 
-const rotateWord = (word: string, offset: number) => `${word.slice(offset)}${word.slice(0, offset)}`;
-
-export const generateWordle: PuzzleGenerator = ({ seed }) => {
+export const generateWordGuess: PuzzleGenerator = ({ seed }) => {
   const normalizedSeed = normalizeSeed(seed);
-  const random = createRandom(`wordle:${normalizedSeed}`);
+  const random = createRandom(`word-guess:${normalizedSeed}`);
   const answerWord = WORDS[Math.floor(random() * WORDS.length)] ?? WORDS[0];
 
-  const guesses = Array.from({ length: ROWS }, (_, row) => {
-    if (row === ROWS - 1) {
-      return "";
-    }
+  const cells = Array.from({ length: ROWS * COLUMNS }, (_, index) => {
+    const row = Math.floor(index / COLUMNS);
+    const column = index % COLUMNS;
 
-    const base = WORDS[(row + Math.floor(random() * WORDS.length)) % WORDS.length] ?? answerWord;
-    return rotateWord(base, Math.floor(random() * COLUMNS));
+    return {
+      row,
+      column,
+      value: "",
+      locked: false,
+      tone: "empty",
+      ariaLabel: `Word Guess cell at row ${row + 1}, column ${column + 1}`,
+    } as const;
   });
 
-  const cells = guesses.flatMap((guess, row) =>
-    Array.from({ length: COLUMNS }, (_, column) => {
-      const value = guess[column] ?? "";
-      const exact = Boolean(value) && value === answerWord[column];
-      const present = Boolean(value) && !exact && answerWord.includes(value);
-      const tone = exact ? "answer" : present ? "hint" : "empty";
-      const locked = row < ROWS - 1;
-
-      return {
-        row,
-        column,
-        value,
-        locked,
-        tone,
-        ariaLabel: `${value || "Blank"} at row ${row + 1}, column ${column + 1}`,
-      } as const;
-    }),
-  );
-
   return createGeneratedPuzzle({
-    id: `wordle-${normalizedSeed}`,
-    puzzleId: "wordle",
-    title: "Wordle-like",
+    id: `word-guess-${normalizedSeed}`,
+    puzzleId: "word-guess",
+    title: "Word Guess",
     seed: normalizedSeed,
     width: COLUMNS,
     height: ROWS,
     cells,
+    answerKey: Array.from(answerWord),
     notes: [
-      "Click cells in the open row to cycle letters, then use Finished when you want to mark the attempt complete.",
+      "Type five-letter guesses into the grid, then use Check to judge exact and present letters.",
       "Prototype uses a small built-in word list so the catalog can render without external data.",
     ],
   });
