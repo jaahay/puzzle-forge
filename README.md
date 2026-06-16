@@ -43,6 +43,18 @@ Preview the production bundle locally:
 npm run preview
 ```
 
+## Site shell
+
+Document metadata lives in `index.html`. The static shell declares the app description, author and canonical links, social preview metadata, theme color, and the inline SVG favicon.
+
+Site-level chrome outside the Preact app is styled by `src/siteChrome.css`. It currently owns the footer, copyright and errata note, author/source/changelog links, and the low-prominence version badge.
+
+## Changelog
+
+Reader-facing release notes live in `CHANGELOG.md`, with the current high-level notes mirrored into the page-level changelog section in `index.html`.
+
+Changelog entries should explain product trajectory and user-visible behavior, not duplicate every commit.
+
 ## Catalog model
 
 Puzzle metadata lives in `src/catalog/puzzleCatalog.ts`. Each catalog entry declares its id, title, status, tags, category, and supported dimensions. The UI renders the catalog first, then shows a generation workspace for the selected puzzle.
