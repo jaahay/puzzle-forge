@@ -1,4 +1,4 @@
-import type { GeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
+import type { GeneratedPuzzle, GridGeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
 
 const RNG_MODULUS = 2147483647;
 const RNG_MULTIPLIER = 48271;
@@ -29,14 +29,19 @@ export const createRandom = (seed: string) => {
 
 export const normalizeSeed = (seed: string) => seed.trim() || "puzzle-forge";
 
-export const makeChecksum = (cells: PuzzleCell[]) => {
-  const total = cells.reduce((sum, cell) => {
-    const valueWeight = Array.from(cell.value).reduce((valueSum, character) => valueSum + character.charCodeAt(0), 0);
-    const toneWeight = cell.locked ? 13 : 7;
-    return sum + (valueWeight + toneWeight) * (cell.row + 1) * (cell.column + 1);
+export const makeChecksumFromParts = (parts: string[]) => {
+  const total = parts.reduce((sum, part, index) => {
+    const valueWeight = Array.from(part).reduce((valueSum, character) => valueSum + character.charCodeAt(0), 0);
+    return sum + valueWeight * (index + 1);
   }, 0);
 
   return total.toString(36).padStart(6, "0");
+};
+
+export const makeChecksum = (cells: PuzzleCell[]) => {
+  const parts = cells.map((cell) => `${cell.row}:${cell.column}:${cell.value}:${cell.locked ? "locked" : "open"}:${cell.tone}`);
+
+  return makeChecksumFromParts(parts);
 };
 
 export const createGeneratedPuzzle = ({
@@ -57,7 +62,8 @@ export const createGeneratedPuzzle = ({
   height: number;
   cells: PuzzleCell[];
   notes: string[];
-}): GeneratedPuzzle => ({
+}): GridGeneratedPuzzle => ({
+  kind: "grid",
   id,
   puzzleId,
   title,
@@ -69,3 +75,5 @@ export const createGeneratedPuzzle = ({
   createdAt: new Date().toISOString(),
   notes,
 });
+
+export const isGridPuzzle = (puzzle: GeneratedPuzzle): puzzle is GridGeneratedPuzzle => puzzle.kind === "grid";

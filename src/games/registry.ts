@@ -1,17 +1,21 @@
 import type { PuzzleGenerator, PuzzleId } from "../catalog/types";
 import { generateLogicGrid } from "./logicGrid/generate";
 import { generateNonogram } from "./nonogram/generate";
+import { generatePegSolitaire } from "./pegSolitaire/generate";
+import { generateSolitaire } from "./solitaire/generate";
 import { generateSudoku } from "./sudoku/generate";
 import { generateWordle } from "./wordle/generate";
 
-const generators = {
+const generators: Partial<Record<PuzzleId, PuzzleGenerator>> = {
   sudoku: generateSudoku,
   nonogram: generateNonogram,
   wordle: generateWordle,
   "logic-grid": generateLogicGrid,
-} satisfies Partial<Record<PuzzleId, PuzzleGenerator>>;
+  "klondike-solitaire": generateSolitaire,
+  "peg-solitaire": generatePegSolitaire,
+};
 
-export const hasPuzzleGenerator = (puzzleId: PuzzleId) => puzzleId in generators;
+export const hasPuzzleGenerator = (puzzleId: PuzzleId) => Boolean(generators[puzzleId]);
 
 export const generatePuzzle = (request: Parameters<PuzzleGenerator>[0]) => {
   const generator = generators[request.puzzleId];

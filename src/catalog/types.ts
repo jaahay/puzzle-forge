@@ -3,13 +3,15 @@ export type PuzzleId =
   | "nonogram"
   | "wordle"
   | "logic-grid"
+  | "klondike-solitaire"
+  | "peg-solitaire"
   | "kenken"
   | "minesweeper"
   | "slitherlink";
 
 export type PuzzleStatus = "playable" | "prototype" | "planned";
 
-export type PuzzleCategory = "numbers" | "logic" | "word" | "grid";
+export type PuzzleCategory = "numbers" | "logic" | "word" | "grid" | "cards";
 
 export type PuzzleDefinition = {
   id: PuzzleId;
@@ -27,7 +29,7 @@ export type PuzzleDefinition = {
   maxHeight: number;
 };
 
-export type PuzzleCellTone = "given" | "empty" | "accent" | "answer" | "hint";
+export type PuzzleCellTone = "given" | "empty" | "accent" | "answer" | "hint" | "disabled";
 
 export type PuzzleCell = {
   row: number;
@@ -38,18 +40,67 @@ export type PuzzleCell = {
   ariaLabel?: string;
 };
 
-export type GeneratedPuzzle = {
+export type CardSuit = "clubs" | "diamonds" | "hearts" | "spades";
+
+export type CardRank =
+  | "ace"
+  | "2"
+  | "3"
+  | "4"
+  | "5"
+  | "6"
+  | "7"
+  | "8"
+  | "9"
+  | "10"
+  | "jack"
+  | "queen"
+  | "king";
+
+export type CardColor = "red" | "black";
+
+export type PlayingCard = {
+  suit: CardSuit;
+  rank: CardRank;
+  code: string;
+  color: CardColor;
+  label: string;
+  faceUp: boolean;
+};
+
+export type CardStackRole = "stock" | "waste" | "foundation" | "tableau";
+
+export type CardStack = {
+  id: string;
+  title: string;
+  role: CardStackRole;
+  cards: PlayingCard[];
+  faceDownCount?: number;
+};
+
+type BaseGeneratedPuzzle = {
   id: string;
   puzzleId: PuzzleId;
   title: string;
   seed: string;
   width: number;
   height: number;
-  cells: PuzzleCell[];
   checksum: string;
   createdAt: string;
   notes: string[];
 };
+
+export type GridGeneratedPuzzle = BaseGeneratedPuzzle & {
+  kind: "grid";
+  cells: PuzzleCell[];
+};
+
+export type CardGeneratedPuzzle = BaseGeneratedPuzzle & {
+  kind: "cards";
+  stacks: CardStack[];
+};
+
+export type GeneratedPuzzle = GridGeneratedPuzzle | CardGeneratedPuzzle;
 
 export type PuzzleGenerationRequest = {
   requestId: string;
