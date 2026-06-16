@@ -601,7 +601,7 @@ export const App = () => {
         return { cells, message: "A jump must hop over another peg." };
       }
 
-      const nextCells = cells.map((candidate) => {
+      const nextCells: PuzzleCell[] = cells.map((candidate): PuzzleCell => {
         const isSource = candidate.row === source.row && candidate.column === source.column;
         const isTarget = candidate.row === target.row && candidate.column === target.column;
         const isMiddle = candidate.row === middleCell.row && candidate.column === middleCell.column;
