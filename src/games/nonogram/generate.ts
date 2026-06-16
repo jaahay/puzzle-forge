@@ -37,14 +37,12 @@ export const generateNonogram: PuzzleGenerator = ({ seed, width, height }) => {
   const cells = Array.from({ length: boundedWidth * boundedHeight }, (_, index) => {
     const row = Math.floor(index / boundedWidth);
     const column = index % boundedWidth;
-    const solutionValue = solution[index] ? "■" : "";
 
     return {
       row,
       column,
       value: "",
       locked: false,
-      solutionValue,
       tone: "empty",
       ariaLabel: `Playable nonogram cell at row ${row + 1}, column ${column + 1}`,
     } as const;
@@ -61,7 +59,7 @@ export const generateNonogram: PuzzleGenerator = ({ seed, width, height }) => {
     notes: [
       `Row clues: ${rowClues.join(" / ")}`,
       `Column clues: ${columnClues.join(" / ")}`,
-      "Click cells to toggle filled squares; the board reports solved when the grid matches the generated clues.",
+      "Click cells to toggle filled squares, then use Finished when you want to mark the attempt complete.",
     ],
   });
 };
