@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import { getPuzzleDefinition, isGeneratable, puzzleCatalog } from "./catalog/puzzleCatalog";
+import { getPuzzleDefinition, isGeneratable } from "./catalog/puzzleCatalog";
 import type {
   CardStack,
   GeneratedPuzzle,
@@ -10,179 +10,30 @@ import type {
   PuzzleGenerationResponse,
   PuzzleId,
 } from "./catalog/types";
+import { AppShell } from "./components/AppShell";
+import { PuzzleCatalog } from "./components/PuzzleCatalog";
+import {
+  canMoveToFoundation,
+  canMoveToTableau,
+  canSelectFromStack,
+  cloneStack,
+  isSelectedCard,
+  revealTopTableauCard,
+  type CardSelection,
+} from "./interactions/cardRules";
+import {
+  cloneGridCell,
+  getCellIndex,
+  getGridCell,
+  getGridInputMode,
+  isSelectedGridCell,
+  normalizeCellInput,
+  prepareGridCells,
+  type GridCellSelection,
+} from "./interactions/gridRules";
 
 const makeRequestId = () => Math.random().toString(36).slice(2);
 const makeRandomSeed = () => `random-${Date.now().toString(36)}-${makeRequestId().slice(0, 6)}`;
-const numberCharacters = "123456789";
-const letterCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-const rankValues: Record<PlayingCard["rank"], number> = {
-  ace: 1,
-  "2": 2,
-  "3": 3,
-  "4": 4,
-  "5": 5,
-  "6": 6,
-  "7": 7,
-  "8": 8,
-  "9": 9,
-  "10": 10,
-  jack: 11,
-  queen: 12,
-  king: 13,
-};
-
-type CardSelection = {
-  stackId: string;
-  cardIndex: number;
-};
-
-type GridCellSelection = {
-  row: number;
-  column: number;
-};
-
-type GridInputMode = "none" | "numeric" | "word";
-
-const cloneCard = (card: PlayingCard): PlayingCard => ({ ...card });
-
-const cloneStack = (stack: CardStack): CardStack => ({
-  ...stack,
-  cards: stack.cards.map(cloneCard),
-});
-
-const cloneGridCell = (cell: PuzzleCell): PuzzleCell => ({ ...cell });
-
-const getTopCard = (stack: CardStack) => stack.cards[stack.cards.length - 1];
-
-const getGridInputMode = (puzzleId: PuzzleId): GridInputMode => {
-  if (puzzleId === "sudoku" || puzzleId === "logic-grid") {
-    return "numeric";
-  }
-
-  if (puzzleId === "word-guess") {
-    return "word";
-  }
-
-  return "none";
-};
-
-const takeLastAllowedCharacter = (value: string, allowedCharacters: string) => {
-  const characters = Array.from(value.toUpperCase()).filter((character) => allowedCharacters.includes(character));
-  return characters[characters.length - 1] ?? "";
-};
-
-const normalizeCellInput = (mode: GridInputMode, rawValue: string) => {
-  if (mode === "numeric") {
-    return takeLastAllowedCharacter(rawValue, numberCharacters);
-  }
-
-  if (mode === "word") {
-    return takeLastAllowedCharacter(rawValue, letterCharacters);
-  }
-
-  return rawValue;
-};
-
-const revealTopTableauCard = (stack: CardStack) => {
-  if (stack.role !== "tableau" || stack.cards.length === 0) {
-    return stack;
-  }
-
-  const topIndex = stack.cards.length - 1;
-  const topCard = stack.cards[topIndex];
-
-  if (topCard.faceUp) {
-    return stack;
-  }
-
-  return {
-    ...stack,
-    cards: stack.cards.map((card, index) => (index === topIndex ? { ...card, faceUp: true } : card)),
-  };
-};
-
-const canMoveToFoundation = (card: PlayingCard, targetStack: CardStack) => {
-  const topCard = getTopCard(targetStack);
-
-  if (!topCard) {
-    return rankValues[card.rank] === 1;
-  }
-
-  return card.suit === topCard.suit && rankValues[card.rank] === rankValues[topCard.rank] + 1;
-};
-
-const canMoveToTableau = (card: PlayingCard, targetStack: CardStack) => {
-  const topCard = getTopCard(targetStack);
-
-  if (!topCard) {
-    return rankValues[card.rank] === 13;
-  }
-
-  return topCard.faceUp && card.color !== topCard.color && rankValues[card.rank] === rankValues[topCard.rank] - 1;
-};
-
-const canSelectFromStack = (stack: CardStack, cardIndex: number) => {
-  const card = stack.cards[cardIndex];
-
-  if (!card?.faceUp) {
-    return false;
-  }
-
-  if (stack.role === "waste" || stack.role === "foundation") {
-    return cardIndex === stack.cards.length - 1;
-  }
-
-  return stack.role === "tableau";
-};
-
-const isSelectedCard = (selection: CardSelection | null, stack: CardStack, index: number) =>
-  selection?.stackId === stack.id && index >= selection.cardIndex;
-
-const isSelectedGridCell = (selection: GridCellSelection | null, cell: PuzzleCell) =>
-  selection?.row === cell.row && selection.column === cell.column;
-
-const getCellIndex = (cells: PuzzleCell[], cell: GridCellSelection) =>
-  cells.findIndex((candidate) => candidate.row === cell.row && candidate.column === cell.column);
-
-const getGridCell = (cells: PuzzleCell[], cell: GridCellSelection) => {
-  const index = getCellIndex(cells, cell);
-  return index >= 0 ? cells[index] : undefined;
-};
-
-const prepareGridCells = (puzzle: GridGeneratedPuzzle): PuzzleCell[] =>
-  puzzle.cells.map((cell) => {
-    if (puzzle.puzzleId === "nonogram") {
-      return {
-        ...cell,
-        value: "",
-        locked: false,
-        tone: "empty",
-        ariaLabel: `Playable nonogram cell at row ${cell.row + 1}, column ${cell.column + 1}`,
-      };
-    }
-
-    if (!cell.locked && (puzzle.puzzleId === "sudoku" || puzzle.puzzleId === "logic-grid")) {
-      return {
-        ...cell,
-        value: "",
-        tone: "empty",
-        ariaLabel: `Editable ${puzzle.title} cell at row ${cell.row + 1}, column ${cell.column + 1}`,
-      };
-    }
-
-    if (puzzle.puzzleId === "word-guess") {
-      return {
-        ...cell,
-        value: "",
-        locked: false,
-        tone: "empty",
-        ariaLabel: `Word Guess cell at row ${cell.row + 1}, column ${cell.column + 1}`,
-      };
-    }
-
-    return cloneGridCell(cell);
-  });
 
 type CardStackProps = {
   stack: CardStack;
@@ -878,54 +729,15 @@ export const App = () => {
   }, []);
 
   return (
-    <main class="app-shell">
-      <section class="hero-panel">
-        <p class="eyebrow">puzzles catalog</p>
-        <h1>One home for Sudoku, Solitaire, Nonogram, Word Guess, and whatever comes next.</h1>
-        <p class="hero-copy">
-          Browse the catalog, pick a puzzle family, and generate deterministic boards and deals in a Web Worker so
-          the interface stays responsive.
-        </p>
-      </section>
-
+    <AppShell>
       <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
-        <aside class="catalog-panel" aria-label="Puzzle catalog" id="puzzle-catalog">
-          <div class="panel-heading">
-            <span class="catalog-count">{puzzleCatalog.length} puzzle ideas</span>
-            <div class="catalog-heading-actions">
-              <strong>Catalog</strong>
-              <button
-                aria-controls="puzzle-catalog-list"
-                aria-expanded={!isCatalogCollapsed}
-                class="catalog-collapse-button"
-                onClick={() => setIsCatalogCollapsed((current) => !current)}
-                type="button"
-              >
-                {isCatalogCollapsed ? "Expand" : "Collapse"}
-              </button>
-            </div>
-          </div>
-
-          <div class="catalog-rail" hidden={!isCatalogCollapsed} aria-hidden={!isCatalogCollapsed}>
-            <span>Catalog</span>
-            <strong>{selectedDefinition.title}</strong>
-          </div>
-
-          <div class="catalog-grid" id="puzzle-catalog-list" hidden={isCatalogCollapsed}>
-            {puzzleCatalog.map((definition) => (
-              <button
-                class={definition.id === selectedPuzzleId ? "catalog-card selected" : "catalog-card"}
-                key={definition.id}
-                type="button"
-                onClick={() => selectPuzzle(definition.id)}
-              >
-                <span class={`status ${definition.status}`}>{definition.status}</span>
-                <strong>{definition.title}</strong>
-                <span>{definition.tagline}</span>
-              </button>
-            ))}
-          </div>
-        </aside>
+        <PuzzleCatalog
+          isCollapsed={isCatalogCollapsed}
+          selectedPuzzleId={selectedPuzzleId}
+          selectedPuzzleTitle={selectedDefinition.title}
+          onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)}
+          onSelectPuzzle={selectPuzzle}
+        />
 
         <section class="workspace-panel" aria-label="Selected puzzle workspace">
           <div class="workspace-copy">
@@ -1019,6 +831,6 @@ export const App = () => {
           ) : null}
         </section>
       </section>
-    </main>
+    </AppShell>
   );
 };
