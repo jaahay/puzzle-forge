@@ -10,29 +10,32 @@ const rotateWord = (word: string, offset: number) => `${word.slice(offset)}${wor
 export const generateWordle: PuzzleGenerator = ({ seed }) => {
   const normalizedSeed = normalizeSeed(seed);
   const random = createRandom(`wordle:${normalizedSeed}`);
-  const target = WORDS[Math.floor(random() * WORDS.length)] ?? WORDS[0];
+  const answerWord = WORDS[Math.floor(random() * WORDS.length)] ?? WORDS[0];
 
   const guesses = Array.from({ length: ROWS }, (_, row) => {
     if (row === ROWS - 1) {
-      return target;
+      return "";
     }
 
-    const base = WORDS[(row + Math.floor(random() * WORDS.length)) % WORDS.length] ?? target;
+    const base = WORDS[(row + Math.floor(random() * WORDS.length)) % WORDS.length] ?? answerWord;
     return rotateWord(base, Math.floor(random() * COLUMNS));
   });
 
   const cells = guesses.flatMap((guess, row) =>
     Array.from({ length: COLUMNS }, (_, column) => {
       const value = guess[column] ?? "";
-      const exact = value === target[column];
-      const present = !exact && target.includes(value);
+      const solutionValue = answerWord[column] ?? "";
+      const exact = value === solutionValue;
+      const present = Boolean(value) && !exact && answerWord.includes(value);
       const tone = exact ? "answer" : present ? "hint" : "empty";
+      const locked = row < ROWS - 1;
 
       return {
         row,
         column,
         value,
-        locked: row < ROWS - 1,
+        locked,
+        solutionValue,
         tone,
         ariaLabel: `${value || "Blank"} at row ${row + 1}, column ${column + 1}`,
       } as const;
@@ -48,8 +51,8 @@ export const generateWordle: PuzzleGenerator = ({ seed }) => {
     height: ROWS,
     cells,
     notes: [
+      "Click cells in the open row to cycle letters; the board reports solved when the row matches the generated answer.",
       "Prototype uses a small built-in word list so the catalog can render without external data.",
-      "Next step: replace sample words with a curated dictionary and game-state evaluator.",
     ],
   });
 };
