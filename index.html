@@ -4,10 +4,70 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#111827" />
-    <title>puzzle-forge</title>
+    <meta
+      name="description"
+      content="Puzzle Forge is a catalog-first puzzle workbench for generating and playing seeded Sudoku, Solitaire, Nonogram, Word Guess, and procedural logic puzzles."
+    />
+    <meta name="author" content="James Hay" />
+    <meta name="application-name" content="Puzzle Forge" />
+    <meta name="creator" content="James Hay" />
+    <meta name="publisher" content="James Hay" />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Puzzle Forge" />
+    <meta
+      property="og:description"
+      content="Generate, solve, and experiment with seeded procedural logic puzzles from one catalog shell."
+    />
+    <meta property="og:site_name" content="Puzzle Forge" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Puzzle Forge" />
+    <meta
+      name="twitter:description"
+      content="A puzzle catalog and generator workbench for deterministic boards, deals, and logic experiments."
+    />
+    <link rel="author" href="https://jameshay.org" />
+    <link rel="canonical" href="https://puzzles.jameshay.org/" />
+    <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%23111827"/><path d="M14 16h16v16H14zM34 16h16v16H34zM14 36h16v16H14zM34 36h16v16H34z" fill="%23a7f3d0"/><circle cx="42" cy="24" r="5" fill="%23facc15"/><path d="M18 44l4 4 8-10" fill="none" stroke="%23111827" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 20h0M42 44h0" stroke="%23111827" stroke-width="5" stroke-linecap="round"/></svg>' />
+    <title>Puzzle Forge — procedural puzzle catalog</title>
   </head>
   <body>
     <div id="app"></div>
+
+    <section class="site-changelog" id="changelog" aria-labelledby="changelog-title">
+      <p class="site-kicker">changelog</p>
+      <h2 id="changelog-title">Recent forge notes</h2>
+      <article>
+        <time datetime="2026-06-16">June 16, 2026</time>
+        <h3>Catalog shell hardening</h3>
+        <p>
+          Added richer document metadata, a whimsical generated favicon, persistent footer links, and this concise
+          changelog surface so the project explains itself outside the puzzle workspace.
+        </p>
+      </article>
+      <article>
+        <time datetime="2026-06-14">June 14, 2026</time>
+        <h3>Playable puzzle interactions</h3>
+        <p>
+          Refined the catalog into a multi-puzzle destination with typed grid inputs, seeded generation, solitaire card
+          moves, peg jumps, answer checks, and worker-backed puzzle generation.
+        </p>
+      </article>
+    </section>
+
+    <footer class="site-footer">
+      <div>
+        <strong>Puzzle Forge</strong>
+        <span>v0.1.0</span>
+      </div>
+      <nav aria-label="Site links">
+        <a href="https://jameshay.org" rel="author">James Hay</a>
+        <a href="https://github.com/jaahay/puzzle-forge">Source</a>
+        <a href="#changelog">Changelog</a>
+      </nav>
+      <p>© 2026 James Hay. Errata, corrections, and puzzle mischief welcome via the source repository.</p>
+    </footer>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

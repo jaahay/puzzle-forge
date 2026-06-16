@@ -1,6 +1,7 @@
 import { render } from "preact";
 import { App } from "./App";
 import "./styles.css";
+import "./siteChrome.css";
 
 const root = document.getElementById("app");
 

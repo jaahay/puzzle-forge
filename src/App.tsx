@@ -335,6 +335,7 @@ export const App = () => {
   const [selectedGridCell, setSelectedGridCell] = useState<GridCellSelection | null>(null);
   const [statusMessage, setStatusMessage] = useState("Choose a puzzle and generate a board.");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(false);
   const activeRequestId = useRef<string | null>(null);
   const worker = useMemo(
     () => new Worker(new URL("./workers/puzzleWorker.ts", import.meta.url), { type: "module" }),
@@ -887,14 +888,30 @@ export const App = () => {
         </p>
       </section>
 
-      <section class="catalog-layout">
-        <aside class="catalog-panel" aria-label="Puzzle catalog">
+      <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
+        <aside class="catalog-panel" aria-label="Puzzle catalog" id="puzzle-catalog">
           <div class="panel-heading">
-            <span>{puzzleCatalog.length} puzzle ideas</span>
-            <strong>Catalog</strong>
+            <span class="catalog-count">{puzzleCatalog.length} puzzle ideas</span>
+            <div class="catalog-heading-actions">
+              <strong>Catalog</strong>
+              <button
+                aria-controls="puzzle-catalog-list"
+                aria-expanded={!isCatalogCollapsed}
+                class="catalog-collapse-button"
+                onClick={() => setIsCatalogCollapsed((current) => !current)}
+                type="button"
+              >
+                {isCatalogCollapsed ? "Expand" : "Collapse"}
+              </button>
+            </div>
           </div>
 
-          <div class="catalog-grid">
+          <div class="catalog-rail" hidden={!isCatalogCollapsed} aria-hidden={!isCatalogCollapsed}>
+            <span>Catalog</span>
+            <strong>{selectedDefinition.title}</strong>
+          </div>
+
+          <div class="catalog-grid" id="puzzle-catalog-list" hidden={isCatalogCollapsed}>
             {puzzleCatalog.map((definition) => (
               <button
                 class={definition.id === selectedPuzzleId ? "catalog-card selected" : "catalog-card"}
