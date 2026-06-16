@@ -27,6 +27,7 @@ export const generateNonogram: PuzzleGenerator = ({ seed, width, height }) => {
   const boundedHeight = normalizeDimension(height, 8, 5, 12);
   const random = createRandom(`nonogram:${normalizedSeed}:${boundedWidth}x${boundedHeight}`);
   const solution = Array.from({ length: boundedWidth * boundedHeight }, () => random() > 0.48);
+  const answerKey = solution.map((isFilled) => (isFilled ? "■" : ""));
   const rowClues = Array.from({ length: boundedHeight }, (_, row) =>
     summarizeRuns(solution.slice(row * boundedWidth, row * boundedWidth + boundedWidth)),
   );
@@ -56,10 +57,11 @@ export const generateNonogram: PuzzleGenerator = ({ seed, width, height }) => {
     width: boundedWidth,
     height: boundedHeight,
     cells,
+    answerKey,
     notes: [
       `Row clues: ${rowClues.join(" / ")}`,
       `Column clues: ${columnClues.join(" / ")}`,
-      "Click cells to toggle filled squares, then use Finished when you want to mark the attempt complete.",
+      "Click cells to toggle filled squares, then use Check to judge the completed grid.",
     ],
   });
 };
