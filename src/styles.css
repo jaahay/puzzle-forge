@@ -268,9 +268,110 @@ label {
   background: #93c5fd;
 }
 
+.cell.disabled {
+  border-color: transparent;
+  color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
 .grid.wordle .cell {
   min-height: 4rem;
   text-transform: uppercase;
+}
+
+.grid.peg-solitaire .cell {
+  border-radius: 999px;
+}
+
+.cards-layout {
+  display: grid;
+  gap: 1rem;
+}
+
+.card-row {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.stock-row {
+  grid-template-columns: repeat(2, minmax(7rem, 1fr));
+  max-width: 18rem;
+}
+
+.foundation-row {
+  grid-template-columns: repeat(4, minmax(5rem, 1fr));
+}
+
+.tableau-row {
+  grid-template-columns: repeat(7, minmax(4.5rem, 1fr));
+  align-items: start;
+}
+
+.card-stack {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.card-stack-heading {
+  display: grid;
+  gap: 0.15rem;
+  color: #cbd5e1;
+  font-size: 0.8rem;
+}
+
+.card-stack-heading strong {
+  color: #f8fafc;
+}
+
+.card-stack-heading span {
+  color: #94a3b8;
+}
+
+.playing-card-list {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.tableau .playing-card-list {
+  grid-auto-rows: 1.6rem;
+  padding-bottom: 4.8rem;
+}
+
+.playing-card {
+  display: grid;
+  min-height: 4.4rem;
+  place-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.55rem;
+  color: #0f172a;
+  background: #f8fafc;
+  font-size: clamp(0.9rem, 2vw, 1.2rem);
+  font-weight: 900;
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.28);
+}
+
+.playing-card.red {
+  color: #b91c1c;
+}
+
+.playing-card.black {
+  color: #111827;
+}
+
+.playing-card.back {
+  border-color: #60a5fa;
+  background:
+    linear-gradient(135deg, rgba(96, 165, 250, 0.88), rgba(59, 130, 246, 0.66)),
+    repeating-linear-gradient(45deg, rgba(15, 23, 42, 0.2) 0 4px, transparent 4px 8px);
+}
+
+.playing-card.placeholder {
+  border-style: dashed;
+  color: #64748b;
+  background: rgba(15, 23, 42, 0.58);
+  box-shadow: none;
 }
 
 .notes-list {
@@ -283,5 +384,11 @@ label {
   .catalog-layout,
   .control-panel {
     grid-template-columns: 1fr;
+  }
+
+  .stock-row,
+  .foundation-row,
+  .tableau-row {
+    grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
   }
 }
