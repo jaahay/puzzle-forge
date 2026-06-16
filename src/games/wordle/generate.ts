@@ -24,8 +24,7 @@ export const generateWordle: PuzzleGenerator = ({ seed }) => {
   const cells = guesses.flatMap((guess, row) =>
     Array.from({ length: COLUMNS }, (_, column) => {
       const value = guess[column] ?? "";
-      const solutionValue = answerWord[column] ?? "";
-      const exact = value === solutionValue;
+      const exact = Boolean(value) && value === answerWord[column];
       const present = Boolean(value) && !exact && answerWord.includes(value);
       const tone = exact ? "answer" : present ? "hint" : "empty";
       const locked = row < ROWS - 1;
@@ -35,7 +34,6 @@ export const generateWordle: PuzzleGenerator = ({ seed }) => {
         column,
         value,
         locked,
-        solutionValue,
         tone,
         ariaLabel: `${value || "Blank"} at row ${row + 1}, column ${column + 1}`,
       } as const;
@@ -51,7 +49,7 @@ export const generateWordle: PuzzleGenerator = ({ seed }) => {
     height: ROWS,
     cells,
     notes: [
-      "Click cells in the open row to cycle letters; the board reports solved when the row matches the generated answer.",
+      "Click cells in the open row to cycle letters, then use Finished when you want to mark the attempt complete.",
       "Prototype uses a small built-in word list so the catalog can render without external data.",
     ],
   });
