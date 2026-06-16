@@ -340,6 +340,7 @@ label {
 }
 
 .playing-card {
+  position: relative;
   display: grid;
   min-height: 4.4rem;
   place-items: center;
@@ -347,9 +348,27 @@ label {
   border-radius: 0.55rem;
   color: #0f172a;
   background: #f8fafc;
+  cursor: pointer;
   font-size: clamp(0.9rem, 2vw, 1.2rem);
   font-weight: 900;
   box-shadow: 0 10px 24px rgba(2, 6, 23, 0.28);
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.playing-card:hover:not(:disabled),
+.playing-card:focus-visible {
+  border-color: #a7f3d0;
+  box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.3), 0 10px 24px rgba(2, 6, 23, 0.28);
+  outline: none;
+  transform: translateY(-2px);
+}
+
+.playing-card:disabled {
+  cursor: default;
+  opacity: 1;
 }
 
 .playing-card.red {
@@ -372,6 +391,29 @@ label {
   color: #64748b;
   background: rgba(15, 23, 42, 0.58);
   box-shadow: none;
+}
+
+.playing-card.drop-target {
+  border-color: #a7f3d0;
+  color: #a7f3d0;
+  cursor: pointer;
+}
+
+.selected-card {
+  border-color: #facc15;
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.35), 0 10px 24px rgba(2, 6, 23, 0.28);
+  transform: translateY(-4px);
+}
+
+.card-action-hint {
+  position: absolute;
+  right: 0.35rem;
+  bottom: 0.25rem;
+  color: #64748b;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .notes-list {
