@@ -2,87 +2,6 @@
   scroll-behavior: smooth;
 }
 
-.catalog-collapse-control {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-.catalog-collapse-toggle {
-  position: sticky;
-  top: 0.75rem;
-  z-index: 10;
-  display: flex;
-  width: min(1240px, calc(100vw - 2rem));
-  margin: 0.75rem auto -2.75rem;
-  justify-content: flex-end;
-  pointer-events: none;
-}
-
-.catalog-collapse-toggle span {
-  border: 1px solid rgba(167, 243, 208, 0.54);
-  border-radius: 999px;
-  padding: 0.55rem 0.85rem;
-  color: #0f172a;
-  background: #a7f3d0;
-  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.28);
-  cursor: pointer;
-  font-size: 0.76rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  pointer-events: auto;
-  text-transform: uppercase;
-}
-
-.catalog-collapse-toggle .expand-label {
-  display: none;
-}
-
-.catalog-collapse-control:focus-visible + .catalog-collapse-toggle span {
-  outline: 3px solid rgba(250, 204, 21, 0.75);
-  outline-offset: 3px;
-}
-
-.catalog-collapse-control:checked + .catalog-collapse-toggle .collapse-label {
-  display: none;
-}
-
-.catalog-collapse-control:checked + .catalog-collapse-toggle .expand-label {
-  display: inline-block;
-}
-
-.catalog-collapse-control:checked ~ #app .catalog-layout {
-  grid-template-columns: minmax(3.5rem, 0.08fr) minmax(0, 1fr);
-}
-
-.catalog-collapse-control:checked ~ #app .catalog-panel {
-  align-self: start;
-  min-height: 18rem;
-  padding: 0.75rem 0.5rem;
-}
-
-.catalog-collapse-control:checked ~ #app .catalog-panel .panel-heading,
-.catalog-collapse-control:checked ~ #app .catalog-panel .catalog-grid {
-  display: none;
-}
-
-.catalog-collapse-control:checked ~ #app .catalog-panel::before {
-  content: "Catalog";
-  display: grid;
-  min-height: 16rem;
-  place-items: center;
-  color: #a7f3d0;
-  font-size: 0.78rem;
-  font-weight: 900;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  writing-mode: vertical-rl;
-}
-
 .site-changelog,
 .site-footer {
   width: min(1240px, calc(100vw - 2rem));
@@ -199,25 +118,6 @@
   grid-column: 1 / -1;
   margin: 0;
   font-size: 0.9rem;
-}
-
-@media (max-width: 940px) {
-  .catalog-collapse-toggle {
-    margin-bottom: 0.75rem;
-  }
-
-  .catalog-collapse-control:checked ~ #app .catalog-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .catalog-collapse-control:checked ~ #app .catalog-panel {
-    min-height: auto;
-  }
-
-  .catalog-collapse-control:checked ~ #app .catalog-panel::before {
-    min-height: auto;
-    writing-mode: horizontal-tb;
-  }
 }
 
 @media (max-width: 720px) {
