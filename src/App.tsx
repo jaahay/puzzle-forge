@@ -1,13 +1,77 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { getPuzzleDefinition, isGeneratable, puzzleCatalog } from "./catalog/puzzleCatalog";
 import type {
+  CardStack,
   GeneratedPuzzle,
+  PlayingCard,
   PuzzleGenerationRequest,
   PuzzleGenerationResponse,
   PuzzleId,
 } from "./catalog/types";
 
 const makeRequestId = () => Math.random().toString(36).slice(2);
+
+const renderPlayingCard = (card: PlayingCard, stackId: string, index: number) => (
+  <span
+    aria-label={card.faceUp ? card.label : "Face-down card"}
+    class={`playing-card ${card.faceUp ? card.color : "back"}`}
+    key={`${stackId}-${index}-${card.code}`}
+  >
+    {card.faceUp ? card.code : ""}
+  </span>
+);
+
+const renderCardStack = (stack: CardStack) => {
+  const cardsToRender = stack.role === "stock" ? stack.cards.slice(0, 1) : stack.cards;
+  const countLabel = stack.role === "stock" && stack.cards.length > 0 ? `${stack.cards.length} cards` : null;
+
+  return (
+    <div class={`card-stack ${stack.role}`} key={stack.id}>
+      <div class="card-stack-heading">
+        <strong>{stack.title}</strong>
+        {countLabel ? <span>{countLabel}</span> : null}
+      </div>
+      <div class="playing-card-list">
+        {cardsToRender.length > 0 ? (
+          cardsToRender.map((card, index) => renderPlayingCard(card, stack.id, index))
+        ) : (
+          <span class="playing-card placeholder" aria-label={`${stack.title} is empty`}>
+            {stack.role === "foundation" ? "A" : ""}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const renderPuzzlePreview = (puzzle: GeneratedPuzzle) => {
+  if (puzzle.kind === "cards") {
+    const stockAndWaste = puzzle.stacks.filter((stack) => stack.role === "stock" || stack.role === "waste");
+    const foundations = puzzle.stacks.filter((stack) => stack.role === "foundation");
+    const tableau = puzzle.stacks.filter((stack) => stack.role === "tableau");
+
+    return (
+      <div class="cards-layout">
+        <div class="card-row stock-row">{stockAndWaste.map(renderCardStack)}</div>
+        <div class="card-row foundation-row">{foundations.map(renderCardStack)}</div>
+        <div class="card-row tableau-row">{tableau.map(renderCardStack)}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      class={`grid ${puzzle.puzzleId}`}
+      style={{ gridTemplateColumns: `repeat(${puzzle.width}, minmax(0, 1fr))` }}
+    >
+      {puzzle.cells.map((cell) => (
+        <div aria-label={cell.ariaLabel} class={`cell ${cell.tone}`} key={`${cell.row}-${cell.column}`}>
+          {cell.value}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 export const App = () => {
   const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>("sudoku");
@@ -95,10 +159,10 @@ export const App = () => {
     <main class="app-shell">
       <section class="hero-panel">
         <p class="eyebrow">puzzles catalog</p>
-        <h1>One home for Sudoku, Nonogram, Wordle-like puzzles, and whatever comes next.</h1>
+        <h1>One home for Sudoku, Solitaire, Nonogram, Wordle-like puzzles, and whatever comes next.</h1>
         <p class="hero-copy">
-          Browse the catalog, pick a puzzle family, and generate deterministic boards in a Web Worker
-          so the interface stays responsive.
+          Browse the catalog, pick a puzzle family, and generate deterministic boards and deals in a Web Worker so
+          the interface stays responsive.
         </p>
       </section>
 
@@ -175,25 +239,12 @@ export const App = () => {
           {puzzle ? (
             <section class="puzzle-panel" aria-label="Generated puzzle preview">
               <div class="puzzle-meta">
-                <span>{puzzle.width} x {puzzle.height}</span>
+                <span>{puzzle.kind === "cards" ? "52-card deal" : `${puzzle.width} x ${puzzle.height}`}</span>
                 <span>Seed: {puzzle.seed}</span>
                 <span>Checksum: {puzzle.checksum}</span>
               </div>
 
-              <div
-                class={`grid ${puzzle.puzzleId}`}
-                style={{ gridTemplateColumns: `repeat(${puzzle.width}, minmax(0, 1fr))` }}
-              >
-                {puzzle.cells.map((cell) => (
-                  <div
-                    aria-label={cell.ariaLabel}
-                    class={`cell ${cell.tone}`}
-                    key={`${cell.row}-${cell.column}`}
-                  >
-                    {cell.value}
-                  </div>
-                ))}
-              </div>
+              {renderPuzzlePreview(puzzle)}
 
               <ul class="notes-list">
                 {puzzle.notes.map((note) => (
