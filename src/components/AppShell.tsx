@@ -15,11 +15,11 @@ const viewLinks: { href: `#${AppView}`; label: string; view: AppView }[] = [
 export const AppShell = ({ activeView, children }: AppShellProps) => (
   <main class="app-shell">
     <section class="hero-panel">
-      <p class="eyebrow">puzzles catalog</p>
+      <p class="eyebrow">procedural puzzle workbench</p>
       <h1>One home for Sudoku, Solitaire, Nonogram, Word Guess, and whatever comes next.</h1>
       <p class="hero-copy">
-        Browse the catalog, inspect product notes, and generate deterministic boards and deals in a Web Worker so the
-        interface stays responsive.
+        Use the tabs to move between the playable catalog, product notes, and project context. Puzzle generation still
+        runs in a Web Worker so seeded boards and deals stay responsive.
       </p>
 
       <nav class="app-tabs" aria-label="Puzzle Forge views">
