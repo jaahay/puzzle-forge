@@ -36,8 +36,8 @@ export const generateSudoku: PuzzleGenerator = ({ seed }) => {
     height: BOARD_SIZE,
     cells,
     notes: [
-      "Prototype Sudoku generator uses a valid base grid pattern with seeded digit rotation.",
-      "A future pass should add uniqueness checks and difficulty grading.",
+      "Click open cells to cycle digits, then use Finished when you want to mark the attempt complete.",
+      "Generator uses a valid base grid pattern with seeded digit rotation; uniqueness and difficulty grading are future work.",
     ],
   });
 };

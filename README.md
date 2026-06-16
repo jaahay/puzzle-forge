@@ -59,13 +59,13 @@ Initial catalog entries:
 - Minesweeper
 - Slitherlink
 
-Only playable and prototype entries have generators today. Planned entries are visible in the catalog but disabled for generation until their engine exists.
+`playable` means the entry has an in-browser interaction surface, not only a generator. Planned entries are visible in the catalog but disabled for generation until their engine exists.
 
 ## Generator model
 
 Puzzle engines live under `src/games/<puzzle>/generate.ts`. Shared generation helpers live in `src/games/shared.ts`, and `src/games/registry.ts` maps catalog ids to concrete generators.
 
-Current generators:
+Current playable generators:
 
 - `src/games/sudoku/generate.ts`
 - `src/games/nonogram/generate.ts`

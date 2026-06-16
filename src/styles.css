@@ -198,7 +198,15 @@ h2 {
   padding-top: 1rem;
 }
 
-.control-panel button {
+.control-actions,
+.puzzle-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.control-panel button,
+.puzzle-actions button {
   border-radius: 999px;
   padding: 0.85rem 1.25rem;
   color: #0f172a;
@@ -207,7 +215,14 @@ h2 {
   font-weight: 800;
 }
 
-.control-panel button:disabled {
+.control-actions button:nth-child(2),
+.puzzle-actions button {
+  color: #e5e7eb;
+  background: #334155;
+}
+
+.control-panel button:disabled,
+.puzzle-actions button:disabled {
   cursor: not-allowed;
   opacity: 0.62;
 }
@@ -246,6 +261,33 @@ label {
   color: #cbd5e1;
   background: #111827;
   font-weight: 800;
+}
+
+.cell.interactive-cell {
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.cell.interactive-cell:hover,
+.cell.interactive-cell:focus-visible {
+  border-color: #a7f3d0;
+  box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.28);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.cell:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.cell.selected-grid-cell {
+  border-color: #facc15;
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.32);
+  transform: translateY(-2px);
 }
 
 .cell.given {
@@ -414,6 +456,10 @@ label {
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.puzzle-actions {
+  margin-top: 1rem;
 }
 
 .notes-list {

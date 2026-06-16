@@ -52,7 +52,7 @@ export const generateLogicGrid: PuzzleGenerator = ({ seed, width, height }) => {
     height: boundedHeight,
     cells,
     notes: [
-      "This keeps the original procedural workbench as one catalog entry.",
+      "Click open cells to cycle candidate digits, then use Finished when you want to mark the attempt complete.",
       "Future versions can attach rules, regions, and solver traces to the same grid model.",
     ],
   });
