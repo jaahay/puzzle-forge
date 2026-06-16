@@ -3,10 +3,10 @@ import type { GeneratedPuzzle, GridGeneratedPuzzle, PuzzleCell, PuzzleId } from 
 const RNG_MODULUS = 2147483647;
 const RNG_MULTIPLIER = 48271;
 
-export const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, max), min);
+export const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
 export const normalizeDimension = (value: number, fallback: number, min: number, max: number) =>
-  Math.min(Math.max(Math.floor(Number.isFinite(value) ? value : fallback), min), max);
+  clamp(Math.floor(Number.isFinite(value) ? value : fallback), min, max);
 
 const seedToState = (seed: string) => {
   let state = 17;
