@@ -14,16 +14,19 @@ export const generateSudoku: PuzzleGenerator = ({ seed }) => {
     const row = Math.floor(index / BOARD_SIZE);
     const column = index % BOARD_SIZE;
     const pattern = (row * BOX_SIZE + Math.floor(row / BOX_SIZE) + column + digitOffset) % BOARD_SIZE;
-    const value = String(pattern + 1);
+    const solutionValue = String(pattern + 1);
     const locked = random() < clueDensity || (row === column && random() < 0.7);
 
     return {
       row,
       column,
-      value: locked ? value : "",
+      value: locked ? solutionValue : "",
       locked,
+      solutionValue,
       tone: locked ? "given" : "empty",
-      ariaLabel: locked ? `Given ${value} at row ${row + 1}, column ${column + 1}` : `Empty Sudoku cell at row ${row + 1}, column ${column + 1}`,
+      ariaLabel: locked
+        ? `Given ${solutionValue} at row ${row + 1}, column ${column + 1}`
+        : `Empty Sudoku cell at row ${row + 1}, column ${column + 1}`,
     } as const;
   });
 
@@ -36,8 +39,8 @@ export const generateSudoku: PuzzleGenerator = ({ seed }) => {
     height: BOARD_SIZE,
     cells,
     notes: [
-      "Prototype Sudoku generator uses a valid base grid pattern with seeded digit rotation.",
-      "A future pass should add uniqueness checks and difficulty grading.",
+      "Click open cells to cycle digits; the board reports solved when every entry matches the generated solution.",
+      "Generator uses a valid base grid pattern with seeded digit rotation; uniqueness and difficulty grading are future work.",
     ],
   });
 };
