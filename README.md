@@ -2,7 +2,7 @@
 
 Generate, solve, and experiment with procedural logic puzzles.
 
-The app is structured as a catalog-first puzzle destination suitable for a `puzzles.*` subdomain. Sudoku, 52-card Solitaire, Peg Solitaire, Nonogram, Wordle-like puzzles, and future engines share one catalog shell while keeping each puzzle generator isolated.
+The app is structured as a catalog-first puzzle destination suitable for a `puzzles.*` subdomain. Sudoku, 52-card Solitaire, Peg Solitaire, Nonogram, Word Guess, and future engines share one catalog shell while keeping each puzzle generator isolated.
 
 ## Stack
 
@@ -51,7 +51,7 @@ Initial catalog entries:
 
 - Sudoku
 - Nonogram
-- Wordle-like
+- Word Guess
 - Logic Grid
 - Solitaire
 - Peg Solitaire
@@ -74,7 +74,7 @@ Current playable generators:
 - `src/games/solitaire/generate.ts`
 - `src/games/pegSolitaire/generate.ts`
 
-Grid generators return `GridGeneratedPuzzle` previews with cells. Card generators return `CardGeneratedPuzzle` previews with stock, waste, foundation, and tableau stacks. Both shapes flow through the shared worker contract so puzzle-specific renderers can evolve without blocking the catalog shell.
+Grid generators return `GridGeneratedPuzzle` previews with cells and optional puzzle-level answer keys for checking. Card generators return `CardGeneratedPuzzle` previews with stock, waste, foundation, and tableau stacks. Both shapes flow through the shared worker contract so puzzle-specific renderers can evolve without blocking the catalog shell.
 
 ## Worker contract
 
@@ -82,4 +82,4 @@ The UI posts a `PuzzleGenerationRequest` to `src/workers/puzzleWorker.ts` with a
 
 ## Product direction
 
-The branch now targets a catalog destination rather than a single puzzle workbench. Future work should add richer per-puzzle renderers, puzzle-specific settings, curated Wordle dictionaries, Nonogram clue derivation, Sudoku uniqueness checks, Solitaire move validation, Peg Solitaire solver hints, and eventually deployment configuration for the chosen `puzzles.*` host.
+The branch now targets a catalog destination rather than a single puzzle workbench. Future work should add richer per-puzzle renderers, puzzle-specific settings, curated word dictionaries, Nonogram clue derivation, Sudoku uniqueness checks, Solitaire move validation, Peg Solitaire solver hints, and eventually deployment configuration for the chosen `puzzles.*` host.
