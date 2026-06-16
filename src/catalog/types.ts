@@ -38,6 +38,7 @@ export type PuzzleCell = {
   locked: boolean;
   tone: PuzzleCellTone;
   ariaLabel?: string;
+  solutionValue?: string;
 };
 
 export type CardSuit = "clubs" | "diamonds" | "hearts" | "spades";
