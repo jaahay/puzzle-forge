@@ -22,43 +22,86 @@ export type PuzzleRequest = {
   height: number;
 };
 
+const MIN_SIZE = 4;
+const MAX_SIZE = 12;
+const RNG_MODULUS = 2147483647;
+const RNG_MULTIPLIER = 48271;
+
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
-const scoreSeed = (seed: string) =>
-  Array.from(seed).reduce((score, character, index) => score + character.charCodeAt(0) * (index + 17), 97);
+const normalizeDimension = (value: number) => clamp(Math.floor(Number.isFinite(value) ? value : MIN_SIZE), MIN_SIZE, MAX_SIZE);
 
-const sample = (base: number, index: number) => {
-  const value = Math.sin(base + index * 12.9898) * 43758.5453;
-  return value - Math.floor(value);
+const seedToState = (seed: string) => {
+  let state = 17;
+
+  for (const character of seed) {
+    state = (state * 31 + character.codePointAt(0)!) % RNG_MODULUS;
+  }
+
+  return state === 0 ? 1 : state;
 };
 
-const makeChecksum = (cells: PuzzleCell[]) =>
-  cells
-    .reduce((sum, cell) => sum + (cell.value + 3) * (cell.row + 1) * (cell.column + 1), 0)
-    .toString(36)
-    .padStart(6, "0");
+const createRandom = (seed: string) => {
+  let state = seedToState(seed);
+
+  return () => {
+    state = (state * RNG_MULTIPLIER) % RNG_MODULUS;
+    return state / RNG_MODULUS;
+  };
+};
+
+const makeChecksum = (cells: PuzzleCell[]) => {
+  const total = cells.reduce((sum, cell) => {
+    const lockWeight = cell.locked ? 11 : 5;
+    return sum + (cell.value + lockWeight) * (cell.row + 1) * (cell.column + 1);
+  }, 0);
+
+  return total.toString(36).padStart(6, "0");
+};
+
+const getClueDensity = (width: number, height: number) => {
+  const area = width * height;
+
+  if (area <= 25) {
+    return 0.58;
+  }
+
+  if (area <= 64) {
+    return 0.5;
+  }
+
+  return 0.43;
+};
 
 export const generatePuzzle = ({ id, seed, width, height }: PuzzleRequest): Puzzle => {
-  const boundedWidth = clamp(Math.floor(width), 4, 12);
-  const boundedHeight = clamp(Math.floor(height), 4, 12);
-  const base = scoreSeed(`${seed}:${boundedWidth}x${boundedHeight}`);
+  const boundedWidth = normalizeDimension(width);
+  const boundedHeight = normalizeDimension(height);
+  const random = createRandom(`${seed.trim() || "puzzle-forge"}:${boundedWidth}x${boundedHeight}`);
+  const clueDensity = getClueDensity(boundedWidth, boundedHeight);
 
   const cells: PuzzleCell[] = Array.from({ length: boundedWidth * boundedHeight }, (_, index) => {
     const row = Math.floor(index / boundedWidth);
     const column = index % boundedWidth;
-    const value = 1 + Math.floor(sample(base, index) * 9);
-    const locked = sample(base, index + 1000) > 0.46;
+    const diagonalBias = row === column || row + column === boundedWidth - 1 ? 1 : 0;
+    const value = 1 + ((Math.floor(random() * 9) + diagonalBias) % 9);
+    const locked = random() < clueDensity;
 
     return { row, column, value, locked };
   });
 
-  if (!cells.some((cell) => cell.locked)) {
+  const lockedCells = cells.filter((cell) => cell.locked).length;
+
+  if (lockedCells === 0) {
     cells[0] = { ...cells[0], locked: true };
+  }
+
+  if (lockedCells === cells.length) {
+    cells[cells.length - 1] = { ...cells[cells.length - 1], locked: false };
   }
 
   return {
     id,
-    seed,
+    seed: seed.trim() || "puzzle-forge",
     width: boundedWidth,
     height: boundedHeight,
     cells,
