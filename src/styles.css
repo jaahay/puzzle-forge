@@ -248,6 +248,33 @@ label {
   font-weight: 800;
 }
 
+.cell.interactive-cell {
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.cell.interactive-cell:hover,
+.cell.interactive-cell:focus-visible {
+  border-color: #a7f3d0;
+  box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.28);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.cell:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.cell.selected-grid-cell {
+  border-color: #facc15;
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.32);
+  transform: translateY(-2px);
+}
+
 .cell.given {
   color: #0f172a;
   background: #a7f3d0;
