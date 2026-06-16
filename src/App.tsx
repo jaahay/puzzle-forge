@@ -10,7 +10,9 @@ import type {
   PuzzleGenerationResponse,
   PuzzleId,
 } from "./catalog/types";
+import { AboutView } from "./components/AboutView";
 import { AppShell } from "./components/AppShell";
+import { ChangelogView } from "./components/ChangelogView";
 import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import {
   canMoveToFoundation,
@@ -31,9 +33,12 @@ import {
   prepareGridCells,
   type GridCellSelection,
 } from "./interactions/gridRules";
+import type { AppView } from "./site/views";
+import { viewFromHash } from "./site/views";
 
 const makeRequestId = () => Math.random().toString(36).slice(2);
 const makeRandomSeed = () => `random-${Date.now().toString(36)}-${makeRequestId().slice(0, 6)}`;
+const getActiveView = (): AppView => (typeof window === "undefined" ? "catalog" : viewFromHash(window.location.hash));
 
 type CardStackProps = {
   stack: CardStack;
@@ -175,6 +180,7 @@ const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick, onCel
 };
 
 export const App = () => {
+  const [activeView, setActiveView] = useState<AppView>(getActiveView);
   const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>("sudoku");
   const [seed, setSeed] = useState("daily-catalog");
   const [width, setWidth] = useState(9);
@@ -647,6 +653,21 @@ export const App = () => {
   };
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const syncActiveView = () => setActiveView(getActiveView());
+
+    syncActiveView();
+    window.addEventListener("hashchange", syncActiveView);
+
+    return () => {
+      window.removeEventListener("hashchange", syncActiveView);
+    };
+  }, []);
+
+  useEffect(() => {
     const handleMessage = (event: MessageEvent<PuzzleGenerationResponse>) => {
       if (event.data.requestId !== activeRequestId.current) {
         return;
@@ -729,108 +750,114 @@ export const App = () => {
   }, []);
 
   return (
-    <AppShell>
-      <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
-        <PuzzleCatalog
-          isCollapsed={isCatalogCollapsed}
-          selectedPuzzleId={selectedPuzzleId}
-          selectedPuzzleTitle={selectedDefinition.title}
-          onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)}
-          onSelectPuzzle={selectPuzzle}
-        />
+    <AppShell activeView={activeView}>
+      {activeView === "catalog" ? (
+        <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
+          <PuzzleCatalog
+            isCollapsed={isCatalogCollapsed}
+            selectedPuzzleId={selectedPuzzleId}
+            selectedPuzzleTitle={selectedDefinition.title}
+            onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)}
+            onSelectPuzzle={selectPuzzle}
+          />
 
-        <section class="workspace-panel" aria-label="Selected puzzle workspace">
-          <div class="workspace-copy">
-            <span class={`status ${selectedDefinition.status}`}>{selectedDefinition.status}</span>
-            <h2>{selectedDefinition.title}</h2>
-            <p>{selectedDefinition.description}</p>
-            <div class="tag-row">
-              {selectedDefinition.tags.map((tag) => (
-                <span key={tag}>{tag}</span>
-              ))}
-            </div>
-          </div>
-
-          <div class="control-panel" aria-label="Puzzle controls">
-            <label>
-              Seed
-              <input value={seed} onInput={(event) => setSeed(event.currentTarget.value)} />
-            </label>
-
-            <label>
-              Width
-              <input
-                type="number"
-                min={selectedDefinition.minWidth}
-                max={selectedDefinition.maxWidth}
-                value={width}
-                onInput={(event) => setWidth(Number(event.currentTarget.value))}
-              />
-            </label>
-
-            <label>
-              Height
-              <input
-                type="number"
-                min={selectedDefinition.minHeight}
-                max={selectedDefinition.maxHeight}
-                value={height}
-                onInput={(event) => setHeight(Number(event.currentTarget.value))}
-              />
-            </label>
-
-            <div class="control-actions">
-              <button type="button" onClick={() => generate()} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-                {isGenerating ? "Generating..." : "Generate"}
-              </button>
-              <button type="button" onClick={randomize} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-                Randomize
-              </button>
-            </div>
-          </div>
-
-          <p class="status-line" aria-live="polite">{statusMessage}</p>
-
-          {puzzle ? (
-            <section class="puzzle-panel" aria-label="Generated puzzle preview">
-              <div class="puzzle-meta">
-                <span>{puzzle.kind === "cards" ? "52-card deal" : `${puzzle.width} x ${puzzle.height}`}</span>
-                <span>Seed: {puzzle.seed}</span>
-                <span>Checksum: {puzzle.checksum}</span>
+          <section class="workspace-panel" aria-label="Selected puzzle workspace">
+            <div class="workspace-copy">
+              <span class={`status ${selectedDefinition.status}`}>{selectedDefinition.status}</span>
+              <h2>{selectedDefinition.title}</h2>
+              <p>{selectedDefinition.description}</p>
+              <div class="tag-row">
+                {selectedDefinition.tags.map((tag) => (
+                  <span key={tag}>{tag}</span>
+                ))}
               </div>
+            </div>
 
-              {puzzle.kind === "cards" && cardStacks ? (
-                <CardPuzzlePreview
-                  stacks={cardStacks}
-                  selectedCard={selectedCard}
-                  onCardClick={handleCardClick}
-                  onStackClick={handleStackClick}
-                />
-              ) : puzzle.kind === "grid" && gridCells ? (
-                <GridPuzzlePreview
-                  puzzle={puzzle}
-                  cells={gridCells}
-                  selectedGridCell={selectedGridCell}
-                  onCellClick={handleGridCellClick}
-                  onCellInput={handleGridCellInput}
-                />
-              ) : null}
+            <div class="control-panel" aria-label="Puzzle controls">
+              <label>
+                Seed
+                <input value={seed} onInput={(event) => setSeed(event.currentTarget.value)} />
+              </label>
 
-              <div class="puzzle-actions">
-                <button type="button" onClick={handleCheck}>
-                  Check
+              <label>
+                Width
+                <input
+                  type="number"
+                  min={selectedDefinition.minWidth}
+                  max={selectedDefinition.maxWidth}
+                  value={width}
+                  onInput={(event) => setWidth(Number(event.currentTarget.value))}
+                />
+              </label>
+
+              <label>
+                Height
+                <input
+                  type="number"
+                  min={selectedDefinition.minHeight}
+                  max={selectedDefinition.maxHeight}
+                  value={height}
+                  onInput={(event) => setHeight(Number(event.currentTarget.value))}
+                />
+              </label>
+
+              <div class="control-actions">
+                <button type="button" onClick={() => generate()} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
+                  {isGenerating ? "Generating..." : "Generate"}
+                </button>
+                <button type="button" onClick={randomize} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
+                  Randomize
                 </button>
               </div>
+            </div>
 
-              <ul class="notes-list">
-                {puzzle.notes.map((note) => (
-                  <li key={note}>{note}</li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
+            <p class="status-line" aria-live="polite">{statusMessage}</p>
+
+            {puzzle ? (
+              <section class="puzzle-panel" aria-label="Generated puzzle preview">
+                <div class="puzzle-meta">
+                  <span>{puzzle.kind === "cards" ? "52-card deal" : `${puzzle.width} x ${puzzle.height}`}</span>
+                  <span>Seed: {puzzle.seed}</span>
+                  <span>Checksum: {puzzle.checksum}</span>
+                </div>
+
+                {puzzle.kind === "cards" && cardStacks ? (
+                  <CardPuzzlePreview
+                    stacks={cardStacks}
+                    selectedCard={selectedCard}
+                    onCardClick={handleCardClick}
+                    onStackClick={handleStackClick}
+                  />
+                ) : puzzle.kind === "grid" && gridCells ? (
+                  <GridPuzzlePreview
+                    puzzle={puzzle}
+                    cells={gridCells}
+                    selectedGridCell={selectedGridCell}
+                    onCellClick={handleGridCellClick}
+                    onCellInput={handleGridCellInput}
+                  />
+                ) : null}
+
+                <div class="puzzle-actions">
+                  <button type="button" onClick={handleCheck}>
+                    Check
+                  </button>
+                </div>
+
+                <ul class="notes-list">
+                  {puzzle.notes.map((note) => (
+                    <li key={note}>{note}</li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+          </section>
         </section>
-      </section>
+      ) : activeView === "changelog" ? (
+        <ChangelogView />
+      ) : (
+        <AboutView />
+      )}
     </AppShell>
   );
 };
