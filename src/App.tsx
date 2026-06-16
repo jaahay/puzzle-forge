@@ -3,7 +3,9 @@ import { getPuzzleDefinition, isGeneratable, puzzleCatalog } from "./catalog/puz
 import type {
   CardStack,
   GeneratedPuzzle,
+  GridGeneratedPuzzle,
   PlayingCard,
+  PuzzleCell,
   PuzzleGenerationRequest,
   PuzzleGenerationResponse,
   PuzzleId,
@@ -27,9 +29,17 @@ const rankValues: Record<PlayingCard["rank"], number> = {
   king: 13,
 };
 
+const digitCycle = ["", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+const letterCycle = ["", ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
+
 type CardSelection = {
   stackId: string;
   cardIndex: number;
+};
+
+type GridCellSelection = {
+  row: number;
+  column: number;
 };
 
 const cloneCard = (card: PlayingCard): PlayingCard => ({ ...card });
@@ -38,6 +48,8 @@ const cloneStack = (stack: CardStack): CardStack => ({
   ...stack,
   cards: stack.cards.map(cloneCard),
 });
+
+const cloneGridCell = (cell: PuzzleCell): PuzzleCell => ({ ...cell });
 
 const getTopCard = (stack: CardStack) => stack.cards[stack.cards.length - 1];
 
@@ -95,6 +107,55 @@ const canSelectFromStack = (stack: CardStack, cardIndex: number) => {
 
 const isSelectedCard = (selection: CardSelection | null, stack: CardStack, index: number) =>
   selection?.stackId === stack.id && index >= selection.cardIndex;
+
+const isSelectedGridCell = (selection: GridCellSelection | null, cell: PuzzleCell) =>
+  selection?.row === cell.row && selection.column === cell.column;
+
+const cycleValue = (values: string[], currentValue: string) => {
+  const currentIndex = values.indexOf(currentValue);
+  return values[(currentIndex + 1) % values.length] ?? values[0];
+};
+
+const getCellIndex = (cells: PuzzleCell[], cell: GridCellSelection) =>
+  cells.findIndex((candidate) => candidate.row === cell.row && candidate.column === cell.column);
+
+const getGridCell = (cells: PuzzleCell[], cell: GridCellSelection) => {
+  const index = getCellIndex(cells, cell);
+  return index >= 0 ? cells[index] : undefined;
+};
+
+const prepareGridCells = (puzzle: GridGeneratedPuzzle): PuzzleCell[] =>
+  puzzle.cells.map((cell) => {
+    if (puzzle.puzzleId === "nonogram") {
+      return {
+        ...cell,
+        value: "",
+        locked: false,
+        tone: "empty",
+        ariaLabel: `Playable nonogram cell at row ${cell.row + 1}, column ${cell.column + 1}`,
+      };
+    }
+
+    if (!cell.locked && (puzzle.puzzleId === "sudoku" || puzzle.puzzleId === "logic-grid")) {
+      return {
+        ...cell,
+        value: "",
+        tone: "empty",
+        ariaLabel: `Editable ${puzzle.title} cell at row ${cell.row + 1}, column ${cell.column + 1}`,
+      };
+    }
+
+    if (!cell.locked && puzzle.puzzleId === "wordle") {
+      return {
+        ...cell,
+        value: "",
+        tone: "empty",
+        ariaLabel: `Editable Wordle-like cell at row ${cell.row + 1}, column ${cell.column + 1}`,
+      };
+    }
+
+    return cloneGridCell(cell);
+  });
 
 type CardStackProps = {
   stack: CardStack;
@@ -182,24 +243,37 @@ const CardPuzzlePreview = ({ stacks, selectedCard, onCardClick, onStackClick }: 
   );
 };
 
-const renderGridPuzzlePreview = (puzzle: GeneratedPuzzle) => {
-  if (puzzle.kind !== "grid") {
-    return null;
-  }
-
-  return (
-    <div
-      class={`grid ${puzzle.puzzleId}`}
-      style={{ gridTemplateColumns: `repeat(${puzzle.width}, minmax(0, 1fr))` }}
-    >
-      {puzzle.cells.map((cell) => (
-        <div aria-label={cell.ariaLabel} class={`cell ${cell.tone}`} key={`${cell.row}-${cell.column}`}>
-          {cell.value}
-        </div>
-      ))}
-    </div>
-  );
+type GridPuzzlePreviewProps = {
+  puzzle: GridGeneratedPuzzle;
+  cells: PuzzleCell[];
+  selectedGridCell: GridCellSelection | null;
+  onCellClick: (cell: PuzzleCell) => void;
 };
+
+const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick }: GridPuzzlePreviewProps) => (
+  <div
+    class={`grid ${puzzle.puzzleId}`}
+    style={{ gridTemplateColumns: `repeat(${puzzle.width}, minmax(0, 1fr))` }}
+  >
+    {cells.map((cell) => {
+      const isInteractive = cell.tone !== "disabled" && (puzzle.puzzleId === "peg-solitaire" || !cell.locked);
+
+      return (
+        <button
+          aria-label={cell.ariaLabel}
+          aria-pressed={isSelectedGridCell(selectedGridCell, cell)}
+          class={`cell ${cell.tone} ${isInteractive ? "interactive-cell" : ""} ${isSelectedGridCell(selectedGridCell, cell) ? "selected-grid-cell" : ""}`}
+          disabled={!isInteractive}
+          key={`${cell.row}-${cell.column}`}
+          onClick={() => onCellClick(cell)}
+          type="button"
+        >
+          {cell.value}
+        </button>
+      );
+    })}
+  </div>
+);
 
 export const App = () => {
   const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>("sudoku");
@@ -209,6 +283,8 @@ export const App = () => {
   const [puzzle, setPuzzle] = useState<GeneratedPuzzle | null>(null);
   const [cardStacks, setCardStacks] = useState<CardStack[] | null>(null);
   const [selectedCard, setSelectedCard] = useState<CardSelection | null>(null);
+  const [gridCells, setGridCells] = useState<PuzzleCell[] | null>(null);
+  const [selectedGridCell, setSelectedGridCell] = useState<GridCellSelection | null>(null);
   const [statusMessage, setStatusMessage] = useState("Choose a puzzle and generate a board.");
   const [isGenerating, setIsGenerating] = useState(false);
   const activeRequestId = useRef<string | null>(null);
@@ -221,6 +297,10 @@ export const App = () => {
 
   const clearCardInteraction = () => {
     setSelectedCard(null);
+  };
+
+  const clearGridInteraction = () => {
+    setSelectedGridCell(null);
   };
 
   const updateCardStacks = (updater: (stacks: CardStack[]) => { stacks: CardStack[]; message: string }) => {
@@ -237,6 +317,18 @@ export const App = () => {
       setStatusMessage(foundationCardCount === 52 ? "Solved. All cards are on foundations." : message);
 
       return stacks;
+    });
+  };
+
+  const updateGridCells = (updater: (cells: PuzzleCell[]) => { cells: PuzzleCell[]; message: string }) => {
+    setGridCells((currentCells) => {
+      if (!currentCells) {
+        return currentCells;
+      }
+
+      const { cells, message } = updater(currentCells.map(cloneGridCell));
+      setStatusMessage(message);
+      return cells;
     });
   };
 
@@ -378,6 +470,190 @@ export const App = () => {
     );
   };
 
+  const cycleNumericGridCell = (cell: PuzzleCell, puzzleLabel: string) => {
+    if (cell.locked) {
+      setStatusMessage("Given cells are fixed. Choose an open cell.");
+      return;
+    }
+
+    clearGridInteraction();
+    updateGridCells((cells) => {
+      const index = getCellIndex(cells, cell);
+      const current = cells[index];
+
+      if (!current) {
+        return { cells, message: "Cell no longer exists." };
+      }
+
+      const nextValue = cycleValue(digitCycle, current.value);
+      cells[index] = {
+        ...current,
+        value: nextValue,
+        tone: nextValue ? "answer" : "empty",
+        ariaLabel: `${nextValue || "Empty"} ${puzzleLabel} cell at row ${current.row + 1}, column ${current.column + 1}`,
+      };
+
+      return { cells, message: nextValue ? `Placed ${nextValue}.` : "Cleared cell." };
+    });
+  };
+
+  const cycleWordCell = (cell: PuzzleCell) => {
+    if (cell.locked) {
+      setStatusMessage("Previous guesses are fixed. Edit the open row.");
+      return;
+    }
+
+    clearGridInteraction();
+    updateGridCells((cells) => {
+      const index = getCellIndex(cells, cell);
+      const current = cells[index];
+
+      if (!current) {
+        return { cells, message: "Cell no longer exists." };
+      }
+
+      const nextValue = cycleValue(letterCycle, current.value);
+      cells[index] = {
+        ...current,
+        value: nextValue,
+        tone: nextValue ? "hint" : "empty",
+        ariaLabel: `${nextValue || "Blank"} at row ${current.row + 1}, column ${current.column + 1}`,
+      };
+
+      return { cells, message: nextValue ? `Set letter ${nextValue}.` : "Cleared letter." };
+    });
+  };
+
+  const toggleNonogramCell = (cell: PuzzleCell) => {
+    clearGridInteraction();
+    updateGridCells((cells) => {
+      const index = getCellIndex(cells, cell);
+      const current = cells[index];
+
+      if (!current) {
+        return { cells, message: "Cell no longer exists." };
+      }
+
+      const nextValue = current.value === "■" ? "" : "■";
+      cells[index] = {
+        ...current,
+        value: nextValue,
+        tone: nextValue ? "accent" : "empty",
+        ariaLabel: `${nextValue ? "Filled" : "Empty"} nonogram cell at row ${current.row + 1}, column ${current.column + 1}`,
+      };
+
+      return { cells, message: nextValue ? "Marked filled square." : "Cleared square." };
+    });
+  };
+
+  const handlePegSolitaireCellClick = (cell: PuzzleCell) => {
+    if (cell.tone === "disabled") {
+      return;
+    }
+
+    if (!selectedGridCell) {
+      if (cell.value === "●") {
+        setSelectedGridCell({ row: cell.row, column: cell.column });
+        setStatusMessage(`Selected peg at row ${cell.row + 1}, column ${cell.column + 1}.`);
+      } else {
+        setStatusMessage("Select a peg, then jump it into an empty hole two spaces away.");
+      }
+
+      return;
+    }
+
+    if (selectedGridCell.row === cell.row && selectedGridCell.column === cell.column) {
+      clearGridInteraction();
+      setStatusMessage("Peg selection cleared.");
+      return;
+    }
+
+    if (cell.value === "●") {
+      setSelectedGridCell({ row: cell.row, column: cell.column });
+      setStatusMessage(`Selected peg at row ${cell.row + 1}, column ${cell.column + 1}.`);
+      return;
+    }
+
+    updateGridCells((cells) => {
+      const source = getGridCell(cells, selectedGridCell);
+      const target = getGridCell(cells, cell);
+
+      if (!source || !target || source.value !== "●" || target.value !== "○") {
+        return { cells, message: "Peg jumps must start on a peg and land in an empty hole." };
+      }
+
+      const rowDelta = target.row - source.row;
+      const columnDelta = target.column - source.column;
+      const isOrthogonalJump =
+        (Math.abs(rowDelta) === 2 && columnDelta === 0) || (Math.abs(columnDelta) === 2 && rowDelta === 0);
+
+      if (!isOrthogonalJump) {
+        return { cells, message: "Peg jumps must move exactly two spaces horizontally or vertically." };
+      }
+
+      const middleCell = getGridCell(cells, {
+        row: source.row + rowDelta / 2,
+        column: source.column + columnDelta / 2,
+      });
+
+      if (!middleCell || middleCell.value !== "●") {
+        return { cells, message: "A jump must hop over another peg." };
+      }
+
+      const nextCells = cells.map((candidate) => {
+        const isSource = candidate.row === source.row && candidate.column === source.column;
+        const isTarget = candidate.row === target.row && candidate.column === target.column;
+        const isMiddle = candidate.row === middleCell.row && candidate.column === middleCell.column;
+
+        if (isSource || isMiddle) {
+          return { ...candidate, value: "○", locked: false, tone: "empty" };
+        }
+
+        if (isTarget) {
+          return { ...candidate, value: "●", locked: true, tone: "given" };
+        }
+
+        return candidate;
+      });
+      const pegCount = nextCells.filter((candidate) => candidate.value === "●").length;
+
+      return { cells: nextCells, message: pegCount === 1 ? "Solved: one peg remains." : `Jumped peg. ${pegCount} pegs remain.` };
+    });
+
+    clearGridInteraction();
+  };
+
+  const handleGridCellClick = (cell: PuzzleCell) => {
+    if (!puzzle || puzzle.kind !== "grid") {
+      return;
+    }
+
+    if (puzzle.puzzleId === "sudoku") {
+      cycleNumericGridCell(cell, "Sudoku");
+      return;
+    }
+
+    if (puzzle.puzzleId === "logic-grid") {
+      cycleNumericGridCell(cell, "logic-grid");
+      return;
+    }
+
+    if (puzzle.puzzleId === "wordle") {
+      cycleWordCell(cell);
+      return;
+    }
+
+    if (puzzle.puzzleId === "nonogram") {
+      toggleNonogramCell(cell);
+      return;
+    }
+
+    if (puzzle.puzzleId === "peg-solitaire") {
+      handlePegSolitaireCellClick(cell);
+      return;
+    }
+  };
+
   useEffect(() => {
     const handleMessage = (event: MessageEvent<PuzzleGenerationResponse>) => {
       if (event.data.requestId !== activeRequestId.current) {
@@ -393,7 +669,9 @@ export const App = () => {
 
       setPuzzle(event.data.puzzle);
       setCardStacks(event.data.puzzle.kind === "cards" ? event.data.puzzle.stacks.map(cloneStack) : null);
+      setGridCells(event.data.puzzle.kind === "grid" ? prepareGridCells(event.data.puzzle) : null);
       setSelectedCard(null);
+      setSelectedGridCell(null);
       setStatusMessage(`${event.data.puzzle.title} generated from seed ${event.data.puzzle.seed}.`);
     };
 
@@ -413,7 +691,9 @@ export const App = () => {
     setHeight(definition.defaultHeight);
     setPuzzle(null);
     setCardStacks(null);
+    setGridCells(null);
     setSelectedCard(null);
+    setSelectedGridCell(null);
     setStatusMessage(
       isGeneratable(definition)
         ? `${definition.title} is ready to generate.`
@@ -439,6 +719,7 @@ export const App = () => {
     activeRequestId.current = requestId;
     setIsGenerating(true);
     setSelectedCard(null);
+    setSelectedGridCell(null);
     setStatusMessage(`Generating ${selectedDefinition.title}...`);
     worker.postMessage(request);
   };
@@ -545,9 +826,14 @@ export const App = () => {
                   onCardClick={handleCardClick}
                   onStackClick={handleStackClick}
                 />
-              ) : (
-                renderGridPuzzlePreview(puzzle)
-              )}
+              ) : puzzle.kind === "grid" && gridCells ? (
+                <GridPuzzlePreview
+                  puzzle={puzzle}
+                  cells={gridCells}
+                  selectedGridCell={selectedGridCell}
+                  onCellClick={handleGridCellClick}
+                />
+              ) : null}
 
               <ul class="notes-list">
                 {puzzle.notes.map((note) => (
