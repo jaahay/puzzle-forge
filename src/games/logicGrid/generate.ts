@@ -21,6 +21,7 @@ export const generateLogicGrid: PuzzleGenerator = ({ seed, width, height }) => {
   const boundedHeight = normalizeDimension(height, 6, 4, 12);
   const random = createRandom(`logic-grid:${normalizedSeed}:${boundedWidth}x${boundedHeight}`);
   const clueDensity = getClueDensity(boundedWidth, boundedHeight);
+  const answerKey: string[] = [];
 
   const cells = Array.from({ length: boundedWidth * boundedHeight }, (_, index) => {
     const row = Math.floor(index / boundedWidth);
@@ -28,6 +29,8 @@ export const generateLogicGrid: PuzzleGenerator = ({ seed, width, height }) => {
     const diagonalBias = row === column || row + column === boundedWidth - 1 ? 1 : 0;
     const value = String(1 + ((Math.floor(random() * 9) + diagonalBias) % 9));
     const locked = random() < clueDensity;
+
+    answerKey.push(value);
 
     return {
       row,
@@ -40,7 +43,7 @@ export const generateLogicGrid: PuzzleGenerator = ({ seed, width, height }) => {
   });
 
   if (!cells.some((cell) => cell.locked)) {
-    cells[0] = { ...cells[0], locked: true, value: "1", tone: "given" };
+    cells[0] = { ...cells[0], locked: true, value: answerKey[0] ?? "1", tone: "given" };
   }
 
   return createGeneratedPuzzle({
@@ -51,8 +54,9 @@ export const generateLogicGrid: PuzzleGenerator = ({ seed, width, height }) => {
     width: boundedWidth,
     height: boundedHeight,
     cells,
+    answerKey,
     notes: [
-      "Click open cells to cycle candidate digits, then use Finished when you want to mark the attempt complete.",
+      "Type digits into open cells, then use Check to judge against the generated solution.",
       "Future versions can attach rules, regions, and solver traces to the same grid model.",
     ],
   });
