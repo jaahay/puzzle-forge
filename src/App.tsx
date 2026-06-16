@@ -11,19 +11,128 @@ import type {
 
 const makeRequestId = () => Math.random().toString(36).slice(2);
 
-const renderPlayingCard = (card: PlayingCard, stackId: string, index: number) => (
-  <span
-    aria-label={card.faceUp ? card.label : "Face-down card"}
-    class={`playing-card ${card.faceUp ? card.color : "back"}`}
-    key={`${stackId}-${index}-${card.code}`}
-  >
-    {card.faceUp ? card.code : ""}
-  </span>
-);
+const rankValues: Record<PlayingCard["rank"], number> = {
+  ace: 1,
+  "2": 2,
+  "3": 3,
+  "4": 4,
+  "5": 5,
+  "6": 6,
+  "7": 7,
+  "8": 8,
+  "9": 9,
+  "10": 10,
+  jack: 11,
+  queen: 12,
+  king: 13,
+};
 
-const renderCardStack = (stack: CardStack) => {
-  const cardsToRender = stack.role === "stock" ? stack.cards.slice(0, 1) : stack.cards;
+type CardSelection = {
+  stackId: string;
+  cardIndex: number;
+};
+
+const cloneCard = (card: PlayingCard): PlayingCard => ({ ...card });
+
+const cloneStack = (stack: CardStack): CardStack => ({
+  ...stack,
+  cards: stack.cards.map(cloneCard),
+});
+
+const getTopCard = (stack: CardStack) => stack.cards[stack.cards.length - 1];
+
+const revealTopTableauCard = (stack: CardStack) => {
+  if (stack.role !== "tableau" || stack.cards.length === 0) {
+    return stack;
+  }
+
+  const topIndex = stack.cards.length - 1;
+  const topCard = stack.cards[topIndex];
+
+  if (topCard.faceUp) {
+    return stack;
+  }
+
+  return {
+    ...stack,
+    cards: stack.cards.map((card, index) => (index === topIndex ? { ...card, faceUp: true } : card)),
+  };
+};
+
+const canMoveToFoundation = (card: PlayingCard, target: CardStack) => {
+  const topCard = getTopCard(target);
+
+  if (!topCard) {
+    return rankValues[card.rank] === 1;
+  }
+
+  return card.suit === topCard.suit && rankValues[card.rank] === rankValues[topCard.rank] + 1;
+};
+
+const canMoveToTableau = (card: PlayingCard, target: CardStack) => {
+  const topCard = getTopCard(target);
+
+  if (!topCard) {
+    return rankValues[card.rank] === 13;
+  }
+
+  return topCard.faceUp && card.color !== topCard.color && rankValues[card.rank] === rankValues[topCard.rank] - 1;
+};
+
+const canSelectFromStack = (stack: CardStack, cardIndex: number) => {
+  const card = stack.cards[cardIndex];
+
+  if (!card?.faceUp) {
+    return false;
+  }
+
+  if (stack.role === "waste" || stack.role === "foundation") {
+    return cardIndex === stack.cards.length - 1;
+  }
+
+  return stack.role === "tableau";
+};
+
+const isSelectedCard = (selection: CardSelection | null, stack: CardStack, index: number) =>
+  selection?.stackId === stack.id && index >= selection.cardIndex;
+
+type CardStackProps = {
+  stack: CardStack;
+  selectedCard: CardSelection | null;
+  onCardClick: (stack: CardStack, cardIndex: number) => void;
+  onStackClick: (stack: CardStack) => void;
+};
+
+const renderPlayingCard = (
+  card: PlayingCard,
+  stack: CardStack,
+  index: number,
+  selectedCard: CardSelection | null,
+  onCardClick: (stack: CardStack, cardIndex: number) => void,
+) => {
+  const selected = isSelectedCard(selectedCard, stack, index);
+  const selectable = canSelectFromStack(stack, index);
+
+  return (
+    <button
+      aria-label={card.faceUp ? card.label : "Face-down card"}
+      class={`playing-card ${card.faceUp ? card.color : "back"} ${selected ? "selected-card" : ""}`}
+      disabled={!card.faceUp && stack.role !== "stock"}
+      key={`${stack.id}-${index}-${card.code}`}
+      onClick={() => onCardClick(stack, index)}
+      type="button"
+    >
+      <span>{card.faceUp ? card.code : ""}</span>
+      {selectable ? <span class="card-action-hint">move</span> : null}
+    </button>
+  );
+};
+
+const renderCardStack = ({ stack, selectedCard, onCardClick, onStackClick }: CardStackProps) => {
+  const cardsToRender = stack.role === "stock" ? stack.cards.slice(-1) : stack.cards;
+  const firstRenderedIndex = stack.role === "stock" ? Math.max(stack.cards.length - 1, 0) : 0;
   const countLabel = stack.role === "stock" && stack.cards.length > 0 ? `${stack.cards.length} cards` : null;
+  const hasSelection = selectedCard !== null;
 
   return (
     <div class={`card-stack ${stack.role}`} key={stack.id}>
@@ -33,30 +142,49 @@ const renderCardStack = (stack: CardStack) => {
       </div>
       <div class="playing-card-list">
         {cardsToRender.length > 0 ? (
-          cardsToRender.map((card, index) => renderPlayingCard(card, stack.id, index))
+          cardsToRender.map((card, index) =>
+            renderPlayingCard(card, stack, firstRenderedIndex + index, selectedCard, onCardClick),
+          )
         ) : (
-          <span class="playing-card placeholder" aria-label={`${stack.title} is empty`}>
-            {stack.role === "foundation" ? "A" : ""}
-          </span>
+          <button
+            class={`playing-card placeholder ${hasSelection ? "drop-target" : ""}`}
+            aria-label={`${stack.title} is empty`}
+            onClick={() => onStackClick(stack)}
+            type="button"
+          >
+            {stack.role === "foundation" ? "A" : stack.role === "stock" ? "↻" : ""}
+          </button>
         )}
       </div>
     </div>
   );
 };
 
-const renderPuzzlePreview = (puzzle: GeneratedPuzzle) => {
-  if (puzzle.kind === "cards") {
-    const stockAndWaste = puzzle.stacks.filter((stack) => stack.role === "stock" || stack.role === "waste");
-    const foundations = puzzle.stacks.filter((stack) => stack.role === "foundation");
-    const tableau = puzzle.stacks.filter((stack) => stack.role === "tableau");
+type CardPuzzlePreviewProps = {
+  stacks: CardStack[];
+  selectedCard: CardSelection | null;
+  onCardClick: (stack: CardStack, cardIndex: number) => void;
+  onStackClick: (stack: CardStack) => void;
+};
 
-    return (
-      <div class="cards-layout">
-        <div class="card-row stock-row">{stockAndWaste.map(renderCardStack)}</div>
-        <div class="card-row foundation-row">{foundations.map(renderCardStack)}</div>
-        <div class="card-row tableau-row">{tableau.map(renderCardStack)}</div>
-      </div>
-    );
+const CardPuzzlePreview = ({ stacks, selectedCard, onCardClick, onStackClick }: CardPuzzlePreviewProps) => {
+  const stockAndWaste = stacks.filter((stack) => stack.role === "stock" || stack.role === "waste");
+  const foundations = stacks.filter((stack) => stack.role === "foundation");
+  const tableau = stacks.filter((stack) => stack.role === "tableau");
+  const renderStack = (stack: CardStack) => renderCardStack({ stack, selectedCard, onCardClick, onStackClick });
+
+  return (
+    <div class="cards-layout">
+      <div class="card-row stock-row">{stockAndWaste.map(renderStack)}</div>
+      <div class="card-row foundation-row">{foundations.map(renderStack)}</div>
+      <div class="card-row tableau-row">{tableau.map(renderStack)}</div>
+    </div>
+  );
+};
+
+const renderGridPuzzlePreview = (puzzle: GeneratedPuzzle) => {
+  if (puzzle.kind !== "grid") {
+    return null;
   }
 
   return (
@@ -79,6 +207,8 @@ export const App = () => {
   const [width, setWidth] = useState(9);
   const [height, setHeight] = useState(9);
   const [puzzle, setPuzzle] = useState<GeneratedPuzzle | null>(null);
+  const [cardStacks, setCardStacks] = useState<CardStack[] | null>(null);
+  const [selectedCard, setSelectedCard] = useState<CardSelection | null>(null);
   const [statusMessage, setStatusMessage] = useState("Choose a puzzle and generate a board.");
   const [isGenerating, setIsGenerating] = useState(false);
   const activeRequestId = useRef<string | null>(null);
@@ -88,6 +218,165 @@ export const App = () => {
   );
   const selectedDefinition = getPuzzleDefinition(selectedPuzzleId);
   const selectedPuzzleIsGeneratable = isGeneratable(selectedDefinition);
+
+  const clearCardInteraction = () => {
+    setSelectedCard(null);
+  };
+
+  const updateCardStacks = (updater: (stacks: CardStack[]) => { stacks: CardStack[]; message: string }) => {
+    setCardStacks((currentStacks) => {
+      if (!currentStacks) {
+        return currentStacks;
+      }
+
+      const { stacks, message } = updater(currentStacks.map(cloneStack));
+      const foundationCardCount = stacks
+        .filter((stack) => stack.role === "foundation")
+        .reduce((total, stack) => total + stack.cards.length, 0);
+
+      setStatusMessage(foundationCardCount === 52 ? "Solved. All cards are on foundations." : message);
+
+      return stacks;
+    });
+  };
+
+  const drawFromStock = () => {
+    clearCardInteraction();
+    updateCardStacks((stacks) => {
+      const stockIndex = stacks.findIndex((stack) => stack.role === "stock");
+      const wasteIndex = stacks.findIndex((stack) => stack.role === "waste");
+      const stock = stacks[stockIndex];
+      const waste = stacks[wasteIndex];
+
+      if (!stock || !waste) {
+        return { stacks, message: "Solitaire stock or waste stack is missing." };
+      }
+
+      if (stock.cards.length > 0) {
+        const drawnCard = stock.cards[stock.cards.length - 1];
+        const nextStacks = [...stacks];
+        nextStacks[stockIndex] = { ...stock, cards: stock.cards.slice(0, -1), faceDownCount: stock.cards.length - 1 };
+        nextStacks[wasteIndex] = { ...waste, cards: [...waste.cards, { ...drawnCard, faceUp: true }] };
+
+        return { stacks: nextStacks, message: `Drew ${drawnCard.label} to waste.` };
+      }
+
+      if (waste.cards.length === 0) {
+        return { stacks, message: "Stock and waste are both empty." };
+      }
+
+      const recycledCards = waste.cards.map((card) => ({ ...card, faceUp: false })).reverse();
+      const nextStacks = [...stacks];
+      nextStacks[stockIndex] = { ...stock, cards: recycledCards, faceDownCount: recycledCards.length };
+      nextStacks[wasteIndex] = { ...waste, cards: [] };
+
+      return { stacks: nextStacks, message: "Recycled waste back into the stock." };
+    });
+  };
+
+  const moveSelectedCardToStack = (targetStackId: string) => {
+    if (!selectedCard) {
+      return false;
+    }
+
+    let didMove = false;
+
+    updateCardStacks((stacks) => {
+      const sourceIndex = stacks.findIndex((stack) => stack.id === selectedCard.stackId);
+      const targetIndex = stacks.findIndex((stack) => stack.id === targetStackId);
+      const source = stacks[sourceIndex];
+      const target = stacks[targetIndex];
+
+      if (!source || !target) {
+        return { stacks, message: "Selected source or target stack no longer exists." };
+      }
+
+      if (source.id === target.id) {
+        return { stacks, message: "Card selection cleared." };
+      }
+
+      const movingCards = source.cards.slice(selectedCard.cardIndex);
+      const movingCard = movingCards[0];
+
+      if (!movingCard?.faceUp) {
+        return { stacks, message: "Only face-up cards can be moved." };
+      }
+
+      if ((source.role === "waste" || source.role === "foundation") && selectedCard.cardIndex !== source.cards.length - 1) {
+        return { stacks, message: "Only the top waste or foundation card can move." };
+      }
+
+      if (target.role === "foundation" && (movingCards.length !== 1 || !canMoveToFoundation(movingCard, target))) {
+        return { stacks, message: `${movingCard.code} cannot move to ${target.title}.` };
+      }
+
+      if (target.role === "tableau" && !canMoveToTableau(movingCard, target)) {
+        return { stacks, message: `${movingCard.code} cannot move to ${target.title}.` };
+      }
+
+      if (target.role !== "foundation" && target.role !== "tableau") {
+        return { stacks, message: "Cards can move only to foundations or tableau columns." };
+      }
+
+      const nextStacks = [...stacks];
+      const nextSource = revealTopTableauCard({ ...source, cards: source.cards.slice(0, selectedCard.cardIndex) });
+      const nextTarget = { ...target, cards: [...target.cards, ...movingCards] };
+
+      nextStacks[sourceIndex] = nextSource;
+      nextStacks[targetIndex] = nextTarget;
+      didMove = true;
+
+      return { stacks: nextStacks, message: `Moved ${movingCard.code} to ${target.title}.` };
+    });
+
+    clearCardInteraction();
+
+    return didMove;
+  };
+
+  const handleStackClick = (stack: CardStack) => {
+    if (stack.role === "stock") {
+      drawFromStock();
+      return;
+    }
+
+    if (selectedCard) {
+      moveSelectedCardToStack(stack.id);
+      return;
+    }
+
+    setStatusMessage(`${stack.title} is empty.`);
+  };
+
+  const handleCardClick = (stack: CardStack, cardIndex: number) => {
+    if (stack.role === "stock") {
+      drawFromStock();
+      return;
+    }
+
+    if (selectedCard && moveSelectedCardToStack(stack.id)) {
+      return;
+    }
+
+    if (selectedCard?.stackId === stack.id && selectedCard.cardIndex === cardIndex) {
+      clearCardInteraction();
+      setStatusMessage("Card selection cleared.");
+      return;
+    }
+
+    if (!canSelectFromStack(stack, cardIndex)) {
+      setStatusMessage("Select a face-up waste card, foundation card, or tableau run.");
+      return;
+    }
+
+    const card = stack.cards[cardIndex];
+    setSelectedCard({ stackId: stack.id, cardIndex });
+    setStatusMessage(
+      stack.role === "tableau"
+        ? `Selected ${card.code} and ${stack.cards.length - cardIndex - 1} card(s) below it.`
+        : `Selected ${card.code}.`,
+    );
+  };
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent<PuzzleGenerationResponse>) => {
@@ -103,6 +392,8 @@ export const App = () => {
       }
 
       setPuzzle(event.data.puzzle);
+      setCardStacks(event.data.puzzle.kind === "cards" ? event.data.puzzle.stacks.map(cloneStack) : null);
+      setSelectedCard(null);
       setStatusMessage(`${event.data.puzzle.title} generated from seed ${event.data.puzzle.seed}.`);
     };
 
@@ -121,6 +412,8 @@ export const App = () => {
     setWidth(definition.defaultWidth);
     setHeight(definition.defaultHeight);
     setPuzzle(null);
+    setCardStacks(null);
+    setSelectedCard(null);
     setStatusMessage(
       isGeneratable(definition)
         ? `${definition.title} is ready to generate.`
@@ -145,6 +438,7 @@ export const App = () => {
 
     activeRequestId.current = requestId;
     setIsGenerating(true);
+    setSelectedCard(null);
     setStatusMessage(`Generating ${selectedDefinition.title}...`);
     worker.postMessage(request);
   };
@@ -244,7 +538,16 @@ export const App = () => {
                 <span>Checksum: {puzzle.checksum}</span>
               </div>
 
-              {renderPuzzlePreview(puzzle)}
+              {puzzle.kind === "cards" && cardStacks ? (
+                <CardPuzzlePreview
+                  stacks={cardStacks}
+                  selectedCard={selectedCard}
+                  onCardClick={handleCardClick}
+                  onStackClick={handleStackClick}
+                />
+              ) : (
+                renderGridPuzzlePreview(puzzle)
+              )}
 
               <ul class="notes-list">
                 {puzzle.notes.map((note) => (
