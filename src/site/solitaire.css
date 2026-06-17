@@ -1,0 +1,105 @@
+.solitaire-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.solitaire-summary span {
+  border: 1px solid rgba(167, 243, 208, 0.22);
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  color: #d1fae5;
+  background: rgba(6, 78, 59, 0.28);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.card-board-top-row {
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.6fr) minmax(18rem, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.card-board-top-row .stock-row {
+  max-width: none;
+}
+
+.tableau-row {
+  overflow-x: auto;
+  padding: 0.15rem 0.15rem 5.4rem;
+  scrollbar-color: #475569 transparent;
+}
+
+.tableau-row .card-stack {
+  min-width: 5.2rem;
+}
+
+.playing-card {
+  aspect-ratio: 0.72;
+  min-height: 5.25rem;
+  overflow: hidden;
+}
+
+.tableau .playing-card-list {
+  grid-auto-rows: 1.45rem;
+}
+
+.card-corner {
+  position: absolute;
+  display: grid;
+  gap: 0.02rem;
+  justify-items: center;
+  line-height: 0.86;
+}
+
+.card-corner-top {
+  top: 0.35rem;
+  left: 0.35rem;
+}
+
+.card-corner-bottom {
+  right: 0.35rem;
+  bottom: 0.35rem;
+  transform: rotate(180deg);
+}
+
+.card-center-suit {
+  font-size: clamp(1.45rem, 4vw, 2.4rem);
+  line-height: 1;
+  opacity: 0.92;
+}
+
+.card-back-mark {
+  display: grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  place-items: center;
+  border: 2px solid rgba(248, 250, 252, 0.5);
+  border-radius: 999px;
+  color: #eff6ff;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+}
+
+.playing-card.placeholder span {
+  font-size: clamp(1.1rem, 3vw, 1.8rem);
+  opacity: 0.8;
+}
+
+.playing-card.drop-target {
+  box-shadow: inset 0 0 0 2px rgba(167, 243, 208, 0.28);
+}
+
+@media (max-width: 940px) {
+  .card-board-top-row {
+    grid-template-columns: 1fr;
+  }
+
+  .tableau-row {
+    grid-template-columns: repeat(7, minmax(4.85rem, 1fr));
+  }
+}
