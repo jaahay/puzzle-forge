@@ -130,7 +130,8 @@ export const CardPuzzlePreview = ({ stacks, selectedCard, stats, onCardClick, on
     (total, stack) => total + stack.cards.filter((card) => !card.faceUp).length,
     0,
   );
-  const wasteTopCard = getTopCard(stockAndWaste.find((stack) => stack.role === "waste") ?? { cards: [], id: "waste", role: "waste", title: "Waste" });
+  const wasteStack = stockAndWaste.find((stack) => stack.role === "waste");
+  const wasteTopCard = wasteStack ? getTopCard(wasteStack) : undefined;
   const renderStack = (stack: CardStack) => renderCardStack({ stack, selectedCard, onCardClick, onStackClick });
 
   return (
