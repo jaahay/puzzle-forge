@@ -10,6 +10,8 @@ import "./site/footer.css";
 
 const root = document.getElementById("app");
 
-if (root) {
-  render(<App />, root);
+if (!root) {
+  throw new Error("App root element was not found.");
 }
+
+render(<App />, root);
