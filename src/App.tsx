@@ -42,6 +42,7 @@ const makeRequestId = () => Math.random().toString(36).slice(2);
 const makeRandomSeed = () => `random-${Date.now().toString(36)}-${makeRequestId().slice(0, 6)}`;
 const getActiveView = (): AppView => (typeof window === "undefined" ? "catalog" : viewFromHash(window.location.hash));
 const defaultSudokuDifficulty: PuzzleDifficulty = "Medium";
+const pluralize = (count: number, singular: string, plural = `${singular}s`) => `${count} ${count === 1 ? singular : plural}`;
 
 type SolitaireStats = {
   moveCount: number;
@@ -451,11 +452,11 @@ export const App = () => {
       cells[index] = {
         ...current,
         value: nextValue,
-        tone: nextValue ? "answer" : "empty",
+        tone: puzzle.puzzleId === "sudoku" ? "empty" : nextValue ? "answer" : "empty",
         ariaLabel: `${nextValue || "Empty"} cell at row ${current.row + 1}, column ${current.column + 1}`,
       };
 
-      return { cells, message: nextValue ? `Set cell to ${nextValue}.` : "Cleared cell." };
+      return { cells, message: puzzle.puzzleId === "sudoku" ? "Sudoku entry updated." : nextValue ? `Set cell to ${nextValue}.` : "Cleared cell." };
     });
   };
 
@@ -564,6 +565,11 @@ export const App = () => {
     }
 
     if (puzzle.puzzleId === "sudoku") {
+      if (selectedGridCell?.row === cell.row && selectedGridCell.column === cell.column) {
+        clearGridInteraction();
+        return;
+      }
+
       setSelectedGridCell({ row: cell.row, column: cell.column });
       return;
     }
@@ -673,6 +679,26 @@ export const App = () => {
       };
     });
 
+    if (currentPuzzle.puzzleId === "sudoku") {
+      if (emptyCount === 0 && incorrectCount === 0) {
+        return { cells: nextCells, message: "Sudoku solved. Beautifully done." };
+      }
+
+      if (incorrectCount === 0) {
+        return {
+          cells: nextCells,
+          message: `Sudoku validation: no mistakes found. ${pluralize(emptyCount, "empty square")} remain.`,
+        };
+      }
+
+      return {
+        cells: nextCells,
+        message: `Sudoku validation: ${pluralize(incorrectCount, "incorrect entry", "incorrect entries")} marked in red${
+          emptyCount > 0 ? `, and ${pluralize(emptyCount, "empty square")} remain` : ""
+        }.`,
+      };
+    }
+
     if (emptyCount === 0 && incorrectCount === 0) {
       return { cells: nextCells, message: `Solved. ${currentPuzzle.title} is correct.` };
     }
@@ -748,7 +774,7 @@ export const App = () => {
       resetSolitaireStats();
       setStatusMessage(
         event.data.puzzle.puzzleId === "sudoku"
-          ? `${event.data.puzzle.difficulty ?? difficulty} Sudoku ready.`
+          ? `${event.data.puzzle.difficulty ?? defaultSudokuDifficulty} Sudoku ready.`
           : `${event.data.puzzle.title} generated from seed ${event.data.puzzle.seed}.`,
       );
     };
@@ -757,9 +783,8 @@ export const App = () => {
 
     return () => {
       worker.removeEventListener("message", handleMessage);
-      worker.terminate();
     };
-  }, [difficulty, worker]);
+  }, [worker]);
 
   const selectPuzzle = (puzzleId: PuzzleId) => {
     if (puzzleId === selectedPuzzleId) {
@@ -794,6 +819,15 @@ export const App = () => {
 
   const randomize = () => {
     beginGeneration({ seed: makeRandomSeed() });
+  };
+
+  const handleDifficultyChange = (nextDifficulty: PuzzleDifficulty) => {
+    if (selectedPuzzleId !== "sudoku") {
+      setDifficulty(nextDifficulty);
+      return;
+    }
+
+    beginGeneration({ puzzleId: "sudoku", seed, width: 9, height: 9, difficulty: nextDifficulty });
   };
 
   useEffect(() => {
@@ -832,7 +866,7 @@ export const App = () => {
             onSeedChange={setSeed}
             onWidthChange={setWidth}
             onHeightChange={setHeight}
-            onDifficultyChange={setDifficulty}
+            onDifficultyChange={handleDifficultyChange}
             onGenerate={generate}
             onRandomize={randomize}
             onCheck={handleCheck}
