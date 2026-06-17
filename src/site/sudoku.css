@@ -61,12 +61,14 @@ select {
   outline: none;
 }
 
-.sudoku-workspace .workspace-copy {
+.sudoku-workspace .workspace-copy,
+.nonogram-workspace .workspace-copy {
   grid-template-columns: auto 1fr;
   align-items: center;
 }
 
-.sudoku-workspace .workspace-copy h2 {
+.sudoku-workspace .workspace-copy h2,
+.nonogram-workspace .workspace-copy h2 {
   margin-bottom: 0;
 }
 
@@ -204,17 +206,22 @@ select {
   opacity: 0.45;
 }
 
-.sudoku-seed-panel {
+.puzzle-settings-panel {
   display: grid;
-  grid-template-columns: minmax(9rem, 0.8fr) minmax(14rem, 1.2fr) auto;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
   gap: 1rem;
   align-items: end;
   border-top: 1px solid #1e293b;
   padding-top: 1rem;
 }
 
-.sudoku-seed-panel .control-actions button,
-.sudoku-seed-panel .control-actions button:nth-child(2) {
+.puzzle-settings-actions {
+  display: flex;
+  gap: 0.65rem;
+}
+
+.puzzle-settings-actions button {
+  width: 100%;
   border-radius: 999px;
   padding: 0.85rem 1.25rem;
   color: #0f172a;
@@ -223,7 +230,7 @@ select {
   font-weight: 800;
 }
 
-.sudoku-seed-panel .control-actions button:disabled {
+.puzzle-settings-actions button:disabled {
   cursor: not-allowed;
   opacity: 0.62;
 }
@@ -237,7 +244,7 @@ select {
 
 @media (max-width: 940px) {
   .catalog-layout.catalog-collapsed,
-  .sudoku-seed-panel {
+  .puzzle-settings-panel {
     grid-template-columns: 1fr;
   }
 
