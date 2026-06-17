@@ -4,8 +4,8 @@ export const puzzleCatalog: PuzzleDefinition[] = [
   {
     id: "sudoku",
     title: "Sudoku",
-    tagline: "Classic number-placement grids.",
-    description: "Generate seeded 9 by 9 Sudoku boards, type digits into open cells, and check the completed grid.",
+    tagline: "Classic 9x9 logic with seeded difficulty.",
+    description: "Fill every row, column, and 3x3 box with digits 1-9.",
     category: "numbers",
     status: "playable",
     tags: ["numbers", "deduction", "grid"],
