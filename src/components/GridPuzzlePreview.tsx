@@ -116,7 +116,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
               inputMode={inputMode === "numeric" ? "numeric" : "text"}
               key={`${cell.row}-${cell.column}`}
               maxLength={isSudoku ? 2 : 1}
-              onClick={() => onCellClick(cell)}
+              onClick={isSudoku ? undefined : () => onCellClick(cell)}
               onFocus={() => onCellClick(cell)}
               onInput={(event) => onCellInput(cell, isSudoku ? getSudokuInputValue(event.currentTarget.value) : event.currentTarget.value)}
               readOnly={!isEditable}
@@ -128,7 +128,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
         return (
           <button
             aria-label={cell.ariaLabel}
-            aria-pressed={isNonogram ? cell.value === "■" : isSelected}
+            aria-pressed={isNonogram ? cell.value === "\u25a0" : isSelected}
             class={cellClass}
             disabled={!isSelectable}
             key={`${cell.row}-${cell.column}`}
