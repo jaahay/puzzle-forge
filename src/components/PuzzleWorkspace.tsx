@@ -214,7 +214,7 @@ export const PuzzleWorkspace = ({
             <div class="puzzle-settings-panel" aria-label={`${selectedDefinition.title} controls`}>
               <div class="puzzle-settings-actions">
                 <button type="button" onClick={onCheck}>
-                  {isSudoku ? "Check board" : "Check"}
+                  Check
                 </button>
               </div>
 
@@ -231,10 +231,12 @@ export const PuzzleWorkspace = ({
               ) : null}
 
               {isNonogram && !isFixedSize ? (
-                <>
-                  <label>
-                    Width
+                <div class="puzzle-size-control" aria-label="Nonogram size">
+                  <span class="control-label">Size</span>
+                  <label class="compact-number-control">
+                    <span>W</span>
                     <input
+                      aria-label="Width"
                       type="number"
                       min={selectedDefinition.minWidth}
                       max={selectedDefinition.maxWidth}
@@ -244,10 +246,11 @@ export const PuzzleWorkspace = ({
                       onKeyDown={blurOnEnter}
                     />
                   </label>
-
-                  <label>
-                    Height
+                  <span class="size-separator">x</span>
+                  <label class="compact-number-control">
+                    <span>H</span>
                     <input
+                      aria-label="Height"
                       type="number"
                       min={selectedDefinition.minHeight}
                       max={selectedDefinition.maxHeight}
@@ -257,7 +260,7 @@ export const PuzzleWorkspace = ({
                       onKeyDown={blurOnEnter}
                     />
                   </label>
-                </>
+                </div>
               ) : null}
 
               <label>
