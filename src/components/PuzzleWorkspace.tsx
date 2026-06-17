@@ -212,7 +212,7 @@ export const PuzzleWorkspace = ({
                   New random
                 </button>
               </div>
-              <p class="sudoku-input-hint">Type 1-9. Press 0 to clear. Click the selected square again to deselect.</p>
+              <p class="sudoku-input-hint">Type 1-9. Press 0 to clear. Click outside the board to deselect.</p>
             </div>
           ) : null}
 
