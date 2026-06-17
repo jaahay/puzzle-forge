@@ -60,6 +60,8 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
           isPeer ? "peer-cell" : "",
           isSameValue ? "same-value-cell" : "",
           hasConflict ? "conflict-cell" : "",
+          isSudoku && cell.column % SUDOKU_BOX_SIZE === 0 && cell.column > 0 ? "box-left" : "",
+          isSudoku && cell.row % SUDOKU_BOX_SIZE === 0 && cell.row > 0 ? "box-top" : "",
         ]
           .filter(Boolean)
           .join(" ");
