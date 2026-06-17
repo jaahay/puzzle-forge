@@ -76,6 +76,9 @@ export const PuzzleWorkspace = ({
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
   const filledOpenCount = getFilledOpenCount(gridCells);
   const openCount = getOpenCount(gridCells);
+  const showSudokuValidationMessage =
+    isSudoku && (statusMessage.startsWith("Sudoku solved") || statusMessage.startsWith("Sudoku validation"));
+  const sudokuValidationTone = statusMessage.startsWith("Sudoku solved") ? "success" : statusMessage.includes("incorrect") ? "error" : "progress";
 
   return (
     <section class={`workspace-panel ${isSudoku ? "sudoku-workspace" : ""}`} aria-label="Selected puzzle workspace">
@@ -142,6 +145,12 @@ export const PuzzleWorkspace = ({
         </p>
       )}
 
+      {showSudokuValidationMessage ? (
+        <p class={`sudoku-validation-message ${sudokuValidationTone}`} aria-live="polite">
+          {statusMessage}
+        </p>
+      ) : null}
+
       {puzzle ? (
         <section class="puzzle-panel" aria-label="Generated puzzle preview">
           <div class="puzzle-meta">
@@ -176,7 +185,7 @@ export const PuzzleWorkspace = ({
               </button>
             ) : null}
             <button type="button" onClick={onCheck}>
-              {isSudoku ? "Validate" : "Check"}
+              {isSudoku ? "Check board" : "Check"}
             </button>
           </div>
 
@@ -203,7 +212,7 @@ export const PuzzleWorkspace = ({
                   New random
                 </button>
               </div>
-              <p class="sudoku-input-hint">Type 1-9. Press 0 to clear the active square.</p>
+              <p class="sudoku-input-hint">Type 1-9. Press 0 to clear. Click the selected square again to deselect.</p>
             </div>
           ) : null}
 
