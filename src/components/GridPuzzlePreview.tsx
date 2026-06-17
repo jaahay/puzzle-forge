@@ -136,7 +136,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
               {digit}
             </button>
           ))}
-          <button type="button" disabled={!canUseDigitPad} onClick={() => setSelectedSudokuValue("")}> 
+          <button type="button" disabled={!canUseDigitPad} onClick={() => setSelectedSudokuValue("")}>
             0 Clear
           </button>
         </div>
