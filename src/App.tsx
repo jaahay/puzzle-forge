@@ -5,6 +5,7 @@ import type {
   GeneratedPuzzle,
   GridGeneratedPuzzle,
   PuzzleCell,
+  PuzzleDifficulty,
   PuzzleGenerationRequest,
   PuzzleGenerationResponse,
   PuzzleId,
@@ -40,6 +41,7 @@ import { viewFromHash } from "./site/views";
 const makeRequestId = () => Math.random().toString(36).slice(2);
 const makeRandomSeed = () => `random-${Date.now().toString(36)}-${makeRequestId().slice(0, 6)}`;
 const getActiveView = (): AppView => (typeof window === "undefined" ? "catalog" : viewFromHash(window.location.hash));
+const defaultSudokuDifficulty: PuzzleDifficulty = "Medium";
 
 type SolitaireStats = {
   moveCount: number;
@@ -55,22 +57,38 @@ const initialSolitaireStats: SolitaireStats = {
   autoMoveCount: 0,
 };
 
+type PuzzleSession = {
+  seed: string;
+  width: number;
+  height: number;
+  difficulty: PuzzleDifficulty;
+  puzzle: GeneratedPuzzle | null;
+  cardStacks: CardStack[] | null;
+  selectedCard: CardSelection | null;
+  solitaireStats: SolitaireStats;
+  gridCells: PuzzleCell[] | null;
+  selectedGridCell: GridCellSelection | null;
+  statusMessage: string;
+};
+
 export const App = () => {
   const [activeView, setActiveView] = useState<AppView>(getActiveView);
   const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>("sudoku");
-  const [seed, setSeed] = useState("daily-catalog");
+  const [seed, setSeed] = useState(makeRandomSeed);
   const [width, setWidth] = useState(9);
   const [height, setHeight] = useState(9);
+  const [difficulty, setDifficulty] = useState<PuzzleDifficulty>(defaultSudokuDifficulty);
   const [puzzle, setPuzzle] = useState<GeneratedPuzzle | null>(null);
   const [cardStacks, setCardStacks] = useState<CardStack[] | null>(null);
   const [selectedCard, setSelectedCard] = useState<CardSelection | null>(null);
   const [solitaireStats, setSolitaireStats] = useState<SolitaireStats>(initialSolitaireStats);
   const [gridCells, setGridCells] = useState<PuzzleCell[] | null>(null);
   const [selectedGridCell, setSelectedGridCell] = useState<GridCellSelection | null>(null);
-  const [statusMessage, setStatusMessage] = useState("Choose a puzzle and generate a board.");
+  const [statusMessage, setStatusMessage] = useState("Generating Sudoku...");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(false);
   const activeRequestId = useRef<string | null>(null);
+  const sessionCache = useRef<Partial<Record<PuzzleId, PuzzleSession>>>({});
   const worker = useMemo(
     () => new Worker(new URL("./workers/puzzleWorker.ts", import.meta.url), { type: "module" }),
     [],
@@ -88,6 +106,88 @@ export const App = () => {
 
   const clearGridInteraction = () => {
     setSelectedGridCell(null);
+  };
+
+  const saveCurrentSession = () => {
+    sessionCache.current[selectedPuzzleId] = {
+      seed,
+      width,
+      height,
+      difficulty,
+      puzzle,
+      cardStacks: cardStacks?.map(cloneStack) ?? null,
+      selectedCard: selectedCard ? { ...selectedCard } : null,
+      solitaireStats: { ...solitaireStats },
+      gridCells: gridCells?.map(cloneGridCell) ?? null,
+      selectedGridCell: selectedGridCell ? { ...selectedGridCell } : null,
+      statusMessage,
+    };
+  };
+
+  const restoreSession = (puzzleId: PuzzleId, session: PuzzleSession) => {
+    setSelectedPuzzleId(puzzleId);
+    setSeed(session.seed);
+    setWidth(session.width);
+    setHeight(session.height);
+    setDifficulty(session.difficulty);
+    setPuzzle(session.puzzle);
+    setCardStacks(session.cardStacks?.map(cloneStack) ?? null);
+    setSelectedCard(session.selectedCard ? { ...session.selectedCard } : null);
+    setSolitaireStats({ ...session.solitaireStats });
+    setGridCells(session.gridCells?.map(cloneGridCell) ?? null);
+    setSelectedGridCell(session.selectedGridCell ? { ...session.selectedGridCell } : null);
+    setStatusMessage(session.statusMessage);
+    setIsGenerating(false);
+  };
+
+  const beginGeneration = ({
+    puzzleId = selectedPuzzleId,
+    seed: generationSeed = seed,
+    width: generationWidth = width,
+    height: generationHeight = height,
+    difficulty: generationDifficulty = difficulty,
+  }: Partial<Omit<PuzzleGenerationRequest, "requestId">> = {}) => {
+    const definition = getPuzzleDefinition(puzzleId);
+
+    if (!isGeneratable(definition)) {
+      setSelectedPuzzleId(puzzleId);
+      setWidth(definition.defaultWidth);
+      setHeight(definition.defaultHeight);
+      setPuzzle(null);
+      setCardStacks(null);
+      setGridCells(null);
+      setSelectedCard(null);
+      setSelectedGridCell(null);
+      resetSolitaireStats();
+      setStatusMessage(`${definition.title} is planned for a future generator.`);
+      return;
+    }
+
+    const requestId = makeRequestId();
+    const request: PuzzleGenerationRequest = {
+      requestId,
+      puzzleId,
+      seed: generationSeed,
+      width: generationWidth,
+      height: generationHeight,
+      difficulty: generationDifficulty,
+    };
+
+    activeRequestId.current = requestId;
+    setSelectedPuzzleId(puzzleId);
+    setSeed(generationSeed);
+    setWidth(generationWidth);
+    setHeight(generationHeight);
+    setDifficulty(generationDifficulty);
+    setIsGenerating(true);
+    setPuzzle(null);
+    setCardStacks(null);
+    setGridCells(null);
+    setSelectedCard(null);
+    setSelectedGridCell(null);
+    resetSolitaireStats();
+    setStatusMessage(`Generating ${definition.title}...`);
+    worker.postMessage(request);
   };
 
   const updateCardStacks = (updater: (stacks: CardStack[]) => { stacks: CardStack[]; message: string }) => {
@@ -339,6 +439,7 @@ export const App = () => {
     const inputMode = getGridInputMode(puzzle.puzzleId);
     const nextValue = normalizeCellInput(inputMode, rawValue);
 
+    setSelectedGridCell({ row: cell.row, column: cell.column });
     updateGridCells((cells) => {
       const index = getCellIndex(cells, cell);
       const current = cells[index];
@@ -459,6 +560,11 @@ export const App = () => {
 
   const handleGridCellClick = (cell: PuzzleCell) => {
     if (!puzzle || puzzle.kind !== "grid") {
+      return;
+    }
+
+    if (puzzle.puzzleId === "sudoku") {
+      setSelectedGridCell({ row: cell.row, column: cell.column });
       return;
     }
 
@@ -640,7 +746,11 @@ export const App = () => {
       setSelectedCard(null);
       setSelectedGridCell(null);
       resetSolitaireStats();
-      setStatusMessage(`${event.data.puzzle.title} generated from seed ${event.data.puzzle.seed}.`);
+      setStatusMessage(
+        event.data.puzzle.puzzleId === "sudoku"
+          ? `${event.data.puzzle.difficulty ?? difficulty} Sudoku ready.`
+          : `${event.data.puzzle.title} generated from seed ${event.data.puzzle.seed}.`,
+      );
     };
 
     worker.addEventListener("message", handleMessage);
@@ -649,60 +759,46 @@ export const App = () => {
       worker.removeEventListener("message", handleMessage);
       worker.terminate();
     };
-  }, [worker]);
+  }, [difficulty, worker]);
 
   const selectPuzzle = (puzzleId: PuzzleId) => {
-    const definition = getPuzzleDefinition(puzzleId);
-
-    setSelectedPuzzleId(puzzleId);
-    setWidth(definition.defaultWidth);
-    setHeight(definition.defaultHeight);
-    setPuzzle(null);
-    setCardStacks(null);
-    setGridCells(null);
-    setSelectedCard(null);
-    setSelectedGridCell(null);
-    resetSolitaireStats();
-    setStatusMessage(
-      isGeneratable(definition)
-        ? `${definition.title} is ready to generate.`
-        : `${definition.title} is planned for a future generator.`,
-    );
-  };
-
-  const generate = (seedOverride?: string) => {
-    if (!selectedPuzzleIsGeneratable) {
-      setStatusMessage(`${selectedDefinition.title} is planned, not generatable yet.`);
+    if (puzzleId === selectedPuzzleId) {
       return;
     }
 
-    const requestId = makeRequestId();
-    const request: PuzzleGenerationRequest = {
-      requestId,
-      puzzleId: selectedPuzzleId,
-      seed: seedOverride ?? seed,
-      width,
-      height,
-    };
+    saveCurrentSession();
 
-    activeRequestId.current = requestId;
-    setIsGenerating(true);
-    setSelectedCard(null);
-    setSelectedGridCell(null);
-    resetSolitaireStats();
-    setStatusMessage(`Generating ${selectedDefinition.title}...`);
-    worker.postMessage(request);
+    const cachedSession = sessionCache.current[puzzleId];
+
+    if (cachedSession) {
+      restoreSession(puzzleId, cachedSession);
+      return;
+    }
+
+    const definition = getPuzzleDefinition(puzzleId);
+    const nextSeed = makeRandomSeed();
+    const nextDifficulty = puzzleId === "sudoku" ? defaultSudokuDifficulty : difficulty;
+
+    beginGeneration({
+      puzzleId,
+      seed: nextSeed,
+      width: definition.defaultWidth,
+      height: definition.defaultHeight,
+      difficulty: nextDifficulty,
+    });
+  };
+
+  const generate = () => {
+    beginGeneration();
   };
 
   const randomize = () => {
-    const randomSeed = makeRandomSeed();
-    setSeed(randomSeed);
-    generate(randomSeed);
+    beginGeneration({ seed: makeRandomSeed() });
   };
 
   useEffect(() => {
-    generate();
-    // Generate the first catalog entry when the worker is ready.
+    beginGeneration({ puzzleId: "sudoku", seed, width: 9, height: 9, difficulty: defaultSudokuDifficulty });
+    // Generate an initial random Sudoku board when the worker is ready.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -724,6 +820,7 @@ export const App = () => {
             seed={seed}
             width={width}
             height={height}
+            difficulty={difficulty}
             puzzle={puzzle}
             cardStacks={cardStacks}
             selectedCard={selectedCard}
@@ -735,7 +832,8 @@ export const App = () => {
             onSeedChange={setSeed}
             onWidthChange={setWidth}
             onHeightChange={setHeight}
-            onGenerate={() => generate()}
+            onDifficultyChange={setDifficulty}
+            onGenerate={generate}
             onRandomize={randomize}
             onCheck={handleCheck}
             onAutoMoveToFoundations={autoMoveToFoundations}

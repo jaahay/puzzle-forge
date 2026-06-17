@@ -13,6 +13,8 @@ export type PuzzleStatus = "playable" | "prototype" | "planned";
 
 export type PuzzleCategory = "numbers" | "logic" | "word" | "grid" | "cards";
 
+export type PuzzleDifficulty = "Easy" | "Medium" | "Hard" | "Expert";
+
 export type PuzzleDefinition = {
   id: PuzzleId;
   title: string;
@@ -87,6 +89,7 @@ type BaseGeneratedPuzzle = {
   height: number;
   checksum: string;
   createdAt: string;
+  difficulty?: PuzzleDifficulty;
   notes: string[];
 };
 
@@ -109,6 +112,7 @@ export type PuzzleGenerationRequest = {
   seed: string;
   width: number;
   height: number;
+  difficulty?: PuzzleDifficulty;
 };
 
 export type PuzzleGenerationResponse =

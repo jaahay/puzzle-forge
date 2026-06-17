@@ -1,4 +1,4 @@
-import type { GeneratedPuzzle, GridGeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
+import type { GeneratedPuzzle, GridGeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleId } from "../catalog/types";
 
 const RNG_MODULUS = 2147483647;
 const RNG_MULTIPLIER = 48271;
@@ -51,6 +51,7 @@ export const createGeneratedPuzzle = ({
   seed,
   width,
   height,
+  difficulty,
   cells,
   notes,
   answerKey,
@@ -61,6 +62,7 @@ export const createGeneratedPuzzle = ({
   seed: string;
   width: number;
   height: number;
+  difficulty?: PuzzleDifficulty;
   cells: PuzzleCell[];
   notes: string[];
   answerKey?: string[];
@@ -72,6 +74,7 @@ export const createGeneratedPuzzle = ({
   seed,
   width,
   height,
+  difficulty,
   cells,
   answerKey,
   checksum: makeChecksum(cells),
