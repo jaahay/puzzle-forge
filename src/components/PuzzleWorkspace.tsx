@@ -41,6 +41,8 @@ type PuzzleWorkspaceProps = {
 };
 
 const getGivenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => cell.locked).length ?? 0;
+const getFilledOpenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => !cell.locked && cell.value).length ?? 0;
+const getOpenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => !cell.locked).length ?? 0;
 
 export const PuzzleWorkspace = ({
   selectedDefinition,
@@ -72,6 +74,8 @@ export const PuzzleWorkspace = ({
 }: PuzzleWorkspaceProps) => {
   const isSudoku = selectedDefinition.id === "sudoku";
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
+  const filledOpenCount = getFilledOpenCount(gridCells);
+  const openCount = getOpenCount(gridCells);
 
   return (
     <section class={`workspace-panel ${isSudoku ? "sudoku-workspace" : ""}`} aria-label="Selected puzzle workspace">
@@ -132,9 +136,11 @@ export const PuzzleWorkspace = ({
         </div>
       )}
 
-      <p class="status-line" aria-live="polite">
-        {statusMessage}
-      </p>
+      {isSudoku ? null : (
+        <p class="status-line" aria-live="polite">
+          {statusMessage}
+        </p>
+      )}
 
       {puzzle ? (
         <section class="puzzle-panel" aria-label="Generated puzzle preview">
@@ -142,6 +148,7 @@ export const PuzzleWorkspace = ({
             {puzzle.kind === "cards" ? <span>52-card deal</span> : isSudoku ? null : <span>{`${puzzle.width} x ${puzzle.height}`}</span>}
             {puzzle.difficulty ? <span>{puzzle.difficulty}</span> : null}
             {isSudoku ? <span>{getGivenCount(gridCells)} givens</span> : <span>Seed: {puzzle.seed}</span>}
+            {isSudoku ? <span>{filledOpenCount}/{openCount} filled</span> : null}
           </div>
 
           {puzzle.kind === "cards" && cardStacks ? (
@@ -169,7 +176,7 @@ export const PuzzleWorkspace = ({
               </button>
             ) : null}
             <button type="button" onClick={onCheck}>
-              Check
+              {isSudoku ? "Validate" : "Check"}
             </button>
           </div>
 
@@ -196,6 +203,7 @@ export const PuzzleWorkspace = ({
                   New random
                 </button>
               </div>
+              <p class="sudoku-input-hint">Type 1-9. Press 0 to clear the active square.</p>
             </div>
           ) : null}
 
