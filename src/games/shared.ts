@@ -1,4 +1,4 @@
-import type { GeneratedPuzzle, GridGeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleId } from "../catalog/types";
+import type { GeneratedPuzzle, GridGeneratedPuzzle, GridPuzzleClues, PuzzleCell, PuzzleDifficulty, PuzzleId } from "../catalog/types";
 
 const RNG_MODULUS = 2147483647;
 const RNG_MULTIPLIER = 48271;
@@ -55,6 +55,7 @@ export const createGeneratedPuzzle = ({
   cells,
   notes,
   answerKey,
+  clues,
 }: {
   id: string;
   puzzleId: PuzzleId;
@@ -66,6 +67,7 @@ export const createGeneratedPuzzle = ({
   cells: PuzzleCell[];
   notes: string[];
   answerKey?: string[];
+  clues?: GridPuzzleClues;
 }): GridGeneratedPuzzle => ({
   kind: "grid",
   id,
@@ -77,6 +79,7 @@ export const createGeneratedPuzzle = ({
   difficulty,
   cells,
   answerKey,
+  clues,
   checksum: makeChecksum(cells),
   createdAt: new Date().toISOString(),
   notes,
