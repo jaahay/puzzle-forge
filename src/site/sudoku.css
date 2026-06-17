@@ -119,6 +119,17 @@ select {
   font-weight: 800;
 }
 
+.grid.sudoku .cell.interactive-cell {
+  transition: none;
+}
+
+.grid.sudoku .cell.interactive-cell:hover,
+.grid.sudoku .cell.interactive-cell:focus-visible,
+.grid.sudoku .cell-input.interactive-cell:hover,
+.grid.sudoku .cell-input.interactive-cell:focus-visible {
+  transform: none;
+}
+
 .grid.sudoku .cell.box-left {
   border-left-width: 3px;
   border-left-color: #e5e7eb;
@@ -134,16 +145,12 @@ select {
   background: #1e293b;
 }
 
-.grid.sudoku .cell.answer {
-  color: #dbeafe;
-  background: #0f172a;
-}
-
+.grid.sudoku .cell.answer,
 .grid.sudoku .cell.hint,
 .grid.sudoku .cell.conflict-cell,
 .grid.sudoku .cell.mistake-cell {
-  color: #450a0a;
-  background: #fecaca;
+  color: #dbeafe;
+  background: #0f172a;
 }
 
 .grid.sudoku .cell.peer-cell {
@@ -158,11 +165,6 @@ select {
 .grid.sudoku .cell.correct-cell {
   color: #052e16;
   background: #bbf7d0;
-}
-
-.grid.sudoku .cell.mistake-cell {
-  color: #450a0a;
-  background: #fecaca;
 }
 
 .grid.sudoku .cell.selected-grid-cell,
@@ -209,6 +211,21 @@ select {
   align-items: end;
   border-top: 1px solid #1e293b;
   padding-top: 1rem;
+}
+
+.sudoku-seed-panel .control-actions button,
+.sudoku-seed-panel .control-actions button:nth-child(2) {
+  border-radius: 999px;
+  padding: 0.85rem 1.25rem;
+  color: #0f172a;
+  background: #a7f3d0;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.sudoku-seed-panel .control-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
 }
 
 .sudoku-input-hint {
