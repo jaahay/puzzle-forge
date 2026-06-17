@@ -4,6 +4,13 @@ import type { GridCellSelection } from "../interactions/gridRules";
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
 
+type SolitaireStats = {
+  moveCount: number;
+  drawCount: number;
+  recycleCount: number;
+  autoMoveCount: number;
+};
+
 type PuzzleWorkspaceProps = {
   selectedDefinition: PuzzleDefinition;
   selectedPuzzleIsGeneratable: boolean;
@@ -13,6 +20,7 @@ type PuzzleWorkspaceProps = {
   puzzle: GeneratedPuzzle | null;
   cardStacks: CardStack[] | null;
   selectedCard: CardSelection | null;
+  solitaireStats: SolitaireStats;
   gridCells: PuzzleCell[] | null;
   selectedGridCell: GridCellSelection | null;
   statusMessage: string;
@@ -23,6 +31,7 @@ type PuzzleWorkspaceProps = {
   onGenerate: () => void;
   onRandomize: () => void;
   onCheck: () => void;
+  onAutoMoveToFoundations: () => void;
   onCardClick: (stack: CardStack, cardIndex: number) => void;
   onStackClick: (stack: CardStack) => void;
   onCellClick: (cell: PuzzleCell) => void;
@@ -38,6 +47,7 @@ export const PuzzleWorkspace = ({
   puzzle,
   cardStacks,
   selectedCard,
+  solitaireStats,
   gridCells,
   selectedGridCell,
   statusMessage,
@@ -48,6 +58,7 @@ export const PuzzleWorkspace = ({
   onGenerate,
   onRandomize,
   onCheck,
+  onAutoMoveToFoundations,
   onCardClick,
   onStackClick,
   onCellClick,
@@ -119,6 +130,7 @@ export const PuzzleWorkspace = ({
           <CardPuzzlePreview
             stacks={cardStacks}
             selectedCard={selectedCard}
+            stats={solitaireStats}
             onCardClick={onCardClick}
             onStackClick={onStackClick}
           />
@@ -133,6 +145,11 @@ export const PuzzleWorkspace = ({
         ) : null}
 
         <div class="puzzle-actions">
+          {puzzle.kind === "cards" ? (
+            <button type="button" onClick={onAutoMoveToFoundations}>
+              Auto foundation
+            </button>
+          ) : null}
           <button type="button" onClick={onCheck}>
             Check
           </button>
