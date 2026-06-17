@@ -25,6 +25,13 @@ const suitSymbols: Record<CardSuit, string> = {
   spades: "♠",
 };
 
+const suitLabels: Record<CardSuit, string> = {
+  clubs: "Clubs",
+  diamonds: "Diamonds",
+  hearts: "Hearts",
+  spades: "Spades",
+};
+
 const rankLabels: Record<CardRank, string> = {
   ace: "A",
   "2": "2",
@@ -41,6 +48,22 @@ const rankLabels: Record<CardRank, string> = {
   king: "K",
 };
 
+const spokenRankLabels: Record<CardRank, string> = {
+  ace: "Ace",
+  "2": "Two",
+  "3": "Three",
+  "4": "Four",
+  "5": "Five",
+  "6": "Six",
+  "7": "Seven",
+  "8": "Eight",
+  "9": "Nine",
+  "10": "Ten",
+  jack: "Jack",
+  queen: "Queen",
+  king: "King",
+};
+
 const cardColor = (suit: CardSuit): CardColor => (suit === "diamonds" || suit === "hearts" ? "red" : "black");
 
 const createDeck = (): PlayingCard[] =>
@@ -50,7 +73,7 @@ const createDeck = (): PlayingCard[] =>
       rank,
       code: `${rankLabels[rank]}${suitSymbols[suit]}`,
       color: cardColor(suit),
-      label: `${rankLabels[rank]} of ${suit}`,
+      label: `${spokenRankLabels[rank]} of ${suitLabels[suit]}`,
       faceUp: false,
     })),
   );
@@ -126,7 +149,7 @@ export const generateSolitaire = ({ seed }: { seed: string }) => {
     kind: "cards" as const,
     id: `klondike-solitaire-${checksum}`,
     puzzleId: "klondike-solitaire" as const,
-    title: "Klondike Solitaire Deal",
+    title: "Klondike Solitaire",
     seed: normalizedSeed,
     width: 7,
     height: 7,
@@ -134,9 +157,9 @@ export const generateSolitaire = ({ seed }: { seed: string }) => {
     checksum,
     createdAt: new Date().toISOString(),
     notes: [
-      "A deterministic 52-card Klondike deal generated from the seed.",
-      "Tableau columns are dealt one through seven cards with the bottom card face up.",
-      "Foundations, stock, and waste are modeled so future work can add move validation and scoring.",
+      "Draw-one Klondike deal generated deterministically from the seed.",
+      "Tableau runs must descend by rank and alternate colors; only Kings may move into empty tableau columns.",
+      "Foundations build from Ace to King by suit. Use Auto foundation for currently legal foundation moves.",
     ],
   };
 };

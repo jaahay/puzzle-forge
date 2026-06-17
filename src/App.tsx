@@ -19,6 +19,9 @@ import {
   canMoveToTableau,
   canSelectFromStack,
   cloneStack,
+  findFoundationIndexForCard,
+  getTopCard,
+  isTableauRun,
   revealTopTableauCard,
   type CardSelection,
 } from "./interactions/cardRules";
@@ -38,6 +41,20 @@ const makeRequestId = () => Math.random().toString(36).slice(2);
 const makeRandomSeed = () => `random-${Date.now().toString(36)}-${makeRequestId().slice(0, 6)}`;
 const getActiveView = (): AppView => (typeof window === "undefined" ? "catalog" : viewFromHash(window.location.hash));
 
+type SolitaireStats = {
+  moveCount: number;
+  drawCount: number;
+  recycleCount: number;
+  autoMoveCount: number;
+};
+
+const initialSolitaireStats: SolitaireStats = {
+  moveCount: 0,
+  drawCount: 0,
+  recycleCount: 0,
+  autoMoveCount: 0,
+};
+
 export const App = () => {
   const [activeView, setActiveView] = useState<AppView>(getActiveView);
   const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>("sudoku");
@@ -47,6 +64,7 @@ export const App = () => {
   const [puzzle, setPuzzle] = useState<GeneratedPuzzle | null>(null);
   const [cardStacks, setCardStacks] = useState<CardStack[] | null>(null);
   const [selectedCard, setSelectedCard] = useState<CardSelection | null>(null);
+  const [solitaireStats, setSolitaireStats] = useState<SolitaireStats>(initialSolitaireStats);
   const [gridCells, setGridCells] = useState<PuzzleCell[] | null>(null);
   const [selectedGridCell, setSelectedGridCell] = useState<GridCellSelection | null>(null);
   const [statusMessage, setStatusMessage] = useState("Choose a puzzle and generate a board.");
@@ -59,6 +77,10 @@ export const App = () => {
   );
   const selectedDefinition = getPuzzleDefinition(selectedPuzzleId);
   const selectedPuzzleIsGeneratable = isGeneratable(selectedDefinition);
+
+  const resetSolitaireStats = () => {
+    setSolitaireStats(initialSolitaireStats);
+  };
 
   const clearCardInteraction = () => {
     setSelectedCard(null);
@@ -114,6 +136,7 @@ export const App = () => {
         const nextStacks = [...stacks];
         nextStacks[stockIndex] = { ...stock, cards: stock.cards.slice(0, -1), faceDownCount: stock.cards.length - 1 };
         nextStacks[wasteIndex] = { ...waste, cards: [...waste.cards, { ...drawnCard, faceUp: true }] };
+        setSolitaireStats((current) => ({ ...current, drawCount: current.drawCount + 1, moveCount: current.moveCount + 1 }));
 
         return { stacks: nextStacks, message: `Drew ${drawnCard.label} to waste.` };
       }
@@ -126,6 +149,7 @@ export const App = () => {
       const nextStacks = [...stacks];
       nextStacks[stockIndex] = { ...stock, cards: recycledCards, faceDownCount: recycledCards.length };
       nextStacks[wasteIndex] = { ...waste, cards: [] };
+      setSolitaireStats((current) => ({ ...current, recycleCount: current.recycleCount + 1, moveCount: current.moveCount + 1 }));
 
       return { stacks: nextStacks, message: "Recycled waste back into the stock." };
     });
@@ -163,6 +187,10 @@ export const App = () => {
         return { stacks, message: "Only the top waste or foundation card can move." };
       }
 
+      if (source.role === "tableau" && !isTableauRun(source, selectedCard.cardIndex)) {
+        return { stacks, message: "Tableau moves must be descending, alternating-color runs." };
+      }
+
       if (targetStack.role === "foundation" && (movingCards.length !== 1 || !canMoveToFoundation(movingCard, targetStack))) {
         return { stacks, message: `${movingCard.code} cannot move to ${targetStack.title}.` };
       }
@@ -182,6 +210,7 @@ export const App = () => {
       nextStacks[sourceIndex] = nextSource;
       nextStacks[targetIndex] = nextTarget;
       didMove = true;
+      setSolitaireStats((current) => ({ ...current, moveCount: current.moveCount + 1 }));
 
       return { stacks: nextStacks, message: `Moved ${movingCard.code} to ${targetStack.title}.` };
     });
@@ -189,6 +218,73 @@ export const App = () => {
     clearCardInteraction();
 
     return didMove;
+  };
+
+  const autoMoveToFoundations = () => {
+    clearCardInteraction();
+    updateCardStacks((stacks) => {
+      let nextStacks = stacks;
+      let movedCardCount = 0;
+      let lastMovedLabel = "";
+
+      while (true) {
+        const sourceIndex = nextStacks.findIndex((stack) => {
+          const topCard = getTopCard(stack);
+          return (
+            (stack.role === "waste" || stack.role === "tableau") &&
+            Boolean(topCard?.faceUp) &&
+            topCard !== undefined &&
+            findFoundationIndexForCard(topCard, nextStacks) >= 0
+          );
+        });
+
+        if (sourceIndex < 0) {
+          break;
+        }
+
+        const source = nextStacks[sourceIndex];
+        const movingCard = getTopCard(source);
+
+        if (!movingCard) {
+          break;
+        }
+
+        const foundationIndex = findFoundationIndexForCard(movingCard, nextStacks);
+        const foundation = nextStacks[foundationIndex];
+
+        if (!foundation) {
+          break;
+        }
+
+        const sourceCards = source.cards.slice(0, -1);
+        const nextSource = source.role === "tableau" ? revealTopTableauCard({ ...source, cards: sourceCards }) : { ...source, cards: sourceCards };
+        const nextFoundation = { ...foundation, cards: [...foundation.cards, movingCard] };
+
+        nextStacks = [...nextStacks];
+        nextStacks[sourceIndex] = nextSource;
+        nextStacks[foundationIndex] = nextFoundation;
+        movedCardCount += 1;
+        lastMovedLabel = movingCard.code;
+      }
+
+      if (movedCardCount === 0) {
+        return { stacks, message: "No legal foundation moves are available." };
+      }
+
+      setSolitaireStats((current) => ({
+        ...current,
+        autoMoveCount: current.autoMoveCount + movedCardCount,
+        moveCount: current.moveCount + movedCardCount,
+      }));
+
+      return {
+        stacks: nextStacks,
+        message:
+          movedCardCount === 1
+            ? `Auto-moved ${lastMovedLabel} to a foundation.`
+            : `Auto-moved ${movedCardCount} cards to foundations.`,
+      };
+    });
   };
 
   const handleStackClick = (stack: CardStack) => {
@@ -222,7 +318,7 @@ export const App = () => {
     }
 
     if (!canSelectFromStack(stack, cardIndex)) {
-      setStatusMessage("Select a face-up waste card, foundation card, or tableau run.");
+      setStatusMessage("Select a face-up waste/foundation top card or a descending alternating tableau run.");
       return;
     }
 
@@ -258,7 +354,7 @@ export const App = () => {
         ariaLabel: `${nextValue || "Empty"} cell at row ${current.row + 1}, column ${current.column + 1}`,
       };
 
-      return { cells, message: nextValue ? `Entered ${nextValue}.` : "Cleared cell." };
+      return { cells, message: nextValue ? `Set cell to ${nextValue}.` : "Cleared cell." };
     });
   };
 
@@ -492,8 +588,8 @@ export const App = () => {
         .reduce((total, stack) => total + stack.cards.length, 0) ?? 0;
       setStatusMessage(
         foundationCardCount === 52
-          ? "Solved. All cards are on foundations."
-          : `Not solved: ${foundationCardCount}/52 cards are on foundations.`,
+          ? `Solved in ${solitaireStats.moveCount} move(s). All cards are on foundations.`
+          : `Not solved: ${foundationCardCount}/52 cards are on foundations after ${solitaireStats.moveCount} move(s).`,
       );
       return;
     }
@@ -518,7 +614,6 @@ export const App = () => {
 
     const syncActiveView = () => setActiveView(getActiveView());
 
-    syncActiveView();
     window.addEventListener("hashchange", syncActiveView);
 
     return () => {
@@ -544,6 +639,7 @@ export const App = () => {
       setGridCells(event.data.puzzle.kind === "grid" ? prepareGridCells(event.data.puzzle) : null);
       setSelectedCard(null);
       setSelectedGridCell(null);
+      resetSolitaireStats();
       setStatusMessage(`${event.data.puzzle.title} generated from seed ${event.data.puzzle.seed}.`);
     };
 
@@ -566,6 +662,7 @@ export const App = () => {
     setGridCells(null);
     setSelectedCard(null);
     setSelectedGridCell(null);
+    resetSolitaireStats();
     setStatusMessage(
       isGeneratable(definition)
         ? `${definition.title} is ready to generate.`
@@ -592,6 +689,7 @@ export const App = () => {
     setIsGenerating(true);
     setSelectedCard(null);
     setSelectedGridCell(null);
+    resetSolitaireStats();
     setStatusMessage(`Generating ${selectedDefinition.title}...`);
     worker.postMessage(request);
   };
@@ -629,6 +727,7 @@ export const App = () => {
             puzzle={puzzle}
             cardStacks={cardStacks}
             selectedCard={selectedCard}
+            solitaireStats={solitaireStats}
             gridCells={gridCells}
             selectedGridCell={selectedGridCell}
             statusMessage={statusMessage}
@@ -639,6 +738,7 @@ export const App = () => {
             onGenerate={() => generate()}
             onRandomize={randomize}
             onCheck={handleCheck}
+            onAutoMoveToFoundations={autoMoveToFoundations}
             onCardClick={handleCardClick}
             onStackClick={handleStackClick}
             onCellClick={handleGridCellClick}
