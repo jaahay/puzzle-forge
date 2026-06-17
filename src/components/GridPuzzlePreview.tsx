@@ -1,8 +1,10 @@
+import { useEffect } from "preact/hooks";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { getGridInputMode, isSelectedGridCell, type GridCellSelection } from "../interactions/gridRules";
 
 const SUDOKU_BOX_SIZE = 3;
 const sudokuDigits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+const sudokuSelectionScopeSelector = '[data-sudoku-selection-scope="true"]';
 
 const sameSudokuBox = (left: PuzzleCell, right: PuzzleCell) =>
   Math.floor(left.row / SUDOKU_BOX_SIZE) === Math.floor(right.row / SUDOKU_BOX_SIZE) &&
@@ -36,15 +38,39 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
     }
   };
 
+  useEffect(() => {
+    if (!isSudoku || !selectedCell || typeof document === "undefined") {
+      return;
+    }
+
+    const clearSelectionFromOutsideClick = (event: PointerEvent) => {
+      const target = event.target;
+
+      if (target instanceof Element && target.closest(sudokuSelectionScopeSelector)) {
+        return;
+      }
+
+      onCellClick(selectedCell);
+    };
+
+    document.addEventListener("pointerdown", clearSelectionFromOutsideClick);
+
+    return () => {
+      document.removeEventListener("pointerdown", clearSelectionFromOutsideClick);
+    };
+  }, [isSudoku, onCellClick, selectedCell]);
+
   return (
     <>
       <div
         aria-label={isSudoku ? `${puzzle.difficulty ?? "Medium"} Sudoku board` : undefined}
         class={`grid ${puzzle.puzzleId}`}
+        data-sudoku-selection-scope={isSudoku ? "true" : undefined}
         style={{ gridTemplateColumns: `repeat(${puzzle.width}, minmax(0, 1fr))` }}
       >
         {cells.map((cell) => {
-          const isInteractive = cell.tone !== "disabled" && (puzzle.puzzleId === "peg-solitaire" || !cell.locked);
+          const isSelectable = cell.tone !== "disabled" && (isSudoku || puzzle.puzzleId === "peg-solitaire" || !cell.locked);
+          const isEditable = cell.tone !== "disabled" && (puzzle.puzzleId === "peg-solitaire" || !cell.locked);
           const isSelected = isSelectedGridCell(selectedGridCell, cell);
           const isPeer = Boolean(
             isSudoku &&
@@ -58,7 +84,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
           const cellClass = [
             "cell",
             visualTone,
-            isInteractive ? "interactive-cell" : "",
+            isSelectable ? "interactive-cell" : "",
             isSelected ? "selected-grid-cell" : "",
             isPeer ? "peer-cell" : "",
             isSameValue ? "same-value-cell" : "",
@@ -74,12 +100,14 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
               <input
                 aria-label={cell.ariaLabel}
                 class={`cell-input ${cellClass}`}
-                disabled={!isInteractive}
+                disabled={!isSelectable}
                 inputMode={inputMode === "numeric" ? "numeric" : "text"}
                 key={`${cell.row}-${cell.column}`}
                 maxLength={isSudoku ? 2 : 1}
+                onClick={() => onCellClick(cell)}
                 onFocus={() => onCellClick(cell)}
                 onInput={(event) => onCellInput(cell, isSudoku ? getSudokuInputValue(event.currentTarget.value) : event.currentTarget.value)}
+                readOnly={!isEditable}
                 value={cell.value}
               />
             );
@@ -90,7 +118,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
               aria-label={cell.ariaLabel}
               aria-pressed={isSelected}
               class={cellClass}
-              disabled={!isInteractive}
+              disabled={!isSelectable}
               key={`${cell.row}-${cell.column}`}
               onClick={() => onCellClick(cell)}
               type="button"
@@ -102,7 +130,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
       </div>
 
       {isSudoku ? (
-        <div class="sudoku-digit-pad" aria-label="Sudoku digit pad">
+        <div class="sudoku-digit-pad" aria-label="Sudoku digit pad" data-sudoku-selection-scope="true">
           {sudokuDigits.map((digit) => (
             <button key={digit} type="button" disabled={!canUseDigitPad} onClick={() => setSelectedSudokuValue(digit)}>
               {digit}
