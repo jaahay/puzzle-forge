@@ -21,15 +21,13 @@ const summarizeRuns = (values: boolean[]) => {
   return runs;
 };
 
-const formatClue = (values: number[]) => (values.length > 0 ? values.join("-") : "0");
-
 export const generateNonogram: PuzzleGenerator = ({ seed, width, height }) => {
   const normalizedSeed = normalizeSeed(seed);
   const boundedWidth = normalizeDimension(width, 8, 5, 12);
   const boundedHeight = normalizeDimension(height, 8, 5, 12);
   const random = createRandom(`nonogram:${normalizedSeed}:${boundedWidth}x${boundedHeight}`);
   const solution = Array.from({ length: boundedWidth * boundedHeight }, () => random() > 0.48);
-  const answerKey = solution.map((isFilled) => (isFilled ? "■" : ""));
+  const answerKey = solution.map((isFilled) => (isFilled ? "\u25a0" : ""));
   const rowClues = Array.from({ length: boundedHeight }, (_, row) =>
     summarizeRuns(solution.slice(row * boundedWidth, row * boundedWidth + boundedWidth)),
   );
@@ -64,10 +62,6 @@ export const generateNonogram: PuzzleGenerator = ({ seed, width, height }) => {
       rows: rowClues,
       columns: columnClues,
     },
-    notes: [
-      `Clue rails: rows ${rowClues.map(formatClue).join(" / ")}; columns ${columnClues.map(formatClue).join(" / ")}.`,
-      "Use the clue numbers beside each row and above each column to reconstruct the hidden picture.",
-      "Click cells to toggle filled squares, then use Check to judge the completed grid.",
-    ],
+    notes: [],
   });
 };

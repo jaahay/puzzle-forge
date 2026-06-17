@@ -429,7 +429,7 @@ export const App = () => {
         return { cells, message: "Cell no longer exists." };
       }
 
-      const nextValue = current.value === "■" ? "" : "■";
+      const nextValue = current.value === "\u25a0" ? "" : "\u25a0";
       cells[index] = {
         ...current,
         value: nextValue,
@@ -610,7 +610,9 @@ export const App = () => {
       setStatusMessage(
         event.data.puzzle.puzzleId === "sudoku"
           ? `${event.data.puzzle.difficulty ?? defaultSudokuDifficulty} Sudoku ready.`
-          : `${event.data.puzzle.title} generated from seed ${event.data.puzzle.seed}.`,
+          : event.data.puzzle.puzzleId === "nonogram"
+            ? "Nonogram ready."
+            : `${event.data.puzzle.title} generated from seed ${event.data.puzzle.seed}.`,
       );
     };
 
@@ -654,6 +656,39 @@ export const App = () => {
 
   const randomize = () => {
     beginGeneration({ seed: makeRandomSeed() });
+  };
+
+  const commitGenerationSettings = ({ seed: nextSeed, width: nextWidth, height: nextHeight }: Partial<Pick<PuzzleGenerationRequest, "seed" | "width" | "height">> = {}) => {
+    const definition = getPuzzleDefinition(selectedPuzzleId);
+    const generationSeed = typeof nextSeed === "string" ? nextSeed.trim() : seed.trim();
+    const fallbackSeed = puzzle?.seed ?? makeRandomSeed();
+    const normalizedSeed = generationSeed || fallbackSeed;
+    const generationWidth = Number.isFinite(nextWidth) ? Number(nextWidth) : width || definition.defaultWidth;
+    const generationHeight = Number.isFinite(nextHeight) ? Number(nextHeight) : height || definition.defaultHeight;
+    const currentGrid = puzzle?.kind === "grid" ? puzzle : null;
+    const settingsAreCurrent =
+      puzzle?.puzzleId === selectedPuzzleId &&
+      puzzle.seed === normalizedSeed &&
+      (!currentGrid || (currentGrid.width === generationWidth && currentGrid.height === generationHeight)) &&
+      (selectedPuzzleId !== "sudoku" || puzzle.difficulty === difficulty);
+
+    if (normalizedSeed !== seed) {
+      setSeed(normalizedSeed);
+    }
+
+    if (generationWidth !== width) {
+      setWidth(generationWidth);
+    }
+
+    if (generationHeight !== height) {
+      setHeight(generationHeight);
+    }
+
+    if (settingsAreCurrent) {
+      return;
+    }
+
+    beginGeneration({ seed: normalizedSeed, width: generationWidth, height: generationHeight });
   };
 
   const handleDifficultyChange = (nextDifficulty: PuzzleDifficulty) => {
@@ -701,6 +736,7 @@ export const App = () => {
             onSeedChange={setSeed}
             onWidthChange={setWidth}
             onHeightChange={setHeight}
+            onSettingsCommit={commitGenerationSettings}
             onDifficultyChange={handleDifficultyChange}
             onGenerate={generate}
             onRandomize={randomize}
