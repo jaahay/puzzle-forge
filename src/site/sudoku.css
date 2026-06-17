@@ -215,6 +215,11 @@ select {
   padding-top: 1rem;
 }
 
+.nonogram-workspace .puzzle-settings-panel {
+  grid-template-columns: minmax(6.5rem, auto) minmax(9rem, auto) minmax(10rem, 1fr) minmax(7.25rem, auto);
+  gap: 0.7rem;
+}
+
 .puzzle-settings-actions {
   display: flex;
   gap: 0.65rem;
@@ -235,6 +240,42 @@ select {
   opacity: 0.62;
 }
 
+.puzzle-size-control {
+  display: grid;
+  grid-template-columns: auto auto min-content auto;
+  gap: 0.45rem;
+  align-items: end;
+}
+
+.control-label {
+  grid-column: 1 / -1;
+  color: #cbd5e1;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.compact-number-control {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  color: #cbd5e1;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.compact-number-control input {
+  width: 4.25rem;
+  padding-inline: 0.65rem;
+  text-align: center;
+}
+
+.size-separator {
+  align-self: center;
+  color: #94a3b8;
+  font-weight: 900;
+}
+
 .sudoku-input-hint {
   grid-column: 1 / -1;
   margin: -0.25rem 0 0;
@@ -244,7 +285,8 @@ select {
 
 @media (max-width: 940px) {
   .catalog-layout.catalog-collapsed,
-  .puzzle-settings-panel {
+  .puzzle-settings-panel,
+  .nonogram-workspace .puzzle-settings-panel {
     grid-template-columns: 1fr;
   }
 
