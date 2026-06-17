@@ -41,6 +41,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
     ? cells.find((cell) => cell.row === selectedGridCell.row && cell.column === selectedGridCell.column)
     : undefined;
   const isSudoku = puzzle.puzzleId === "sudoku";
+  const hasValidationMistakes = Boolean(isSudoku && cells.some((cell) => !cell.locked && cell.tone === "hint"));
   const canUseDigitPad = Boolean(isSudoku && selectedCell && !selectedCell.locked);
   const setSelectedSudokuValue = (value: string) => {
     if (isSudoku && selectedCell && !selectedCell.locked) {
@@ -55,8 +56,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
         class={`grid ${puzzle.puzzleId}`}
         style={{ gridTemplateColumns: `repeat(${puzzle.width}, minmax(0, 1fr))` }}
       >
-        {cells.map((cell, index) => {
-          const solutionValue = puzzle.answerKey?.[index] ?? "";
+        {cells.map((cell) => {
           const isInteractive = cell.tone !== "disabled" && (puzzle.puzzleId === "peg-solitaire" || !cell.locked);
           const isSelected = isSelectedGridCell(selectedGridCell, cell);
           const isPeer = Boolean(
@@ -67,8 +67,8 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
           );
           const isSameValue = Boolean(isSudoku && selectedCell?.value && cell.value === selectedCell.value && !isSelected);
           const hasConflict = isSudoku && hasSudokuConflict(cell, cells);
-          const isCorrectValue = Boolean(isSudoku && !cell.locked && cell.value && cell.value === solutionValue);
-          const isMistakeValue = Boolean(isSudoku && !cell.locked && cell.value && solutionValue && cell.value !== solutionValue);
+          const isCorrectValue = Boolean(isSudoku && hasValidationMistakes && !cell.locked && cell.tone === "answer");
+          const isMistakeValue = Boolean(isSudoku && !cell.locked && cell.tone === "hint");
           const cellClass = [
             "cell",
             cell.tone,
