@@ -18,8 +18,10 @@ const summarizeRuns = (values: boolean[]) => {
     runs.push(currentRun);
   }
 
-  return runs.length > 0 ? runs.join("-") : "0";
+  return runs;
 };
+
+const formatClue = (values: number[]) => (values.length > 0 ? values.join("-") : "0");
 
 export const generateNonogram: PuzzleGenerator = ({ seed, width, height }) => {
   const normalizedSeed = normalizeSeed(seed);
@@ -58,9 +60,13 @@ export const generateNonogram: PuzzleGenerator = ({ seed, width, height }) => {
     height: boundedHeight,
     cells,
     answerKey,
+    clues: {
+      rows: rowClues,
+      columns: columnClues,
+    },
     notes: [
-      `Row clues: ${rowClues.join(" / ")}`,
-      `Column clues: ${columnClues.join(" / ")}`,
+      `Clue rails: rows ${rowClues.map(formatClue).join(" / ")}; columns ${columnClues.map(formatClue).join(" / ")}.`,
+      "Use the clue numbers beside each row and above each column to reconstruct the hidden picture.",
       "Click cells to toggle filled squares, then use Check to judge the completed grid.",
     ],
   });

@@ -42,6 +42,11 @@ export type PuzzleCell = {
   ariaLabel?: string;
 };
 
+export type GridPuzzleClues = {
+  rows?: number[][];
+  columns?: number[][];
+};
+
 export type CardSuit = "clubs" | "diamonds" | "hearts" | "spades";
 
 export type CardRank =
@@ -97,6 +102,7 @@ export type GridGeneratedPuzzle = BaseGeneratedPuzzle & {
   kind: "grid";
   cells: PuzzleCell[];
   answerKey?: string[];
+  clues?: GridPuzzleClues;
 };
 
 export type CardGeneratedPuzzle = BaseGeneratedPuzzle & {
