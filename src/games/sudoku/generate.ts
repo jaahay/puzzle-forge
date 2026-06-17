@@ -4,6 +4,7 @@ import { createGeneratedPuzzle, createRandom, normalizeSeed } from "../shared";
 const BOARD_SIZE = 9;
 const BOX_SIZE = 3;
 const CELL_COUNT = BOARD_SIZE * BOARD_SIZE;
+const sudokuDigits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
 const difficultyClueTargets: Record<PuzzleDifficulty, number> = {
   Easy: 40,
@@ -34,7 +35,7 @@ const shuffle = <T>(items: T[], random: () => number) => {
 };
 
 const buildSolution = (random: () => number) => {
-  const digits = shuffle(["1", "2", "3", "4", "5", "6", "7", "8", "9"], random);
+  const digits = shuffle(sudokuDigits, random);
   const bands = shuffle([0, 1, 2], random);
   const stacks = shuffle([0, 1, 2], random);
   const rows = bands.flatMap((band) => shuffle([0, 1, 2], random).map((row) => band * BOX_SIZE + row));
@@ -90,9 +91,7 @@ const countSolutions = (board: string[], maxSolutions = 2) => {
       }
 
       const usedDigits = new Set(peerMap[index].map((peerIndex) => working[peerIndex]).filter(Boolean));
-      const candidates = difficultyLabels.length
-        ? ["1", "2", "3", "4", "5", "6", "7", "8", "9"].filter((digit) => !usedDigits.has(digit))
-        : [];
+      const candidates = sudokuDigits.filter((digit) => !usedDigits.has(digit));
 
       if (candidates.length === 0) {
         return;
@@ -168,8 +167,8 @@ const removeClues = (solution: string[], random: () => number, clueTarget: numbe
 
 export const generateSudoku: PuzzleGenerator = ({ seed, difficulty }) => {
   const normalizedSeed = normalizeSeed(seed);
-  const random = createRandom(`sudoku:${normalizedSeed}`);
-  const selectedDifficulty = getDifficulty(difficulty, random);
+  const selectedDifficulty = getDifficulty(difficulty, createRandom(`sudoku:${normalizedSeed}:difficulty`));
+  const random = createRandom(`sudoku:${normalizedSeed}:${selectedDifficulty}`);
   const solution = buildSolution(random);
   const puzzleValues = removeClues(solution, random, difficultyClueTargets[selectedDifficulty]);
   const givenCount = puzzleValues.filter(Boolean).length;
@@ -190,7 +189,7 @@ export const generateSudoku: PuzzleGenerator = ({ seed, difficulty }) => {
   });
 
   return createGeneratedPuzzle({
-    id: `sudoku-${normalizedSeed}`,
+    id: `sudoku-${normalizedSeed}-${selectedDifficulty.toLowerCase()}`,
     puzzleId: "sudoku",
     title: "Sudoku",
     seed: normalizedSeed,
