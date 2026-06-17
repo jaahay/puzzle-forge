@@ -1,329 +1,45 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import { getPuzzleDefinition, isGeneratable, puzzleCatalog } from "./catalog/puzzleCatalog";
+import { getPuzzleDefinition, isGeneratable } from "./catalog/puzzleCatalog";
 import type {
   CardStack,
   GeneratedPuzzle,
   GridGeneratedPuzzle,
-  PlayingCard,
   PuzzleCell,
   PuzzleGenerationRequest,
   PuzzleGenerationResponse,
   PuzzleId,
 } from "./catalog/types";
+import { AboutView } from "./components/AboutView";
+import { AppShell } from "./components/AppShell";
+import { ChangelogView } from "./components/ChangelogView";
+import { PuzzleCatalog } from "./components/PuzzleCatalog";
+import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
+import {
+  canMoveToFoundation,
+  canMoveToTableau,
+  canSelectFromStack,
+  cloneStack,
+  revealTopTableauCard,
+  type CardSelection,
+} from "./interactions/cardRules";
+import {
+  cloneGridCell,
+  getCellIndex,
+  getGridCell,
+  getGridInputMode,
+  normalizeCellInput,
+  prepareGridCells,
+  type GridCellSelection,
+} from "./interactions/gridRules";
+import type { AppView } from "./site/views";
+import { viewFromHash } from "./site/views";
 
 const makeRequestId = () => Math.random().toString(36).slice(2);
 const makeRandomSeed = () => `random-${Date.now().toString(36)}-${makeRequestId().slice(0, 6)}`;
-const numberCharacters = "123456789";
-const letterCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-const rankValues: Record<PlayingCard["rank"], number> = {
-  ace: 1,
-  "2": 2,
-  "3": 3,
-  "4": 4,
-  "5": 5,
-  "6": 6,
-  "7": 7,
-  "8": 8,
-  "9": 9,
-  "10": 10,
-  jack: 11,
-  queen: 12,
-  king: 13,
-};
-
-type CardSelection = {
-  stackId: string;
-  cardIndex: number;
-};
-
-type GridCellSelection = {
-  row: number;
-  column: number;
-};
-
-type GridInputMode = "none" | "numeric" | "word";
-
-const cloneCard = (card: PlayingCard): PlayingCard => ({ ...card });
-
-const cloneStack = (stack: CardStack): CardStack => ({
-  ...stack,
-  cards: stack.cards.map(cloneCard),
-});
-
-const cloneGridCell = (cell: PuzzleCell): PuzzleCell => ({ ...cell });
-
-const getTopCard = (stack: CardStack) => stack.cards[stack.cards.length - 1];
-
-const getGridInputMode = (puzzleId: PuzzleId): GridInputMode => {
-  if (puzzleId === "sudoku" || puzzleId === "logic-grid") {
-    return "numeric";
-  }
-
-  if (puzzleId === "word-guess") {
-    return "word";
-  }
-
-  return "none";
-};
-
-const takeLastAllowedCharacter = (value: string, allowedCharacters: string) => {
-  const characters = Array.from(value.toUpperCase()).filter((character) => allowedCharacters.includes(character));
-  return characters[characters.length - 1] ?? "";
-};
-
-const normalizeCellInput = (mode: GridInputMode, rawValue: string) => {
-  if (mode === "numeric") {
-    return takeLastAllowedCharacter(rawValue, numberCharacters);
-  }
-
-  if (mode === "word") {
-    return takeLastAllowedCharacter(rawValue, letterCharacters);
-  }
-
-  return rawValue;
-};
-
-const revealTopTableauCard = (stack: CardStack) => {
-  if (stack.role !== "tableau" || stack.cards.length === 0) {
-    return stack;
-  }
-
-  const topIndex = stack.cards.length - 1;
-  const topCard = stack.cards[topIndex];
-
-  if (topCard.faceUp) {
-    return stack;
-  }
-
-  return {
-    ...stack,
-    cards: stack.cards.map((card, index) => (index === topIndex ? { ...card, faceUp: true } : card)),
-  };
-};
-
-const canMoveToFoundation = (card: PlayingCard, targetStack: CardStack) => {
-  const topCard = getTopCard(targetStack);
-
-  if (!topCard) {
-    return rankValues[card.rank] === 1;
-  }
-
-  return card.suit === topCard.suit && rankValues[card.rank] === rankValues[topCard.rank] + 1;
-};
-
-const canMoveToTableau = (card: PlayingCard, targetStack: CardStack) => {
-  const topCard = getTopCard(targetStack);
-
-  if (!topCard) {
-    return rankValues[card.rank] === 13;
-  }
-
-  return topCard.faceUp && card.color !== topCard.color && rankValues[card.rank] === rankValues[topCard.rank] - 1;
-};
-
-const canSelectFromStack = (stack: CardStack, cardIndex: number) => {
-  const card = stack.cards[cardIndex];
-
-  if (!card?.faceUp) {
-    return false;
-  }
-
-  if (stack.role === "waste" || stack.role === "foundation") {
-    return cardIndex === stack.cards.length - 1;
-  }
-
-  return stack.role === "tableau";
-};
-
-const isSelectedCard = (selection: CardSelection | null, stack: CardStack, index: number) =>
-  selection?.stackId === stack.id && index >= selection.cardIndex;
-
-const isSelectedGridCell = (selection: GridCellSelection | null, cell: PuzzleCell) =>
-  selection?.row === cell.row && selection.column === cell.column;
-
-const getCellIndex = (cells: PuzzleCell[], cell: GridCellSelection) =>
-  cells.findIndex((candidate) => candidate.row === cell.row && candidate.column === cell.column);
-
-const getGridCell = (cells: PuzzleCell[], cell: GridCellSelection) => {
-  const index = getCellIndex(cells, cell);
-  return index >= 0 ? cells[index] : undefined;
-};
-
-const prepareGridCells = (puzzle: GridGeneratedPuzzle): PuzzleCell[] =>
-  puzzle.cells.map((cell) => {
-    if (puzzle.puzzleId === "nonogram") {
-      return {
-        ...cell,
-        value: "",
-        locked: false,
-        tone: "empty",
-        ariaLabel: `Playable nonogram cell at row ${cell.row + 1}, column ${cell.column + 1}`,
-      };
-    }
-
-    if (!cell.locked && (puzzle.puzzleId === "sudoku" || puzzle.puzzleId === "logic-grid")) {
-      return {
-        ...cell,
-        value: "",
-        tone: "empty",
-        ariaLabel: `Editable ${puzzle.title} cell at row ${cell.row + 1}, column ${cell.column + 1}`,
-      };
-    }
-
-    if (puzzle.puzzleId === "word-guess") {
-      return {
-        ...cell,
-        value: "",
-        locked: false,
-        tone: "empty",
-        ariaLabel: `Word Guess cell at row ${cell.row + 1}, column ${cell.column + 1}`,
-      };
-    }
-
-    return cloneGridCell(cell);
-  });
-
-type CardStackProps = {
-  stack: CardStack;
-  selectedCard: CardSelection | null;
-  onCardClick: (stack: CardStack, cardIndex: number) => void;
-  onStackClick: (stack: CardStack) => void;
-};
-
-const renderPlayingCard = (
-  card: PlayingCard,
-  stack: CardStack,
-  index: number,
-  selectedCard: CardSelection | null,
-  onCardClick: (stack: CardStack, cardIndex: number) => void,
-) => {
-  const selected = isSelectedCard(selectedCard, stack, index);
-  const selectable = canSelectFromStack(stack, index);
-
-  return (
-    <button
-      aria-label={card.faceUp ? card.label : "Face-down card"}
-      class={`playing-card ${card.faceUp ? card.color : "back"} ${selected ? "selected-card" : ""}`}
-      disabled={!card.faceUp && stack.role !== "stock"}
-      key={`${stack.id}-${index}-${card.code}`}
-      onClick={() => onCardClick(stack, index)}
-      type="button"
-    >
-      <span>{card.faceUp ? card.code : ""}</span>
-      {selectable ? <span class="card-action-hint">move</span> : null}
-    </button>
-  );
-};
-
-const renderCardStack = ({ stack, selectedCard, onCardClick, onStackClick }: CardStackProps) => {
-  const cardsToRender = stack.role === "stock" ? stack.cards.slice(-1) : stack.cards;
-  const firstRenderedIndex = stack.role === "stock" ? Math.max(stack.cards.length - 1, 0) : 0;
-  const countLabel = stack.role === "stock" && stack.cards.length > 0 ? `${stack.cards.length} cards` : null;
-  const hasSelection = selectedCard !== null;
-
-  return (
-    <div class={`card-stack ${stack.role}`} key={stack.id}>
-      <div class="card-stack-heading">
-        <strong>{stack.title}</strong>
-        {countLabel ? <span>{countLabel}</span> : null}
-      </div>
-      <div class="playing-card-list">
-        {cardsToRender.length > 0 ? (
-          cardsToRender.map((card, index) =>
-            renderPlayingCard(card, stack, firstRenderedIndex + index, selectedCard, onCardClick),
-          )
-        ) : (
-          <button
-            class={`playing-card placeholder ${hasSelection ? "drop-target" : ""}`}
-            aria-label={`${stack.title} is empty`}
-            onClick={() => onStackClick(stack)}
-            type="button"
-          >
-            {stack.role === "foundation" ? "A" : stack.role === "stock" ? "↻" : ""}
-          </button>
-        )}
-      </div>
-    </div>
-  );
-};
-
-type CardPuzzlePreviewProps = {
-  stacks: CardStack[];
-  selectedCard: CardSelection | null;
-  onCardClick: (stack: CardStack, cardIndex: number) => void;
-  onStackClick: (stack: CardStack) => void;
-};
-
-const CardPuzzlePreview = ({ stacks, selectedCard, onCardClick, onStackClick }: CardPuzzlePreviewProps) => {
-  const stockAndWaste = stacks.filter((stack) => stack.role === "stock" || stack.role === "waste");
-  const foundations = stacks.filter((stack) => stack.role === "foundation");
-  const tableau = stacks.filter((stack) => stack.role === "tableau");
-  const renderStack = (stack: CardStack) => renderCardStack({ stack, selectedCard, onCardClick, onStackClick });
-
-  return (
-    <div class="cards-layout">
-      <div class="card-row stock-row">{stockAndWaste.map(renderStack)}</div>
-      <div class="card-row foundation-row">{foundations.map(renderStack)}</div>
-      <div class="card-row tableau-row">{tableau.map(renderStack)}</div>
-    </div>
-  );
-};
-
-type GridPuzzlePreviewProps = {
-  puzzle: GridGeneratedPuzzle;
-  cells: PuzzleCell[];
-  selectedGridCell: GridCellSelection | null;
-  onCellClick: (cell: PuzzleCell) => void;
-  onCellInput: (cell: PuzzleCell, value: string) => void;
-};
-
-const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick, onCellInput }: GridPuzzlePreviewProps) => {
-  const inputMode = getGridInputMode(puzzle.puzzleId);
-
-  return (
-    <div
-      class={`grid ${puzzle.puzzleId}`}
-      style={{ gridTemplateColumns: `repeat(${puzzle.width}, minmax(0, 1fr))` }}
-    >
-      {cells.map((cell) => {
-        const isInteractive = cell.tone !== "disabled" && (puzzle.puzzleId === "peg-solitaire" || !cell.locked);
-        const cellClass = `cell ${cell.tone} ${isInteractive ? "interactive-cell" : ""} ${isSelectedGridCell(selectedGridCell, cell) ? "selected-grid-cell" : ""}`;
-
-        if (inputMode !== "none") {
-          return (
-            <input
-              aria-label={cell.ariaLabel}
-              class={`cell-input ${cellClass}`}
-              disabled={!isInteractive}
-              inputMode={inputMode === "numeric" ? "numeric" : "text"}
-              key={`${cell.row}-${cell.column}`}
-              maxLength={1}
-              onInput={(event) => onCellInput(cell, event.currentTarget.value)}
-              value={cell.value}
-            />
-          );
-        }
-
-        return (
-          <button
-            aria-label={cell.ariaLabel}
-            aria-pressed={isSelectedGridCell(selectedGridCell, cell)}
-            class={cellClass}
-            disabled={!isInteractive}
-            key={`${cell.row}-${cell.column}`}
-            onClick={() => onCellClick(cell)}
-            type="button"
-          >
-            {cell.value}
-          </button>
-        );
-      })}
-    </div>
-  );
-};
+const getActiveView = (): AppView => (typeof window === "undefined" ? "catalog" : viewFromHash(window.location.hash));
 
 export const App = () => {
+  const [activeView, setActiveView] = useState<AppView>(getActiveView);
   const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>("sudoku");
   const [seed, setSeed] = useState("daily-catalog");
   const [width, setWidth] = useState(9);
@@ -796,6 +512,21 @@ export const App = () => {
   };
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const syncActiveView = () => setActiveView(getActiveView());
+
+    syncActiveView();
+    window.addEventListener("hashchange", syncActiveView);
+
+    return () => {
+      window.removeEventListener("hashchange", syncActiveView);
+    };
+  }, []);
+
+  useEffect(() => {
     const handleMessage = (event: MessageEvent<PuzzleGenerationResponse>) => {
       if (event.data.requestId !== activeRequestId.current) {
         return;
@@ -878,147 +609,47 @@ export const App = () => {
   }, []);
 
   return (
-    <main class="app-shell">
-      <section class="hero-panel">
-        <p class="eyebrow">puzzles catalog</p>
-        <h1>One home for Sudoku, Solitaire, Nonogram, Word Guess, and whatever comes next.</h1>
-        <p class="hero-copy">
-          Browse the catalog, pick a puzzle family, and generate deterministic boards and deals in a Web Worker so
-          the interface stays responsive.
-        </p>
-      </section>
+    <AppShell activeView={activeView}>
+      {activeView === "catalog" ? (
+        <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
+          <PuzzleCatalog
+            isCollapsed={isCatalogCollapsed}
+            selectedPuzzleId={selectedPuzzleId}
+            selectedPuzzleTitle={selectedDefinition.title}
+            onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)}
+            onSelectPuzzle={selectPuzzle}
+          />
 
-      <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
-        <aside class="catalog-panel" aria-label="Puzzle catalog" id="puzzle-catalog">
-          <div class="panel-heading">
-            <span class="catalog-count">{puzzleCatalog.length} puzzle ideas</span>
-            <div class="catalog-heading-actions">
-              <strong>Catalog</strong>
-              <button
-                aria-controls="puzzle-catalog-list"
-                aria-expanded={!isCatalogCollapsed}
-                class="catalog-collapse-button"
-                onClick={() => setIsCatalogCollapsed((current) => !current)}
-                type="button"
-              >
-                {isCatalogCollapsed ? "Expand" : "Collapse"}
-              </button>
-            </div>
-          </div>
-
-          <div class="catalog-rail" hidden={!isCatalogCollapsed} aria-hidden={!isCatalogCollapsed}>
-            <span>Catalog</span>
-            <strong>{selectedDefinition.title}</strong>
-          </div>
-
-          <div class="catalog-grid" id="puzzle-catalog-list" hidden={isCatalogCollapsed}>
-            {puzzleCatalog.map((definition) => (
-              <button
-                class={definition.id === selectedPuzzleId ? "catalog-card selected" : "catalog-card"}
-                key={definition.id}
-                type="button"
-                onClick={() => selectPuzzle(definition.id)}
-              >
-                <span class={`status ${definition.status}`}>{definition.status}</span>
-                <strong>{definition.title}</strong>
-                <span>{definition.tagline}</span>
-              </button>
-            ))}
-          </div>
-        </aside>
-
-        <section class="workspace-panel" aria-label="Selected puzzle workspace">
-          <div class="workspace-copy">
-            <span class={`status ${selectedDefinition.status}`}>{selectedDefinition.status}</span>
-            <h2>{selectedDefinition.title}</h2>
-            <p>{selectedDefinition.description}</p>
-            <div class="tag-row">
-              {selectedDefinition.tags.map((tag) => (
-                <span key={tag}>{tag}</span>
-              ))}
-            </div>
-          </div>
-
-          <div class="control-panel" aria-label="Puzzle controls">
-            <label>
-              Seed
-              <input value={seed} onInput={(event) => setSeed(event.currentTarget.value)} />
-            </label>
-
-            <label>
-              Width
-              <input
-                type="number"
-                min={selectedDefinition.minWidth}
-                max={selectedDefinition.maxWidth}
-                value={width}
-                onInput={(event) => setWidth(Number(event.currentTarget.value))}
-              />
-            </label>
-
-            <label>
-              Height
-              <input
-                type="number"
-                min={selectedDefinition.minHeight}
-                max={selectedDefinition.maxHeight}
-                value={height}
-                onInput={(event) => setHeight(Number(event.currentTarget.value))}
-              />
-            </label>
-
-            <div class="control-actions">
-              <button type="button" onClick={() => generate()} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-                {isGenerating ? "Generating..." : "Generate"}
-              </button>
-              <button type="button" onClick={randomize} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-                Randomize
-              </button>
-            </div>
-          </div>
-
-          <p class="status-line" aria-live="polite">{statusMessage}</p>
-
-          {puzzle ? (
-            <section class="puzzle-panel" aria-label="Generated puzzle preview">
-              <div class="puzzle-meta">
-                <span>{puzzle.kind === "cards" ? "52-card deal" : `${puzzle.width} x ${puzzle.height}`}</span>
-                <span>Seed: {puzzle.seed}</span>
-                <span>Checksum: {puzzle.checksum}</span>
-              </div>
-
-              {puzzle.kind === "cards" && cardStacks ? (
-                <CardPuzzlePreview
-                  stacks={cardStacks}
-                  selectedCard={selectedCard}
-                  onCardClick={handleCardClick}
-                  onStackClick={handleStackClick}
-                />
-              ) : puzzle.kind === "grid" && gridCells ? (
-                <GridPuzzlePreview
-                  puzzle={puzzle}
-                  cells={gridCells}
-                  selectedGridCell={selectedGridCell}
-                  onCellClick={handleGridCellClick}
-                  onCellInput={handleGridCellInput}
-                />
-              ) : null}
-
-              <div class="puzzle-actions">
-                <button type="button" onClick={handleCheck}>
-                  Check
-                </button>
-              </div>
-
-              <ul class="notes-list">
-                {puzzle.notes.map((note) => (
-                  <li key={note}>{note}</li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
+          <PuzzleWorkspace
+            selectedDefinition={selectedDefinition}
+            selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
+            seed={seed}
+            width={width}
+            height={height}
+            puzzle={puzzle}
+            cardStacks={cardStacks}
+            selectedCard={selectedCard}
+            gridCells={gridCells}
+            selectedGridCell={selectedGridCell}
+            statusMessage={statusMessage}
+            isGenerating={isGenerating}
+            onSeedChange={setSeed}
+            onWidthChange={setWidth}
+            onHeightChange={setHeight}
+            onGenerate={() => generate()}
+            onRandomize={randomize}
+            onCheck={handleCheck}
+            onCardClick={handleCardClick}
+            onStackClick={handleStackClick}
+            onCellClick={handleGridCellClick}
+            onCellInput={handleGridCellInput}
+          />
         </section>
-      </section>
-    </main>
+      ) : activeView === "changelog" ? (
+        <ChangelogView />
+      ) : (
+        <AboutView />
+      )}
+    </AppShell>
   );
 };
