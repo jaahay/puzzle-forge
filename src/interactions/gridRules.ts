@@ -7,7 +7,7 @@ export type GridCellSelection = {
 
 export type GridInputMode = "none" | "numeric" | "word";
 
-const numberCharacters = "123456789";
+const numberCharacters = "0123456789";
 const letterCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 export const cloneGridCell = (cell: PuzzleCell): PuzzleCell => ({ ...cell });
