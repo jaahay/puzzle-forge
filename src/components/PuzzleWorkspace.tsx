@@ -11,7 +11,7 @@ type SolitaireStats = {
   autoMoveCount: number;
 };
 
-type GenerationSettings = Partial<Pick<PuzzleGenerationRequest, "seed" | "width" | "height">>;
+type GenerationSettings = Partial<Pick<PuzzleGenerationRequest, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution">>;
 
 type PuzzleWorkspaceProps = {
   selectedDefinition: PuzzleDefinition;
@@ -20,6 +20,7 @@ type PuzzleWorkspaceProps = {
   width: number;
   height: number;
   difficulty: PuzzleDifficulty;
+  requireUniqueSolution: boolean;
   puzzle: GeneratedPuzzle | null;
   cardStacks: CardStack[] | null;
   selectedCard: CardSelection | null;
@@ -33,6 +34,7 @@ type PuzzleWorkspaceProps = {
   onHeightChange: (height: number) => void;
   onSettingsCommit: (settings?: GenerationSettings) => void;
   onDifficultyChange: (difficulty: PuzzleDifficulty) => void;
+  onUniqueSolutionChange: (requireUniqueSolution: boolean) => void;
   onGenerate: () => void;
   onRandomize: () => void;
   onCheck: () => void;
@@ -59,6 +61,7 @@ export const PuzzleWorkspace = ({
   width,
   height,
   difficulty,
+  requireUniqueSolution,
   puzzle,
   cardStacks,
   selectedCard,
@@ -72,6 +75,7 @@ export const PuzzleWorkspace = ({
   onHeightChange,
   onSettingsCommit,
   onDifficultyChange,
+  onUniqueSolutionChange,
   onGenerate,
   onRandomize,
   onCheck,
@@ -175,6 +179,7 @@ export const PuzzleWorkspace = ({
           <div class="puzzle-meta">
             {puzzle.kind === "cards" ? <span>52-card deal</span> : isSudoku ? null : <span>{`${puzzle.width} x ${puzzle.height}`}</span>}
             {puzzle.difficulty ? <span>{puzzle.difficulty}</span> : null}
+            {isNonogram ? <span>{puzzle.uniqueSolution ? "Unique" : "Open"}</span> : null}
             {isSudoku ? <span>{getGivenCount(gridCells)} givens</span> : isNonogram ? <span>{filledOpenCount}/{openCount} filled</span> : <span>Seed: {puzzle.seed}</span>}
             {isSudoku ? <span>{filledOpenCount}/{openCount} filled</span> : null}
           </div>
@@ -218,17 +223,15 @@ export const PuzzleWorkspace = ({
                 </button>
               </div>
 
-              {isSudoku ? (
-                <label>
-                  Difficulty
-                  <select value={difficulty} onChange={(event) => onDifficultyChange(event.currentTarget.value as PuzzleDifficulty)}>
-                    <option>Easy</option>
-                    <option>Medium</option>
-                    <option>Hard</option>
-                    <option>Expert</option>
-                  </select>
-                </label>
-              ) : null}
+              <label>
+                Difficulty
+                <select value={difficulty} onChange={(event) => onDifficultyChange(event.currentTarget.value as PuzzleDifficulty)}>
+                  <option>Easy</option>
+                  <option>Medium</option>
+                  <option>Hard</option>
+                  <option>Expert</option>
+                </select>
+              </label>
 
               {isNonogram && !isFixedSize ? (
                 <div class="puzzle-size-control" aria-label="Nonogram size">
@@ -272,6 +275,17 @@ export const PuzzleWorkspace = ({
                   onKeyDown={blurOnEnter}
                 />
               </label>
+
+              {isNonogram ? (
+                <label class="puzzle-checkbox-control">
+                  <input
+                    checked={requireUniqueSolution}
+                    onChange={(event) => onUniqueSolutionChange(event.currentTarget.checked)}
+                    type="checkbox"
+                  />
+                  <span>Unique</span>
+                </label>
+              ) : null}
 
               <div class="puzzle-settings-actions">
                 <button type="button" onClick={onRandomize} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
