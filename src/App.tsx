@@ -38,6 +38,7 @@ export const App = () => {
   const [width, setWidth] = useState(9);
   const [height, setHeight] = useState(9);
   const [difficulty, setDifficulty] = useState<PuzzleDifficulty>(defaultSudokuDifficulty);
+  const [requireUniqueSolution, setRequireUniqueSolution] = useState(true);
   const [puzzle, setPuzzle] = useState<GeneratedPuzzle | null>(null);
   const [cardStacks, setCardStacks] = useState<CardStack[] | null>(null);
   const [selectedCard, setSelectedCard] = useState<CardSelection | null>(null);
@@ -74,6 +75,7 @@ export const App = () => {
       width,
       height,
       difficulty,
+      requireUniqueSolution,
       puzzle,
       cardStacks: cardStacks?.map(cloneStack) ?? null,
       selectedCard: selectedCard ? { ...selectedCard } : null,
@@ -90,6 +92,7 @@ export const App = () => {
     setWidth(session.width);
     setHeight(session.height);
     setDifficulty(session.difficulty);
+    setRequireUniqueSolution(session.requireUniqueSolution);
     setPuzzle(session.puzzle);
     setCardStacks(session.cardStacks?.map(cloneStack) ?? null);
     setSelectedCard(session.selectedCard ? { ...session.selectedCard } : null);
@@ -106,6 +109,7 @@ export const App = () => {
     width: generationWidth = width,
     height: generationHeight = height,
     difficulty: generationDifficulty = difficulty,
+    requireUniqueSolution: generationRequireUniqueSolution = requireUniqueSolution,
   }: Partial<Omit<PuzzleGenerationRequest, "requestId">> = {}) => {
     const definition = getPuzzleDefinition(puzzleId);
 
@@ -131,6 +135,7 @@ export const App = () => {
       width: generationWidth,
       height: generationHeight,
       difficulty: generationDifficulty,
+      requireUniqueSolution: generationRequireUniqueSolution,
     };
 
     activeRequestId.current = requestId;
@@ -139,6 +144,7 @@ export const App = () => {
     setWidth(generationWidth);
     setHeight(generationHeight);
     setDifficulty(generationDifficulty);
+    setRequireUniqueSolution(generationRequireUniqueSolution);
     setIsGenerating(true);
     setPuzzle(null);
     setCardStacks(null);
@@ -611,7 +617,9 @@ export const App = () => {
         event.data.puzzle.puzzleId === "sudoku"
           ? `${event.data.puzzle.difficulty ?? defaultSudokuDifficulty} Sudoku ready.`
           : event.data.puzzle.puzzleId === "nonogram"
-            ? "Nonogram ready."
+            ? event.data.puzzle.uniqueSolution
+              ? "Unique Nonogram ready."
+              : "Open Nonogram ready. Multiple solutions may be possible."
             : `${event.data.puzzle.title} generated from seed ${event.data.puzzle.seed}.`,
       );
     };
@@ -647,6 +655,7 @@ export const App = () => {
       width: definition.defaultWidth,
       height: definition.defaultHeight,
       difficulty: nextDifficulty,
+      requireUniqueSolution,
     });
   };
 
@@ -658,19 +667,28 @@ export const App = () => {
     beginGeneration({ seed: makeRandomSeed() });
   };
 
-  const commitGenerationSettings = ({ seed: nextSeed, width: nextWidth, height: nextHeight }: Partial<Pick<PuzzleGenerationRequest, "seed" | "width" | "height">> = {}) => {
+  const commitGenerationSettings = ({
+    seed: nextSeed,
+    width: nextWidth,
+    height: nextHeight,
+    difficulty: nextDifficulty,
+    requireUniqueSolution: nextRequireUniqueSolution,
+  }: Partial<Pick<PuzzleGenerationRequest, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution">> = {}) => {
     const definition = getPuzzleDefinition(selectedPuzzleId);
     const generationSeed = typeof nextSeed === "string" ? nextSeed.trim() : seed.trim();
     const fallbackSeed = puzzle?.seed ?? makeRandomSeed();
     const normalizedSeed = generationSeed || fallbackSeed;
     const generationWidth = Number.isFinite(nextWidth) ? Number(nextWidth) : width || definition.defaultWidth;
     const generationHeight = Number.isFinite(nextHeight) ? Number(nextHeight) : height || definition.defaultHeight;
+    const generationDifficulty = nextDifficulty ?? difficulty;
+    const generationRequireUniqueSolution = typeof nextRequireUniqueSolution === "boolean" ? nextRequireUniqueSolution : requireUniqueSolution;
     const currentGrid = puzzle?.kind === "grid" ? puzzle : null;
     const settingsAreCurrent =
       puzzle?.puzzleId === selectedPuzzleId &&
       puzzle.seed === normalizedSeed &&
       (!currentGrid || (currentGrid.width === generationWidth && currentGrid.height === generationHeight)) &&
-      (selectedPuzzleId !== "sudoku" || puzzle.difficulty === difficulty);
+      (selectedPuzzleId !== "sudoku" || puzzle.difficulty === generationDifficulty) &&
+      (selectedPuzzleId !== "nonogram" || (puzzle.difficulty === generationDifficulty && Boolean(puzzle.uniqueSolution) === generationRequireUniqueSolution));
 
     if (normalizedSeed !== seed) {
       setSeed(normalizedSeed);
@@ -684,20 +702,48 @@ export const App = () => {
       setHeight(generationHeight);
     }
 
+    if (generationDifficulty !== difficulty) {
+      setDifficulty(generationDifficulty);
+    }
+
+    if (generationRequireUniqueSolution !== requireUniqueSolution) {
+      setRequireUniqueSolution(generationRequireUniqueSolution);
+    }
+
     if (settingsAreCurrent) {
       return;
     }
 
-    beginGeneration({ seed: normalizedSeed, width: generationWidth, height: generationHeight });
+    beginGeneration({
+      seed: normalizedSeed,
+      width: generationWidth,
+      height: generationHeight,
+      difficulty: generationDifficulty,
+      requireUniqueSolution: generationRequireUniqueSolution,
+    });
   };
 
   const handleDifficultyChange = (nextDifficulty: PuzzleDifficulty) => {
-    if (selectedPuzzleId !== "sudoku") {
-      setDifficulty(nextDifficulty);
+    if (selectedPuzzleId === "sudoku") {
+      beginGeneration({ puzzleId: "sudoku", seed, width: 9, height: 9, difficulty: nextDifficulty });
       return;
     }
 
-    beginGeneration({ puzzleId: "sudoku", seed, width: 9, height: 9, difficulty: nextDifficulty });
+    if (selectedPuzzleId === "nonogram") {
+      commitGenerationSettings({ difficulty: nextDifficulty });
+      return;
+    }
+
+    setDifficulty(nextDifficulty);
+  };
+
+  const handleUniqueSolutionChange = (nextRequireUniqueSolution: boolean) => {
+    if (selectedPuzzleId === "nonogram") {
+      commitGenerationSettings({ requireUniqueSolution: nextRequireUniqueSolution });
+      return;
+    }
+
+    setRequireUniqueSolution(nextRequireUniqueSolution);
   };
 
   useEffect(() => {
@@ -725,6 +771,7 @@ export const App = () => {
             width={width}
             height={height}
             difficulty={difficulty}
+            requireUniqueSolution={requireUniqueSolution}
             puzzle={puzzle}
             cardStacks={cardStacks}
             selectedCard={selectedCard}
@@ -738,6 +785,7 @@ export const App = () => {
             onHeightChange={setHeight}
             onSettingsCommit={commitGenerationSettings}
             onDifficultyChange={handleDifficultyChange}
+            onUniqueSolutionChange={handleUniqueSolutionChange}
             onGenerate={generate}
             onRandomize={randomize}
             onCheck={handleCheck}
