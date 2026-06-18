@@ -95,6 +95,7 @@ type BaseGeneratedPuzzle = {
   checksum: string;
   createdAt: string;
   difficulty?: PuzzleDifficulty;
+  uniqueSolution?: boolean;
   notes: string[];
 };
 
@@ -119,6 +120,7 @@ export type PuzzleGenerationRequest = {
   width: number;
   height: number;
   difficulty?: PuzzleDifficulty;
+  requireUniqueSolution?: boolean;
 };
 
 export type PuzzleGenerationResponse =
