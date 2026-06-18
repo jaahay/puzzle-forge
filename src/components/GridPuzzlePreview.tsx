@@ -1,5 +1,6 @@
 import { useEffect } from "preact/hooks";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
+import { FILLED_NONOGRAM_CELL } from "../games/nonogram/solve";
 import { getGridInputMode, isSelectedGridCell, type GridCellSelection } from "../interactions/gridRules";
 
 const SUDOKU_BOX_SIZE = 3;
@@ -128,14 +129,14 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
         return (
           <button
             aria-label={cell.ariaLabel}
-            aria-pressed={isNonogram ? cell.value === "\u25a0" : isSelected}
+            aria-pressed={isNonogram ? cell.value === FILLED_NONOGRAM_CELL : isSelected}
             class={cellClass}
             disabled={!isSelectable}
             key={`${cell.row}-${cell.column}`}
             onClick={() => onCellClick(cell)}
             type="button"
           >
-            {cell.value}
+            {isNonogram ? "" : cell.value}
           </button>
         );
       })}
