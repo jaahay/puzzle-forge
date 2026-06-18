@@ -21,6 +21,7 @@ export type PuzzleSession = {
   width: number;
   height: number;
   difficulty: PuzzleDifficulty;
+  requireUniqueSolution: boolean;
   puzzle: GeneratedPuzzle | null;
   cardStacks: CardStack[] | null;
   selectedCard: CardSelection | null;
