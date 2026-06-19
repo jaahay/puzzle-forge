@@ -1,5 +1,6 @@
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { pluralize } from "../app/runtime";
+import { buildNonogramCluesFromCells, sameNonogramClue, FILLED_NONOGRAM_CELL } from "../games/nonogram/solve";
 import { cloneGridCell } from "./gridRules";
 
 const checkWordGuess = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) => {
@@ -53,9 +54,46 @@ const checkWordGuess = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[])
   return { cells: nextCells, message: `Not solved yet. ${currentPuzzle.height - completeGuessCount} attempt(s) remain.` };
 };
 
+const checkNonogram = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) => {
+  const targetRows = currentPuzzle.clues?.rows ?? [];
+  const targetColumns = currentPuzzle.clues?.columns ?? [];
+  const actualClues = buildNonogramCluesFromCells(cells, currentPuzzle.width, currentPuzzle.height);
+  const rowMatches = Array.from({ length: currentPuzzle.height }, (_, row) => sameNonogramClue(actualClues.rows[row] ?? [], targetRows[row] ?? []));
+  const columnMatches = Array.from({ length: currentPuzzle.width }, (_, column) =>
+    sameNonogramClue(actualClues.columns[column] ?? [], targetColumns[column] ?? []),
+  );
+  const incorrectRowCount = rowMatches.filter((matches) => !matches).length;
+  const incorrectColumnCount = columnMatches.filter((matches) => !matches).length;
+  const nextCells = cells.map((cell): PuzzleCell => {
+    if (cell.tone === "disabled" || cell.locked) {
+      return cell;
+    }
+
+    const validLineCrossing = Boolean(rowMatches[cell.row] && columnMatches[cell.column]);
+
+    return {
+      ...cell,
+      tone: cell.value === FILLED_NONOGRAM_CELL ? (validLineCrossing ? "accent" : "hint") : validLineCrossing ? "empty" : "hint",
+    };
+  });
+
+  if (incorrectRowCount === 0 && incorrectColumnCount === 0) {
+    return { cells: nextCells, message: "Solved. Nonogram matches all row and column clues." };
+  }
+
+  return {
+    cells: nextCells,
+    message: `Not solved: ${pluralize(incorrectRowCount, "row clue")} and ${pluralize(incorrectColumnCount, "column clue")} do not match.`,
+  };
+};
+
 export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) => {
   if (currentPuzzle.puzzleId === "word-guess") {
     return checkWordGuess(currentPuzzle, cells);
+  }
+
+  if (currentPuzzle.puzzleId === "nonogram") {
+    return checkNonogram(currentPuzzle, cells);
   }
 
   const answerKey = currentPuzzle.answerKey;
@@ -81,13 +119,6 @@ export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: Puzzl
       emptyCount += 1;
     } else if (!isCorrect) {
       incorrectCount += 1;
-    }
-
-    if (currentPuzzle.puzzleId === "nonogram") {
-      return {
-        ...cell,
-        tone: isCorrect ? (actual === "■" ? "accent" : "empty") : "hint",
-      };
     }
 
     return {

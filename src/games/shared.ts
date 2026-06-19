@@ -52,6 +52,7 @@ export const createGeneratedPuzzle = ({
   width,
   height,
   difficulty,
+  uniqueSolution,
   cells,
   notes,
   answerKey,
@@ -64,6 +65,7 @@ export const createGeneratedPuzzle = ({
   width: number;
   height: number;
   difficulty?: PuzzleDifficulty;
+  uniqueSolution?: boolean;
   cells: PuzzleCell[];
   notes: string[];
   answerKey?: string[];
@@ -77,6 +79,7 @@ export const createGeneratedPuzzle = ({
   width,
   height,
   difficulty,
+  uniqueSolution,
   cells,
   answerKey,
   clues,
