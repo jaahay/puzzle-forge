@@ -3,6 +3,7 @@ import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
+import { WordGuessGame } from "./WordGuessGame";
 
 type SolitaireStats = {
   moveCount: number;
@@ -87,6 +88,7 @@ export const PuzzleWorkspace = ({
 }: PuzzleWorkspaceProps) => {
   const isSudoku = selectedDefinition.id === "sudoku";
   const isNonogram = selectedDefinition.id === "nonogram";
+  const isWordGuess = selectedDefinition.id === "word-guess";
   const usesBottomGenerationControls = isSudoku || isNonogram;
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
   const filledOpenCount = getFilledOpenCount(gridCells);
@@ -122,24 +124,28 @@ export const PuzzleWorkspace = ({
           {isFixedSize ? null : (
             <>
               <label>
-                Width
+                {isWordGuess ? "Letters" : "Width"}
                 <input
                   type="number"
                   min={selectedDefinition.minWidth}
                   max={selectedDefinition.maxWidth}
                   value={width}
+                  onBlur={(event) => onSettingsCommit({ width: Number(event.currentTarget.value) })}
                   onInput={(event) => onWidthChange(Number(event.currentTarget.value))}
+                  onKeyDown={blurOnEnter}
                 />
               </label>
 
               <label>
-                Height
+                {isWordGuess ? "Guesses" : "Height"}
                 <input
                   type="number"
                   min={selectedDefinition.minHeight}
                   max={selectedDefinition.maxHeight}
                   value={height}
+                  onBlur={(event) => onSettingsCommit({ height: Number(event.currentTarget.value) })}
                   onInput={(event) => onHeightChange(Number(event.currentTarget.value))}
+                  onKeyDown={blurOnEnter}
                 />
               </label>
             </>
@@ -192,6 +198,15 @@ export const PuzzleWorkspace = ({
               onCardClick={onCardClick}
               onStackClick={onStackClick}
             />
+          ) : puzzle.kind === "grid" && puzzle.puzzleId === "word-guess" && gridCells ? (
+            <WordGuessGame
+              puzzle={puzzle}
+              cells={gridCells}
+              statusMessage={statusMessage}
+              onCellInput={onCellInput}
+              onSubmitGuess={onCheck}
+              onRandomize={onRandomize}
+            />
           ) : puzzle.kind === "grid" && gridCells ? (
             <GridPuzzlePreview
               puzzle={puzzle}
@@ -202,7 +217,7 @@ export const PuzzleWorkspace = ({
             />
           ) : null}
 
-          {puzzle.kind === "cards" || !usesBottomGenerationControls ? (
+          {puzzle.kind === "cards" || (!usesBottomGenerationControls && !isWordGuess) ? (
             <div class="puzzle-actions">
               {puzzle.kind === "cards" ? (
                 <button type="button" onClick={onAutoMoveToFoundations}>

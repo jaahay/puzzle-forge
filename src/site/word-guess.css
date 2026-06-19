@@ -1,0 +1,147 @@
+.word-guess-game {
+  display: grid;
+  gap: 1rem;
+}
+
+.word-guess-status {
+  display: grid;
+  gap: 0.25rem;
+  color: #cbd5e1;
+}
+
+.word-guess-status strong {
+  color: #f8fafc;
+}
+
+.word-guess-status span {
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.word-guess-board {
+  display: grid;
+  gap: 0.45rem;
+  justify-items: center;
+}
+
+.word-guess-row {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 0.35rem;
+}
+
+.word-guess-row.active .word-guess-tile.pending {
+  border-color: #a7f3d0;
+}
+
+.word-guess-tile {
+  display: grid;
+  width: clamp(2rem, 7vw, 3.5rem);
+  min-height: clamp(2.25rem, 8vw, 3.75rem);
+  place-items: center;
+  border: 1px solid #334155;
+  border-radius: 0.7rem;
+  color: #f8fafc;
+  background: #111827;
+  font-size: clamp(1rem, 3vw, 1.45rem);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.word-guess-tile.correct {
+  color: #0f172a;
+  background: #a7f3d0;
+}
+
+.word-guess-tile.present {
+  color: #0f172a;
+  background: #facc15;
+}
+
+.word-guess-tile.absent {
+  color: #e5e7eb;
+  background: #334155;
+}
+
+.word-guess-keyboard {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: center;
+}
+
+.word-guess-keyboard-row {
+  display: flex;
+  gap: 0.3rem;
+  justify-content: center;
+}
+
+.word-guess-key,
+.word-guess-actions button {
+  border-radius: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  color: #e5e7eb;
+  background: #334155;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.word-guess-key {
+  min-width: 2.1rem;
+}
+
+.word-guess-key.wide {
+  min-width: 4.25rem;
+}
+
+.word-guess-key.correct {
+  color: #0f172a;
+  background: #a7f3d0;
+}
+
+.word-guess-key.present {
+  color: #0f172a;
+  background: #facc15;
+}
+
+.word-guess-key.absent {
+  color: #e5e7eb;
+  background: #1e293b;
+}
+
+.word-guess-key:disabled,
+.word-guess-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.word-guess-key:hover:not(:disabled),
+.word-guess-key:focus-visible,
+.word-guess-actions button:hover:not(:disabled),
+.word-guess-actions button:focus-visible {
+  box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.28);
+  outline: none;
+}
+
+.word-guess-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+.word-guess-actions button:first-child {
+  color: #0f172a;
+  background: #a7f3d0;
+}
+
+@media (max-width: 620px) {
+  .word-guess-key {
+    min-width: 1.65rem;
+    padding: 0.55rem 0.45rem;
+    font-size: 0.8rem;
+  }
+
+  .word-guess-key.wide {
+    min-width: 3.35rem;
+  }
+}
