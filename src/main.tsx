@@ -4,6 +4,7 @@ import "./styles.css";
 import "./site/solitaire.css";
 import "./site/sudoku.css";
 import "./site/nonogram.css";
+import "./site/word-guess.css";
 import "./site/base.css";
 import "./site/tabs.css";
 import "./site/views.css";
