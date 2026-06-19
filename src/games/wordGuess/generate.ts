@@ -41,10 +41,6 @@ export const generateWordGuess: PuzzleGenerator = ({ seed, width, height }) => {
     height: maxGuesses,
     cells,
     answerKey: Array.from(answerWord),
-    notes: [
-      `${wordLength}-letter Word Guess with ${maxGuesses} attempts from ${wordBank.dictionaryId}.`,
-      "Guesses are checked with duplicate-aware exact and present letter feedback.",
-      "Classic mode is 5 letters and 6 guesses; custom modes use the same scoring contract.",
-    ],
+    notes: [],
   });
 };
