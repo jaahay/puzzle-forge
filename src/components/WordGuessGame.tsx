@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
-import { getWordGuessAnalysis } from "../games/wordle/analysis";
-import { scoreWordGuess, type WordGuessMark } from "../games/wordle/feedback";
-import { readWordGuessProgress, writeWordGuessProgress, type WordGuessProgressStatus } from "../games/wordle/progress";
-import { formatWordGuessShareText } from "../games/wordle/share";
-import { getWordGuessBank, isValidWordGuess } from "../games/wordle/words";
+import { getWordGuessAnalysis } from "../games/wordGuess/analysis";
+import { scoreWordGuess, type WordGuessMark } from "../games/wordGuess/feedback";
+import { readWordGuessProgress, writeWordGuessProgress, type WordGuessProgressStatus } from "../games/wordGuess/progress";
+import { formatWordGuessShareText } from "../games/wordGuess/share";
+import { getWordGuessBank, isValidWordGuess } from "../games/wordGuess/words";
 
 const keyboardRows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"] as const;
 type KeyboardMark = WordGuessMark | "unused";
