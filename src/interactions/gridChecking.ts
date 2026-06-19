@@ -1,6 +1,8 @@
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { pluralize } from "../app/runtime";
+import { scoreWordGuess, wordGuessMarkToTone } from "../games/wordle/feedback";
 import { buildNonogramCluesFromCells, sameNonogramClue, FILLED_NONOGRAM_CELL } from "../games/nonogram/solve";
+import { getWordGuessBank, isValidWordGuess } from "../games/wordle/words";
 import { cloneGridCell } from "./gridRules";
 
 const checkWordGuess = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) => {
@@ -10,13 +12,14 @@ const checkWordGuess = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[])
     return { cells, message: "No checker is available for this word puzzle." };
   }
 
+  const wordBank = getWordGuessBank(currentPuzzle.width);
   let completeGuessCount = 0;
   let solved = false;
   const nextCells = cells.map(cloneGridCell);
 
   for (let row = 0; row < currentPuzzle.height; row += 1) {
     const rowCells = nextCells.filter((candidate) => candidate.row === row).sort((left, right) => left.column - right.column);
-    const guess = rowCells.map((candidate) => candidate.value).join("");
+    const guess = rowCells.map((candidate) => candidate.value).join("").toUpperCase();
     const hasAnyLetter = rowCells.some((candidate) => candidate.value);
     const isComplete = rowCells.every((candidate) => candidate.value);
 
@@ -28,27 +31,31 @@ const checkWordGuess = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[])
       return { cells: nextCells, message: `Row ${row + 1} is incomplete.` };
     }
 
+    if (!isValidWordGuess(guess, wordBank)) {
+      return { cells: nextCells, message: `${guess} is not in the ${wordBank.length}-letter guess list.` };
+    }
+
+    const marks = scoreWordGuess(solutionWord, guess);
     completeGuessCount += 1;
     solved = solved || guess === solutionWord;
 
     for (const rowCell of rowCells) {
-      const expected = solutionWord[rowCell.column] ?? "";
-      const exact = rowCell.value === expected;
-      const present = !exact && solutionWord.includes(rowCell.value);
-      rowCell.tone = exact ? "answer" : present ? "hint" : "empty";
+      const mark = marks[rowCell.column] ?? "absent";
+      rowCell.tone = wordGuessMarkToTone(mark);
+      rowCell.ariaLabel = `${rowCell.value || "Empty"} Word Guess cell at row ${rowCell.row + 1}, column ${rowCell.column + 1}, ${mark}`;
     }
   }
 
   if (completeGuessCount === 0) {
-    return { cells: nextCells, message: "Enter a complete five-letter guess, then check it." };
+    return { cells: nextCells, message: `Enter a complete ${currentPuzzle.width}-letter guess, then check it.` };
   }
 
   if (solved) {
-    return { cells: nextCells, message: `Solved. The word is ${solutionWord}.` };
+    return { cells: nextCells, message: `Solved in ${completeGuessCount}/${currentPuzzle.height}. The word is ${solutionWord}.` };
   }
 
   if (completeGuessCount >= currentPuzzle.height) {
-    return { cells: nextCells, message: "No match in the available attempts." };
+    return { cells: nextCells, message: `No match in the available attempts. The word was ${solutionWord}.` };
   }
 
   return { cells: nextCells, message: `Not solved yet. ${currentPuzzle.height - completeGuessCount} attempt(s) remain.` };
