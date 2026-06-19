@@ -266,26 +266,38 @@ export const PuzzleWorkspace = ({
                 </div>
               ) : null}
 
-              <label>
-                Seed
-                <input
-                  value={seed}
-                  onBlur={(event) => onSettingsCommit({ seed: event.currentTarget.value })}
-                  onInput={(event) => onSeedChange(event.currentTarget.value)}
-                  onKeyDown={blurOnEnter}
-                />
-              </label>
-
               {isNonogram ? (
-                <label class="puzzle-checkbox-control">
+                <div class="puzzle-generation-options" aria-label="Nonogram generation options">
+                  <label>
+                    Seed
+                    <input
+                      value={seed}
+                      onBlur={(event) => onSettingsCommit({ seed: event.currentTarget.value })}
+                      onInput={(event) => onSeedChange(event.currentTarget.value)}
+                      onKeyDown={blurOnEnter}
+                    />
+                  </label>
+
+                  <label class="puzzle-checkbox-control">
+                    <input
+                      checked={requireUniqueSolution}
+                      onChange={(event) => onUniqueSolutionChange(event.currentTarget.checked)}
+                      type="checkbox"
+                    />
+                    <span>Unique solution</span>
+                  </label>
+                </div>
+              ) : (
+                <label>
+                  Seed
                   <input
-                    checked={requireUniqueSolution}
-                    onChange={(event) => onUniqueSolutionChange(event.currentTarget.checked)}
-                    type="checkbox"
+                    value={seed}
+                    onBlur={(event) => onSettingsCommit({ seed: event.currentTarget.value })}
+                    onInput={(event) => onSeedChange(event.currentTarget.value)}
+                    onKeyDown={blurOnEnter}
                   />
-                  <span>Unique</span>
                 </label>
-              ) : null}
+              )}
 
               <div class="puzzle-settings-actions">
                 <button type="button" onClick={onRandomize} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
