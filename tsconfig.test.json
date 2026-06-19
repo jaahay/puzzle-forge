@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": false,
+    "outDir": ".test-build",
+    "rootDir": ".",
+    "types": []
+  },
+  "include": ["src/games/wordle/**/*.ts", "tests/**/*.ts"]
+}
