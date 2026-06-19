@@ -1,18 +1,26 @@
 import type { PuzzleGenerator } from "../../catalog/types";
-import { createGeneratedPuzzle, createRandom, normalizeSeed } from "../shared";
+import { createGeneratedPuzzle, createRandom, normalizeDimension, normalizeSeed } from "../shared";
+import {
+  DEFAULT_WORD_GUESS_GUESSES,
+  DEFAULT_WORD_GUESS_LENGTH,
+  getWordGuessBank,
+  WORD_GUESS_MAX_GUESSES,
+  WORD_GUESS_MAX_LENGTH,
+  WORD_GUESS_MIN_GUESSES,
+  WORD_GUESS_MIN_LENGTH,
+} from "./words";
 
-const WORDS = ["FORGE", "LOGIC", "GRIDS", "CLUES", "SOLVE", "BRAIN", "LEVEL", "CHAIN"];
-const ROWS = 6;
-const COLUMNS = 5;
-
-export const generateWordGuess: PuzzleGenerator = ({ seed }) => {
+export const generateWordGuess: PuzzleGenerator = ({ seed, width, height }) => {
   const normalizedSeed = normalizeSeed(seed);
-  const random = createRandom(`word-guess:${normalizedSeed}`);
-  const answerWord = WORDS[Math.floor(random() * WORDS.length)] ?? WORDS[0];
+  const wordLength = normalizeDimension(width, DEFAULT_WORD_GUESS_LENGTH, WORD_GUESS_MIN_LENGTH, WORD_GUESS_MAX_LENGTH);
+  const maxGuesses = normalizeDimension(height, DEFAULT_WORD_GUESS_GUESSES, WORD_GUESS_MIN_GUESSES, WORD_GUESS_MAX_GUESSES);
+  const wordBank = getWordGuessBank(wordLength);
+  const random = createRandom(`word-guess:${wordBank.dictionaryId}:${wordLength}:${maxGuesses}:${normalizedSeed}`);
+  const answerWord = wordBank.answers[Math.floor(random() * wordBank.answers.length)] ?? wordBank.answers[0] ?? "FORGE";
 
-  const cells = Array.from({ length: ROWS * COLUMNS }, (_, index) => {
-    const row = Math.floor(index / COLUMNS);
-    const column = index % COLUMNS;
+  const cells = Array.from({ length: maxGuesses * wordLength }, (_, index) => {
+    const row = Math.floor(index / wordLength);
+    const column = index % wordLength;
 
     return {
       row,
@@ -25,17 +33,18 @@ export const generateWordGuess: PuzzleGenerator = ({ seed }) => {
   });
 
   return createGeneratedPuzzle({
-    id: `word-guess-${normalizedSeed}`,
+    id: `word-guess-${wordLength}x${maxGuesses}-${normalizedSeed}`,
     puzzleId: "word-guess",
     title: "Word Guess",
     seed: normalizedSeed,
-    width: COLUMNS,
-    height: ROWS,
+    width: wordLength,
+    height: maxGuesses,
     cells,
     answerKey: Array.from(answerWord),
     notes: [
-      "Type five-letter guesses into the grid, then use Check to judge exact and present letters.",
-      "Prototype uses a small built-in word list so the catalog can render without external data.",
+      `${wordLength}-letter Word Guess with ${maxGuesses} attempts from ${wordBank.dictionaryId}.`,
+      "Guesses are checked with duplicate-aware exact and present letter feedback.",
+      "Classic mode is 5 letters and 6 guesses; custom modes use the same scoring contract.",
     ],
   });
 };
