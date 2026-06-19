@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { scoreWordGuess, type WordGuessMark } from "../games/wordle/feedback";
+import { readWordGuessProgress, writeWordGuessProgress, type WordGuessProgressStatus } from "../games/wordle/progress";
 import { formatWordGuessShareText } from "../games/wordle/share";
 import { getWordGuessBank, isValidWordGuess } from "../games/wordle/words";
 
@@ -37,18 +38,75 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
   const wordBank = useMemo(() => getWordGuessBank(puzzle.width), [puzzle.width]);
   const rows = useMemo(() => getRows(cells, puzzle.height), [cells, puzzle.height]);
   const [submittedRows, setSubmittedRows] = useState(0);
-  const [status, setStatus] = useState<"playing" | "won" | "lost">("playing");
+  const [status, setStatus] = useState<WordGuessProgressStatus>("playing");
   const [message, setMessage] = useState(`Type a ${puzzle.width}-letter word.`);
   const [copiedShare, setCopiedShare] = useState(false);
+  const restoredPuzzleId = useRef<string | null>(null);
+  const skipNextSave = useRef(false);
   const activeRow = status === "playing" ? submittedRows : -1;
-  const submittedGuesses = rows.slice(0, submittedRows).map(getGuess).filter((guess) => guess.length === puzzle.width);
+  const rowGuesses = rows.map(getGuess);
+  const submittedGuesses = rowGuesses.slice(0, submittedRows).filter((guess) => guess.length === puzzle.width);
 
   useEffect(() => {
+    if (restoredPuzzleId.current === puzzle.id) {
+      return;
+    }
+
+    restoredPuzzleId.current = puzzle.id;
+    skipNextSave.current = true;
     setSubmittedRows(0);
     setStatus("playing");
     setMessage(`Type a ${puzzle.width}-letter word.`);
     setCopiedShare(false);
-  }, [puzzle.id, puzzle.width]);
+
+    const saved = readWordGuessProgress(puzzle.id);
+
+    if (saved && saved.puzzleId === puzzle.id && saved.wordLength === puzzle.width && saved.maxGuesses === puzzle.height) {
+      const restoredGuesses = saved.guesses.slice(0, puzzle.height).map((guess) => guess.toUpperCase().slice(0, puzzle.width));
+      const restoredSubmittedRows = saved.status === "playing" ? Math.max(0, restoredGuesses.length - 1) : restoredGuesses.length;
+
+      restoredGuesses.forEach((guess, rowIndex) => {
+        const rowCells = rows[rowIndex] ?? [];
+        Array.from(guess).forEach((letter, columnIndex) => {
+          const cell = rowCells[columnIndex];
+          if (cell && cell.value !== letter) {
+            onCellInput(cell, letter);
+          }
+        });
+      });
+
+      setSubmittedRows(restoredSubmittedRows);
+      setStatus(saved.status);
+      setMessage(
+        saved.status === "won"
+          ? `Solved in ${restoredSubmittedRows}/${puzzle.height}.`
+          : saved.status === "lost"
+            ? `No match. The word was ${answer}.`
+            : restoredSubmittedRows > 0
+              ? `${puzzle.height - restoredSubmittedRows} attempt(s) remain.`
+              : `Type a ${puzzle.width}-letter word.`,
+      );
+    }
+
+    window.setTimeout(() => {
+      skipNextSave.current = false;
+    }, 0);
+  }, [answer, onCellInput, puzzle.id, puzzle.height, puzzle.width, rows]);
+
+  useEffect(() => {
+    if (skipNextSave.current) {
+      return;
+    }
+
+    const guesses = rowGuesses.slice(0, status === "playing" ? submittedRows + 1 : submittedRows).filter(Boolean);
+    writeWordGuessProgress({
+      puzzleId: puzzle.id,
+      wordLength: puzzle.width,
+      maxGuesses: puzzle.height,
+      guesses,
+      status,
+    });
+  }, [puzzle.id, puzzle.height, puzzle.width, rowGuesses, status, submittedRows]);
 
   const submitGuess = () => {
     if (status !== "playing") {
