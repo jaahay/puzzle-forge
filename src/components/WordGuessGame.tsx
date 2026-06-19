@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
+import { getWordGuessAnalysis } from "../games/wordle/analysis";
 import { scoreWordGuess, type WordGuessMark } from "../games/wordle/feedback";
 import { readWordGuessProgress, writeWordGuessProgress, type WordGuessProgressStatus } from "../games/wordle/progress";
 import { formatWordGuessShareText } from "../games/wordle/share";
@@ -13,6 +14,13 @@ const markRank: Record<KeyboardMark, number> = {
   present: 2,
   correct: 3,
 };
+
+const difficultyLabels = {
+  gentle: "Gentle",
+  steady: "Steady",
+  sharp: "Sharp",
+  severe: "Severe",
+} as const;
 
 type WordGuessGameProps = {
   puzzle: GridGeneratedPuzzle;
@@ -41,11 +49,15 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
   const [status, setStatus] = useState<WordGuessProgressStatus>("playing");
   const [message, setMessage] = useState(`Type a ${puzzle.width}-letter word.`);
   const [copiedShare, setCopiedShare] = useState(false);
+  const [hardMode, setHardMode] = useState(false);
   const restoredPuzzleId = useRef<string | null>(null);
   const skipNextSave = useRef(false);
   const activeRow = status === "playing" ? submittedRows : -1;
   const rowGuesses = rows.map(getGuess);
   const submittedGuesses = rowGuesses.slice(0, submittedRows).filter((guess) => guess.length === puzzle.width);
+  const submittedGuessKey = submittedGuesses.join("|");
+  const analysis = useMemo(() => getWordGuessAnalysis(answer, submittedGuesses, wordBank), [answer, submittedGuessKey, wordBank]);
+  const visibleCandidates = analysis.currentCandidates.slice(0, 8);
 
   useEffect(() => {
     if (restoredPuzzleId.current === puzzle.id) {
@@ -58,6 +70,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     setStatus("playing");
     setMessage(`Type a ${puzzle.width}-letter word.`);
     setCopiedShare(false);
+    setHardMode(false);
 
     const saved = readWordGuessProgress(puzzle.id);
 
@@ -123,6 +136,11 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
 
     if (!isValidWordGuess(guess, wordBank)) {
       setMessage(`${guess} is not in the ${wordBank.length}-letter guess list.`);
+      return;
+    }
+
+    if (hardMode && submittedGuesses.length > 0 && !analysis.currentCandidates.includes(guess)) {
+      setMessage(`Hard mode: ${guess} is ruled out by previous feedback.`);
       return;
     }
 
@@ -217,7 +235,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     }
 
     return marks;
-  }, [answer, submittedGuesses]);
+  }, [answer, submittedGuessKey]);
 
   const shareText = formatWordGuessShareText({
     title: puzzle.title,
@@ -267,6 +285,50 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
           );
         })}
       </div>
+
+      <section class="word-guess-analysis" aria-label="Word Guess deduction analysis">
+        <div class="word-guess-analysis-header">
+          <div>
+            <strong>{analysis.candidateCount}</strong>
+            <span>possible answer{analysis.candidateCount === 1 ? "" : "s"} remain</span>
+          </div>
+          <div>
+            <strong>{difficultyLabels[analysis.difficultyBand]}</strong>
+            <span>difficulty estimate</span>
+          </div>
+          <div>
+            <strong>{analysis.bestStarter.guess || "—"}</strong>
+            <span>solver starter</span>
+          </div>
+        </div>
+
+        <label class="word-guess-hard-mode">
+          <input type="checkbox" checked={hardMode} onChange={(event) => setHardMode(event.currentTarget.checked)} disabled={status !== "playing" && submittedRows > 0} />
+          <span>Hard mode: guesses must remain possible under prior feedback.</span>
+        </label>
+
+        {analysis.steps.length > 0 ? (
+          <ol class="word-guess-candidate-steps">
+            {analysis.steps.map((step, index) => (
+              <li key={`${step.guess}-${index}`}>
+                <strong>{step.guess}</strong>
+                <span>{step.before} → {step.after}</span>
+                <span>{step.eliminated} eliminated</span>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p class="word-guess-analysis-note">
+            Best starter leaves about {analysis.bestStarter.averageRemaining.toFixed(1)} answers on average; worst bucket is {analysis.bestStarter.worstBucket}.
+          </p>
+        )}
+
+        {visibleCandidates.length > 0 ? (
+          <p class="word-guess-candidate-preview">
+            Candidates: {visibleCandidates.join(", ")}{analysis.currentCandidates.length > visibleCandidates.length ? ", …" : ""}
+          </p>
+        ) : null}
+      </section>
 
       <div class="word-guess-keyboard" aria-label="Word Guess keyboard">
         {keyboardRows.map((row, rowIndex) => (
