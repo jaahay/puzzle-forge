@@ -4,7 +4,7 @@ import { generateNonogram } from "./nonogram/generate";
 import { generatePegSolitaire } from "./pegSolitaire/generate";
 import { generateSolitaire } from "./solitaire/generate";
 import { generateSudoku } from "./sudoku/generate";
-import { generateWordGuess } from "./wordle/generate";
+import { generateWordGuess } from "./wordGuess/generate";
 
 const generators: Partial<Record<PuzzleId, PuzzleGenerator>> = {
   sudoku: generateSudoku,
