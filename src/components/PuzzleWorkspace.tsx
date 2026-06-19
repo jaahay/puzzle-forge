@@ -1,4 +1,5 @@
 import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition, PuzzleDifficulty, PuzzleGenerationRequest } from "../catalog/types";
+import { getWordGuessDailyLabel, getWordGuessDailySeed } from "../games/wordle/daily";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
@@ -93,11 +94,13 @@ export const PuzzleWorkspace = ({
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
   const filledOpenCount = getFilledOpenCount(gridCells);
   const openCount = getOpenCount(gridCells);
+  const wordGuessDailyLabel = isWordGuess && puzzle ? getWordGuessDailyLabel(puzzle.seed) : null;
   const showSudokuValidationMessage =
     isSudoku && (statusMessage.startsWith("Sudoku solved") || statusMessage.startsWith("Sudoku validation"));
   const showNonogramValidationMessage = isNonogram && (statusMessage.startsWith("Solved") || statusMessage.startsWith("Not solved"));
   const sudokuValidationTone = statusMessage.startsWith("Sudoku solved") ? "success" : statusMessage.includes("incorrect") ? "error" : "progress";
   const nonogramValidationTone = statusMessage.startsWith("Solved") ? "success" : "error";
+  const generateWordGuessDaily = () => onSettingsCommit({ seed: getWordGuessDailySeed(), width, height });
 
   return (
     <section class={`workspace-panel ${isSudoku ? "sudoku-workspace" : ""} ${isNonogram ? "nonogram-workspace" : ""}`} aria-label="Selected puzzle workspace">
@@ -152,6 +155,11 @@ export const PuzzleWorkspace = ({
           )}
 
           <div class="control-actions">
+            {isWordGuess ? (
+              <button type="button" onClick={generateWordGuessDaily} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
+                Today
+              </button>
+            ) : null}
             <button type="button" onClick={onGenerate} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
               {isGenerating ? "Generating..." : "Generate"}
             </button>
@@ -186,7 +194,15 @@ export const PuzzleWorkspace = ({
             {puzzle.kind === "cards" ? <span>52-card deal</span> : isSudoku ? null : <span>{`${puzzle.width} x ${puzzle.height}`}</span>}
             {puzzle.difficulty ? <span>{puzzle.difficulty}</span> : null}
             {isNonogram ? <span>{puzzle.uniqueSolution ? "Unique" : "Open"}</span> : null}
-            {isSudoku ? <span>{getGivenCount(gridCells)} givens</span> : isNonogram ? <span>{filledOpenCount}/{openCount} filled</span> : <span>Seed: {puzzle.seed}</span>}
+            {isSudoku ? (
+              <span>{getGivenCount(gridCells)} givens</span>
+            ) : isNonogram ? (
+              <span>{filledOpenCount}/{openCount} filled</span>
+            ) : wordGuessDailyLabel ? (
+              <span>Daily: {wordGuessDailyLabel}</span>
+            ) : (
+              <span>Seed: {puzzle.seed}</span>
+            )}
             {isSudoku ? <span>{filledOpenCount}/{openCount} filled</span> : null}
           </div>
 
