@@ -9,6 +9,7 @@ import "./site/base.css";
 import "./site/tabs.css";
 import "./site/views.css";
 import "./site/footer.css";
+import "./site/mobile-workspace.css";
 
 const root = document.getElementById("app");
 
