@@ -29,7 +29,7 @@ const withMockStorage = (testBody: (storage: Map<string, string>) => void) => {
 
 describe("Word Guess hardening", () => {
   it("handles duplicate letters with exact remaining-letter accounting", () => {
-    expect(scoreWordGuess("BALMY", "ALLEY")).toEqual(["present", "present", "absent", "absent", "correct"]);
+    expect(scoreWordGuess("BALMY", "ALLEY")).toEqual(["present", "absent", "correct", "absent", "correct"]);
     expect(scoreWordGuess("APPLE", "PAPER")).toEqual(["present", "present", "correct", "present", "absent"]);
     expect(scoreWordGuess("SHEEP", "PEELS")).toEqual(["present", "present", "correct", "absent", "present"]);
   });
