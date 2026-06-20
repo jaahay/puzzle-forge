@@ -1,0 +1,27 @@
+{
+  "id": "/",
+  "name": "Puzzle Forge",
+  "short_name": "Puzzle Forge",
+  "description": "Generate, solve, and experiment with seeded procedural logic puzzles.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#111827",
+  "theme_color": "#111827",
+  "categories": ["games", "entertainment", "productivity"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/maskable-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
