@@ -1,3 +1,4 @@
+import { getPuzzleAvailability } from "../catalog/puzzleAvailability";
 import { puzzleCatalog } from "../catalog/puzzleCatalog";
 import type { PuzzleDefinition, PuzzleId } from "../catalog/types";
 
@@ -13,11 +14,9 @@ const shortLabels: Partial<Record<PuzzleId, string>> = {
   slitherlink: "SL",
 };
 
-const shortLabelForPuzzle = (definition: PuzzleDefinition) => shortLabels[definition.id] ?? definition.title.slice(0, 2).toUpperCase();
-const readyPuzzles = puzzleCatalog.filter((definition) => definition.status === "playable");
-const previewPuzzles = puzzleCatalog.filter((definition) => definition.status === "prototype");
-const plannedPuzzles = puzzleCatalog.filter((definition) => definition.status === "planned");
+const { readyPuzzles, previewPuzzles, plannedPuzzles } = getPuzzleAvailability();
 
+const shortLabelForPuzzle = (definition: PuzzleDefinition) => shortLabels[definition.id] ?? definition.title.slice(0, 2).toUpperCase();
 const statusLabel = (status: PuzzleDefinition["status"]) => {
   if (status === "planned") {
     return "Coming soon";
