@@ -51,6 +51,16 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
       onCellInput(selectedCell, value);
     }
   };
+  const handleSudokuKeyDown = (event: KeyboardEvent, cell: PuzzleCell) => {
+    if (!isSudoku || cell.locked) {
+      return;
+    }
+
+    if (event.key === "Backspace" || event.key === "Delete") {
+      event.preventDefault();
+      onCellInput(cell, "");
+    }
+  };
 
   useEffect(() => {
     if (!isSudoku || !selectedCell || typeof document === "undefined") {
@@ -120,6 +130,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
               onClick={isSudoku ? undefined : () => onCellClick(cell)}
               onFocus={() => onCellClick(cell)}
               onInput={(event) => onCellInput(cell, isSudoku ? getSudokuInputValue(event.currentTarget.value) : event.currentTarget.value)}
+              onKeyDown={isSudoku ? (event) => handleSudokuKeyDown(event, cell) : undefined}
               readOnly={!isEditable}
               value={cell.value}
             />
@@ -169,8 +180,8 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
               {digit}
             </button>
           ))}
-          <button type="button" disabled={!canUseDigitPad} onClick={() => setSelectedSudokuValue("")}>
-            0 Clear
+          <button class="sudoku-clear-button" type="button" disabled={!canUseDigitPad} onClick={() => setSelectedSudokuValue("")}>
+            Clear
           </button>
         </div>
       ) : null}
