@@ -8,6 +8,7 @@ import "./site/word-guess.css";
 import "./site/base.css";
 import "./site/tabs.css";
 import "./site/views.css";
+import "./site/app-shell.css";
 import "./site/footer.css";
 
 const root = document.getElementById("app");
