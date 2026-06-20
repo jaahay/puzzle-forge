@@ -6,7 +6,8 @@ type AppShellProps = {
   children: ComponentChildren;
 };
 
-const viewLinks: { href: `#${AppView}`; label: string; view: AppView }[] = [
+const viewLinks: { href: string; label: string; view?: AppView; external?: boolean }[] = [
+  { href: "https://github.com/jaahay/puzzle-forge", label: "Source", external: true },
   { href: "#changelog", label: "Updates", view: "changelog" },
   { href: "#about", label: "About", view: "about" },
 ];
@@ -23,7 +24,12 @@ export const AppShell = ({ activeView, children }: AppShellProps) => (
 
       <nav class="app-nav" aria-label="Puzzle Workbench pages">
         {viewLinks.map((link) => (
-          <a href={link.href} aria-current={activeView === link.view ? "page" : undefined} key={link.view}>
+          <a
+            href={link.href}
+            aria-current={link.view && activeView === link.view ? "page" : undefined}
+            key={link.label}
+            rel={link.external ? "noreferrer" : undefined}
+          >
             {link.label}
           </a>
         ))}
