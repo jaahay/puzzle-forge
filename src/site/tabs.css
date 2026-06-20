@@ -1,29 +1,76 @@
-.app-tabs {
+.app-header {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem;
-  margin-top: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1.25rem;
+  padding: 0.8rem 1rem;
+  background: rgba(15, 23, 42, 0.78);
+  box-shadow: 0 18px 54px rgba(2, 6, 23, 0.28);
 }
 
-.app-tabs a {
-  border: 1px solid rgba(167, 243, 208, 0.34);
+.app-brand,
+.app-nav a {
+  display: inline-flex;
+  align-items: center;
   border-radius: 999px;
+  text-decoration: none;
+}
+
+.app-brand {
+  gap: 0.6rem;
+  color: #f8fafc;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+
+.app-brand-mark {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: 0.7rem;
+  color: #0f172a;
+  background: #a7f3d0;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.app-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.app-nav a {
+  border: 1px solid rgba(167, 243, 208, 0.34);
   padding: 0.45rem 0.8rem;
   color: #a7f3d0;
   font-size: 0.78rem;
   font-weight: 900;
   letter-spacing: 0.08em;
-  text-decoration: none;
   text-transform: uppercase;
 }
 
-.app-tabs a[aria-current="page"] {
+.app-brand[aria-current="page"],
+.app-nav a[aria-current="page"] {
   color: #0f172a;
   background: #a7f3d0;
 }
 
-.app-tabs a:hover,
-.app-tabs a:focus-visible {
+.app-brand[aria-current="page"] .app-brand-mark {
+  color: #a7f3d0;
+  background: #0f172a;
+}
+
+.app-brand:hover,
+.app-brand:focus-visible,
+.app-nav a:hover,
+.app-nav a:focus-visible {
   box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.22);
   outline: none;
 }
