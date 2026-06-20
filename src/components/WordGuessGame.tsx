@@ -13,6 +13,15 @@ const difficultyLabels = {
   severe: "Severe",
 } as const;
 
+const keyboardRows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
+const markRank = {
+  absent: 1,
+  present: 2,
+  correct: 3,
+} as const;
+
+type WordGuessMark = keyof typeof markRank;
+
 type WordGuessGameProps = {
   puzzle: GridGeneratedPuzzle;
   cells: PuzzleCell[];
@@ -30,6 +39,23 @@ const getGuess = (rowCells: PuzzleCell[]) => rowCells.map((cell) => cell.value).
 const getLetterFromKey = (key: string) => {
   const letter = key.toUpperCase();
   return letter.length === 1 && letter >= "A" && letter <= "Z" ? letter : "";
+};
+
+const getLetterMarks = (answer: string, submittedGuesses: string[]) => {
+  const marks: Partial<Record<string, WordGuessMark>> = {};
+
+  submittedGuesses.forEach((guess) => {
+    scoreWordGuess(answer, guess).forEach((mark, index) => {
+      const letter = guess[index];
+      const existingMark = marks[letter];
+
+      if (!existingMark || markRank[mark] > markRank[existingMark]) {
+        marks[letter] = mark;
+      }
+    });
+  });
+
+  return marks;
 };
 
 const restoreGuessIntoRow = (rowCells: PuzzleCell[], guess: string, onCellInput: (cell: PuzzleCell, value: string) => void) => {
@@ -58,6 +84,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
   const submittedGuesses = rowGuesses.slice(0, submittedRows).filter((guess) => guess.length === puzzle.width);
   const submittedGuessKey = submittedGuesses.join("|");
   const analysis = useMemo(() => getWordGuessAnalysis(answer, submittedGuesses, wordBank), [answer, submittedGuessKey, wordBank]);
+  const letterMarks = useMemo(() => getLetterMarks(answer, submittedGuesses), [answer, submittedGuessKey]);
 
   useEffect(() => {
     if (restoredPuzzleId.current === puzzle.id) {
@@ -246,7 +273,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     <section class="word-guess-game" aria-label={`${puzzle.width}-letter Word Guess game`}>
       <div class="word-guess-status" aria-live="polite">
         <strong>{message}</strong>
-        <span>Real words only. Type on your keyboard, press Enter to submit, Backspace to erase.</span>
+        <span>Use your keyboard or tap the on-screen keys. Enter submits; Backspace erases.</span>
       </div>
 
       <div class="word-guess-board" aria-label="Word Guess board">
@@ -270,6 +297,32 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
             </div>
           );
         })}
+      </div>
+
+      <div class="word-guess-keyboard" aria-label="Word Guess on-screen keyboard">
+        {keyboardRows.map((row, rowIndex) => (
+          <div class="word-guess-keyboard-row" key={row}>
+            {rowIndex === 2 ? (
+              <button class="word-guess-key wide" type="button" onClick={submitGuess} disabled={status !== "playing"}>
+                Enter
+              </button>
+            ) : null}
+            {Array.from(row).map((letter) => {
+              const mark = letterMarks[letter];
+
+              return (
+                <button class={`word-guess-key ${mark ?? "unknown"}`} key={letter} type="button" onClick={() => inputLetter(letter)} disabled={status !== "playing"}>
+                  {letter}
+                </button>
+              );
+            })}
+            {rowIndex === 2 ? (
+              <button class="word-guess-key wide" type="button" onClick={backspace} disabled={status !== "playing"} aria-label="Backspace">
+                ⌫
+              </button>
+            ) : null}
+          </div>
+        ))}
       </div>
 
       <div class="word-guess-actions">
