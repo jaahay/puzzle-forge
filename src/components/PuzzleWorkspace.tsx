@@ -1,3 +1,4 @@
+import { useState } from "preact/hooks";
 import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition, PuzzleDifficulty, PuzzleGenerationRequest } from "../catalog/types";
 import { getWordGuessDailyLabel, getWordGuessDailySeed } from "../games/wordGuess/daily";
 import type { CardSelection } from "../interactions/cardRules";
@@ -87,6 +88,7 @@ export const PuzzleWorkspace = ({
   onCellClick,
   onCellInput,
 }: PuzzleWorkspaceProps) => {
+  const [seedCopied, setSeedCopied] = useState(false);
   const isSudoku = selectedDefinition.id === "sudoku";
   const isNonogram = selectedDefinition.id === "nonogram";
   const isWordGuess = selectedDefinition.id === "word-guess";
@@ -101,6 +103,28 @@ export const PuzzleWorkspace = ({
   const sudokuValidationTone = statusMessage.startsWith("Sudoku solved") ? "success" : statusMessage.includes("incorrect") ? "error" : "progress";
   const nonogramValidationTone = statusMessage.startsWith("Solved") ? "success" : "error";
   const generateWordGuessDaily = () => onSettingsCommit({ seed: getWordGuessDailySeed(), width, height });
+  const copySeed = async () => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      await navigator.clipboard.writeText(seed);
+    }
+
+    setSeedCopied(true);
+
+    if (typeof window !== "undefined") {
+      window.setTimeout(() => setSeedCopied(false), 1400);
+    }
+  };
+  const seedInput = (
+    <div class="seed-control">
+      <input
+        value={seed}
+        onBlur={(event) => onSettingsCommit({ seed: event.currentTarget.value })}
+        onInput={(event) => onSeedChange(event.currentTarget.value)}
+        onKeyDown={blurOnEnter}
+      />
+      <button type="button" onClick={copySeed}>{seedCopied ? "Copied" : "Copy"}</button>
+    </div>
+  );
 
   return (
     <section class={`workspace-panel ${isSudoku ? "sudoku-workspace" : ""} ${isNonogram ? "nonogram-workspace" : ""}`} aria-label="Selected puzzle workspace">
@@ -121,7 +145,7 @@ export const PuzzleWorkspace = ({
         <div class="control-panel" aria-label="Puzzle controls">
           <label>
             Seed
-            <input value={seed} onInput={(event) => onSeedChange(event.currentTarget.value)} />
+            {seedInput}
           </label>
 
           {isFixedSize ? null : (
@@ -164,7 +188,7 @@ export const PuzzleWorkspace = ({
               {isGenerating ? "Generating..." : "Generate"}
             </button>
             <button type="button" onClick={onRandomize} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-              Randomize
+              New puzzle
             </button>
           </div>
         </div>
@@ -203,7 +227,8 @@ export const PuzzleWorkspace = ({
             ) : (
               <span>Seed: {puzzle.seed}</span>
             )}
-            {isSudoku ? <span>{filledOpenCount}/{openCount} filled</span> : null}
+            {isSudoku ? <span>Progress: {filledOpenCount} of {openCount}</span> : null}
+            {isSudoku ? <span>Seed: {puzzle.seed}</span> : null}
           </div>
 
           {puzzle.kind === "cards" && cardStacks ? (
@@ -301,12 +326,7 @@ export const PuzzleWorkspace = ({
                 <div class="puzzle-generation-options" aria-label="Nonogram generation options">
                   <label>
                     Seed
-                    <input
-                      value={seed}
-                      onBlur={(event) => onSettingsCommit({ seed: event.currentTarget.value })}
-                      onInput={(event) => onSeedChange(event.currentTarget.value)}
-                      onKeyDown={blurOnEnter}
-                    />
+                    {seedInput}
                   </label>
 
                   <label class="puzzle-checkbox-control">
@@ -321,22 +341,17 @@ export const PuzzleWorkspace = ({
               ) : (
                 <label>
                   Seed
-                  <input
-                    value={seed}
-                    onBlur={(event) => onSettingsCommit({ seed: event.currentTarget.value })}
-                    onInput={(event) => onSeedChange(event.currentTarget.value)}
-                    onKeyDown={blurOnEnter}
-                  />
+                  {seedInput}
                 </label>
               )}
 
               <div class="puzzle-settings-actions">
                 <button type="button" onClick={onRandomize} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-                  Randomize
+                  New puzzle
                 </button>
               </div>
 
-              {isSudoku ? <p class="sudoku-input-hint">Type 1-9. Press 0 to clear. Click outside the board to deselect.</p> : null}
+              {isSudoku ? <p class="sudoku-input-hint">Select an empty cell, then type 1-9 or tap a number. Press 0, Backspace, or Clear to empty a cell.</p> : null}
             </div>
           ) : null}
 
