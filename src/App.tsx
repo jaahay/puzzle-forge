@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { createPuzzleSessionCache, getPuzzleSession, putPuzzleSession } from "./app/sessionCache";
 import { getPuzzleAvailability } from "./catalog/puzzleAvailability";
 import { getPuzzleDefinition, isGeneratable } from "./catalog/puzzleCatalog";
 import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleGenerationRequest, PuzzleGenerationResponse, PuzzleId } from "./catalog/types";
@@ -9,7 +10,7 @@ import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
 import { StartView } from "./components/StartView";
 import { defaultSudokuDifficulty, getActiveView, makeRandomSeed, makeRequestId } from "./app/runtime";
-import { initialSolitaireStats, type PuzzleSession, type PuzzleSessionCache, type SolitaireStats } from "./app/session";
+import { initialSolitaireStats, type PuzzleSession, type SolitaireStats } from "./app/session";
 import {
   canMoveToFoundation,
   canMoveToTableau,
@@ -52,7 +53,7 @@ export const App = () => {
   const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(true);
   const [hasSelectedPuzzle, setHasSelectedPuzzle] = useState(false);
   const activeRequestId = useRef<string | null>(null);
-  const sessionCache = useRef<PuzzleSessionCache>({});
+  const sessionCache = useRef(createPuzzleSessionCache());
   const worker = useMemo(
     () => new Worker(new URL("./workers/puzzleWorker.ts", import.meta.url), { type: "module" }),
     [],
@@ -74,7 +75,7 @@ export const App = () => {
   };
 
   const saveCurrentSession = () => {
-    sessionCache.current[selectedPuzzleId] = {
+    putPuzzleSession(sessionCache.current, selectedPuzzleId, {
       seed,
       width,
       height,
@@ -87,7 +88,7 @@ export const App = () => {
       gridCells: gridCells?.map(cloneGridCell) ?? null,
       selectedGridCell: selectedGridCell ? { ...selectedGridCell } : null,
       statusMessage,
-    };
+    });
   };
 
   const restoreSession = (puzzleId: PuzzleId, session: PuzzleSession) => {
@@ -649,7 +650,7 @@ export const App = () => {
       saveCurrentSession();
     }
 
-    const cachedSession = sessionCache.current[puzzleId];
+    const cachedSession = getPuzzleSession(sessionCache.current, puzzleId);
 
     if (cachedSession) {
       restoreSession(puzzleId, cachedSession);
