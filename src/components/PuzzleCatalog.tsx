@@ -2,22 +2,33 @@ import { puzzleCatalog } from "../catalog/puzzleCatalog";
 import type { PuzzleDefinition, PuzzleId } from "../catalog/types";
 
 const shortLabels: Partial<Record<PuzzleId, string>> = {
-  sudoku: "9×9",
-  nonogram: "▦",
+  sudoku: "9x9",
+  nonogram: "N",
   "word-guess": "W",
   "logic-grid": "LG",
-  "klondike-solitaire": "♠",
-  "peg-solitaire": "●",
+  "klondike-solitaire": "S",
+  "peg-solitaire": "PS",
   kenken: "K",
-  minesweeper: "✹",
-  slitherlink: "⟲",
+  minesweeper: "M",
+  slitherlink: "SL",
 };
 
 const shortLabelForPuzzle = (definition: PuzzleDefinition) => shortLabels[definition.id] ?? definition.title.slice(0, 2).toUpperCase();
-const playablePuzzles = puzzleCatalog.filter((definition) => definition.status === "playable");
-const plannedPuzzles = puzzleCatalog.filter((definition) => definition.status !== "playable");
+const readyPuzzles = puzzleCatalog.filter((definition) => definition.status === "playable");
+const previewPuzzles = puzzleCatalog.filter((definition) => definition.status === "prototype");
+const plannedPuzzles = puzzleCatalog.filter((definition) => definition.status === "planned");
 
-const statusLabel = (status: PuzzleDefinition["status"]) => (status === "planned" ? "Coming soon" : status);
+const statusLabel = (status: PuzzleDefinition["status"]) => {
+  if (status === "planned") {
+    return "Coming soon";
+  }
+
+  if (status === "prototype") {
+    return "Preview";
+  }
+
+  return "Ready";
+};
 
 type PuzzleCatalogProps = {
   isCollapsed: boolean;
@@ -36,7 +47,7 @@ export const PuzzleCatalog = ({
     <div class="panel-heading">
       <span class="catalog-count">Puzzles</span>
       <div class="catalog-heading-actions">
-        {isCollapsed ? null : <strong>{`${playablePuzzles.length} playable`}</strong>}
+        {isCollapsed ? null : <strong>{`${readyPuzzles.length} ready`}</strong>}
         <button
           aria-controls="puzzle-catalog-list"
           aria-expanded={!isCollapsed}
@@ -53,8 +64,9 @@ export const PuzzleCatalog = ({
       <div class="catalog-mini-list" id="puzzle-catalog-list">
         {puzzleCatalog.map((definition) => (
           <button
-            aria-label={definition.title}
+            aria-label={`${definition.title}${definition.status === "planned" ? " coming soon" : ""}`}
             class={definition.id === selectedPuzzleId ? "catalog-mini-card selected" : "catalog-mini-card"}
+            disabled={definition.status === "planned"}
             key={definition.id}
             onClick={() => onSelectPuzzle(definition.id)}
             type="button"
@@ -65,10 +77,10 @@ export const PuzzleCatalog = ({
       </div>
     ) : (
       <div class="catalog-sections" id="puzzle-catalog-list">
-        <section class="catalog-section" aria-label="Playable puzzles">
-          <p class="catalog-section-label">Play</p>
+        <section class="catalog-section" aria-label="Ready puzzles">
+          <p class="catalog-section-label">Ready</p>
           <div class="catalog-grid">
-            {playablePuzzles.map((definition) => (
+            {readyPuzzles.map((definition) => (
               <button
                 class={definition.id === selectedPuzzleId ? "catalog-card selected" : "catalog-card"}
                 key={definition.id}
@@ -82,16 +94,31 @@ export const PuzzleCatalog = ({
           </div>
         </section>
 
+        {previewPuzzles.length > 0 ? (
+          <section class="catalog-section" aria-label="Preview puzzles">
+            <p class="catalog-section-label">Preview</p>
+            <div class="catalog-grid">
+              {previewPuzzles.map((definition) => (
+                <button
+                  class={definition.id === selectedPuzzleId ? "catalog-card selected" : "catalog-card"}
+                  key={definition.id}
+                  type="button"
+                  onClick={() => onSelectPuzzle(definition.id)}
+                >
+                  <span class={`status ${definition.status}`}>{statusLabel(definition.status)}</span>
+                  <strong>{definition.title}</strong>
+                  <span>{definition.tagline}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <section class="catalog-section" aria-label="Coming soon puzzles">
           <p class="catalog-section-label">Coming soon</p>
           <div class="catalog-grid">
             {plannedPuzzles.map((definition) => (
-              <button
-                class={definition.id === selectedPuzzleId ? "catalog-card selected" : "catalog-card"}
-                key={definition.id}
-                type="button"
-                onClick={() => onSelectPuzzle(definition.id)}
-              >
+              <button class="catalog-card" disabled key={definition.id} type="button">
                 <span class={`status ${definition.status}`}>{statusLabel(definition.status)}</span>
                 <strong>{definition.title}</strong>
                 <span>{definition.tagline}</span>
