@@ -1,8 +1,8 @@
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { pluralize } from "../app/runtime";
-import { scoreWordGuess, wordGuessMarkToTone } from "../games/wordle/feedback";
+import { scoreWordGuess, wordGuessMarkToTone } from "../games/wordGuess/feedback";
 import { buildNonogramCluesFromCells, sameNonogramClue, FILLED_NONOGRAM_CELL } from "../games/nonogram/solve";
-import { getWordGuessBank, isValidWordGuess } from "../games/wordle/words";
+import { getWordGuessBank, isValidWordGuess } from "../games/wordGuess/words";
 import { cloneGridCell } from "./gridRules";
 
 const checkWordGuess = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) => {

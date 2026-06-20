@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Puzzle Forge maskable icon</title>
+  <desc id="desc">A safe-area Puzzle Forge icon for Android adaptive launchers.</desc>
+  <rect width="512" height="512" fill="#111827" />
+  <rect x="128" y="144" width="96" height="96" rx="18" fill="#a7f3d0" />
+  <rect x="288" y="144" width="96" height="96" rx="18" fill="#a7f3d0" />
+  <rect x="128" y="304" width="96" height="96" rx="18" fill="#a7f3d0" />
+  <rect x="288" y="304" width="96" height="96" rx="18" fill="#a7f3d0" />
+  <circle cx="336" cy="192" r="36" fill="#facc15" />
+  <path d="M154 362l30 30 64-82" fill="none" stroke="#111827" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M176 180h0M336 352h0" stroke="#111827" stroke-width="38" stroke-linecap="round" />
+</svg>

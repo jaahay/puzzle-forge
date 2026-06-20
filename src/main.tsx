@@ -8,7 +8,9 @@ import "./site/word-guess.css";
 import "./site/base.css";
 import "./site/tabs.css";
 import "./site/views.css";
+import "./site/app-shell.css";
 import "./site/footer.css";
+import "./site/mobile-workspace.css";
 
 const root = document.getElementById("app");
 
@@ -17,3 +19,11 @@ if (!root) {
 }
 
 render(<App />, root);
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch((error: unknown) => {
+      console.warn("Puzzle Forge service worker registration failed.", error);
+    });
+  });
+}

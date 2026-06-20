@@ -88,4 +88,3 @@ export const createGeneratedPuzzle = ({
   notes,
 });
 
-export const isGridPuzzle = (puzzle: GeneratedPuzzle): puzzle is GridGeneratedPuzzle => puzzle.kind === "grid";

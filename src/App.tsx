@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { getPuzzleAvailability } from "./catalog/puzzleAvailability";
 import { getPuzzleDefinition, isGeneratable } from "./catalog/puzzleCatalog";
 import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleGenerationRequest, PuzzleGenerationResponse, PuzzleId } from "./catalog/types";
 import { AboutView } from "./components/AboutView";
@@ -6,6 +7,7 @@ import { AppShell } from "./components/AppShell";
 import { ChangelogView } from "./components/ChangelogView";
 import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
+import { StartView } from "./components/StartView";
 import { defaultSudokuDifficulty, getActiveView, makeRandomSeed, makeRequestId } from "./app/runtime";
 import { initialSolitaireStats, type PuzzleSession, type PuzzleSessionCache, type SolitaireStats } from "./app/session";
 import {
@@ -45,15 +47,17 @@ export const App = () => {
   const [solitaireStats, setSolitaireStats] = useState<SolitaireStats>(initialSolitaireStats);
   const [gridCells, setGridCells] = useState<PuzzleCell[] | null>(null);
   const [selectedGridCell, setSelectedGridCell] = useState<GridCellSelection | null>(null);
-  const [statusMessage, setStatusMessage] = useState("Generating Sudoku...");
+  const [statusMessage, setStatusMessage] = useState("Pick a puzzle to start.");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(false);
+  const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(true);
+  const [hasSelectedPuzzle, setHasSelectedPuzzle] = useState(false);
   const activeRequestId = useRef<string | null>(null);
   const sessionCache = useRef<PuzzleSessionCache>({});
   const worker = useMemo(
     () => new Worker(new URL("./workers/puzzleWorker.ts", import.meta.url), { type: "module" }),
     [],
   );
+  const { readyPuzzles, previewPuzzles, plannedPuzzles } = useMemo(() => getPuzzleAvailability(), []);
   const selectedDefinition = getPuzzleDefinition(selectedPuzzleId);
   const selectedPuzzleIsGeneratable = isGeneratable(selectedDefinition);
 
@@ -87,6 +91,8 @@ export const App = () => {
   };
 
   const restoreSession = (puzzleId: PuzzleId, session: PuzzleSession) => {
+    setHasSelectedPuzzle(true);
+    setIsCatalogCollapsed(true);
     setSelectedPuzzleId(puzzleId);
     setSeed(session.seed);
     setWidth(session.width);
@@ -112,6 +118,9 @@ export const App = () => {
     requireUniqueSolution: generationRequireUniqueSolution = requireUniqueSolution,
   }: Partial<Omit<PuzzleGenerationRequest, "requestId">> = {}) => {
     const definition = getPuzzleDefinition(puzzleId);
+
+    setHasSelectedPuzzle(true);
+    setIsCatalogCollapsed(true);
 
     if (!isGeneratable(definition)) {
       setSelectedPuzzleId(puzzleId);
@@ -435,7 +444,7 @@ export const App = () => {
         return { cells, message: "Cell no longer exists." };
       }
 
-      const nextValue = current.value === "\u25a0" ? "" : "\u25a0";
+      const nextValue = current.value === "■" ? "" : "■";
       cells[index] = {
         ...current,
         value: nextValue,
@@ -632,11 +641,13 @@ export const App = () => {
   }, [worker]);
 
   const selectPuzzle = (puzzleId: PuzzleId) => {
-    if (puzzleId === selectedPuzzleId) {
+    if (puzzleId === selectedPuzzleId && hasSelectedPuzzle) {
       return;
     }
 
-    saveCurrentSession();
+    if (hasSelectedPuzzle) {
+      saveCurrentSession();
+    }
 
     const cachedSession = sessionCache.current[puzzleId];
 
@@ -746,56 +757,58 @@ export const App = () => {
     setRequireUniqueSolution(nextRequireUniqueSolution);
   };
 
-  useEffect(() => {
-    beginGeneration({ puzzleId: "sudoku", seed, width: 9, height: 9, difficulty: defaultSudokuDifficulty });
-    // Generate an initial random Sudoku board when the worker is ready.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <AppShell activeView={activeView}>
       {activeView === "catalog" ? (
-        <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
-          <PuzzleCatalog
-            isCollapsed={isCatalogCollapsed}
-            selectedPuzzleId={selectedPuzzleId}
-            selectedPuzzleTitle={selectedDefinition.title}
-            onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)}
+        hasSelectedPuzzle ? (
+          <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
+            <PuzzleCatalog
+              isCollapsed={isCatalogCollapsed}
+              selectedPuzzleId={selectedPuzzleId}
+              onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)}
+              onSelectPuzzle={selectPuzzle}
+            />
+
+            <PuzzleWorkspace
+              selectedDefinition={selectedDefinition}
+              selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
+              seed={seed}
+              width={width}
+              height={height}
+              difficulty={difficulty}
+              requireUniqueSolution={requireUniqueSolution}
+              puzzle={puzzle}
+              cardStacks={cardStacks}
+              selectedCard={selectedCard}
+              solitaireStats={solitaireStats}
+              gridCells={gridCells}
+              selectedGridCell={selectedGridCell}
+              statusMessage={statusMessage}
+              isGenerating={isGenerating}
+              onSeedChange={setSeed}
+              onWidthChange={setWidth}
+              onHeightChange={setHeight}
+              onSettingsCommit={commitGenerationSettings}
+              onDifficultyChange={handleDifficultyChange}
+              onUniqueSolutionChange={handleUniqueSolutionChange}
+              onGenerate={generate}
+              onRandomize={randomize}
+              onCheck={handleCheck}
+              onAutoMoveToFoundations={autoMoveToFoundations}
+              onCardClick={handleCardClick}
+              onStackClick={handleStackClick}
+              onCellClick={handleGridCellClick}
+              onCellInput={handleGridCellInput}
+            />
+          </section>
+        ) : (
+          <StartView
+            readyPuzzles={readyPuzzles}
+            previewPuzzles={previewPuzzles}
+            plannedPuzzles={plannedPuzzles}
             onSelectPuzzle={selectPuzzle}
           />
-
-          <PuzzleWorkspace
-            selectedDefinition={selectedDefinition}
-            selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
-            seed={seed}
-            width={width}
-            height={height}
-            difficulty={difficulty}
-            requireUniqueSolution={requireUniqueSolution}
-            puzzle={puzzle}
-            cardStacks={cardStacks}
-            selectedCard={selectedCard}
-            solitaireStats={solitaireStats}
-            gridCells={gridCells}
-            selectedGridCell={selectedGridCell}
-            statusMessage={statusMessage}
-            isGenerating={isGenerating}
-            onSeedChange={setSeed}
-            onWidthChange={setWidth}
-            onHeightChange={setHeight}
-            onSettingsCommit={commitGenerationSettings}
-            onDifficultyChange={handleDifficultyChange}
-            onUniqueSolutionChange={handleUniqueSolutionChange}
-            onGenerate={generate}
-            onRandomize={randomize}
-            onCheck={handleCheck}
-            onAutoMoveToFoundations={autoMoveToFoundations}
-            onCardClick={handleCardClick}
-            onStackClick={handleStackClick}
-            onCellClick={handleGridCellClick}
-            onCellInput={handleGridCellInput}
-          />
-        </section>
+        )
       ) : activeView === "changelog" ? (
         <ChangelogView />
       ) : (

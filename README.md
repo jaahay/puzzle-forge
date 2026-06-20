@@ -16,31 +16,37 @@ The app is structured as a catalog-first puzzle destination suitable for a `puzz
 Install dependencies:
 
 ```sh
-npm install
+pnpm install
 ```
 
 Start the development server:
 
 ```sh
-npm run dev
+pnpm dev
 ```
 
-Run a production build with TypeScript checking:
+Run tests, TypeScript checking, and a production build:
 
 ```sh
-npm run build
+pnpm build
 ```
 
 Run TypeScript checking without producing a bundle:
 
 ```sh
-npm run typecheck
+pnpm typecheck
+```
+
+Run tests only:
+
+```sh
+pnpm test
 ```
 
 Preview the production bundle locally:
 
 ```sh
-npm run preview
+pnpm preview
 ```
 
 ## Site shell
@@ -81,7 +87,7 @@ Current playable generators:
 
 - `src/games/sudoku/generate.ts`
 - `src/games/nonogram/generate.ts`
-- `src/games/wordle/generate.ts`
+- `src/games/wordGuess/generate.ts`
 - `src/games/logicGrid/generate.ts`
 - `src/games/solitaire/generate.ts`
 - `src/games/pegSolitaire/generate.ts`
