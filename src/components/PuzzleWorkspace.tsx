@@ -1,5 +1,5 @@
 import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition, PuzzleDifficulty, PuzzleGenerationRequest } from "../catalog/types";
-import { getWordGuessDailyLabel, getWordGuessDailySeed } from "../games/wordle/daily";
+import { getWordGuessDailyLabel, getWordGuessDailySeed } from "../games/wordGuess/daily";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
 import { CardPuzzlePreview } from "./CardPuzzlePreview";

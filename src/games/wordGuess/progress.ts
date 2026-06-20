@@ -5,6 +5,7 @@ export type SavedWordGuessProgress = {
   wordLength: number;
   maxGuesses: number;
   guesses: string[];
+  currentInput?: string;
   status: WordGuessProgressStatus;
 };
 
@@ -22,6 +23,7 @@ const isSavedWordGuessProgress = (value: unknown): value is SavedWordGuessProgre
     typeof candidate.maxGuesses === "number" &&
     Array.isArray(candidate.guesses) &&
     candidate.guesses.every((guess) => typeof guess === "string") &&
+    (candidate.currentInput === undefined || typeof candidate.currentInput === "string") &&
     (candidate.status === "playing" || candidate.status === "won" || candidate.status === "lost")
   );
 };

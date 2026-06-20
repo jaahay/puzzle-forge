@@ -113,8 +113,7 @@ export type CardGeneratedPuzzle = BaseGeneratedPuzzle & {
 
 export type GeneratedPuzzle = GridGeneratedPuzzle | CardGeneratedPuzzle;
 
-export type PuzzleGenerationRequest = {
-  requestId: string;
+export type PuzzleGenerationParams = {
   puzzleId: PuzzleId;
   seed: string;
   width: number;
@@ -122,6 +121,10 @@ export type PuzzleGenerationRequest = {
   difficulty?: PuzzleDifficulty;
   requireUniqueSolution?: boolean;
 };
+
+export type PuzzleGenerationRequest = {
+  requestId: string;
+} & PuzzleGenerationParams;
 
 export type PuzzleGenerationResponse =
   | {
@@ -133,4 +136,8 @@ export type PuzzleGenerationResponse =
       error: string;
     };
 
-export type PuzzleGenerator = (request: Omit<PuzzleGenerationRequest, "requestId">) => GeneratedPuzzle;
+export type GridPuzzleGenerator = (params: PuzzleGenerationParams) => GridGeneratedPuzzle;
+
+export type CardPuzzleGenerator = (params: PuzzleGenerationParams) => CardGeneratedPuzzle;
+
+export type PuzzleGenerator = GridPuzzleGenerator | CardPuzzleGenerator;

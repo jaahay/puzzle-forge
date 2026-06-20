@@ -126,6 +126,60 @@
   background: #fecaca;
 }
 
+.nonogram-workspace .puzzle-settings-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: 0.85rem;
+  align-items: end;
+}
+
+.nonogram-workspace .puzzle-settings-panel > div:first-of-type {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: flex-start;
+  border-bottom: 1px solid #1e293b;
+  padding-bottom: 0.85rem;
+}
+
+.nonogram-workspace .puzzle-settings-panel > div:first-of-type button {
+  min-width: 7rem;
+}
+
+.nonogram-workspace .puzzle-settings-panel > label,
+.nonogram-workspace .puzzle-size-control,
+.nonogram-workspace .puzzle-generation-options {
+  min-width: 0;
+}
+
+.nonogram-workspace .puzzle-generation-options {
+  grid-column: span 2;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.nonogram-workspace .puzzle-generation-options label,
+.nonogram-workspace .puzzle-generation-options input {
+  min-width: 0;
+}
+
+.nonogram-workspace .puzzle-checkbox-control {
+  min-width: max-content;
+}
+
+.nonogram-workspace .puzzle-settings-panel > div:last-of-type {
+  justify-self: end;
+}
+
+.nonogram-workspace .puzzle-settings-actions button {
+  width: auto;
+}
+
+@media (max-width: 940px) {
+  .nonogram-workspace .puzzle-generation-options {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 720px) {
   .nonogram-board {
     grid-template-columns: minmax(3rem, max-content) minmax(18rem, 1fr);
