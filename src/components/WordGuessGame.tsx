@@ -4,7 +4,7 @@ import { getWordGuessAnalysis } from "../games/wordGuess/analysis";
 import { scoreWordGuess } from "../games/wordGuess/feedback";
 import { readWordGuessProgress, writeWordGuessProgress, type WordGuessProgressStatus } from "../games/wordGuess/progress";
 import { formatWordGuessShareText } from "../games/wordGuess/share";
-import { getWordGuessBank, isValidWordGuess } from "../games/wordGuess/words";
+import { getWordGuessBank, isValidWordGuess, normalizeWordGuessWord } from "../games/wordGuess/words";
 
 const difficultyLabels = {
   gentle: "Gentle",
@@ -30,6 +30,16 @@ const getGuess = (rowCells: PuzzleCell[]) => rowCells.map((cell) => cell.value).
 const getLetterFromKey = (key: string) => {
   const letter = key.toUpperCase();
   return letter.length === 1 && letter >= "A" && letter <= "Z" ? letter : "";
+};
+
+const restoreGuessIntoRow = (rowCells: PuzzleCell[], guess: string, onCellInput: (cell: PuzzleCell, value: string) => void) => {
+  Array.from(guess).forEach((letter, columnIndex) => {
+    const cell = rowCells[columnIndex];
+
+    if (cell && cell.value !== letter) {
+      onCellInput(cell, letter);
+    }
+  });
 };
 
 export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSubmitGuess, onRandomize }: WordGuessGameProps) => {
@@ -65,18 +75,20 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     const saved = readWordGuessProgress(puzzle.id);
 
     if (saved && saved.puzzleId === puzzle.id && saved.wordLength === puzzle.width && saved.maxGuesses === puzzle.height) {
-      const restoredGuesses = saved.guesses.slice(0, puzzle.height).map((guess) => guess.toUpperCase().slice(0, puzzle.width));
-      const restoredSubmittedRows = saved.status === "playing" ? Math.max(0, restoredGuesses.length - 1) : restoredGuesses.length;
+      const restoredGuesses = saved.guesses
+        .slice(0, puzzle.height)
+        .map((guess) => normalizeWordGuessWord(guess).slice(0, puzzle.width))
+        .filter((guess) => guess.length === puzzle.width);
+      const restoredCurrentInput = saved.status === "playing" ? normalizeWordGuessWord(saved.currentInput ?? "").slice(0, puzzle.width) : "";
+      const restoredSubmittedRows = Math.min(restoredGuesses.length, puzzle.height);
 
       restoredGuesses.forEach((guess, rowIndex) => {
-        const rowCells = rows[rowIndex] ?? [];
-        Array.from(guess).forEach((letter, columnIndex) => {
-          const cell = rowCells[columnIndex];
-          if (cell && cell.value !== letter) {
-            onCellInput(cell, letter);
-          }
-        });
+        restoreGuessIntoRow(rows[rowIndex] ?? [], guess, onCellInput);
       });
+
+      if (restoredCurrentInput && restoredSubmittedRows < puzzle.height) {
+        restoreGuessIntoRow(rows[restoredSubmittedRows] ?? [], restoredCurrentInput, onCellInput);
+      }
 
       setSubmittedRows(restoredSubmittedRows);
       setStatus(saved.status);
@@ -101,15 +113,16 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
       return;
     }
 
-    const guesses = rowGuesses.slice(0, status === "playing" ? submittedRows + 1 : submittedRows).filter(Boolean);
+    const currentInput = status === "playing" ? rowGuesses[submittedRows] ?? "" : "";
     writeWordGuessProgress({
       puzzleId: puzzle.id,
       wordLength: puzzle.width,
       maxGuesses: puzzle.height,
-      guesses,
+      guesses: submittedGuesses,
+      currentInput: currentInput || undefined,
       status,
     });
-  }, [puzzle.id, puzzle.height, puzzle.width, rowGuesses, status, submittedRows]);
+  }, [puzzle.id, puzzle.height, puzzle.width, rowGuesses, status, submittedGuesses, submittedRows]);
 
   const submitGuess = () => {
     if (status !== "playing") {
