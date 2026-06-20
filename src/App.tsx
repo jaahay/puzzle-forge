@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import { getPuzzleDefinition, isGeneratable, puzzleCatalog } from "./catalog/puzzleCatalog";
+import { getPuzzleAvailability } from "./catalog/puzzleAvailability";
+import { getPuzzleDefinition, isGeneratable } from "./catalog/puzzleCatalog";
 import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleGenerationRequest, PuzzleGenerationResponse, PuzzleId } from "./catalog/types";
 import { AboutView } from "./components/AboutView";
 import { AppShell } from "./components/AppShell";
 import { ChangelogView } from "./components/ChangelogView";
 import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
+import { StartView } from "./components/StartView";
 import { defaultSudokuDifficulty, getActiveView, makeRandomSeed, makeRequestId } from "./app/runtime";
 import { initialSolitaireStats, type PuzzleSession, type PuzzleSessionCache, type SolitaireStats } from "./app/session";
 import {
@@ -55,10 +57,9 @@ export const App = () => {
     () => new Worker(new URL("./workers/puzzleWorker.ts", import.meta.url), { type: "module" }),
     [],
   );
+  const { readyPuzzles, previewPuzzles, plannedPuzzles } = useMemo(() => getPuzzleAvailability(), []);
   const selectedDefinition = getPuzzleDefinition(selectedPuzzleId);
   const selectedPuzzleIsGeneratable = isGeneratable(selectedDefinition);
-  const playablePuzzles = puzzleCatalog.filter(isGeneratable);
-  const plannedPuzzles = puzzleCatalog.filter((definition) => !isGeneratable(definition));
 
   const resetSolitaireStats = () => {
     setSolitaireStats(initialSolitaireStats);
@@ -443,7 +444,7 @@ export const App = () => {
         return { cells, message: "Cell no longer exists." };
       }
 
-      const nextValue = current.value === "\u25a0" ? "" : "\u25a0";
+      const nextValue = current.value === "■" ? "" : "■";
       cells[index] = {
         ...current,
         value: nextValue,
@@ -801,31 +802,12 @@ export const App = () => {
             />
           </section>
         ) : (
-          <section class="start-layout" aria-labelledby="puzzle-start-title">
-            <div class="puzzle-start-panel">
-              <p class="site-kicker">Puzzle Workbench</p>
-              <h1 id="puzzle-start-title">Pick a puzzle</h1>
-              <p class="hero-copy">Generate repeatable puzzle boards, deals, and grids from seeds.</p>
-
-              <div class="start-card-grid" aria-label="Playable puzzles">
-                {playablePuzzles.map((definition) => (
-                  <button class="start-puzzle-card" key={definition.id} type="button" onClick={() => selectPuzzle(definition.id)}>
-                    <strong>{definition.title}</strong>
-                    <span>{definition.tagline}</span>
-                  </button>
-                ))}
-              </div>
-
-              <div class="coming-soon-list" aria-label="Coming soon puzzles">
-                <span>Coming soon</span>
-                {plannedPuzzles.map((definition) => (
-                  <button key={definition.id} type="button" disabled>
-                    {definition.title}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </section>
+          <StartView
+            readyPuzzles={readyPuzzles}
+            previewPuzzles={previewPuzzles}
+            plannedPuzzles={plannedPuzzles}
+            onSelectPuzzle={selectPuzzle}
+          />
         )
       ) : activeView === "changelog" ? (
         <ChangelogView />
