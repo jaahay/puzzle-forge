@@ -14,15 +14,15 @@ const viewLinks: { href: string; label: string; view?: AppView; external?: boole
 
 export const AppShell = ({ activeView, children }: AppShellProps) => (
   <main class="app-shell">
-    <header class="app-header" aria-label="Puzzle Workbench navigation">
+    <header class="app-header" aria-label="Puzzle Forge navigation">
       <a class="app-brand" href="#catalog" aria-current={activeView === "catalog" ? "page" : undefined}>
         <span class="app-brand-mark" aria-hidden="true">
           ◧
         </span>
-        <span>Puzzle Workbench</span>
+        <span>Puzzle Forge</span>
       </a>
 
-      <nav class="app-nav" aria-label="Puzzle Workbench pages">
+      <nav class="app-nav" aria-label="Puzzle Forge pages">
         {viewLinks.map((link) => (
           <a
             href={link.href}
