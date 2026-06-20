@@ -1,19 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { getWordGuessAnalysis } from "../games/wordGuess/analysis";
-import { scoreWordGuess, type WordGuessMark } from "../games/wordGuess/feedback";
+import { scoreWordGuess } from "../games/wordGuess/feedback";
 import { readWordGuessProgress, writeWordGuessProgress, type WordGuessProgressStatus } from "../games/wordGuess/progress";
 import { formatWordGuessShareText } from "../games/wordGuess/share";
 import { getWordGuessBank, isValidWordGuess } from "../games/wordGuess/words";
-
-const keyboardRows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"] as const;
-type KeyboardMark = WordGuessMark | "unused";
-const markRank: Record<KeyboardMark, number> = {
-  unused: 0,
-  absent: 1,
-  present: 2,
-  correct: 3,
-};
 
 const difficultyLabels = {
   gentle: "Gentle",
@@ -57,7 +48,6 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
   const submittedGuesses = rowGuesses.slice(0, submittedRows).filter((guess) => guess.length === puzzle.width);
   const submittedGuessKey = submittedGuesses.join("|");
   const analysis = useMemo(() => getWordGuessAnalysis(answer, submittedGuesses, wordBank), [answer, submittedGuessKey, wordBank]);
-  const visibleCandidates = analysis.currentCandidates.slice(0, 8);
 
   useEffect(() => {
     if (restoredPuzzleId.current === puzzle.id) {
@@ -135,7 +125,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     }
 
     if (!isValidWordGuess(guess, wordBank)) {
-      setMessage(`${guess} is not in the ${wordBank.length}-letter guess list.`);
+      setMessage(`${guess} is not in the ${wordBank.length}-letter word list.`);
       return;
     }
 
@@ -220,23 +210,6 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     };
   });
 
-  const keyboardMarks = useMemo(() => {
-    const marks = new Map<string, KeyboardMark>();
-
-    for (const guess of submittedGuesses) {
-      scoreWordGuess(answer, guess).forEach((mark, index) => {
-        const letter = guess[index];
-        const currentMark = letter ? marks.get(letter) ?? "unused" : "unused";
-
-        if (letter && markRank[mark] > markRank[currentMark]) {
-          marks.set(letter, mark);
-        }
-      });
-    }
-
-    return marks;
-  }, [answer, submittedGuessKey]);
-
   const shareText = formatWordGuessShareText({
     title: puzzle.title,
     seed: puzzle.seed,
@@ -260,7 +233,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     <section class="word-guess-game" aria-label={`${puzzle.width}-letter Word Guess game`}>
       <div class="word-guess-status" aria-live="polite">
         <strong>{message}</strong>
-        <span>{statusMessage}</span>
+        <span>Real words only. Type on your keyboard, press Enter to submit, Backspace to erase.</span>
       </div>
 
       <div class="word-guess-board" aria-label="Word Guess board">
@@ -286,7 +259,20 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
         })}
       </div>
 
-      <section class="word-guess-analysis" aria-label="Word Guess deduction analysis">
+      <div class="word-guess-actions">
+        <button type="button" onClick={submitGuess} disabled={status !== "playing"}>
+          Submit
+        </button>
+        <button type="button" onClick={onRandomize}>
+          New word
+        </button>
+        <button type="button" onClick={copyShareText} disabled={submittedRows === 0}>
+          {copiedShare ? "Copied" : "Share"}
+        </button>
+      </div>
+
+      <details class="word-guess-solver-details">
+        <summary>Solver details</summary>
         <div class="word-guess-analysis-header">
           <div>
             <strong>{analysis.candidateCount}</strong>
@@ -319,54 +305,12 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
           </ol>
         ) : (
           <p class="word-guess-analysis-note">
-            Best starter leaves about {analysis.bestStarter.averageRemaining.toFixed(1)} answers on average; worst bucket is {analysis.bestStarter.worstBucket}.
+            Dictionary: {wordBank.dictionaryId}. {wordBank.answers.length} possible answers, {wordBank.validGuesses.length} valid guesses.
           </p>
         )}
+      </details>
 
-        {visibleCandidates.length > 0 ? (
-          <p class="word-guess-candidate-preview">
-            Candidates: {visibleCandidates.join(", ")}{analysis.currentCandidates.length > visibleCandidates.length ? ", …" : ""}
-          </p>
-        ) : null}
-      </section>
-
-      <div class="word-guess-keyboard" aria-label="Word Guess keyboard">
-        {keyboardRows.map((row, rowIndex) => (
-          <div class="word-guess-keyboard-row" key={row}>
-            {rowIndex === 2 ? (
-              <button type="button" class="word-guess-key wide" disabled={status !== "playing"} onClick={submitGuess}>
-                Enter
-              </button>
-            ) : null}
-            {Array.from(row).map((letter) => {
-              const mark = keyboardMarks.get(letter) ?? "unused";
-
-              return (
-                <button type="button" class={`word-guess-key ${mark}`} disabled={status !== "playing"} key={letter} onClick={() => inputLetter(letter)}>
-                  {letter}
-                </button>
-              );
-            })}
-            {rowIndex === 2 ? (
-              <button type="button" class="word-guess-key wide" disabled={status !== "playing"} onClick={backspace}>
-                Back
-              </button>
-            ) : null}
-          </div>
-        ))}
-      </div>
-
-      <div class="word-guess-actions">
-        <button type="button" onClick={submitGuess} disabled={status !== "playing"}>
-          Submit guess
-        </button>
-        <button type="button" onClick={onRandomize}>
-          New word
-        </button>
-        <button type="button" onClick={copyShareText} disabled={submittedRows === 0}>
-          {copiedShare ? "Copied" : "Share"}
-        </button>
-      </div>
+      <span class="sr-only">{statusMessage}</span>
     </section>
   );
 };
