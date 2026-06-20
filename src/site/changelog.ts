@@ -7,11 +7,18 @@ export type ChangelogEntry = {
 
 export const changelogEntries: ChangelogEntry[] = [
   {
+    date: "2026-06-19",
+    label: "June 19, 2026",
+    title: "App shell polish",
+    body:
+      "Moved Puzzle Workbench into a compact top bar, simplified the first-run puzzle picker, and reduced status-copy noise around playable games.",
+  },
+  {
     date: "2026-06-16",
     label: "June 16, 2026",
     title: "Catalog shell hardening",
     body:
-      "Added richer document metadata, a whimsical generated favicon, persistent footer links, and a concise changelog surface so the project explains itself outside the puzzle workspace.",
+      "Added document metadata, a generated favicon, footer links, and an updates surface so the project explains itself outside the puzzle workspace.",
   },
   {
     date: "2026-06-14",
