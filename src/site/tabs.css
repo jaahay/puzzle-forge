@@ -47,10 +47,11 @@
 }
 
 .app-nav a {
-  border: 1px solid rgba(167, 243, 208, 0.34);
+  border: 1px solid rgba(148, 163, 184, 0.24);
   border-radius: 999px;
   padding: 0.45rem 0.8rem;
-  color: #a7f3d0;
+  color: #cbd5e1;
+  background: transparent;
   font-size: 0.78rem;
   font-weight: 900;
   letter-spacing: 0.08em;
@@ -58,8 +59,9 @@
 }
 
 .app-nav a[aria-current="page"] {
-  color: #0f172a;
-  background: #a7f3d0;
+  border-color: rgba(167, 243, 208, 0.48);
+  color: #a7f3d0;
+  background: rgba(167, 243, 208, 0.08);
 }
 
 .app-brand:hover,
@@ -68,4 +70,10 @@
 .app-nav a:focus-visible {
   box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.22);
   outline: none;
+}
+
+.app-nav a:hover,
+.app-nav a:focus-visible {
+  border-color: rgba(167, 243, 208, 0.48);
+  color: #a7f3d0;
 }
