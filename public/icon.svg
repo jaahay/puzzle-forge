@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Puzzle Forge</title>
+  <desc id="desc">A dark rounded square puzzle-grid icon with mint tiles, a yellow sun token, and a check mark.</desc>
+  <rect width="512" height="512" rx="112" fill="#111827" />
+  <rect x="112" y="128" width="112" height="112" rx="20" fill="#a7f3d0" />
+  <rect x="272" y="128" width="112" height="112" rx="20" fill="#a7f3d0" />
+  <rect x="112" y="288" width="112" height="112" rx="20" fill="#a7f3d0" />
+  <rect x="272" y="288" width="112" height="112" rx="20" fill="#a7f3d0" />
+  <circle cx="336" cy="192" r="42" fill="#facc15" />
+  <path d="M140 352l36 36 72-92" fill="none" stroke="#111827" stroke-width="34" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M176 168h0M336 352h0" stroke="#111827" stroke-width="42" stroke-linecap="round" />
+</svg>
