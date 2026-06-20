@@ -1,15 +1,15 @@
 export const AboutView = () => (
   <section class="site-changelog about-view" id="about" aria-labelledby="about-title">
     <p class="site-kicker">about</p>
-    <h2 id="about-title">Puzzle Workbench generates repeatable puzzle boards, deals, and grids from seeds.</h2>
+    <h2 id="about-title">Puzzle Forge generates repeatable boards, deals, and grids from seeds.</h2>
     <p>
-      Pick a puzzle, tune the seed when you care about repeatability, and play the generated instance in place. The app is
-      small on purpose: each puzzle family gets its own rules while sharing one lightweight shell.
+      Choose a puzzle, tune the seed when repeatability matters, and play the generated instance in a shared workbench
+      surface. The app is small on purpose: each puzzle family gets its own rules while sharing one lightweight shell.
     </p>
 
     <article>
       <h3>What it does</h3>
-      <p>Generate and play Sudoku, Solitaire, Nonogram, Word Guess, Peg Solitaire, and other puzzle prototypes from one interface.</p>
+      <p>Generate and play Sudoku, Nonogram, Word Guess, and preview puzzle experiments from one interface.</p>
     </article>
     <article>
       <h3>Why seeds matter</h3>
