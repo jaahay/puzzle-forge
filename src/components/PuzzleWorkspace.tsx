@@ -104,14 +104,16 @@ export const PuzzleWorkspace = ({
   const nonogramValidationTone = statusMessage.startsWith("Solved") ? "success" : "error";
   const generateWordGuessDaily = () => onSettingsCommit({ seed: getWordGuessDailySeed(), width, height });
   const copySeed = async () => {
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      await navigator.clipboard.writeText(seed);
-    }
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(seed);
+      }
+    } finally {
+      setSeedCopied(true);
 
-    setSeedCopied(true);
-
-    if (typeof window !== "undefined") {
-      window.setTimeout(() => setSeedCopied(false), 1400);
+      if (typeof window !== "undefined") {
+        window.setTimeout(() => setSeedCopied(false), 1400);
+      }
     }
   };
   const seedInput = (
