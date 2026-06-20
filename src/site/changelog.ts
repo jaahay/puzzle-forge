@@ -11,7 +11,7 @@ export const changelogEntries: ChangelogEntry[] = [
     label: "June 19, 2026",
     title: "App shell polish",
     body:
-      "Moved Puzzle Workbench into a compact top bar, simplified the first-run puzzle picker, and reduced status-copy noise around playable games.",
+      "Moved Puzzle Forge into a compact top bar, simplified the first-run puzzle picker, and grouped games into ready, preview, and coming-soon states.",
   },
   {
     date: "2026-06-16",
