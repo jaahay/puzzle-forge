@@ -1,4 +1,4 @@
-import type { ComponentChildren, JSX } from "preact";
+import type { ComponentChildren } from "preact";
 import { useRef } from "preact/hooks";
 
 const nativeTextInputMarker = "true";
@@ -22,6 +22,10 @@ type PuzzleNativeTextInputProps = {
   onEnter: () => void;
 };
 
+type NavigatorWithVibrate = Navigator & {
+  vibrate?: (pattern: number | number[]) => boolean;
+};
+
 export const isPuzzleNativeTextInputTarget = (target: EventTarget | null) =>
   (target as HTMLElement | null)?.dataset?.puzzleNativeTextInput === nativeTextInputMarker;
 
@@ -43,11 +47,14 @@ export const PuzzleNativeTextInput = ({
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const pulseHaptics = () => {
-    if (!hapticsEnabled || typeof navigator === "undefined" || typeof navigator.vibrate !== "function") {
+    if (!hapticsEnabled || typeof navigator === "undefined") {
       return;
     }
 
-    navigator.vibrate(hapticDurationMs);
+    const vibrate = (navigator as NavigatorWithVibrate).vibrate;
+    if (typeof vibrate === "function") {
+      vibrate(hapticDurationMs);
+    }
   };
 
   const focusInput = () => {
@@ -56,8 +63,8 @@ export const PuzzleNativeTextInput = ({
     }
   };
 
-  const handleInput = (event: JSX.TargetedEvent<HTMLInputElement, Event>) => {
-    const input = event.currentTarget;
+  const handleInput = (event: Event) => {
+    const input = event.currentTarget as HTMLInputElement;
     const value = input.value;
 
     if (!value) {
@@ -69,7 +76,7 @@ export const PuzzleNativeTextInput = ({
     input.value = "";
   };
 
-  const handleKeyDown = (event: JSX.TargetedKeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (event: KeyboardEvent) => {
     if (event.altKey || event.ctrlKey || event.metaKey) {
       return;
     }
@@ -101,10 +108,8 @@ export const PuzzleNativeTextInput = ({
         type="text"
         inputMode={inputMode}
         autoComplete="off"
-        autoCapitalize={autoCapitalize}
-        autoCorrect="off"
+        {...({ autoCapitalize, autoCorrect: "off", enterKeyHint } as Record<string, string>)}
         spellCheck={false}
-        enterKeyHint={enterKeyHint}
         aria-label={ariaLabel}
         disabled={!enabled}
         tabIndex={enabled ? 0 : -1}
