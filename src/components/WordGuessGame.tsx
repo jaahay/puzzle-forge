@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useEffect, useMemo, useState } from "preact/hooks";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { getWordGuessAnalysis } from "../games/wordGuess/analysis";
 import { scoreWordGuess } from "../games/wordGuess/feedback";
 import { readWordGuessProgress, writeWordGuessProgress, type WordGuessProgressStatus } from "../games/wordGuess/progress";
 import { formatWordGuessShareText } from "../games/wordGuess/share";
 import { getWordGuessBank, isValidWordGuess, normalizeWordGuessWord } from "../games/wordGuess/words";
+import { isPuzzleNativeTextInputTarget, PuzzleNativeTextInput } from "./PuzzleNativeTextInput";
 
 const difficultyLabels = {
   gentle: "Gentle",
@@ -77,10 +78,10 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
   const [message, setMessage] = useState(`Type a ${puzzle.width}-letter word.`);
   const [copiedShare, setCopiedShare] = useState(false);
   const [hardMode, setHardMode] = useState(false);
-  const nativeInputRef = useRef<HTMLInputElement | null>(null);
   const restoredPuzzleId = useRef<string | null>(null);
   const skipNextSave = useRef(false);
   const activeRow = status === "playing" ? submittedRows : -1;
+  const hapticsEnabled = false;
   const rowGuesses = rows.map(getGuess);
   const submittedGuesses = rowGuesses.slice(0, submittedRows).filter((guess) => guess.length === puzzle.width);
   const submittedGuessKey = submittedGuesses.join("|");
@@ -219,50 +220,12 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     setCopiedShare(false);
   };
 
-  const focusNativeInput = () => {
-    if (status === "playing") {
-      nativeInputRef.current?.focus();
-    }
-  };
-
-  const handleNativeInput = (event: Event) => {
-    const input = event.currentTarget as HTMLInputElement;
-    const value = input.value;
-
-    if (!value) {
-      return;
-    }
-
+  const handleNativeTextInput = (value: string) => {
     Array.from(normalizeWordGuessWord(value)).forEach(inputLetter);
-    input.value = "";
-  };
-
-  const handleNativeKeyDown = (event: KeyboardEvent) => {
-    if (event.altKey || event.ctrlKey || event.metaKey) {
-      return;
-    }
-
-    if (event.key === "Enter") {
-      event.preventDefault();
-      event.stopPropagation();
-      submitGuess();
-      return;
-    }
-
-    if (event.key === "Backspace") {
-      event.preventDefault();
-      event.stopPropagation();
-      backspace();
-      return;
-    }
-
-    if (getLetterFromKey(event.key)) {
-      event.stopPropagation();
-    }
   };
 
   const handleDocumentKeyDown = (event: KeyboardEvent) => {
-    if (event.target === nativeInputRef.current || event.altKey || event.ctrlKey || event.metaKey) {
+    if (isPuzzleNativeTextInputTarget(event.target) || event.altKey || event.ctrlKey || event.metaKey) {
       return;
     }
 
@@ -317,27 +280,22 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
       <div class="word-guess-status" aria-live="polite">
         <strong>{message}</strong>
         <span class="word-guess-desktop-hint">Type or tap letters, then Enter. Backspace erases.</span>
-        <span class="word-guess-mobile-hint">Tap the tiles, type your guess, then press return.</span>
+        <span class="word-guess-mobile-hint">Tap the tiles, type your guess, then press done.</span>
       </div>
 
-      <div class="word-guess-board-shell" onClick={focusNativeInput}>
-        <input
-          ref={nativeInputRef}
-          class="word-guess-native-input"
-          type="text"
-          inputMode="text"
-          autoComplete="off"
-          autoCapitalize="characters"
-          autoCorrect="off"
-          spellCheck={false}
-          enterKeyHint="go"
-          aria-label="Type your Word Guess answer"
-          disabled={status !== "playing"}
-          tabIndex={status === "playing" ? 0 : -1}
-          onInput={handleNativeInput}
-          onKeyDown={handleNativeKeyDown}
-        />
-
+      <PuzzleNativeTextInput
+        className="word-guess-board-shell"
+        inputClassName="word-guess-native-input"
+        ariaLabel="Type your Word Guess answer"
+        enabled={status === "playing"}
+        inputMode="text"
+        enterKeyHint="done"
+        autoCapitalize="characters"
+        hapticsEnabled={hapticsEnabled}
+        onTextInput={handleNativeTextInput}
+        onBackspace={backspace}
+        onEnter={submitGuess}
+      >
         <div class="word-guess-board" aria-label="Word Guess board">
           {rows.map((rowCells, rowIndex) => {
             const guess = getGuess(rowCells);
@@ -351,7 +309,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
                   const tileLabel = cell.value ? `${cell.value}${mark ? `, ${mark}` : ""}` : "Empty";
 
                   return (
-                    <span class={`word-guess-tile ${mark ?? "pending"}`} key={`${cell.row}-${cell.column}`} aria-label={tileLabel}>
+                    <span class={`word-guess-tile ${mark ?? "pending"} ${cell.value ? "filled" : "empty"}`} key={`${cell.row}-${cell.column}`} aria-label={tileLabel}>
                       {cell.value}
                     </span>
                   );
@@ -360,7 +318,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
             );
           })}
         </div>
-      </div>
+      </PuzzleNativeTextInput>
 
       <div class="word-guess-keyboard" aria-label="Word Guess on-screen keyboard">
         {keyboardRows.map((row, rowIndex) => (
