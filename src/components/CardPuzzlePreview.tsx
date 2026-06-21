@@ -1,5 +1,5 @@
 import type { CardStack, PlayingCard } from "../catalog/types";
-import { canSelectFromStack, getTopCard, isSelectedCard, type CardSelection } from "../interactions/cardRules";
+import { canSelectFromStack, isSelectedCard, type CardSelection } from "../interactions/cardRules";
 
 type SolitaireStats = {
   moveCount: number;
@@ -22,12 +22,8 @@ const rankFromCode = (card: PlayingCard) => card.code.slice(0, -1);
 const getFoundationPlaceholder = (stack: CardStack) => stack.title.match(/[♣♦♥♠]/u)?.[0] ?? "A";
 
 const getStackCountLabel = (stack: CardStack) => {
-  if (stack.role === "stock") {
-    return `${stack.cards.length} stock`;
-  }
-
-  if (stack.role === "waste") {
-    return `${stack.cards.length} waste`;
+  if (stack.role === "stock" || stack.role === "waste") {
+    return `${stack.cards.length}`;
   }
 
   if (stack.role === "foundation") {
@@ -35,7 +31,21 @@ const getStackCountLabel = (stack: CardStack) => {
   }
 
   const faceDownCount = stack.cards.filter((card) => !card.faceUp).length;
-  return `${stack.cards.length} cards${faceDownCount > 0 ? `, ${faceDownCount} hidden` : ""}`;
+  return faceDownCount > 0 ? `${stack.cards.length}, ${faceDownCount} hidden` : `${stack.cards.length}`;
+};
+
+const getRenderedCards = (stack: CardStack) => {
+  if (stack.role === "stock" || stack.role === "waste" || stack.role === "foundation") {
+    return {
+      cards: stack.cards.slice(-1),
+      firstRenderedIndex: Math.max(stack.cards.length - 1, 0),
+    };
+  }
+
+  return {
+    cards: stack.cards,
+    firstRenderedIndex: 0,
+  };
 };
 
 const renderPlayingCard = (
@@ -47,13 +57,12 @@ const renderPlayingCard = (
   onCardDoubleClick: (stack: CardStack, cardIndex: number) => void,
 ) => {
   const selected = isSelectedCard(selectedCard, stack, index);
-  const selectable = canSelectFromStack(stack, index);
   const rank = rankFromCode(card);
   const suit = suitFromCode(card);
 
   return (
     <button
-      aria-label={card.faceUp ? `${card.label}${selectable ? ", movable" : ""}` : "Face-down card"}
+      aria-label={card.faceUp ? card.label : "Face-down card"}
       class={`playing-card ${card.faceUp ? card.color : "back"} ${card.faceUp ? "face-up" : "face-down"} ${selected ? "selected-card" : ""}`}
       disabled={!card.faceUp && stack.role !== "stock"}
       key={`${stack.id}-${index}-${card.code}`}
@@ -78,14 +87,12 @@ const renderPlayingCard = (
       ) : (
         <span class="card-back-mark">PF</span>
       )}
-      {selectable ? <span class="card-action-hint">move</span> : null}
     </button>
   );
 };
 
 const renderCardStack = ({ stack, selectedCard, onCardClick, onCardDoubleClick, onStackClick }: CardStackProps) => {
-  const cardsToRender = stack.role === "stock" ? stack.cards.slice(-1) : stack.cards;
-  const firstRenderedIndex = stack.role === "stock" ? Math.max(stack.cards.length - 1, 0) : 0;
+  const { cards: cardsToRender, firstRenderedIndex } = getRenderedCards(stack);
   const hasSelection = selectedCard !== null;
   const placeholderLabel =
     stack.role === "foundation" ? getFoundationPlaceholder(stack) : stack.role === "stock" ? "↻" : stack.role === "tableau" ? "K" : "";
@@ -134,20 +141,14 @@ export const CardPuzzlePreview = ({ stacks, selectedCard, stats, onCardClick, on
     (total, stack) => total + stack.cards.filter((card) => !card.faceUp).length,
     0,
   );
-  const wasteStack = stockAndWaste.find((stack) => stack.role === "waste");
-  const wasteTopCard = wasteStack ? getTopCard(wasteStack) : undefined;
   const renderStack = (stack: CardStack) => renderCardStack({ stack, selectedCard, onCardClick, onCardDoubleClick, onStackClick });
 
   return (
     <div class="cards-layout">
       <div class="solitaire-summary" aria-label="Solitaire progress summary">
-        <span>{foundationCardCount}/52 foundation</span>
-        <span>{hiddenTableauCardCount} hidden tableau</span>
-        <span>{wasteTopCard ? `${wasteTopCard.code} on waste` : "Waste empty"}</span>
-        <span>{stats.moveCount} moves</span>
-        <span>{stats.drawCount} draws</span>
-        <span>{stats.recycleCount} recycle(s)</span>
-        <span>{stats.autoMoveCount} auto</span>
+        <span aria-label={`${foundationCardCount} of 52 cards on foundations`}>♣ {foundationCardCount}/52</span>
+        <span aria-label={`${hiddenTableauCardCount} hidden tableau cards`}>◐ {hiddenTableauCardCount}</span>
+        <span aria-label={`${stats.moveCount} moves`}>↻ {stats.moveCount}</span>
       </div>
       <div class="card-board-top-row">
         <div class="card-row stock-row">{stockAndWaste.map(renderStack)}</div>
