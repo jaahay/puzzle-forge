@@ -21,6 +21,29 @@
   font-size: 0.85rem;
 }
 
+.word-guess-board-shell {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.word-guess-native-input {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1px;
+  height: 1px;
+  border: 0;
+  padding: 0;
+  opacity: 0;
+  color: transparent;
+  background: transparent;
+  caret-color: transparent;
+  font-size: 16px;
+  transform: translate(-50%, -50%);
+}
+
 .word-guess-board {
   display: grid;
   gap: 0.45rem;
@@ -268,6 +291,11 @@
 }
 
 @media (max-width: 620px) {
+  .word-guess-board-shell {
+    cursor: text;
+    touch-action: manipulation;
+  }
+
   .word-guess-analysis-header,
   .word-guess-candidate-steps li {
     grid-template-columns: 1fr;
