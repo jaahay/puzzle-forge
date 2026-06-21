@@ -77,6 +77,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
   const [message, setMessage] = useState(`Type a ${puzzle.width}-letter word.`);
   const [copiedShare, setCopiedShare] = useState(false);
   const [hardMode, setHardMode] = useState(false);
+  const nativeInputRef = useRef<HTMLInputElement | null>(null);
   const restoredPuzzleId = useRef<string | null>(null);
   const skipNextSave = useRef(false);
   const activeRow = status === "playing" ? submittedRows : -1;
@@ -218,6 +219,12 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     setCopiedShare(false);
   };
 
+  const focusNativeInput = () => {
+    if (status === "playing") {
+      nativeInputRef.current?.focus();
+    }
+  };
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.altKey || event.ctrlKey || event.metaKey) {
@@ -273,10 +280,61 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     <section class="word-guess-game" aria-label={`${puzzle.width}-letter Word Guess game`}>
       <div class="word-guess-status" aria-live="polite">
         <strong>{message}</strong>
-        <span>Type or tap letters, then Enter. Backspace erases.</span>
+        <span>Type with your keyboard. On mobile, use the device keyboard field.</span>
       </div>
 
-      <div class="word-guess-board" aria-label="Word Guess board">
+      <label class="word-guess-native-control">
+        <span>Device keyboard</span>
+        <input
+          ref={nativeInputRef}
+          class="word-guess-native-input"
+          type="text"
+          inputMode="text"
+          autoComplete="off"
+          autoCapitalize="characters"
+          autoCorrect="off"
+          spellCheck={false}
+          aria-label="Word Guess device keyboard input"
+          placeholder="Tap here to type"
+          disabled={status !== "playing"}
+          onInput={(event) => {
+            const input = event.currentTarget;
+            const value = input.value;
+
+            if (!value) {
+              return;
+            }
+
+            Array.from(normalizeWordGuessWord(value)).forEach(inputLetter);
+            input.value = "";
+          }}
+          onKeyDown={(event) => {
+            if (event.altKey || event.ctrlKey || event.metaKey) {
+              return;
+            }
+
+            if (event.key === "Enter") {
+              event.preventDefault();
+              event.stopPropagation();
+              submitGuess();
+              return;
+            }
+
+            if (event.key === "Backspace") {
+              event.preventDefault();
+              event.stopPropagation();
+              backspace();
+              return;
+            }
+
+            if (getLetterFromKey(event.key)) {
+              event.stopPropagation();
+            }
+          }}
+        />
+      </label>
+
+      <div class="word-guess-board" aria-label="Word Guess board" onClick={focusNativeInput}>
         {rows.map((rowCells, rowIndex) => {
           const guess = getGuess(rowCells);
           const isSubmitted = rowIndex < submittedRows && guess.length === puzzle.width;
