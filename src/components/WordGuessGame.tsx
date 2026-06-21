@@ -225,35 +225,71 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     }
   };
 
+  const handleNativeInput = (event: Event) => {
+    const input = event.currentTarget as HTMLInputElement;
+    const value = input.value;
+
+    if (!value) {
+      return;
+    }
+
+    Array.from(normalizeWordGuessWord(value)).forEach(inputLetter);
+    input.value = "";
+  };
+
+  const handleNativeKeyDown = (event: KeyboardEvent) => {
+    if (event.altKey || event.ctrlKey || event.metaKey) {
+      return;
+    }
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      event.stopPropagation();
+      submitGuess();
+      return;
+    }
+
+    if (event.key === "Backspace") {
+      event.preventDefault();
+      event.stopPropagation();
+      backspace();
+      return;
+    }
+
+    if (getLetterFromKey(event.key)) {
+      event.stopPropagation();
+    }
+  };
+
+  const handleDocumentKeyDown = (event: KeyboardEvent) => {
+    if (event.target === nativeInputRef.current || event.altKey || event.ctrlKey || event.metaKey) {
+      return;
+    }
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      submitGuess();
+      return;
+    }
+
+    if (event.key === "Backspace") {
+      event.preventDefault();
+      backspace();
+      return;
+    }
+
+    const letter = getLetterFromKey(event.key);
+    if (letter) {
+      event.preventDefault();
+      inputLetter(letter);
+    }
+  };
+
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey) {
-        return;
-      }
-
-      if (event.key === "Enter") {
-        event.preventDefault();
-        submitGuess();
-        return;
-      }
-
-      if (event.key === "Backspace") {
-        event.preventDefault();
-        backspace();
-        return;
-      }
-
-      const letter = getLetterFromKey(event.key);
-      if (letter) {
-        event.preventDefault();
-        inputLetter(letter);
-      }
-    };
-
-    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", handleDocumentKeyDown);
 
     return () => {
-      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("keydown", handleDocumentKeyDown);
     };
   });
 
@@ -284,7 +320,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
         <span class="word-guess-mobile-hint">Tap the tiles, type your guess, then press return.</span>
       </div>
 
-      <div class="word-guess-board-shell" onPointerDown={focusNativeInput}>
+      <div class="word-guess-board-shell" onClick={focusNativeInput}>
         <input
           ref={nativeInputRef}
           class="word-guess-native-input"
@@ -298,40 +334,8 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
           aria-label="Type your Word Guess answer"
           disabled={status !== "playing"}
           tabIndex={status === "playing" ? 0 : -1}
-          onInput={(event) => {
-            const input = event.currentTarget;
-            const value = input.value;
-
-            if (!value) {
-              return;
-            }
-
-            Array.from(normalizeWordGuessWord(value)).forEach(inputLetter);
-            input.value = "";
-          }}
-          onKeyDown={(event) => {
-            if (event.altKey || event.ctrlKey || event.metaKey) {
-              return;
-            }
-
-            if (event.key === "Enter") {
-              event.preventDefault();
-              event.stopPropagation();
-              submitGuess();
-              return;
-            }
-
-            if (event.key === "Backspace") {
-              event.preventDefault();
-              event.stopPropagation();
-              backspace();
-              return;
-            }
-
-            if (getLetterFromKey(event.key)) {
-              event.stopPropagation();
-            }
-          }}
+          onInput={handleNativeInput}
+          onKeyDown={handleNativeKeyDown}
         />
 
         <div class="word-guess-board" aria-label="Word Guess board">
