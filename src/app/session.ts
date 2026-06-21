@@ -25,6 +25,13 @@ export type SolitaireStats = {
   autoMoveCount: number;
 };
 
+export type SolitaireHistoryEntry = {
+  cardStacks: CardStack[];
+  selectedCard: CardSelection | null;
+  solitaireStats: SolitaireStats;
+  statusMessage: string;
+};
+
 export const initialSolitaireStats: SolitaireStats = {
   moveCount: 0,
   drawCount: 0,
@@ -42,6 +49,8 @@ export type PuzzleSession = {
   cardStacks: CardStack[] | null;
   selectedCard: CardSelection | null;
   solitaireStats: SolitaireStats;
+  solitaireUndoStack?: SolitaireHistoryEntry[];
+  solitaireRedoStack?: SolitaireHistoryEntry[];
   gridCells: PuzzleCell[] | null;
   selectedGridCell: GridCellSelection | null;
   statusMessage: string;
@@ -85,6 +94,13 @@ const cloneGridCell = (cell: PuzzleCell): PuzzleCell => ({ ...cell });
 const cloneCardStack = (stack: CardStack): CardStack => ({
   ...stack,
   cards: stack.cards.map((card) => ({ ...card })),
+});
+
+const cloneSolitaireHistoryEntry = (entry: SolitaireHistoryEntry): SolitaireHistoryEntry => ({
+  cardStacks: entry.cardStacks.map(cloneCardStack),
+  selectedCard: entry.selectedCard ? { ...entry.selectedCard } : null,
+  solitaireStats: { ...entry.solitaireStats },
+  statusMessage: entry.statusMessage,
 });
 
 const clonePuzzleWithoutSolutionKeys = (puzzle: GeneratedPuzzle | null): GeneratedPuzzle | null => {
@@ -131,6 +147,8 @@ export const cloneSessionForPersistence = (session: PuzzleSession): PuzzleSessio
   cardStacks: session.cardStacks?.map(cloneCardStack) ?? null,
   selectedCard: session.selectedCard ? { ...session.selectedCard } : null,
   solitaireStats: { ...session.solitaireStats },
+  solitaireUndoStack: session.solitaireUndoStack?.map(cloneSolitaireHistoryEntry) ?? [],
+  solitaireRedoStack: session.solitaireRedoStack?.map(cloneSolitaireHistoryEntry) ?? [],
   gridCells: session.gridCells?.map(cloneGridCell) ?? null,
   selectedGridCell: session.selectedGridCell ? { ...session.selectedGridCell } : null,
   statusMessage: session.statusMessage,
