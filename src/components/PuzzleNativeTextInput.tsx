@@ -45,6 +45,11 @@ export const PuzzleNativeTextInput = ({
   onEnter,
 }: PuzzleNativeTextInputProps) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const browserInputAttributes = {
+    autocapitalize: autoCapitalize,
+    autocorrect: "off",
+    enterkeyhint: enterKeyHint,
+  } as Record<string, string>;
 
   const pulseHaptics = () => {
     if (!hapticsEnabled || typeof navigator === "undefined") {
@@ -63,8 +68,7 @@ export const PuzzleNativeTextInput = ({
     }
   };
 
-  const handleInput = (event: Event) => {
-    const input = event.currentTarget as HTMLInputElement;
+  const handleInputValue = (input: HTMLInputElement) => {
     const value = input.value;
 
     if (!value) {
@@ -76,7 +80,7 @@ export const PuzzleNativeTextInput = ({
     input.value = "";
   };
 
-  const handleKeyDown = (event: KeyboardEvent) => {
+  const handleInputKey = (event: KeyboardEvent) => {
     if (event.altKey || event.ctrlKey || event.metaKey) {
       return;
     }
@@ -108,14 +112,14 @@ export const PuzzleNativeTextInput = ({
         type="text"
         inputMode={inputMode}
         autoComplete="off"
-        {...({ autoCapitalize, autoCorrect: "off", enterKeyHint } as Record<string, string>)}
+        {...browserInputAttributes}
         spellCheck={false}
         aria-label={ariaLabel}
         disabled={!enabled}
         tabIndex={enabled ? 0 : -1}
         data-puzzle-native-text-input={nativeTextInputMarker}
-        onInput={handleInput}
-        onKeyDown={handleKeyDown}
+        onInput={(event) => handleInputValue(event.currentTarget)}
+        onKeyDown={(event) => handleInputKey(event)}
       />
       {children}
     </div>
