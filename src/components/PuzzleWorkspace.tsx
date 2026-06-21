@@ -229,7 +229,7 @@ export const PuzzleWorkspace = ({
       {puzzle ? (
         <section class="puzzle-panel" aria-label="Generated puzzle preview">
           <div class="puzzle-meta">
-            {puzzle.kind === "cards" ? <span>52-card deal</span> : isSudoku ? null : <span>{`${puzzle.width} x ${puzzle.height}`}</span>}
+            {puzzle.kind === "cards" ? null : isSudoku ? null : <span>{`${puzzle.width} x ${puzzle.height}`}</span>}
             {puzzle.difficulty ? <span>{puzzle.difficulty}</span> : null}
             {isNonogram ? <span>{puzzle.uniqueSolution ? "Unique" : "Open"}</span> : null}
             {isSudoku ? (
@@ -238,12 +238,26 @@ export const PuzzleWorkspace = ({
               <span>{filledOpenCount}/{openCount} filled</span>
             ) : wordGuessDailyLabel ? (
               <span>Daily: {wordGuessDailyLabel}</span>
-            ) : (
+            ) : puzzle.kind === "cards" ? null : (
               <span>Seed: {puzzle.seed}</span>
             )}
             {isSudoku ? <span>Progress: {filledOpenCount} of {openCount}</span> : null}
             {isSudoku ? <span>Seed: {puzzle.seed}</span> : null}
           </div>
+
+          {puzzle.kind === "cards" ? (
+            <div class="solitaire-action-row" aria-label="Solitaire controls">
+              <button type="button" onClick={onUndoSolitaire} disabled={!canUndoSolitaire} aria-label="Undo Solitaire move" title="Undo">
+                ↶
+              </button>
+              <button type="button" onClick={onRedoSolitaire} disabled={!canRedoSolitaire} aria-label="Redo Solitaire move" title="Redo">
+                ↷
+              </button>
+              <button type="button" onClick={onAutoMoveToFoundations} aria-label="Move all currently legal cards to foundations" title="Auto foundation">
+                ♣→
+              </button>
+            </div>
+          ) : null}
 
           {puzzle.kind === "cards" && cardStacks ? (
             <CardPuzzlePreview
@@ -275,17 +289,8 @@ export const PuzzleWorkspace = ({
             />
           ) : null}
 
-          {puzzle.kind === "cards" || (!usesBottomGenerationControls && !isWordGuess) ? (
+          {puzzle.kind !== "cards" && (!usesBottomGenerationControls && !isWordGuess) ? (
             <div class="puzzle-actions">
-              {puzzle.kind === "cards" ? (
-                <>
-                  <button type="button" onClick={onUndoSolitaire} disabled={!canUndoSolitaire}>Undo</button>
-                  <button type="button" onClick={onRedoSolitaire} disabled={!canRedoSolitaire}>Redo</button>
-                  <button type="button" onClick={onAutoMoveToFoundations}>
-                    Auto foundation
-                  </button>
-                </>
-              ) : null}
               <button type="button" onClick={onCheck}>
                 Check
               </button>
@@ -376,7 +381,7 @@ export const PuzzleWorkspace = ({
             </div>
           ) : null}
 
-          {usesBottomGenerationControls || puzzle.notes.length === 0 ? null : (
+          {usesBottomGenerationControls || puzzle.kind === "cards" || puzzle.notes.length === 0 ? null : (
             <ul class="notes-list">
               {puzzle.notes.map((note) => (
                 <li key={note}>{note}</li>
