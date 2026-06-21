@@ -280,11 +280,11 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     <section class="word-guess-game" aria-label={`${puzzle.width}-letter Word Guess game`}>
       <div class="word-guess-status" aria-live="polite">
         <strong>{message}</strong>
-        <span>Type with your keyboard. On mobile, use the device keyboard field.</span>
+        <span class="word-guess-desktop-hint">Type or tap letters, then Enter. Backspace erases.</span>
+        <span class="word-guess-mobile-hint">Tap the tiles, type your guess, then press return.</span>
       </div>
 
-      <label class="word-guess-native-control">
-        <span>Device keyboard</span>
+      <div class="word-guess-board-shell" onPointerDown={focusNativeInput}>
         <input
           ref={nativeInputRef}
           class="word-guess-native-input"
@@ -294,9 +294,10 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
           autoCapitalize="characters"
           autoCorrect="off"
           spellCheck={false}
-          aria-label="Word Guess device keyboard input"
-          placeholder="Tap here to type"
+          enterKeyHint="go"
+          aria-label="Type your Word Guess answer"
           disabled={status !== "playing"}
+          tabIndex={status === "playing" ? 0 : -1}
           onInput={(event) => {
             const input = event.currentTarget;
             const value = input.value;
@@ -332,29 +333,29 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
             }
           }}
         />
-      </label>
 
-      <div class="word-guess-board" aria-label="Word Guess board" onClick={focusNativeInput}>
-        {rows.map((rowCells, rowIndex) => {
-          const guess = getGuess(rowCells);
-          const isSubmitted = rowIndex < submittedRows && guess.length === puzzle.width;
-          const marks = isSubmitted ? scoreWordGuess(answer, guess) : [];
+        <div class="word-guess-board" aria-label="Word Guess board">
+          {rows.map((rowCells, rowIndex) => {
+            const guess = getGuess(rowCells);
+            const isSubmitted = rowIndex < submittedRows && guess.length === puzzle.width;
+            const marks = isSubmitted ? scoreWordGuess(answer, guess) : [];
 
-          return (
-            <div class={`word-guess-row ${rowIndex === activeRow ? "active" : ""}`} key={rowIndex} aria-label={`Guess ${rowIndex + 1}`}>
-              {rowCells.map((cell) => {
-                const mark = marks[cell.column];
-                const tileLabel = cell.value ? `${cell.value}${mark ? `, ${mark}` : ""}` : "Empty";
+            return (
+              <div class={`word-guess-row ${rowIndex === activeRow ? "active" : ""}`} key={rowIndex} aria-label={`Guess ${rowIndex + 1}`}>
+                {rowCells.map((cell) => {
+                  const mark = marks[cell.column];
+                  const tileLabel = cell.value ? `${cell.value}${mark ? `, ${mark}` : ""}` : "Empty";
 
-                return (
-                  <span class={`word-guess-tile ${mark ?? "pending"}`} key={`${cell.row}-${cell.column}`} aria-label={tileLabel}>
-                    {cell.value}
-                  </span>
-                );
-              })}
-            </div>
-          );
-        })}
+                  return (
+                    <span class={`word-guess-tile ${mark ?? "pending"}`} key={`${cell.row}-${cell.column}`} aria-label={tileLabel}>
+                      {cell.value}
+                    </span>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div class="word-guess-keyboard" aria-label="Word Guess on-screen keyboard">
