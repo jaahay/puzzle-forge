@@ -11,11 +11,28 @@
   width: max-content;
   max-width: 100%;
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
   border: 2px solid #e5e7eb;
   border-radius: 1rem;
   padding: 0.55rem;
-  background: #64748b;
+  background: linear-gradient(135deg, #64748b, #475569);
   box-shadow: 0 24px 80px rgba(2, 6, 23, 0.32);
+  scrollbar-color: #a7f3d0 #334155;
+}
+
+.nonogram-board::-webkit-scrollbar {
+  height: 0.7rem;
+}
+
+.nonogram-board::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: #334155;
+}
+
+.nonogram-board::-webkit-scrollbar-thumb {
+  border: 2px solid #334155;
+  border-radius: 999px;
+  background: #a7f3d0;
 }
 
 .nonogram-corner {
@@ -28,12 +45,12 @@
   border-bottom-width: 2px;
   border-radius: 0;
   padding: 0.45rem;
-  color: #0f172a;
-  background: #e5e7eb;
+  color: #1e293b;
+  background: #e2e8f0;
   font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  font-size: 0.64rem;
+  font-size: 0.58rem;
   font-weight: 900;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
@@ -83,7 +100,7 @@
   justify-content: flex-end;
   width: var(--nonogram-cell-size);
   border-bottom-width: 2px;
-  padding: 0.45rem 0.2rem;
+  padding: 0.4rem 0.18rem;
 }
 
 .nonogram-row-clue {
@@ -134,6 +151,10 @@
 .nonogram-board .grid.nonogram .cell.hint {
   color: #450a0a;
   background: #fecaca;
+}
+
+.nonogram-workspace .puzzle-panel {
+  align-items: center;
 }
 
 .nonogram-workspace .puzzle-settings-panel {
@@ -201,11 +222,11 @@
   .nonogram-corner {
     min-width: 2.85rem;
     padding: 0.35rem;
-    font-size: 0.56rem;
+    font-size: 0.52rem;
   }
 
   .nonogram-clue {
-    font-size: 0.68rem;
+    font-size: 0.66rem;
   }
 
   .nonogram-row-clue {
