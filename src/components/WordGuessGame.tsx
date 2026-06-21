@@ -273,7 +273,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     <section class="word-guess-game" aria-label={`${puzzle.width}-letter Word Guess game`}>
       <div class="word-guess-status" aria-live="polite">
         <strong>{message}</strong>
-        <span>Use your keyboard or tap the on-screen keys. Enter submits; Backspace erases.</span>
+        <span>Type or tap letters, then Enter. Backspace erases.</span>
       </div>
 
       <div class="word-guess-board" aria-label="Word Guess board">
