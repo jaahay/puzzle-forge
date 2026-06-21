@@ -33,6 +33,13 @@ import {
 } from "./interactions/gridRules";
 import type { AppView } from "./site/views";
 
+type SolitaireHistoryEntry = {
+  cardStacks: CardStack[];
+  selectedCard: CardSelection | null;
+  solitaireStats: SolitaireStats;
+  statusMessage: string;
+};
+
 export const App = () => {
   const [activeView, setActiveView] = useState<AppView>(getActiveView);
   const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>("sudoku");
@@ -45,6 +52,8 @@ export const App = () => {
   const [cardStacks, setCardStacks] = useState<CardStack[] | null>(null);
   const [selectedCard, setSelectedCard] = useState<CardSelection | null>(null);
   const [solitaireStats, setSolitaireStats] = useState<SolitaireStats>(initialSolitaireStats);
+  const [solitaireUndoStack, setSolitaireUndoStack] = useState<SolitaireHistoryEntry[]>([]);
+  const [solitaireRedoStack, setSolitaireRedoStack] = useState<SolitaireHistoryEntry[]>([]);
   const [gridCells, setGridCells] = useState<PuzzleCell[] | null>(null);
   const [selectedGridCell, setSelectedGridCell] = useState<GridCellSelection | null>(null);
   const [statusMessage, setStatusMessage] = useState("Pick a puzzle to start.");
@@ -71,6 +80,51 @@ export const App = () => {
 
   const clearGridInteraction = () => {
     setSelectedGridCell(null);
+  };
+
+  const makeSolitaireHistoryEntry = (stacks: CardStack[], selected: CardSelection | null, stats: SolitaireStats, message: string): SolitaireHistoryEntry => ({
+    cardStacks: stacks.map(cloneStack),
+    selectedCard: selected ? { ...selected } : null,
+    solitaireStats: { ...stats },
+    statusMessage: message,
+  });
+
+  const restoreSolitaireHistoryEntry = (entry: SolitaireHistoryEntry) => {
+    setCardStacks(entry.cardStacks.map(cloneStack));
+    setSelectedCard(entry.selectedCard ? { ...entry.selectedCard } : null);
+    setSolitaireStats({ ...entry.solitaireStats });
+    setStatusMessage(entry.statusMessage);
+  };
+
+  const clearSolitaireHistory = () => {
+    setSolitaireUndoStack([]);
+    setSolitaireRedoStack([]);
+  };
+
+  const undoSolitaireMove = () => {
+    if (!cardStacks || solitaireUndoStack.length === 0) {
+      setStatusMessage("No Solitaire moves to undo.");
+      return;
+    }
+
+    const previous = solitaireUndoStack[solitaireUndoStack.length - 1];
+    const current = makeSolitaireHistoryEntry(cardStacks, selectedCard, solitaireStats, statusMessage);
+    setSolitaireUndoStack((entries) => entries.slice(0, -1));
+    setSolitaireRedoStack((entries) => [...entries, current]);
+    restoreSolitaireHistoryEntry(previous);
+  };
+
+  const redoSolitaireMove = () => {
+    if (!cardStacks || solitaireRedoStack.length === 0) {
+      setStatusMessage("No Solitaire moves to redo.");
+      return;
+    }
+
+    const next = solitaireRedoStack[solitaireRedoStack.length - 1];
+    const current = makeSolitaireHistoryEntry(cardStacks, selectedCard, solitaireStats, statusMessage);
+    setSolitaireRedoStack((entries) => entries.slice(0, -1));
+    setSolitaireUndoStack((entries) => [...entries, current]);
+    restoreSolitaireHistoryEntry(next);
   };
 
   const saveCurrentSession = () => {
@@ -106,6 +160,7 @@ export const App = () => {
     setGridCells(session.gridCells?.map(cloneGridCell) ?? null);
     setSelectedGridCell(session.selectedGridCell ? { ...session.selectedGridCell } : null);
     setStatusMessage(session.statusMessage);
+    clearSolitaireHistory();
     setIsGenerating(false);
   };
 
@@ -161,6 +216,7 @@ export const App = () => {
     setSelectedCard(null);
     setSelectedGridCell(null);
     resetSolitaireStats();
+    clearSolitaireHistory();
     setStatusMessage(`Generating ${definition.title}...`);
     worker.postMessage(request);
   };
@@ -171,12 +227,21 @@ export const App = () => {
         return currentStacks;
       }
 
-      const { stacks, message } = updater(currentStacks.map(cloneStack));
+      const workingStacks = currentStacks.map(cloneStack);
+      const historyEntry = makeSolitaireHistoryEntry(currentStacks, selectedCard, solitaireStats, statusMessage);
+      const { stacks, message } = updater(workingStacks);
+      const didChange = stacks !== workingStacks;
       const foundationCardCount = stacks
         .filter((stack) => stack.role === "foundation")
         .reduce((total, stack) => total + stack.cards.length, 0);
+      const nextMessage = foundationCardCount === 52 ? "Solved. All cards are on foundations." : message;
 
-      setStatusMessage(foundationCardCount === 52 ? "Solved. All cards are on foundations." : message);
+      if (didChange) {
+        setSolitaireUndoStack((entries) => [...entries, historyEntry].slice(-120));
+        setSolitaireRedoStack([]);
+      }
+
+      setStatusMessage(nextMessage);
 
       return stacks;
     });
@@ -293,6 +358,44 @@ export const App = () => {
     clearCardInteraction();
 
     return didMove;
+  };
+
+  const moveSingleCardToFoundation = (stack: CardStack, cardIndex: number) => {
+    clearCardInteraction();
+
+    updateCardStacks((stacks) => {
+      const sourceIndex = stacks.findIndex((candidate) => candidate.id === stack.id);
+      const source = stacks[sourceIndex];
+
+      if (!source) {
+        return { stacks, message: "Selected source stack no longer exists." };
+      }
+
+      if (cardIndex !== source.cards.length - 1) {
+        return { stacks, message: "Only a top card can move to a foundation." };
+      }
+
+      const movingCard = source.cards[cardIndex];
+
+      if (!movingCard?.faceUp) {
+        return { stacks, message: "Only face-up cards can move to foundations." };
+      }
+
+      const foundationIndex = findFoundationIndexForCard(movingCard, stacks);
+      const foundation = stacks[foundationIndex];
+
+      if (!foundation || !canMoveToFoundation(movingCard, foundation)) {
+        return { stacks, message: `${movingCard.code} cannot move to a foundation.` };
+      }
+
+      const nextStacks = [...stacks];
+      const sourceCards = source.cards.slice(0, -1);
+      nextStacks[sourceIndex] = source.role === "tableau" ? revealTopTableauCard({ ...source, cards: sourceCards }) : { ...source, cards: sourceCards };
+      nextStacks[foundationIndex] = { ...foundation, cards: [...foundation.cards, movingCard] };
+      setSolitaireStats((current) => ({ ...current, moveCount: current.moveCount + 1 }));
+
+      return { stacks: nextStacks, message: `Moved ${movingCard.code} to ${foundation.title}.` };
+    });
   };
 
   const autoMoveToFoundations = () => {
@@ -622,6 +725,7 @@ export const App = () => {
       setSelectedCard(null);
       setSelectedGridCell(null);
       resetSolitaireStats();
+      clearSolitaireHistory();
       setStatusMessage(
         event.data.puzzle.puzzleId === "sudoku"
           ? `${event.data.puzzle.difficulty ?? defaultSudokuDifficulty} Sudoku ready.`
@@ -795,7 +899,12 @@ export const App = () => {
               onRandomize={randomize}
               onCheck={handleCheck}
               onAutoMoveToFoundations={autoMoveToFoundations}
+              onUndoSolitaire={undoSolitaireMove}
+              onRedoSolitaire={redoSolitaireMove}
+              canUndoSolitaire={solitaireUndoStack.length > 0}
+              canRedoSolitaire={solitaireRedoStack.length > 0}
               onCardClick={handleCardClick}
+              onCardDoubleClick={moveSingleCardToFoundation}
               onStackClick={handleStackClick}
               onCellClick={handleGridCellClick}
               onCellInput={handleGridCellInput}

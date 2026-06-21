@@ -12,6 +12,7 @@ type CardStackProps = {
   stack: CardStack;
   selectedCard: CardSelection | null;
   onCardClick: (stack: CardStack, cardIndex: number) => void;
+  onCardDoubleClick: (stack: CardStack, cardIndex: number) => void;
   onStackClick: (stack: CardStack) => void;
 };
 
@@ -43,6 +44,7 @@ const renderPlayingCard = (
   index: number,
   selectedCard: CardSelection | null,
   onCardClick: (stack: CardStack, cardIndex: number) => void,
+  onCardDoubleClick: (stack: CardStack, cardIndex: number) => void,
 ) => {
   const selected = isSelectedCard(selectedCard, stack, index);
   const selectable = canSelectFromStack(stack, index);
@@ -52,10 +54,11 @@ const renderPlayingCard = (
   return (
     <button
       aria-label={card.faceUp ? `${card.label}${selectable ? ", movable" : ""}` : "Face-down card"}
-      class={`playing-card ${card.faceUp ? card.color : "back"} ${selected ? "selected-card" : ""}`}
+      class={`playing-card ${card.faceUp ? card.color : "back"} ${card.faceUp ? "face-up" : "face-down"} ${selected ? "selected-card" : ""}`}
       disabled={!card.faceUp && stack.role !== "stock"}
       key={`${stack.id}-${index}-${card.code}`}
       onClick={() => onCardClick(stack, index)}
+      onDblClick={() => onCardDoubleClick(stack, index)}
       type="button"
     >
       {card.faceUp ? (
@@ -80,7 +83,7 @@ const renderPlayingCard = (
   );
 };
 
-const renderCardStack = ({ stack, selectedCard, onCardClick, onStackClick }: CardStackProps) => {
+const renderCardStack = ({ stack, selectedCard, onCardClick, onCardDoubleClick, onStackClick }: CardStackProps) => {
   const cardsToRender = stack.role === "stock" ? stack.cards.slice(-1) : stack.cards;
   const firstRenderedIndex = stack.role === "stock" ? Math.max(stack.cards.length - 1, 0) : 0;
   const hasSelection = selectedCard !== null;
@@ -96,7 +99,7 @@ const renderCardStack = ({ stack, selectedCard, onCardClick, onStackClick }: Car
       <div class="playing-card-list">
         {cardsToRender.length > 0 ? (
           cardsToRender.map((card, index) =>
-            renderPlayingCard(card, stack, firstRenderedIndex + index, selectedCard, onCardClick),
+            renderPlayingCard(card, stack, firstRenderedIndex + index, selectedCard, onCardClick, onCardDoubleClick),
           )
         ) : (
           <button
@@ -118,10 +121,11 @@ type CardPuzzlePreviewProps = {
   selectedCard: CardSelection | null;
   stats: SolitaireStats;
   onCardClick: (stack: CardStack, cardIndex: number) => void;
+  onCardDoubleClick: (stack: CardStack, cardIndex: number) => void;
   onStackClick: (stack: CardStack) => void;
 };
 
-export const CardPuzzlePreview = ({ stacks, selectedCard, stats, onCardClick, onStackClick }: CardPuzzlePreviewProps) => {
+export const CardPuzzlePreview = ({ stacks, selectedCard, stats, onCardClick, onCardDoubleClick, onStackClick }: CardPuzzlePreviewProps) => {
   const stockAndWaste = stacks.filter((stack) => stack.role === "stock" || stack.role === "waste");
   const foundations = stacks.filter((stack) => stack.role === "foundation");
   const tableau = stacks.filter((stack) => stack.role === "tableau");
@@ -132,7 +136,7 @@ export const CardPuzzlePreview = ({ stacks, selectedCard, stats, onCardClick, on
   );
   const wasteStack = stockAndWaste.find((stack) => stack.role === "waste");
   const wasteTopCard = wasteStack ? getTopCard(wasteStack) : undefined;
-  const renderStack = (stack: CardStack) => renderCardStack({ stack, selectedCard, onCardClick, onStackClick });
+  const renderStack = (stack: CardStack) => renderCardStack({ stack, selectedCard, onCardClick, onCardDoubleClick, onStackClick });
 
   return (
     <div class="cards-layout">

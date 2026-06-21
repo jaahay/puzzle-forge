@@ -103,3 +103,27 @@
     grid-template-columns: repeat(7, minmax(4.85rem, 1fr));
   }
 }
+
+/* Solitaire polish: overlapped tableau stacks and history controls. */
+.tableau .playing-card-list {
+  display: grid;
+  grid-auto-rows: clamp(1.18rem, 3vw, 1.72rem);
+  padding-bottom: clamp(5.75rem, 16vw, 8rem);
+}
+
+.tableau .playing-card {
+  width: 100%;
+}
+
+.playing-card.face-down + .playing-card.face-up {
+  margin-top: 0.2rem;
+}
+
+.playing-card.face-up {
+  isolation: isolate;
+}
+
+.puzzle-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}

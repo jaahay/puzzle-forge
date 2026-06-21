@@ -42,7 +42,12 @@ type PuzzleWorkspaceProps = {
   onRandomize: () => void;
   onCheck: () => void;
   onAutoMoveToFoundations: () => void;
+  onUndoSolitaire: () => void;
+  onRedoSolitaire: () => void;
+  canUndoSolitaire: boolean;
+  canRedoSolitaire: boolean;
   onCardClick: (stack: CardStack, cardIndex: number) => void;
+  onCardDoubleClick: (stack: CardStack, cardIndex: number) => void;
   onStackClick: (stack: CardStack) => void;
   onCellClick: (cell: PuzzleCell) => void;
   onCellInput: (cell: PuzzleCell, value: string) => void;
@@ -83,7 +88,12 @@ export const PuzzleWorkspace = ({
   onRandomize,
   onCheck,
   onAutoMoveToFoundations,
+  onUndoSolitaire,
+  onRedoSolitaire,
+  canUndoSolitaire,
+  canRedoSolitaire,
   onCardClick,
+  onCardDoubleClick,
   onStackClick,
   onCellClick,
   onCellInput,
@@ -240,6 +250,7 @@ export const PuzzleWorkspace = ({
               selectedCard={selectedCard}
               stats={solitaireStats}
               onCardClick={onCardClick}
+              onCardDoubleClick={onCardDoubleClick}
               onStackClick={onStackClick}
             />
           ) : puzzle.kind === "grid" && puzzle.puzzleId === "word-guess" && gridCells ? (
@@ -264,9 +275,13 @@ export const PuzzleWorkspace = ({
           {puzzle.kind === "cards" || (!usesBottomGenerationControls && !isWordGuess) ? (
             <div class="puzzle-actions">
               {puzzle.kind === "cards" ? (
-                <button type="button" onClick={onAutoMoveToFoundations}>
-                  Auto foundation
-                </button>
+                <>
+                  <button type="button" onClick={onUndoSolitaire} disabled={!canUndoSolitaire}>Undo</button>
+                  <button type="button" onClick={onRedoSolitaire} disabled={!canRedoSolitaire}>Redo</button>
+                  <button type="button" onClick={onAutoMoveToFoundations}>
+                    Auto foundation
+                  </button>
+                </>
               ) : null}
               <button type="button" onClick={onCheck}>
                 Check
