@@ -21,6 +21,41 @@
   font-size: 0.85rem;
 }
 
+.word-guess-native-control {
+  display: none;
+  gap: 0.35rem;
+  width: min(100%, 22rem);
+  margin: 0 auto;
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.word-guess-native-input {
+  width: 100%;
+  border: 1px solid #334155;
+  border-radius: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  color: #f8fafc;
+  background: #111827;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.word-guess-native-input:focus {
+  border-color: #a7f3d0;
+  box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.28);
+  outline: none;
+}
+
+.word-guess-native-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
 .word-guess-board {
   display: grid;
   gap: 0.45rem;
@@ -268,6 +303,14 @@
 }
 
 @media (max-width: 620px) {
+  .word-guess-native-control {
+    display: grid;
+  }
+
+  .word-guess-keyboard {
+    display: none;
+  }
+
   .word-guess-analysis-header,
   .word-guess-candidate-steps li {
     grid-template-columns: 1fr;
