@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { getWordGuessAnalysis } from "../games/wordGuess/analysis";
 import { scoreWordGuess } from "../games/wordGuess/feedback";
