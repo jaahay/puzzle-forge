@@ -1,5 +1,5 @@
 import type { ComponentChildren } from "preact";
-import { useRef } from "preact/hooks";
+import { useEffect, useRef } from "preact/hooks";
 
 const nativeTextInputMarker = "true";
 
@@ -45,11 +45,18 @@ export const PuzzleNativeTextInput = ({
   onEnter,
 }: PuzzleNativeTextInputProps) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const browserInputAttributes = {
-    autocapitalize: autoCapitalize,
-    autocorrect: "off",
-    enterkeyhint: enterKeyHint,
-  } as Record<string, string>;
+
+  useEffect(() => {
+    const input = inputRef.current;
+    if (!input) {
+      return;
+    }
+
+    input.setAttribute("inputmode", inputMode);
+    input.setAttribute("autocapitalize", autoCapitalize);
+    input.setAttribute("autocorrect", "off");
+    input.setAttribute("enterkeyhint", enterKeyHint);
+  }, [autoCapitalize, enterKeyHint, inputMode]);
 
   const pulseHaptics = () => {
     if (!hapticsEnabled || typeof navigator === "undefined") {
@@ -110,9 +117,7 @@ export const PuzzleNativeTextInput = ({
         ref={inputRef}
         class={inputClassName}
         type="text"
-        inputMode={inputMode}
         autoComplete="off"
-        {...browserInputAttributes}
         spellCheck={false}
         aria-label={ariaLabel}
         disabled={!enabled}
