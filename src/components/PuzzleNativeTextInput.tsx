@@ -118,8 +118,8 @@ export const PuzzleNativeTextInput = ({
         disabled={!enabled}
         tabIndex={enabled ? 0 : -1}
         data-puzzle-native-text-input={nativeTextInputMarker}
-        onInput={(event) => handleInputValue(event.currentTarget)}
-        onKeyDown={(event) => handleInputKey(event)}
+        onInput={(event) => handleInputValue(event.currentTarget as HTMLInputElement)}
+        onKeyDown={(event) => handleInputKey(event as unknown as KeyboardEvent)}
       />
       {children}
     </div>
