@@ -93,6 +93,7 @@ export const PuzzleWorkspace = ({
   const isNonogram = selectedDefinition.id === "nonogram";
   const isWordGuess = selectedDefinition.id === "word-guess";
   const usesBottomGenerationControls = isSudoku || isNonogram;
+  const showStatusLine = !usesBottomGenerationControls && !isWordGuess;
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
   const filledOpenCount = getFilledOpenCount(gridCells);
   const openCount = getOpenCount(gridCells);
@@ -124,7 +125,7 @@ export const PuzzleWorkspace = ({
         onInput={(event) => onSeedChange(event.currentTarget.value)}
         onKeyDown={blurOnEnter}
       />
-      <button type="button" onClick={copySeed}>{seedCopied ? "Copied" : "Copy"}</button>
+      <button type="button" onClick={copySeed}>{seedCopied ? "Copied" : "Copy seed"}</button>
     </div>
   );
 
@@ -187,20 +188,20 @@ export const PuzzleWorkspace = ({
               </button>
             ) : null}
             <button type="button" onClick={onGenerate} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-              {isGenerating ? "Generating..." : "Generate"}
+              {isGenerating ? "Generating..." : isWordGuess ? "Use seed" : "Generate"}
             </button>
             <button type="button" onClick={onRandomize} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-              New puzzle
+              {isWordGuess ? "Random" : "Randomize"}
             </button>
           </div>
         </div>
       )}
 
-      {usesBottomGenerationControls ? null : (
+      {showStatusLine ? (
         <p class="status-line" aria-live="polite">
           {statusMessage}
         </p>
-      )}
+      ) : null}
 
       {showSudokuValidationMessage ? (
         <p class={`sudoku-validation-message ${sudokuValidationTone}`} aria-live="polite">
@@ -349,7 +350,7 @@ export const PuzzleWorkspace = ({
 
               <div class="puzzle-settings-actions">
                 <button type="button" onClick={onRandomize} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-                  New puzzle
+                  Randomize
                 </button>
               </div>
 
