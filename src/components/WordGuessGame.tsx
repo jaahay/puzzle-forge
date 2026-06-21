@@ -79,6 +79,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
   const [hardMode, setHardMode] = useState(false);
   const restoredPuzzleId = useRef<string | null>(null);
   const skipNextSave = useRef(false);
+  const nativeInputRef = useRef<HTMLInputElement | null>(null);
   const activeRow = status === "playing" ? submittedRows : -1;
   const rowGuesses = rows.map(getGuess);
   const submittedGuesses = rowGuesses.slice(0, submittedRows).filter((guess) => guess.length === puzzle.width);
@@ -218,9 +219,19 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     setCopiedShare(false);
   };
 
+  const focusNativeInput = () => {
+    if (status === "playing") {
+      nativeInputRef.current?.focus();
+    }
+  };
+
+  const handleNativeInput = (value: string) => {
+    Array.from(normalizeWordGuessWord(value)).forEach(inputLetter);
+  };
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey) {
+      if (event.target === nativeInputRef.current || event.altKey || event.ctrlKey || event.metaKey) {
         return;
       }
 
@@ -276,27 +287,65 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
         <span>Type or tap letters, then Enter. Backspace erases.</span>
       </div>
 
-      <div class="word-guess-board" aria-label="Word Guess board">
-        {rows.map((rowCells, rowIndex) => {
-          const guess = getGuess(rowCells);
-          const isSubmitted = rowIndex < submittedRows && guess.length === puzzle.width;
-          const marks = isSubmitted ? scoreWordGuess(answer, guess) : [];
+      <div class="word-guess-board-shell" onClick={focusNativeInput}>
+        <input
+          ref={nativeInputRef}
+          class="word-guess-native-input"
+          type="text"
+          autoComplete="off"
+          spellCheck={false}
+          aria-label="Type your Word Guess answer"
+          disabled={status !== "playing"}
+          tabIndex={status === "playing" ? 0 : -1}
+          onInput={(event) => {
+            const input = event.currentTarget;
+            handleNativeInput(input.value);
+            input.value = "";
+          }}
+          onKeyDown={(event) => {
+            if (event.altKey || event.ctrlKey || event.metaKey) {
+              return;
+            }
 
-          return (
-            <div class={`word-guess-row ${rowIndex === activeRow ? "active" : ""}`} key={rowIndex} aria-label={`Guess ${rowIndex + 1}`}>
-              {rowCells.map((cell) => {
-                const mark = marks[cell.column];
-                const tileLabel = cell.value ? `${cell.value}${mark ? `, ${mark}` : ""}` : "Empty";
+            if (event.key === "Enter") {
+              event.preventDefault();
+              event.stopPropagation();
+              submitGuess();
+              return;
+            }
 
-                return (
-                  <span class={`word-guess-tile ${mark ?? "pending"}`} key={`${cell.row}-${cell.column}`} aria-label={tileLabel}>
-                    {cell.value}
-                  </span>
-                );
-              })}
-            </div>
-          );
-        })}
+            if (event.key === "Backspace") {
+              event.preventDefault();
+              event.stopPropagation();
+              backspace();
+              return;
+            }
+
+            event.stopPropagation();
+          }}
+        />
+        <div class="word-guess-board" aria-label="Word Guess board">
+          {rows.map((rowCells, rowIndex) => {
+            const guess = getGuess(rowCells);
+            const isSubmitted = rowIndex < submittedRows && guess.length === puzzle.width;
+            const marks = isSubmitted ? scoreWordGuess(answer, guess) : [];
+
+            return (
+              <div class={`word-guess-row ${rowIndex === activeRow ? "active" : ""}`} key={rowIndex} aria-label={`Guess ${rowIndex + 1}`}>
+                {rowCells.map((cell) => {
+                  const mark = marks[cell.column];
+                  const tileLabel = cell.value ? `${cell.value}${mark ? `, ${mark}` : ""}` : "Empty";
+
+                  return (
+                    <span class={`word-guess-tile ${mark ?? "pending"}`} key={`${cell.row}-${cell.column}`} aria-label={tileLabel}>
+                      {cell.value}
+                    </span>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div class="word-guess-keyboard" aria-label="Word Guess on-screen keyboard">
