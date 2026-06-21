@@ -46,18 +46,6 @@ export const PuzzleNativeTextInput = ({
 }: PuzzleNativeTextInputProps) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => {
-    const input = inputRef.current;
-    if (!input) {
-      return;
-    }
-
-    input.setAttribute("inputmode", inputMode);
-    input.setAttribute("autocapitalize", autoCapitalize);
-    input.setAttribute("autocorrect", "off");
-    input.setAttribute("enterkeyhint", enterKeyHint);
-  }, [autoCapitalize, enterKeyHint, inputMode]);
-
   const pulseHaptics = () => {
     if (!hapticsEnabled || typeof navigator === "undefined") {
       return;
@@ -75,57 +63,66 @@ export const PuzzleNativeTextInput = ({
     }
   };
 
-  const handleInputValue = (input: HTMLInputElement) => {
-    const value = input.value;
-
-    if (!value) {
+  useEffect(() => {
+    const input = inputRef.current;
+    if (!input) {
       return;
     }
 
-    onTextInput(value);
-    pulseHaptics();
-    input.value = "";
-  };
+    input.setAttribute("inputmode", inputMode);
+    input.setAttribute("autocapitalize", autoCapitalize);
+    input.setAttribute("autocorrect", "off");
+    input.setAttribute("enterkeyhint", enterKeyHint);
+    input.dataset.puzzleNativeTextInput = nativeTextInputMarker;
 
-  const handleInputKey = (event: KeyboardEvent) => {
-    if (event.altKey || event.ctrlKey || event.metaKey) {
-      return;
-    }
+    const handleInput = () => {
+      const value = input.value;
 
-    if (event.key === "Enter") {
-      event.preventDefault();
-      event.stopPropagation();
-      onEnter();
+      if (!value) {
+        return;
+      }
+
+      onTextInput(value);
       pulseHaptics();
-      return;
-    }
+      input.value = "";
+    };
 
-    if (event.key === "Backspace") {
-      event.preventDefault();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.altKey || event.ctrlKey || event.metaKey) {
+        return;
+      }
+
+      if (event.key === "Enter") {
+        event.preventDefault();
+        event.stopPropagation();
+        onEnter();
+        pulseHaptics();
+        return;
+      }
+
+      if (event.key === "Backspace") {
+        event.preventDefault();
+        event.stopPropagation();
+        onBackspace();
+        pulseHaptics();
+        return;
+      }
+
       event.stopPropagation();
-      onBackspace();
-      pulseHaptics();
-      return;
-    }
+    };
 
-    event.stopPropagation();
-  };
+    input.addEventListener("input", handleInput);
+    input.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      input.removeEventListener("input", handleInput);
+      input.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [autoCapitalize, enterKeyHint, hapticDurationMs, hapticsEnabled, inputMode, onBackspace, onEnter, onTextInput]);
 
   return (
     <div class={className} onClick={focusInput}>
-      <input
-        ref={inputRef}
-        class={inputClassName}
-        type="text"
-        autoComplete="off"
-        spellCheck={false}
-        aria-label={ariaLabel}
-        disabled={!enabled}
-        tabIndex={enabled ? 0 : -1}
-        data-puzzle-native-text-input={nativeTextInputMarker}
-        onInput={(event) => handleInputValue(event.currentTarget as HTMLInputElement)}
-        onKeyDown={(event) => handleInputKey(event as unknown as KeyboardEvent)}
-      />
+      <input ref={inputRef} class={inputClassName} type="text" autoComplete="off" spellCheck={false} aria-label={ariaLabel} disabled={!enabled} tabIndex={enabled ? 0 : -1} />
       {children}
     </div>
   );
