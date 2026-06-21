@@ -1,11 +1,14 @@
 .nonogram-board {
+  --nonogram-cell-size: clamp(2.15rem, 5vw, 2.8rem);
+
   display: grid;
   grid-template-areas:
     "corner columns"
     "rows puzzle";
-  grid-template-columns: minmax(3.25rem, max-content) minmax(min(18rem, 100%), 42rem);
+  grid-template-columns: max-content max-content;
   gap: 0;
   align-items: stretch;
+  width: max-content;
   max-width: 100%;
   overflow-x: auto;
   border: 2px solid #e5e7eb;
@@ -17,6 +20,7 @@
 
 .nonogram-corner {
   display: grid;
+  min-width: 3.25rem;
   place-items: end center;
   grid-area: corner;
   border: 1px solid #94a3b8;
@@ -38,6 +42,7 @@
   grid-area: columns;
   gap: 0;
   align-items: stretch;
+  width: max-content;
   background: #94a3b8;
 }
 
@@ -45,6 +50,7 @@
   display: grid;
   grid-area: rows;
   gap: 0;
+  width: max-content;
   height: 100%;
   background: #94a3b8;
 }
@@ -54,14 +60,14 @@
   align-items: center;
   justify-content: center;
   gap: 0.16rem;
-  min-width: 2.35rem;
-  min-height: clamp(2.25rem, 5.5vw, 2.95rem);
+  min-width: var(--nonogram-cell-size);
+  min-height: var(--nonogram-cell-size);
   border: 1px solid #94a3b8;
   border-radius: 0;
   color: #0f172a;
   background: #f8fafc;
   font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  font-size: clamp(0.72rem, 1.7vw, 0.86rem);
+  font-size: clamp(0.68rem, 1.6vw, 0.84rem);
   font-weight: 800;
   line-height: 1;
 }
@@ -75,6 +81,7 @@
 .nonogram-column-clue {
   flex-direction: column;
   justify-content: flex-end;
+  width: var(--nonogram-cell-size);
   border-bottom-width: 2px;
   padding: 0.45rem 0.2rem;
 }
@@ -89,7 +96,8 @@
 .nonogram-board .grid.nonogram {
   grid-area: puzzle;
   gap: 0;
-  min-width: 18rem;
+  width: max-content;
+  min-width: 0;
   overflow: hidden;
   border: 1px solid #94a3b8;
   border-radius: 0;
@@ -97,7 +105,9 @@
 }
 
 .nonogram-board .grid.nonogram .cell {
-  min-height: clamp(2.25rem, 5.5vw, 2.95rem);
+  width: var(--nonogram-cell-size);
+  min-width: var(--nonogram-cell-size);
+  min-height: var(--nonogram-cell-size);
   border: 1px solid #94a3b8;
   border-radius: 0;
   color: #0f172a;
@@ -182,25 +192,46 @@
 
 @media (max-width: 720px) {
   .nonogram-board {
-    grid-template-columns: minmax(3rem, max-content) minmax(18rem, 1fr);
-    padding: 0.45rem;
+    --nonogram-cell-size: clamp(1.85rem, 8.2vw, 2.25rem);
+
+    max-width: calc(100vw - 2rem);
+    padding: 0.4rem;
   }
 
   .nonogram-corner {
-    font-size: 0.58rem;
+    min-width: 2.85rem;
+    padding: 0.35rem;
+    font-size: 0.56rem;
   }
 
   .nonogram-clue {
-    min-height: 2.25rem;
-    font-size: 0.7rem;
+    font-size: 0.68rem;
   }
 
   .nonogram-row-clue {
-    min-width: 3rem;
-    padding-inline: 0.35rem;
+    min-width: 2.85rem;
+    padding-inline: 0.32rem;
   }
 
-  .nonogram-board .grid.nonogram .cell {
-    min-height: 2.25rem;
+  .nonogram-workspace .puzzle-settings-panel,
+  .nonogram-workspace .puzzle-generation-options {
+    grid-template-columns: 1fr;
+  }
+
+  .nonogram-workspace .puzzle-settings-panel > div:first-of-type {
+    padding-bottom: 0.65rem;
+  }
+
+  .nonogram-workspace .puzzle-settings-panel > div:last-of-type {
+    justify-self: stretch;
+  }
+
+  .nonogram-workspace .puzzle-settings-actions button {
+    width: 100%;
+  }
+
+  .nonogram-workspace .puzzle-checkbox-control {
+    min-width: 0;
+    white-space: normal;
   }
 }
