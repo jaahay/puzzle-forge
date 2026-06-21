@@ -1,3 +1,37 @@
+.solitaire-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  justify-content: flex-start;
+  margin: 0 0 0.9rem;
+}
+
+.solitaire-action-row button {
+  min-width: 3.1rem;
+  border-radius: 999px;
+  padding: 0.72rem 1rem;
+  color: #0f172a;
+  background: #a7f3d0;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.solitaire-action-row button:nth-child(2) {
+  color: #e5e7eb;
+  background: #334155;
+}
+
+.solitaire-action-row button:nth-child(3) {
+  color: #f8fafc;
+  background: #0f766e;
+}
+
+.solitaire-action-row button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
 .solitaire-summary {
   display: flex;
   flex-wrap: wrap;
@@ -44,8 +78,28 @@
   overflow: hidden;
 }
 
+.stock .playing-card-list,
+.waste .playing-card-list,
+.foundation .playing-card-list {
+  min-height: 5.25rem;
+}
+
 .tableau .playing-card-list {
-  grid-auto-rows: 1.45rem;
+  display: grid;
+  grid-auto-rows: clamp(1.18rem, 3vw, 1.72rem);
+  padding-bottom: clamp(5.75rem, 16vw, 8rem);
+}
+
+.tableau .playing-card {
+  width: 100%;
+}
+
+.playing-card.face-down + .playing-card.face-up {
+  margin-top: 0.2rem;
+}
+
+.playing-card.face-up {
+  isolation: isolate;
 }
 
 .card-corner {
@@ -102,28 +156,4 @@
   .tableau-row {
     grid-template-columns: repeat(7, minmax(4.85rem, 1fr));
   }
-}
-
-/* Solitaire polish: overlapped tableau stacks and history controls. */
-.tableau .playing-card-list {
-  display: grid;
-  grid-auto-rows: clamp(1.18rem, 3vw, 1.72rem);
-  padding-bottom: clamp(5.75rem, 16vw, 8rem);
-}
-
-.tableau .playing-card {
-  width: 100%;
-}
-
-.playing-card.face-down + .playing-card.face-up {
-  margin-top: 0.2rem;
-}
-
-.playing-card.face-up {
-  isolation: isolate;
-}
-
-.puzzle-actions button:disabled {
-  cursor: not-allowed;
-  opacity: 0.52;
 }
