@@ -66,6 +66,10 @@
   text-transform: uppercase;
 }
 
+.word-guess-row.active .word-guess-tile.filled.pending {
+  animation: word-guess-tile-pop 120ms ease-out;
+}
+
 .word-guess-tile.correct {
   color: #0f172a;
   background: #a7f3d0;
@@ -282,7 +286,21 @@
   border: 0;
 }
 
-@media (max-width: 620px) {
+@keyframes word-guess-tile-pop {
+  0% {
+    transform: scale(0.94);
+  }
+
+  55% {
+    transform: scale(1.035);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 620px), (pointer: coarse) and (max-width: 1180px) {
   .word-guess-desktop-hint {
     display: none;
   }
