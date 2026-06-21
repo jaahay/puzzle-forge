@@ -5,6 +5,7 @@ import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
+import { TilePuzzlePreview } from "./TilePuzzlePreview";
 import { WordGuessGame } from "./WordGuessGame";
 
 type SolitaireStats = {
@@ -253,6 +254,8 @@ export const PuzzleWorkspace = ({
               onCardDoubleClick={onCardDoubleClick}
               onStackClick={onStackClick}
             />
+          ) : puzzle.kind === "tiles" ? (
+            <TilePuzzlePreview puzzle={puzzle} />
           ) : puzzle.kind === "grid" && puzzle.puzzleId === "word-guess" && gridCells ? (
             <WordGuessGame
               puzzle={puzzle}

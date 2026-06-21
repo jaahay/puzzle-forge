@@ -1,4 +1,14 @@
-import type { GeneratedPuzzle, GridGeneratedPuzzle, GridPuzzleClues, PuzzleCell, PuzzleDifficulty, PuzzleId } from "../catalog/types";
+import type {
+  GeneratedPuzzle,
+  GridGeneratedPuzzle,
+  GridPuzzleClues,
+  PuzzleCell,
+  PuzzleDifficulty,
+  PuzzleId,
+  TileGeneratedPuzzle,
+  TilePuzzleAsset,
+  TilePuzzlePiece,
+} from "../catalog/types";
 
 const RNG_MODULUS = 2147483647;
 const RNG_MULTIPLIER = 48271;
@@ -88,3 +98,38 @@ export const createGeneratedPuzzle = ({
   notes,
 });
 
+export const createGeneratedTilePuzzle = ({
+  id,
+  puzzleId,
+  title,
+  seed,
+  width,
+  height,
+  tiles,
+  asset,
+  notes,
+}: {
+  id: string;
+  puzzleId: PuzzleId;
+  title: string;
+  seed: string;
+  width: number;
+  height: number;
+  tiles: TilePuzzlePiece[];
+  asset: TilePuzzleAsset;
+  notes: string[];
+}): TileGeneratedPuzzle => ({
+  kind: "tiles",
+  id,
+  puzzleId,
+  title,
+  seed,
+  width,
+  height,
+  tiles,
+  asset,
+  checksum: makeChecksumFromParts(tiles.map((tile) => `
+${tile.id}:${tile.currentIndex}:${tile.solvedIndex}`)),
+  createdAt: new Date().toISOString(),
+  notes,
+});

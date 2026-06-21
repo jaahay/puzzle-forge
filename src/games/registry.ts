@@ -1,4 +1,5 @@
 import type { PuzzleGenerator, PuzzleId } from "../catalog/types";
+import { generateJigsaw } from "./jigsaw/generate";
 import { generateLogicGrid } from "./logicGrid/generate";
 import { generateNonogram } from "./nonogram/generate";
 import { generatePegSolitaire } from "./pegSolitaire/generate";
@@ -11,6 +12,7 @@ const generators: Partial<Record<PuzzleId, PuzzleGenerator>> = {
   nonogram: generateNonogram,
   "word-guess": generateWordGuess,
   "logic-grid": generateLogicGrid,
+  jigsaw: generateJigsaw,
   "klondike-solitaire": generateSolitaire,
   "peg-solitaire": generatePegSolitaire,
 };

@@ -685,10 +685,10 @@ export const App = () => {
       return;
     }
 
-    if (!gridCells) {
+    if (!gridCells || puzzle.kind !== "grid") {
       return;
     }
-
+    
     updateGridCells((cells) => checkGridAnswer(puzzle, cells));
   };
 

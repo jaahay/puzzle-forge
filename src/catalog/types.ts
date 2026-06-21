@@ -7,6 +7,7 @@ export type PuzzleId =
   | "peg-solitaire"
   | "kenken"
   | "minesweeper"
+  | "jigsaw"
   | "slitherlink";
 
 export type PuzzleStatus = "playable" | "prototype" | "planned";
@@ -85,6 +86,21 @@ export type CardStack = {
   faceDownCount?: number;
 };
 
+export type TilePuzzleAsset = {
+  id: string;
+  title: string;
+  kind: "generated";
+  palette: string[];
+};
+
+export type TilePuzzlePiece = {
+  id: string;
+  currentIndex: number;
+  solvedIndex: number;
+  row: number;
+  column: number;
+};
+
 type BaseGeneratedPuzzle = {
   id: string;
   puzzleId: PuzzleId;
@@ -111,7 +127,13 @@ export type CardGeneratedPuzzle = BaseGeneratedPuzzle & {
   stacks: CardStack[];
 };
 
-export type GeneratedPuzzle = GridGeneratedPuzzle | CardGeneratedPuzzle;
+export type TileGeneratedPuzzle = BaseGeneratedPuzzle & {
+  kind: "tiles";
+  tiles: TilePuzzlePiece[];
+  asset: TilePuzzleAsset;
+};
+
+export type GeneratedPuzzle = GridGeneratedPuzzle | CardGeneratedPuzzle | TileGeneratedPuzzle;
 
 export type PuzzleGenerationParams = {
   puzzleId: PuzzleId;
@@ -140,4 +162,6 @@ export type GridPuzzleGenerator = (params: PuzzleGenerationParams) => GridGenera
 
 export type CardPuzzleGenerator = (params: PuzzleGenerationParams) => CardGeneratedPuzzle;
 
-export type PuzzleGenerator = GridPuzzleGenerator | CardPuzzleGenerator;
+export type TilePuzzleGenerator = (params: PuzzleGenerationParams) => TileGeneratedPuzzle;
+
+export type PuzzleGenerator = GridPuzzleGenerator | CardPuzzleGenerator | TilePuzzleGenerator;
