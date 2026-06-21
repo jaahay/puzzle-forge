@@ -21,39 +21,19 @@
   font-size: 0.85rem;
 }
 
-.word-guess-native-control {
+.word-guess-mobile-hint {
   display: none;
-  gap: 0.35rem;
-  width: min(100%, 22rem);
+}
+
+.word-guess-board-shell {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
   margin: 0 auto;
-  color: #cbd5e1;
-  font-size: 0.85rem;
-  font-weight: 800;
 }
 
 .word-guess-native-input {
-  width: 100%;
-  border: 1px solid #334155;
-  border-radius: 0.75rem;
-  padding: 0.75rem 0.85rem;
-  color: #f8fafc;
-  background: #111827;
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.word-guess-native-input:focus {
-  border-color: #a7f3d0;
-  box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.28);
-  outline: none;
-}
-
-.word-guess-native-input:disabled {
-  cursor: not-allowed;
-  opacity: 0.65;
+  display: none;
 }
 
 .word-guess-board {
@@ -303,8 +283,42 @@
 }
 
 @media (max-width: 620px) {
-  .word-guess-native-control {
-    display: grid;
+  .word-guess-desktop-hint {
+    display: none;
+  }
+
+  .word-guess-mobile-hint {
+    display: inline;
+  }
+
+  .word-guess-board-shell {
+    cursor: text;
+    touch-action: manipulation;
+  }
+
+  .word-guess-board-shell:focus-within .word-guess-row.active .word-guess-tile.pending {
+    box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.18);
+  }
+
+  .word-guess-native-input {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    padding: 0;
+    opacity: 0;
+    color: transparent;
+    background: transparent;
+    caret-color: transparent;
+    cursor: text;
+    font-size: 16px;
+  }
+
+  .word-guess-native-input:disabled {
+    cursor: default;
   }
 
   .word-guess-keyboard {
