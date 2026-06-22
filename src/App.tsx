@@ -9,7 +9,18 @@ import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
 import { StartView } from "./components/StartView";
 import { defaultSudokuDifficulty, getActiveView, makeRandomSeed, makeRequestId } from "./app/runtime";
-import { initialSolitaireStats, type PuzzleSession, type PuzzleSessionCache, type SolitaireStats } from "./app/session";
+import {
+  initialSolitaireStats,
+  loadPersistedPuzzleSessions,
+  restorePuzzleSessionFromPersisted,
+  savePersistedPuzzleSessions,
+  solitaireHistoryLimit,
+  type PersistedPuzzleSessionCache,
+  type PuzzleSession,
+  type PuzzleSessionCache,
+  type SolitaireHistoryEntry,
+  type SolitaireStats,
+} from "./app/session";
 import {
   canMoveToFoundation,
   canMoveToTableau,
@@ -33,13 +44,6 @@ import {
 } from "./interactions/gridRules";
 import type { AppView } from "./site/views";
 
-type SolitaireHistoryEntry = {
-  cardStacks: CardStack[];
-  selectedCard: CardSelection | null;
-  solitaireStats: SolitaireStats;
-  statusMessage: string;
-};
-
 export const App = () => {
   const [activeView, setActiveView] = useState<AppView>(getActiveView);
   const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>("sudoku");
@@ -61,6 +65,9 @@ export const App = () => {
   const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(true);
   const [hasSelectedPuzzle, setHasSelectedPuzzle] = useState(false);
   const activeRequestId = useRef<string | null>(null);
+  const hasLoadedPersistedSessions = useRef(false);
+  const pendingRestorePuzzleId = useRef<PuzzleId | null>(null);
+  const persistedSessionCache = useRef<PersistedPuzzleSessionCache>({});
   const sessionCache = useRef<PuzzleSessionCache>({});
   const worker = useMemo(
     () => new Worker(new URL("./workers/puzzleWorker.ts", import.meta.url), { type: "module" }),
@@ -89,6 +96,13 @@ export const App = () => {
     statusMessage: message,
   });
 
+  const cloneSolitaireHistoryEntry = (entry: SolitaireHistoryEntry): SolitaireHistoryEntry => ({
+    cardStacks: entry.cardStacks.map(cloneStack),
+    selectedCard: entry.selectedCard ? { ...entry.selectedCard } : null,
+    solitaireStats: { ...entry.solitaireStats },
+    statusMessage: entry.statusMessage,
+  });
+
   const restoreSolitaireHistoryEntry = (entry: SolitaireHistoryEntry) => {
     setCardStacks(entry.cardStacks.map(cloneStack));
     setSelectedCard(entry.selectedCard ? { ...entry.selectedCard } : null);
@@ -110,7 +124,7 @@ export const App = () => {
     const previous = solitaireUndoStack[solitaireUndoStack.length - 1];
     const current = makeSolitaireHistoryEntry(cardStacks, selectedCard, solitaireStats, statusMessage);
     setSolitaireUndoStack((entries) => entries.slice(0, -1));
-    setSolitaireRedoStack((entries) => [...entries, current]);
+    setSolitaireRedoStack((entries) => [...entries, current].slice(-solitaireHistoryLimit));
     restoreSolitaireHistoryEntry(previous);
   };
 
@@ -123,7 +137,7 @@ export const App = () => {
     const next = solitaireRedoStack[solitaireRedoStack.length - 1];
     const current = makeSolitaireHistoryEntry(cardStacks, selectedCard, solitaireStats, statusMessage);
     setSolitaireRedoStack((entries) => entries.slice(0, -1));
-    setSolitaireUndoStack((entries) => [...entries, current]);
+    setSolitaireUndoStack((entries) => [...entries, current].slice(-solitaireHistoryLimit));
     restoreSolitaireHistoryEntry(next);
   };
 
@@ -138,10 +152,14 @@ export const App = () => {
       cardStacks: cardStacks?.map(cloneStack) ?? null,
       selectedCard: selectedCard ? { ...selectedCard } : null,
       solitaireStats: { ...solitaireStats },
+      solitaireUndoStack: solitaireUndoStack.map(cloneSolitaireHistoryEntry),
+      solitaireRedoStack: solitaireRedoStack.map(cloneSolitaireHistoryEntry),
       gridCells: gridCells?.map(cloneGridCell) ?? null,
       selectedGridCell: selectedGridCell ? { ...selectedGridCell } : null,
       statusMessage,
     };
+
+    savePersistedPuzzleSessions({ activePuzzleId: selectedPuzzleId, sessions: sessionCache.current });
   };
 
   const restoreSession = (puzzleId: PuzzleId, session: PuzzleSession) => {
@@ -157,10 +175,11 @@ export const App = () => {
     setCardStacks(session.cardStacks?.map(cloneStack) ?? null);
     setSelectedCard(session.selectedCard ? { ...session.selectedCard } : null);
     setSolitaireStats({ ...session.solitaireStats });
+    setSolitaireUndoStack(session.solitaireUndoStack?.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit) ?? []);
+    setSolitaireRedoStack(session.solitaireRedoStack?.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit) ?? []);
     setGridCells(session.gridCells?.map(cloneGridCell) ?? null);
     setSelectedGridCell(session.selectedGridCell ? { ...session.selectedGridCell } : null);
     setStatusMessage(session.statusMessage);
-    clearSolitaireHistory();
     setIsGenerating(false);
   };
 
@@ -187,6 +206,7 @@ export const App = () => {
       setSelectedCard(null);
       setSelectedGridCell(null);
       resetSolitaireStats();
+      clearSolitaireHistory();
       setStatusMessage(`${definition.title} is planned for a future generator.`);
       return;
     }
@@ -234,11 +254,18 @@ export const App = () => {
       const foundationCardCount = stacks
         .filter((stack) => stack.role === "foundation")
         .reduce((total, stack) => total + stack.cards.length, 0);
-      const nextMessage = foundationCardCount === 52 ? "Solved. All cards are on foundations." : message;
+      const isSolved = foundationCardCount === 52;
+      const nextMessage = isSolved ? "Solved. All cards are on foundations." : message;
 
       if (didChange) {
-        setSolitaireUndoStack((entries) => [...entries, historyEntry].slice(-120));
-        setSolitaireRedoStack([]);
+        if (isSolved) {
+          setSolitaireUndoStack([]);
+          setSolitaireRedoStack([]);
+          setSelectedCard(null);
+        } else {
+          setSolitaireUndoStack((entries) => [...entries, historyEntry].slice(-solitaireHistoryLimit));
+          setSolitaireRedoStack([]);
+        }
       }
 
       setStatusMessage(nextMessage);
@@ -688,7 +715,7 @@ export const App = () => {
     if (!gridCells || puzzle.kind !== "grid") {
       return;
     }
-    
+
     updateGridCells((cells) => checkGridAnswer(puzzle, cells));
   };
 
@@ -715,34 +742,96 @@ export const App = () => {
       setIsGenerating(false);
 
       if ("error" in event.data) {
+        pendingRestorePuzzleId.current = null;
         setStatusMessage(event.data.error);
         return;
       }
 
-      setPuzzle(event.data.puzzle);
-      setCardStacks(event.data.puzzle.kind === "cards" ? event.data.puzzle.stacks.map(cloneStack) : null);
-      setGridCells(event.data.puzzle.kind === "grid" ? prepareGridCells(event.data.puzzle) : null);
+      const generatedPuzzle = event.data.puzzle;
+      const pendingPersistedSession =
+        pendingRestorePuzzleId.current === generatedPuzzle.puzzleId ? persistedSessionCache.current[generatedPuzzle.puzzleId] : undefined;
+      const restoredSession = pendingPersistedSession ? restorePuzzleSessionFromPersisted(pendingPersistedSession, generatedPuzzle) : null;
+
+      if (restoredSession) {
+        pendingRestorePuzzleId.current = null;
+        sessionCache.current[generatedPuzzle.puzzleId] = restoredSession;
+        restoreSession(generatedPuzzle.puzzleId, restoredSession);
+        return;
+      }
+
+      pendingRestorePuzzleId.current = null;
+      setPuzzle(generatedPuzzle);
+      setCardStacks(generatedPuzzle.kind === "cards" ? generatedPuzzle.stacks.map(cloneStack) : null);
+      setGridCells(generatedPuzzle.kind === "grid" ? prepareGridCells(generatedPuzzle) : null);
       setSelectedCard(null);
       setSelectedGridCell(null);
       resetSolitaireStats();
       clearSolitaireHistory();
       setStatusMessage(
-        event.data.puzzle.puzzleId === "sudoku"
-          ? `${event.data.puzzle.difficulty ?? defaultSudokuDifficulty} Sudoku ready.`
-          : event.data.puzzle.puzzleId === "nonogram"
-            ? event.data.puzzle.uniqueSolution
+        generatedPuzzle.puzzleId === "sudoku"
+          ? `${generatedPuzzle.difficulty ?? defaultSudokuDifficulty} Sudoku ready.`
+          : generatedPuzzle.puzzleId === "nonogram"
+            ? generatedPuzzle.uniqueSolution
               ? "Unique Nonogram ready."
               : "Open Nonogram ready. Multiple solutions may be possible."
-            : `${event.data.puzzle.title} generated from seed ${event.data.puzzle.seed}.`,
+            : `${generatedPuzzle.title} generated from seed ${generatedPuzzle.seed}.`,
       );
     };
 
     worker.addEventListener("message", handleMessage);
 
+    if (!hasLoadedPersistedSessions.current) {
+      hasLoadedPersistedSessions.current = true;
+      const persisted = loadPersistedPuzzleSessions();
+
+      if (persisted) {
+        persistedSessionCache.current = persisted.sessions;
+        const activePersistedSession = persisted.sessions[persisted.activePuzzleId];
+
+        if (activePersistedSession) {
+          pendingRestorePuzzleId.current = activePersistedSession.puzzleId;
+          beginGeneration({
+            puzzleId: activePersistedSession.puzzleId,
+            seed: activePersistedSession.seed,
+            width: activePersistedSession.width,
+            height: activePersistedSession.height,
+            difficulty: activePersistedSession.difficulty,
+            requireUniqueSolution: activePersistedSession.requireUniqueSolution,
+          });
+        }
+      }
+    }
+
     return () => {
       worker.removeEventListener("message", handleMessage);
     };
   }, [worker]);
+
+  useEffect(() => {
+    if (!hasSelectedPuzzle || isGenerating) {
+      return;
+    }
+
+    saveCurrentSession();
+  }, [
+    hasSelectedPuzzle,
+    isGenerating,
+    selectedPuzzleId,
+    seed,
+    width,
+    height,
+    difficulty,
+    requireUniqueSolution,
+    puzzle,
+    cardStacks,
+    selectedCard,
+    solitaireStats,
+    solitaireUndoStack,
+    solitaireRedoStack,
+    gridCells,
+    selectedGridCell,
+    statusMessage,
+  ]);
 
   const selectPuzzle = (puzzleId: PuzzleId) => {
     if (puzzleId === selectedPuzzleId && hasSelectedPuzzle) {

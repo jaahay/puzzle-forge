@@ -1,12 +1,21 @@
 import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleId } from "../catalog/types";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
+export { puzzleIds, solitaireHistoryLimit, solitaireHistoryLimitNotice } from "./sessionConstants";
+export * from "./sessionPersistence";
 
 export type SolitaireStats = {
   moveCount: number;
   drawCount: number;
   recycleCount: number;
   autoMoveCount: number;
+};
+
+export type SolitaireHistoryEntry = {
+  cardStacks: CardStack[];
+  selectedCard: CardSelection | null;
+  solitaireStats: SolitaireStats;
+  statusMessage: string;
 };
 
 export const initialSolitaireStats: SolitaireStats = {
@@ -26,6 +35,8 @@ export type PuzzleSession = {
   cardStacks: CardStack[] | null;
   selectedCard: CardSelection | null;
   solitaireStats: SolitaireStats;
+  solitaireUndoStack?: SolitaireHistoryEntry[];
+  solitaireRedoStack?: SolitaireHistoryEntry[];
   gridCells: PuzzleCell[] | null;
   selectedGridCell: GridCellSelection | null;
   statusMessage: string;

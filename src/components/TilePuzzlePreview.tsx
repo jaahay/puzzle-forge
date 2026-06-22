@@ -1,9 +1,30 @@
-import { useMemo, useState } from "preact/hooks";
+import { useEffect, useMemo, useState } from "preact/hooks";
 import type { TileGeneratedPuzzle, TilePuzzlePiece } from "../catalog/types";
 
 type TilePuzzlePreviewProps = { puzzle: TileGeneratedPuzzle };
 
 type TileStyle = { backgroundImage: string; backgroundPosition: string; backgroundSize: string };
+
+type PersistedTileOrder = {
+  id: string;
+  currentIndex: number;
+};
+
+type PersistedTileOrderEnvelope = {
+  schemaVersion: 1;
+  puzzleId: "jigsaw";
+  puzzleInstanceId: string;
+  seed: string;
+  width: number;
+  height: number;
+  tileOrder: PersistedTileOrder[];
+  updatedAt: string;
+};
+
+const tileOrderSchemaVersion = 1;
+
+const getTileOrderStorageKey = (puzzle: TileGeneratedPuzzle) =>
+  `puzzle-forge.jigsaw.${tileOrderSchemaVersion}.${puzzle.id}.${puzzle.seed}.${puzzle.width}x${puzzle.height}`;
 
 const getTileStyle = (puzzle: TileGeneratedPuzzle, tile: TilePuzzlePiece): TileStyle => {
   const [first, second, third, fourth] = puzzle.asset.palette;
@@ -22,13 +43,95 @@ const getTileStyle = (puzzle: TileGeneratedPuzzle, tile: TilePuzzlePiece): TileS
 
 const sortByCurrentIndex = (tiles: TilePuzzlePiece[]) => [...tiles].sort((left, right) => left.currentIndex - right.currentIndex);
 
+const loadPersistedTileOrder = (puzzle: TileGeneratedPuzzle, fallbackTiles: TilePuzzlePiece[]) => {
+  if (typeof window === "undefined") {
+    return fallbackTiles;
+  }
+
+  const rawEnvelope = window.localStorage.getItem(getTileOrderStorageKey(puzzle));
+
+  if (!rawEnvelope) {
+    return fallbackTiles;
+  }
+
+  try {
+    const envelope: unknown = JSON.parse(rawEnvelope);
+
+    if (typeof envelope !== "object" || envelope === null || Array.isArray(envelope)) {
+      return fallbackTiles;
+    }
+
+    const candidate = envelope as Partial<PersistedTileOrderEnvelope>;
+
+    if (
+      candidate.schemaVersion !== tileOrderSchemaVersion ||
+      candidate.puzzleId !== "jigsaw" ||
+      candidate.puzzleInstanceId !== puzzle.id ||
+      candidate.seed !== puzzle.seed ||
+      candidate.width !== puzzle.width ||
+      candidate.height !== puzzle.height ||
+      !Array.isArray(candidate.tileOrder)
+    ) {
+      return fallbackTiles;
+    }
+
+    const persistedIndexes = new Map(
+      candidate.tileOrder.flatMap((tile) =>
+        typeof tile.id === "string" && typeof tile.currentIndex === "number" ? [[tile.id, tile.currentIndex] as const] : [],
+      ),
+    );
+
+    if (persistedIndexes.size !== fallbackTiles.length) {
+      return fallbackTiles;
+    }
+
+    return sortByCurrentIndex(
+      fallbackTiles.map((tile) => {
+        const currentIndex = persistedIndexes.get(tile.id);
+
+        return typeof currentIndex === "number" ? { ...tile, currentIndex } : tile;
+      }),
+    );
+  } catch {
+    return fallbackTiles;
+  }
+};
+
+const savePersistedTileOrder = (puzzle: TileGeneratedPuzzle, tiles: TilePuzzlePiece[]) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const envelope: PersistedTileOrderEnvelope = {
+    schemaVersion: tileOrderSchemaVersion,
+    puzzleId: "jigsaw",
+    puzzleInstanceId: puzzle.id,
+    seed: puzzle.seed,
+    width: puzzle.width,
+    height: puzzle.height,
+    tileOrder: tiles.map(({ id, currentIndex }) => ({ id, currentIndex })),
+    updatedAt: new Date().toISOString(),
+  };
+
+  window.localStorage.setItem(getTileOrderStorageKey(puzzle), JSON.stringify(envelope));
+};
+
 export const TilePuzzlePreview = ({ puzzle }: TilePuzzlePreviewProps) => {
   const initialTiles = useMemo(() => sortByCurrentIndex(puzzle.tiles), [puzzle.id, puzzle.tiles]);
-  const [tiles, setTiles] = useState<TilePuzzlePiece[]>(initialTiles);
+  const [tiles, setTiles] = useState<TilePuzzlePiece[]>(() => loadPersistedTileOrder(puzzle, initialTiles));
   const [selectedTileId, setSelectedTileId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const solvedCount = tiles.filter((tile) => tile.currentIndex === tile.solvedIndex).length;
   const isSolved = solvedCount === tiles.length;
+
+  useEffect(() => {
+    setTiles(loadPersistedTileOrder(puzzle, initialTiles));
+    setSelectedTileId(null);
+  }, [initialTiles, puzzle]);
+
+  useEffect(() => {
+    savePersistedTileOrder(puzzle, tiles);
+  }, [puzzle, tiles]);
 
   const resetTiles = () => {
     setTiles(initialTiles);

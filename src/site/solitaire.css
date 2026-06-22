@@ -3,7 +3,7 @@
   flex-wrap: wrap;
   gap: 0.55rem;
   justify-content: flex-start;
-  margin: 0 0 0.9rem;
+  margin: 0 0 0.55rem;
 }
 
 .solitaire-action-row button {
@@ -30,6 +30,14 @@
 .solitaire-action-row button:disabled {
   cursor: not-allowed;
   opacity: 0.48;
+}
+
+.solitaire-history-note {
+  margin: 0 0 0.95rem;
+  color: #a7f3d0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  opacity: 0.78;
 }
 
 .solitaire-summary {
