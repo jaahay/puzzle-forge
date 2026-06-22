@@ -223,6 +223,7 @@ select {
   grid-template-columns: repeat(10, minmax(2.6rem, 1fr));
   gap: 0.45rem;
   width: min(100%, 42rem);
+  margin: 0.55rem 0 1rem;
 }
 
 .sudoku-digit-pad button {
@@ -258,6 +259,7 @@ select {
   gap: 1rem;
   align-items: end;
   border-top: 1px solid #1e293b;
+  margin-top: 1rem;
   padding-top: 1rem;
 }
 
@@ -266,9 +268,18 @@ select {
   gap: 0.7rem;
 }
 
+.word-guess-workspace .puzzle-settings-panel {
+  grid-template-columns: minmax(5.5rem, auto) minmax(5.5rem, auto) minmax(15rem, 1fr) minmax(18rem, auto);
+  gap: 0.75rem;
+}
+
 .puzzle-settings-actions {
   display: flex;
   gap: 0.65rem;
+}
+
+.word-guess-workspace .puzzle-settings-actions {
+  flex-wrap: wrap;
 }
 
 .puzzle-settings-actions button {
@@ -288,8 +299,13 @@ select {
 
 .seed-control {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(6rem, 1fr) auto;
   gap: 0.45rem;
+  min-width: 0;
+}
+
+.seed-control input {
+  min-width: 0;
 }
 
 .seed-control button {
@@ -300,6 +316,7 @@ select {
   background: #0f172a;
   cursor: pointer;
   font-weight: 900;
+  white-space: nowrap;
 }
 
 .seed-control button:hover,
@@ -368,6 +385,7 @@ select {
   accent-color: #a7f3d0;
 }
 
+.word-guess-solvability-note,
 .sudoku-input-hint {
   grid-column: 1 / -1;
   margin: -0.25rem 0 0;
@@ -379,6 +397,7 @@ select {
   .catalog-layout.catalog-collapsed,
   .puzzle-settings-panel,
   .nonogram-workspace .puzzle-settings-panel,
+  .word-guess-workspace .puzzle-settings-panel,
   .puzzle-generation-options {
     grid-template-columns: 1fr;
   }
@@ -386,5 +405,9 @@ select {
   .catalog-mini-list,
   .sudoku-digit-pad {
     grid-template-columns: repeat(auto-fit, minmax(3rem, 1fr));
+  }
+
+  .seed-control {
+    grid-template-columns: 1fr;
   }
 }

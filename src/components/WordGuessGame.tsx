@@ -221,7 +221,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
 
   const focusNativeInput = () => {
     if (status === "playing") {
-      nativeInputRef.current?.focus();
+      nativeInputRef.current?.focus({ preventScroll: true });
     }
   };
 
@@ -284,7 +284,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     <section class="word-guess-game" aria-label={`${puzzle.width}-letter Word Guess game`}>
       <div class="word-guess-status" aria-live="polite">
         <strong>{message}</strong>
-        <span>Type or tap letters, then Enter. Backspace erases.</span>
+        <span>Type with your keyboard, or tap the board to use the device keyboard.</span>
       </div>
 
       <div class="word-guess-board-shell" onClick={focusNativeInput}>
@@ -292,7 +292,10 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
           ref={nativeInputRef}
           class="word-guess-native-input"
           type="text"
+          inputMode="text"
+          enterKeyHint="go"
           autoComplete="off"
+          autoCapitalize="characters"
           spellcheck={false}
           aria-label="Type your Word Guess answer"
           disabled={status !== "playing"}
