@@ -86,6 +86,15 @@ export type CardStack = {
   faceDownCount?: number;
 };
 
+export type SolitaireDrawMode = "draw-1" | "draw-3";
+export type SolitaireRedealLimit = "unlimited" | 3 | 1 | 0;
+
+export type SolitaireVariation = {
+  drawMode: SolitaireDrawMode;
+  redeals: SolitaireRedealLimit;
+  knownSolvable: boolean;
+};
+
 export type TilePuzzleAsset = {
   id: string;
   title: string;
@@ -125,6 +134,7 @@ export type GridGeneratedPuzzle = BaseGeneratedPuzzle & {
 export type CardGeneratedPuzzle = BaseGeneratedPuzzle & {
   kind: "cards";
   stacks: CardStack[];
+  solitaireVariation: SolitaireVariation;
 };
 
 export type TileGeneratedPuzzle = BaseGeneratedPuzzle & {
@@ -142,6 +152,7 @@ export type PuzzleGenerationParams = {
   height: number;
   difficulty?: PuzzleDifficulty;
   requireUniqueSolution?: boolean;
+  solitaireVariation?: SolitaireVariation;
 };
 
 export type PuzzleGenerationRequest = {
