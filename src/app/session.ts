@@ -244,6 +244,91 @@ export const clonePersistedPuzzleSession = (session: PersistedPuzzleSession): Pe
   progress: clonePersistedPuzzleProgress(session.progress),
 });
 
+const persistedIdentityMatchesPuzzle = (persisted: PersistedPuzzleSession, puzzle: GeneratedPuzzle) =>
+  persisted.puzzleId === puzzle.puzzleId &&
+  persisted.seed === puzzle.seed &&
+  persisted.width === puzzle.width &&
+  persisted.height === puzzle.height &&
+  (!puzzle.difficulty || persisted.difficulty === puzzle.difficulty);
+
+export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSession, puzzle: GeneratedPuzzle): PuzzleSession | null => {
+  if (!persistedIdentityMatchesPuzzle(persisted, puzzle)) {
+    return null;
+  }
+
+  if (persisted.progress.kind === "cards" && puzzle.kind === "cards") {
+    const stacks = persisted.progress.stacks.map(cloneCardStack);
+
+    return {
+      seed: persisted.seed,
+      width: persisted.width,
+      height: persisted.height,
+      difficulty: persisted.difficulty,
+      requireUniqueSolution: persisted.requireUniqueSolution,
+      puzzle: { ...puzzle, stacks: stacks.map(cloneCardStack) },
+      cardStacks: stacks,
+      selectedCard: persisted.progress.selectedCard ? { ...persisted.progress.selectedCard } : null,
+      solitaireStats: { ...persisted.progress.stats },
+      solitaireUndoStack: trimSolitaireHistory(persisted.progress.undoStack),
+      solitaireRedoStack: trimSolitaireHistory(persisted.progress.redoStack),
+      gridCells: null,
+      selectedGridCell: null,
+      statusMessage: persisted.statusMessage,
+    };
+  }
+
+  if (persisted.progress.kind === "tiles" && puzzle.kind === "tiles") {
+    const tileIndexes = new Map(persisted.progress.tileOrder.map(({ id, currentIndex }) => [id, currentIndex] as const));
+
+    if (tileIndexes.size !== puzzle.tiles.length || puzzle.tiles.some((tile) => !tileIndexes.has(tile.id))) {
+      return null;
+    }
+
+    const restoredPuzzle: GeneratedPuzzle = {
+      ...puzzle,
+      tiles: puzzle.tiles.map((tile) => ({ ...tile, currentIndex: tileIndexes.get(tile.id) ?? tile.currentIndex })),
+    };
+
+    return {
+      seed: persisted.seed,
+      width: persisted.width,
+      height: persisted.height,
+      difficulty: persisted.difficulty,
+      requireUniqueSolution: persisted.requireUniqueSolution,
+      puzzle: restoredPuzzle,
+      cardStacks: null,
+      selectedCard: null,
+      solitaireStats: initialSolitaireStats,
+      solitaireUndoStack: [],
+      solitaireRedoStack: [],
+      gridCells: null,
+      selectedGridCell: null,
+      statusMessage: persisted.statusMessage,
+    };
+  }
+
+  if (persisted.progress.kind === "grid" && puzzle.kind === "grid") {
+    return {
+      seed: persisted.seed,
+      width: persisted.width,
+      height: persisted.height,
+      difficulty: persisted.difficulty,
+      requireUniqueSolution: persisted.requireUniqueSolution,
+      puzzle,
+      cardStacks: null,
+      selectedCard: null,
+      solitaireStats: initialSolitaireStats,
+      solitaireUndoStack: [],
+      solitaireRedoStack: [],
+      gridCells: persisted.progress.cells.map(cloneGridCell),
+      selectedGridCell: persisted.progress.selectedCell ? { ...persisted.progress.selectedCell } : null,
+      statusMessage: persisted.statusMessage,
+    };
+  }
+
+  return null;
+};
+
 export const loadPersistedPuzzleSessions = (): PersistedPuzzleSessions | null => {
   if (typeof window === "undefined") return null;
 
