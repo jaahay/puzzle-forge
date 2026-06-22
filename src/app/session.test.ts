@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CardStack, GeneratedPuzzle, PlayingCard, PuzzleCell } from "../catalog/types";
-import type { CardSelection } from "../interactions/cardRules";
+import type { CardStack, GeneratedPuzzle, PlayingCard } from "../catalog/types";
 import {
   buildPersistedPuzzleSession,
   completePersistedPuzzleSession,
@@ -102,7 +101,7 @@ const withMockWindowStorage = (run: (storage: Map<string, string>) => void) => {
 };
 
 describe("app session persistence", () => {
-  it("stores generated identity and card progress without durable generated puzzle internals", () => {
+  it("stores compact card refs and generated identity without durable generated puzzle internals", () => {
     const session = makeSession({
       solitaireUndoStack: Array.from({ length: solitaireHistoryLimit + 5 }, (_, index) => makeHistoryEntry(index)),
     });
@@ -113,15 +112,20 @@ describe("app session persistence", () => {
     expect(persisted).not.toHaveProperty("puzzle");
     expect(persisted?.progress.kind).toBe("cards");
     if (persisted?.progress.kind !== "cards") return;
+    expect(persisted.progress.stacks[0].cards).toEqual([{ code: "AS", faceDown: true }]);
+    expect(persisted.progress.stacks[1].cards).toEqual(["2S"]);
     expect(persisted.progress.undoStack).toHaveLength(solitaireHistoryLimit);
     expect(persisted.progress.undoStack[0].solitaireStats.moveCount).toBe(5);
   });
 
   it("clears transient Solitaire history and selection when completing persisted card progress", () => {
-    const persisted = buildPersistedPuzzleSession("klondike-solitaire", makeSession({
-      solitaireUndoStack: [makeHistoryEntry(1)],
-      solitaireRedoStack: [makeHistoryEntry(2)],
-    }));
+    const persisted = buildPersistedPuzzleSession(
+      "klondike-solitaire",
+      makeSession({
+        solitaireUndoStack: [makeHistoryEntry(1)],
+        solitaireRedoStack: [makeHistoryEntry(2)],
+      }),
+    );
 
     expect(persisted).not.toBeNull();
     const completed = completePersistedPuzzleSession(persisted as PersistedPuzzleSession, "2026-06-22T00:00:00.000Z");
@@ -135,11 +139,14 @@ describe("app session persistence", () => {
     expect(completed.progress.redoStack).toEqual([]);
   });
 
-  it("restores card progress only when regenerated puzzle identity matches", () => {
-    const persisted = buildPersistedPuzzleSession("klondike-solitaire", makeSession({
-      statusMessage: "Restored progress.",
-      solitaireUndoStack: [makeHistoryEntry(1)],
-    }));
+  it("restores compact card progress only when regenerated puzzle identity matches", () => {
+    const persisted = buildPersistedPuzzleSession(
+      "klondike-solitaire",
+      makeSession({
+        statusMessage: "Restored progress.",
+        solitaireUndoStack: [makeHistoryEntry(1)],
+      }),
+    );
 
     expect(persisted).not.toBeNull();
     const restored = restorePuzzleSessionFromPersisted(persisted as PersistedPuzzleSession, makeCardPuzzle("seed-1"));
@@ -149,6 +156,24 @@ describe("app session persistence", () => {
     expect(restored?.cardStacks).toEqual(makeCardStacks());
     expect(restored?.solitaireUndoStack).toHaveLength(1);
     expect(mismatched).toBeNull();
+  });
+
+  it("rejects compact card progress with duplicate card codes", () => {
+    const persisted = buildPersistedPuzzleSession("klondike-solitaire", makeSession());
+    expect(persisted?.progress.kind).toBe("cards");
+    if (!persisted || persisted.progress.kind !== "cards") return;
+
+    const duplicateCardSession: PersistedPuzzleSession = {
+      ...persisted,
+      progress: {
+        ...persisted.progress,
+        stacks: persisted.progress.stacks.map((stack) =>
+          stack.id === "waste" ? { ...stack, cards: ["AS"] } : stack,
+        ),
+      },
+    };
+
+    expect(restorePuzzleSessionFromPersisted(duplicateCardSession, makeCardPuzzle())).toBeNull();
   });
 
   it("round-trips valid persisted sessions and ignores invalid records that contain generated puzzle payloads", () => {
