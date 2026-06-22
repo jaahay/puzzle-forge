@@ -1,4 +1,5 @@
 import { useState } from "preact/hooks";
+import { solitaireHistoryLimitNotice } from "../app/session";
 import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition, PuzzleDifficulty, PuzzleGenerationRequest } from "../catalog/types";
 import { getWordGuessDailyLabel, getWordGuessDailySeed } from "../games/wordGuess/daily";
 import type { CardSelection } from "../interactions/cardRules";
@@ -246,17 +247,20 @@ export const PuzzleWorkspace = ({
           </div>
 
           {puzzle.kind === "cards" ? (
-            <div class="solitaire-action-row" aria-label="Solitaire controls">
-              <button type="button" onClick={onUndoSolitaire} disabled={!canUndoSolitaire} aria-label="Undo Solitaire move" title="Undo">
-                ↶
-              </button>
-              <button type="button" onClick={onRedoSolitaire} disabled={!canRedoSolitaire} aria-label="Redo Solitaire move" title="Redo">
-                ↷
-              </button>
-              <button type="button" onClick={onAutoMoveToFoundations} aria-label="Move all currently legal cards to foundations" title="Auto foundation">
-                ♣→
-              </button>
-            </div>
+            <>
+              <div class="solitaire-action-row" aria-label="Solitaire controls">
+                <button type="button" onClick={onUndoSolitaire} disabled={!canUndoSolitaire} aria-label="Undo Solitaire move" title="Undo">
+                  ↶
+                </button>
+                <button type="button" onClick={onRedoSolitaire} disabled={!canRedoSolitaire} aria-label="Redo Solitaire move" title="Redo">
+                  ↷
+                </button>
+                <button type="button" onClick={onAutoMoveToFoundations} aria-label="Move all currently legal cards to foundations" title="Auto foundation">
+                  ♣→
+                </button>
+              </div>
+              <p class="solitaire-history-note">{solitaireHistoryLimitNotice}</p>
+            </>
           ) : null}
 
           {puzzle.kind === "cards" && cardStacks ? (
