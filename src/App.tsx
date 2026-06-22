@@ -734,36 +734,6 @@ export const App = () => {
   }, []);
 
   useEffect(() => {
-    if (hasLoadedPersistedSessions.current) {
-      return;
-    }
-
-    hasLoadedPersistedSessions.current = true;
-    const persisted = loadPersistedPuzzleSessions();
-
-    if (!persisted) {
-      return;
-    }
-
-    persistedSessionCache.current = persisted.sessions;
-    const activePersistedSession = persisted.sessions[persisted.activePuzzleId];
-
-    if (!activePersistedSession) {
-      return;
-    }
-
-    pendingRestorePuzzleId.current = activePersistedSession.puzzleId;
-    beginGeneration({
-      puzzleId: activePersistedSession.puzzleId,
-      seed: activePersistedSession.seed,
-      width: activePersistedSession.width,
-      height: activePersistedSession.height,
-      difficulty: activePersistedSession.difficulty,
-      requireUniqueSolution: activePersistedSession.requireUniqueSolution,
-    });
-  }, []);
-
-  useEffect(() => {
     const handleMessage = (event: MessageEvent<PuzzleGenerationResponse>) => {
       if (event.data.requestId !== activeRequestId.current) {
         return;
@@ -809,6 +779,28 @@ export const App = () => {
     };
 
     worker.addEventListener("message", handleMessage);
+
+    if (!hasLoadedPersistedSessions.current) {
+      hasLoadedPersistedSessions.current = true;
+      const persisted = loadPersistedPuzzleSessions();
+
+      if (persisted) {
+        persistedSessionCache.current = persisted.sessions;
+        const activePersistedSession = persisted.sessions[persisted.activePuzzleId];
+
+        if (activePersistedSession) {
+          pendingRestorePuzzleId.current = activePersistedSession.puzzleId;
+          beginGeneration({
+            puzzleId: activePersistedSession.puzzleId,
+            seed: activePersistedSession.seed,
+            width: activePersistedSession.width,
+            height: activePersistedSession.height,
+            difficulty: activePersistedSession.difficulty,
+            requireUniqueSolution: activePersistedSession.requireUniqueSolution,
+          });
+        }
+      }
+    }
 
     return () => {
       worker.removeEventListener("message", handleMessage);
