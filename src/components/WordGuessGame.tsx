@@ -293,7 +293,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
           class="word-guess-native-input"
           type="text"
           autoComplete="off"
-          spellCheck={false}
+          spellcheck={false}
           aria-label="Type your Word Guess answer"
           disabled={status !== "playing"}
           tabIndex={status === "playing" ? 0 : -1}
