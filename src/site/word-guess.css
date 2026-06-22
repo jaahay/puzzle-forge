@@ -26,6 +26,7 @@
   width: fit-content;
   max-width: 100%;
   margin: 0 auto;
+  cursor: text;
 }
 
 .word-guess-native-input {
@@ -292,22 +293,24 @@
 
 @media (max-width: 620px) {
   .word-guess-board-shell {
-    cursor: text;
     touch-action: manipulation;
+  }
+
+  .word-guess-board-shell::after {
+    display: block;
+    margin-top: 0.55rem;
+    color: #94a3b8;
+    content: "Tap the board to open your device keyboard.";
+    font-size: 0.82rem;
+    text-align: center;
+  }
+
+  .word-guess-keyboard {
+    display: none;
   }
 
   .word-guess-analysis-header,
   .word-guess-candidate-steps li {
     grid-template-columns: 1fr;
-  }
-
-  .word-guess-keyboard-row {
-    gap: 0.25rem;
-  }
-
-  .word-guess-key {
-    min-height: 2.55rem;
-    padding-inline: 0.35rem;
-    font-size: 0.78rem;
   }
 }
