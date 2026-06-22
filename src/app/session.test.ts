@@ -14,6 +14,9 @@ import {
   type SolitaireStats,
 } from "./session";
 
+const metadataStorageKey = "puzzle-forge.sessions.v1";
+const solitaireStorageKey = "puzzle-forge.session.v1.klondike-solitaire";
+
 const makeCard = (code: string, faceUp = true): PlayingCard => ({
   suit: "spades",
   rank: "ace",
@@ -176,26 +179,20 @@ describe("app session persistence", () => {
     expect(restorePuzzleSessionFromPersisted(duplicateCardSession, makeCardPuzzle())).toBeNull();
   });
 
-  it("round-trips valid persisted sessions and ignores invalid records that contain generated puzzle payloads", () => {
+  it("round-trips valid per-puzzle storage and ignores invalid records that contain generated puzzle payloads", () => {
     withMockWindowStorage((storage) => {
       const session = makeSession();
       savePersistedPuzzleSessions({ activePuzzleId: "klondike-solitaire", sessions: { "klondike-solitaire": session } });
 
+      const metadata = JSON.parse(storage.get(metadataStorageKey) ?? "{}");
+      const persistedSession = JSON.parse(storage.get(solitaireStorageKey) ?? "{}");
+
+      expect(metadata.activePuzzleId).toBe("klondike-solitaire");
+      expect(metadata.savedPuzzleIds).toEqual(["klondike-solitaire"]);
+      expect(persistedSession.progress.kind).toBe("cards");
       expect(loadPersistedPuzzleSessions()?.activePuzzleId).toBe("klondike-solitaire");
 
-      const validEnvelope = JSON.parse(storage.get("puzzle-forge.sessions.v1") ?? "{}");
-      storage.set(
-        "puzzle-forge.sessions.v1",
-        JSON.stringify({
-          ...validEnvelope,
-          sessions: {
-            "klondike-solitaire": {
-              ...validEnvelope.sessions["klondike-solitaire"],
-              puzzle: makeCardPuzzle(),
-            },
-          },
-        }),
-      );
+      storage.set(solitaireStorageKey, JSON.stringify({ ...persistedSession, puzzle: makeCardPuzzle() }));
 
       expect(loadPersistedPuzzleSessions()).toBeNull();
     });
