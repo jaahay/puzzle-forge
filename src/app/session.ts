@@ -1,4 +1,4 @@
-import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleId } from "../catalog/types";
+import type { CardStack, GeneratedPuzzle, PlayingCard, PuzzleCell, PuzzleDifficulty, PuzzleId } from "../catalog/types";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
 
@@ -71,13 +71,28 @@ export type PersistedPuzzleIdentity = {
   generatorVersion: 1;
 };
 
+export type PersistedCardRef = string | { code: string; faceDown: true };
+
+export type PersistedCardStack = {
+  id: string;
+  cards: PersistedCardRef[];
+  faceDownCount?: number;
+};
+
+export type PersistedSolitaireHistoryEntry = {
+  cardStacks: PersistedCardStack[];
+  selectedCard: CardSelection | null;
+  solitaireStats: SolitaireStats;
+  statusMessage: string;
+};
+
 export type PersistedCardProgress = {
   kind: "cards";
-  stacks: CardStack[];
+  stacks: PersistedCardStack[];
   selectedCard: CardSelection | null;
   stats: SolitaireStats;
-  undoStack: SolitaireHistoryEntry[];
-  redoStack: SolitaireHistoryEntry[];
+  undoStack: PersistedSolitaireHistoryEntry[];
+  redoStack: PersistedSolitaireHistoryEntry[];
 };
 
 export type PersistedTileProgress = {
@@ -123,6 +138,23 @@ const isRecord = (value: unknown): value is Record<string, unknown> => typeof va
 const isPuzzleId = (value: unknown): value is PuzzleId => typeof value === "string" && puzzleIds.includes(value as PuzzleId);
 const isSolitaireStats = (value: unknown): value is SolitaireStats =>
   isRecord(value) && typeof value.moveCount === "number" && typeof value.drawCount === "number" && typeof value.recycleCount === "number" && typeof value.autoMoveCount === "number";
+const isCardSelection = (value: unknown): value is CardSelection | null =>
+  value === null || (isRecord(value) && typeof value.stackId === "string" && typeof value.cardIndex === "number");
+const isPersistedCardRef = (value: unknown): value is PersistedCardRef =>
+  typeof value === "string" || (isRecord(value) && typeof value.code === "string" && value.faceDown === true);
+const isPersistedCardStack = (value: unknown): value is PersistedCardStack =>
+  isRecord(value) &&
+  typeof value.id === "string" &&
+  Array.isArray(value.cards) &&
+  value.cards.every(isPersistedCardRef) &&
+  (value.faceDownCount === undefined || typeof value.faceDownCount === "number");
+const isPersistedSolitaireHistoryEntry = (value: unknown): value is PersistedSolitaireHistoryEntry =>
+  isRecord(value) &&
+  Array.isArray(value.cardStacks) &&
+  value.cardStacks.every(isPersistedCardStack) &&
+  isCardSelection(value.selectedCard) &&
+  isSolitaireStats(value.solitaireStats) &&
+  typeof value.statusMessage === "string";
 
 const cloneGridCell = (cell: PuzzleCell): PuzzleCell => ({ ...cell });
 const cloneCardStack = (stack: CardStack): CardStack => ({ ...stack, cards: stack.cards.map((card) => ({ ...card })) });
@@ -133,6 +165,101 @@ const cloneSolitaireHistoryEntry = (entry: SolitaireHistoryEntry): SolitaireHist
   statusMessage: entry.statusMessage,
 });
 const trimSolitaireHistory = (entries: SolitaireHistoryEntry[] = []) => entries.slice(-solitaireHistoryLimit).map(cloneSolitaireHistoryEntry);
+
+const buildPersistedCardRef = (card: PlayingCard): PersistedCardRef => (card.faceUp ? card.code : { code: card.code, faceDown: true });
+const clonePersistedCardRef = (card: PersistedCardRef): PersistedCardRef => (typeof card === "string" ? card : { ...card });
+const buildPersistedCardStack = (stack: CardStack): PersistedCardStack => ({
+  id: stack.id,
+  cards: stack.cards.map(buildPersistedCardRef),
+  ...(typeof stack.faceDownCount === "number" ? { faceDownCount: stack.faceDownCount } : {}),
+});
+const clonePersistedCardStack = (stack: PersistedCardStack): PersistedCardStack => ({
+  ...stack,
+  cards: stack.cards.map(clonePersistedCardRef),
+});
+const buildPersistedSolitaireHistoryEntry = (entry: SolitaireHistoryEntry): PersistedSolitaireHistoryEntry => ({
+  cardStacks: entry.cardStacks.map(buildPersistedCardStack),
+  selectedCard: entry.selectedCard ? { ...entry.selectedCard } : null,
+  solitaireStats: { ...entry.solitaireStats },
+  statusMessage: entry.statusMessage,
+});
+const clonePersistedSolitaireHistoryEntry = (entry: PersistedSolitaireHistoryEntry): PersistedSolitaireHistoryEntry => ({
+  cardStacks: entry.cardStacks.map(clonePersistedCardStack),
+  selectedCard: entry.selectedCard ? { ...entry.selectedCard } : null,
+  solitaireStats: { ...entry.solitaireStats },
+  statusMessage: entry.statusMessage,
+});
+const trimPersistedSolitaireHistory = (entries: PersistedSolitaireHistoryEntry[] = []) => entries.slice(-solitaireHistoryLimit).map(clonePersistedSolitaireHistoryEntry);
+const buildPersistedSolitaireHistory = (entries: SolitaireHistoryEntry[] = []) => trimSolitaireHistory(entries).map(buildPersistedSolitaireHistoryEntry);
+
+const buildCardCatalog = (stacks: CardStack[]) => new Map(stacks.flatMap((stack) => stack.cards.map((card) => [card.code, card] as const)));
+const buildStackCatalog = (stacks: CardStack[]) => new Map(stacks.map((stack) => [stack.id, stack] as const));
+const persistedCardRefCode = (card: PersistedCardRef) => (typeof card === "string" ? card : card.code);
+const restorePersistedCardRef = (card: PersistedCardRef, cardsByCode: Map<string, PlayingCard>): PlayingCard | null => {
+  const original = cardsByCode.get(persistedCardRefCode(card));
+  if (!original) return null;
+  return { ...original, faceUp: typeof card === "string" };
+};
+const restorePersistedCardStack = (stack: PersistedCardStack, originalStack: CardStack, cardsByCode: Map<string, PlayingCard>): CardStack | null => {
+  const cards: PlayingCard[] = [];
+  for (const persistedCard of stack.cards) {
+    const card = restorePersistedCardRef(persistedCard, cardsByCode);
+    if (!card) return null;
+    cards.push(card);
+  }
+
+  return {
+    ...originalStack,
+    cards,
+    faceDownCount: stack.faceDownCount ?? cards.filter((card) => !card.faceUp).length,
+  };
+};
+const restorePersistedCardStacks = (stacks: PersistedCardStack[], puzzleStacks: CardStack[]): CardStack[] | null => {
+  const stacksById = buildStackCatalog(puzzleStacks);
+  const cardsByCode = buildCardCatalog(puzzleStacks);
+  const usedCardCodes = new Set<string>();
+
+  if (stacks.length !== puzzleStacks.length) return null;
+
+  const restoredStacks: CardStack[] = [];
+  for (const stack of stacks) {
+    const originalStack = stacksById.get(stack.id);
+    if (!originalStack) return null;
+
+    for (const card of stack.cards) {
+      const code = persistedCardRefCode(card);
+      if (usedCardCodes.has(code)) return null;
+      usedCardCodes.add(code);
+    }
+
+    const restoredStack = restorePersistedCardStack(stack, originalStack, cardsByCode);
+    if (!restoredStack) return null;
+    restoredStacks.push(restoredStack);
+  }
+
+  return usedCardCodes.size === cardsByCode.size ? restoredStacks : null;
+};
+const restorePersistedSolitaireHistoryEntry = (entry: PersistedSolitaireHistoryEntry, puzzleStacks: CardStack[]): SolitaireHistoryEntry | null => {
+  const restoredStacks = restorePersistedCardStacks(entry.cardStacks, puzzleStacks);
+  if (!restoredStacks) return null;
+
+  return {
+    cardStacks: restoredStacks,
+    selectedCard: entry.selectedCard ? { ...entry.selectedCard } : null,
+    solitaireStats: { ...entry.solitaireStats },
+    statusMessage: entry.statusMessage,
+  };
+};
+const restorePersistedSolitaireHistory = (entries: PersistedSolitaireHistoryEntry[], puzzleStacks: CardStack[]): SolitaireHistoryEntry[] | null => {
+  const restoredEntries: SolitaireHistoryEntry[] = [];
+  for (const entry of trimPersistedSolitaireHistory(entries)) {
+    const restoredEntry = restorePersistedSolitaireHistoryEntry(entry, puzzleStacks);
+    if (!restoredEntry) return null;
+    restoredEntries.push(restoredEntry);
+  }
+
+  return restoredEntries;
+};
 
 export const buildPersistedPuzzleIdentity = (puzzleId: PuzzleId, session: PuzzleSession): PersistedPuzzleIdentity => ({
   puzzleId,
@@ -148,11 +275,11 @@ const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzlePr
   if (session.cardStacks) {
     return {
       kind: "cards",
-      stacks: session.cardStacks.map(cloneCardStack),
+      stacks: session.cardStacks.map(buildPersistedCardStack),
       selectedCard: session.selectedCard ? { ...session.selectedCard } : null,
       stats: { ...session.solitaireStats },
-      undoStack: trimSolitaireHistory(session.solitaireUndoStack),
-      redoStack: trimSolitaireHistory(session.solitaireRedoStack),
+      undoStack: buildPersistedSolitaireHistory(session.solitaireUndoStack),
+      redoStack: buildPersistedSolitaireHistory(session.solitaireRedoStack),
     };
   }
 
@@ -200,7 +327,18 @@ export const completePersistedPuzzleSession = (session: PersistedPuzzleSession, 
 
 const isPersistedPuzzleProgress = (value: unknown): value is PersistedPuzzleProgress => {
   if (!isRecord(value)) return false;
-  if (value.kind === "cards") return Array.isArray(value.stacks) && isSolitaireStats(value.stats) && Array.isArray(value.undoStack) && Array.isArray(value.redoStack);
+  if (value.kind === "cards") {
+    return (
+      Array.isArray(value.stacks) &&
+      value.stacks.every(isPersistedCardStack) &&
+      isCardSelection(value.selectedCard) &&
+      isSolitaireStats(value.stats) &&
+      Array.isArray(value.undoStack) &&
+      value.undoStack.every(isPersistedSolitaireHistoryEntry) &&
+      Array.isArray(value.redoStack) &&
+      value.redoStack.every(isPersistedSolitaireHistoryEntry)
+    );
+  }
   if (value.kind === "tiles") return Array.isArray(value.tileOrder);
   return value.kind === "grid" && Array.isArray(value.cells);
 };
@@ -224,11 +362,11 @@ const clonePersistedPuzzleProgress = (progress: PersistedPuzzleProgress): Persis
   if (progress.kind === "cards") {
     return {
       kind: "cards",
-      stacks: progress.stacks.map(cloneCardStack),
+      stacks: progress.stacks.map(clonePersistedCardStack),
       selectedCard: progress.selectedCard ? { ...progress.selectedCard } : null,
       stats: { ...progress.stats },
-      undoStack: trimSolitaireHistory(progress.undoStack),
-      redoStack: trimSolitaireHistory(progress.redoStack),
+      undoStack: trimPersistedSolitaireHistory(progress.undoStack),
+      redoStack: trimPersistedSolitaireHistory(progress.redoStack),
     };
   }
 
@@ -257,7 +395,11 @@ export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSess
   }
 
   if (persisted.progress.kind === "cards" && puzzle.kind === "cards") {
-    const stacks = persisted.progress.stacks.map(cloneCardStack);
+    const stacks = restorePersistedCardStacks(persisted.progress.stacks, puzzle.stacks);
+    const undoStack = restorePersistedSolitaireHistory(persisted.progress.undoStack, puzzle.stacks);
+    const redoStack = restorePersistedSolitaireHistory(persisted.progress.redoStack, puzzle.stacks);
+
+    if (!stacks || !undoStack || !redoStack) return null;
 
     return {
       seed: persisted.seed,
@@ -269,8 +411,8 @@ export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSess
       cardStacks: stacks,
       selectedCard: persisted.progress.selectedCard ? { ...persisted.progress.selectedCard } : null,
       solitaireStats: { ...persisted.progress.stats },
-      solitaireUndoStack: trimSolitaireHistory(persisted.progress.undoStack),
-      solitaireRedoStack: trimSolitaireHistory(persisted.progress.redoStack),
+      solitaireUndoStack: undoStack,
+      solitaireRedoStack: redoStack,
       gridCells: null,
       selectedGridCell: null,
       statusMessage: persisted.statusMessage,
