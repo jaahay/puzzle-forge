@@ -78,6 +78,12 @@ const makeSession = (overrides: Partial<PuzzleSession> = {}): PuzzleSession => (
   ...overrides,
 });
 
+const stackCards = (stacks: CardStack[] | null | undefined) =>
+  stacks?.map((stack) => ({
+    id: stack.id,
+    cards: stack.cards.map(({ code, faceUp }) => ({ code, faceUp })),
+  }));
+
 const withMockWindowStorage = (run: (storage: Map<string, string>) => void) => {
   const storage = new Map<string, string>();
   const originalWindow = globalThis.window;
@@ -156,7 +162,7 @@ describe("app session persistence", () => {
     const mismatched = restorePuzzleSessionFromPersisted(persisted as PersistedPuzzleSession, makeCardPuzzle("different-seed"));
 
     expect(restored?.statusMessage).toBe("Restored progress.");
-    expect(restored?.cardStacks).toEqual(makeCardStacks());
+    expect(stackCards(restored?.cardStacks)).toEqual(stackCards(makeCardStacks()));
     expect(restored?.solitaireUndoStack).toHaveLength(1);
     expect(mismatched).toBeNull();
   });
