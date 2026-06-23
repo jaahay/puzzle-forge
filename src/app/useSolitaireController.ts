@@ -11,6 +11,7 @@ import {
   revealTopTableauCard,
   type CardSelection,
 } from "../interactions/cardRules";
+import { cloneSolitaireHistoryEntry, makeSolitaireHistoryEntry } from "./puzzleSessionRuntime";
 import {
   initialSolitaireStats,
   solitaireHistoryLimit,
@@ -34,25 +35,6 @@ export type SolitaireControllerOptions = {
   statusMessage: string;
   onStatusMessage: (message: string) => void;
 };
-
-const cloneSolitaireHistoryEntry = (entry: SolitaireHistoryEntry): SolitaireHistoryEntry => ({
-  cardStacks: entry.cardStacks.map(cloneStack),
-  selectedCard: entry.selectedCard ? { ...entry.selectedCard } : null,
-  solitaireStats: { ...entry.solitaireStats },
-  statusMessage: entry.statusMessage,
-});
-
-const makeSolitaireHistoryEntry = (
-  stacks: CardStack[],
-  selected: CardSelection | null,
-  stats: SolitaireStats,
-  message: string,
-): SolitaireHistoryEntry => ({
-  cardStacks: stacks.map(cloneStack),
-  selectedCard: selected ? { ...selected } : null,
-  solitaireStats: { ...stats },
-  statusMessage: message,
-});
 
 export const useSolitaireController = ({ statusMessage, onStatusMessage }: SolitaireControllerOptions) => {
   const [cardStacks, setCardStacks] = useState<CardStack[] | null>(null);
