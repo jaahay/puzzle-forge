@@ -50,7 +50,7 @@ export const App = () => {
     setDifficulty(session.difficulty);
     setRequireUniqueSolution(session.requireUniqueSolution);
     setPuzzle(session.puzzle);
-    setSolitaireVariation(normalizeSolitaireVariation(session.solitaireVariation ?? (session.puzzle.kind === "cards" ? session.puzzle.solitaireVariation : undefined)));
+    setSolitaireVariation(normalizeSolitaireVariation(session.solitaireVariation ?? (session.puzzle?.kind === "cards" ? session.puzzle.solitaireVariation : undefined)));
     solitaire.restoreSolitaireSnapshot({
       cardStacks: session.cardStacks,
       selectedCard: session.selectedCard,
