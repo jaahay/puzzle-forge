@@ -1,6 +1,5 @@
 import type { CardStack, SolitaireVariation } from "../catalog/types";
 import { defaultSolitaireVariation, normalizeSolitaireVariation } from "../games/solitaire/variation";
-import type { SolitaireStats } from "./session";
 
 export type SolitaireStackUpdate = {
   stacks: CardStack[];
@@ -13,6 +12,11 @@ export type SolitaireStockStatsDelta = {
   moveCount?: number;
 };
 
+export type SolitaireStockContext = {
+  recycleCount: number;
+  variation?: SolitaireVariation;
+};
+
 export type DrawFromStockResult = SolitaireStackUpdate & {
   statsDelta?: SolitaireStockStatsDelta;
 };
@@ -21,8 +25,7 @@ const pluralizeCards = (count: number) => (count === 1 ? "card" : "cards");
 
 export const drawFromStockStacks = (
   stacks: CardStack[],
-  stats: SolitaireStats,
-  variation: SolitaireVariation = defaultSolitaireVariation,
+  { recycleCount, variation = defaultSolitaireVariation }: SolitaireStockContext,
 ): DrawFromStockResult => {
   const normalizedVariation = normalizeSolitaireVariation(variation);
   const stockIndex = stacks.findIndex((stack) => stack.role === "stock");
@@ -62,7 +65,7 @@ export const drawFromStockStacks = (
 
   const redeals = normalizedVariation.redeals;
 
-  if (redeals !== "unlimited" && stats.recycleCount >= redeals) {
+  if (redeals !== "unlimited" && recycleCount >= redeals) {
     return { stacks, message: "Redeal limit reached for this variation." };
   }
 
