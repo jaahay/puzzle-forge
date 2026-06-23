@@ -156,7 +156,10 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
   const drawFromStock = () => {
     clearCardInteraction();
     updateCardStacks((stacks) => {
-      const result = drawFromStockStacks(stacks, solitaireStats, solitaireVariation);
+      const result = drawFromStockStacks(stacks, {
+        recycleCount: solitaireStats.recycleCount,
+        variation: solitaireVariation,
+      });
 
       if (result.statsDelta) {
         updateSolitaireStats(result.statsDelta);
