@@ -1,5 +1,6 @@
-import type { CardColor, CardRank, CardStack, CardSuit, PlayingCard } from "../../catalog/types";
+import type { CardColor, CardRank, CardStack, CardSuit, PlayingCard, PuzzleGenerationParams } from "../../catalog/types";
 import { createRandom, makeChecksumFromParts, normalizeSeed } from "../shared";
+import { normalizeSolitaireVariation, solitaireDrawModeLabels, solitaireRedealLimitLabels } from "./variation";
 
 const suits = ["clubs", "diamonds", "hearts", "spades"] as const satisfies readonly CardSuit[];
 const ranks = [
@@ -95,8 +96,9 @@ const cloneCard = (card: PlayingCard, faceUp: boolean): PlayingCard => ({
   faceUp,
 });
 
-export const generateSolitaire = ({ seed }: { seed: string }) => {
+export const generateSolitaire = ({ seed, solitaireVariation: requestedVariation }: PuzzleGenerationParams) => {
   const normalizedSeed = normalizeSeed(seed);
+  const solitaireVariation = normalizeSolitaireVariation(requestedVariation);
   const deck = shuffle(createDeck(), normalizedSeed);
   const tableau: CardStack[] = [];
   let cursor = 0;
@@ -141,9 +143,12 @@ export const generateSolitaire = ({ seed }: { seed: string }) => {
     ...tableau,
   ];
 
-  const checksum = makeChecksumFromParts(
-    stacks.flatMap((stack) => [stack.id, ...stack.cards.map((card) => `${card.code}:${card.faceUp ? "up" : "down"}`)]),
-  );
+  const checksum = makeChecksumFromParts([
+    solitaireVariation.drawMode,
+    String(solitaireVariation.redeals),
+    solitaireVariation.knownSolvable ? "known-solvable" : "not-verified",
+    ...stacks.flatMap((stack) => [stack.id, ...stack.cards.map((card) => `${card.code}:${card.faceUp ? "up" : "down"}`)]),
+  ]);
 
   return {
     kind: "cards" as const,
@@ -154,10 +159,13 @@ export const generateSolitaire = ({ seed }: { seed: string }) => {
     width: 7,
     height: 7,
     stacks,
+    solitaireVariation,
     checksum,
     createdAt: new Date().toISOString(),
     notes: [
-      "Draw-one Klondike deal generated deterministically from the seed.",
+      `${solitaireDrawModeLabels[solitaireVariation.drawMode]} Klondike deal generated deterministically from the seed.`,
+      `Redeals: ${solitaireRedealLimitLabels[String(solitaireVariation.redeals)]}.`,
+      "Solvability is not verified unless knownSolvable is true.",
       "Tableau runs must descend by rank and alternate colors; only Kings may move into empty tableau columns.",
       "Foundations build from Ace to King by suit. Use Auto foundation for currently legal foundation moves.",
     ],

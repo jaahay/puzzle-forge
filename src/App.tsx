@@ -1,48 +1,21 @@
-import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useEffect, useMemo, useState } from "preact/hooks";
 import { getPuzzleAvailability } from "./catalog/puzzleAvailability";
 import { getPuzzleDefinition, isGeneratable } from "./catalog/puzzleCatalog";
-import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleGenerationRequest, PuzzleGenerationResponse, PuzzleId } from "./catalog/types";
+import type { GeneratedPuzzle, PuzzleDifficulty, PuzzleGenerationRequest, PuzzleId } from "./catalog/types";
 import { AboutView } from "./components/AboutView";
 import { AppShell } from "./components/AppShell";
 import { ChangelogView } from "./components/ChangelogView";
 import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
 import { StartView } from "./components/StartView";
-import { defaultSudokuDifficulty, getActiveView, makeRandomSeed, makeRequestId } from "./app/runtime";
-import {
-  initialSolitaireStats,
-  loadPersistedPuzzleSessions,
-  restorePuzzleSessionFromPersisted,
-  savePersistedPuzzleSessions,
-  solitaireHistoryLimit,
-  type PersistedPuzzleSessionCache,
-  type PuzzleSession,
-  type PuzzleSessionCache,
-  type SolitaireHistoryEntry,
-  type SolitaireStats,
-} from "./app/session";
-import {
-  canMoveToFoundation,
-  canMoveToTableau,
-  canSelectFromStack,
-  cloneStack,
-  findFoundationIndexForCard,
-  getTopCard,
-  isTableauRun,
-  revealTopTableauCard,
-  type CardSelection,
-} from "./interactions/cardRules";
-import { checkGridAnswer } from "./interactions/gridChecking";
-import {
-  cloneGridCell,
-  getCellIndex,
-  getGridCell,
-  getGridInputMode,
-  normalizeCellInput,
-  prepareGridCells,
-  type GridCellSelection,
-} from "./interactions/gridRules";
+import { defaultSudokuDifficulty, getActiveView, makeRandomSeed } from "./app/runtime";
+import { useGridController } from "./app/useGridController";
+import { usePuzzleGeneration, type BeginGenerationOptions } from "./app/usePuzzleGeneration";
+import { buildRuntimeSession, usePuzzleSessions } from "./app/usePuzzleSessions";
+import { useSolitaireController } from "./app/useSolitaireController";
 import type { AppView } from "./site/views";
+
+const initialStatusMessage = "Pick a puzzle to start.";
 
 export const App = () => {
   const [activeView, setActiveView] = useState<AppView>(getActiveView);
@@ -53,116 +26,19 @@ export const App = () => {
   const [difficulty, setDifficulty] = useState<PuzzleDifficulty>(defaultSudokuDifficulty);
   const [requireUniqueSolution, setRequireUniqueSolution] = useState(true);
   const [puzzle, setPuzzle] = useState<GeneratedPuzzle | null>(null);
-  const [cardStacks, setCardStacks] = useState<CardStack[] | null>(null);
-  const [selectedCard, setSelectedCard] = useState<CardSelection | null>(null);
-  const [solitaireStats, setSolitaireStats] = useState<SolitaireStats>(initialSolitaireStats);
-  const [solitaireUndoStack, setSolitaireUndoStack] = useState<SolitaireHistoryEntry[]>([]);
-  const [solitaireRedoStack, setSolitaireRedoStack] = useState<SolitaireHistoryEntry[]>([]);
-  const [gridCells, setGridCells] = useState<PuzzleCell[] | null>(null);
-  const [selectedGridCell, setSelectedGridCell] = useState<GridCellSelection | null>(null);
-  const [statusMessage, setStatusMessage] = useState("Pick a puzzle to start.");
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
   const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(true);
   const [hasSelectedPuzzle, setHasSelectedPuzzle] = useState(false);
-  const activeRequestId = useRef<string | null>(null);
-  const hasLoadedPersistedSessions = useRef(false);
-  const pendingRestorePuzzleId = useRef<PuzzleId | null>(null);
-  const persistedSessionCache = useRef<PersistedPuzzleSessionCache>({});
-  const sessionCache = useRef<PuzzleSessionCache>({});
-  const worker = useMemo(
-    () => new Worker(new URL("./workers/puzzleWorker.ts", import.meta.url), { type: "module" }),
-    [],
-  );
+
+  const generation = usePuzzleGeneration();
+  const sessions = usePuzzleSessions();
+  const grid = useGridController();
+  const solitaire = useSolitaireController({ statusMessage, onStatusMessage: setStatusMessage });
   const { readyPuzzles, previewPuzzles, plannedPuzzles } = useMemo(() => getPuzzleAvailability(), []);
   const selectedDefinition = getPuzzleDefinition(selectedPuzzleId);
   const selectedPuzzleIsGeneratable = isGeneratable(selectedDefinition);
 
-  const resetSolitaireStats = () => {
-    setSolitaireStats(initialSolitaireStats);
-  };
-
-  const clearCardInteraction = () => {
-    setSelectedCard(null);
-  };
-
-  const clearGridInteraction = () => {
-    setSelectedGridCell(null);
-  };
-
-  const makeSolitaireHistoryEntry = (stacks: CardStack[], selected: CardSelection | null, stats: SolitaireStats, message: string): SolitaireHistoryEntry => ({
-    cardStacks: stacks.map(cloneStack),
-    selectedCard: selected ? { ...selected } : null,
-    solitaireStats: { ...stats },
-    statusMessage: message,
-  });
-
-  const cloneSolitaireHistoryEntry = (entry: SolitaireHistoryEntry): SolitaireHistoryEntry => ({
-    cardStacks: entry.cardStacks.map(cloneStack),
-    selectedCard: entry.selectedCard ? { ...entry.selectedCard } : null,
-    solitaireStats: { ...entry.solitaireStats },
-    statusMessage: entry.statusMessage,
-  });
-
-  const restoreSolitaireHistoryEntry = (entry: SolitaireHistoryEntry) => {
-    setCardStacks(entry.cardStacks.map(cloneStack));
-    setSelectedCard(entry.selectedCard ? { ...entry.selectedCard } : null);
-    setSolitaireStats({ ...entry.solitaireStats });
-    setStatusMessage(entry.statusMessage);
-  };
-
-  const clearSolitaireHistory = () => {
-    setSolitaireUndoStack([]);
-    setSolitaireRedoStack([]);
-  };
-
-  const undoSolitaireMove = () => {
-    if (!cardStacks || solitaireUndoStack.length === 0) {
-      setStatusMessage("No Solitaire moves to undo.");
-      return;
-    }
-
-    const previous = solitaireUndoStack[solitaireUndoStack.length - 1];
-    const current = makeSolitaireHistoryEntry(cardStacks, selectedCard, solitaireStats, statusMessage);
-    setSolitaireUndoStack((entries) => entries.slice(0, -1));
-    setSolitaireRedoStack((entries) => [...entries, current].slice(-solitaireHistoryLimit));
-    restoreSolitaireHistoryEntry(previous);
-  };
-
-  const redoSolitaireMove = () => {
-    if (!cardStacks || solitaireRedoStack.length === 0) {
-      setStatusMessage("No Solitaire moves to redo.");
-      return;
-    }
-
-    const next = solitaireRedoStack[solitaireRedoStack.length - 1];
-    const current = makeSolitaireHistoryEntry(cardStacks, selectedCard, solitaireStats, statusMessage);
-    setSolitaireRedoStack((entries) => entries.slice(0, -1));
-    setSolitaireUndoStack((entries) => [...entries, current].slice(-solitaireHistoryLimit));
-    restoreSolitaireHistoryEntry(next);
-  };
-
-  const saveCurrentSession = () => {
-    sessionCache.current[selectedPuzzleId] = {
-      seed,
-      width,
-      height,
-      difficulty,
-      requireUniqueSolution,
-      puzzle,
-      cardStacks: cardStacks?.map(cloneStack) ?? null,
-      selectedCard: selectedCard ? { ...selectedCard } : null,
-      solitaireStats: { ...solitaireStats },
-      solitaireUndoStack: solitaireUndoStack.map(cloneSolitaireHistoryEntry),
-      solitaireRedoStack: solitaireRedoStack.map(cloneSolitaireHistoryEntry),
-      gridCells: gridCells?.map(cloneGridCell) ?? null,
-      selectedGridCell: selectedGridCell ? { ...selectedGridCell } : null,
-      statusMessage,
-    };
-
-    savePersistedPuzzleSessions({ activePuzzleId: selectedPuzzleId, sessions: sessionCache.current });
-  };
-
-  const restoreSession = (puzzleId: PuzzleId, session: PuzzleSession) => {
+  const restoreSession = (puzzleId: PuzzleId, session: ReturnType<typeof buildRuntimeSession>) => {
     setHasSelectedPuzzle(true);
     setIsCatalogCollapsed(true);
     setSelectedPuzzleId(puzzleId);
@@ -172,551 +48,109 @@ export const App = () => {
     setDifficulty(session.difficulty);
     setRequireUniqueSolution(session.requireUniqueSolution);
     setPuzzle(session.puzzle);
-    setCardStacks(session.cardStacks?.map(cloneStack) ?? null);
-    setSelectedCard(session.selectedCard ? { ...session.selectedCard } : null);
-    setSolitaireStats({ ...session.solitaireStats });
-    setSolitaireUndoStack(session.solitaireUndoStack?.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit) ?? []);
-    setSolitaireRedoStack(session.solitaireRedoStack?.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit) ?? []);
-    setGridCells(session.gridCells?.map(cloneGridCell) ?? null);
-    setSelectedGridCell(session.selectedGridCell ? { ...session.selectedGridCell } : null);
-    setStatusMessage(session.statusMessage);
-    setIsGenerating(false);
+    solitaire.restoreSolitaireSnapshot({
+      cardStacks: session.cardStacks,
+      selectedCard: session.selectedCard,
+      solitaireStats: session.solitaireStats,
+      solitaireUndoStack: session.solitaireUndoStack ?? [],
+      solitaireRedoStack: session.solitaireRedoStack ?? [],
+      statusMessage: session.statusMessage,
+    });
+    grid.restoreGridSnapshot({
+      gridCells: session.gridCells,
+      selectedGridCell: session.selectedGridCell,
+    });
+    generation.setIsGenerating(false);
   };
 
-  const beginGeneration = ({
-    puzzleId = selectedPuzzleId,
-    seed: generationSeed = seed,
-    width: generationWidth = width,
-    height: generationHeight = height,
-    difficulty: generationDifficulty = difficulty,
-    requireUniqueSolution: generationRequireUniqueSolution = requireUniqueSolution,
-  }: Partial<Omit<PuzzleGenerationRequest, "requestId">> = {}) => {
-    const definition = getPuzzleDefinition(puzzleId);
+  const makeCurrentSession = () =>
+    buildRuntimeSession({
+      puzzleId: selectedPuzzleId,
+      seed,
+      width,
+      height,
+      difficulty,
+      requireUniqueSolution,
+      puzzle,
+      cardStacks: solitaire.cardStacks,
+      selectedCard: solitaire.selectedCard,
+      solitaireStats: solitaire.solitaireStats,
+      solitaireUndoStack: solitaire.solitaireUndoStack,
+      solitaireRedoStack: solitaire.solitaireRedoStack,
+      gridCells: grid.gridCells,
+      selectedGridCell: grid.selectedGridCell,
+      statusMessage,
+    });
+
+  const saveCurrentSession = () => {
+    sessions.saveSession(selectedPuzzleId, makeCurrentSession());
+  };
+
+  const resetRuntimePuzzleState = () => {
+    setPuzzle(null);
+    solitaire.resetSolitaire();
+    grid.resetGrid();
+  };
+
+  const beginGeneration = (options: BeginGenerationOptions = {}) => {
+    const result = generation.beginGeneration(
+      {
+        selectedPuzzleId,
+        seed,
+        width,
+        height,
+        difficulty,
+        requireUniqueSolution,
+      },
+      options,
+    );
 
     setHasSelectedPuzzle(true);
     setIsCatalogCollapsed(true);
 
-    if (!isGeneratable(definition)) {
-      setSelectedPuzzleId(puzzleId);
+    if (result.kind === "planned") {
+      const definition = getPuzzleDefinition(result.puzzleId);
+      setSelectedPuzzleId(result.puzzleId);
       setWidth(definition.defaultWidth);
       setHeight(definition.defaultHeight);
-      setPuzzle(null);
-      setCardStacks(null);
-      setGridCells(null);
-      setSelectedCard(null);
-      setSelectedGridCell(null);
-      resetSolitaireStats();
-      clearSolitaireHistory();
-      setStatusMessage(`${definition.title} is planned for a future generator.`);
+      resetRuntimePuzzleState();
+      setStatusMessage(`${result.title} is planned for a future generator.`);
       return;
     }
 
-    const requestId = makeRequestId();
-    const request: PuzzleGenerationRequest = {
-      requestId,
-      puzzleId,
-      seed: generationSeed,
-      width: generationWidth,
-      height: generationHeight,
-      difficulty: generationDifficulty,
-      requireUniqueSolution: generationRequireUniqueSolution,
-    };
-
-    activeRequestId.current = requestId;
-    setSelectedPuzzleId(puzzleId);
-    setSeed(generationSeed);
-    setWidth(generationWidth);
-    setHeight(generationHeight);
-    setDifficulty(generationDifficulty);
-    setRequireUniqueSolution(generationRequireUniqueSolution);
-    setIsGenerating(true);
-    setPuzzle(null);
-    setCardStacks(null);
-    setGridCells(null);
-    setSelectedCard(null);
-    setSelectedGridCell(null);
-    resetSolitaireStats();
-    clearSolitaireHistory();
-    setStatusMessage(`Generating ${definition.title}...`);
-    worker.postMessage(request);
+    const { request, title } = result;
+    setSelectedPuzzleId(request.puzzleId);
+    setSeed(request.seed);
+    setWidth(request.width);
+    setHeight(request.height);
+    setDifficulty(request.difficulty ?? difficulty);
+    setRequireUniqueSolution(Boolean(request.requireUniqueSolution));
+    resetRuntimePuzzleState();
+    setStatusMessage(`Generating ${title}...`);
   };
 
-  const updateCardStacks = (updater: (stacks: CardStack[]) => { stacks: CardStack[]; message: string }) => {
-    setCardStacks((currentStacks) => {
-      if (!currentStacks) {
-        return currentStacks;
-      }
+  const handleGeneratedPuzzle = (generatedPuzzle: GeneratedPuzzle) => {
+    const restoredSession = sessions.restorePendingSessionForPuzzle(generatedPuzzle);
 
-      const workingStacks = currentStacks.map(cloneStack);
-      const historyEntry = makeSolitaireHistoryEntry(currentStacks, selectedCard, solitaireStats, statusMessage);
-      const { stacks, message } = updater(workingStacks);
-      const didChange = stacks !== workingStacks;
-      const foundationCardCount = stacks
-        .filter((stack) => stack.role === "foundation")
-        .reduce((total, stack) => total + stack.cards.length, 0);
-      const isSolved = foundationCardCount === 52;
-      const nextMessage = isSolved ? "Solved. All cards are on foundations." : message;
+    if (restoredSession) {
+      restoreSession(generatedPuzzle.puzzleId, restoredSession);
+      return;
+    }
 
-      if (didChange) {
-        if (isSolved) {
-          setSolitaireUndoStack([]);
-          setSolitaireRedoStack([]);
-          setSelectedCard(null);
-        } else {
-          setSolitaireUndoStack((entries) => [...entries, historyEntry].slice(-solitaireHistoryLimit));
-          setSolitaireRedoStack([]);
-        }
-      }
-
-      setStatusMessage(nextMessage);
-
-      return stacks;
+    const readyMessage = generation.makeReadyMessage(generatedPuzzle);
+    setPuzzle(generatedPuzzle);
+    solitaire.restoreSolitaireSnapshot({
+      cardStacks: generatedPuzzle.kind === "cards" ? generatedPuzzle.stacks : null,
+      selectedCard: null,
+      solitaireStats: solitaire.solitaireStats,
+      solitaireUndoStack: [],
+      solitaireRedoStack: [],
+      statusMessage: readyMessage,
     });
-  };
-
-  const updateGridCells = (updater: (cells: PuzzleCell[]) => { cells: PuzzleCell[]; message: string }) => {
-    setGridCells((currentCells) => {
-      if (!currentCells) {
-        return currentCells;
-      }
-
-      const { cells, message } = updater(currentCells.map(cloneGridCell));
-      setStatusMessage(message);
-      return cells;
-    });
-  };
-
-  const drawFromStock = () => {
-    clearCardInteraction();
-    updateCardStacks((stacks) => {
-      const stockIndex = stacks.findIndex((stack) => stack.role === "stock");
-      const wasteIndex = stacks.findIndex((stack) => stack.role === "waste");
-      const stock = stacks[stockIndex];
-      const waste = stacks[wasteIndex];
-
-      if (!stock || !waste) {
-        return { stacks, message: "Solitaire stock or waste stack is missing." };
-      }
-
-      if (stock.cards.length > 0) {
-        const drawnCard = stock.cards[stock.cards.length - 1];
-        const nextStacks = [...stacks];
-        nextStacks[stockIndex] = { ...stock, cards: stock.cards.slice(0, -1), faceDownCount: stock.cards.length - 1 };
-        nextStacks[wasteIndex] = { ...waste, cards: [...waste.cards, { ...drawnCard, faceUp: true }] };
-        setSolitaireStats((current) => ({ ...current, drawCount: current.drawCount + 1, moveCount: current.moveCount + 1 }));
-
-        return { stacks: nextStacks, message: `Drew ${drawnCard.label} to waste.` };
-      }
-
-      if (waste.cards.length === 0) {
-        return { stacks, message: "Stock and waste are both empty." };
-      }
-
-      const recycledCards = waste.cards.map((card) => ({ ...card, faceUp: false })).reverse();
-      const nextStacks = [...stacks];
-      nextStacks[stockIndex] = { ...stock, cards: recycledCards, faceDownCount: recycledCards.length };
-      nextStacks[wasteIndex] = { ...waste, cards: [] };
-      setSolitaireStats((current) => ({ ...current, recycleCount: current.recycleCount + 1, moveCount: current.moveCount + 1 }));
-
-      return { stacks: nextStacks, message: "Recycled waste back into the stock." };
-    });
-  };
-
-  const moveSelectedCardToStack = (targetStackId: string) => {
-    if (!selectedCard) {
-      return false;
-    }
-
-    let didMove = false;
-
-    updateCardStacks((stacks) => {
-      const sourceIndex = stacks.findIndex((stack) => stack.id === selectedCard.stackId);
-      const targetIndex = stacks.findIndex((stack) => stack.id === targetStackId);
-      const source = stacks[sourceIndex];
-      const targetStack = stacks[targetIndex];
-
-      if (!source || !targetStack) {
-        return { stacks, message: "Selected source or destination stack no longer exists." };
-      }
-
-      if (source.id === targetStack.id) {
-        return { stacks, message: "Card selection cleared." };
-      }
-
-      const movingCards = source.cards.slice(selectedCard.cardIndex);
-      const movingCard = movingCards[0];
-
-      if (!movingCard?.faceUp) {
-        return { stacks, message: "Only face-up cards can be moved." };
-      }
-
-      if ((source.role === "waste" || source.role === "foundation") && selectedCard.cardIndex !== source.cards.length - 1) {
-        return { stacks, message: "Only the top waste or foundation card can move." };
-      }
-
-      if (source.role === "tableau" && !isTableauRun(source, selectedCard.cardIndex)) {
-        return { stacks, message: "Tableau moves must be descending, alternating-color runs." };
-      }
-
-      if (targetStack.role === "foundation" && (movingCards.length !== 1 || !canMoveToFoundation(movingCard, targetStack))) {
-        return { stacks, message: `${movingCard.code} cannot move to ${targetStack.title}.` };
-      }
-
-      if (targetStack.role === "tableau" && !canMoveToTableau(movingCard, targetStack)) {
-        return { stacks, message: `${movingCard.code} cannot move to ${targetStack.title}.` };
-      }
-
-      if (targetStack.role !== "foundation" && targetStack.role !== "tableau") {
-        return { stacks, message: "Cards can move only to foundations or tableau columns." };
-      }
-
-      const nextStacks = [...stacks];
-      const nextSource = revealTopTableauCard({ ...source, cards: source.cards.slice(0, selectedCard.cardIndex) });
-      const nextTarget = { ...targetStack, cards: [...targetStack.cards, ...movingCards] };
-
-      nextStacks[sourceIndex] = nextSource;
-      nextStacks[targetIndex] = nextTarget;
-      didMove = true;
-      setSolitaireStats((current) => ({ ...current, moveCount: current.moveCount + 1 }));
-
-      return { stacks: nextStacks, message: `Moved ${movingCard.code} to ${targetStack.title}.` };
-    });
-
-    clearCardInteraction();
-
-    return didMove;
-  };
-
-  const moveSingleCardToFoundation = (stack: CardStack, cardIndex: number) => {
-    clearCardInteraction();
-
-    updateCardStacks((stacks) => {
-      const sourceIndex = stacks.findIndex((candidate) => candidate.id === stack.id);
-      const source = stacks[sourceIndex];
-
-      if (!source) {
-        return { stacks, message: "Selected source stack no longer exists." };
-      }
-
-      if (cardIndex !== source.cards.length - 1) {
-        return { stacks, message: "Only a top card can move to a foundation." };
-      }
-
-      const movingCard = source.cards[cardIndex];
-
-      if (!movingCard?.faceUp) {
-        return { stacks, message: "Only face-up cards can move to foundations." };
-      }
-
-      const foundationIndex = findFoundationIndexForCard(movingCard, stacks);
-      const foundation = stacks[foundationIndex];
-
-      if (!foundation || !canMoveToFoundation(movingCard, foundation)) {
-        return { stacks, message: `${movingCard.code} cannot move to a foundation.` };
-      }
-
-      const nextStacks = [...stacks];
-      const sourceCards = source.cards.slice(0, -1);
-      nextStacks[sourceIndex] = source.role === "tableau" ? revealTopTableauCard({ ...source, cards: sourceCards }) : { ...source, cards: sourceCards };
-      nextStacks[foundationIndex] = { ...foundation, cards: [...foundation.cards, movingCard] };
-      setSolitaireStats((current) => ({ ...current, moveCount: current.moveCount + 1 }));
-
-      return { stacks: nextStacks, message: `Moved ${movingCard.code} to ${foundation.title}.` };
-    });
-  };
-
-  const autoMoveToFoundations = () => {
-    clearCardInteraction();
-    updateCardStacks((stacks) => {
-      let nextStacks = stacks;
-      let movedCardCount = 0;
-      let lastMovedLabel = "";
-
-      while (true) {
-        const sourceIndex = nextStacks.findIndex((stack) => {
-          const topCard = getTopCard(stack);
-          return (
-            (stack.role === "waste" || stack.role === "tableau") &&
-            Boolean(topCard?.faceUp) &&
-            topCard !== undefined &&
-            findFoundationIndexForCard(topCard, nextStacks) >= 0
-          );
-        });
-
-        if (sourceIndex < 0) {
-          break;
-        }
-
-        const source = nextStacks[sourceIndex];
-        const movingCard = getTopCard(source);
-
-        if (!movingCard) {
-          break;
-        }
-
-        const foundationIndex = findFoundationIndexForCard(movingCard, nextStacks);
-        const foundation = nextStacks[foundationIndex];
-
-        if (!foundation) {
-          break;
-        }
-
-        const sourceCards = source.cards.slice(0, -1);
-        const nextSource = source.role === "tableau" ? revealTopTableauCard({ ...source, cards: sourceCards }) : { ...source, cards: sourceCards };
-        const nextFoundation = { ...foundation, cards: [...foundation.cards, movingCard] };
-
-        nextStacks = [...nextStacks];
-        nextStacks[sourceIndex] = nextSource;
-        nextStacks[foundationIndex] = nextFoundation;
-        movedCardCount += 1;
-        lastMovedLabel = movingCard.code;
-      }
-
-      if (movedCardCount === 0) {
-        return { stacks, message: "No legal foundation moves are available." };
-      }
-
-      setSolitaireStats((current) => ({
-        ...current,
-        autoMoveCount: current.autoMoveCount + movedCardCount,
-        moveCount: current.moveCount + movedCardCount,
-      }));
-
-      return {
-        stacks: nextStacks,
-        message:
-          movedCardCount === 1
-            ? `Auto-moved ${lastMovedLabel} to a foundation.`
-            : `Auto-moved ${movedCardCount} cards to foundations.`,
-      };
-    });
-  };
-
-  const handleStackClick = (stack: CardStack) => {
-    if (stack.role === "stock") {
-      drawFromStock();
-      return;
-    }
-
-    if (selectedCard) {
-      moveSelectedCardToStack(stack.id);
-      return;
-    }
-
-    setStatusMessage(`${stack.title} is empty.`);
-  };
-
-  const handleCardClick = (stack: CardStack, cardIndex: number) => {
-    if (stack.role === "stock") {
-      drawFromStock();
-      return;
-    }
-
-    if (selectedCard && moveSelectedCardToStack(stack.id)) {
-      return;
-    }
-
-    if (selectedCard?.stackId === stack.id && selectedCard.cardIndex === cardIndex) {
-      clearCardInteraction();
-      setStatusMessage("Card selection cleared.");
-      return;
-    }
-
-    if (!canSelectFromStack(stack, cardIndex)) {
-      setStatusMessage("Select a face-up waste/foundation top card or a descending alternating tableau run.");
-      return;
-    }
-
-    const card = stack.cards[cardIndex];
-    setSelectedCard({ stackId: stack.id, cardIndex });
-    setStatusMessage(
-      stack.role === "tableau"
-        ? `Selected ${card.code} and ${stack.cards.length - cardIndex - 1} card(s) below it.`
-        : `Selected ${card.code}.`,
-    );
-  };
-
-  const handleGridCellInput = (cell: PuzzleCell, rawValue: string) => {
-    if (!puzzle || puzzle.kind !== "grid" || cell.locked) {
-      return;
-    }
-
-    const inputMode = getGridInputMode(puzzle.puzzleId);
-    const nextValue = normalizeCellInput(inputMode, rawValue);
-
-    setSelectedGridCell({ row: cell.row, column: cell.column });
-    updateGridCells((cells) => {
-      const index = getCellIndex(cells, cell);
-      const current = cells[index];
-
-      if (!current) {
-        return { cells, message: "Cell no longer exists." };
-      }
-
-      cells[index] = {
-        ...current,
-        value: nextValue,
-        tone: puzzle.puzzleId === "sudoku" ? "empty" : nextValue ? "answer" : "empty",
-        ariaLabel: `${nextValue || "Empty"} cell at row ${current.row + 1}, column ${current.column + 1}`,
-      };
-
-      return { cells, message: puzzle.puzzleId === "sudoku" ? "Sudoku entry updated." : nextValue ? `Set cell to ${nextValue}.` : "Cleared cell." };
-    });
-  };
-
-  const toggleNonogramCell = (cell: PuzzleCell) => {
-    clearGridInteraction();
-    updateGridCells((cells) => {
-      const index = getCellIndex(cells, cell);
-      const current = cells[index];
-
-      if (!current) {
-        return { cells, message: "Cell no longer exists." };
-      }
-
-      const nextValue = current.value === "■" ? "" : "■";
-      cells[index] = {
-        ...current,
-        value: nextValue,
-        tone: nextValue ? "accent" : "empty",
-        ariaLabel: `${nextValue ? "Filled" : "Empty"} nonogram cell at row ${current.row + 1}, column ${current.column + 1}`,
-      };
-
-      return { cells, message: nextValue ? "Marked filled square." : "Cleared square." };
-    });
-  };
-
-  const handlePegSolitaireCellClick = (cell: PuzzleCell) => {
-    if (cell.tone === "disabled") {
-      return;
-    }
-
-    if (!selectedGridCell) {
-      if (cell.value === "●") {
-        setSelectedGridCell({ row: cell.row, column: cell.column });
-        setStatusMessage(`Selected peg at row ${cell.row + 1}, column ${cell.column + 1}.`);
-      } else {
-        setStatusMessage("Select a peg, then jump it into an empty hole two spaces away.");
-      }
-
-      return;
-    }
-
-    if (selectedGridCell.row === cell.row && selectedGridCell.column === cell.column) {
-      clearGridInteraction();
-      setStatusMessage("Peg selection cleared.");
-      return;
-    }
-
-    if (cell.value === "●") {
-      setSelectedGridCell({ row: cell.row, column: cell.column });
-      setStatusMessage(`Selected peg at row ${cell.row + 1}, column ${cell.column + 1}.`);
-      return;
-    }
-
-    updateGridCells((cells) => {
-      const source = getGridCell(cells, selectedGridCell);
-      const destination = getGridCell(cells, cell);
-
-      if (!source || !destination || source.value !== "●" || destination.value !== "○") {
-        return { cells, message: "Peg jumps must start on a peg and land in an empty hole." };
-      }
-
-      const rowDelta = destination.row - source.row;
-      const columnDelta = destination.column - source.column;
-      const isOrthogonalJump =
-        (Math.abs(rowDelta) === 2 && columnDelta === 0) || (Math.abs(columnDelta) === 2 && rowDelta === 0);
-
-      if (!isOrthogonalJump) {
-        return { cells, message: "Peg jumps must move exactly two spaces horizontally or vertically." };
-      }
-
-      const middleCell = getGridCell(cells, {
-        row: source.row + rowDelta / 2,
-        column: source.column + columnDelta / 2,
-      });
-
-      if (!middleCell || middleCell.value !== "●") {
-        return { cells, message: "A jump must hop over another peg." };
-      }
-
-      const nextCells: PuzzleCell[] = cells.map((candidate): PuzzleCell => {
-        const isSource = candidate.row === source.row && candidate.column === source.column;
-        const isDestination = candidate.row === destination.row && candidate.column === destination.column;
-        const isMiddle = candidate.row === middleCell.row && candidate.column === middleCell.column;
-
-        if (isSource || isMiddle) {
-          return { ...candidate, value: "○", locked: false, tone: "empty" };
-        }
-
-        if (isDestination) {
-          return { ...candidate, value: "●", locked: true, tone: "given" };
-        }
-
-        return candidate;
-      });
-      const pegCount = nextCells.filter((candidate) => candidate.value === "●").length;
-
-      return { cells: nextCells, message: pegCount === 1 ? "Solved: one peg remains." : `Jumped peg. ${pegCount} pegs remain.` };
-    });
-
-    clearGridInteraction();
-  };
-
-  const handleGridCellClick = (cell: PuzzleCell) => {
-    if (!puzzle || puzzle.kind !== "grid") {
-      return;
-    }
-
-    if (puzzle.puzzleId === "sudoku") {
-      if (selectedGridCell?.row === cell.row && selectedGridCell.column === cell.column) {
-        clearGridInteraction();
-        return;
-      }
-
-      setSelectedGridCell({ row: cell.row, column: cell.column });
-      return;
-    }
-
-    if (puzzle.puzzleId === "nonogram") {
-      toggleNonogramCell(cell);
-      return;
-    }
-
-    if (puzzle.puzzleId === "peg-solitaire") {
-      handlePegSolitaireCellClick(cell);
-      return;
-    }
-  };
-
-  const handleCheck = () => {
-    if (!puzzle) {
-      return;
-    }
-
-    if (puzzle.kind === "cards") {
-      const foundationCardCount = cardStacks
-        ?.filter((stack) => stack.role === "foundation")
-        .reduce((total, stack) => total + stack.cards.length, 0) ?? 0;
-      setStatusMessage(
-        foundationCardCount === 52
-          ? `Solved in ${solitaireStats.moveCount} move(s). All cards are on foundations.`
-          : `Not solved: ${foundationCardCount}/52 cards are on foundations after ${solitaireStats.moveCount} move(s).`,
-      );
-      return;
-    }
-
-    if (puzzle.puzzleId === "peg-solitaire") {
-      const pegCount = gridCells?.filter((cell) => cell.value === "●").length ?? 0;
-      setStatusMessage(pegCount === 1 ? "Solved. One peg remains." : `Not solved: ${pegCount} pegs remain.`);
-      return;
-    }
-
-    if (!gridCells || puzzle.kind !== "grid") {
-      return;
-    }
-
-    updateGridCells((cells) => checkGridAnswer(puzzle, cells));
+    grid.prepareGeneratedGrid(generatedPuzzle);
+    solitaire.resetSolitaireStats();
+    solitaire.clearSolitaireHistory();
+    setStatusMessage(readyMessage);
   };
 
   useEffect(() => {
@@ -734,88 +168,38 @@ export const App = () => {
   }, []);
 
   useEffect(() => {
-    const handleMessage = (event: MessageEvent<PuzzleGenerationResponse>) => {
-      if (event.data.requestId !== activeRequestId.current) {
-        return;
-      }
-
-      setIsGenerating(false);
-
-      if ("error" in event.data) {
-        pendingRestorePuzzleId.current = null;
-        setStatusMessage(event.data.error);
-        return;
-      }
-
-      const generatedPuzzle = event.data.puzzle;
-      const pendingPersistedSession =
-        pendingRestorePuzzleId.current === generatedPuzzle.puzzleId ? persistedSessionCache.current[generatedPuzzle.puzzleId] : undefined;
-      const restoredSession = pendingPersistedSession ? restorePuzzleSessionFromPersisted(pendingPersistedSession, generatedPuzzle) : null;
-
-      if (restoredSession) {
-        pendingRestorePuzzleId.current = null;
-        sessionCache.current[generatedPuzzle.puzzleId] = restoredSession;
-        restoreSession(generatedPuzzle.puzzleId, restoredSession);
-        return;
-      }
-
-      pendingRestorePuzzleId.current = null;
-      setPuzzle(generatedPuzzle);
-      setCardStacks(generatedPuzzle.kind === "cards" ? generatedPuzzle.stacks.map(cloneStack) : null);
-      setGridCells(generatedPuzzle.kind === "grid" ? prepareGridCells(generatedPuzzle) : null);
-      setSelectedCard(null);
-      setSelectedGridCell(null);
-      resetSolitaireStats();
-      clearSolitaireHistory();
-      setStatusMessage(
-        generatedPuzzle.puzzleId === "sudoku"
-          ? `${generatedPuzzle.difficulty ?? defaultSudokuDifficulty} Sudoku ready.`
-          : generatedPuzzle.puzzleId === "nonogram"
-            ? generatedPuzzle.uniqueSolution
-              ? "Unique Nonogram ready."
-              : "Open Nonogram ready. Multiple solutions may be possible."
-            : `${generatedPuzzle.title} generated from seed ${generatedPuzzle.seed}.`,
+    const handleMessage = (event: MessageEvent) => {
+      generation.handleGenerationMessage(
+        event,
+        handleGeneratedPuzzle,
+        (error) => {
+          sessions.pendingRestorePuzzleId.current = null;
+          setStatusMessage(error);
+        },
       );
     };
 
-    worker.addEventListener("message", handleMessage);
+    generation.worker.addEventListener("message", handleMessage);
 
-    if (!hasLoadedPersistedSessions.current) {
-      hasLoadedPersistedSessions.current = true;
-      const persisted = loadPersistedPuzzleSessions();
-
-      if (persisted) {
-        persistedSessionCache.current = persisted.sessions;
-        const activePersistedSession = persisted.sessions[persisted.activePuzzleId];
-
-        if (activePersistedSession) {
-          pendingRestorePuzzleId.current = activePersistedSession.puzzleId;
-          beginGeneration({
-            puzzleId: activePersistedSession.puzzleId,
-            seed: activePersistedSession.seed,
-            width: activePersistedSession.width,
-            height: activePersistedSession.height,
-            difficulty: activePersistedSession.difficulty,
-            requireUniqueSolution: activePersistedSession.requireUniqueSolution,
-          });
-        }
-      }
-    }
+    sessions.loadPersistedSessionsOnce({
+      restoreSession,
+      beginGeneration: (session) => beginGeneration(session),
+    });
 
     return () => {
-      worker.removeEventListener("message", handleMessage);
+      generation.worker.removeEventListener("message", handleMessage);
     };
-  }, [worker]);
+  }, [generation.worker]);
 
   useEffect(() => {
-    if (!hasSelectedPuzzle || isGenerating) {
+    if (!hasSelectedPuzzle || generation.isGenerating) {
       return;
     }
 
     saveCurrentSession();
   }, [
     hasSelectedPuzzle,
-    isGenerating,
+    generation.isGenerating,
     selectedPuzzleId,
     seed,
     width,
@@ -823,13 +207,13 @@ export const App = () => {
     difficulty,
     requireUniqueSolution,
     puzzle,
-    cardStacks,
-    selectedCard,
-    solitaireStats,
-    solitaireUndoStack,
-    solitaireRedoStack,
-    gridCells,
-    selectedGridCell,
+    solitaire.cardStacks,
+    solitaire.selectedCard,
+    solitaire.solitaireStats,
+    solitaire.solitaireUndoStack,
+    solitaire.solitaireRedoStack,
+    grid.gridCells,
+    grid.selectedGridCell,
     statusMessage,
   ]);
 
@@ -842,7 +226,7 @@ export const App = () => {
       saveCurrentSession();
     }
 
-    const cachedSession = sessionCache.current[puzzleId];
+    const cachedSession = sessions.getCachedSession(puzzleId);
 
     if (cachedSession) {
       restoreSession(puzzleId, cachedSession);
@@ -877,7 +261,8 @@ export const App = () => {
     height: nextHeight,
     difficulty: nextDifficulty,
     requireUniqueSolution: nextRequireUniqueSolution,
-  }: Partial<Pick<PuzzleGenerationRequest, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution">> = {}) => {
+    solitaireVariation: nextSolitaireVariation,
+  }: Partial<Pick<PuzzleGenerationRequest, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution" | "solitaireVariation">> = {}) => {
     const definition = getPuzzleDefinition(selectedPuzzleId);
     const generationSeed = typeof nextSeed === "string" ? nextSeed.trim() : seed.trim();
     const fallbackSeed = puzzle?.seed ?? makeRandomSeed();
@@ -887,12 +272,15 @@ export const App = () => {
     const generationDifficulty = nextDifficulty ?? difficulty;
     const generationRequireUniqueSolution = typeof nextRequireUniqueSolution === "boolean" ? nextRequireUniqueSolution : requireUniqueSolution;
     const currentGrid = puzzle?.kind === "grid" ? puzzle : null;
+    const currentSolitaireVariation = puzzle?.kind === "cards" ? puzzle.solitaireVariation : undefined;
+    const generationSolitaireVariation = nextSolitaireVariation ?? currentSolitaireVariation;
     const settingsAreCurrent =
       puzzle?.puzzleId === selectedPuzzleId &&
       puzzle.seed === normalizedSeed &&
       (!currentGrid || (currentGrid.width === generationWidth && currentGrid.height === generationHeight)) &&
       (selectedPuzzleId !== "sudoku" || puzzle.difficulty === generationDifficulty) &&
-      (selectedPuzzleId !== "nonogram" || (puzzle.difficulty === generationDifficulty && Boolean(puzzle.uniqueSolution) === generationRequireUniqueSolution));
+      (selectedPuzzleId !== "nonogram" || (puzzle.difficulty === generationDifficulty && Boolean(puzzle.uniqueSolution) === generationRequireUniqueSolution)) &&
+      (selectedPuzzleId !== "klondike-solitaire" || nextSolitaireVariation === undefined);
 
     if (normalizedSeed !== seed) {
       setSeed(normalizedSeed);
@@ -924,6 +312,7 @@ export const App = () => {
       height: generationHeight,
       difficulty: generationDifficulty,
       requireUniqueSolution: generationRequireUniqueSolution,
+      solitaireVariation: generationSolitaireVariation,
     });
   };
 
@@ -950,6 +339,19 @@ export const App = () => {
     setRequireUniqueSolution(nextRequireUniqueSolution);
   };
 
+  const handleCheck = () => {
+    if (!puzzle) {
+      return;
+    }
+
+    if (puzzle.kind === "cards") {
+      solitaire.checkSolitaire();
+      return;
+    }
+
+    grid.checkGrid(puzzle, setStatusMessage);
+  };
+
   return (
     <AppShell activeView={activeView}>
       {activeView === "catalog" ? (
@@ -971,13 +373,13 @@ export const App = () => {
               difficulty={difficulty}
               requireUniqueSolution={requireUniqueSolution}
               puzzle={puzzle}
-              cardStacks={cardStacks}
-              selectedCard={selectedCard}
-              solitaireStats={solitaireStats}
-              gridCells={gridCells}
-              selectedGridCell={selectedGridCell}
+              cardStacks={solitaire.cardStacks}
+              selectedCard={solitaire.selectedCard}
+              solitaireStats={solitaire.solitaireStats}
+              gridCells={grid.gridCells}
+              selectedGridCell={grid.selectedGridCell}
               statusMessage={statusMessage}
-              isGenerating={isGenerating}
+              isGenerating={generation.isGenerating}
               onSeedChange={setSeed}
               onWidthChange={setWidth}
               onHeightChange={setHeight}
@@ -987,16 +389,16 @@ export const App = () => {
               onGenerate={generate}
               onRandomize={randomize}
               onCheck={handleCheck}
-              onAutoMoveToFoundations={autoMoveToFoundations}
-              onUndoSolitaire={undoSolitaireMove}
-              onRedoSolitaire={redoSolitaireMove}
-              canUndoSolitaire={solitaireUndoStack.length > 0}
-              canRedoSolitaire={solitaireRedoStack.length > 0}
-              onCardClick={handleCardClick}
-              onCardDoubleClick={moveSingleCardToFoundation}
-              onStackClick={handleStackClick}
-              onCellClick={handleGridCellClick}
-              onCellInput={handleGridCellInput}
+              onAutoMoveToFoundations={solitaire.autoMoveToFoundations}
+              onUndoSolitaire={solitaire.undoSolitaireMove}
+              onRedoSolitaire={solitaire.redoSolitaireMove}
+              canUndoSolitaire={solitaire.solitaireUndoStack.length > 0}
+              canRedoSolitaire={solitaire.solitaireRedoStack.length > 0}
+              onCardClick={solitaire.handleCardClick}
+              onCardDoubleClick={solitaire.moveSingleCardToFoundation}
+              onStackClick={solitaire.handleStackClick}
+              onCellClick={(cell) => grid.handleGridCellClick(puzzle, cell, setStatusMessage)}
+              onCellInput={(cell, value) => grid.handleGridCellInput(puzzle, cell, value, setStatusMessage)}
             />
           </section>
         ) : (

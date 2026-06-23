@@ -1,4 +1,4 @@
-import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleId } from "../catalog/types";
+import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleId, SolitaireVariation } from "../catalog/types";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
 export { puzzleIds, solitaireHistoryLimit, solitaireHistoryLimitNotice } from "./sessionConstants";
@@ -31,6 +31,7 @@ export type PuzzleSession = {
   height: number;
   difficulty: PuzzleDifficulty;
   requireUniqueSolution: boolean;
+  solitaireVariation?: SolitaireVariation;
   puzzle: GeneratedPuzzle | null;
   cardStacks: CardStack[] | null;
   selectedCard: CardSelection | null;
