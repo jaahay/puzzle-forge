@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CardStack, GeneratedPuzzle, PlayingCard } from "../catalog/types";
+import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import {
   buildPersistedPuzzleSession,
   completePersistedPuzzleSession,
@@ -58,6 +59,7 @@ const makeCardPuzzle = (seed = "seed-1"): GeneratedPuzzle => ({
   notes: [],
   kind: "cards",
   stacks: makeCardStacks(),
+  solitaireVariation: defaultSolitaireVariation,
 });
 
 const makeSession = (overrides: Partial<PuzzleSession> = {}): PuzzleSession => ({
@@ -66,6 +68,7 @@ const makeSession = (overrides: Partial<PuzzleSession> = {}): PuzzleSession => (
   height: 4,
   difficulty: "Easy",
   requireUniqueSolution: false,
+  solitaireVariation: defaultSolitaireVariation,
   puzzle: makeCardPuzzle(),
   cardStacks: makeCardStacks(),
   selectedCard: { stackId: "waste", cardIndex: 0 },
@@ -119,6 +122,7 @@ describe("app session persistence", () => {
 
     expect(persisted).not.toBeNull();
     expect(persisted).not.toHaveProperty("puzzle");
+    expect(persisted?.solitaireVariation).toEqual(defaultSolitaireVariation);
     expect(persisted?.progress.kind).toBe("cards");
     if (persisted?.progress.kind !== "cards") return;
     expect(persisted.progress.stacks[0].cards).toEqual([{ code: "AS", faceDown: true }]);
@@ -167,12 +171,12 @@ describe("app session persistence", () => {
     expect(mismatched).toBeNull();
   });
 
-  it("rejects compact card progress with duplicate card codes", () => {
+  it("rejects compact card progress with invalid card code reuse", () => {
     const persisted = buildPersistedPuzzleSession("klondike-solitaire", makeSession());
     expect(persisted?.progress.kind).toBe("cards");
     if (!persisted || persisted.progress.kind !== "cards") return;
 
-    const duplicateCardSession: PersistedPuzzleSession = {
+    const invalidCardSession: PersistedPuzzleSession = {
       ...persisted,
       progress: {
         ...persisted.progress,
@@ -182,7 +186,7 @@ describe("app session persistence", () => {
       },
     };
 
-    expect(restorePuzzleSessionFromPersisted(duplicateCardSession, makeCardPuzzle())).toBeNull();
+    expect(restorePuzzleSessionFromPersisted(invalidCardSession, makeCardPuzzle())).toBeNull();
   });
 
   it("round-trips valid per-puzzle storage and ignores invalid records that contain generated puzzle payloads", () => {
@@ -195,6 +199,7 @@ describe("app session persistence", () => {
 
       expect(metadata.activePuzzleId).toBe("klondike-solitaire");
       expect(metadata.savedPuzzleIds).toEqual(["klondike-solitaire"]);
+      expect(persistedSession.solitaireVariation).toEqual(defaultSolitaireVariation);
       expect(persistedSession.progress.kind).toBe("cards");
       expect(loadPersistedPuzzleSessions()?.activePuzzleId).toBe("klondike-solitaire");
 
