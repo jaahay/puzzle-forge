@@ -29,6 +29,18 @@ export const cloneSolitaireHistoryEntry = (entry: SolitaireHistoryEntry): Solita
   statusMessage: entry.statusMessage,
 });
 
+export const makeSolitaireHistoryEntry = (
+  stacks: CardStack[],
+  selected: CardSelection | null,
+  stats: SolitaireStats,
+  message: string,
+): SolitaireHistoryEntry => ({
+  cardStacks: stacks.map(cloneStack),
+  selectedCard: selected ? { ...selected } : null,
+  solitaireStats: { ...stats },
+  statusMessage: message,
+});
+
 export const resolveSessionSolitaireVariation = ({ puzzle, solitaireVariation }: Pick<RuntimeSessionInput, "puzzle" | "solitaireVariation">) => {
   if (puzzle?.kind === "cards") {
     return normalizeSolitaireVariation(solitaireVariation ?? puzzle.solitaireVariation);
