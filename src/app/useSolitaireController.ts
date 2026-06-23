@@ -1,5 +1,6 @@
 import { useState } from "preact/hooks";
-import type { CardStack } from "../catalog/types";
+import type { CardStack, SolitaireVariation } from "../catalog/types";
+import { normalizeSolitaireVariation } from "../games/solitaire/variation";
 import {
   canMoveToFoundation,
   canMoveToTableau,
@@ -33,16 +34,18 @@ export type SolitaireControllerSnapshot = SolitaireControllerState & {
 
 export type SolitaireControllerOptions = {
   statusMessage: string;
+  variation: SolitaireVariation;
   onStatusMessage: (message: string) => void;
 };
 
-export const useSolitaireController = ({ statusMessage, onStatusMessage }: SolitaireControllerOptions) => {
+export const useSolitaireController = ({ statusMessage, variation, onStatusMessage }: SolitaireControllerOptions) => {
   const [cardStacks, setCardStacks] = useState<CardStack[] | null>(null);
   const [selectedCard, setSelectedCard] = useState<CardSelection | null>(null);
   const [solitaireStats, setSolitaireStats] = useState<SolitaireStats>(initialSolitaireStats);
   const [solitaireUndoStack, setSolitaireUndoStack] = useState<SolitaireHistoryEntry[]>([]);
   const [solitaireRedoStack, setSolitaireRedoStack] = useState<SolitaireHistoryEntry[]>([]);
   const setStatusMessage = onStatusMessage;
+  const solitaireVariation = normalizeSolitaireVariation(variation);
 
   const clearCardInteraction = () => {
     setSelectedCard(null);
@@ -159,17 +162,28 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage }: Solit
       }
 
       if (stock.cards.length > 0) {
-        const drawnCard = stock.cards[stock.cards.length - 1];
+        const drawSize = solitaireVariation.drawMode === "draw-3" ? Math.min(3, stock.cards.length) : 1;
+        const drawnCards = stock.cards.slice(-drawSize).map((card) => ({ ...card, faceUp: true }));
         const nextStacks = [...stacks];
-        nextStacks[stockIndex] = { ...stock, cards: stock.cards.slice(0, -1), faceDownCount: stock.cards.length - 1 };
-        nextStacks[wasteIndex] = { ...waste, cards: [...waste.cards, { ...drawnCard, faceUp: true }] };
+        nextStacks[stockIndex] = { ...stock, cards: stock.cards.slice(0, -drawSize), faceDownCount: stock.cards.length - drawSize };
+        nextStacks[wasteIndex] = { ...waste, cards: [...waste.cards, ...drawnCards] };
         setSolitaireStats((current) => ({ ...current, drawCount: current.drawCount + 1, moveCount: current.moveCount + 1 }));
 
-        return { stacks: nextStacks, message: `Drew ${drawnCard.label} to waste.` };
+        return {
+          stacks: nextStacks,
+          message:
+            drawnCards.length === 1
+              ? `Drew ${drawnCards[0].label} to waste.`
+              : `Drew ${drawnCards.length} cards to waste.`,
+        };
       }
 
       if (waste.cards.length === 0) {
         return { stacks, message: "Stock and waste are both empty." };
+      }
+
+      if (solitaireVariation.redeals !== "unlimited" && solitaireStats.recycleCount >= solitaireVariation.redeals) {
+        return { stacks, message: "Redeal limit reached for this variation." };
       }
 
       const recycledCards = waste.cards.map((card) => ({ ...card, faceUp: false })).reverse();
