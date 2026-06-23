@@ -31,7 +31,8 @@ export type SolitaireControllerSnapshot = SolitaireControllerState & {
 };
 
 export type SolitaireControllerOptions = {
-  initialStatusMessage?: string;
+  statusMessage: string;
+  onStatusMessage: (message: string) => void;
 };
 
 const cloneSolitaireHistoryEntry = (entry: SolitaireHistoryEntry): SolitaireHistoryEntry => ({
@@ -53,13 +54,13 @@ const makeSolitaireHistoryEntry = (
   statusMessage: message,
 });
 
-export const useSolitaireController = ({ initialStatusMessage = "Pick a puzzle to start." }: SolitaireControllerOptions = {}) => {
+export const useSolitaireController = ({ statusMessage, onStatusMessage }: SolitaireControllerOptions) => {
   const [cardStacks, setCardStacks] = useState<CardStack[] | null>(null);
   const [selectedCard, setSelectedCard] = useState<CardSelection | null>(null);
   const [solitaireStats, setSolitaireStats] = useState<SolitaireStats>(initialSolitaireStats);
   const [solitaireUndoStack, setSolitaireUndoStack] = useState<SolitaireHistoryEntry[]>([]);
   const [solitaireRedoStack, setSolitaireRedoStack] = useState<SolitaireHistoryEntry[]>([]);
-  const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
+  const setStatusMessage = onStatusMessage;
 
   const clearCardInteraction = () => {
     setSelectedCard(null);
@@ -430,8 +431,6 @@ export const useSolitaireController = ({ initialStatusMessage = "Pick a puzzle t
     solitaireStats,
     solitaireUndoStack,
     solitaireRedoStack,
-    statusMessage,
-    setStatusMessage,
     setCardStacks,
     setSelectedCard,
     resetSolitaireStats,
