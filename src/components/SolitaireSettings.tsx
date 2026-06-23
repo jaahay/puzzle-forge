@@ -56,9 +56,9 @@ export const SolitaireSettings = ({
         </select>
       </label>
 
-      <div class="solitaire-proof-state" aria-label="Solvability proof state">
-        <span>knownSolvable</span>
-        <strong>{variation.knownSolvable ? "true" : "false"}</strong>
+      <div class="solitaire-proof-state" aria-label="Solvability verification state">
+        <span>Solvability</span>
+        <strong>{variation.knownSolvable ? "Verified" : "Not verified"}</strong>
       </div>
 
       <div class="puzzle-settings-actions solitaire-settings-actions">
@@ -71,7 +71,7 @@ export const SolitaireSettings = ({
       </div>
 
       <p class="solitaire-solvability-note">
-        Current random deals are not solver-verified. Use user-facing copy for uncertainty; keep code/data as knownSolvable boolean metadata.
+        Random deals are not solver-verified yet. Verified mode will require proof metadata.
       </p>
     </div>
   );
