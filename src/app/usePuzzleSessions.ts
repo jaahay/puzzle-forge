@@ -35,7 +35,7 @@ export type RuntimeSessionDraft = {
 
 export type RestoreSessionCallbacks = {
   restoreSession: (puzzleId: PuzzleId, session: PuzzleSession) => void;
-  beginGeneration: (session: Pick<PuzzleSession, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution"> & { puzzleId: PuzzleId }) => void;
+  beginGeneration: (session: Pick<PuzzleSession, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution" | "solitaireVariation"> & { puzzleId: PuzzleId }) => void;
 };
 
 const cloneSolitaireHistoryEntry = (entry: SolitaireHistoryEntry): SolitaireHistoryEntry => ({
@@ -138,6 +138,7 @@ export const usePuzzleSessions = () => {
         height: activePersistedSession.height,
         difficulty: activePersistedSession.difficulty,
         requireUniqueSolution: activePersistedSession.requireUniqueSolution,
+        solitaireVariation: activePersistedSession.solitaireVariation,
       });
     }
   };
