@@ -15,6 +15,8 @@ import { buildRuntimeSession, usePuzzleSessions } from "./app/usePuzzleSessions"
 import { useSolitaireController } from "./app/useSolitaireController";
 import type { AppView } from "./site/views";
 
+const initialStatusMessage = "Pick a puzzle to start.";
+
 export const App = () => {
   const [activeView, setActiveView] = useState<AppView>(getActiveView);
   const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>("sudoku");
@@ -24,18 +26,17 @@ export const App = () => {
   const [difficulty, setDifficulty] = useState<PuzzleDifficulty>(defaultSudokuDifficulty);
   const [requireUniqueSolution, setRequireUniqueSolution] = useState(true);
   const [puzzle, setPuzzle] = useState<GeneratedPuzzle | null>(null);
+  const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
   const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(true);
   const [hasSelectedPuzzle, setHasSelectedPuzzle] = useState(false);
 
   const generation = usePuzzleGeneration();
   const sessions = usePuzzleSessions();
   const grid = useGridController();
-  const solitaire = useSolitaireController();
+  const solitaire = useSolitaireController({ statusMessage, onStatusMessage: setStatusMessage });
   const { readyPuzzles, previewPuzzles, plannedPuzzles } = useMemo(() => getPuzzleAvailability(), []);
   const selectedDefinition = getPuzzleDefinition(selectedPuzzleId);
   const selectedPuzzleIsGeneratable = isGeneratable(selectedDefinition);
-  const statusMessage = solitaire.statusMessage;
-  const setStatusMessage = solitaire.setStatusMessage;
 
   const restoreSession = (puzzleId: PuzzleId, session: ReturnType<typeof buildRuntimeSession>) => {
     setHasSelectedPuzzle(true);
