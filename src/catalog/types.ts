@@ -177,4 +177,4 @@ export type CardPuzzleGenerator = (params: PuzzleGenerationParams) => CardGenera
 
 export type TilePuzzleGenerator = (params: PuzzleGenerationParams) => TileGeneratedPuzzle;
 
-export type PuzzleGenerator = GridPuzzleGenerator | CardPuzzleGenerator | TileGenerator;
+export type PuzzleGenerator = GridPuzzleGenerator | CardPuzzleGenerator | TilePuzzleGenerator;
