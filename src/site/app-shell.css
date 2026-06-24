@@ -17,6 +17,62 @@
   text-transform: uppercase;
 }
 
+.catalog-panel.collapsed .panel-heading {
+  margin-bottom: 0.65rem;
+}
+
+.catalog-mini-list {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.catalog-mini-card {
+  position: relative;
+  display: grid;
+  min-height: 3.25rem;
+  place-items: center;
+  border: 1px solid #334155;
+  border-radius: 0.9rem;
+  padding: 0.45rem;
+  color: #e2e8f0;
+  background: #111827;
+}
+
+.catalog-mini-card.selected {
+  border-color: #a7f3d0;
+}
+
+.catalog-mini-icon {
+  font-size: 1.2rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.catalog-panel.collapsed .catalog-mini-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.catalog-mini-status {
+  position: absolute;
+  top: 0.28rem;
+  right: 0.28rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+}
+
+.catalog-mini-status.prototype {
+  background: #fde68a;
+}
+
+.catalog-mini-status.planned {
+  background: #c4b5fd;
+}
+
 .catalog-sections,
 .catalog-section {
   display: grid;
