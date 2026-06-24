@@ -25,12 +25,29 @@ const compactStatusLabel = (status: PuzzleDefinition["status"]) => {
   return statusLabel(status);
 };
 
+const puzzleIcons: Record<PuzzleId, string> = {
+  sudoku: "▦",
+  nonogram: "▥",
+  "word-guess": "Aa",
+  "logic-grid": "⌗",
+  "klondike-solitaire": "♠",
+  "peg-solitaire": "●",
+  kenken: "∑",
+  minesweeper: "✹",
+  jigsaw: "▧",
+  slitherlink: "∞",
+};
+
 type PuzzleCatalogProps = {
   isCollapsed: boolean;
   selectedPuzzleId: PuzzleId;
   onCollapseToggle: () => void;
   onSelectPuzzle: (puzzleId: PuzzleId) => void;
 };
+
+const CompactStatusMarker = ({ status }: { status: PuzzleDefinition["status"] }) => (
+  <span class={`catalog-mini-status ${status}`} aria-label={compactStatusLabel(status)} title={compactStatusLabel(status)} />
+);
 
 export const PuzzleCatalog = ({
   isCollapsed,
@@ -52,6 +69,7 @@ export const PuzzleCatalog = ({
     {isCollapsed ? (
       <div class="catalog-mini-list" id="puzzle-catalog-list">
         <a class="catalog-mini-card home-card" href="/" aria-label="Puzzle Forge home" onClick={markHomeNavigation}>
+          <span class="catalog-mini-icon" aria-hidden="true">⌂</span>
           <span class="catalog-mini-title">Home</span>
         </a>
         {puzzleCatalog.map((definition) => (
@@ -63,8 +81,9 @@ export const PuzzleCatalog = ({
             onClick={() => onSelectPuzzle(definition.id)}
             type="button"
           >
+            <span class="catalog-mini-icon" aria-hidden="true">{puzzleIcons[definition.id]}</span>
             <span class="catalog-mini-title">{definition.title}</span>
-            {definition.status === "playable" ? null : <span class={`catalog-mini-status ${definition.status}`}>{compactStatusLabel(definition.status)}</span>}
+            {definition.status === "playable" ? null : <CompactStatusMarker status={definition.status} />}
           </button>
         ))}
       </div>
