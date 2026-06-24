@@ -1,4 +1,5 @@
 import type { CardStack, PlayingCard, SolitaireVariation } from "../catalog/types";
+import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { canSelectFromStack, getVisibleWasteStartIndex, isSelectedCard, type CardSelection } from "../interactions/cardRules";
 
 type SolitaireStats = {
@@ -137,13 +138,13 @@ type CardPuzzlePreviewProps = {
   stacks: CardStack[];
   selectedCard: CardSelection | null;
   stats: SolitaireStats;
-  variation: SolitaireVariation;
+  variation?: SolitaireVariation;
   onCardClick: (stack: CardStack, cardIndex: number) => void;
   onCardDoubleClick: (stack: CardStack, cardIndex: number) => void;
   onStackClick: (stack: CardStack) => void;
 };
 
-export const CardPuzzlePreview = ({ stacks, selectedCard, stats, variation, onCardClick, onCardDoubleClick, onStackClick }: CardPuzzlePreviewProps) => {
+export const CardPuzzlePreview = ({ stacks, selectedCard, stats, variation = defaultSolitaireVariation, onCardClick, onCardDoubleClick, onStackClick }: CardPuzzlePreviewProps) => {
   const stockAndWaste = stacks.filter((stack) => stack.role === "stock" || stack.role === "waste");
   const foundations = stacks.filter((stack) => stack.role === "foundation");
   const tableau = stacks.filter((stack) => stack.role === "tableau");
