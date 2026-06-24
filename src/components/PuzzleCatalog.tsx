@@ -1,5 +1,6 @@
 import { markHomeNavigation } from "../app/homeNavigation";
 import { getPuzzleAvailability } from "../catalog/puzzleAvailability";
+import { homeIcon, puzzleIcons } from "../catalog/puzzleIcons";
 import { puzzleCatalog } from "../catalog/puzzleCatalog";
 import type { PuzzleDefinition, PuzzleId } from "../catalog/types";
 
@@ -23,19 +24,6 @@ const compactStatusLabel = (status: PuzzleDefinition["status"]) => {
   }
 
   return statusLabel(status);
-};
-
-const puzzleIcons: Record<PuzzleId, string> = {
-  sudoku: "▦",
-  nonogram: "▥",
-  "word-guess": "Aa",
-  "logic-grid": "⌗",
-  "klondike-solitaire": "♠",
-  "peg-solitaire": "●",
-  kenken: "∑",
-  minesweeper: "✹",
-  jigsaw: "▧",
-  slitherlink: "∞",
 };
 
 type PuzzleCatalogProps = {
@@ -69,7 +57,7 @@ export const PuzzleCatalog = ({
     {isCollapsed ? (
       <div class="catalog-mini-list" id="puzzle-catalog-list">
         <a class="catalog-mini-card home-card" href="/" aria-label="Puzzle Forge home" onClick={markHomeNavigation}>
-          <span class="catalog-mini-icon" aria-hidden="true">⌂</span>
+          <span class="catalog-mini-icon" aria-hidden="true">{homeIcon}</span>
           <span class="catalog-mini-title">Home</span>
         </a>
         {puzzleCatalog.map((definition) => (
