@@ -1,8 +1,13 @@
-import type { CardStack, PlayingCard } from "../catalog/types";
+import type { CardStack, PlayingCard, SolitaireDrawMode, SolitaireWasteMode } from "../catalog/types";
 
 export type CardSelection = {
   stackId: string;
   cardIndex: number;
+};
+
+export type CardSelectionRules = {
+  drawMode?: SolitaireDrawMode;
+  wasteMode?: SolitaireWasteMode;
 };
 
 export const rankValues: Record<PlayingCard["rank"], number> = {
@@ -29,6 +34,27 @@ export const cloneStack = (stack: CardStack): CardStack => ({
 });
 
 export const getTopCard = (stack: CardStack) => stack.cards[stack.cards.length - 1];
+
+export const getVisibleWasteStartIndex = (stack: CardStack, rules: CardSelectionRules = {}) => {
+  if (stack.role !== "waste" || stack.cards.length === 0) {
+    return stack.cards.length;
+  }
+
+  const visibleWasteCount = rules.drawMode === "draw-3" ? 3 : 1;
+  return Math.max(stack.cards.length - visibleWasteCount, 0);
+};
+
+export const canSelectWasteCard = (stack: CardStack, cardIndex: number, rules: CardSelectionRules = {}) => {
+  if (stack.role !== "waste") {
+    return false;
+  }
+
+  if (rules.wasteMode === "relaxed") {
+    return cardIndex >= getVisibleWasteStartIndex(stack, rules);
+  }
+
+  return cardIndex === stack.cards.length - 1;
+};
 
 export const revealTopTableauCard = (stack: CardStack) => {
   if (stack.role !== "tableau" || stack.cards.length === 0) {
@@ -89,14 +115,18 @@ export const canMoveToTableau = (card: PlayingCard, targetStack: CardStack) => {
   return topCard.faceUp && card.color !== topCard.color && rankValues[card.rank] === rankValues[topCard.rank] - 1;
 };
 
-export const canSelectFromStack = (stack: CardStack, cardIndex: number) => {
+export const canSelectFromStack = (stack: CardStack, cardIndex: number, rules: CardSelectionRules = {}) => {
   const card = stack.cards[cardIndex];
 
   if (!card?.faceUp) {
     return false;
   }
 
-  if (stack.role === "waste" || stack.role === "foundation") {
+  if (stack.role === "waste") {
+    return canSelectWasteCard(stack, cardIndex, rules);
+  }
+
+  if (stack.role === "foundation") {
     return cardIndex === stack.cards.length - 1;
   }
 
@@ -107,4 +137,4 @@ export const findFoundationIndexForCard = (card: PlayingCard, stacks: CardStack[
   stacks.findIndex((stack) => stack.role === "foundation" && canMoveToFoundation(card, stack));
 
 export const isSelectedCard = (selection: CardSelection | null, stack: CardStack, index: number) =>
-  selection?.stackId === stack.id && index >= selection.cardIndex;
+  selection?.stackId === stack.id && (stack.role === "tableau" ? index >= selection.cardIndex : index === selection.cardIndex);
