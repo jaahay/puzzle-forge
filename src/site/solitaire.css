@@ -92,6 +92,29 @@
   min-height: 5.25rem;
 }
 
+.waste .playing-card-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(2.1rem, 1fr));
+  align-items: stretch;
+}
+
+.waste .playing-card {
+  min-width: 3.15rem;
+  transition: transform 160ms ease, opacity 160ms ease;
+}
+
+.waste .playing-card + .playing-card {
+  margin-left: -1.55rem;
+}
+
+.waste .playing-card.playable-card {
+  z-index: 2;
+}
+
+.waste .playing-card.locked-card {
+  opacity: 0.72;
+}
+
 .tableau .playing-card-list {
   display: grid;
   grid-auto-rows: clamp(1.18rem, 3vw, 1.72rem);
