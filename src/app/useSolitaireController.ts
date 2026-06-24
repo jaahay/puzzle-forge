@@ -163,16 +163,6 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
     setStatusMessage(nextStatusMessage);
   };
 
-  const restoreSolitaireHistoryEntry = (entry: SolitaireHistoryEntry) => {
-    setSolitaireState((current) => ({
-      ...current,
-      cardStacks: entry.cardStacks.map(cloneStack),
-      selectedCard: entry.selectedCard ? { ...entry.selectedCard } : null,
-      solitaireStats: { ...entry.solitaireStats },
-    }));
-    setStatusMessage(entry.statusMessage);
-  };
-
   const undoSolitaireMove = () => {
     if (!cardStacks || solitaireUndoStack.length === 0) {
       setStatusMessage("No Solitaire moves to undo.");
@@ -183,10 +173,13 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
     const current = makeSolitaireHistoryEntry(cardStacks, selectedCard, solitaireStats, statusMessage);
     setSolitaireState((state) => ({
       ...state,
+      cardStacks: previous.cardStacks.map(cloneStack),
+      selectedCard: previous.selectedCard ? { ...previous.selectedCard } : null,
+      solitaireStats: { ...previous.solitaireStats },
       solitaireUndoStack: state.solitaireUndoStack.slice(0, -1),
       solitaireRedoStack: [...state.solitaireRedoStack, current].slice(-solitaireHistoryLimit),
     }));
-    restoreSolitaireHistoryEntry(previous);
+    setStatusMessage(previous.statusMessage);
   };
 
   const redoSolitaireMove = () => {
@@ -199,10 +192,13 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
     const current = makeSolitaireHistoryEntry(cardStacks, selectedCard, solitaireStats, statusMessage);
     setSolitaireState((state) => ({
       ...state,
+      cardStacks: next.cardStacks.map(cloneStack),
+      selectedCard: next.selectedCard ? { ...next.selectedCard } : null,
+      solitaireStats: { ...next.solitaireStats },
       solitaireRedoStack: state.solitaireRedoStack.slice(0, -1),
       solitaireUndoStack: [...state.solitaireUndoStack, current].slice(-solitaireHistoryLimit),
     }));
-    restoreSolitaireHistoryEntry(next);
+    setStatusMessage(next.statusMessage);
   };
 
   const drawFromStock = () => {
@@ -225,7 +221,7 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
     }
 
     const workingStacks = cardStacks.map(cloneStack);
-    const result = moveSelectedCardToStackInStacks(workingStacks, selectedCard, targetStackId);
+    const result = moveSelectedCardToStackInStacks(workingStacks, selectedCard, targetStackId, solitaireVariation);
 
     commitStackUpdate(workingStacks, { ...result, statsDelta: moveResultStatsDelta(result) }, { clearSelection: true });
 
@@ -238,7 +234,7 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
     }
 
     const workingStacks = cardStacks.map(cloneStack);
-    const result = moveSingleCardToFoundationInStacks(workingStacks, stack, cardIndex);
+    const result = moveSingleCardToFoundationInStacks(workingStacks, stack, cardIndex, solitaireVariation);
 
     commitStackUpdate(workingStacks, { ...result, statsDelta: moveResultStatsDelta(result) }, { clearSelection: true });
   };
@@ -284,8 +280,8 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
       return;
     }
 
-    if (!canSelectFromStack(stack, cardIndex)) {
-      setStatusMessage("Select a face-up waste/foundation top card or a descending alternating tableau run.");
+    if (!canSelectFromStack(stack, cardIndex, solitaireVariation)) {
+      setStatusMessage("Select a face-up waste/foundation top card, visible relaxed waste card, or descending alternating tableau run.");
       return;
     }
 
