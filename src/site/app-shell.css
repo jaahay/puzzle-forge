@@ -6,6 +6,10 @@
   margin-top: 0;
 }
 
+.catalog-layout.catalog-collapsed {
+  grid-template-columns: minmax(4.8rem, 0.16fr) minmax(0, 1fr);
+}
+
 .workspace-copy > .status.playable {
   display: none;
 }
