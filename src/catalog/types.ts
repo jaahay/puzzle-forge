@@ -88,10 +88,12 @@ export type CardStack = {
 
 export type SolitaireDrawMode = "draw-1" | "draw-3";
 export type SolitaireRedealLimit = "unlimited" | 3 | 1 | 0;
+export type SolitaireWasteMode = "standard" | "relaxed";
 
 export type SolitaireVariation = {
   drawMode: SolitaireDrawMode;
   redeals: SolitaireRedealLimit;
+  wasteMode: SolitaireWasteMode;
   knownSolvable: boolean;
 };
 
@@ -175,4 +177,4 @@ export type CardPuzzleGenerator = (params: PuzzleGenerationParams) => CardGenera
 
 export type TilePuzzleGenerator = (params: PuzzleGenerationParams) => TileGeneratedPuzzle;
 
-export type PuzzleGenerator = GridPuzzleGenerator | CardPuzzleGenerator | TilePuzzleGenerator;
+export type PuzzleGenerator = GridPuzzleGenerator | CardPuzzleGenerator | TileGenerator;
