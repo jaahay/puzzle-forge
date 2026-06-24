@@ -2,11 +2,13 @@ import type { CardStack } from "../catalog/types";
 import {
   canMoveToFoundation,
   canMoveToTableau,
+  canSelectWasteCard,
   findFoundationIndexForCard,
   getTopCard,
   isTableauRun,
   revealTopTableauCard,
   type CardSelection,
+  type CardSelectionRules,
 } from "../interactions/cardRules";
 import type { SolitaireStackUpdate } from "./solitaireStock";
 
@@ -16,10 +18,39 @@ export type SolitaireMoveResult = SolitaireStackUpdate & {
   autoMoveCountDelta?: number;
 };
 
+const getMovingCards = (source: CardStack, cardIndex: number, rules: CardSelectionRules) => {
+  if (source.role === "waste" && rules.wasteMode === "relaxed") {
+    return source.cards.slice(cardIndex, cardIndex + 1);
+  }
+
+  return source.cards.slice(cardIndex);
+};
+
+const removeMovingCards = (source: CardStack, cardIndex: number, rules: CardSelectionRules) => {
+  if (source.role === "waste" && rules.wasteMode === "relaxed") {
+    return source.cards.filter((_, index) => index !== cardIndex);
+  }
+
+  return source.cards.slice(0, cardIndex);
+};
+
+const canMoveFromWasteOrFoundation = (source: CardStack, cardIndex: number, rules: CardSelectionRules) => {
+  if (source.role === "waste") {
+    return canSelectWasteCard(source, cardIndex, rules);
+  }
+
+  if (source.role === "foundation") {
+    return cardIndex === source.cards.length - 1;
+  }
+
+  return true;
+};
+
 export const moveSelectedCardToStackInStacks = (
   stacks: CardStack[],
   selectedCard: CardSelection,
   targetStackId: string,
+  rules: CardSelectionRules = {},
 ): SolitaireMoveResult => {
   const sourceIndex = stacks.findIndex((stack) => stack.id === selectedCard.stackId);
   const targetIndex = stacks.findIndex((stack) => stack.id === targetStackId);
@@ -34,15 +65,15 @@ export const moveSelectedCardToStackInStacks = (
     return { stacks, message: "Card selection cleared." };
   }
 
-  const movingCards = source.cards.slice(selectedCard.cardIndex);
+  const movingCards = getMovingCards(source, selectedCard.cardIndex, rules);
   const movingCard = movingCards[0];
 
   if (!movingCard?.faceUp) {
     return { stacks, message: "Only face-up cards can be moved." };
   }
 
-  if ((source.role === "waste" || source.role === "foundation") && selectedCard.cardIndex !== source.cards.length - 1) {
-    return { stacks, message: "Only the top waste or foundation card can move." };
+  if ((source.role === "waste" || source.role === "foundation") && !canMoveFromWasteOrFoundation(source, selectedCard.cardIndex, rules)) {
+    return { stacks, message: source.role === "waste" ? "Only visible waste cards can move." : "Only a top foundation card can move." };
   }
 
   if (source.role === "tableau" && !isTableauRun(source, selectedCard.cardIndex)) {
@@ -62,7 +93,8 @@ export const moveSelectedCardToStackInStacks = (
   }
 
   const nextStacks = [...stacks];
-  const nextSource = revealTopTableauCard({ ...source, cards: source.cards.slice(0, selectedCard.cardIndex) });
+  const nextSourceCards = removeMovingCards(source, selectedCard.cardIndex, rules);
+  const nextSource = revealTopTableauCard({ ...source, cards: nextSourceCards });
   const nextTarget = { ...targetStack, cards: [...targetStack.cards, ...movingCards] };
 
   nextStacks[sourceIndex] = nextSource;
@@ -80,6 +112,7 @@ export const moveSingleCardToFoundationInStacks = (
   stacks: CardStack[],
   stack: CardStack,
   cardIndex: number,
+  rules: CardSelectionRules = {},
 ): SolitaireMoveResult => {
   const sourceIndex = stacks.findIndex((candidate) => candidate.id === stack.id);
   const source = stacks[sourceIndex];
@@ -88,8 +121,12 @@ export const moveSingleCardToFoundationInStacks = (
     return { stacks, message: "Selected source stack no longer exists." };
   }
 
-  if (cardIndex !== source.cards.length - 1) {
-    return { stacks, message: "Only a top card can move to a foundation." };
+  if ((source.role === "waste" || source.role === "foundation") && !canMoveFromWasteOrFoundation(source, cardIndex, rules)) {
+    return { stacks, message: source.role === "waste" ? "Only visible waste cards can move to foundations." : "Only a top card can move to a foundation." };
+  }
+
+  if (source.role === "tableau" && cardIndex !== source.cards.length - 1) {
+    return { stacks, message: "Only a top tableau card can move to a foundation." };
   }
 
   const movingCard = source.cards[cardIndex];
@@ -106,7 +143,7 @@ export const moveSingleCardToFoundationInStacks = (
   }
 
   const nextStacks = [...stacks];
-  const sourceCards = source.cards.slice(0, -1);
+  const sourceCards = removeMovingCards(source, cardIndex, rules);
 
   nextStacks[sourceIndex] = source.role === "tableau" ? revealTopTableauCard({ ...source, cards: sourceCards }) : { ...source, cards: sourceCards };
   nextStacks[foundationIndex] = { ...foundation, cards: [...foundation.cards, movingCard] };
