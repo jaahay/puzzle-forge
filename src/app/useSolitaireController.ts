@@ -12,6 +12,7 @@ import {
   autoMoveToFoundationsInStacks,
   moveSelectedCardToStackInStacks,
   moveSingleCardToFoundationInStacks,
+  type SolitaireMoveResult,
 } from "./solitaireMoves";
 import { drawFromStockStacks, type SolitaireStockStatsDelta, type SolitaireStackUpdate } from "./solitaireStock";
 
@@ -33,32 +34,115 @@ export type SolitaireControllerOptions = {
   solitaireVariation?: SolitaireVariation;
 };
 
+type SolitaireStatsDelta = SolitaireStockStatsDelta & { autoMoveCount?: number };
+type SolitaireControllerStackUpdate = SolitaireStackUpdate & { statsDelta?: SolitaireStatsDelta };
+
+const initialSolitaireControllerState: SolitaireControllerState = {
+  cardStacks: null,
+  selectedCard: null,
+  solitaireStats: initialSolitaireStats,
+  solitaireUndoStack: [],
+  solitaireRedoStack: [],
+};
+
+const applySolitaireStatsDelta = (stats: SolitaireStats, delta?: SolitaireStatsDelta): SolitaireStats => {
+  if (!delta) {
+    return stats;
+  }
+
+  return {
+    ...stats,
+    drawCount: stats.drawCount + (delta.drawCount ?? 0),
+    recycleCount: stats.recycleCount + (delta.recycleCount ?? 0),
+    autoMoveCount: stats.autoMoveCount + (delta.autoMoveCount ?? 0),
+    moveCount: stats.moveCount + (delta.moveCount ?? 0),
+  };
+};
+
+const moveResultStatsDelta = (result: SolitaireMoveResult): SolitaireStatsDelta | undefined => {
+  if (!result.moveCountDelta && !result.autoMoveCountDelta) {
+    return undefined;
+  }
+
+  return {
+    moveCount: result.moveCountDelta ?? 0,
+    autoMoveCount: result.autoMoveCountDelta ?? 0,
+  };
+};
+
 export const useSolitaireController = ({ statusMessage, onStatusMessage, solitaireVariation }: SolitaireControllerOptions) => {
-  const [cardStacks, setCardStacks] = useState<CardStack[] | null>(null);
-  const [selectedCard, setSelectedCard] = useState<CardSelection | null>(null);
-  const [solitaireStats, setSolitaireStats] = useState<SolitaireStats>(initialSolitaireStats);
-  const [solitaireUndoStack, setSolitaireUndoStack] = useState<SolitaireHistoryEntry[]>([]);
-  const [solitaireRedoStack, setSolitaireRedoStack] = useState<SolitaireHistoryEntry[]>([]);
+  const [solitaireState, setSolitaireState] = useState<SolitaireControllerState>(initialSolitaireControllerState);
+  const { cardStacks, selectedCard, solitaireStats, solitaireUndoStack, solitaireRedoStack } = solitaireState;
   const setStatusMessage = onStatusMessage;
+
+  const commitStackUpdate = (
+    baseStacks: CardStack[],
+    { stacks, message, statsDelta }: SolitaireControllerStackUpdate,
+    { clearSelection = false }: { clearSelection?: boolean } = {},
+  ) => {
+    const didChange = stacks !== baseStacks;
+    const foundationCardCount = stacks
+      .filter((stack) => stack.role === "foundation")
+      .reduce((total, stack) => total + stack.cards.length, 0);
+    const isSolved = foundationCardCount === 52;
+    const nextMessage = isSolved ? "Solved. All cards are on foundations." : message;
+
+    setSolitaireState((current) => {
+      const historyEntry = current.cardStacks
+        ? makeSolitaireHistoryEntry(current.cardStacks, current.selectedCard, current.solitaireStats, statusMessage)
+        : null;
+      const nextState: SolitaireControllerState = {
+        ...current,
+        cardStacks: stacks,
+        selectedCard: clearSelection ? null : current.selectedCard,
+        solitaireStats: didChange ? applySolitaireStatsDelta(current.solitaireStats, statsDelta) : current.solitaireStats,
+      };
+
+      if (!didChange) {
+        return nextState;
+      }
+
+      if (isSolved) {
+        return {
+          ...nextState,
+          selectedCard: null,
+          solitaireUndoStack: [],
+          solitaireRedoStack: [],
+        };
+      }
+
+      return {
+        ...nextState,
+        solitaireUndoStack: historyEntry ? [...current.solitaireUndoStack, historyEntry].slice(-solitaireHistoryLimit) : current.solitaireUndoStack,
+        solitaireRedoStack: [],
+      };
+    });
+
+    setStatusMessage(nextMessage);
+  };
+
+  const setCardStacks = (nextCardStacks: CardStack[] | null) => {
+    setSolitaireState((current) => ({ ...current, cardStacks: nextCardStacks }));
+  };
+
+  const setSelectedCard = (nextSelectedCard: CardSelection | null) => {
+    setSolitaireState((current) => ({ ...current, selectedCard: nextSelectedCard }));
+  };
 
   const clearCardInteraction = () => {
     setSelectedCard(null);
   };
 
   const resetSolitaireStats = () => {
-    setSolitaireStats(initialSolitaireStats);
+    setSolitaireState((current) => ({ ...current, solitaireStats: initialSolitaireStats }));
   };
 
   const clearSolitaireHistory = () => {
-    setSolitaireUndoStack([]);
-    setSolitaireRedoStack([]);
+    setSolitaireState((current) => ({ ...current, solitaireUndoStack: [], solitaireRedoStack: [] }));
   };
 
   const resetSolitaire = () => {
-    setCardStacks(null);
-    clearCardInteraction();
-    resetSolitaireStats();
-    clearSolitaireHistory();
+    setSolitaireState(initialSolitaireControllerState);
   };
 
   const restoreSolitaireSnapshot = ({
@@ -69,29 +153,24 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
     solitaireRedoStack: nextRedoStack,
     statusMessage: nextStatusMessage,
   }: SolitaireControllerSnapshot) => {
-    setCardStacks(nextCardStacks?.map(cloneStack) ?? null);
-    setSelectedCard(nextSelectedCard ? { ...nextSelectedCard } : null);
-    setSolitaireStats({ ...nextStats });
-    setSolitaireUndoStack(nextUndoStack.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit));
-    setSolitaireRedoStack(nextRedoStack.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit));
+    setSolitaireState({
+      cardStacks: nextCardStacks?.map(cloneStack) ?? null,
+      selectedCard: nextSelectedCard ? { ...nextSelectedCard } : null,
+      solitaireStats: { ...nextStats },
+      solitaireUndoStack: nextUndoStack.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit),
+      solitaireRedoStack: nextRedoStack.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit),
+    });
     setStatusMessage(nextStatusMessage);
   };
 
   const restoreSolitaireHistoryEntry = (entry: SolitaireHistoryEntry) => {
-    setCardStacks(entry.cardStacks.map(cloneStack));
-    setSelectedCard(entry.selectedCard ? { ...entry.selectedCard } : null);
-    setSolitaireStats({ ...entry.solitaireStats });
-    setStatusMessage(entry.statusMessage);
-  };
-
-  const updateSolitaireStats = (delta: SolitaireStockStatsDelta & { autoMoveCount?: number }) => {
-    setSolitaireStats((current) => ({
+    setSolitaireState((current) => ({
       ...current,
-      drawCount: current.drawCount + (delta.drawCount ?? 0),
-      recycleCount: current.recycleCount + (delta.recycleCount ?? 0),
-      autoMoveCount: current.autoMoveCount + (delta.autoMoveCount ?? 0),
-      moveCount: current.moveCount + (delta.moveCount ?? 0),
+      cardStacks: entry.cardStacks.map(cloneStack),
+      selectedCard: entry.selectedCard ? { ...entry.selectedCard } : null,
+      solitaireStats: { ...entry.solitaireStats },
     }));
+    setStatusMessage(entry.statusMessage);
   };
 
   const undoSolitaireMove = () => {
@@ -102,8 +181,11 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
 
     const previous = solitaireUndoStack[solitaireUndoStack.length - 1];
     const current = makeSolitaireHistoryEntry(cardStacks, selectedCard, solitaireStats, statusMessage);
-    setSolitaireUndoStack((entries) => entries.slice(0, -1));
-    setSolitaireRedoStack((entries) => [...entries, current].slice(-solitaireHistoryLimit));
+    setSolitaireState((state) => ({
+      ...state,
+      solitaireUndoStack: state.solitaireUndoStack.slice(0, -1),
+      solitaireRedoStack: [...state.solitaireRedoStack, current].slice(-solitaireHistoryLimit),
+    }));
     restoreSolitaireHistoryEntry(previous);
   };
 
@@ -115,111 +197,61 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
 
     const next = solitaireRedoStack[solitaireRedoStack.length - 1];
     const current = makeSolitaireHistoryEntry(cardStacks, selectedCard, solitaireStats, statusMessage);
-    setSolitaireRedoStack((entries) => entries.slice(0, -1));
-    setSolitaireUndoStack((entries) => [...entries, current].slice(-solitaireHistoryLimit));
+    setSolitaireState((state) => ({
+      ...state,
+      solitaireRedoStack: state.solitaireRedoStack.slice(0, -1),
+      solitaireUndoStack: [...state.solitaireUndoStack, current].slice(-solitaireHistoryLimit),
+    }));
     restoreSolitaireHistoryEntry(next);
   };
 
-  const updateCardStacks = (updater: (stacks: CardStack[]) => SolitaireStackUpdate) => {
-    setCardStacks((currentStacks) => {
-      if (!currentStacks) {
-        return currentStacks;
-      }
-
-      const workingStacks = currentStacks.map(cloneStack);
-      const historyEntry = makeSolitaireHistoryEntry(currentStacks, selectedCard, solitaireStats, statusMessage);
-      const { stacks, message } = updater(workingStacks);
-      const didChange = stacks !== workingStacks;
-      const foundationCardCount = stacks
-        .filter((stack) => stack.role === "foundation")
-        .reduce((total, stack) => total + stack.cards.length, 0);
-      const isSolved = foundationCardCount === 52;
-      const nextMessage = isSolved ? "Solved. All cards are on foundations." : message;
-
-      if (didChange) {
-        if (isSolved) {
-          setSolitaireUndoStack([]);
-          setSolitaireRedoStack([]);
-          setSelectedCard(null);
-        } else {
-          setSolitaireUndoStack((entries) => [...entries, historyEntry].slice(-solitaireHistoryLimit));
-          setSolitaireRedoStack([]);
-        }
-      }
-
-      setStatusMessage(nextMessage);
-
-      return stacks;
-    });
-  };
-
   const drawFromStock = () => {
-    clearCardInteraction();
-    updateCardStacks((stacks) => {
-      const result = drawFromStockStacks(stacks, {
-        recycleCount: solitaireStats.recycleCount,
-        variation: solitaireVariation,
-      });
+    if (!cardStacks) {
+      return;
+    }
 
-      if (result.statsDelta) {
-        updateSolitaireStats(result.statsDelta);
-      }
-
-      return result;
+    const workingStacks = cardStacks.map(cloneStack);
+    const result = drawFromStockStacks(workingStacks, {
+      recycleCount: solitaireStats.recycleCount,
+      variation: solitaireVariation,
     });
+
+    commitStackUpdate(workingStacks, result, { clearSelection: true });
   };
 
   const moveSelectedCardToStack = (targetStackId: string) => {
-    if (!selectedCard) {
+    if (!cardStacks || !selectedCard) {
       return false;
     }
 
-    let didMove = false;
+    const workingStacks = cardStacks.map(cloneStack);
+    const result = moveSelectedCardToStackInStacks(workingStacks, selectedCard, targetStackId);
 
-    updateCardStacks((stacks) => {
-      const result = moveSelectedCardToStackInStacks(stacks, selectedCard, targetStackId);
-      didMove = Boolean(result.didMove);
+    commitStackUpdate(workingStacks, { ...result, statsDelta: moveResultStatsDelta(result) }, { clearSelection: true });
 
-      if (result.moveCountDelta) {
-        updateSolitaireStats({ moveCount: result.moveCountDelta });
-      }
-
-      return result;
-    });
-
-    clearCardInteraction();
-
-    return didMove;
+    return Boolean(result.didMove);
   };
 
   const moveSingleCardToFoundation = (stack: CardStack, cardIndex: number) => {
-    clearCardInteraction();
+    if (!cardStacks) {
+      return;
+    }
 
-    updateCardStacks((stacks) => {
-      const result = moveSingleCardToFoundationInStacks(stacks, stack, cardIndex);
+    const workingStacks = cardStacks.map(cloneStack);
+    const result = moveSingleCardToFoundationInStacks(workingStacks, stack, cardIndex);
 
-      if (result.moveCountDelta) {
-        updateSolitaireStats({ moveCount: result.moveCountDelta });
-      }
-
-      return result;
-    });
+    commitStackUpdate(workingStacks, { ...result, statsDelta: moveResultStatsDelta(result) }, { clearSelection: true });
   };
 
   const autoMoveToFoundations = () => {
-    clearCardInteraction();
-    updateCardStacks((stacks) => {
-      const result = autoMoveToFoundationsInStacks(stacks);
+    if (!cardStacks) {
+      return;
+    }
 
-      if (result.moveCountDelta || result.autoMoveCountDelta) {
-        updateSolitaireStats({
-          autoMoveCount: result.autoMoveCountDelta ?? 0,
-          moveCount: result.moveCountDelta ?? 0,
-        });
-      }
+    const workingStacks = cardStacks.map(cloneStack);
+    const result = autoMoveToFoundationsInStacks(workingStacks);
 
-      return result;
-    });
+    commitStackUpdate(workingStacks, { ...result, statsDelta: moveResultStatsDelta(result) }, { clearSelection: true });
   };
 
   const handleStackClick = (stack: CardStack) => {
