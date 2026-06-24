@@ -88,7 +88,7 @@ export const SolitaireSettings = ({
       </div>
 
       <p class="solitaire-solvability-note">
-        Standard waste keeps only the top waste card playable. Relaxed waste lets any visible waste card move. Random deals are not solver-verified yet.
+        Standard waste plays the top card only. Relaxed waste lets any visible waste card move. Random deals are not solver-verified yet.
       </p>
     </div>
   );
