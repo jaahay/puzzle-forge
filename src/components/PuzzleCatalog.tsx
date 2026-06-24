@@ -1,3 +1,4 @@
+import { markHomeNavigation } from "../app/homeNavigation";
 import { getPuzzleAvailability } from "../catalog/puzzleAvailability";
 import { puzzleCatalog } from "../catalog/puzzleCatalog";
 import type { PuzzleDefinition, PuzzleId } from "../catalog/types";
@@ -14,6 +15,14 @@ const statusLabel = (status: PuzzleDefinition["status"]) => {
   }
 
   return "Ready";
+};
+
+const compactStatusLabel = (status: PuzzleDefinition["status"]) => {
+  if (status === "planned") {
+    return "Soon";
+  }
+
+  return statusLabel(status);
 };
 
 type PuzzleCatalogProps = {
@@ -35,14 +44,14 @@ export const PuzzleCatalog = ({
       <div class="catalog-heading-actions">
         {isCollapsed ? null : <strong>{`${readyPuzzles.length} ready`}</strong>}
         <button aria-controls="puzzle-catalog-list" aria-expanded={!isCollapsed} class="catalog-collapse-button" onClick={onCollapseToggle} type="button">
-          {isCollapsed ? "Show names" : "Hide details"}
+          {isCollapsed ? "Show" : "Collapse"}
         </button>
       </div>
     </div>
 
     {isCollapsed ? (
       <div class="catalog-mini-list" id="puzzle-catalog-list">
-        <a class="catalog-mini-card home-card" href="/" aria-label="Puzzle Forge home">
+        <a class="catalog-mini-card home-card" href="/" aria-label="Puzzle Forge home" onClick={markHomeNavigation}>
           <span class="catalog-mini-title">Home</span>
         </a>
         {puzzleCatalog.map((definition) => (
@@ -55,13 +64,13 @@ export const PuzzleCatalog = ({
             type="button"
           >
             <span class="catalog-mini-title">{definition.title}</span>
-            {definition.status === "playable" ? null : <span class={`catalog-mini-status ${definition.status}`}>{statusLabel(definition.status)}</span>}
+            {definition.status === "playable" ? null : <span class={`catalog-mini-status ${definition.status}`}>{compactStatusLabel(definition.status)}</span>}
           </button>
         ))}
       </div>
     ) : (
       <div class="catalog-sections" id="puzzle-catalog-list">
-        <a class="catalog-card home-card" href="/">
+        <a class="catalog-card home-card" href="/" onClick={markHomeNavigation}>
           <strong>Home</strong>
           <span>Return to the puzzle catalog.</span>
         </a>
