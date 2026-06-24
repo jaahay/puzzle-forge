@@ -1,3 +1,4 @@
+import { homeIcon, puzzleIcons } from "../catalog/puzzleIcons";
 import type { PuzzleDefinition, PuzzleId } from "../catalog/types";
 
 type StartViewProps = {
@@ -15,6 +16,7 @@ type StartPuzzleButtonProps = {
 
 const StartPuzzleButton = ({ definition, label, onSelectPuzzle }: StartPuzzleButtonProps) => (
   <button class="start-puzzle-card" key={definition.id} type="button" onClick={() => onSelectPuzzle(definition.id)}>
+    <span class="start-puzzle-card-icon" aria-hidden="true">{puzzleIcons[definition.id]}</span>
     {label ? <span class={`status ${definition.status}`}>{label}</span> : null}
     <strong>{definition.title}</strong>
     <span>{definition.tagline}</span>
@@ -22,9 +24,10 @@ const StartPuzzleButton = ({ definition, label, onSelectPuzzle }: StartPuzzleBut
 );
 
 const StartRailButton = ({ definition, label, onSelectPuzzle }: StartPuzzleButtonProps) => (
-  <button class="catalog-mini-card" key={definition.id} type="button" onClick={() => onSelectPuzzle(definition.id)}>
+  <button class="catalog-mini-card" key={definition.id} type="button" onClick={() => onSelectPuzzle(definition.id)} aria-label={definition.title}>
+    <span class="catalog-mini-icon" aria-hidden="true">{puzzleIcons[definition.id]}</span>
     <span class="catalog-mini-title">{definition.title}</span>
-    {label ? <span class={`catalog-mini-status ${definition.status}`}>{label}</span> : null}
+    {label ? <span class={`catalog-mini-status ${definition.status}`} aria-label={label} title={label} /> : null}
   </button>
 );
 
@@ -36,7 +39,8 @@ export const StartView = ({ readyPuzzles, previewPuzzles, plannedPuzzles, onSele
         <strong>{`${readyPuzzles.length} ready`}</strong>
       </div>
       <div class="catalog-mini-list">
-        <a class="catalog-mini-card home-card selected" href="/" aria-current="page">
+        <a class="catalog-mini-card home-card selected" href="/" aria-current="page" aria-label="Puzzle Forge home">
+          <span class="catalog-mini-icon" aria-hidden="true">{homeIcon}</span>
           <span class="catalog-mini-title">Home</span>
         </a>
         {readyPuzzles.map((definition) => (
@@ -46,9 +50,10 @@ export const StartView = ({ readyPuzzles, previewPuzzles, plannedPuzzles, onSele
           <StartRailButton definition={definition} key={definition.id} label="Preview" onSelectPuzzle={onSelectPuzzle} />
         ))}
         {plannedPuzzles.map((definition) => (
-          <button class="catalog-mini-card" disabled key={definition.id} type="button">
+          <button class="catalog-mini-card" disabled key={definition.id} type="button" aria-label={`${definition.title} coming soon`}>
+            <span class="catalog-mini-icon" aria-hidden="true">{puzzleIcons[definition.id]}</span>
             <span class="catalog-mini-title">{definition.title}</span>
-            <span class="catalog-mini-status planned">Soon</span>
+            <span class="catalog-mini-status planned" aria-label="Soon" title="Soon" />
           </button>
         ))}
       </div>
@@ -83,7 +88,7 @@ export const StartView = ({ readyPuzzles, previewPuzzles, plannedPuzzles, onSele
           <span>Coming soon</span>
           {plannedPuzzles.map((definition) => (
             <button key={definition.id} type="button" disabled>
-              {definition.title}
+              {puzzleIcons[definition.id]} {definition.title}
             </button>
           ))}
         </div>
