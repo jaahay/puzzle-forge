@@ -1,16 +1,6 @@
 import { useState } from "preact/hooks";
-import type { CardStack } from "../catalog/types";
-import {
-  canMoveToFoundation,
-  canMoveToTableau,
-  canSelectFromStack,
-  cloneStack,
-  findFoundationIndexForCard,
-  getTopCard,
-  isTableauRun,
-  revealTopTableauCard,
-  type CardSelection,
-} from "../interactions/cardRules";
+import type { CardStack, SolitaireVariation } from "../catalog/types";
+import { canSelectFromStack, cloneStack, type CardSelection } from "../interactions/cardRules";
 import { cloneSolitaireHistoryEntry, makeSolitaireHistoryEntry } from "./puzzleSessionRuntime";
 import {
   initialSolitaireStats,
@@ -18,6 +8,13 @@ import {
   type SolitaireHistoryEntry,
   type SolitaireStats,
 } from "./session";
+import {
+  autoMoveToFoundationsInStacks,
+  moveSelectedCardToStackInStacks,
+  moveSingleCardToFoundationInStacks,
+  type SolitaireMoveResult,
+} from "./solitaireMoves";
+import { drawFromStockStacks, type SolitaireStockStatsDelta, type SolitaireStackUpdate } from "./solitaireStock";
 
 export type SolitaireControllerState = {
   cardStacks: CardStack[] | null;
@@ -34,34 +31,118 @@ export type SolitaireControllerSnapshot = SolitaireControllerState & {
 export type SolitaireControllerOptions = {
   statusMessage: string;
   onStatusMessage: (message: string) => void;
+  solitaireVariation?: SolitaireVariation;
 };
 
-export const useSolitaireController = ({ statusMessage, onStatusMessage }: SolitaireControllerOptions) => {
-  const [cardStacks, setCardStacks] = useState<CardStack[] | null>(null);
-  const [selectedCard, setSelectedCard] = useState<CardSelection | null>(null);
-  const [solitaireStats, setSolitaireStats] = useState<SolitaireStats>(initialSolitaireStats);
-  const [solitaireUndoStack, setSolitaireUndoStack] = useState<SolitaireHistoryEntry[]>([]);
-  const [solitaireRedoStack, setSolitaireRedoStack] = useState<SolitaireHistoryEntry[]>([]);
+type SolitaireStatsDelta = SolitaireStockStatsDelta & { autoMoveCount?: number };
+type SolitaireControllerStackUpdate = SolitaireStackUpdate & { statsDelta?: SolitaireStatsDelta };
+
+const initialSolitaireControllerState: SolitaireControllerState = {
+  cardStacks: null,
+  selectedCard: null,
+  solitaireStats: initialSolitaireStats,
+  solitaireUndoStack: [],
+  solitaireRedoStack: [],
+};
+
+const applySolitaireStatsDelta = (stats: SolitaireStats, delta?: SolitaireStatsDelta): SolitaireStats => {
+  if (!delta) {
+    return stats;
+  }
+
+  return {
+    ...stats,
+    drawCount: stats.drawCount + (delta.drawCount ?? 0),
+    recycleCount: stats.recycleCount + (delta.recycleCount ?? 0),
+    autoMoveCount: stats.autoMoveCount + (delta.autoMoveCount ?? 0),
+    moveCount: stats.moveCount + (delta.moveCount ?? 0),
+  };
+};
+
+const moveResultStatsDelta = (result: SolitaireMoveResult): SolitaireStatsDelta | undefined => {
+  if (!result.moveCountDelta && !result.autoMoveCountDelta) {
+    return undefined;
+  }
+
+  return {
+    moveCount: result.moveCountDelta ?? 0,
+    autoMoveCount: result.autoMoveCountDelta ?? 0,
+  };
+};
+
+export const useSolitaireController = ({ statusMessage, onStatusMessage, solitaireVariation }: SolitaireControllerOptions) => {
+  const [solitaireState, setSolitaireState] = useState<SolitaireControllerState>(initialSolitaireControllerState);
+  const { cardStacks, selectedCard, solitaireStats, solitaireUndoStack, solitaireRedoStack } = solitaireState;
   const setStatusMessage = onStatusMessage;
+
+  const commitStackUpdate = (
+    baseStacks: CardStack[],
+    { stacks, message, statsDelta }: SolitaireControllerStackUpdate,
+    { clearSelection = false }: { clearSelection?: boolean } = {},
+  ) => {
+    const didChange = stacks !== baseStacks;
+    const foundationCardCount = stacks
+      .filter((stack) => stack.role === "foundation")
+      .reduce((total, stack) => total + stack.cards.length, 0);
+    const isSolved = foundationCardCount === 52;
+    const nextMessage = isSolved ? "Solved. All cards are on foundations." : message;
+
+    setSolitaireState((current) => {
+      const historyEntry = current.cardStacks
+        ? makeSolitaireHistoryEntry(current.cardStacks, current.selectedCard, current.solitaireStats, statusMessage)
+        : null;
+      const nextState: SolitaireControllerState = {
+        ...current,
+        cardStacks: stacks,
+        selectedCard: clearSelection ? null : current.selectedCard,
+        solitaireStats: didChange ? applySolitaireStatsDelta(current.solitaireStats, statsDelta) : current.solitaireStats,
+      };
+
+      if (!didChange) {
+        return nextState;
+      }
+
+      if (isSolved) {
+        return {
+          ...nextState,
+          selectedCard: null,
+          solitaireUndoStack: [],
+          solitaireRedoStack: [],
+        };
+      }
+
+      return {
+        ...nextState,
+        solitaireUndoStack: historyEntry ? [...current.solitaireUndoStack, historyEntry].slice(-solitaireHistoryLimit) : current.solitaireUndoStack,
+        solitaireRedoStack: [],
+      };
+    });
+
+    setStatusMessage(nextMessage);
+  };
+
+  const setCardStacks = (nextCardStacks: CardStack[] | null) => {
+    setSolitaireState((current) => ({ ...current, cardStacks: nextCardStacks }));
+  };
+
+  const setSelectedCard = (nextSelectedCard: CardSelection | null) => {
+    setSolitaireState((current) => ({ ...current, selectedCard: nextSelectedCard }));
+  };
 
   const clearCardInteraction = () => {
     setSelectedCard(null);
   };
 
   const resetSolitaireStats = () => {
-    setSolitaireStats(initialSolitaireStats);
+    setSolitaireState((current) => ({ ...current, solitaireStats: initialSolitaireStats }));
   };
 
   const clearSolitaireHistory = () => {
-    setSolitaireUndoStack([]);
-    setSolitaireRedoStack([]);
+    setSolitaireState((current) => ({ ...current, solitaireUndoStack: [], solitaireRedoStack: [] }));
   };
 
   const resetSolitaire = () => {
-    setCardStacks(null);
-    clearCardInteraction();
-    resetSolitaireStats();
-    clearSolitaireHistory();
+    setSolitaireState(initialSolitaireControllerState);
   };
 
   const restoreSolitaireSnapshot = ({
@@ -72,19 +153,14 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage }: Solit
     solitaireRedoStack: nextRedoStack,
     statusMessage: nextStatusMessage,
   }: SolitaireControllerSnapshot) => {
-    setCardStacks(nextCardStacks?.map(cloneStack) ?? null);
-    setSelectedCard(nextSelectedCard ? { ...nextSelectedCard } : null);
-    setSolitaireStats({ ...nextStats });
-    setSolitaireUndoStack(nextUndoStack.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit));
-    setSolitaireRedoStack(nextRedoStack.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit));
+    setSolitaireState({
+      cardStacks: nextCardStacks?.map(cloneStack) ?? null,
+      selectedCard: nextSelectedCard ? { ...nextSelectedCard } : null,
+      solitaireStats: { ...nextStats },
+      solitaireUndoStack: nextUndoStack.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit),
+      solitaireRedoStack: nextRedoStack.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit),
+    });
     setStatusMessage(nextStatusMessage);
-  };
-
-  const restoreSolitaireHistoryEntry = (entry: SolitaireHistoryEntry) => {
-    setCardStacks(entry.cardStacks.map(cloneStack));
-    setSelectedCard(entry.selectedCard ? { ...entry.selectedCard } : null);
-    setSolitaireStats({ ...entry.solitaireStats });
-    setStatusMessage(entry.statusMessage);
   };
 
   const undoSolitaireMove = () => {
@@ -95,9 +171,15 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage }: Solit
 
     const previous = solitaireUndoStack[solitaireUndoStack.length - 1];
     const current = makeSolitaireHistoryEntry(cardStacks, selectedCard, solitaireStats, statusMessage);
-    setSolitaireUndoStack((entries) => entries.slice(0, -1));
-    setSolitaireRedoStack((entries) => [...entries, current].slice(-solitaireHistoryLimit));
-    restoreSolitaireHistoryEntry(previous);
+    setSolitaireState((state) => ({
+      ...state,
+      cardStacks: previous.cardStacks.map(cloneStack),
+      selectedCard: previous.selectedCard ? { ...previous.selectedCard } : null,
+      solitaireStats: { ...previous.solitaireStats },
+      solitaireUndoStack: state.solitaireUndoStack.slice(0, -1),
+      solitaireRedoStack: [...state.solitaireRedoStack, current].slice(-solitaireHistoryLimit),
+    }));
+    setStatusMessage(previous.statusMessage);
   };
 
   const redoSolitaireMove = () => {
@@ -108,248 +190,64 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage }: Solit
 
     const next = solitaireRedoStack[solitaireRedoStack.length - 1];
     const current = makeSolitaireHistoryEntry(cardStacks, selectedCard, solitaireStats, statusMessage);
-    setSolitaireRedoStack((entries) => entries.slice(0, -1));
-    setSolitaireUndoStack((entries) => [...entries, current].slice(-solitaireHistoryLimit));
-    restoreSolitaireHistoryEntry(next);
-  };
-
-  const updateCardStacks = (updater: (stacks: CardStack[]) => { stacks: CardStack[]; message: string }) => {
-    setCardStacks((currentStacks) => {
-      if (!currentStacks) {
-        return currentStacks;
-      }
-
-      const workingStacks = currentStacks.map(cloneStack);
-      const historyEntry = makeSolitaireHistoryEntry(currentStacks, selectedCard, solitaireStats, statusMessage);
-      const { stacks, message } = updater(workingStacks);
-      const didChange = stacks !== workingStacks;
-      const foundationCardCount = stacks
-        .filter((stack) => stack.role === "foundation")
-        .reduce((total, stack) => total + stack.cards.length, 0);
-      const isSolved = foundationCardCount === 52;
-      const nextMessage = isSolved ? "Solved. All cards are on foundations." : message;
-
-      if (didChange) {
-        if (isSolved) {
-          setSolitaireUndoStack([]);
-          setSolitaireRedoStack([]);
-          setSelectedCard(null);
-        } else {
-          setSolitaireUndoStack((entries) => [...entries, historyEntry].slice(-solitaireHistoryLimit));
-          setSolitaireRedoStack([]);
-        }
-      }
-
-      setStatusMessage(nextMessage);
-
-      return stacks;
-    });
+    setSolitaireState((state) => ({
+      ...state,
+      cardStacks: next.cardStacks.map(cloneStack),
+      selectedCard: next.selectedCard ? { ...next.selectedCard } : null,
+      solitaireStats: { ...next.solitaireStats },
+      solitaireRedoStack: state.solitaireRedoStack.slice(0, -1),
+      solitaireUndoStack: [...state.solitaireUndoStack, current].slice(-solitaireHistoryLimit),
+    }));
+    setStatusMessage(next.statusMessage);
   };
 
   const drawFromStock = () => {
-    clearCardInteraction();
-    updateCardStacks((stacks) => {
-      const stockIndex = stacks.findIndex((stack) => stack.role === "stock");
-      const wasteIndex = stacks.findIndex((stack) => stack.role === "waste");
-      const stock = stacks[stockIndex];
-      const waste = stacks[wasteIndex];
+    if (!cardStacks) {
+      return;
+    }
 
-      if (!stock || !waste) {
-        return { stacks, message: "Solitaire stock or waste stack is missing." };
-      }
-
-      if (stock.cards.length > 0) {
-        const drawnCard = stock.cards[stock.cards.length - 1];
-        const nextStacks = [...stacks];
-        nextStacks[stockIndex] = { ...stock, cards: stock.cards.slice(0, -1), faceDownCount: stock.cards.length - 1 };
-        nextStacks[wasteIndex] = { ...waste, cards: [...waste.cards, { ...drawnCard, faceUp: true }] };
-        setSolitaireStats((current) => ({ ...current, drawCount: current.drawCount + 1, moveCount: current.moveCount + 1 }));
-
-        return { stacks: nextStacks, message: `Drew ${drawnCard.label} to waste.` };
-      }
-
-      if (waste.cards.length === 0) {
-        return { stacks, message: "Stock and waste are both empty." };
-      }
-
-      const recycledCards = waste.cards.map((card) => ({ ...card, faceUp: false })).reverse();
-      const nextStacks = [...stacks];
-      nextStacks[stockIndex] = { ...stock, cards: recycledCards, faceDownCount: recycledCards.length };
-      nextStacks[wasteIndex] = { ...waste, cards: [] };
-      setSolitaireStats((current) => ({ ...current, recycleCount: current.recycleCount + 1, moveCount: current.moveCount + 1 }));
-
-      return { stacks: nextStacks, message: "Recycled waste back into the stock." };
+    const workingStacks = cardStacks.map(cloneStack);
+    const result = drawFromStockStacks(workingStacks, {
+      recycleCount: solitaireStats.recycleCount,
+      variation: solitaireVariation,
     });
+
+    commitStackUpdate(workingStacks, result, { clearSelection: true });
   };
 
   const moveSelectedCardToStack = (targetStackId: string) => {
-    if (!selectedCard) {
+    if (!cardStacks || !selectedCard) {
       return false;
     }
 
-    let didMove = false;
+    const workingStacks = cardStacks.map(cloneStack);
+    const result = moveSelectedCardToStackInStacks(workingStacks, selectedCard, targetStackId, solitaireVariation);
 
-    updateCardStacks((stacks) => {
-      const sourceIndex = stacks.findIndex((stack) => stack.id === selectedCard.stackId);
-      const targetIndex = stacks.findIndex((stack) => stack.id === targetStackId);
-      const source = stacks[sourceIndex];
-      const targetStack = stacks[targetIndex];
+    commitStackUpdate(workingStacks, { ...result, statsDelta: moveResultStatsDelta(result) }, { clearSelection: true });
 
-      if (!source || !targetStack) {
-        return { stacks, message: "Selected source or destination stack no longer exists." };
-      }
-
-      if (source.id === targetStack.id) {
-        return { stacks, message: "Card selection cleared." };
-      }
-
-      const movingCards = source.cards.slice(selectedCard.cardIndex);
-      const movingCard = movingCards[0];
-
-      if (!movingCard?.faceUp) {
-        return { stacks, message: "Only face-up cards can be moved." };
-      }
-
-      if ((source.role === "waste" || source.role === "foundation") && selectedCard.cardIndex !== source.cards.length - 1) {
-        return { stacks, message: "Only the top waste or foundation card can move." };
-      }
-
-      if (source.role === "tableau" && !isTableauRun(source, selectedCard.cardIndex)) {
-        return { stacks, message: "Tableau moves must be descending, alternating-color runs." };
-      }
-
-      if (targetStack.role === "foundation" && (movingCards.length !== 1 || !canMoveToFoundation(movingCard, targetStack))) {
-        return { stacks, message: `${movingCard.code} cannot move to ${targetStack.title}.` };
-      }
-
-      if (targetStack.role === "tableau" && !canMoveToTableau(movingCard, targetStack)) {
-        return { stacks, message: `${movingCard.code} cannot move to ${targetStack.title}.` };
-      }
-
-      if (targetStack.role !== "foundation" && targetStack.role !== "tableau") {
-        return { stacks, message: "Cards can move only to foundations or tableau columns." };
-      }
-
-      const nextStacks = [...stacks];
-      const nextSource = revealTopTableauCard({ ...source, cards: source.cards.slice(0, selectedCard.cardIndex) });
-      const nextTarget = { ...targetStack, cards: [...targetStack.cards, ...movingCards] };
-
-      nextStacks[sourceIndex] = nextSource;
-      nextStacks[targetIndex] = nextTarget;
-      didMove = true;
-      setSolitaireStats((current) => ({ ...current, moveCount: current.moveCount + 1 }));
-
-      return { stacks: nextStacks, message: `Moved ${movingCard.code} to ${targetStack.title}.` };
-    });
-
-    clearCardInteraction();
-
-    return didMove;
+    return Boolean(result.didMove);
   };
 
   const moveSingleCardToFoundation = (stack: CardStack, cardIndex: number) => {
-    clearCardInteraction();
+    if (!cardStacks) {
+      return;
+    }
 
-    updateCardStacks((stacks) => {
-      const sourceIndex = stacks.findIndex((candidate) => candidate.id === stack.id);
-      const source = stacks[sourceIndex];
+    const workingStacks = cardStacks.map(cloneStack);
+    const result = moveSingleCardToFoundationInStacks(workingStacks, stack, cardIndex, solitaireVariation);
 
-      if (!source) {
-        return { stacks, message: "Selected source stack no longer exists." };
-      }
-
-      if (cardIndex !== source.cards.length - 1) {
-        return { stacks, message: "Only a top card can move to a foundation." };
-      }
-
-      const movingCard = source.cards[cardIndex];
-
-      if (!movingCard?.faceUp) {
-        return { stacks, message: "Only face-up cards can move to foundations." };
-      }
-
-      const foundationIndex = findFoundationIndexForCard(movingCard, stacks);
-      const foundation = stacks[foundationIndex];
-
-      if (!foundation || !canMoveToFoundation(movingCard, foundation)) {
-        return { stacks, message: `${movingCard.code} cannot move to a foundation.` };
-      }
-
-      const nextStacks = [...stacks];
-      const sourceCards = source.cards.slice(0, -1);
-      nextStacks[sourceIndex] = source.role === "tableau" ? revealTopTableauCard({ ...source, cards: sourceCards }) : { ...source, cards: sourceCards };
-      nextStacks[foundationIndex] = { ...foundation, cards: [...foundation.cards, movingCard] };
-      setSolitaireStats((current) => ({ ...current, moveCount: current.moveCount + 1 }));
-
-      return { stacks: nextStacks, message: `Moved ${movingCard.code} to ${foundation.title}.` };
-    });
+    commitStackUpdate(workingStacks, { ...result, statsDelta: moveResultStatsDelta(result) }, { clearSelection: true });
   };
 
   const autoMoveToFoundations = () => {
-    clearCardInteraction();
-    updateCardStacks((stacks) => {
-      let nextStacks = stacks;
-      let movedCardCount = 0;
-      let lastMovedLabel = "";
+    if (!cardStacks) {
+      return;
+    }
 
-      while (true) {
-        const sourceIndex = nextStacks.findIndex((stack) => {
-          const topCard = getTopCard(stack);
-          return (
-            (stack.role === "waste" || stack.role === "tableau") &&
-            Boolean(topCard?.faceUp) &&
-            topCard !== undefined &&
-            findFoundationIndexForCard(topCard, nextStacks) >= 0
-          );
-        });
+    const workingStacks = cardStacks.map(cloneStack);
+    const result = autoMoveToFoundationsInStacks(workingStacks);
 
-        if (sourceIndex < 0) {
-          break;
-        }
-
-        const source = nextStacks[sourceIndex];
-        const movingCard = getTopCard(source);
-
-        if (!movingCard) {
-          break;
-        }
-
-        const foundationIndex = findFoundationIndexForCard(movingCard, nextStacks);
-        const foundation = nextStacks[foundationIndex];
-
-        if (!foundation) {
-          break;
-        }
-
-        const sourceCards = source.cards.slice(0, -1);
-        const nextSource = source.role === "tableau" ? revealTopTableauCard({ ...source, cards: sourceCards }) : { ...source, cards: sourceCards };
-        const nextFoundation = { ...foundation, cards: [...foundation.cards, movingCard] };
-
-        nextStacks = [...nextStacks];
-        nextStacks[sourceIndex] = nextSource;
-        nextStacks[foundationIndex] = nextFoundation;
-        movedCardCount += 1;
-        lastMovedLabel = movingCard.code;
-      }
-
-      if (movedCardCount === 0) {
-        return { stacks, message: "No legal foundation moves are available." };
-      }
-
-      setSolitaireStats((current) => ({
-        ...current,
-        autoMoveCount: current.autoMoveCount + movedCardCount,
-        moveCount: current.moveCount + movedCardCount,
-      }));
-
-      return {
-        stacks: nextStacks,
-        message:
-          movedCardCount === 1
-            ? `Auto-moved ${lastMovedLabel} to a foundation.`
-            : `Auto-moved ${movedCardCount} cards to foundations.`,
-      };
-    });
+    commitStackUpdate(workingStacks, { ...result, statsDelta: moveResultStatsDelta(result) }, { clearSelection: true });
   };
 
   const handleStackClick = (stack: CardStack) => {
@@ -382,8 +280,8 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage }: Solit
       return;
     }
 
-    if (!canSelectFromStack(stack, cardIndex)) {
-      setStatusMessage("Select a face-up waste/foundation top card or a descending alternating tableau run.");
+    if (!canSelectFromStack(stack, cardIndex, solitaireVariation)) {
+      setStatusMessage("Select a face-up waste/foundation top card, visible relaxed waste card, or descending alternating tableau run.");
       return;
     }
 

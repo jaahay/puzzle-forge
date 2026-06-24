@@ -1,11 +1,17 @@
 import { useState } from "preact/hooks";
 import { solitaireHistoryLimitNotice } from "../app/session";
-import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition, PuzzleDifficulty, PuzzleGenerationRequest } from "../catalog/types";
+import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition, PuzzleDifficulty, PuzzleGenerationRequest, SolitaireVariation } from "../catalog/types";
+import {
+  solitaireDrawModeLabels,
+  solitaireRedealLimitLabels,
+  solitaireWasteModeLabels,
+} from "../games/solitaire/variation";
 import { getWordGuessDailyLabel, getWordGuessDailySeed } from "../games/wordGuess/daily";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
+import { SolitaireSettings } from "./SolitaireSettings";
 import { TilePuzzlePreview } from "./TilePuzzlePreview";
 import { WordGuessGame } from "./WordGuessGame";
 
@@ -16,7 +22,7 @@ type SolitaireStats = {
   autoMoveCount: number;
 };
 
-type GenerationSettings = Partial<Pick<PuzzleGenerationRequest, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution">>;
+type GenerationSettings = Partial<Pick<PuzzleGenerationRequest, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution" | "solitaireVariation">>;
 
 type PuzzleWorkspaceProps = {
   selectedDefinition: PuzzleDefinition;
@@ -27,6 +33,7 @@ type PuzzleWorkspaceProps = {
   difficulty: PuzzleDifficulty;
   requireUniqueSolution: boolean;
   puzzle: GeneratedPuzzle | null;
+  solitaireVariation: SolitaireVariation;
   cardStacks: CardStack[] | null;
   selectedCard: CardSelection | null;
   solitaireStats: SolitaireStats;
@@ -43,6 +50,7 @@ type PuzzleWorkspaceProps = {
   onGenerate: () => void;
   onRandomize: () => void;
   onCheck: () => void;
+  onSolitaireVariationChange: (variation: SolitaireVariation) => void;
   onAutoMoveToFoundations: () => void;
   onUndoSolitaire: () => void;
   onRedoSolitaire: () => void;
@@ -73,6 +81,7 @@ export const PuzzleWorkspace = ({
   difficulty,
   requireUniqueSolution,
   puzzle,
+  solitaireVariation,
   cardStacks,
   selectedCard,
   solitaireStats,
@@ -89,6 +98,7 @@ export const PuzzleWorkspace = ({
   onGenerate,
   onRandomize,
   onCheck,
+  onSolitaireVariationChange,
   onAutoMoveToFoundations,
   onUndoSolitaire,
   onRedoSolitaire,
@@ -104,6 +114,7 @@ export const PuzzleWorkspace = ({
   const isSudoku = selectedDefinition.id === "sudoku";
   const isNonogram = selectedDefinition.id === "nonogram";
   const isWordGuess = selectedDefinition.id === "word-guess";
+  const isSolitaire = selectedDefinition.id === "klondike-solitaire";
   const hasBottomSettingsBar = isSudoku || isNonogram || isWordGuess;
   const compactWorkspaceHeader = isSudoku || isNonogram;
   const showStatusLine = !hasBottomSettingsBar;
@@ -194,14 +205,24 @@ export const PuzzleWorkspace = ({
             </>
           )}
 
-          <div class="control-actions">
-            <button type="button" onClick={onGenerate} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-              {isGenerating ? "Generating..." : "Generate"}
-            </button>
-            <button type="button" onClick={onRandomize} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-              Randomize
-            </button>
-          </div>
+          {isSolitaire ? (
+            <SolitaireSettings
+              variation={solitaireVariation}
+              isGenerating={isGenerating}
+              onVariationChange={onSolitaireVariationChange}
+              onGenerate={onGenerate}
+              onRandomize={onRandomize}
+            />
+          ) : (
+            <div class="control-actions">
+              <button type="button" onClick={onGenerate} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
+                {isGenerating ? "Generating..." : "Generate"}
+              </button>
+              <button type="button" onClick={onRandomize} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
+                Randomize
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -231,7 +252,10 @@ export const PuzzleWorkspace = ({
             {isNonogram ? <span>{puzzle.uniqueSolution ? "Unique" : "Open"}</span> : null}
             {isWordGuess ? <span>Answer-list solvable</span> : null}
             {puzzle.kind === "cards" ? <span>Random deal</span> : null}
-            {puzzle.kind === "cards" ? <span>Solvability unknown</span> : null}
+            {puzzle.kind === "cards" ? <span>{solitaireDrawModeLabels[puzzle.solitaireVariation.drawMode]}</span> : null}
+            {puzzle.kind === "cards" ? <span>{solitaireRedealLimitLabels[String(puzzle.solitaireVariation.redeals)]}</span> : null}
+            {puzzle.kind === "cards" ? <span>{solitaireWasteModeLabels[puzzle.solitaireVariation.wasteMode]}</span> : null}
+            {puzzle.kind === "cards" ? <span>{puzzle.solitaireVariation.knownSolvable ? "Solvability verified" : "Solvability not verified"}</span> : null}
             {isSudoku ? (
               <span>{getGivenCount(gridCells)} givens</span>
             ) : isNonogram ? (
@@ -267,6 +291,7 @@ export const PuzzleWorkspace = ({
               stacks={cardStacks}
               selectedCard={selectedCard}
               stats={solitaireStats}
+              variation={puzzle.solitaireVariation}
               onCardClick={onCardClick}
               onCardDoubleClick={onCardDoubleClick}
               onStackClick={onStackClick}

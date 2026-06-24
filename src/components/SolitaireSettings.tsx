@@ -1,9 +1,11 @@
-import type { SolitaireDrawMode, SolitaireRedealLimit, SolitaireVariation } from "../catalog/types";
+import type { SolitaireDrawMode, SolitaireRedealLimit, SolitaireVariation, SolitaireWasteMode } from "../catalog/types";
 import {
   solitaireDrawModeLabels,
   solitaireDrawModes,
   solitaireRedealLimitLabels,
   solitaireRedealLimits,
+  solitaireWasteModeLabels,
+  solitaireWasteModes,
 } from "../games/solitaire/variation";
 
 type SolitaireSettingsProps = {
@@ -32,6 +34,10 @@ export const SolitaireSettings = ({
     onVariationChange({ ...variation, redeals, knownSolvable: false });
   };
 
+  const updateWasteMode = (wasteMode: SolitaireWasteMode) => {
+    onVariationChange({ ...variation, wasteMode, knownSolvable: false });
+  };
+
   return (
     <div class="solitaire-settings" aria-label="Solitaire variation settings">
       <label>
@@ -56,9 +62,20 @@ export const SolitaireSettings = ({
         </select>
       </label>
 
-      <div class="solitaire-proof-state" aria-label="Solvability proof state">
-        <span>knownSolvable</span>
-        <strong>{variation.knownSolvable ? "true" : "false"}</strong>
+      <label>
+        Waste
+        <select value={variation.wasteMode} onChange={(event) => updateWasteMode(event.currentTarget.value as SolitaireWasteMode)}>
+          {solitaireWasteModes.map((wasteMode) => (
+            <option key={wasteMode} value={wasteMode}>
+              {solitaireWasteModeLabels[wasteMode]}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <div class="solitaire-proof-state" aria-label="Solvability verification state">
+        <span>Solvability</span>
+        <strong>{variation.knownSolvable ? "Verified" : "Not verified"}</strong>
       </div>
 
       <div class="puzzle-settings-actions solitaire-settings-actions">
@@ -71,7 +88,7 @@ export const SolitaireSettings = ({
       </div>
 
       <p class="solitaire-solvability-note">
-        Current random deals are not solver-verified. Use user-facing copy for uncertainty; keep code/data as knownSolvable boolean metadata.
+        Standard waste plays the top card only. Relaxed waste lets any visible waste card move. Random deals are not solver-verified yet.
       </p>
     </div>
   );

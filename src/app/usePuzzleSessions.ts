@@ -35,7 +35,7 @@ export type RuntimeSessionDraft = {
 
 export type RestoreSessionCallbacks = {
   restoreSession: (puzzleId: PuzzleId, session: PuzzleSession) => void;
-  beginGeneration: (session: Pick<PuzzleSession, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution"> & { puzzleId: PuzzleId }) => void;
+  beginGeneration: (session: Pick<PuzzleSession, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution" | "solitaireVariation"> & { puzzleId: PuzzleId }) => void;
 };
 
 const cloneSolitaireHistoryEntry = (entry: SolitaireHistoryEntry): SolitaireHistoryEntry => ({
@@ -98,6 +98,27 @@ export const buildRuntimeSession = ({
   statusMessage,
 });
 
+export const buildFreshSessionForGeneratedPuzzle = (
+  generatedPuzzle: GeneratedPuzzle,
+  statusMessage: string,
+): PuzzleSession => ({
+  seed: generatedPuzzle.seed,
+  width: generatedPuzzle.width,
+  height: generatedPuzzle.height,
+  difficulty: generatedPuzzle.difficulty ?? "Easy",
+  requireUniqueSolution: Boolean(generatedPuzzle.uniqueSolution),
+  solitaireVariation: generatedPuzzle.kind === "cards" ? { ...generatedPuzzle.solitaireVariation } : undefined,
+  puzzle: generatedPuzzle,
+  cardStacks: generatedPuzzle.kind === "cards" ? generatedPuzzle.stacks.map(cloneStack) : null,
+  selectedCard: null,
+  solitaireStats: { ...initialSolitaireStats },
+  solitaireUndoStack: [],
+  solitaireRedoStack: [],
+  gridCells: generatedPuzzle.kind === "grid" ? prepareGridCells(generatedPuzzle) : null,
+  selectedGridCell: null,
+  statusMessage,
+});
+
 export const usePuzzleSessions = () => {
   const persistedSessionCache = useRef<PersistedPuzzleSessionCache>({});
   const sessionCache = useRef<PuzzleSessionCache>({});
@@ -138,6 +159,7 @@ export const usePuzzleSessions = () => {
         height: activePersistedSession.height,
         difficulty: activePersistedSession.difficulty,
         requireUniqueSolution: activePersistedSession.requireUniqueSolution,
+        solitaireVariation: activePersistedSession.solitaireVariation,
       });
     }
   };
@@ -156,27 +178,6 @@ export const usePuzzleSessions = () => {
     sessionCache.current[generatedPuzzle.puzzleId] = clonePuzzleSession(restoredSession);
     return restoredSession;
   };
-
-  const buildFreshSessionForGeneratedPuzzle = (
-    generatedPuzzle: GeneratedPuzzle,
-    statusMessage: string,
-  ): PuzzleSession => ({
-    seed: generatedPuzzle.seed,
-    width: generatedPuzzle.width,
-    height: generatedPuzzle.height,
-    difficulty: generatedPuzzle.difficulty ?? "Easy",
-    requireUniqueSolution: Boolean(generatedPuzzle.uniqueSolution),
-    solitaireVariation: generatedPuzzle.kind === "cards" ? { ...generatedPuzzle.solitaireVariation } : undefined,
-    puzzle: generatedPuzzle,
-    cardStacks: generatedPuzzle.kind === "cards" ? generatedPuzzle.stacks.map(cloneStack) : null,
-    selectedCard: null,
-    solitaireStats: { ...initialSolitaireStats },
-    solitaireUndoStack: [],
-    solitaireRedoStack: [],
-    gridCells: generatedPuzzle.kind === "grid" ? prepareGridCells(generatedPuzzle) : null,
-    selectedGridCell: null,
-    statusMessage,
-  });
 
   return {
     sessionCache,

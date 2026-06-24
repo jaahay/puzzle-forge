@@ -1,6 +1,6 @@
 import type { CardColor, CardRank, CardStack, CardSuit, PlayingCard, PuzzleGenerationParams } from "../../catalog/types";
 import { createRandom, makeChecksumFromParts, normalizeSeed } from "../shared";
-import { normalizeSolitaireVariation, solitaireDrawModeLabels, solitaireRedealLimitLabels } from "./variation";
+import { normalizeSolitaireVariation, solitaireDrawModeLabels, solitaireRedealLimitLabels, solitaireWasteModeLabels } from "./variation";
 
 const suits = ["clubs", "diamonds", "hearts", "spades"] as const satisfies readonly CardSuit[];
 const ranks = [
@@ -20,10 +20,10 @@ const ranks = [
 ] as const satisfies readonly CardRank[];
 
 const suitSymbols: Record<CardSuit, string> = {
-  clubs: "♣",
-  diamonds: "♦",
-  hearts: "♥",
-  spades: "♠",
+  clubs: "\u2663",
+  diamonds: "\u2666",
+  hearts: "\u2665",
+  spades: "\u2660",
 };
 
 const suitLabels: Record<CardSuit, string> = {
@@ -146,6 +146,7 @@ export const generateSolitaire = ({ seed, solitaireVariation: requestedVariation
   const checksum = makeChecksumFromParts([
     solitaireVariation.drawMode,
     String(solitaireVariation.redeals),
+    solitaireVariation.wasteMode,
     solitaireVariation.knownSolvable ? "known-solvable" : "not-verified",
     ...stacks.flatMap((stack) => [stack.id, ...stack.cards.map((card) => `${card.code}:${card.faceUp ? "up" : "down"}`)]),
   ]);
@@ -165,6 +166,7 @@ export const generateSolitaire = ({ seed, solitaireVariation: requestedVariation
     notes: [
       `${solitaireDrawModeLabels[solitaireVariation.drawMode]} Klondike deal generated deterministically from the seed.`,
       `Redeals: ${solitaireRedealLimitLabels[String(solitaireVariation.redeals)]}.`,
+      `Waste: ${solitaireWasteModeLabels[solitaireVariation.wasteMode]}.`,
       "Solvability is not verified unless knownSolvable is true.",
       "Tableau runs must descend by rank and alternate colors; only Kings may move into empty tableau columns.",
       "Foundations build from Ace to King by suit. Use Auto foundation for currently legal foundation moves.",
