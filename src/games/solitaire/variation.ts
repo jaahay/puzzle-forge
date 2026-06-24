@@ -24,8 +24,8 @@ export const solitaireRedealLimitLabels: Record<string, string> = {
 };
 
 export const solitaireWasteModeLabels: Record<SolitaireWasteMode, string> = {
-  standard: "Top waste card only",
-  relaxed: "Visible waste cards",
+  standard: "Top card only",
+  relaxed: "Any visible card",
 };
 
 export const normalizeSolitaireVariation = (variation?: Partial<SolitaireVariation> | null): SolitaireVariation => {
