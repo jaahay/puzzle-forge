@@ -1,3 +1,51 @@
+.puzzle-meta {
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.95rem;
+}
+
+.puzzle-meta span,
+.tag-row span {
+  min-height: 1.85rem;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.1;
+}
+
+.puzzle-settings-panel {
+  grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.nonogram-workspace .puzzle-settings-panel,
+.word-guess-workspace .puzzle-settings-panel {
+  grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
+}
+
+.puzzle-settings-panel > label,
+.puzzle-generation-options,
+.puzzle-size-control,
+.puzzle-settings-actions {
+  min-width: 0;
+}
+
+.puzzle-generation-options {
+  grid-template-columns: minmax(10rem, 1fr) auto;
+}
+
+.puzzle-settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+}
+
+.puzzle-settings-actions button {
+  min-width: 7rem;
+  width: auto;
+  flex: 1 1 7rem;
+}
+
 .seed-control {
   min-width: 0;
 }
@@ -11,8 +59,54 @@
   white-space: nowrap;
 }
 
+.nonogram-workspace .puzzle-generation-options {
+  grid-column: span 2;
+}
+
+.word-guess-workspace .seed-control {
+  grid-template-columns: minmax(8rem, 1fr) auto;
+}
+
+.word-guess-workspace .puzzle-settings-actions {
+  justify-content: flex-end;
+}
+
+@media (min-width: 941px) {
+  .nonogram-workspace .puzzle-settings-panel {
+    grid-template-columns: minmax(7rem, 0.8fr) minmax(9rem, 0.9fr) minmax(20rem, 1.8fr) minmax(15rem, 1.2fr);
+  }
+
+  .word-guess-workspace .puzzle-settings-panel {
+    grid-template-columns: minmax(5.5rem, 0.6fr) minmax(5.5rem, 0.6fr) minmax(18rem, 1.7fr) minmax(17rem, 1.2fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .puzzle-settings-panel,
+  .nonogram-workspace .puzzle-settings-panel,
+  .word-guess-workspace .puzzle-settings-panel,
+  .puzzle-generation-options {
+    grid-template-columns: 1fr;
+  }
+
+  .nonogram-workspace .puzzle-generation-options {
+    grid-column: auto;
+  }
+
+  .puzzle-settings-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  }
+
+  .puzzle-settings-actions button {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
 @media (max-width: 430px) {
-  .seed-control {
+  .seed-control,
+  .word-guess-workspace .seed-control {
     grid-template-columns: 1fr;
   }
 
