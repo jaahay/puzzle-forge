@@ -1,4 +1,5 @@
 import type { ComponentChildren } from "preact";
+import { markHomeNavigation } from "../app/homeNavigation";
 import type { AppView } from "../site/views";
 
 type AppShellProps = {
@@ -15,7 +16,7 @@ const viewLinks: { href: string; label: string; view?: AppView; external?: boole
 export const AppShell = ({ activeView, children }: AppShellProps) => (
   <main class="app-shell">
     <header class="app-header" aria-label="Puzzle Forge navigation">
-      <a class="app-brand" href="/" aria-label="Puzzle Forge home" aria-current={activeView === "catalog" ? "page" : undefined}>
+      <a class="app-brand" href="/" aria-label="Puzzle Forge home" aria-current={activeView === "catalog" ? "page" : undefined} onClick={markHomeNavigation}>
         <span class="app-brand-mark" aria-hidden="true">
           ◧
         </span>
