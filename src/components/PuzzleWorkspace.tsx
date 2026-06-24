@@ -4,6 +4,7 @@ import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition, PuzzleDi
 import {
   solitaireDrawModeLabels,
   solitaireRedealLimitLabels,
+  solitaireWasteModeLabels,
 } from "../games/solitaire/variation";
 import { getWordGuessDailyLabel, getWordGuessDailySeed } from "../games/wordGuess/daily";
 import type { CardSelection } from "../interactions/cardRules";
@@ -253,6 +254,7 @@ export const PuzzleWorkspace = ({
             {puzzle.kind === "cards" ? <span>Random deal</span> : null}
             {puzzle.kind === "cards" ? <span>{solitaireDrawModeLabels[puzzle.solitaireVariation.drawMode]}</span> : null}
             {puzzle.kind === "cards" ? <span>{solitaireRedealLimitLabels[String(puzzle.solitaireVariation.redeals)]}</span> : null}
+            {puzzle.kind === "cards" ? <span>{solitaireWasteModeLabels[puzzle.solitaireVariation.wasteMode]}</span> : null}
             {puzzle.kind === "cards" ? <span>{puzzle.solitaireVariation.knownSolvable ? "Solvability verified" : "Solvability not verified"}</span> : null}
             {isSudoku ? (
               <span>{getGivenCount(gridCells)} givens</span>
@@ -289,6 +291,7 @@ export const PuzzleWorkspace = ({
               stacks={cardStacks}
               selectedCard={selectedCard}
               stats={solitaireStats}
+              variation={puzzle.solitaireVariation}
               onCardClick={onCardClick}
               onCardDoubleClick={onCardDoubleClick}
               onStackClick={onStackClick}
