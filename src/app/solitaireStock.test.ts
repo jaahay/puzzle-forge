@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import type { CardStack, PlayingCard, SolitaireVariation } from "../catalog/types";
-import { initialSolitaireStats } from "./session";
 import { drawFromStockStacks } from "./solitaireStock";
 
 const makeCard = (code: string): PlayingCard => ({
@@ -39,8 +38,7 @@ describe("drawFromStockStacks", () => {
   it("draws one card for draw-1", () => {
     const result = drawFromStockStacks(
       makeStacks([makeCard("A♠"), makeCard("2♠"), makeCard("3♠")]),
-      initialSolitaireStats,
-      variation({ drawMode: "draw-1" }),
+      { recycleCount: 0, variation: variation({ drawMode: "draw-1" }) },
     );
 
     expect(result.stacks[0].cards).toHaveLength(2);
@@ -52,8 +50,7 @@ describe("drawFromStockStacks", () => {
   it("draws up to three cards for draw-3", () => {
     const result = drawFromStockStacks(
       makeStacks([makeCard("A♠"), makeCard("2♠"), makeCard("3♠"), makeCard("4♠")]),
-      initialSolitaireStats,
-      variation({ drawMode: "draw-3" }),
+      { recycleCount: 0, variation: variation({ drawMode: "draw-3" }) },
     );
 
     expect(result.stacks[0].cards.map((card) => card.code)).toEqual(["A♠"]);
@@ -64,8 +61,7 @@ describe("drawFromStockStacks", () => {
   it("blocks redeal after the variation limit is reached", () => {
     const result = drawFromStockStacks(
       makeStacks([], [makeCard("A♠")]),
-      { ...initialSolitaireStats, recycleCount: 1 },
-      variation({ redeals: 1 }),
+      { recycleCount: 1, variation: variation({ redeals: 1 }) },
     );
 
     expect(result.stacks[0].cards).toHaveLength(0);
