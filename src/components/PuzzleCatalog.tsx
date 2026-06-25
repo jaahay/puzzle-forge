@@ -1,4 +1,3 @@
-import { markHomeNavigation } from "../app/homeNavigation";
 import { getPuzzleAvailability } from "../catalog/puzzleAvailability";
 import { homeIcon, puzzleIcons } from "../catalog/puzzleIcons";
 import { puzzleCatalog } from "../catalog/puzzleCatalog";
@@ -28,8 +27,10 @@ const compactStatusLabel = (status: PuzzleDefinition["status"]) => {
 
 type PuzzleCatalogProps = {
   isCollapsed: boolean;
+  isHomeSelected: boolean;
   selectedPuzzleId: PuzzleId;
   onCollapseToggle: () => void;
+  onHomeSelect: () => void;
   onSelectPuzzle: (puzzleId: PuzzleId) => void;
 };
 
@@ -66,8 +67,10 @@ const ExpandedPuzzleCard = ({
 
 export const PuzzleCatalog = ({
   isCollapsed,
+  isHomeSelected,
   selectedPuzzleId,
   onCollapseToggle,
+  onHomeSelect,
   onSelectPuzzle,
 }: PuzzleCatalogProps) => (
   <aside class={`catalog-panel ${isCollapsed ? "collapsed" : ""}`} aria-label="Puzzle catalog" id="puzzle-catalog">
@@ -83,14 +86,14 @@ export const PuzzleCatalog = ({
 
     {isCollapsed ? (
       <div class="catalog-mini-list" id="puzzle-catalog-list">
-        <a class="catalog-mini-card home-card" href="/" aria-label="Puzzle Forge home" onClick={markHomeNavigation}>
+        <button class={isHomeSelected ? "catalog-mini-card home-card selected" : "catalog-mini-card home-card"} type="button" aria-label="Puzzle Forge home" onClick={onHomeSelect}>
           <span class="catalog-mini-icon" aria-hidden="true">{homeIcon}</span>
           <span class="catalog-mini-title">Home</span>
-        </a>
+        </button>
         {puzzleCatalog.map((definition) => (
           <button
             aria-label={`${definition.title}${definition.status === "planned" ? " coming soon" : ""}`}
-            class={definition.id === selectedPuzzleId ? "catalog-mini-card selected" : "catalog-mini-card"}
+            class={!isHomeSelected && definition.id === selectedPuzzleId ? "catalog-mini-card selected" : "catalog-mini-card"}
             disabled={definition.status === "planned"}
             key={definition.id}
             onClick={() => onSelectPuzzle(definition.id)}
@@ -104,16 +107,16 @@ export const PuzzleCatalog = ({
       </div>
     ) : (
       <div class="catalog-sections" id="puzzle-catalog-list">
-        <a class="catalog-card home-card" href="/" onClick={markHomeNavigation}>
+        <button class={isHomeSelected ? "catalog-card home-card selected" : "catalog-card home-card"} type="button" onClick={onHomeSelect}>
           <span class="catalog-card-icon" aria-hidden="true">{homeIcon}</span>
           <strong>Home</strong>
-          <span>Return to the puzzle catalog.</span>
-        </a>
+          <span>Choose or switch puzzles.</span>
+        </button>
         <section class="catalog-section" aria-label="Ready puzzles">
           <p class="catalog-section-label">Ready</p>
           <div class="catalog-grid">
             {readyPuzzles.map((definition) => (
-              <ExpandedPuzzleCard definition={definition} isSelected={definition.id === selectedPuzzleId} key={definition.id} onSelectPuzzle={onSelectPuzzle} />
+              <ExpandedPuzzleCard definition={definition} isSelected={!isHomeSelected && definition.id === selectedPuzzleId} key={definition.id} onSelectPuzzle={onSelectPuzzle} />
             ))}
           </div>
         </section>
@@ -122,7 +125,7 @@ export const PuzzleCatalog = ({
             <p class="catalog-section-label">Preview</p>
             <div class="catalog-grid">
               {previewPuzzles.map((definition) => (
-                <ExpandedPuzzleCard definition={definition} isSelected={definition.id === selectedPuzzleId} key={definition.id} onSelectPuzzle={onSelectPuzzle} />
+                <ExpandedPuzzleCard definition={definition} isSelected={!isHomeSelected && definition.id === selectedPuzzleId} key={definition.id} onSelectPuzzle={onSelectPuzzle} />
               ))}
             </div>
           </section>
