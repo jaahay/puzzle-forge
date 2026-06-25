@@ -42,7 +42,6 @@ export const App = () => {
 
   const restoreSession = (puzzleId: PuzzleId, session: ReturnType<typeof buildRuntimeSession>) => {
     setHasSelectedPuzzle(true);
-    setIsCatalogCollapsed(true);
     setSelectedPuzzleId(puzzleId);
     setSeed(session.seed);
     setWidth(session.width);
@@ -114,7 +113,6 @@ export const App = () => {
     );
 
     setHasSelectedPuzzle(true);
-    setIsCatalogCollapsed(true);
 
     if (result.kind === "planned") {
       const definition = getPuzzleDefinition(result.puzzleId);
