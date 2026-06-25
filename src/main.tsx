@@ -8,6 +8,7 @@ import "./site/footer.css";
 import "./site/app-shell.css";
 import "./site/workspace.css";
 import "./site/mobile-workspace.css";
+import "./site/grid.css";
 import "./site/sudoku.css";
 import "./site/nonogram.css";
 import "./site/word-guess.css";
