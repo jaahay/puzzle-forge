@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { getPuzzleAvailability } from "./catalog/puzzleAvailability";
 import { getPuzzleDefinition, isGeneratable } from "./catalog/puzzleCatalog";
 import type { GeneratedPuzzle, PuzzleDifficulty, PuzzleGenerationRequest, PuzzleId, SolitaireVariation } from "./catalog/types";
@@ -18,6 +18,10 @@ import type { AppView } from "./site/views";
 
 const initialStatusMessage = "Pick a puzzle to start.";
 
+type GenerationBehavior = {
+  preserveScroll?: boolean;
+};
+
 export const App = () => {
   const [activeView, setActiveView] = useState<AppView>(getActiveView);
   const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>("sudoku");
@@ -32,6 +36,7 @@ export const App = () => {
   const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(true);
   const [hasSelectedPuzzle, setHasSelectedPuzzle] = useState(false);
   const [isHomeSelected, setIsHomeSelected] = useState(true);
+  const pendingScrollRestore = useRef<{ x: number; y: number } | null>(null);
 
   const generation = usePuzzleGeneration();
   const sessions = usePuzzleSessions();
@@ -40,6 +45,29 @@ export const App = () => {
   const { readyPuzzles, previewPuzzles, plannedPuzzles } = useMemo(() => getPuzzleAvailability(), []);
   const selectedDefinition = getPuzzleDefinition(selectedPuzzleId);
   const selectedPuzzleIsGeneratable = isGeneratable(selectedDefinition);
+
+  const rememberScrollPosition = () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    pendingScrollRestore.current = { x: window.scrollX, y: window.scrollY };
+  };
+
+  const restoreScrollPosition = () => {
+    if (typeof window === "undefined" || !pendingScrollRestore.current) {
+      return;
+    }
+
+    const savedPosition = pendingScrollRestore.current;
+    pendingScrollRestore.current = null;
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ left: savedPosition.x, top: savedPosition.y, behavior: "auto" });
+      });
+    });
+  };
 
   const restoreSession = (puzzleId: PuzzleId, session: ReturnType<typeof buildRuntimeSession>) => {
     setHasSelectedPuzzle(true);
@@ -65,6 +93,7 @@ export const App = () => {
       selectedGridCell: session.selectedGridCell,
     });
     generation.setIsGenerating(false);
+    restoreScrollPosition();
   };
 
   const makeCurrentSession = () =>
@@ -96,7 +125,11 @@ export const App = () => {
     grid.resetGrid();
   };
 
-  const beginGeneration = (options: BeginGenerationOptions = {}) => {
+  const beginGeneration = (options: BeginGenerationOptions = {}, behavior: GenerationBehavior = {}) => {
+    if (behavior.preserveScroll) {
+      rememberScrollPosition();
+    }
+
     const requestedPuzzleId = options.puzzleId ?? selectedPuzzleId;
     const requestOptions =
       requestedPuzzleId === "klondike-solitaire"
@@ -124,6 +157,7 @@ export const App = () => {
       setHeight(definition.defaultHeight);
       resetRuntimePuzzleState();
       setStatusMessage(`${result.title} is planned for a future generator.`);
+      restoreScrollPosition();
       return;
     }
 
@@ -166,6 +200,7 @@ export const App = () => {
     solitaire.resetSolitaireStats();
     solitaire.clearSolitaireHistory();
     setStatusMessage(readyMessage);
+    restoreScrollPosition();
   };
 
   useEffect(() => {
@@ -190,6 +225,7 @@ export const App = () => {
         (error) => {
           sessions.pendingRestorePuzzleId.current = null;
           setStatusMessage(error);
+          restoreScrollPosition();
         },
       );
     };
@@ -280,11 +316,11 @@ export const App = () => {
   };
 
   const generate = () => {
-    beginGeneration();
+    beginGeneration({}, { preserveScroll: true });
   };
 
   const randomize = () => {
-    beginGeneration({ seed: makeRandomSeed() });
+    beginGeneration({ seed: makeRandomSeed() }, { preserveScroll: true });
   };
 
   const commitGenerationSettings = ({
@@ -342,19 +378,22 @@ export const App = () => {
       return;
     }
 
-    beginGeneration({
-      seed: normalizedSeed,
-      width: generationWidth,
-      height: generationHeight,
-      difficulty: generationDifficulty,
-      requireUniqueSolution: generationRequireUniqueSolution,
-      solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? generationSolitaireVariation : undefined,
-    });
+    beginGeneration(
+      {
+        seed: normalizedSeed,
+        width: generationWidth,
+        height: generationHeight,
+        difficulty: generationDifficulty,
+        requireUniqueSolution: generationRequireUniqueSolution,
+        solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? generationSolitaireVariation : undefined,
+      },
+      { preserveScroll: true },
+    );
   };
 
   const handleDifficultyChange = (nextDifficulty: PuzzleDifficulty) => {
     if (selectedPuzzleId === "sudoku") {
-      beginGeneration({ puzzleId: "sudoku", seed, width: 9, height: 9, difficulty: nextDifficulty });
+      beginGeneration({ puzzleId: "sudoku", seed, width: 9, height: 9, difficulty: nextDifficulty }, { preserveScroll: true });
       return;
     }
 
