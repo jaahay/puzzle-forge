@@ -64,6 +64,54 @@
   margin: 0;
 }
 
+.puzzle-panel > .grid,
+.puzzle-panel > .nonogram-board,
+.puzzle-panel > .word-guess-game,
+.puzzle-panel > .cards-layout,
+.puzzle-panel > .tile-puzzle-preview,
+.puzzle-panel > .peg-solitaire-board {
+  justify-self: center;
+}
+
+.puzzle-panel > .grid,
+.word-guess-board-shell,
+.cards-layout,
+.tile-puzzle-preview {
+  width: min(100%, 44rem);
+}
+
+.cards-layout,
+.word-guess-game,
+.tile-puzzle-preview {
+  gap: 0.9rem;
+}
+
+.grid.sudoku,
+.nonogram-board,
+.word-guess-board,
+.tile-puzzle-board,
+.cards-layout {
+  margin-inline: auto;
+}
+
+.word-guess-board {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.tile-puzzle-summary,
+.tile-puzzle-tools,
+.word-guess-actions {
+  gap: 0.55rem;
+}
+
+.tile-puzzle-tools button,
+.word-guess-actions button,
+.puzzle-actions button,
+.solitaire-action-row button {
+  min-height: 2.65rem;
+}
+
 .solitaire-action-row,
 .puzzle-actions,
 .word-guess-actions {
@@ -164,6 +212,13 @@
 @media (max-width: 700px) {
   .workspace-copy {
     padding: 0.8rem;
+  }
+
+  .puzzle-panel > .grid,
+  .puzzle-panel > .word-guess-game,
+  .puzzle-panel > .cards-layout,
+  .puzzle-panel > .tile-puzzle-preview {
+    width: 100%;
   }
 
   .puzzle-settings-panel,
