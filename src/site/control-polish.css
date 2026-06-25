@@ -1,10 +1,12 @@
 .workspace-panel {
   display: grid;
+  min-width: 0;
   gap: 0.85rem;
 }
 
 .workspace-copy {
   position: relative;
+  min-width: 0;
   margin-bottom: 0;
   border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 1.1rem;
@@ -32,9 +34,10 @@
 
 .control-panel {
   display: grid;
-  grid-template-columns: minmax(14rem, 1.25fr) minmax(16rem, 2fr);
+  grid-template-columns: minmax(14rem, 1.25fr) minmax(0, 2fr);
   gap: 0.8rem;
   align-items: end;
+  min-width: 0;
   border-top: 1px solid rgba(30, 41, 59, 0.9);
   padding-top: 0.85rem;
 }
@@ -84,6 +87,7 @@
 
 .puzzle-panel {
   display: grid;
+  min-width: 0;
   gap: 0.95rem;
   margin-top: 0;
 }
@@ -123,6 +127,7 @@
 .puzzle-panel > .tile-puzzle-preview,
 .puzzle-panel > .peg-solitaire-board {
   justify-self: center;
+  min-width: 0;
 }
 
 .puzzle-panel > .grid,
@@ -249,6 +254,28 @@
 
 .word-guess-workspace .puzzle-settings-actions {
   justify-content: flex-end;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .word-guess-keyboard,
+  .sudoku-digit-pad {
+    display: none;
+  }
+}
+
+@media (max-width: 1180px) and (hover: hover) and (pointer: fine) {
+  .control-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .solitaire-settings {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .solitaire-proof-state,
+  .solitaire-solvability-note {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (min-width: 941px) {
