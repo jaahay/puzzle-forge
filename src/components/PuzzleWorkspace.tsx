@@ -447,7 +447,7 @@ export const PuzzleWorkspace = ({
               </div>
 
               {isWordGuess ? <p class="word-guess-solvability-note">Answer is always selected from this puzzle's answer list and is accepted as a valid guess.</p> : null}
-              {isSudoku ? <p class="sudoku-input-hint">Select an empty cell, then type 1-9 or tap a number. Press 0, Backspace, or Clear to empty a cell.</p> : null}
+              {isSudoku ? <p class="sudoku-input-hint">Select an empty cell, then type 1-9. On touch devices, use the number pad or Clear to edit the selected cell.</p> : null}
             </div>
           ) : null}
 
