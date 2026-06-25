@@ -103,7 +103,8 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
         );
         const isSameValue = Boolean(isSudoku && selectedCell?.value && cell.value === selectedCell.value && !isSelected);
         const isCorrectValue = Boolean(isSudoku && hasSudokuValidation && !cell.locked && cell.tone === "answer");
-        const visualTone = isSudoku && cell.tone === "hint" ? "empty" : cell.tone;
+        const isIncorrectValue = Boolean(isSudoku && hasSudokuValidation && !cell.locked && cell.tone === "hint");
+        const visualTone = cell.tone;
         const cellClass = [
           "cell",
           visualTone,
@@ -112,6 +113,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
           isPeer ? "peer-cell" : "",
           isSameValue ? "same-value-cell" : "",
           isCorrectValue ? "correct-cell" : "",
+          isIncorrectValue ? "incorrect-cell" : "",
           isSudoku && cell.column % SUDOKU_BOX_SIZE === 0 && cell.column > 0 ? "box-left" : "",
           isSudoku && cell.row % SUDOKU_BOX_SIZE === 0 && cell.row > 0 ? "box-top" : "",
         ]
