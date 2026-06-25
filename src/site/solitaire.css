@@ -1,3 +1,130 @@
+.cards-layout {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.card-row {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.stock-row {
+  grid-template-columns: repeat(2, minmax(7rem, 1fr));
+  max-width: 18rem;
+}
+
+.foundation-row {
+  grid-template-columns: repeat(4, minmax(5rem, 1fr));
+}
+
+.tableau-row {
+  grid-template-columns: repeat(7, minmax(4.5rem, 1fr));
+  align-items: start;
+}
+
+.card-stack {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.card-stack-heading {
+  display: grid;
+  gap: 0.15rem;
+  color: #cbd5e1;
+  font-size: 0.8rem;
+}
+
+.card-stack-heading strong {
+  color: #f8fafc;
+}
+
+.card-stack-heading span {
+  color: #94a3b8;
+}
+
+.playing-card-list {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.playing-card {
+  position: relative;
+  display: grid;
+  min-height: 4.4rem;
+  place-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.55rem;
+  color: #0f172a;
+  background: #f8fafc;
+  cursor: pointer;
+  font-size: clamp(0.9rem, 2vw, 1.2rem);
+  font-weight: 900;
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.28);
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.playing-card:hover:not(:disabled),
+.playing-card:focus-visible {
+  border-color: #a7f3d0;
+  box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.3), 0 10px 24px rgba(2, 6, 23, 0.28);
+  outline: none;
+  transform: translateY(-2px);
+}
+
+.playing-card:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.playing-card.red {
+  color: #b91c1c;
+}
+
+.playing-card.black {
+  color: #111827;
+}
+
+.playing-card.back {
+  border-color: #60a5fa;
+  background:
+    linear-gradient(135deg, rgba(96, 165, 250, 0.88), rgba(59, 130, 246, 0.66)),
+    repeating-linear-gradient(45deg, rgba(15, 23, 42, 0.2) 0 4px, transparent 4px 8px);
+}
+
+.playing-card.placeholder {
+  border-style: dashed;
+  color: #64748b;
+  background: rgba(15, 23, 42, 0.58);
+  box-shadow: none;
+}
+
+.playing-card.drop-target {
+  border-color: #a7f3d0;
+  color: #a7f3d0;
+  cursor: pointer;
+}
+
+.selected-card {
+  border-color: #facc15;
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.35), 0 10px 24px rgba(2, 6, 23, 0.28);
+  transform: translateY(-4px);
+}
+
+.card-action-hint {
+  position: absolute;
+  right: 0.35rem;
+  bottom: 0.25rem;
+  color: #64748b;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .solitaire-action-row {
   display: flex;
   flex-wrap: wrap;
