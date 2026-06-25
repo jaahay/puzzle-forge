@@ -30,6 +30,58 @@
   min-height: auto;
 }
 
+.control-panel {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1.25fr) minmax(16rem, 2fr);
+  gap: 0.8rem;
+  align-items: end;
+  border-top: 1px solid rgba(30, 41, 59, 0.9);
+  padding-top: 0.85rem;
+}
+
+.control-panel > label,
+.solitaire-settings {
+  min-width: 0;
+}
+
+.solitaire-settings {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(8.5rem, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.solitaire-proof-state {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.4rem;
+  align-items: baseline;
+  min-height: 2.65rem;
+}
+
+.solitaire-proof-state span {
+  color: #cbd5e1;
+  font-weight: 800;
+}
+
+.solitaire-proof-state strong {
+  color: #f8fafc;
+}
+
+.solitaire-settings-actions {
+  display: grid;
+  grid-column: span 2;
+  grid-template-columns: repeat(2, minmax(8rem, 1fr));
+  gap: 0.65rem;
+}
+
+.solitaire-solvability-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #cbd5e1;
+  line-height: 1.45;
+}
+
 .puzzle-panel {
   display: grid;
   gap: 0.95rem;
@@ -214,13 +266,13 @@
     padding: 0.8rem;
   }
 
-  .puzzle-panel > .grid,
-  .puzzle-panel > .word-guess-game,
-  .puzzle-panel > .cards-layout,
-  .puzzle-panel > .tile-puzzle-preview {
-    width: 100%;
+  .workspace-copy h2 {
+    font-size: clamp(2.4rem, 13vw, 4.25rem);
+    line-height: 0.98;
   }
 
+  .control-panel,
+  .solitaire-settings,
   .puzzle-settings-panel,
   .nonogram-workspace .puzzle-settings-panel,
   .word-guess-workspace .puzzle-settings-panel,
@@ -228,18 +280,36 @@
     grid-template-columns: 1fr;
   }
 
-  .nonogram-workspace .puzzle-generation-options {
-    grid-column: auto;
-  }
-
+  .solitaire-settings-actions,
   .puzzle-settings-actions {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+    grid-column: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .solitaire-settings-actions button,
   .puzzle-settings-actions button {
     width: 100%;
     min-width: 0;
+  }
+
+  .solitaire-proof-state {
+    min-height: auto;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 0.9rem;
+    padding: 0.65rem 0.75rem;
+    background: rgba(17, 24, 39, 0.46);
+  }
+
+  .puzzle-panel > .grid,
+  .puzzle-panel > .word-guess-game,
+  .puzzle-panel > .cards-layout,
+  .puzzle-panel > .tile-puzzle-preview {
+    width: 100%;
+  }
+
+  .nonogram-workspace .puzzle-generation-options {
+    grid-column: auto;
   }
 }
 
