@@ -31,6 +31,7 @@ export const App = () => {
   const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
   const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(true);
   const [hasSelectedPuzzle, setHasSelectedPuzzle] = useState(false);
+  const [isHomeSelected, setIsHomeSelected] = useState(true);
 
   const generation = usePuzzleGeneration();
   const sessions = usePuzzleSessions();
@@ -42,6 +43,7 @@ export const App = () => {
 
   const restoreSession = (puzzleId: PuzzleId, session: ReturnType<typeof buildRuntimeSession>) => {
     setHasSelectedPuzzle(true);
+    setIsHomeSelected(false);
     setSelectedPuzzleId(puzzleId);
     setSeed(session.seed);
     setWidth(session.width);
@@ -113,6 +115,7 @@ export const App = () => {
     );
 
     setHasSelectedPuzzle(true);
+    setIsHomeSelected(false);
 
     if (result.kind === "planned") {
       const definition = getPuzzleDefinition(result.puzzleId);
@@ -204,13 +207,14 @@ export const App = () => {
   }, [generation.worker]);
 
   useEffect(() => {
-    if (!hasSelectedPuzzle || generation.isGenerating) {
+    if (!hasSelectedPuzzle || generation.isGenerating || isHomeSelected) {
       return;
     }
 
     saveCurrentSession();
   }, [
     hasSelectedPuzzle,
+    isHomeSelected,
     generation.isGenerating,
     selectedPuzzleId,
     seed,
@@ -229,15 +233,30 @@ export const App = () => {
     statusMessage,
   ]);
 
-  const selectPuzzle = (puzzleId: PuzzleId) => {
-    if (puzzleId === selectedPuzzleId && hasSelectedPuzzle) {
-      return;
-    }
-
-    if (hasSelectedPuzzle) {
+  const selectHome = () => {
+    if (hasSelectedPuzzle && !isHomeSelected) {
       saveCurrentSession();
     }
 
+    setActiveView("catalog");
+    setHasSelectedPuzzle(true);
+    setIsHomeSelected(true);
+
+    if (typeof window !== "undefined" && window.location.hash) {
+      window.history.pushState(null, "", `${window.location.pathname}${window.location.search}`);
+    }
+  };
+
+  const selectPuzzle = (puzzleId: PuzzleId) => {
+    if (puzzleId === selectedPuzzleId && hasSelectedPuzzle && !isHomeSelected) {
+      return;
+    }
+
+    if (hasSelectedPuzzle && !isHomeSelected) {
+      saveCurrentSession();
+    }
+
+    setIsHomeSelected(false);
     const cachedSession = sessions.getCachedSession(puzzleId);
 
     if (cachedSession) {
@@ -370,17 +389,26 @@ export const App = () => {
   };
 
   return (
-    <AppShell activeView={activeView}>
+    <AppShell activeView={activeView} onHomeSelect={selectHome}>
       {activeView === "catalog" ? (
-        hasSelectedPuzzle ? (
-          <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
-            <PuzzleCatalog
-              isCollapsed={isCatalogCollapsed}
-              selectedPuzzleId={selectedPuzzleId}
-              onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)}
+        <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
+          <PuzzleCatalog
+            isCollapsed={isCatalogCollapsed}
+            isHomeSelected={isHomeSelected || !hasSelectedPuzzle}
+            selectedPuzzleId={selectedPuzzleId}
+            onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)}
+            onHomeSelect={selectHome}
+            onSelectPuzzle={selectPuzzle}
+          />
+
+          {isHomeSelected || !hasSelectedPuzzle ? (
+            <StartView
+              readyPuzzles={readyPuzzles}
+              previewPuzzles={previewPuzzles}
+              plannedPuzzles={plannedPuzzles}
               onSelectPuzzle={selectPuzzle}
             />
-
+          ) : (
             <PuzzleWorkspace
               selectedDefinition={selectedDefinition}
               selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
@@ -419,15 +447,8 @@ export const App = () => {
               onCellClick={(cell) => grid.handleGridCellClick(puzzle, cell, setStatusMessage)}
               onCellInput={(cell, value) => grid.handleGridCellInput(puzzle, cell, value, setStatusMessage)}
             />
-          </section>
-        ) : (
-          <StartView
-            readyPuzzles={readyPuzzles}
-            previewPuzzles={previewPuzzles}
-            plannedPuzzles={plannedPuzzles}
-            onSelectPuzzle={selectPuzzle}
-          />
-        )
+          )}
+        </section>
       ) : activeView === "changelog" ? (
         <ChangelogView />
       ) : (
