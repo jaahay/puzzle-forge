@@ -37,6 +37,25 @@ const CompactStatusMarker = ({ status }: { status: PuzzleDefinition["status"] })
   <span class={`catalog-mini-status ${status}`} aria-label={compactStatusLabel(status)} title={compactStatusLabel(status)} />
 );
 
+const ExpandedPuzzleCard = ({ definition, onSelectPuzzle }: { definition: PuzzleDefinition; onSelectPuzzle?: (puzzleId: PuzzleId) => void }) => {
+  const isPlanned = definition.status === "planned";
+
+  return (
+    <button
+      class="catalog-card"
+      disabled={isPlanned}
+      key={definition.id}
+      onClick={onSelectPuzzle ? () => onSelectPuzzle(definition.id) : undefined}
+      type="button"
+    >
+      <span class="catalog-card-icon" aria-hidden="true">{puzzleIcons[definition.id]}</span>
+      {definition.status === "playable" ? null : <span class={`status ${definition.status}`}>{statusLabel(definition.status)}</span>}
+      <strong>{definition.title}</strong>
+      <span>{definition.tagline}</span>
+    </button>
+  );
+};
+
 export const PuzzleCatalog = ({
   isCollapsed,
   selectedPuzzleId,
@@ -78,6 +97,7 @@ export const PuzzleCatalog = ({
     ) : (
       <div class="catalog-sections" id="puzzle-catalog-list">
         <a class="catalog-card home-card" href="/" onClick={markHomeNavigation}>
+          <span class="catalog-card-icon" aria-hidden="true">{homeIcon}</span>
           <strong>Home</strong>
           <span>Return to the puzzle catalog.</span>
         </a>
@@ -85,10 +105,7 @@ export const PuzzleCatalog = ({
           <p class="catalog-section-label">Ready</p>
           <div class="catalog-grid">
             {readyPuzzles.map((definition) => (
-              <button class={definition.id === selectedPuzzleId ? "catalog-card selected" : "catalog-card"} key={definition.id} type="button" onClick={() => onSelectPuzzle(definition.id)}>
-                <strong>{definition.title}</strong>
-                <span>{definition.tagline}</span>
-              </button>
+              <ExpandedPuzzleCard definition={definition} key={definition.id} onSelectPuzzle={onSelectPuzzle} />
             ))}
           </div>
         </section>
@@ -97,11 +114,7 @@ export const PuzzleCatalog = ({
             <p class="catalog-section-label">Preview</p>
             <div class="catalog-grid">
               {previewPuzzles.map((definition) => (
-                <button class={definition.id === selectedPuzzleId ? "catalog-card selected" : "catalog-card"} key={definition.id} type="button" onClick={() => onSelectPuzzle(definition.id)}>
-                  <span class={`status ${definition.status}`}>{statusLabel(definition.status)}</span>
-                  <strong>{definition.title}</strong>
-                  <span>{definition.tagline}</span>
-                </button>
+                <ExpandedPuzzleCard definition={definition} key={definition.id} onSelectPuzzle={onSelectPuzzle} />
               ))}
             </div>
           </section>
@@ -110,11 +123,7 @@ export const PuzzleCatalog = ({
           <p class="catalog-section-label">Coming soon</p>
           <div class="catalog-grid">
             {plannedPuzzles.map((definition) => (
-              <button class="catalog-card" disabled key={definition.id} type="button">
-                <span class={`status ${definition.status}`}>{statusLabel(definition.status)}</span>
-                <strong>{definition.title}</strong>
-                <span>{definition.tagline}</span>
-              </button>
+              <ExpandedPuzzleCard definition={definition} key={definition.id} />
             ))}
           </div>
         </section>
