@@ -1,0 +1,90 @@
+/* Shared grid and cell primitives for grid-based puzzles. */
+
+.grid {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.cell {
+  display: grid;
+  min-height: 3rem;
+  place-items: center;
+  border: 1px solid #334155;
+  border-radius: 0.75rem;
+  color: #cbd5e1;
+  background: #111827;
+  font-weight: 800;
+}
+
+input.cell-input {
+  min-height: 3rem;
+  padding: 0;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.cell.interactive-cell {
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.cell.interactive-cell:hover,
+.cell.interactive-cell:focus-visible,
+.cell-input.interactive-cell:focus {
+  border-color: #a7f3d0;
+  box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.28);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.cell:disabled,
+.cell-input:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.cell.selected-grid-cell {
+  border-color: #facc15;
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.32);
+  transform: translateY(-2px);
+}
+
+.cell.given {
+  color: #0f172a;
+  background: #a7f3d0;
+}
+
+.cell.accent {
+  color: #f8fafc;
+  background: #7c3aed;
+}
+
+.cell.answer {
+  color: #0f172a;
+  background: #facc15;
+}
+
+.cell.hint {
+  color: #0f172a;
+  background: #93c5fd;
+}
+
+.cell.disabled {
+  border-color: transparent;
+  color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.grid.word-guess .cell {
+  min-height: 4rem;
+  font-size: 1.3rem;
+  text-transform: uppercase;
+}
+
+.grid.peg-solitaire .cell {
+  border-radius: 999px;
+}
