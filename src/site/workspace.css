@@ -113,17 +113,20 @@
 }
 
 .solitaire-control-panel {
-  grid-template-columns: minmax(16rem, 0.95fr) minmax(22rem, 1.35fr);
-  align-items: start;
+  width: min(100%, 44rem);
+  justify-self: center;
+  grid-template-columns: 1fr;
+  align-items: stretch;
 }
 
 .solitaire-control-panel > label {
-  align-self: end;
+  order: 2;
 }
 
 .solitaire-settings {
+  order: 1;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.8rem;
   align-items: end;
 }
@@ -149,12 +152,8 @@
   color: #f8fafc;
 }
 
-.solitaire-settings-actions,
-.solitaire-solvability-note {
-  grid-column: 1 / -1;
-}
-
 .solitaire-settings-actions {
+  grid-column: 1 / span 2;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -165,7 +164,9 @@
 }
 
 .solitaire-solvability-note {
+  grid-column: 3 / -1;
   margin: 0;
+  align-self: center;
   color: #cbd5e1;
   line-height: 1.45;
 }
@@ -305,31 +306,40 @@
 
 @media (min-width: 941px) {
   .sudoku-settings-panel {
+    width: min(100%, 44rem);
+    justify-self: center;
     grid-template-columns: minmax(7rem, 0.75fr) minmax(9rem, 0.9fr) minmax(18rem, 1.65fr) minmax(10rem, 0.9fr);
   }
 
-  .nonogram-settings-panel {
-    grid-template-columns: minmax(7rem, 0.7fr) minmax(9rem, 0.9fr) minmax(13rem, 1.05fr) minmax(20rem, 1.75fr) minmax(10rem, 0.9fr);
+  .word-guess-settings-panel {
+    width: min(100%, 44rem);
+    justify-self: center;
+    grid-template-columns: minmax(5.5rem, 0.55fr) minmax(5.5rem, 0.55fr) minmax(18rem, 2fr);
   }
 
-  .word-guess-settings-panel {
-    grid-template-columns: minmax(5.5rem, 0.55fr) minmax(5.5rem, 0.55fr) minmax(18rem, 1.7fr) minmax(17rem, 1.35fr);
+  .word-guess-settings-panel .generation-actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .word-guess-settings-panel .generation-actions button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .word-guess-solvability-note {
+    text-align: center;
   }
 
   .sudoku-settings-panel .check-actions,
-  .sudoku-settings-panel .generation-actions,
-  .nonogram-settings-panel .check-actions,
-  .nonogram-settings-panel .generation-actions,
-  .word-guess-settings-panel .generation-actions {
+  .sudoku-settings-panel .generation-actions {
     display: grid;
     grid-template-columns: 1fr;
   }
 
   .sudoku-settings-panel .check-actions button,
-  .sudoku-settings-panel .generation-actions button,
-  .nonogram-settings-panel .check-actions button,
-  .nonogram-settings-panel .generation-actions button,
-  .word-guess-settings-panel .generation-actions button {
+  .sudoku-settings-panel .generation-actions button {
     width: 100%;
     min-width: 0;
   }
@@ -341,13 +351,25 @@
   .puzzle-settings-panel,
   .sudoku-settings-panel,
   .nonogram-settings-panel,
-  .word-guess-settings-panel {
+  .word-guess-settings-panel,
+  .solitaire-settings {
     grid-template-columns: 1fr;
+  }
+
+  .solitaire-control-panel,
+  .solitaire-control-panel > label,
+  .solitaire-settings {
+    order: initial;
   }
 
   .puzzle-generation-options,
   .seed-control {
     grid-template-columns: 1fr;
+  }
+
+  .solitaire-settings-actions,
+  .solitaire-solvability-note {
+    grid-column: 1 / -1;
   }
 
   .puzzle-settings-actions,
