@@ -270,3 +270,9 @@ select {
   gap: 1rem;
   align-items: end;
 }
+
+@media (min-width: 701px) {
+  .sudoku-digit-pad {
+    display: none;
+  }
+}
