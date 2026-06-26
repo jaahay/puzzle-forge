@@ -264,7 +264,7 @@ select {
   background: #334155;
 }
 
-.puzzle-settings-panel {
+.sudoku-settings-panel {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
   gap: 1rem;
