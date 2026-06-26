@@ -171,7 +171,9 @@ export const App = () => {
     if (request.puzzleId === "klondike-solitaire") {
       setSolitaireVariation(normalizeSolitaireVariation(request.solitaireVariation));
     }
-    resetRuntimePuzzleState();
+    if (puzzle?.puzzleId !== request.puzzleId) {
+      resetRuntimePuzzleState();
+    }
     setStatusMessage(`Generating ${title}...`);
   };
 
