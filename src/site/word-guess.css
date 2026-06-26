@@ -291,6 +291,12 @@
   border: 0;
 }
 
+@media (min-width: 701px) {
+  .word-guess-keyboard {
+    display: none;
+  }
+}
+
 @media (max-width: 620px) {
   .word-guess-board-shell {
     touch-action: manipulation;
