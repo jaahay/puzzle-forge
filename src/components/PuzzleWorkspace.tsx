@@ -52,8 +52,8 @@ type PuzzleWorkspaceProps = {
   onCheck: () => void;
   onSolitaireVariationChange: (variation: SolitaireVariation) => void;
   onAutoMoveToFoundations: () => void;
-  onUndoSolitaire: () => void;
-  onRedoSolitaire: () => void;
+  onUndoSolitaire: boolean;
+  onRedoSolitaire: boolean;
   canUndoSolitaire: boolean;
   canRedoSolitaire: boolean;
   onCardClick: (stack: CardStack, cardIndex: number) => void;
@@ -122,6 +122,9 @@ export const PuzzleWorkspace = ({
   const filledOpenCount = getFilledOpenCount(gridCells);
   const openCount = getOpenCount(gridCells);
   const wordGuessDailyLabel = isWordGuess && puzzle ? getWordGuessDailyLabel(puzzle.seed) : null;
+  const workspaceClass = `workspace-panel ${isSudoku ? "sudoku-workspace" : ""} ${isNonogram ? "nonogram-workspace" : ""} ${isWordGuess ? "word-guess-workspace" : ""} ${isSolitaire ? "solitaire-workspace" : ""}`;
+  const topControlPanelClass = `control-panel ${isSolitaire ? "solitaire-control-panel" : ""}`;
+  const bottomSettingsPanelClass = `puzzle-settings-panel ${isSudoku ? "sudoku-settings-panel" : ""} ${isNonogram ? "nonogram-settings-panel" : ""} ${isWordGuess ? "word-guess-settings-panel" : ""}`;
   const showSudokuValidationMessage =
     isSudoku && (statusMessage.startsWith("Sudoku solved") || statusMessage.startsWith("Sudoku validation"));
   const showNonogramValidationMessage = isNonogram && (statusMessage.startsWith("Solved") || statusMessage.startsWith("Not solved"));
@@ -154,7 +157,7 @@ export const PuzzleWorkspace = ({
   );
 
   return (
-    <section class={`workspace-panel ${isSudoku ? "sudoku-workspace" : ""} ${isNonogram ? "nonogram-workspace" : ""} ${isWordGuess ? "word-guess-workspace" : ""}`} aria-label="Selected puzzle workspace">
+    <section class={workspaceClass} aria-label="Selected puzzle workspace">
       <div class="workspace-copy">
         <span class={`status ${selectedDefinition.status}`}>{selectedDefinition.status}</span>
         <h2>{selectedDefinition.title}</h2>
@@ -169,7 +172,7 @@ export const PuzzleWorkspace = ({
       </div>
 
       {hasBottomSettingsBar ? null : (
-        <div class="control-panel" aria-label="Puzzle controls">
+        <div class={topControlPanelClass} aria-label="Puzzle controls">
           <label>
             Seed
             {seedInput}
@@ -326,9 +329,9 @@ export const PuzzleWorkspace = ({
           ) : null}
 
           {hasBottomSettingsBar ? (
-            <div class="puzzle-settings-panel" aria-label={`${selectedDefinition.title} controls`}>
+            <div class={bottomSettingsPanelClass} aria-label={`${selectedDefinition.title} controls`}>
               {isWordGuess ? null : (
-                <div class="puzzle-settings-actions">
+                <div class="puzzle-settings-actions check-actions">
                   <button type="button" onClick={onCheck}>
                     Check
                   </button>
@@ -430,7 +433,7 @@ export const PuzzleWorkspace = ({
                 </label>
               )}
 
-              <div class="puzzle-settings-actions">
+              <div class="puzzle-settings-actions generation-actions">
                 {isWordGuess ? (
                   <button type="button" onClick={generateWordGuessDaily} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
                     Today
