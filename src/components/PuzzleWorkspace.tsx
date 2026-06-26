@@ -52,8 +52,8 @@ type PuzzleWorkspaceProps = {
   onCheck: () => void;
   onSolitaireVariationChange: (variation: SolitaireVariation) => void;
   onAutoMoveToFoundations: () => void;
-  onUndoSolitaire: boolean;
-  onRedoSolitaire: boolean;
+  onUndoSolitaire: () => void;
+  onRedoSolitaire: () => void;
   canUndoSolitaire: boolean;
   canRedoSolitaire: boolean;
   onCardClick: (stack: CardStack, cardIndex: number) => void;
