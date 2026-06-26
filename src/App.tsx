@@ -9,6 +9,7 @@ import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
 import { StartView } from "./components/StartView";
 import { defaultSolitaireVariation, normalizeSolitaireVariation, solitaireVariationsEqual } from "./games/solitaire/variation";
+import { markHomeNavigation, markPuzzleNavigation } from "./app/homeNavigation";
 import { defaultSudokuDifficulty, getActiveView, makeRandomSeed } from "./app/runtime";
 import { useGridController } from "./app/useGridController";
 import { usePuzzleGeneration, type BeginGenerationOptions } from "./app/usePuzzleGeneration";
@@ -70,6 +71,7 @@ export const App = () => {
   };
 
   const restoreSession = (puzzleId: PuzzleId, session: ReturnType<typeof buildRuntimeSession>) => {
+    markPuzzleNavigation();
     setHasSelectedPuzzle(true);
     setIsHomeSelected(false);
     setSelectedPuzzleId(puzzleId);
@@ -149,6 +151,7 @@ export const App = () => {
 
     setHasSelectedPuzzle(true);
     setIsHomeSelected(false);
+    markPuzzleNavigation();
 
     if (result.kind === "planned") {
       const definition = getPuzzleDefinition(result.puzzleId);
@@ -276,6 +279,7 @@ export const App = () => {
       saveCurrentSession();
     }
 
+    markHomeNavigation();
     setActiveView("catalog");
     setHasSelectedPuzzle(true);
     setIsHomeSelected(true);
@@ -294,6 +298,7 @@ export const App = () => {
       saveCurrentSession();
     }
 
+    markPuzzleNavigation();
     setIsHomeSelected(false);
     const cachedSession = sessions.getCachedSession(puzzleId);
 
