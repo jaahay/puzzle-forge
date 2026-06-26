@@ -84,10 +84,12 @@
 .word-guess-actions button {
   min-height: 2.65rem;
   min-width: 7rem;
+  border: 1px solid rgba(167, 243, 208, 0.46);
   border-radius: 999px;
   padding: 0.72rem 1rem;
   color: #0f172a;
-  background: #a7f3d0;
+  background: linear-gradient(180deg, #bbf7d0, #86efac);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34), 0 10px 24px rgba(2, 6, 23, 0.22);
   cursor: pointer;
   font-weight: 900;
 }
@@ -97,9 +99,29 @@
 .puzzle-settings-actions button:nth-child(n + 2),
 .solitaire-settings-actions button:nth-child(2),
 .tile-puzzle-tools button:nth-child(n + 2),
-.word-guess-actions button:nth-child(n + 2) {
+.word-guess-actions button:nth-child(n + 2),
+.seed-control button {
+  border-color: rgba(148, 163, 184, 0.24);
   color: #e5e7eb;
-  background: #334155;
+  background: linear-gradient(180deg, #475569, #334155);
+}
+
+.control-panel button:hover:not(:disabled),
+.puzzle-actions button:hover:not(:disabled),
+.puzzle-settings-actions button:hover:not(:disabled),
+.solitaire-settings-actions button:hover:not(:disabled),
+.tile-puzzle-tools button:hover:not(:disabled),
+.word-guess-actions button:hover:not(:disabled),
+.seed-control button:hover:not(:disabled),
+.control-panel button:focus-visible,
+.puzzle-actions button:focus-visible,
+.puzzle-settings-actions button:focus-visible,
+.solitaire-settings-actions button:focus-visible,
+.tile-puzzle-tools button:focus-visible,
+.word-guess-actions button:focus-visible,
+.seed-control button:focus-visible {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.36), 0 0 0 3px rgba(167, 243, 208, 0.24), 0 12px 28px rgba(2, 6, 23, 0.28);
+  outline: none;
 }
 
 .control-panel button:disabled,
@@ -107,7 +129,8 @@
 .puzzle-settings-actions button:disabled,
 .solitaire-settings-actions button:disabled,
 .tile-puzzle-tools button:disabled,
-.word-guess-actions button:disabled {
+.word-guess-actions button:disabled,
+.seed-control button:disabled {
   cursor: not-allowed;
   opacity: 0.62;
 }
@@ -285,8 +308,13 @@
 }
 
 .seed-control button {
+  min-height: 2.65rem;
   min-width: 5.75rem;
+  border-radius: 999px;
+  padding: 0.72rem 1rem;
   white-space: nowrap;
+  cursor: pointer;
+  font-weight: 900;
 }
 
 .puzzle-settings-actions {
