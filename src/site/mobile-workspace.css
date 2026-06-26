@@ -20,6 +20,16 @@
     padding: 0.85rem;
   }
 
+  .catalog-panel .panel-heading,
+  .catalog-mini-list,
+  .catalog-sections {
+    display: none;
+  }
+
+  .catalog-mobile-nav {
+    display: grid;
+  }
+
   .workspace-copy {
     gap: 0.45rem;
     margin-bottom: 0.75rem;
