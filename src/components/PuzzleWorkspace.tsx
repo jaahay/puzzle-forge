@@ -308,7 +308,6 @@ export const PuzzleWorkspace = ({
               statusMessage={statusMessage}
               onCellInput={onCellInput}
               onSubmitGuess={onCheck}
-              onRandomize={onRandomize}
             />
           ) : puzzle.kind === "grid" && gridCells ? (
             <GridPuzzlePreview
@@ -449,8 +448,8 @@ export const PuzzleWorkspace = ({
                 </button>
               </div>
 
-              {isWordGuess ? <p class="word-guess-solvability-note">Answer is always selected from this puzzle's answer list and is accepted as a valid guess.</p> : null}
-              {isSudoku ? <p class="sudoku-input-hint">Select an empty cell, then type 1-9. On touch devices, use the number pad or Clear to edit the selected cell.</p> : null}
+              {isWordGuess ? <p class="word-guess-solvability-note">Uses this puzzle's answer list.</p> : null}
+              {isSudoku ? <p class="sudoku-input-hint">Select a cell, then type 1-9. Touch devices can use the number pad.</p> : null}
             </div>
           ) : null}
 
