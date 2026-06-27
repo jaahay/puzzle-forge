@@ -197,7 +197,9 @@ export const PuzzleWorkspace = ({
         <SolitaireSettings
           variation={solitaireVariation}
           isGenerating={isGenerating}
+          canGenerate={selectedPuzzleIsGeneratable}
           onVariationChange={onSolitaireVariationChange}
+          onToday={generateDailyPuzzle}
           onGenerate={onGenerate}
           onRandomize={onRandomize}
         />
