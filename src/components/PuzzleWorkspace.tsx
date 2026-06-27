@@ -152,7 +152,9 @@ export const PuzzleWorkspace = ({
         onInput={(event) => onSeedChange(event.currentTarget.value)}
         onKeyDown={blurOnEnter}
       />
-      <button type="button" onClick={copySeed}>{seedCopied ? "Copied" : "Copy seed"}</button>
+      <button type="button" onClick={copySeed} aria-label={seedCopied ? "Seed copied" : "Copy seed"} title={seedCopied ? "Copied" : "Copy seed"}>
+        {seedCopied ? "✓" : "⧉"}
+      </button>
     </div>
   );
 
@@ -219,7 +221,7 @@ export const PuzzleWorkspace = ({
           ) : (
             <div class="control-actions">
               <button type="button" onClick={onGenerate} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-                {isGenerating ? "Generating..." : "Generate"}
+                Generate
               </button>
               <button type="button" onClick={onRandomize} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
                 Randomize
@@ -265,11 +267,8 @@ export const PuzzleWorkspace = ({
               <span>{filledOpenCount}/{openCount} filled</span>
             ) : wordGuessDailyLabel ? (
               <span>Daily: {wordGuessDailyLabel}</span>
-            ) : puzzle.kind === "cards" ? null : (
-              <span>Seed: {puzzle.seed}</span>
-            )}
+            ) : puzzle.kind === "cards" ? null : null}
             {isSudoku ? <span>Progress: {filledOpenCount} of {openCount}</span> : null}
-            {isSudoku ? <span>Seed: {puzzle.seed}</span> : null}
           </div>
 
           {puzzle.kind === "cards" ? (
@@ -440,7 +439,7 @@ export const PuzzleWorkspace = ({
                 ) : null}
                 {isWordGuess ? (
                   <button type="button" onClick={onGenerate} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-                    {isGenerating ? "Generating..." : "Use seed"}
+                    Use seed
                   </button>
                 ) : null}
                 <button type="button" onClick={onRandomize} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
