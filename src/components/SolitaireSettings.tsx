@@ -80,7 +80,7 @@ export const SolitaireSettings = ({
 
       <div class="puzzle-settings-actions solitaire-settings-actions">
         <button type="button" onClick={onGenerate} disabled={isGenerating}>
-          {isGenerating ? "Generating..." : "Use seed"}
+          Use seed
         </button>
         <button type="button" onClick={onRandomize} disabled={isGenerating}>
           Random
