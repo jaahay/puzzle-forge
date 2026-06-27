@@ -8,14 +8,13 @@ import {
 } from "../games/solitaire/variation";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
+import { BottomPuzzleConfiguration } from "./BottomPuzzleConfiguration";
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
-import { GenerationActions } from "./GenerationActions";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
-import { PuzzleDifficultySelect } from "./PuzzleDifficultySelect";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { SeedControl } from "./SeedControl";
-import { SolitaireSettings } from "./SolitaireSettings";
 import { TilePuzzlePreview } from "./TilePuzzlePreview";
+import { TopPuzzleConfiguration } from "./TopPuzzleConfiguration";
 import { WordGuessGame } from "./WordGuessGame";
 
 type SolitaireStats = {
@@ -69,11 +68,6 @@ type PuzzleWorkspaceProps = {
 const getGivenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => cell.locked).length ?? 0;
 const getFilledOpenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => !cell.locked && cell.value).length ?? 0;
 const getOpenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => !cell.locked).length ?? 0;
-const blurOnEnter = (event: KeyboardEvent) => {
-  if (event.key === "Enter") {
-    event.currentTarget instanceof HTMLElement && event.currentTarget.blur();
-  }
-};
 
 export const PuzzleWorkspace = ({
   selectedDefinition,
@@ -125,8 +119,6 @@ export const PuzzleWorkspace = ({
   const openCount = getOpenCount(gridCells);
   const dailyLabel = puzzle ? getDailyPuzzleLabel(puzzle.puzzleId, puzzle.seed) : null;
   const workspaceClass = `${isSudoku ? "sudoku-workspace" : ""} ${isNonogram ? "nonogram-workspace" : ""} ${isWordGuess ? "word-guess-workspace" : ""} ${isSolitaire ? "solitaire-workspace" : ""}`;
-  const topControlPanelClass = `control-panel ${isSolitaire ? "solitaire-control-panel" : ""}`;
-  const bottomSettingsPanelClass = `puzzle-settings-panel ${isSudoku ? "sudoku-settings-panel" : ""} ${isNonogram ? "nonogram-settings-panel" : ""} ${isWordGuess ? "word-guess-settings-panel" : ""}`;
   const showSudokuValidationMessage =
     isSudoku && (statusMessage.startsWith("Sudoku solved") || statusMessage.startsWith("Sudoku validation"));
   const showNonogramValidationMessage = isNonogram && (statusMessage.startsWith("Solved") || statusMessage.startsWith("Not solved"));
@@ -156,66 +148,48 @@ export const PuzzleWorkspace = ({
     </div>
   );
 
-  const topGenerationSlot = hasBottomSettingsBar ? null : (
-    <div class={topControlPanelClass} aria-label="Puzzle controls">
-      <label>
-        Seed
-        {seedInput}
-      </label>
-
-      {isFixedSize ? null : (
-        <>
-          <label>
-            Width
-            <input
-              type="number"
-              min={selectedDefinition.minWidth}
-              max={selectedDefinition.maxWidth}
-              value={width}
-              onBlur={(event) => onSettingsCommit({ width: Number(event.currentTarget.value) })}
-              onInput={(event) => onWidthChange(Number(event.currentTarget.value))}
-              onKeyDown={blurOnEnter}
-            />
-          </label>
-
-          <label>
-            Height
-            <input
-              type="number"
-              min={selectedDefinition.minHeight}
-              max={selectedDefinition.maxHeight}
-              value={height}
-              onBlur={(event) => onSettingsCommit({ height: Number(event.currentTarget.value) })}
-              onInput={(event) => onHeightChange(Number(event.currentTarget.value))}
-              onKeyDown={blurOnEnter}
-            />
-          </label>
-        </>
-      )}
-
-      {isSolitaire ? (
-        <SolitaireSettings
-          variation={solitaireVariation}
-          isGenerating={isGenerating}
-          canGenerate={selectedPuzzleIsGeneratable}
-          onVariationChange={onSolitaireVariationChange}
-          onToday={generateDailyPuzzle}
-          onGenerate={onGenerate}
-          onRandomize={onRandomize}
-        />
-      ) : (
-        <GenerationActions
-          isGenerating={isGenerating}
-          canGenerate={selectedPuzzleIsGeneratable}
-          showToday
-          showUseSeed
-          randomLabel="Random"
-          onToday={generateDailyPuzzle}
-          onUseSeed={onGenerate}
-          onRandomize={onRandomize}
-        />
-      )}
-    </div>
+  const configurationSlot = hasBottomSettingsBar && puzzle ? (
+    <BottomPuzzleConfiguration
+      selectedDefinition={selectedDefinition}
+      selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
+      seedInput={seedInput}
+      width={width}
+      height={height}
+      difficulty={difficulty}
+      requireUniqueSolution={requireUniqueSolution}
+      isFixedSize={isFixedSize}
+      isNonogram={isNonogram}
+      isWordGuess={isWordGuess}
+      isSudoku={isSudoku}
+      isGenerating={isGenerating}
+      onWidthChange={onWidthChange}
+      onHeightChange={onHeightChange}
+      onSettingsCommit={onSettingsCommit}
+      onDifficultyChange={onDifficultyChange}
+      onUniqueSolutionChange={onUniqueSolutionChange}
+      onToday={generateDailyPuzzle}
+      onUseSeed={onGenerate}
+      onRandomize={onRandomize}
+    />
+  ) : (
+    <TopPuzzleConfiguration
+      selectedDefinition={selectedDefinition}
+      selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
+      seedInput={seedInput}
+      width={width}
+      height={height}
+      solitaireVariation={solitaireVariation}
+      isFixedSize={isFixedSize}
+      isGenerating={isGenerating}
+      isSolitaire={isSolitaire}
+      onWidthChange={onWidthChange}
+      onHeightChange={onHeightChange}
+      onSettingsCommit={onSettingsCommit}
+      onSolitaireVariationChange={onSolitaireVariationChange}
+      onToday={generateDailyPuzzle}
+      onUseSeed={onGenerate}
+      onRandomize={onRandomize}
+    />
   );
 
   const statusSlot = showStatusLine || showSudokuValidationMessage || showNonogramValidationMessage ? (
@@ -327,114 +301,6 @@ export const PuzzleWorkspace = ({
     )
   ) : null;
 
-  const bottomGenerationSlot = hasBottomSettingsBar && puzzle ? (
-    <div class={bottomSettingsPanelClass} aria-label={`${selectedDefinition.title} controls`}>
-      {isWordGuess ? (
-        <>
-          <label>
-            Letters
-            <input
-              type="number"
-              min={selectedDefinition.minWidth}
-              max={selectedDefinition.maxWidth}
-              value={width}
-              onBlur={(event) => onSettingsCommit({ width: Number(event.currentTarget.value) })}
-              onInput={(event) => onWidthChange(Number(event.currentTarget.value))}
-              onKeyDown={blurOnEnter}
-            />
-          </label>
-          <label>
-            Guesses
-            <input
-              type="number"
-              min={selectedDefinition.minHeight}
-              max={selectedDefinition.maxHeight}
-              value={height}
-              onBlur={(event) => onSettingsCommit({ height: Number(event.currentTarget.value) })}
-              onInput={(event) => onHeightChange(Number(event.currentTarget.value))}
-              onKeyDown={blurOnEnter}
-            />
-          </label>
-        </>
-      ) : (
-        <label>
-          Difficulty
-          <PuzzleDifficultySelect value={difficulty} onChange={onDifficultyChange} />
-        </label>
-      )}
-
-      {isNonogram && !isFixedSize ? (
-        <div class="puzzle-size-control" aria-label="Nonogram size">
-          <span class="control-label">Size</span>
-          <label class="compact-number-control">
-            <span>W</span>
-            <input
-              aria-label="Width"
-              type="number"
-              min={selectedDefinition.minWidth}
-              max={selectedDefinition.maxWidth}
-              value={width}
-              onBlur={(event) => onSettingsCommit({ width: Number(event.currentTarget.value) })}
-              onInput={(event) => onWidthChange(Number(event.currentTarget.value))}
-              onKeyDown={blurOnEnter}
-            />
-          </label>
-          <span class="size-separator">x</span>
-          <label class="compact-number-control">
-            <span>H</span>
-            <input
-              aria-label="Height"
-              type="number"
-              min={selectedDefinition.minHeight}
-              max={selectedDefinition.maxHeight}
-              value={height}
-              onBlur={(event) => onSettingsCommit({ height: Number(event.currentTarget.value) })}
-              onInput={(event) => onHeightChange(Number(event.currentTarget.value))}
-              onKeyDown={blurOnEnter}
-            />
-          </label>
-        </div>
-      ) : null}
-
-      {isNonogram ? (
-        <div class="puzzle-generation-options" aria-label="Nonogram generation options">
-          <label>
-            Seed
-            {seedInput}
-          </label>
-
-          <label class="puzzle-checkbox-control">
-            <input
-              checked={requireUniqueSolution}
-              onChange={(event) => onUniqueSolutionChange(event.currentTarget.checked)}
-              type="checkbox"
-            />
-            <span>Unique solution</span>
-          </label>
-        </div>
-      ) : (
-        <label>
-          Seed
-          {seedInput}
-        </label>
-      )}
-
-      <GenerationActions
-        isGenerating={isGenerating}
-        canGenerate={selectedPuzzleIsGeneratable}
-        showToday
-        showUseSeed
-        randomLabel="Random"
-        onToday={generateDailyPuzzle}
-        onUseSeed={onGenerate}
-        onRandomize={onRandomize}
-      />
-
-      {isWordGuess ? <p class="word-guess-solvability-note">Uses this puzzle's answer list.</p> : null}
-      {isSudoku ? <p class="sudoku-input-hint">Select a cell, then type 1-9. Touch devices can use the number pad.</p> : null}
-    </div>
-  ) : null;
-
   return (
     <PuzzleWorkspaceLayout
       className={workspaceClass}
@@ -442,7 +308,7 @@ export const PuzzleWorkspace = ({
       status={statusSlot}
       board={boardSlot}
       gameplay={gameplaySlot}
-      generation={bottomGenerationSlot ?? topGenerationSlot}
+      generation={configurationSlot}
     />
   );
 };
