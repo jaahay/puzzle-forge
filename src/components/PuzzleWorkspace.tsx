@@ -1,15 +1,17 @@
 import { solitaireHistoryLimitNotice } from "../app/session";
 import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition, PuzzleDifficulty, PuzzleGenerationRequest, SolitaireVariation } from "../catalog/types";
+import { getDailyPuzzleLabel, getDailyPuzzleSeed } from "../games/shared/daily";
 import {
   solitaireDrawModeLabels,
   solitaireRedealLimitLabels,
   solitaireWasteModeLabels,
 } from "../games/solitaire/variation";
-import { getWordGuessDailyLabel, getWordGuessDailySeed } from "../games/wordGuess/daily";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
+import { GenerationActions } from "./GenerationActions";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
+import { PuzzleDifficultySelect } from "./PuzzleDifficultySelect";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { SeedControl } from "./SeedControl";
 import { SolitaireSettings } from "./SolitaireSettings";
@@ -121,7 +123,7 @@ export const PuzzleWorkspace = ({
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
   const filledOpenCount = getFilledOpenCount(gridCells);
   const openCount = getOpenCount(gridCells);
-  const wordGuessDailyLabel = isWordGuess && puzzle ? getWordGuessDailyLabel(puzzle.seed) : null;
+  const dailyLabel = puzzle ? getDailyPuzzleLabel(puzzle.puzzleId, puzzle.seed) : null;
   const workspaceClass = `${isSudoku ? "sudoku-workspace" : ""} ${isNonogram ? "nonogram-workspace" : ""} ${isWordGuess ? "word-guess-workspace" : ""} ${isSolitaire ? "solitaire-workspace" : ""}`;
   const topControlPanelClass = `control-panel ${isSolitaire ? "solitaire-control-panel" : ""}`;
   const bottomSettingsPanelClass = `puzzle-settings-panel ${isSudoku ? "sudoku-settings-panel" : ""} ${isNonogram ? "nonogram-settings-panel" : ""} ${isWordGuess ? "word-guess-settings-panel" : ""}`;
@@ -130,7 +132,7 @@ export const PuzzleWorkspace = ({
   const showNonogramValidationMessage = isNonogram && (statusMessage.startsWith("Solved") || statusMessage.startsWith("Not solved"));
   const sudokuValidationTone = statusMessage.startsWith("Sudoku solved") ? "success" : statusMessage.includes("incorrect") ? "error" : "progress";
   const nonogramValidationTone = statusMessage.startsWith("Solved") ? "success" : "error";
-  const generateWordGuessDaily = () => onSettingsCommit({ seed: getWordGuessDailySeed(), width, height });
+  const generateDailyPuzzle = () => onSettingsCommit({ seed: getDailyPuzzleSeed(selectedDefinition.id), width, height });
   const seedInput = (
     <SeedControl
       seed={seed}
@@ -200,14 +202,16 @@ export const PuzzleWorkspace = ({
           onRandomize={onRandomize}
         />
       ) : (
-        <div class="control-actions">
-          <button type="button" onClick={onGenerate} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-            Generate
-          </button>
-          <button type="button" onClick={onRandomize} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-            Randomize
-          </button>
-        </div>
+        <GenerationActions
+          isGenerating={isGenerating}
+          canGenerate={selectedPuzzleIsGeneratable}
+          showToday
+          showUseSeed
+          randomLabel="Random"
+          onToday={generateDailyPuzzle}
+          onUseSeed={onGenerate}
+          onRandomize={onRandomize}
+        />
       )}
     </div>
   );
@@ -250,8 +254,8 @@ export const PuzzleWorkspace = ({
           <span>{getGivenCount(gridCells)} givens</span>
         ) : isNonogram ? (
           <span>{filledOpenCount}/{openCount} filled</span>
-        ) : wordGuessDailyLabel ? (
-          <span>Daily: {wordGuessDailyLabel}</span>
+        ) : dailyLabel ? (
+          <span>Daily: {dailyLabel}</span>
         ) : puzzle.kind === "cards" ? null : null}
         {isSudoku ? <span>Progress: {filledOpenCount} of {openCount}</span> : null}
       </div>
@@ -353,12 +357,7 @@ export const PuzzleWorkspace = ({
       ) : (
         <label>
           Difficulty
-          <select value={difficulty} onChange={(event) => onDifficultyChange(event.currentTarget.value as PuzzleDifficulty)}>
-            <option>Easy</option>
-            <option>Medium</option>
-            <option>Hard</option>
-            <option>Expert</option>
-          </select>
+          <PuzzleDifficultySelect value={difficulty} onChange={onDifficultyChange} />
         </label>
       )}
 
@@ -418,21 +417,16 @@ export const PuzzleWorkspace = ({
         </label>
       )}
 
-      <div class="puzzle-settings-actions generation-actions">
-        {isWordGuess ? (
-          <button type="button" onClick={generateWordGuessDaily} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-            Today
-          </button>
-        ) : null}
-        {isWordGuess ? (
-          <button type="button" onClick={onGenerate} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-            Use seed
-          </button>
-        ) : null}
-        <button type="button" onClick={onRandomize} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-          {isWordGuess ? "Random" : "Randomize"}
-        </button>
-      </div>
+      <GenerationActions
+        isGenerating={isGenerating}
+        canGenerate={selectedPuzzleIsGeneratable}
+        showToday
+        showUseSeed
+        randomLabel="Random"
+        onToday={generateDailyPuzzle}
+        onUseSeed={onGenerate}
+        onRandomize={onRandomize}
+      />
 
       {isWordGuess ? <p class="word-guess-solvability-note">Uses this puzzle's answer list.</p> : null}
       {isSudoku ? <p class="sudoku-input-hint">Select a cell, then type 1-9. Touch devices can use the number pad.</p> : null}
