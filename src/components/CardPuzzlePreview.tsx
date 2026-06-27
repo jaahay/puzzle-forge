@@ -77,8 +77,14 @@ const renderPlayingCard = (
       class={`playing-card ${card.faceUp ? card.color : "back"} ${card.faceUp ? "face-up" : "face-down"} ${selected ? "selected-card" : ""} ${canInteract ? "playable-card" : "locked-card"}`}
       disabled={!card.faceUp && stack.role !== "stock"}
       key={`${stack.id}-${index}-${card.code}`}
-      onClick={() => onCardClick(stack, index)}
-      onDblClick={() => onCardDoubleClick(stack, index)}
+      onClick={(event) => {
+        if (event.detail >= 2) {
+          onCardDoubleClick(stack, index);
+          return;
+        }
+
+        onCardClick(stack, index);
+      }}
       type="button"
     >
       {card.faceUp ? (
