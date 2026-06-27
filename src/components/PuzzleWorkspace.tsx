@@ -1,4 +1,3 @@
-import { useState } from "preact/hooks";
 import { solitaireHistoryLimitNotice } from "../app/session";
 import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition, PuzzleDifficulty, PuzzleGenerationRequest, SolitaireVariation } from "../catalog/types";
 import {
@@ -12,6 +11,7 @@ import type { GridCellSelection } from "../interactions/gridRules";
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
+import { SeedControl } from "./SeedControl";
 import { SolitaireSettings } from "./SolitaireSettings";
 import { TilePuzzlePreview } from "./TilePuzzlePreview";
 import { WordGuessGame } from "./WordGuessGame";
@@ -111,7 +111,6 @@ export const PuzzleWorkspace = ({
   onCellClick,
   onCellInput,
 }: PuzzleWorkspaceProps) => {
-  const [seedCopied, setSeedCopied] = useState(false);
   const isSudoku = selectedDefinition.id === "sudoku";
   const isNonogram = selectedDefinition.id === "nonogram";
   const isWordGuess = selectedDefinition.id === "word-guess";
@@ -132,31 +131,12 @@ export const PuzzleWorkspace = ({
   const sudokuValidationTone = statusMessage.startsWith("Sudoku solved") ? "success" : statusMessage.includes("incorrect") ? "error" : "progress";
   const nonogramValidationTone = statusMessage.startsWith("Solved") ? "success" : "error";
   const generateWordGuessDaily = () => onSettingsCommit({ seed: getWordGuessDailySeed(), width, height });
-  const copySeed = async () => {
-    try {
-      if (typeof navigator !== "undefined" && navigator.clipboard) {
-        await navigator.clipboard.writeText(seed);
-      }
-    } finally {
-      setSeedCopied(true);
-
-      if (typeof window !== "undefined") {
-        window.setTimeout(() => setSeedCopied(false), 1400);
-      }
-    }
-  };
   const seedInput = (
-    <div class="seed-control">
-      <input
-        value={seed}
-        onBlur={(event) => onSettingsCommit({ seed: event.currentTarget.value })}
-        onInput={(event) => onSeedChange(event.currentTarget.value)}
-        onKeyDown={blurOnEnter}
-      />
-      <button type="button" onClick={copySeed} aria-label={seedCopied ? "Seed copied" : "Copy seed"} title={seedCopied ? "Copied" : "Copy seed"}>
-        {seedCopied ? "✓" : "⧉"}
-      </button>
-    </div>
+    <SeedControl
+      seed={seed}
+      onSeedChange={onSeedChange}
+      onSeedCommit={(nextSeed) => onSettingsCommit({ seed: nextSeed })}
+    />
   );
 
   const headerSlot = (
