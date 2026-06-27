@@ -1,4 +1,4 @@
-import type { CardStack, PlayingCard, SolitaireDrawMode, SolitaireWasteMode } from "../catalog/types";
+import type { CardStack, CardSuit, PlayingCard, SolitaireDrawMode, SolitaireWasteMode } from "../catalog/types";
 
 export type CardSelection = {
   stackId: string;
@@ -26,7 +26,18 @@ export const rankValues: Record<PlayingCard["rank"], number> = {
   king: 13,
 };
 
+const foundationStackIdPrefix = "foundation-";
+
 const cloneCard = (card: PlayingCard): PlayingCard => ({ ...card });
+
+const getFoundationSuit = (stack: CardStack): CardSuit | null => {
+  if (stack.role !== "foundation" || !stack.id.startsWith(foundationStackIdPrefix)) {
+    return null;
+  }
+
+  const suit = stack.id.slice(foundationStackIdPrefix.length);
+  return suit === "clubs" || suit === "diamonds" || suit === "hearts" || suit === "spades" ? suit : null;
+};
 
 export const cloneStack = (stack: CardStack): CardStack => ({
   ...stack,
@@ -96,6 +107,15 @@ export const isTableauRun = (stack: CardStack, cardIndex: number) => {
 };
 
 export const canMoveToFoundation = (card: PlayingCard, targetStack: CardStack) => {
+  if (targetStack.role !== "foundation") {
+    return false;
+  }
+
+  const foundationSuit = getFoundationSuit(targetStack);
+  if (foundationSuit && foundationSuit !== card.suit) {
+    return false;
+  }
+
   const topCard = getTopCard(targetStack);
 
   if (!topCard) {
