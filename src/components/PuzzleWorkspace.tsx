@@ -276,23 +276,6 @@ export const PuzzleWorkspace = ({
         {isSudoku ? <span>Progress: {filledOpenCount} of {openCount}</span> : null}
       </div>
 
-      {puzzle.kind === "cards" ? (
-        <>
-          <div class="solitaire-action-row" aria-label="Solitaire controls">
-            <button type="button" onClick={onUndoSolitaire} disabled={!canUndoSolitaire} aria-label="Undo Solitaire move" title="Undo">
-              ↶
-            </button>
-            <button type="button" onClick={onRedoSolitaire} disabled={!canRedoSolitaire} aria-label="Redo Solitaire move" title="Redo">
-              ↷
-            </button>
-            <button type="button" onClick={onAutoMoveToFoundations} aria-label="Move all currently legal cards to foundations" title="Auto foundation">
-              ♣→
-            </button>
-          </div>
-          <p class="solitaire-history-note">{solitaireHistoryLimitNotice}</p>
-        </>
-      ) : null}
-
       {puzzle.kind === "cards" && cardStacks ? (
         <CardPuzzlePreview
           stacks={cardStacks}
@@ -323,14 +306,6 @@ export const PuzzleWorkspace = ({
         />
       ) : null}
 
-      {puzzle.kind !== "cards" && (!hasBottomSettingsBar) ? (
-        <div class="puzzle-actions">
-          <button type="button" onClick={onCheck}>
-            Check
-          </button>
-        </div>
-      ) : null}
-
       {hasBottomSettingsBar || puzzle.kind === "cards" || puzzle.notes.length === 0 ? null : (
         <ul class="notes-list">
           {puzzle.notes.map((note) => (
@@ -341,16 +316,33 @@ export const PuzzleWorkspace = ({
     </section>
   ) : null;
 
-  const bottomGenerationSlot = hasBottomSettingsBar && puzzle ? (
-    <div class={bottomSettingsPanelClass} aria-label={`${selectedDefinition.title} controls`}>
-      {isWordGuess ? null : (
-        <div class="puzzle-settings-actions check-actions">
-          <button type="button" onClick={onCheck}>
-            Check
+  const gameplaySlot = puzzle ? (
+    puzzle.kind === "cards" ? (
+      <>
+        <div class="solitaire-action-row" aria-label="Solitaire controls">
+          <button type="button" onClick={onUndoSolitaire} disabled={!canUndoSolitaire} aria-label="Undo Solitaire move" title="Undo">
+            ↶
+          </button>
+          <button type="button" onClick={onRedoSolitaire} disabled={!canRedoSolitaire} aria-label="Redo Solitaire move" title="Redo">
+            ↷
+          </button>
+          <button type="button" onClick={onAutoMoveToFoundations} aria-label="Move all currently legal cards to foundations" title="Auto foundation">
+            ♣→
           </button>
         </div>
-      )}
+        <p class="solitaire-history-note">{solitaireHistoryLimitNotice}</p>
+      </>
+    ) : isWordGuess ? null : (
+      <div class="puzzle-actions">
+        <button type="button" onClick={onCheck}>
+          Check
+        </button>
+      </div>
+    )
+  ) : null;
 
+  const bottomGenerationSlot = hasBottomSettingsBar && puzzle ? (
+    <div class={bottomSettingsPanelClass} aria-label={`${selectedDefinition.title} controls`}>
       {isWordGuess ? (
         <>
           <label>
@@ -473,6 +465,7 @@ export const PuzzleWorkspace = ({
       header={headerSlot}
       status={statusSlot}
       board={boardSlot}
+      gameplay={gameplaySlot}
       generation={bottomGenerationSlot ?? topGenerationSlot}
     />
   );
