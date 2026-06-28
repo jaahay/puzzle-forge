@@ -147,7 +147,7 @@ export const PuzzleWorkspace = ({
     </div>
   );
 
-  const configurationSlot = hasBottomSettingsBar && puzzle ? (
+  const configurationSlot = !puzzle ? null : hasBottomSettingsBar ? (
     <BottomPuzzleConfiguration
       selectedDefinition={selectedDefinition}
       selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
