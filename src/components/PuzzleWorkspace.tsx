@@ -8,13 +8,12 @@ import {
 } from "../games/solitaire/variation";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
-import { BottomPuzzleConfiguration } from "./BottomPuzzleConfiguration";
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
+import { BottomPuzzleConfiguration, TopPuzzleConfiguration } from "./PuzzleConfiguration";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { SeedControl } from "./SeedControl";
 import { TilePuzzlePreview } from "./TilePuzzlePreview";
-import { TopPuzzleConfiguration } from "./TopPuzzleConfiguration";
 import { WordGuessGame } from "./WordGuessGame";
 
 type SolitaireStats = {
