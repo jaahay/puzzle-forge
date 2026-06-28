@@ -110,8 +110,10 @@ export const PuzzleWorkspace = ({
   const isNonogram = selectedDefinition.id === "nonogram";
   const isWordGuess = selectedDefinition.id === "word-guess";
   const isSolitaire = selectedDefinition.id === "klondike-solitaire";
+  const isJigsaw = selectedDefinition.id === "jigsaw";
   const hasBottomSettingsBar = isSudoku || isNonogram || isWordGuess;
   const compactWorkspaceHeader = isSudoku || isNonogram;
+  const showHeaderDescription = !(isSudoku || isNonogram || isWordGuess || isSolitaire || isJigsaw);
   const showStatusLine = !hasBottomSettingsBar;
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
   const filledOpenCount = getFilledOpenCount(gridCells);
@@ -131,12 +133,28 @@ export const PuzzleWorkspace = ({
       onSeedCommit={(nextSeed) => onSettingsCommit({ seed: nextSeed })}
     />
   );
+  const solitaireActionControls = (
+    <>
+      <div class="solitaire-action-row" aria-label="Solitaire controls">
+        <button type="button" onClick={onUndoSolitaire} disabled={!canUndoSolitaire} aria-label="Undo Solitaire move" title="Undo">
+          ↶
+        </button>
+        <button type="button" onClick={onRedoSolitaire} disabled={!canRedoSolitaire} aria-label="Redo Solitaire move" title="Redo">
+          ↷
+        </button>
+        <button type="button" onClick={onAutoMoveToFoundations} aria-label="Move all currently legal cards to foundations" title="Auto foundation">
+          ♣→
+        </button>
+      </div>
+      <p class="solitaire-history-note">{solitaireHistoryLimitNotice}</p>
+    </>
+  );
 
   const headerSlot = (
     <div class="workspace-copy">
       <span class={`status ${selectedDefinition.status}`}>{selectedDefinition.status}</span>
       <h2>{selectedDefinition.title}</h2>
-      {compactWorkspaceHeader ? null : <p>{selectedDefinition.description}</p>}
+      {showHeaderDescription ? <p>{selectedDefinition.description}</p> : null}
       {compactWorkspaceHeader ? null : (
         <div class="tag-row">
           {selectedDefinition.tags.map((tag) => (
@@ -235,6 +253,8 @@ export const PuzzleWorkspace = ({
         {isSudoku ? <span>Progress: {filledOpenCount} of {openCount}</span> : null}
       </div>
 
+      {puzzle.kind === "cards" ? solitaireActionControls : null}
+
       {puzzle.kind === "cards" && cardStacks ? (
         <CardPuzzlePreview
           stacks={cardStacks}
@@ -275,29 +295,12 @@ export const PuzzleWorkspace = ({
     </section>
   ) : null;
 
-  const gameplaySlot = puzzle ? (
-    puzzle.kind === "cards" ? (
-      <>
-        <div class="solitaire-action-row" aria-label="Solitaire controls">
-          <button type="button" onClick={onUndoSolitaire} disabled={!canUndoSolitaire} aria-label="Undo Solitaire move" title="Undo">
-            ↶
-          </button>
-          <button type="button" onClick={onRedoSolitaire} disabled={!canRedoSolitaire} aria-label="Redo Solitaire move" title="Redo">
-            ↷
-          </button>
-          <button type="button" onClick={onAutoMoveToFoundations} aria-label="Move all currently legal cards to foundations" title="Auto foundation">
-            ♣→
-          </button>
-        </div>
-        <p class="solitaire-history-note">{solitaireHistoryLimitNotice}</p>
-      </>
-    ) : isWordGuess ? null : (
-      <div class="puzzle-actions">
-        <button type="button" onClick={onCheck}>
-          Check
-        </button>
-      </div>
-    )
+  const gameplaySlot = puzzle && puzzle.kind !== "cards" && !isWordGuess ? (
+    <div class="puzzle-actions">
+      <button type="button" onClick={onCheck}>
+        Check
+      </button>
+    </div>
   ) : null;
 
   return (
