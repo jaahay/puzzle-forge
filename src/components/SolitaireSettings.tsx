@@ -84,6 +84,7 @@ export const SolitaireSettings = ({
       </div>
 
       <GenerationActions
+        className="solitaire-settings-actions"
         isGenerating={isGenerating}
         canGenerate={canGenerate}
         showToday
