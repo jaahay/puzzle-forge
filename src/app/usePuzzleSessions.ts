@@ -143,17 +143,20 @@ export const usePuzzleSessions = () => {
 
     hasLoadedPersistedSessions.current = true;
 
-    if (consumeHomeNavigation()) {
-      return;
-    }
-
     const persisted = loadPersistedPuzzleSessions();
 
     if (!persisted) {
+      consumeHomeNavigation();
       return;
     }
 
     persistedSessionCache.current = persisted.sessions;
+    sessionCache.current = persisted.sessions;
+
+    if (consumeHomeNavigation()) {
+      return;
+    }
+
     const activePersistedSession = persisted.sessions[persisted.activePuzzleId];
 
     if (activePersistedSession) {
