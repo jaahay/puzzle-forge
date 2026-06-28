@@ -1,7 +1,7 @@
 import type { ComponentChildren } from "preact";
 import type { PuzzleDefinition, SolitaireVariation } from "../catalog/types";
+import { CompactSolitaireSettings } from "./CompactSolitaireSettings";
 import { GenerationActions } from "./GenerationActions";
-import { SolitaireSettings } from "./SolitaireSettings";
 
 type TopPuzzleConfigurationProps = {
   selectedDefinition: PuzzleDefinition;
@@ -83,7 +83,7 @@ export const TopPuzzleConfiguration = ({
     )}
 
     {isSolitaire ? (
-      <SolitaireSettings
+      <CompactSolitaireSettings
         variation={solitaireVariation}
         isGenerating={isGenerating}
         canGenerate={selectedPuzzleIsGeneratable}
