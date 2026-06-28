@@ -4,6 +4,7 @@ type GenerationActionsProps = {
   showToday?: boolean;
   showUseSeed?: boolean;
   randomLabel?: "Random" | "Randomize";
+  className?: string;
   onToday?: () => void;
   onUseSeed?: () => void;
   onRandomize: () => void;
@@ -15,11 +16,12 @@ export const GenerationActions = ({
   showToday = false,
   showUseSeed = false,
   randomLabel = "Randomize",
+  className = "",
   onToday,
   onUseSeed,
   onRandomize,
 }: GenerationActionsProps) => (
-  <div class="puzzle-settings-actions generation-actions">
+  <div class={`puzzle-settings-actions generation-actions ${className}`.trim()}>
     {showToday ? (
       <button type="button" onClick={onToday} disabled={isGenerating || !canGenerate || !onToday}>
         Today
