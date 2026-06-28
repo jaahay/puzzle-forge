@@ -9,6 +9,12 @@ type SolitaireStats = {
   autoMoveCount: number;
 };
 
+type LastCardClick = {
+  stackId: string;
+  cardIndex: number;
+  clickedAt: number;
+};
+
 type CardStackProps = {
   stack: CardStack;
   selectedCard: CardSelection | null;
@@ -18,6 +24,10 @@ type CardStackProps = {
   onStackClick: (stack: CardStack) => void;
 };
 
+const repeatedCardClickThresholdMs = 450;
+let lastCardClick: LastCardClick | null = null;
+
+const getNow = () => (typeof performance === "undefined" ? Date.now() : performance.now());
 const suitFromCode = (card: PlayingCard) => card.code.slice(-1);
 const rankFromCode = (card: PlayingCard) => card.code.slice(0, -1);
 
@@ -78,11 +88,19 @@ const renderPlayingCard = (
       disabled={!card.faceUp && stack.role !== "stock"}
       key={`${stack.id}-${index}-${card.code}`}
       onClick={(event) => {
-        if (event.detail >= 2) {
+        const clickedAt = getNow();
+        const isRepeatedCardClick =
+          lastCardClick?.stackId === stack.id &&
+          lastCardClick.cardIndex === index &&
+          clickedAt - lastCardClick.clickedAt <= repeatedCardClickThresholdMs;
+
+        if (event.detail >= 2 || isRepeatedCardClick) {
+          lastCardClick = null;
           onCardDoubleClick(stack, index);
           return;
         }
 
+        lastCardClick = { stackId: stack.id, cardIndex: index, clickedAt };
         onCardClick(stack, index);
       }}
       type="button"
