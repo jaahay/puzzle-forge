@@ -1,23 +1,20 @@
-@media (max-width: 700px) {
-  .app-shell {
-    width: min(100vw - 0.75rem, 1240px);
-    padding: 1.25rem 0 2.5rem;
-  }
-
-  .hero-panel {
-    padding: 1.25rem;
-  }
-
-  .catalog-layout {
+@media (max-width: 940px) {
+  .catalog-layout,
+  .catalog-layout.catalog-collapsed {
     gap: 0.75rem;
     margin-top: 0.75rem;
+    grid-template-columns: 1fr;
   }
 
   .catalog-panel,
-  .workspace-panel,
-  .puzzle-panel {
-    border-radius: 1.15rem;
-    padding: 0.85rem;
+  .catalog-panel.collapsed {
+    display: grid;
+    gap: 0.65rem;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
   .catalog-panel .panel-heading,
@@ -28,6 +25,47 @@
 
   .catalog-mobile-nav {
     display: grid;
+    gap: 0.35rem;
+  }
+
+  .catalog-mobile-nav span {
+    color: #94a3b8;
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .catalog-mobile-nav select {
+    min-height: 3rem;
+    border-color: rgba(148, 163, 184, 0.3);
+    border-radius: 0.95rem;
+    color: #f8fafc;
+    font-weight: 900;
+  }
+}
+
+@media (max-width: 700px) {
+  .app-shell {
+    width: min(100vw - 0.75rem, 1240px);
+    padding: 1.25rem 0 2.5rem;
+  }
+
+  .hero-panel {
+    padding: 1.25rem;
+  }
+
+  .catalog-panel,
+  .workspace-panel,
+  .puzzle-panel {
+    border-radius: 1.15rem;
+    padding: 0.85rem;
+  }
+
+  .catalog-panel,
+  .catalog-panel.collapsed {
+    border-radius: 0;
+    padding: 0;
   }
 
   .workspace-copy {
@@ -43,6 +81,27 @@
   .workspace-copy p,
   .workspace-copy .tag-row {
     display: none;
+  }
+
+  .puzzle-panel > .grid,
+  .puzzle-panel > .nonogram-board,
+  .puzzle-panel > .word-guess-game,
+  .puzzle-panel > .cards-layout,
+  .puzzle-panel > .tile-puzzle-preview,
+  .puzzle-panel > .peg-solitaire-board {
+    order: 1;
+  }
+
+  .puzzle-meta {
+    order: 2;
+    gap: 0.45rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0;
+  }
+
+  .puzzle-actions,
+  .notes-list {
+    order: 3;
   }
 
   .control-panel {
@@ -82,11 +141,6 @@
 
   .puzzle-panel {
     margin-top: 0.75rem;
-  }
-
-  .puzzle-meta {
-    gap: 0.45rem;
-    margin-bottom: 0.75rem;
   }
 
   .puzzle-meta span {
