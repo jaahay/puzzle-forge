@@ -1,3 +1,4 @@
+import { shouldInitializePuzzleSurface } from "../app/homeNavigation";
 import { puzzleIcons } from "../catalog/puzzleIcons";
 import type { PuzzleDefinition, PuzzleId } from "../catalog/types";
 
@@ -23,40 +24,46 @@ const StartPuzzleButton = ({ definition, label, onSelectPuzzle }: StartPuzzleBut
   </button>
 );
 
-export const StartView = ({ readyPuzzles, previewPuzzles, plannedPuzzles, onSelectPuzzle }: StartViewProps) => (
-  <section class="start-layout" aria-labelledby="puzzle-start-title">
-    <div class="puzzle-start-panel">
-      <h1 id="puzzle-start-title">Choose a puzzle</h1>
-      <p class="hero-copy">Seeded generators and playable puzzle workspaces.</p>
+export const StartView = ({ readyPuzzles, previewPuzzles, plannedPuzzles, onSelectPuzzle }: StartViewProps) => {
+  if (shouldInitializePuzzleSurface()) {
+    return <section class="start-layout" aria-label="Restoring puzzle" />;
+  }
 
-      <section class="start-section" aria-label="Ready puzzles">
-        <p class="start-section-label">Ready</p>
-        <div class="start-card-grid">
-          {readyPuzzles.map((definition) => (
-            <StartPuzzleButton definition={definition} key={definition.id} onSelectPuzzle={onSelectPuzzle} />
-          ))}
-        </div>
-      </section>
+  return (
+    <section class="start-layout" aria-labelledby="puzzle-start-title">
+      <div class="puzzle-start-panel">
+        <h1 id="puzzle-start-title">Choose a puzzle</h1>
+        <p class="hero-copy">Seeded generators and playable puzzle workspaces.</p>
 
-      {previewPuzzles.length > 0 ? (
-        <section class="start-section" aria-label="Preview puzzles">
-          <p class="start-section-label">Preview</p>
-          <div class="start-card-grid compact">
-            {previewPuzzles.map((definition) => (
-              <StartPuzzleButton definition={definition} key={definition.id} label="Preview" onSelectPuzzle={onSelectPuzzle} />
+        <section class="start-section" aria-label="Ready puzzles">
+          <p class="start-section-label">Ready</p>
+          <div class="start-card-grid">
+            {readyPuzzles.map((definition) => (
+              <StartPuzzleButton definition={definition} key={definition.id} onSelectPuzzle={onSelectPuzzle} />
             ))}
           </div>
         </section>
-      ) : null}
 
-      <div class="coming-soon-list" aria-label="Coming soon puzzles">
-        <span>Coming soon</span>
-        {plannedPuzzles.map((definition) => (
-          <button key={definition.id} type="button" disabled>
-            {puzzleIcons[definition.id]} {definition.title}
-          </button>
-        ))}
+        {previewPuzzles.length > 0 ? (
+          <section class="start-section" aria-label="Preview puzzles">
+            <p class="start-section-label">Preview</p>
+            <div class="start-card-grid compact">
+              {previewPuzzles.map((definition) => (
+                <StartPuzzleButton definition={definition} key={definition.id} label="Preview" onSelectPuzzle={onSelectPuzzle} />
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <div class="coming-soon-list" aria-label="Coming soon puzzles">
+          <span>Coming soon</span>
+          {plannedPuzzles.map((definition) => (
+            <button key={definition.id} type="button" disabled>
+              {puzzleIcons[definition.id]} {definition.title}
+            </button>
+          ))}
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
