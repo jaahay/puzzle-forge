@@ -177,7 +177,6 @@ export const BottomPuzzleConfiguration = ({
       onRandomize={onRandomize}
     />
 
-    {isWordGuess ? <p class="word-guess-solvability-note">Uses this puzzle's answer list.</p> : null}
     {isSudoku ? <p class="sudoku-input-hint">Select a cell, then type 1-9. Touch devices can use the number pad.</p> : null}
   </div>
 );
