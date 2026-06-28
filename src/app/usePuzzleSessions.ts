@@ -151,7 +151,6 @@ export const usePuzzleSessions = () => {
     }
 
     persistedSessionCache.current = persisted.sessions;
-    sessionCache.current = persisted.sessions;
 
     if (consumeHomeNavigation()) {
       return;
