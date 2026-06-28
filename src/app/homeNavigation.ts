@@ -9,6 +9,18 @@ const setSelectedSurface = (surface: SelectedSurface) => {
   window.localStorage.removeItem(legacyLastHomeSelectionStorageKey);
 };
 
+export const shouldInitializePuzzleSurface = () => {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  const cameFromHomeAction = window.sessionStorage.getItem(homeNavigationStorageKey) === "1";
+  const selectedSurface = window.localStorage.getItem(selectedSurfaceStorageKey);
+  const legacyLastSelectionWasHome = window.localStorage.getItem(legacyLastHomeSelectionStorageKey) === "1";
+
+  return selectedSurface === "puzzle" && !cameFromHomeAction && !legacyLastSelectionWasHome;
+};
+
 export const markHomeNavigation = () => {
   if (typeof window === "undefined") {
     return;
