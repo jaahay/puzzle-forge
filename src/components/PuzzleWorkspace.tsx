@@ -1,11 +1,5 @@
-import { solitaireHistoryLimitNotice } from "../app/session";
 import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition, PuzzleDifficulty, PuzzleGenerationRequest, SolitaireVariation } from "../catalog/types";
 import { getDailyPuzzleLabel, getDailyPuzzleSeed } from "../games/shared/daily";
-import {
-  solitaireDrawModeLabels,
-  solitaireRedealLimitLabels,
-  solitaireWasteModeLabels,
-} from "../games/solitaire/variation";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
@@ -134,20 +128,17 @@ export const PuzzleWorkspace = ({
     />
   );
   const solitaireActionControls = (
-    <>
-      <div class="solitaire-action-row" aria-label="Solitaire controls">
-        <button type="button" onClick={onUndoSolitaire} disabled={!canUndoSolitaire} aria-label="Undo Solitaire move" title="Undo">
-          ↶
-        </button>
-        <button type="button" onClick={onRedoSolitaire} disabled={!canRedoSolitaire} aria-label="Redo Solitaire move" title="Redo">
-          ↷
-        </button>
-        <button type="button" onClick={onAutoMoveToFoundations} aria-label="Move all currently legal cards to foundations" title="Auto foundation">
-          ♣→
-        </button>
-      </div>
-      <p class="solitaire-history-note">{solitaireHistoryLimitNotice}</p>
-    </>
+    <div class="solitaire-action-row" aria-label="Solitaire controls">
+      <button type="button" onClick={onUndoSolitaire} disabled={!canUndoSolitaire} aria-label="Undo Solitaire move" title="Undo">
+        ↶
+      </button>
+      <button type="button" onClick={onRedoSolitaire} disabled={!canRedoSolitaire} aria-label="Redo Solitaire move" title="Redo">
+        ↷
+      </button>
+      <button type="button" onClick={onAutoMoveToFoundations} aria-label="Move all currently legal cards to foundations" title="Auto foundation">
+        ♣→
+      </button>
+    </div>
   );
 
   const headerSlot = (
@@ -233,33 +224,29 @@ export const PuzzleWorkspace = ({
 
   const boardSlot = puzzle ? (
     <section class="puzzle-panel" aria-label="Generated puzzle preview">
-      <div class="puzzle-meta">
-        {puzzle.kind === "cards" ? null : isSudoku ? null : <span>{`${puzzle.width} x ${puzzle.height}`}</span>}
-        {puzzle.difficulty ? <span>{puzzle.difficulty}</span> : null}
-        {isNonogram ? <span>{puzzle.uniqueSolution ? "Unique" : "Open"}</span> : null}
-        {isWordGuess ? <span>Answer-list solvable</span> : null}
-        {puzzle.kind === "cards" ? <span>Random deal</span> : null}
-        {puzzle.kind === "cards" ? <span>{solitaireDrawModeLabels[puzzle.solitaireVariation.drawMode]}</span> : null}
-        {puzzle.kind === "cards" ? <span>{solitaireRedealLimitLabels[String(puzzle.solitaireVariation.redeals)]}</span> : null}
-        {puzzle.kind === "cards" ? <span>{solitaireWasteModeLabels[puzzle.solitaireVariation.wasteMode]}</span> : null}
-        {puzzle.kind === "cards" ? <span>{puzzle.solitaireVariation.knownSolvable ? "Solvability verified" : "Solvability not verified"}</span> : null}
-        {isSudoku ? (
-          <span>{getGivenCount(gridCells)} givens</span>
-        ) : isNonogram ? (
-          <span>{filledOpenCount}/{openCount} filled</span>
-        ) : dailyLabel ? (
-          <span>Daily: {dailyLabel}</span>
-        ) : puzzle.kind === "cards" ? null : null}
-        {isSudoku ? <span>Progress: {filledOpenCount} of {openCount}</span> : null}
-      </div>
-
-      {puzzle.kind === "cards" ? solitaireActionControls : null}
+      {puzzle.kind === "cards" ? null : (
+        <div class="puzzle-meta">
+          {isSudoku ? null : <span>{`${puzzle.width} x ${puzzle.height}`}</span>}
+          {puzzle.difficulty ? <span>{puzzle.difficulty}</span> : null}
+          {isNonogram ? <span>{puzzle.uniqueSolution ? "Unique" : "Open"}</span> : null}
+          {isWordGuess ? <span>Answer-list solvable</span> : null}
+          {isSudoku ? (
+            <span>{getGivenCount(gridCells)} givens</span>
+          ) : isNonogram ? (
+            <span>{filledOpenCount}/{openCount} filled</span>
+          ) : dailyLabel ? (
+            <span>Daily: {dailyLabel}</span>
+          ) : null}
+          {isSudoku ? <span>Progress: {filledOpenCount} of {openCount}</span> : null}
+        </div>
+      )}
 
       {puzzle.kind === "cards" && cardStacks ? (
         <CardPuzzlePreview
           stacks={cardStacks}
           selectedCard={selectedCard}
           stats={solitaireStats}
+          toolbar={solitaireActionControls}
           variation={puzzle.solitaireVariation}
           onCardClick={onCardClick}
           onCardDoubleClick={onCardDoubleClick}
