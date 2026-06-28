@@ -43,6 +43,27 @@
     color: #f8fafc;
     font-weight: 900;
   }
+
+  .puzzle-panel > .grid,
+  .puzzle-panel > .nonogram-board,
+  .puzzle-panel > .word-guess-game,
+  .puzzle-panel > .cards-layout,
+  .puzzle-panel > .tile-puzzle-preview,
+  .puzzle-panel > .peg-solitaire-board {
+    order: 1;
+  }
+
+  .puzzle-meta {
+    order: 2;
+    gap: 0.45rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0;
+  }
+
+  .puzzle-actions,
+  .notes-list {
+    order: 3;
+  }
 }
 
 @media (max-width: 700px) {
@@ -81,27 +102,6 @@
   .workspace-copy p,
   .workspace-copy .tag-row {
     display: none;
-  }
-
-  .puzzle-panel > .grid,
-  .puzzle-panel > .nonogram-board,
-  .puzzle-panel > .word-guess-game,
-  .puzzle-panel > .cards-layout,
-  .puzzle-panel > .tile-puzzle-preview,
-  .puzzle-panel > .peg-solitaire-board {
-    order: 1;
-  }
-
-  .puzzle-meta {
-    order: 2;
-    gap: 0.45rem;
-    margin-top: 0.75rem;
-    margin-bottom: 0;
-  }
-
-  .puzzle-actions,
-  .notes-list {
-    order: 3;
   }
 
   .control-panel {
