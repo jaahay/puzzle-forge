@@ -1,6 +1,14 @@
+import type { ComponentChildren } from "preact";
 import type { CardStack, PlayingCard, SolitaireVariation } from "../catalog/types";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
-import { canSelectFromStack, getVisibleWasteStartIndex, isSelectedCard, type CardSelection } from "../interactions/cardRules";
+import {
+  canMoveToFoundation,
+  canMoveToTableau,
+  canSelectFromStack,
+  getVisibleWasteStartIndex,
+  isSelectedCard,
+  type CardSelection,
+} from "../interactions/cardRules";
 
 type SolitaireStats = {
   moveCount: number;
@@ -15,8 +23,11 @@ type LastCardClick = {
   clickedAt: number;
 };
 
+type TargetState = "valid" | "invalid" | null;
+
 type CardStackProps = {
   stack: CardStack;
+  stacks: CardStack[];
   selectedCard: CardSelection | null;
   variation: SolitaireVariation;
   onCardClick: (stack: CardStack, cardIndex: number) => void;
@@ -48,9 +59,10 @@ const getStackCountLabel = (stack: CardStack) => {
 
 const getRenderedCards = (stack: CardStack, variation: SolitaireVariation) => {
   if (stack.role === "waste") {
+    const firstRenderedIndex = getVisibleWasteStartIndex(stack, variation);
     return {
-      cards: stack.cards.slice(getVisibleWasteStartIndex(stack, variation)),
-      firstRenderedIndex: getVisibleWasteStartIndex(stack, variation),
+      cards: stack.cards.slice(firstRenderedIndex),
+      firstRenderedIndex,
     };
   }
 
@@ -67,12 +79,50 @@ const getRenderedCards = (stack: CardStack, variation: SolitaireVariation) => {
   };
 };
 
+const getSelectedMove = (stacks: CardStack[], selectedCard: CardSelection | null) => {
+  if (!selectedCard) {
+    return null;
+  }
+
+  const sourceStack = stacks.find((stack) => stack.id === selectedCard.stackId);
+  const card = sourceStack?.cards[selectedCard.cardIndex];
+
+  if (!sourceStack || !card) {
+    return null;
+  }
+
+  return {
+    card,
+    sourceStack,
+    cardCount: sourceStack.role === "tableau" ? sourceStack.cards.length - selectedCard.cardIndex : 1,
+  };
+};
+
+const getTargetState = (stack: CardStack, stacks: CardStack[], selectedCard: CardSelection | null): TargetState => {
+  const selectedMove = getSelectedMove(stacks, selectedCard);
+
+  if (!selectedMove || stack.id === selectedMove.sourceStack.id || stack.role === "stock" || stack.role === "waste") {
+    return null;
+  }
+
+  if (stack.role === "foundation") {
+    return selectedMove.cardCount === 1 && canMoveToFoundation(selectedMove.card, stack) ? "valid" : "invalid";
+  }
+
+  if (stack.role === "tableau") {
+    return canMoveToTableau(selectedMove.card, stack) ? "valid" : "invalid";
+  }
+
+  return null;
+};
+
 const renderPlayingCard = (
   card: PlayingCard,
   stack: CardStack,
   index: number,
   selectedCard: CardSelection | null,
   variation: SolitaireVariation,
+  targetState: TargetState,
   onCardClick: (stack: CardStack, cardIndex: number) => void,
   onCardDoubleClick: (stack: CardStack, cardIndex: number) => void,
 ) => {
@@ -84,7 +134,7 @@ const renderPlayingCard = (
   return (
     <button
       aria-label={card.faceUp ? card.label : "Face-down card"}
-      class={`playing-card ${card.faceUp ? card.color : "back"} ${card.faceUp ? "face-up" : "face-down"} ${selected ? "selected-card" : ""} ${canInteract ? "playable-card" : "locked-card"}`}
+      class={`playing-card ${card.faceUp ? card.color : "back"} ${card.faceUp ? "face-up" : "face-down"} ${selected ? "selected-card" : ""} ${canInteract ? "playable-card" : "locked-card"} ${targetState === "valid" ? "valid-target-card" : ""} ${targetState === "invalid" ? "invalid-target-card" : ""}`}
       disabled={!card.faceUp && stack.role !== "stock"}
       key={`${stack.id}-${index}-${card.code}`}
       onClick={(event) => {
@@ -126,27 +176,27 @@ const renderPlayingCard = (
   );
 };
 
-const renderCardStack = ({ stack, selectedCard, variation, onCardClick, onCardDoubleClick, onStackClick }: CardStackProps) => {
+const renderCardStack = ({ stack, stacks, selectedCard, variation, onCardClick, onCardDoubleClick, onStackClick }: CardStackProps) => {
   const { cards: cardsToRender, firstRenderedIndex } = getRenderedCards(stack, variation);
-  const hasSelection = selectedCard !== null;
+  const targetState = getTargetState(stack, stacks, selectedCard);
   const placeholderLabel =
     stack.role === "foundation" ? getFoundationPlaceholder(stack) : stack.role === "stock" ? "↻" : stack.role === "tableau" ? "K" : "";
 
   return (
-    <div class={`card-stack ${stack.role}`} key={stack.id}>
-      <div class="card-stack-heading">
-        <strong>{stack.title}</strong>
-        <span>{getStackCountLabel(stack)}</span>
-      </div>
+    <div
+      aria-label={`${stack.title}: ${getStackCountLabel(stack)}`}
+      class={`card-stack ${stack.role} ${targetState === "valid" ? "valid-target" : ""} ${targetState === "invalid" ? "invalid-target" : ""}`}
+      key={stack.id}
+    >
       <div class="playing-card-list">
         {cardsToRender.length > 0 ? (
           cardsToRender.map((card, index) =>
-            renderPlayingCard(card, stack, firstRenderedIndex + index, selectedCard, variation, onCardClick, onCardDoubleClick),
+            renderPlayingCard(card, stack, firstRenderedIndex + index, selectedCard, variation, targetState, onCardClick, onCardDoubleClick),
           )
         ) : (
           <button
-            class={`playing-card placeholder ${hasSelection ? "drop-target" : ""}`}
-            aria-label={`${stack.title} is empty${hasSelection ? "; legal cards may be dropped here" : ""}`}
+            class={`playing-card placeholder ${targetState === "valid" ? "drop-target valid-target-card" : ""} ${targetState === "invalid" ? "invalid-target-card" : ""}`}
+            aria-label={`${stack.title} is empty${targetState === "valid" ? "; valid target" : targetState === "invalid" ? "; invalid target" : ""}`}
             onClick={() => onStackClick(stack)}
             type="button"
           >
@@ -162,13 +212,14 @@ type CardPuzzlePreviewProps = {
   stacks: CardStack[];
   selectedCard: CardSelection | null;
   stats: SolitaireStats;
+  toolbar?: ComponentChildren;
   variation?: SolitaireVariation;
   onCardClick: (stack: CardStack, cardIndex: number) => void;
   onCardDoubleClick: (stack: CardStack, cardIndex: number) => void;
   onStackClick: (stack: CardStack) => void;
 };
 
-export const CardPuzzlePreview = ({ stacks, selectedCard, stats, variation = defaultSolitaireVariation, onCardClick, onCardDoubleClick, onStackClick }: CardPuzzlePreviewProps) => {
+export const CardPuzzlePreview = ({ stacks, selectedCard, stats, toolbar, variation = defaultSolitaireVariation, onCardClick, onCardDoubleClick, onStackClick }: CardPuzzlePreviewProps) => {
   const stockAndWaste = stacks.filter((stack) => stack.role === "stock" || stack.role === "waste");
   const foundations = stacks.filter((stack) => stack.role === "foundation");
   const tableau = stacks.filter((stack) => stack.role === "tableau");
@@ -177,14 +228,17 @@ export const CardPuzzlePreview = ({ stacks, selectedCard, stats, variation = def
     (total, stack) => total + stack.cards.filter((card) => !card.faceUp).length,
     0,
   );
-  const renderStack = (stack: CardStack) => renderCardStack({ stack, selectedCard, variation, onCardClick, onCardDoubleClick, onStackClick });
+  const renderStack = (stack: CardStack) => renderCardStack({ stack, stacks, selectedCard, variation, onCardClick, onCardDoubleClick, onStackClick });
 
   return (
     <div class="cards-layout">
       <div class="solitaire-summary" aria-label="Solitaire progress summary">
-        <span aria-label={`${foundationCardCount} of 52 cards on foundations`}>♣ {foundationCardCount}/52</span>
-        <span aria-label={`${hiddenTableauCardCount} hidden tableau cards`}>◐ {hiddenTableauCardCount}</span>
-        <span aria-label={`${stats.moveCount} moves`}>↻ {stats.moveCount}</span>
+        {toolbar ? <div class="solitaire-toolbar">{toolbar}</div> : null}
+        <div class="solitaire-summary-metrics">
+          <span aria-label={`${foundationCardCount} of 52 cards on foundations`}>♣ {foundationCardCount}/52</span>
+          <span aria-label={`${hiddenTableauCardCount} hidden tableau cards`}>◐ {hiddenTableauCardCount}</span>
+          <span aria-label={`${stats.moveCount} moves`}>↻ {stats.moveCount}</span>
+        </div>
       </div>
       <div class="card-board-top-row">
         <div class="card-row stock-row">{stockAndWaste.map(renderStack)}</div>
