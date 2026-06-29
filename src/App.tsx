@@ -9,7 +9,7 @@ import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
 import { StartView } from "./components/StartView";
 import { defaultSolitaireVariation, normalizeSolitaireVariation, solitaireVariationsEqual } from "./games/solitaire/variation";
-import { markHomeNavigation, markPuzzleNavigation } from "./app/homeNavigation";
+import { markHomeNavigation, markPuzzleNavigation, shouldInitializePuzzleSurface } from "./app/homeNavigation";
 import { defaultSudokuDifficulty, getActiveView, makeRandomSeed } from "./app/runtime";
 import { useGridController } from "./app/useGridController";
 import { usePuzzleGeneration, type BeginGenerationOptions } from "./app/usePuzzleGeneration";
@@ -24,6 +24,7 @@ type GenerationBehavior = {
 };
 
 export const App = () => {
+  const shouldStartOnPuzzleSurface = useMemo(shouldInitializePuzzleSurface, []);
   const [activeView, setActiveView] = useState<AppView>(getActiveView);
   const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>("sudoku");
   const [seed, setSeed] = useState(makeRandomSeed);
@@ -35,8 +36,8 @@ export const App = () => {
   const [solitaireVariation, setSolitaireVariation] = useState<SolitaireVariation>(defaultSolitaireVariation);
   const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
   const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(true);
-  const [hasSelectedPuzzle, setHasSelectedPuzzle] = useState(false);
-  const [isHomeSelected, setIsHomeSelected] = useState(true);
+  const [hasSelectedPuzzle, setHasSelectedPuzzle] = useState(shouldStartOnPuzzleSurface);
+  const [isHomeSelected, setIsHomeSelected] = useState(!shouldStartOnPuzzleSurface);
   const pendingScrollRestore = useRef<{ x: number; y: number } | null>(null);
 
   const generation = usePuzzleGeneration();
