@@ -1,4 +1,4 @@
-@media (max-width: 940px) {
+@media (max-width: 940px), (pointer: coarse) {
   .catalog-layout,
   .catalog-layout.catalog-collapsed {
     gap: 0.75rem;
