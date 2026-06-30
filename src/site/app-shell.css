@@ -8,14 +8,20 @@
 .catalog-layout.catalog-collapsed {
   display: grid;
   width: min(100%, 58rem);
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) !important;
   gap: 0.75rem;
   margin: 0 auto;
 }
 
+.catalog-panel,
+.workspace-panel,
+.puzzle-start-panel {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
 .catalog-panel {
   align-self: start;
-  width: 100%;
   padding: 0;
   border: 0;
   border-radius: 0;
@@ -25,6 +31,8 @@
 
 .catalog-mobile-nav {
   display: grid;
+  width: min(100%, 58rem);
+  margin: 0 auto;
 }
 
 .catalog-mobile-nav select {
