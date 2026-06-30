@@ -2,7 +2,7 @@ import type { ComponentChildren } from "preact";
 
 type PuzzleWorkspaceLayoutProps = {
   className?: string;
-  header: ComponentChildren;
+  header?: ComponentChildren;
   status?: ComponentChildren;
   board?: ComponentChildren;
   gameplay?: ComponentChildren;
@@ -18,7 +18,7 @@ export const PuzzleWorkspaceLayout = ({
   generation,
 }: PuzzleWorkspaceLayoutProps) => (
   <section class={`workspace-panel puzzle-workspace-layout ${className}`.trim()} aria-label="Selected puzzle workspace">
-    <header class="workspace-layout-header">{header}</header>
+    {header ? <header class="workspace-layout-header">{header}</header> : null}
 
     {status ? <section class="workspace-layout-status" aria-label="Puzzle status">{status}</section> : null}
 
