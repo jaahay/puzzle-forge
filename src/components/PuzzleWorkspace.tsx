@@ -222,6 +222,20 @@ export const PuzzleWorkspace = ({
     </>
   ) : null;
 
+  const loadingBoardSlot = (
+    <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label={`${selectedDefinition.title} is generating`}>
+      <div class="puzzle-loading-copy">
+        <strong>Generating {selectedDefinition.title}</strong>
+        <span>{statusMessage}</span>
+      </div>
+      <div class="puzzle-loading-grid" aria-hidden="true">
+        {Array.from({ length: selectedDefinition.id === "klondike-solitaire" ? 12 : 9 }, (_, index) => (
+          <span key={index} />
+        ))}
+      </div>
+    </section>
+  );
+
   const boardSlot = puzzle ? (
     <section class="puzzle-panel" aria-label="Generated puzzle preview">
       {puzzle.kind === "cards" ? null : (
@@ -280,7 +294,7 @@ export const PuzzleWorkspace = ({
         </ul>
       )}
     </section>
-  ) : null;
+  ) : isGenerating ? loadingBoardSlot : null;
 
   const gameplaySlot = puzzle && puzzle.kind !== "cards" && !isWordGuess ? (
     <div class="puzzle-actions">
