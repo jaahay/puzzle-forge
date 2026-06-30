@@ -1,4 +1,4 @@
-@media (max-width: 940px), (pointer: coarse) {
+@media (max-width: 700px) {
   .app-shell {
     width: min(100vw - 0.75rem, 1240px);
     padding: 0.75rem 0 calc(5.2rem + env(safe-area-inset-bottom));
@@ -91,9 +91,7 @@
   .notes-list {
     order: 3;
   }
-}
 
-@media (max-width: 700px) {
   .hero-panel {
     padding: 1.25rem;
   }
