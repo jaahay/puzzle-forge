@@ -78,7 +78,7 @@
 
 .control-panel button,
 .puzzle-actions button,
-.puzzle-settings-actions button,
+puzzle-settings-actions button,
 .solitaire-settings-actions button,
 .tile-puzzle-tools button,
 .word-guess-actions button {
@@ -222,6 +222,54 @@
   border-radius: 1rem;
   padding: 0.75rem 0.9rem;
   background: rgba(17, 24, 39, 0.46);
+}
+
+.puzzle-loading-panel {
+  min-height: clamp(16rem, 42vw, 26rem);
+  align-content: center;
+  justify-items: center;
+  gap: 1.25rem;
+}
+
+.puzzle-loading-copy {
+  display: grid;
+  gap: 0.25rem;
+  text-align: center;
+}
+
+.puzzle-loading-copy strong {
+  color: #f8fafc;
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
+}
+
+.puzzle-loading-copy span {
+  color: #cbd5e1;
+}
+
+.puzzle-loading-grid {
+  display: grid;
+  width: min(100%, 18rem);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.puzzle-loading-grid span {
+  min-height: 3.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 0.75rem;
+  background: linear-gradient(90deg, rgba(30, 41, 59, 0.5), rgba(71, 85, 105, 0.58), rgba(30, 41, 59, 0.5));
+  background-size: 240% 100%;
+  animation: puzzle-loading-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes puzzle-loading-shimmer {
+  from {
+    background-position: 120% 0;
+  }
+
+  to {
+    background-position: -120% 0;
+  }
 }
 
 .puzzle-panel > .grid,
