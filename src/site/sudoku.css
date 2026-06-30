@@ -7,98 +7,6 @@ select {
   background: #111827;
 }
 
-.catalog-layout.catalog-collapsed {
-  grid-template-columns: minmax(13rem, 0.28fr) minmax(0, 1fr);
-}
-
-.catalog-panel.collapsed {
-  padding: 0.75rem;
-}
-
-.catalog-panel.collapsed .panel-heading {
-  display: grid;
-  gap: 0.6rem;
-  justify-items: stretch;
-  text-align: left;
-}
-
-.catalog-panel.collapsed .catalog-count {
-  min-width: 0;
-  overflow: hidden;
-  color: #f8fafc;
-  font-size: 0.75rem;
-  font-weight: 900;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.catalog-mini-list {
-  display: grid;
-  gap: 0.55rem;
-}
-
-.catalog-mini-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.45rem;
-  align-items: center;
-  min-height: 3.05rem;
-  border: 1px solid #334155;
-  border-radius: 0.9rem;
-  padding: 0.65rem 0.75rem;
-  color: #cbd5e1;
-  background: #111827;
-  cursor: pointer;
-  font-size: 0.84rem;
-  font-weight: 900;
-  text-align: left;
-  text-decoration: none;
-}
-
-.catalog-mini-title {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.catalog-mini-status {
-  border-radius: 999px;
-  padding: 0.15rem 0.42rem;
-  color: #0f172a;
-  background: #cbd5e1;
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.catalog-mini-status.prototype {
-  background: #fde68a;
-}
-
-.catalog-mini-status.planned {
-  background: #c4b5fd;
-}
-
-.catalog-mini-card.home-card {
-  border-color: rgba(167, 243, 208, 0.38);
-}
-
-.catalog-mini-card:hover,
-.catalog-mini-card:focus-visible,
-.catalog-mini-card.selected {
-  border-color: #a7f3d0;
-  color: #0f172a;
-  background: #a7f3d0;
-  outline: none;
-}
-
-.catalog-mini-card.selected .catalog-mini-status,
-.catalog-mini-card:hover .catalog-mini-status,
-.catalog-mini-card:focus-visible .catalog-mini-status {
-  background: rgba(15, 23, 42, 0.16);
-}
-
 .sudoku-workspace .workspace-copy,
 .nonogram-workspace .workspace-copy {
   grid-template-columns: auto 1fr;
@@ -248,10 +156,16 @@ select {
 }
 
 .sudoku-digit-pad button:hover:not(:disabled),
-.sudoku-digit-pad button:focus-visible {
+.sudoku-digit-pad button:focus-visible,
+.sudoku-digit-pad button.selected-sudoku-digit {
   border-color: #a7f3d0;
   box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.22);
   outline: none;
+}
+
+.sudoku-digit-pad button.selected-sudoku-digit {
+  color: #052e16;
+  background: #a7f3d0;
 }
 
 .sudoku-digit-pad button:disabled {
