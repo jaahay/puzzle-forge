@@ -35,7 +35,7 @@ type CardStackProps = {
   onStackClick: (stack: CardStack) => void;
 };
 
-const repeatedCardClickThresholdMs = 450;
+const repeatedCardClickThresholdMs = 260;
 let lastCardClick: LastCardClick | null = null;
 
 const getNow = () => (typeof performance === "undefined" ? Date.now() : performance.now());
@@ -140,6 +140,7 @@ const renderPlayingCard = (
       onClick={(event) => {
         const clickedAt = getNow();
         const isRepeatedCardClick =
+          !selected &&
           lastCardClick?.stackId === stack.id &&
           lastCardClick.cardIndex === index &&
           clickedAt - lastCardClick.clickedAt <= repeatedCardClickThresholdMs;
@@ -181,6 +182,7 @@ const renderCardStack = ({ stack, stacks, selectedCard, variation, onCardClick, 
   const targetState = getTargetState(stack, stacks, selectedCard);
   const placeholderLabel =
     stack.role === "foundation" ? getFoundationPlaceholder(stack) : stack.role === "stock" ? "↻" : stack.role === "tableau" ? "K" : "";
+  const topCardIndex = stack.cards.length - 1;
 
   return (
     <div
@@ -190,9 +192,12 @@ const renderCardStack = ({ stack, stacks, selectedCard, variation, onCardClick, 
     >
       <div class="playing-card-list">
         {cardsToRender.length > 0 ? (
-          cardsToRender.map((card, index) =>
-            renderPlayingCard(card, stack, firstRenderedIndex + index, selectedCard, variation, targetState, onCardClick, onCardDoubleClick),
-          )
+          cardsToRender.map((card, index) => {
+            const renderedCardIndex = firstRenderedIndex + index;
+            const renderedTargetState = renderedCardIndex === topCardIndex ? targetState : null;
+
+            return renderPlayingCard(card, stack, renderedCardIndex, selectedCard, variation, renderedTargetState, onCardClick, onCardDoubleClick);
+          })
         ) : (
           <button
             class={`playing-card placeholder ${targetState === "valid" ? "drop-target valid-target-card" : ""} ${targetState === "invalid" ? "invalid-target-card" : ""}`}
