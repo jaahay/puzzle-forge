@@ -1,36 +1,14 @@
+import { loadPersistedPuzzleSessions } from "./sessionPersistence";
+
 const homeNavigationStorageKey = "puzzle-forge.home-navigation";
 const selectedSurfaceStorageKey = "puzzle-forge.selected-surface";
 const legacyLastHomeSelectionStorageKey = "puzzle-forge.last-home-selection";
-const persistedSessionsMetadataStorageKey = "puzzle-forge.sessions.v1";
-const persistedSessionStorageKeyPrefix = "puzzle-forge.session.v1.";
 
 type SelectedSurface = "home" | "puzzle";
 
 const setSelectedSurface = (surface: SelectedSurface) => {
   window.localStorage.setItem(selectedSurfaceStorageKey, surface);
   window.localStorage.removeItem(legacyLastHomeSelectionStorageKey);
-};
-
-const hasRestorablePuzzleSession = () => {
-  const rawMetadata = window.localStorage.getItem(persistedSessionsMetadataStorageKey);
-
-  if (!rawMetadata) {
-    return false;
-  }
-
-  try {
-    const metadata: unknown = JSON.parse(rawMetadata);
-
-    if (typeof metadata !== "object" || metadata === null || !("activePuzzleId" in metadata)) {
-      return false;
-    }
-
-    const activePuzzleId = (metadata as { activePuzzleId?: unknown }).activePuzzleId;
-
-    return typeof activePuzzleId === "string" && window.localStorage.getItem(`${persistedSessionStorageKeyPrefix}${activePuzzleId}`) !== null;
-  } catch {
-    return false;
-  }
 };
 
 export const shouldInitializePuzzleSurface = () => {
@@ -42,7 +20,7 @@ export const shouldInitializePuzzleSurface = () => {
   const selectedSurface = window.localStorage.getItem(selectedSurfaceStorageKey);
   const legacyLastSelectionWasHome = window.localStorage.getItem(legacyLastHomeSelectionStorageKey) === "1";
 
-  return selectedSurface === "puzzle" && !cameFromHomeAction && !legacyLastSelectionWasHome && hasRestorablePuzzleSession();
+  return selectedSurface === "puzzle" && !cameFromHomeAction && !legacyLastSelectionWasHome && loadPersistedPuzzleSessions() !== null;
 };
 
 export const markHomeNavigation = () => {
