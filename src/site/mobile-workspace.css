@@ -1,26 +1,44 @@
 @media (max-width: 700px) {
   .app-shell {
     width: min(100vw - 0.75rem, 1240px);
-    padding: 0.75rem 0 calc(5.2rem + env(safe-area-inset-bottom));
+    padding: 0.75rem 0 1rem;
   }
 
   .app-header {
     display: none;
   }
 
+  .catalog-panel,
+  .catalog-panel.collapsed {
+    position: sticky;
+    top: 0.5rem;
+    z-index: 12;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .catalog-mobile-nav {
+    border-radius: 1rem;
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(16px);
+  }
+
+  .catalog-mobile-nav select {
+    min-height: 3.2rem;
+    font-size: clamp(1.05rem, 5vw, 1.35rem);
+  }
+
   .site-footer {
-    position: fixed;
-    right: max(0.5rem, env(safe-area-inset-right));
-    bottom: max(0.5rem, env(safe-area-inset-bottom));
-    left: max(0.5rem, env(safe-area-inset-left));
-    z-index: 20;
-    width: auto;
+    position: static;
+    width: 100%;
     grid-template-columns: 1fr;
-    margin: 0;
+    margin: 0.85rem 0 0;
     border-radius: 1.15rem;
     padding: 0.45rem;
-    background: rgba(15, 23, 42, 0.86);
-    backdrop-filter: blur(18px);
+    background: rgba(15, 23, 42, 0.7);
   }
 
   .site-footer p {
@@ -49,26 +67,21 @@
     margin-top: 0;
   }
 
-  .catalog-panel,
-  .catalog-panel.collapsed {
-    border: 0;
-    border-radius: 0;
-    padding: 0;
-    background: transparent;
-    box-shadow: none;
-  }
-
-  .catalog-mobile-nav select {
-    min-height: 3.2rem;
-    font-size: clamp(1.05rem, 5vw, 1.35rem);
-  }
-
   .workspace-copy {
     display: none;
   }
 
   .workspace-panel {
-    padding-top: 0.75rem;
+    border: 0;
+    border-radius: 0;
+    padding: 0.75rem 0 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .puzzle-panel {
+    border-radius: 1.15rem;
+    padding: 0.85rem;
   }
 
   .puzzle-panel > .grid,
@@ -94,12 +107,6 @@
 
   .hero-panel {
     padding: 1.25rem;
-  }
-
-  .workspace-panel,
-  .puzzle-panel {
-    border-radius: 1.15rem;
-    padding: 0.85rem;
   }
 
   .control-panel {
