@@ -137,10 +137,15 @@
   }
 
   .control-actions,
-  .generation-actions {
+  .generation-actions,
+  .seed-actions {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.5rem;
+  }
+
+  .seed-actions {
+    grid-template-columns: 1fr;
   }
 
   .control-panel button,
@@ -164,7 +169,8 @@
 
 @media (max-width: 430px) {
   .control-actions,
-  .generation-actions {
+  .generation-actions,
+  .seed-actions {
     grid-template-columns: 1fr;
   }
 
