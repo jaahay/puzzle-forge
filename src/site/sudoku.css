@@ -147,17 +147,18 @@ select {
 
 .sudoku-digit-pad {
   display: grid;
-  grid-template-columns: repeat(10, minmax(0, 1fr));
-  gap: 0.45rem;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: 0.38rem;
   width: var(--board-width);
   max-width: 100%;
-  margin: 0 0 1rem;
+  margin: 0 0 0.8rem;
 }
 
 .sudoku-digit-pad button {
+  min-width: 0;
   border: 1px solid #334155;
-  border-radius: 0.75rem;
-  padding: 0.8rem 0.45rem;
+  border-radius: 0.7rem;
+  padding: 0.72rem 0.2rem;
   color: #0f172a;
   background: #e5e7eb;
   cursor: pointer;
@@ -183,15 +184,28 @@ select {
 }
 
 .sudoku-digit-pad .sudoku-clear-button {
-  color: #e5e7eb;
-  background: #334155;
+  display: none;
 }
 
 .sudoku-settings-panel {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
-  gap: 1rem;
+  gap: 0.75rem;
   align-items: end;
+}
+
+@media (max-width: 700px) {
+  .sudoku-settings-panel {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+
+  .sudoku-settings-panel .seed-control,
+  .sudoku-settings-panel .generation-actions,
+  .sudoku-settings-panel .check-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (min-width: 701px) {
