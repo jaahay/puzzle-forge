@@ -3,8 +3,8 @@
   grid-template-areas:
     "corner columns"
     "rows puzzle";
-  grid-template-columns: var(--nonogram-row-clue-width) calc(var(--board-cell-size) * var(--board-columns));
-  grid-template-rows: var(--nonogram-column-clue-height) calc(var(--board-cell-size) * var(--board-rows));
+  grid-template-columns: var(--nonogram-row-clue-width) var(--board-grid-width);
+  grid-template-rows: var(--nonogram-column-clue-height) var(--board-grid-height);
   gap: 0;
   align-items: stretch;
   width: var(--board-width);
@@ -41,7 +41,7 @@
   grid-area: columns;
   gap: 0;
   align-items: stretch;
-  width: calc(var(--board-cell-size) * var(--board-columns));
+  width: var(--board-grid-width);
   background: #94a3b8;
 }
 
@@ -50,7 +50,7 @@
   grid-area: rows;
   gap: 0;
   width: var(--nonogram-row-clue-width);
-  height: calc(var(--board-cell-size) * var(--board-rows));
+  height: var(--board-grid-height);
   background: #94a3b8;
 }
 
@@ -97,7 +97,7 @@
 .nonogram-board .grid.nonogram {
   grid-area: puzzle;
   gap: 0;
-  width: calc(var(--board-cell-size) * var(--board-columns));
+  width: var(--board-grid-width);
   min-width: 0;
   overflow: hidden;
   border: 1px solid #94a3b8;
