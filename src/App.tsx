@@ -50,7 +50,7 @@ export const App = () => {
   const sessions = usePuzzleSessions();
   const grid = useGridController();
   const solitaire = useSolitaireController({ statusMessage, onStatusMessage: setStatusMessage, solitaireVariation });
-  const { readyPuzzles, previewPuzzles, plannedPuzzles } = useMemo(() => getPuzzleAvailability(), []);
+  const { readyPuzzles, previewPuzzles } = useMemo(() => getPuzzleAvailability(), []);
   const selectedDefinition = getPuzzleDefinition(selectedPuzzleId);
   const selectedPuzzleIsGeneratable = isGeneratable(selectedDefinition);
 
@@ -492,12 +492,7 @@ export const App = () => {
           />
 
           {isHomeSelected || !hasSelectedPuzzle ? (
-            <StartView
-              readyPuzzles={readyPuzzles}
-              previewPuzzles={previewPuzzles}
-              plannedPuzzles={plannedPuzzles}
-              onSelectPuzzle={selectPuzzle}
-            />
+            <StartView readyPuzzles={readyPuzzles} previewPuzzles={previewPuzzles} onSelectPuzzle={selectPuzzle} />
           ) : (
             <PuzzleWorkspace
               selectedDefinition={selectedDefinition}
