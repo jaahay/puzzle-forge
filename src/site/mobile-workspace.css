@@ -8,78 +8,29 @@
     display: none;
   }
 
-  .catalog-panel,
-  .catalog-panel.collapsed,
-  .catalog-panel.expanded {
+  .catalog-panel {
     position: sticky;
     top: 0.5rem;
     z-index: 12;
     border: 0;
     border-radius: 0;
     padding: 0;
-    background: transparent;
-    box-shadow: none;
+    background: #0f172a;
+    box-shadow: 0 12px 28px rgba(2, 6, 23, 0.42);
   }
 
-  .catalog-toolbar {
+  .catalog-mobile-nav {
+    border: 1px solid rgba(148, 163, 184, 0.28);
     border-radius: 1rem;
     padding: 0.4rem;
-    background: rgba(15, 23, 42, 0.9);
-    backdrop-filter: blur(16px);
+    background: #0f172a;
   }
 
-  .catalog-home-button,
-  .catalog-collapse-toggle {
-    min-height: 2.75rem;
-  }
-
-  .catalog-home-button {
-    padding: 0.3rem 0.55rem;
-  }
-
-  .catalog-home-copy {
-    font-size: 0.9rem;
-  }
-
-  .catalog-collapse-toggle {
-    padding: 0.45rem 0.65rem;
-    font-size: 0.72rem;
-  }
-
-  .catalog-mini-list {
-    grid-auto-columns: minmax(2.85rem, 1fr);
-    grid-auto-flow: column;
-    grid-template-columns: none;
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    scrollbar-width: none;
-  }
-
-  .catalog-mini-list::-webkit-scrollbar {
-    display: none;
-  }
-
-  .catalog-mini-button {
-    min-height: 2.85rem;
-  }
-
-  .catalog-panel.expanded .catalog-sections {
-    max-height: min(72vh, 32rem);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    border: 1px solid rgba(148, 163, 184, 0.18);
-    border-radius: 1rem;
-    padding: 0.65rem;
-    background: rgba(15, 23, 42, 0.94);
-    backdrop-filter: blur(16px);
-  }
-
-  .catalog-panel.expanded .catalog-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .catalog-panel.expanded .catalog-card {
-    min-height: 3.9rem;
+  .catalog-mobile-nav select {
+    min-height: 3rem;
+    border-radius: 0.8rem;
+    background: #111827;
+    font-size: clamp(1.05rem, 5vw, 1.28rem);
   }
 
   .site-footer {
@@ -147,10 +98,7 @@
   }
 
   .puzzle-meta {
-    order: 2;
-    gap: 0.45rem;
-    margin-top: 0.75rem;
-    margin-bottom: 0;
+    display: none;
   }
 
   .puzzle-actions,
@@ -162,10 +110,15 @@
     padding: 1.25rem;
   }
 
+  .control-panel,
+  .puzzle-settings-panel {
+    border-radius: 0.95rem;
+    padding: 0.7rem;
+  }
+
   .control-panel {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.7rem;
-    padding-top: 0.75rem;
   }
 
   .control-panel > label:first-child,
@@ -174,23 +127,27 @@
     grid-column: 1 / -1;
   }
 
-  .control-panel input {
-    min-height: 3.1rem;
-    padding: 0.65rem 0.75rem;
-    border-radius: 0.75rem;
+  .control-panel input,
+  .puzzle-settings-panel input,
+  .puzzle-settings-panel select {
+    min-height: 2.85rem;
+    padding: 0.58rem 0.7rem;
+    border-radius: 0.72rem;
   }
 
   .control-actions,
   .generation-actions {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.55rem;
+    gap: 0.5rem;
   }
 
   .control-panel button,
-  .puzzle-actions button {
+  .puzzle-actions button,
+  .puzzle-settings-panel button {
     width: 100%;
-    padding: 0.75rem 0.55rem;
+    min-height: 2.55rem;
+    padding: 0.68rem 0.55rem;
     font-size: 0.9rem;
   }
 
@@ -202,22 +159,9 @@
   .puzzle-panel {
     margin-top: 0.75rem;
   }
-
-  .puzzle-meta span {
-    padding: 0.3rem 0.6rem;
-    font-size: 0.9rem;
-  }
 }
 
 @media (max-width: 430px) {
-  .catalog-toolbar {
-    grid-template-columns: minmax(0, 1fr) minmax(5.4rem, auto);
-  }
-
-  .catalog-mini-list {
-    grid-auto-columns: 2.85rem;
-  }
-
   .control-actions,
   .generation-actions {
     grid-template-columns: 1fr;
