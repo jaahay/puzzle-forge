@@ -167,7 +167,7 @@
 
 .puzzle-size-control {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.4rem 0.55rem;
   align-items: end;
 }
@@ -222,16 +222,12 @@
   }
 
   .puzzle-size-control {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.45rem;
   }
 
   .compact-number-control {
     grid-template-columns: 1.5rem minmax(0, 1fr);
-  }
-
-  .size-separator {
-    display: none;
   }
 
   .puzzle-checkbox-control {
