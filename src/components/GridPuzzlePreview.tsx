@@ -2,6 +2,7 @@ import { useEffect, useState } from "preact/hooks";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { FILLED_NONOGRAM_CELL } from "../games/nonogram/solve";
 import { getGridInputMode, isSelectedGridCell, type GridCellSelection } from "../interactions/gridRules";
+import { BoardViewport } from "./BoardViewport";
 
 const SUDOKU_BOX_SIZE = 3;
 const sudokuDigits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
@@ -19,6 +20,7 @@ const getSudokuInputValue = (rawValue: string) => {
 
 const formatClueLabel = (values: number[]) => (values.length > 0 ? values.join(", ") : "0");
 const getClueValues = (values: number[]) => (values.length > 0 ? values : [0]);
+const getMaxClueSlots = (clues: number[][] | undefined) => Math.max(1, ...(clues ?? []).map((values) => getClueValues(values).length));
 
 const renderClue = (values: number[], prefix: string, index: number, className: string) => (
   <div class={`nonogram-clue ${className}`} aria-label={`${prefix} ${index + 1} clue ${formatClueLabel(values)}`} key={`${prefix}-${index}`}>
@@ -179,9 +181,15 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
     </div>
   );
 
-  return (
-    <>
-      {isNonogram ? (
+  if (isNonogram) {
+    return (
+      <BoardViewport
+        kind="nonogram"
+        columns={puzzle.width}
+        rows={puzzle.height}
+        rowClueSlots={getMaxClueSlots(puzzle.clues?.rows)}
+        columnClueSlots={getMaxClueSlots(puzzle.clues?.columns)}
+      >
         <section class="nonogram-board" aria-label="Nonogram puzzle with adjacent row and column clues">
           <div class="nonogram-corner" aria-hidden="true">
             Clues
@@ -194,11 +202,14 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
           </div>
           {grid}
         </section>
-      ) : (
-        grid
-      )}
+      </BoardViewport>
+    );
+  }
 
-      {isSudoku ? (
+  if (isSudoku) {
+    return (
+      <BoardViewport kind="sudoku" columns={puzzle.width} rows={puzzle.height}>
+        {grid}
         <div class="sudoku-digit-pad" aria-label="Sudoku digit pad" data-sudoku-selection-scope="true">
           {sudokuDigits.map((digit) => (
             <button
@@ -215,7 +226,9 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
             Clear
           </button>
         </div>
-      ) : null}
-    </>
-  );
+      </BoardViewport>
+    );
+  }
+
+  return grid;
 };
