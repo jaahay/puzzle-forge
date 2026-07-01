@@ -60,6 +60,10 @@
   padding: 1rem;
 }
 
+.puzzle-workspace-layout > .workspace-layout-header {
+  display: none;
+}
+
 .panel-heading,
 .catalog-mini-list,
 .catalog-sections {
