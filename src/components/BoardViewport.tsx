@@ -134,10 +134,12 @@ export const BoardViewport = ({ kind, columns, rows, rowClueSlots, columnClueSlo
     updateAvailableInlineSize();
 
     if (typeof ResizeObserver === "undefined") {
-      window.addEventListener("resize", () => updateAvailableInlineSize());
+      const handleResize = () => updateAvailableInlineSize();
+
+      window.addEventListener("resize", handleResize);
 
       return () => {
-        window.removeEventListener("resize", () => updateAvailableInlineSize());
+        window.removeEventListener("resize", handleResize);
       };
     }
 
