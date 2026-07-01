@@ -119,6 +119,10 @@ export const App = () => {
     });
 
   const saveCurrentSession = () => {
+    if (!puzzle) {
+      return;
+    }
+
     sessions.saveSession(selectedPuzzleId, makeCurrentSession());
   };
 
@@ -249,7 +253,30 @@ export const App = () => {
   }, [generation.worker]);
 
   useEffect(() => {
-    if (!hasSelectedPuzzle || generation.isGenerating || isHomeSelected) {
+    if (!hasSelectedPuzzle || isHomeSelected || generation.isGenerating || puzzle || !selectedPuzzleIsGeneratable) {
+      return;
+    }
+
+    beginGeneration({
+      puzzleId: selectedPuzzleId,
+      seed: seed.trim() || makeRandomSeed(),
+      width: selectedDefinition.defaultWidth,
+      height: selectedDefinition.defaultHeight,
+      difficulty: selectedPuzzleId === "sudoku" ? difficulty : selectedDefinition.defaultDifficulty,
+      requireUniqueSolution,
+      solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? solitaireVariation : undefined,
+    });
+  }, [
+    hasSelectedPuzzle,
+    isHomeSelected,
+    generation.isGenerating,
+    puzzle,
+    selectedPuzzleId,
+    selectedPuzzleIsGeneratable,
+  ]);
+
+  useEffect(() => {
+    if (!hasSelectedPuzzle || generation.isGenerating || isHomeSelected || !puzzle) {
       return;
     }
 
@@ -291,7 +318,7 @@ export const App = () => {
   };
 
   const selectPuzzle = (puzzleId: PuzzleId) => {
-    if (puzzleId === selectedPuzzleId && hasSelectedPuzzle && !isHomeSelected) {
+    if (puzzleId === selectedPuzzleId && hasSelectedPuzzle && !isHomeSelected && puzzle) {
       return;
     }
 
@@ -303,7 +330,7 @@ export const App = () => {
     setIsHomeSelected(false);
     const cachedSession = sessions.getCachedSession(puzzleId);
 
-    if (cachedSession) {
+    if (cachedSession?.puzzle) {
       restoreSession(puzzleId, cachedSession);
       return;
     }
@@ -472,7 +499,7 @@ export const App = () => {
               gridCells={grid.gridCells}
               selectedGridCell={grid.selectedGridCell}
               statusMessage={statusMessage}
-              isGenerating={generation.isGenerating}
+              isGenerating={generation.isGenerating || (!puzzle && selectedPuzzleIsGeneratable && !isHomeSelected)}
               onSeedChange={setSeed}
               onWidthChange={setWidth}
               onHeightChange={setHeight}
