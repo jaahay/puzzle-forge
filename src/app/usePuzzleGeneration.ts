@@ -1,6 +1,14 @@
 import { useMemo, useRef, useState } from "preact/hooks";
 import { getPuzzleDefinition, isGeneratable } from "../catalog/puzzleCatalog";
-import type { GeneratedPuzzle, PuzzleDifficulty, PuzzleGenerationRequest, PuzzleGenerationResponse, PuzzleId } from "../catalog/types";
+import type {
+  GeneratedPuzzle,
+  PuzzleDefinition,
+  PuzzleDifficulty,
+  PuzzleGenerationRequest,
+  PuzzleGenerationResponse,
+  PuzzleId,
+  SolitaireVariation,
+} from "../catalog/types";
 import { defaultSudokuDifficulty, makeRequestId } from "./runtime";
 
 export type BeginGenerationOptions = Partial<Omit<PuzzleGenerationRequest, "requestId">>;
@@ -19,6 +27,24 @@ export type PuzzleGenerationDefaults = {
   requireUniqueSolution: boolean;
 };
 
+type MissingPuzzleSurfaceState = {
+  hasSelectedPuzzle: boolean;
+  isHomeSelected: boolean;
+  isGenerating: boolean;
+  hasPuzzle: boolean;
+  selectedPuzzleIsGeneratable: boolean;
+};
+
+type MissingPuzzleGenerationInput = {
+  selectedPuzzleId: PuzzleId;
+  selectedDefinition: PuzzleDefinition;
+  seed: string;
+  difficulty: PuzzleDifficulty;
+  requireUniqueSolution: boolean;
+  solitaireVariation: SolitaireVariation;
+  makeSeed: () => string;
+};
+
 export type BeginGenerationResult =
   | {
       kind: "planned";
@@ -30,6 +56,32 @@ export type BeginGenerationResult =
       request: PuzzleGenerationRequest;
       title: string;
     };
+
+export const shouldRecoverMissingPuzzleSurface = ({
+  hasSelectedPuzzle,
+  isHomeSelected,
+  isGenerating,
+  hasPuzzle,
+  selectedPuzzleIsGeneratable,
+}: MissingPuzzleSurfaceState) => hasSelectedPuzzle && !isHomeSelected && !isGenerating && !hasPuzzle && selectedPuzzleIsGeneratable;
+
+export const makeMissingPuzzleGenerationOptions = ({
+  selectedPuzzleId,
+  selectedDefinition,
+  seed,
+  difficulty,
+  requireUniqueSolution,
+  solitaireVariation,
+  makeSeed,
+}: MissingPuzzleGenerationInput): BeginGenerationOptions => ({
+  puzzleId: selectedPuzzleId,
+  seed: seed.trim() || makeSeed(),
+  width: selectedDefinition.defaultWidth,
+  height: selectedDefinition.defaultHeight,
+  difficulty,
+  requireUniqueSolution,
+  solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? solitaireVariation : undefined,
+});
 
 export const usePuzzleGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
