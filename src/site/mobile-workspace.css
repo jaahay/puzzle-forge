@@ -20,15 +20,16 @@
   }
 
   .catalog-mobile-nav {
-    border: 1px solid rgba(148, 163, 184, 0.28);
-    border-radius: 1rem;
-    padding: 0.4rem;
-    background: #0f172a;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
   }
 
   .catalog-mobile-nav select {
-    min-height: 3rem;
-    border-radius: 0.8rem;
+    min-height: 3.05rem;
+    border-color: rgba(148, 163, 184, 0.38);
+    border-radius: 0.95rem;
     background: #111827;
     font-size: clamp(1.05rem, 5vw, 1.28rem);
   }
