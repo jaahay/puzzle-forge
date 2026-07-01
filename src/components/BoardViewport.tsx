@@ -94,7 +94,8 @@ export const makeBoardViewportMetrics = ({
 };
 
 const getObservedInlineSize = (entry: ResizeObserverEntry, fallback: HTMLElement) => {
-  const [contentBox] = entry.contentBoxSize;
+  const contentBoxSize = entry.contentBoxSize as ResizeObserverSize | readonly ResizeObserverSize[] | undefined;
+  const contentBox = Array.isArray(contentBoxSize) ? contentBoxSize[0] : contentBoxSize;
 
   return contentBox?.inlineSize ?? fallback.getBoundingClientRect().width;
 };
