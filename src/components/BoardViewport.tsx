@@ -94,13 +94,9 @@ export const makeBoardViewportMetrics = ({
 };
 
 const getObservedInlineSize = (entry: ResizeObserverEntry, fallback: HTMLElement) => {
-  const contentBoxSize = entry.contentBoxSize;
+  const [contentBox] = entry.contentBoxSize;
 
-  if (Array.isArray(contentBoxSize)) {
-    return contentBoxSize[0]?.inlineSize ?? fallback.getBoundingClientRect().width;
-  }
-
-  return contentBoxSize?.inlineSize ?? fallback.getBoundingClientRect().width;
+  return contentBox?.inlineSize ?? fallback.getBoundingClientRect().width;
 };
 
 export const BoardViewport = ({ kind, columns, rows, rowClueSlots, columnClueSlots, children }: BoardViewportProps) => {
