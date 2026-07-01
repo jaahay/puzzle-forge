@@ -12,7 +12,12 @@ import { defaultSolitaireVariation, normalizeSolitaireVariation, solitaireVariat
 import { markHomeNavigation, markPuzzleNavigation, shouldInitializePuzzleSurface } from "./app/homeNavigation";
 import { defaultSudokuDifficulty, getActiveView, makeRandomSeed } from "./app/runtime";
 import { useGridController } from "./app/useGridController";
-import { usePuzzleGeneration, type BeginGenerationOptions } from "./app/usePuzzleGeneration";
+import {
+  makeMissingPuzzleGenerationOptions,
+  shouldRecoverMissingPuzzleSurface,
+  usePuzzleGeneration,
+  type BeginGenerationOptions,
+} from "./app/usePuzzleGeneration";
 import { buildRuntimeSession, usePuzzleSessions } from "./app/usePuzzleSessions";
 import { useSolitaireController } from "./app/useSolitaireController";
 import type { AppView } from "./site/views";
@@ -253,19 +258,29 @@ export const App = () => {
   }, [generation.worker]);
 
   useEffect(() => {
-    if (!hasSelectedPuzzle || isHomeSelected || generation.isGenerating || puzzle || !selectedPuzzleIsGeneratable) {
+    const shouldRecoverMissingPuzzle = shouldRecoverMissingPuzzleSurface({
+      hasSelectedPuzzle,
+      isHomeSelected,
+      isGenerating: generation.isGenerating,
+      hasPuzzle: Boolean(puzzle),
+      selectedPuzzleIsGeneratable,
+    });
+
+    if (!shouldRecoverMissingPuzzle) {
       return;
     }
 
-    beginGeneration({
-      puzzleId: selectedPuzzleId,
-      seed: seed.trim() || makeRandomSeed(),
-      width: selectedDefinition.defaultWidth,
-      height: selectedDefinition.defaultHeight,
-      difficulty,
-      requireUniqueSolution,
-      solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? solitaireVariation : undefined,
-    });
+    beginGeneration(
+      makeMissingPuzzleGenerationOptions({
+        selectedPuzzleId,
+        selectedDefinition,
+        seed,
+        difficulty,
+        requireUniqueSolution,
+        solitaireVariation,
+        makeSeed: makeRandomSeed,
+      }),
+    );
   }, [
     hasSelectedPuzzle,
     isHomeSelected,
