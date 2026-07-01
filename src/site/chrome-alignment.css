@@ -1,0 +1,30 @@
+/* Focused overrides for top-level puzzle chrome alignment. */
+
+.app-header,
+.catalog-layout,
+.catalog-layout.catalog-collapsed {
+  width: min(100%, 58rem);
+  margin-inline: auto;
+}
+
+.app-header {
+  margin-bottom: 0.65rem;
+}
+
+.catalog-mobile-nav {
+  display: grid;
+  width: 100%;
+  justify-items: center;
+  margin-inline: auto;
+}
+
+.catalog-mobile-nav select {
+  width: min(100%, clamp(15.5rem, 58vw, 24rem));
+  padding-right: 2rem;
+}
+
+@media (max-width: 640px) {
+  .catalog-mobile-nav select {
+    width: min(100%, 15.5rem);
+  }
+}
