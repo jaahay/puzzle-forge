@@ -104,10 +104,7 @@ export const PuzzleWorkspace = ({
   const isNonogram = selectedDefinition.id === "nonogram";
   const isWordGuess = selectedDefinition.id === "word-guess";
   const isSolitaire = selectedDefinition.id === "klondike-solitaire";
-  const isJigsaw = selectedDefinition.id === "jigsaw";
   const hasBottomSettingsBar = isSudoku || isNonogram || isWordGuess;
-  const compactWorkspaceHeader = isSudoku || isNonogram;
-  const showHeaderDescription = !(isSudoku || isNonogram || isWordGuess || isSolitaire || isJigsaw);
   const showStatusLine = !hasBottomSettingsBar;
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
   const filledOpenCount = getFilledOpenCount(gridCells);
@@ -138,21 +135,6 @@ export const PuzzleWorkspace = ({
       <button type="button" onClick={onAutoMoveToFoundations} aria-label="Move all currently legal cards to foundations" title="Auto foundation">
         ♣→
       </button>
-    </div>
-  );
-
-  const headerSlot = (
-    <div class="workspace-copy">
-      <span class={`status ${selectedDefinition.status}`}>{selectedDefinition.status}</span>
-      <h2>{selectedDefinition.title}</h2>
-      {showHeaderDescription ? <p>{selectedDefinition.description}</p> : null}
-      {compactWorkspaceHeader ? null : (
-        <div class="tag-row">
-          {selectedDefinition.tags.map((tag) => (
-            <span key={tag}>{tag}</span>
-          ))}
-        </div>
-      )}
     </div>
   );
 
@@ -307,7 +289,6 @@ export const PuzzleWorkspace = ({
   return (
     <PuzzleWorkspaceLayout
       className={workspaceClass}
-      header={headerSlot}
       status={statusSlot}
       board={boardSlot}
       gameplay={gameplaySlot}
