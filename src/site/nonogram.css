@@ -1,43 +1,25 @@
 .nonogram-board {
-  --nonogram-cell-size: clamp(2.15rem, 5vw, 2.8rem);
-
   display: grid;
   grid-template-areas:
     "corner columns"
     "rows puzzle";
-  grid-template-columns: max-content max-content;
+  grid-template-columns: var(--nonogram-row-clue-width) var(--board-grid-width);
+  grid-template-rows: var(--nonogram-column-clue-height) var(--board-grid-height);
   gap: 0;
   align-items: stretch;
-  width: max-content;
-  max-width: 100%;
-  overflow-x: auto;
-  overscroll-behavior-inline: contain;
+  width: var(--board-width);
+  max-width: none;
+  min-height: var(--board-height);
   border: 2px solid #e5e7eb;
   border-radius: 1rem;
-  padding: 0.55rem;
+  padding: 8px;
   background: linear-gradient(135deg, #64748b, #475569);
   box-shadow: 0 24px 80px rgba(2, 6, 23, 0.32);
-  scrollbar-color: #a7f3d0 #334155;
-}
-
-.nonogram-board::-webkit-scrollbar {
-  height: 0.7rem;
-}
-
-.nonogram-board::-webkit-scrollbar-track {
-  border-radius: 999px;
-  background: #334155;
-}
-
-.nonogram-board::-webkit-scrollbar-thumb {
-  border: 2px solid #334155;
-  border-radius: 999px;
-  background: #a7f3d0;
 }
 
 .nonogram-corner {
   display: grid;
-  min-width: 3.25rem;
+  min-width: 0;
   place-items: end center;
   grid-area: corner;
   border: 1px solid #94a3b8;
@@ -59,7 +41,7 @@
   grid-area: columns;
   gap: 0;
   align-items: stretch;
-  width: max-content;
+  width: var(--board-grid-width);
   background: #94a3b8;
 }
 
@@ -67,8 +49,8 @@
   display: grid;
   grid-area: rows;
   gap: 0;
-  width: max-content;
-  height: 100%;
+  width: var(--nonogram-row-clue-width);
+  height: var(--board-grid-height);
   background: #94a3b8;
 }
 
@@ -77,14 +59,14 @@
   align-items: center;
   justify-content: center;
   gap: 0.16rem;
-  min-width: var(--nonogram-cell-size);
-  min-height: var(--nonogram-cell-size);
+  min-width: 0;
+  min-height: var(--board-cell-size);
   border: 1px solid #94a3b8;
   border-radius: 0;
   color: #0f172a;
   background: #f8fafc;
   font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  font-size: clamp(0.68rem, 1.6vw, 0.84rem);
+  font-size: clamp(0.62rem, calc(var(--board-cell-size) * 0.32), 0.84rem);
   font-weight: 800;
   line-height: 1;
 }
@@ -98,14 +80,16 @@
 .nonogram-column-clue {
   flex-direction: column;
   justify-content: flex-end;
-  width: var(--nonogram-cell-size);
+  width: var(--board-cell-size);
+  min-height: var(--nonogram-column-clue-height);
   border-bottom-width: 2px;
   padding: 0.4rem 0.18rem;
 }
 
 .nonogram-row-clue {
   justify-content: flex-end;
-  min-width: 3.25rem;
+  width: var(--nonogram-row-clue-width);
+  min-height: var(--board-cell-size);
   border-right-width: 2px;
   padding: 0.3rem 0.45rem;
 }
@@ -113,7 +97,7 @@
 .nonogram-board .grid.nonogram {
   grid-area: puzzle;
   gap: 0;
-  width: max-content;
+  width: var(--board-grid-width);
   min-width: 0;
   overflow: hidden;
   border: 1px solid #94a3b8;
@@ -122,15 +106,15 @@
 }
 
 .nonogram-board .grid.nonogram .cell {
-  width: var(--nonogram-cell-size);
-  min-width: var(--nonogram-cell-size);
-  min-height: var(--nonogram-cell-size);
+  width: var(--board-cell-size);
+  min-width: var(--board-cell-size);
+  min-height: var(--board-cell-size);
   border: 1px solid #94a3b8;
   border-radius: 0;
   color: #0f172a;
   background: #f8fafc;
   font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  font-size: clamp(0.95rem, 2.25vw, 1.2rem);
+  font-size: clamp(0.85rem, calc(var(--board-cell-size) * 0.42), 1.2rem);
   font-weight: 900;
 }
 
@@ -283,24 +267,19 @@
 
 @media (max-width: 720px) {
   .nonogram-board {
-    --nonogram-cell-size: clamp(1.85rem, 8.2vw, 2.25rem);
-
-    max-width: calc(100vw - 2rem);
-    padding: 0.4rem;
+    padding: 8px;
   }
 
   .nonogram-corner {
-    min-width: 2.85rem;
     padding: 0.35rem;
     font-size: 0.52rem;
   }
 
   .nonogram-clue {
-    font-size: 0.66rem;
+    font-size: clamp(0.58rem, calc(var(--board-cell-size) * 0.3), 0.66rem);
   }
 
   .nonogram-row-clue {
-    min-width: 2.85rem;
     padding-inline: 0.32rem;
   }
 }

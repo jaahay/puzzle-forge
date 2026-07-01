@@ -1,5 +1,39 @@
 /* Shared grid and cell primitives for grid-based puzzles. */
 
+.board-viewport {
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  scrollbar-color: #a7f3d0 #334155;
+}
+
+.board-viewport::-webkit-scrollbar {
+  height: 0.7rem;
+}
+
+.board-viewport::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: #334155;
+}
+
+.board-viewport::-webkit-scrollbar-thumb {
+  border: 2px solid #334155;
+  border-radius: 999px;
+  background: #a7f3d0;
+}
+
+.board-viewport-inner {
+  display: grid;
+  justify-items: center;
+  gap: 0.55rem;
+  min-width: min-content;
+}
+
 .grid {
   display: grid;
   gap: 0.35rem;
