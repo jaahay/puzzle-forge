@@ -262,7 +262,7 @@ export const App = () => {
       seed: seed.trim() || makeRandomSeed(),
       width: selectedDefinition.defaultWidth,
       height: selectedDefinition.defaultHeight,
-      difficulty: selectedPuzzleId === "sudoku" ? difficulty : selectedDefinition.defaultDifficulty,
+      difficulty,
       requireUniqueSolution,
       solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? solitaireVariation : undefined,
     });
