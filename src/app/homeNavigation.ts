@@ -1,3 +1,4 @@
+import type { PuzzleId } from "../catalog/types";
 import { loadPersistedPuzzleSessions } from "./sessionPersistence";
 
 const homeNavigationStorageKey = "puzzle-forge.home-navigation";
@@ -9,6 +10,14 @@ type SelectedSurface = "home" | "puzzle";
 const setSelectedSurface = (surface: SelectedSurface) => {
   window.localStorage.setItem(selectedSurfaceStorageKey, surface);
   window.localStorage.removeItem(legacyLastHomeSelectionStorageKey);
+};
+
+export const getInitialSelectedPuzzleId = (fallback: PuzzleId = "sudoku") => {
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+
+  return loadPersistedPuzzleSessions()?.activePuzzleId ?? fallback;
 };
 
 export const shouldInitializePuzzleSurface = () => {
