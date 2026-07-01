@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { CardStack, GeneratedPuzzle, PlayingCard } from "../catalog/types";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
+import { getInitialSelectedPuzzleId } from "./homeNavigation";
 import {
   buildPersistedPuzzleSession,
   completePersistedPuzzleSession,
@@ -204,10 +205,12 @@ describe("app session persistence", () => {
       expect(persistedSession.solitaireVariation).toEqual(defaultSolitaireVariation);
       expect(persistedSession.progress.kind).toBe("cards");
       expect(loadPersistedPuzzleSessions()?.activePuzzleId).toBe("klondike-solitaire");
+      expect(getInitialSelectedPuzzleId()).toBe("klondike-solitaire");
 
       storage.set(solitaireStorageKey, JSON.stringify({ ...persistedSession, puzzle: makeCardPuzzle() }));
 
       expect(loadPersistedPuzzleSessions()).toBeNull();
+      expect(getInitialSelectedPuzzleId()).toBe("sudoku");
     });
   });
 });
