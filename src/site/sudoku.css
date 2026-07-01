@@ -183,10 +183,6 @@ select {
   opacity: 0.38;
 }
 
-.sudoku-digit-pad .sudoku-clear-button {
-  display: none;
-}
-
 .sudoku-settings-panel {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
@@ -202,6 +198,7 @@ select {
 
   .sudoku-settings-panel .seed-control,
   .sudoku-settings-panel .generation-actions,
+  .sudoku-settings-panel .seed-actions,
   .sudoku-settings-panel .check-actions {
     display: grid;
     grid-template-columns: 1fr;
