@@ -81,7 +81,8 @@
 
   .puzzle-panel {
     border-radius: 1.15rem;
-    padding: 0.85rem;
+    padding: 0.65rem;
+    overflow: hidden;
   }
 
   .puzzle-panel > .grid,
@@ -95,14 +96,33 @@
 
   .grid.sudoku,
   .sudoku-digit-pad {
-    width: min(100%, calc(100vw - 1.5rem));
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .grid.sudoku {
+    box-sizing: border-box;
+    justify-self: stretch;
+  }
+
+  .grid.sudoku .cell,
+  .grid.sudoku .cell-input {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .grid.sudoku .cell {
     aspect-ratio: 1;
-    min-width: 0;
     min-height: 0;
+    padding: 0;
     font-size: clamp(0.95rem, 5vw, 1.35rem);
+  }
+
+  .grid.sudoku .cell-input {
+    appearance: none;
+    line-height: 1;
   }
 
   .sudoku-digit-pad {
