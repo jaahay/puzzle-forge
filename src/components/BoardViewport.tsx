@@ -23,6 +23,8 @@ export type BoardViewportMetricsInput = {
 
 export type BoardViewportMetrics = {
   cellSize: number;
+  gridWidth: number;
+  gridHeight: number;
   boardWidth: number;
   boardHeight: number;
   rowClueWidth: number;
@@ -63,6 +65,8 @@ export const makeBoardViewportMetrics = ({
 
     return {
       cellSize: roundMetric(cellSize),
+      gridWidth: boardSize,
+      gridHeight: boardSize,
       boardWidth: boardSize,
       boardHeight: boardSize,
       rowClueWidth: 0,
@@ -75,11 +79,15 @@ export const makeBoardViewportMetrics = ({
   const targetBoardWidth = availableWidth || rowClueWidth + nonogramMaxCellSize * safeColumns + nonogramFrameWidth;
   const availableCellWidth = Math.max(0, targetBoardWidth - rowClueWidth - nonogramFrameWidth);
   const cellSize = clamp(availableCellWidth / safeColumns, nonogramMinCellSize, nonogramMaxCellSize);
+  const gridWidth = roundMetric(cellSize * safeColumns);
+  const gridHeight = roundMetric(cellSize * safeRows);
 
   return {
     cellSize: roundMetric(cellSize),
-    boardWidth: roundMetric(rowClueWidth + cellSize * safeColumns + nonogramFrameWidth),
-    boardHeight: roundMetric(columnClueHeight + cellSize * safeRows + nonogramFrameWidth),
+    gridWidth,
+    gridHeight,
+    boardWidth: roundMetric(rowClueWidth + gridWidth + nonogramFrameWidth),
+    boardHeight: roundMetric(columnClueHeight + gridHeight + nonogramFrameWidth),
     rowClueWidth: roundMetric(rowClueWidth),
     columnClueHeight: roundMetric(columnClueHeight),
   };
@@ -114,6 +122,8 @@ export const BoardViewport = ({ kind, columns, rows, rowClueSlots, columnClueSlo
     "--board-columns": String(normalizeCount(columns)),
     "--board-rows": String(normalizeCount(rows)),
     "--board-cell-size": `${metrics.cellSize}px`,
+    "--board-grid-width": `${metrics.gridWidth}px`,
+    "--board-grid-height": `${metrics.gridHeight}px`,
     "--board-width": `${metrics.boardWidth}px`,
     "--board-height": `${metrics.boardHeight}px`,
     "--nonogram-row-clue-width": `${metrics.rowClueWidth}px`,
