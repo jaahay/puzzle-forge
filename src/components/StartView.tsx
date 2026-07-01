@@ -4,7 +4,6 @@ import type { PuzzleDefinition, PuzzleId } from "../catalog/types";
 type StartViewProps = {
   readyPuzzles: PuzzleDefinition[];
   previewPuzzles: PuzzleDefinition[];
-  plannedPuzzles: PuzzleDefinition[];
   onSelectPuzzle: (puzzleId: PuzzleId) => void;
 };
 
@@ -23,7 +22,7 @@ const StartPuzzleButton = ({ definition, label, onSelectPuzzle }: StartPuzzleBut
   </button>
 );
 
-export const StartView = ({ readyPuzzles, previewPuzzles, plannedPuzzles, onSelectPuzzle }: StartViewProps) => (
+export const StartView = ({ readyPuzzles, previewPuzzles, onSelectPuzzle }: StartViewProps) => (
   <section class="start-layout" aria-labelledby="puzzle-start-title">
     <div class="puzzle-start-panel">
       <h1 id="puzzle-start-title">Choose a puzzle</h1>
@@ -48,15 +47,6 @@ export const StartView = ({ readyPuzzles, previewPuzzles, plannedPuzzles, onSele
           </div>
         </section>
       ) : null}
-
-      <div class="coming-soon-list" aria-label="Coming soon puzzles">
-        <span>Coming soon</span>
-        {plannedPuzzles.map((definition) => (
-          <button key={definition.id} type="button" disabled>
-            {puzzleIcons[definition.id]} {definition.title}
-          </button>
-        ))}
-      </div>
     </div>
   </section>
 );
