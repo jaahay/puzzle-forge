@@ -2,7 +2,7 @@ import { getPuzzleAvailability } from "../catalog/puzzleAvailability";
 import { homeIcon, puzzleIcons } from "../catalog/puzzleIcons";
 import type { PuzzleId } from "../catalog/types";
 
-const { readyPuzzles, previewPuzzles, plannedPuzzles } = getPuzzleAvailability();
+const { readyPuzzles, previewPuzzles } = getPuzzleAvailability();
 
 type PuzzleCatalogProps = {
   isCollapsed: boolean;
@@ -36,9 +36,6 @@ export const PuzzleCatalog = ({ isHomeSelected, selectedPuzzleId, onHomeSelect, 
           ))}
           {previewPuzzles.map((definition) => (
             <option key={definition.id} value={definition.id}>{puzzleIcons[definition.id]} {definition.title} · Preview</option>
-          ))}
-          {plannedPuzzles.map((definition) => (
-            <option key={definition.id} value={definition.id} disabled>{puzzleIcons[definition.id]} {definition.title} · Coming soon</option>
           ))}
         </select>
       </div>
