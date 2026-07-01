@@ -215,71 +215,33 @@
   height: 1rem;
 }
 
-@media (min-width: 941px) {
+@media (max-width: 700px) {
   .nonogram-settings-panel {
-    grid-template-columns: minmax(7rem, 0.85fr) minmax(9rem, 0.9fr) minmax(13rem, 1.15fr) minmax(10rem, 0.85fr);
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
   }
 
-  .nonogram-settings-panel .check-actions {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .nonogram-settings-panel > label {
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-  .nonogram-settings-panel .puzzle-size-control {
-    grid-column: 3 / span 2;
-    grid-row: 1;
-  }
-
-  .nonogram-settings-panel .puzzle-generation-options {
-    grid-column: 1 / span 3;
-    grid-row: 2;
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
-  .nonogram-settings-panel .generation-actions {
-    grid-column: 4;
-    grid-row: 2;
-  }
-}
-
-@media (max-width: 940px) {
-  .nonogram-settings-panel,
-  .nonogram-settings-panel .puzzle-generation-options,
   .puzzle-size-control {
     grid-template-columns: 1fr;
+    gap: 0.45rem;
   }
 
-  .nonogram-settings-panel .puzzle-checkbox-control {
-    min-width: 0;
-    padding-bottom: 0;
-    white-space: normal;
+  .compact-number-control {
+    grid-template-columns: 1.5rem minmax(0, 1fr);
   }
 
   .size-separator {
     display: none;
   }
+
+  .puzzle-checkbox-control {
+    min-width: 0;
+    padding-bottom: 0;
+  }
 }
 
-@media (max-width: 720px) {
-  .nonogram-board {
-    padding: 8px;
-  }
-
-  .nonogram-corner {
-    padding: 0.35rem;
-    font-size: 0.52rem;
-  }
-
-  .nonogram-clue {
-    font-size: clamp(0.58rem, calc(var(--board-cell-size) * 0.3), 0.66rem);
-  }
-
-  .nonogram-row-clue {
-    padding-inline: 0.32rem;
+@media (min-width: 941px) {
+  .nonogram-settings-panel {
+    grid-template-columns: minmax(7rem, 0.85fr) minmax(9rem, 0.9fr) minmax(13rem, 1.15fr) minmax(10rem, 0.85fr);
   }
 }
