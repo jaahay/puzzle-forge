@@ -77,15 +77,17 @@ const SeedTools = ({
   canGenerate,
   onUseSeed,
 }: Pick<BottomPuzzleConfigurationProps, "seedInput" | "isGenerating" | "onUseSeed"> & { canGenerate: boolean }) => (
-  <div class="seed-tools">
+  <>
     <label>
       Seed
       {seedInput}
     </label>
-    <button type="button" onClick={onUseSeed} disabled={isGenerating || !canGenerate}>
-      Use seed
-    </button>
-  </div>
+    <div class="puzzle-settings-actions seed-actions">
+      <button type="button" onClick={onUseSeed} disabled={isGenerating || !canGenerate}>
+        Use seed
+      </button>
+    </div>
+  </>
 );
 
 export const BottomPuzzleConfiguration = ({
