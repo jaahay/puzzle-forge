@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { getPuzzleAvailability } from "./catalog/puzzleAvailability";
 import { getPuzzleDefinition, isGeneratable } from "./catalog/puzzleCatalog";
 import type { GeneratedPuzzle, PuzzleDifficulty, PuzzleGenerationRequest, PuzzleId, SolitaireVariation } from "./catalog/types";
@@ -9,18 +9,30 @@ import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
 import { StartView } from "./components/StartView";
 import { defaultSolitaireVariation, normalizeSolitaireVariation, solitaireVariationsEqual } from "./games/solitaire/variation";
+import { getInitialSelectedPuzzleId, markHomeNavigation, markPuzzleNavigation, shouldInitializePuzzleSurface } from "./app/homeNavigation";
 import { defaultSudokuDifficulty, getActiveView, makeRandomSeed } from "./app/runtime";
 import { useGridController } from "./app/useGridController";
-import { usePuzzleGeneration, type BeginGenerationOptions } from "./app/usePuzzleGeneration";
+import {
+  makeMissingPuzzleGenerationOptions,
+  shouldRecoverMissingPuzzleSurface,
+  usePuzzleGeneration,
+  type BeginGenerationOptions,
+} from "./app/usePuzzleGeneration";
 import { buildRuntimeSession, usePuzzleSessions } from "./app/usePuzzleSessions";
 import { useSolitaireController } from "./app/useSolitaireController";
 import type { AppView } from "./site/views";
 
 const initialStatusMessage = "Pick a puzzle to start.";
 
+type GenerationBehavior = {
+  preserveScroll?: boolean;
+};
+
 export const App = () => {
+  const shouldStartOnPuzzleSurface = useMemo(shouldInitializePuzzleSurface, []);
+  const initialSelectedPuzzleId = useMemo(() => getInitialSelectedPuzzleId(), []);
   const [activeView, setActiveView] = useState<AppView>(getActiveView);
-  const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>("sudoku");
+  const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>(initialSelectedPuzzleId);
   const [seed, setSeed] = useState(makeRandomSeed);
   const [width, setWidth] = useState(9);
   const [height, setHeight] = useState(9);
@@ -30,7 +42,9 @@ export const App = () => {
   const [solitaireVariation, setSolitaireVariation] = useState<SolitaireVariation>(defaultSolitaireVariation);
   const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
   const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(true);
-  const [hasSelectedPuzzle, setHasSelectedPuzzle] = useState(false);
+  const [hasSelectedPuzzle, setHasSelectedPuzzle] = useState(shouldStartOnPuzzleSurface);
+  const [isHomeSelected, setIsHomeSelected] = useState(!shouldStartOnPuzzleSurface);
+  const pendingScrollRestore = useRef<{ x: number; y: number } | null>(null);
 
   const generation = usePuzzleGeneration();
   const sessions = usePuzzleSessions();
@@ -40,9 +54,33 @@ export const App = () => {
   const selectedDefinition = getPuzzleDefinition(selectedPuzzleId);
   const selectedPuzzleIsGeneratable = isGeneratable(selectedDefinition);
 
+  const rememberScrollPosition = () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    pendingScrollRestore.current = { x: window.scrollX, y: window.scrollY };
+  };
+
+  const restoreScrollPosition = () => {
+    if (typeof window === "undefined" || !pendingScrollRestore.current) {
+      return;
+    }
+
+    const savedPosition = pendingScrollRestore.current;
+    pendingScrollRestore.current = null;
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ left: savedPosition.x, top: savedPosition.y, behavior: "auto" });
+      });
+    });
+  };
+
   const restoreSession = (puzzleId: PuzzleId, session: ReturnType<typeof buildRuntimeSession>) => {
+    markPuzzleNavigation();
     setHasSelectedPuzzle(true);
-    setIsCatalogCollapsed(true);
+    setIsHomeSelected(false);
     setSelectedPuzzleId(puzzleId);
     setSeed(session.seed);
     setWidth(session.width);
@@ -64,6 +102,7 @@ export const App = () => {
       selectedGridCell: session.selectedGridCell,
     });
     generation.setIsGenerating(false);
+    restoreScrollPosition();
   };
 
   const makeCurrentSession = () =>
@@ -86,6 +125,10 @@ export const App = () => {
     });
 
   const saveCurrentSession = () => {
+    if (!puzzle) {
+      return;
+    }
+
     sessions.saveSession(selectedPuzzleId, makeCurrentSession());
   };
 
@@ -95,7 +138,11 @@ export const App = () => {
     grid.resetGrid();
   };
 
-  const beginGeneration = (options: BeginGenerationOptions = {}) => {
+  const beginGeneration = (options: BeginGenerationOptions = {}, behavior: GenerationBehavior = {}) => {
+    if (behavior.preserveScroll) {
+      rememberScrollPosition();
+    }
+
     const requestedPuzzleId = options.puzzleId ?? selectedPuzzleId;
     const requestOptions =
       requestedPuzzleId === "klondike-solitaire"
@@ -114,7 +161,8 @@ export const App = () => {
     );
 
     setHasSelectedPuzzle(true);
-    setIsCatalogCollapsed(true);
+    setIsHomeSelected(false);
+    markPuzzleNavigation();
 
     if (result.kind === "planned") {
       const definition = getPuzzleDefinition(result.puzzleId);
@@ -123,6 +171,7 @@ export const App = () => {
       setHeight(definition.defaultHeight);
       resetRuntimePuzzleState();
       setStatusMessage(`${result.title} is planned for a future generator.`);
+      restoreScrollPosition();
       return;
     }
 
@@ -136,7 +185,9 @@ export const App = () => {
     if (request.puzzleId === "klondike-solitaire") {
       setSolitaireVariation(normalizeSolitaireVariation(request.solitaireVariation));
     }
-    resetRuntimePuzzleState();
+    if (puzzle?.puzzleId !== request.puzzleId) {
+      resetRuntimePuzzleState();
+    }
     setStatusMessage(`Generating ${title}...`);
   };
 
@@ -165,6 +216,7 @@ export const App = () => {
     solitaire.resetSolitaireStats();
     solitaire.clearSolitaireHistory();
     setStatusMessage(readyMessage);
+    restoreScrollPosition();
   };
 
   useEffect(() => {
@@ -189,6 +241,7 @@ export const App = () => {
         (error) => {
           sessions.pendingRestorePuzzleId.current = null;
           setStatusMessage(error);
+          restoreScrollPosition();
         },
       );
     };
@@ -206,13 +259,47 @@ export const App = () => {
   }, [generation.worker]);
 
   useEffect(() => {
-    if (!hasSelectedPuzzle || generation.isGenerating) {
+    const shouldRecoverMissingPuzzle = shouldRecoverMissingPuzzleSurface({
+      hasSelectedPuzzle,
+      isHomeSelected,
+      isGenerating: generation.isGenerating,
+      hasPuzzle: Boolean(puzzle),
+      selectedPuzzleIsGeneratable,
+    });
+
+    if (!shouldRecoverMissingPuzzle) {
+      return;
+    }
+
+    beginGeneration(
+      makeMissingPuzzleGenerationOptions({
+        selectedPuzzleId,
+        selectedDefinition,
+        seed,
+        difficulty,
+        requireUniqueSolution,
+        solitaireVariation,
+        makeSeed: makeRandomSeed,
+      }),
+    );
+  }, [
+    hasSelectedPuzzle,
+    isHomeSelected,
+    generation.isGenerating,
+    puzzle,
+    selectedPuzzleId,
+    selectedPuzzleIsGeneratable,
+  ]);
+
+  useEffect(() => {
+    if (!hasSelectedPuzzle || generation.isGenerating || isHomeSelected || !puzzle) {
       return;
     }
 
     saveCurrentSession();
   }, [
     hasSelectedPuzzle,
+    isHomeSelected,
     generation.isGenerating,
     selectedPuzzleId,
     seed,
@@ -231,18 +318,35 @@ export const App = () => {
     statusMessage,
   ]);
 
-  const selectPuzzle = (puzzleId: PuzzleId) => {
-    if (puzzleId === selectedPuzzleId && hasSelectedPuzzle) {
-      return;
-    }
-
-    if (hasSelectedPuzzle) {
+  const selectHome = () => {
+    if (hasSelectedPuzzle && !isHomeSelected) {
       saveCurrentSession();
     }
 
+    markHomeNavigation();
+    setActiveView("catalog");
+    setHasSelectedPuzzle(true);
+    setIsHomeSelected(true);
+
+    if (typeof window !== "undefined" && window.location.hash) {
+      window.history.pushState(null, "", `${window.location.pathname}${window.location.search}`);
+    }
+  };
+
+  const selectPuzzle = (puzzleId: PuzzleId) => {
+    if (puzzleId === selectedPuzzleId && hasSelectedPuzzle && !isHomeSelected && puzzle) {
+      return;
+    }
+
+    if (hasSelectedPuzzle && !isHomeSelected) {
+      saveCurrentSession();
+    }
+
+    markPuzzleNavigation();
+    setIsHomeSelected(false);
     const cachedSession = sessions.getCachedSession(puzzleId);
 
-    if (cachedSession) {
+    if (cachedSession?.puzzle) {
       restoreSession(puzzleId, cachedSession);
       return;
     }
@@ -263,11 +367,11 @@ export const App = () => {
   };
 
   const generate = () => {
-    beginGeneration();
+    beginGeneration({}, { preserveScroll: true });
   };
 
   const randomize = () => {
-    beginGeneration({ seed: makeRandomSeed() });
+    beginGeneration({ seed: makeRandomSeed() }, { preserveScroll: true });
   };
 
   const commitGenerationSettings = ({
@@ -325,19 +429,22 @@ export const App = () => {
       return;
     }
 
-    beginGeneration({
-      seed: normalizedSeed,
-      width: generationWidth,
-      height: generationHeight,
-      difficulty: generationDifficulty,
-      requireUniqueSolution: generationRequireUniqueSolution,
-      solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? generationSolitaireVariation : undefined,
-    });
+    beginGeneration(
+      {
+        seed: normalizedSeed,
+        width: generationWidth,
+        height: generationHeight,
+        difficulty: generationDifficulty,
+        requireUniqueSolution: generationRequireUniqueSolution,
+        solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? generationSolitaireVariation : undefined,
+      },
+      { preserveScroll: true },
+    );
   };
 
   const handleDifficultyChange = (nextDifficulty: PuzzleDifficulty) => {
     if (selectedPuzzleId === "sudoku") {
-      beginGeneration({ puzzleId: "sudoku", seed, width: 9, height: 9, difficulty: nextDifficulty });
+      beginGeneration({ puzzleId: "sudoku", seed, width: 9, height: 9, difficulty: nextDifficulty }, { preserveScroll: true });
       return;
     }
 
@@ -372,17 +479,26 @@ export const App = () => {
   };
 
   return (
-    <AppShell activeView={activeView}>
+    <AppShell activeView={activeView} onHomeSelect={selectHome}>
       {activeView === "catalog" ? (
-        hasSelectedPuzzle ? (
-          <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
-            <PuzzleCatalog
-              isCollapsed={isCatalogCollapsed}
-              selectedPuzzleId={selectedPuzzleId}
-              onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)}
+        <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
+          <PuzzleCatalog
+            isCollapsed={isCatalogCollapsed}
+            isHomeSelected={isHomeSelected || !hasSelectedPuzzle}
+            selectedPuzzleId={selectedPuzzleId}
+            onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)}
+            onHomeSelect={selectHome}
+            onSelectPuzzle={selectPuzzle}
+          />
+
+          {isHomeSelected || !hasSelectedPuzzle ? (
+            <StartView
+              readyPuzzles={readyPuzzles}
+              previewPuzzles={previewPuzzles}
+              plannedPuzzles={plannedPuzzles}
               onSelectPuzzle={selectPuzzle}
             />
-
+          ) : (
             <PuzzleWorkspace
               selectedDefinition={selectedDefinition}
               selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
@@ -399,7 +515,7 @@ export const App = () => {
               gridCells={grid.gridCells}
               selectedGridCell={grid.selectedGridCell}
               statusMessage={statusMessage}
-              isGenerating={generation.isGenerating}
+              isGenerating={generation.isGenerating || (!puzzle && selectedPuzzleIsGeneratable && !isHomeSelected)}
               onSeedChange={setSeed}
               onWidthChange={setWidth}
               onHeightChange={setHeight}
@@ -421,15 +537,8 @@ export const App = () => {
               onCellClick={(cell) => grid.handleGridCellClick(puzzle, cell, setStatusMessage)}
               onCellInput={(cell, value) => grid.handleGridCellInput(puzzle, cell, value, setStatusMessage)}
             />
-          </section>
-        ) : (
-          <StartView
-            readyPuzzles={readyPuzzles}
-            previewPuzzles={previewPuzzles}
-            plannedPuzzles={plannedPuzzles}
-            onSelectPuzzle={selectPuzzle}
-          />
-        )
+          )}
+        </section>
       ) : activeView === "changelog" ? (
         <ChangelogView />
       ) : (

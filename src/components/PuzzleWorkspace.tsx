@@ -1,17 +1,12 @@
-import { useState } from "preact/hooks";
-import { solitaireHistoryLimitNotice } from "../app/session";
 import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition, PuzzleDifficulty, PuzzleGenerationRequest, SolitaireVariation } from "../catalog/types";
-import {
-  solitaireDrawModeLabels,
-  solitaireRedealLimitLabels,
-  solitaireWasteModeLabels,
-} from "../games/solitaire/variation";
-import { getWordGuessDailyLabel, getWordGuessDailySeed } from "../games/wordGuess/daily";
+import { getDailyPuzzleLabel, getDailyPuzzleSeed } from "../games/shared/daily";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
-import { SolitaireSettings } from "./SolitaireSettings";
+import { BottomPuzzleConfiguration, TopPuzzleConfiguration } from "./PuzzleConfiguration";
+import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
+import { SeedControl } from "./SeedControl";
 import { TilePuzzlePreview } from "./TilePuzzlePreview";
 import { WordGuessGame } from "./WordGuessGame";
 
@@ -66,11 +61,6 @@ type PuzzleWorkspaceProps = {
 const getGivenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => cell.locked).length ?? 0;
 const getFilledOpenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => !cell.locked && cell.value).length ?? 0;
 const getOpenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => !cell.locked).length ?? 0;
-const blurOnEnter = (event: KeyboardEvent) => {
-  if (event.key === "Enter") {
-    event.currentTarget instanceof HTMLElement && event.currentTarget.blur();
-  }
-};
 
 export const PuzzleWorkspace = ({
   selectedDefinition,
@@ -110,122 +100,90 @@ export const PuzzleWorkspace = ({
   onCellClick,
   onCellInput,
 }: PuzzleWorkspaceProps) => {
-  const [seedCopied, setSeedCopied] = useState(false);
   const isSudoku = selectedDefinition.id === "sudoku";
   const isNonogram = selectedDefinition.id === "nonogram";
   const isWordGuess = selectedDefinition.id === "word-guess";
   const isSolitaire = selectedDefinition.id === "klondike-solitaire";
   const hasBottomSettingsBar = isSudoku || isNonogram || isWordGuess;
-  const compactWorkspaceHeader = isSudoku || isNonogram;
   const showStatusLine = !hasBottomSettingsBar;
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
   const filledOpenCount = getFilledOpenCount(gridCells);
   const openCount = getOpenCount(gridCells);
-  const wordGuessDailyLabel = isWordGuess && puzzle ? getWordGuessDailyLabel(puzzle.seed) : null;
+  const dailyLabel = puzzle ? getDailyPuzzleLabel(puzzle.puzzleId, puzzle.seed) : null;
+  const workspaceClass = `${isSudoku ? "sudoku-workspace" : ""} ${isNonogram ? "nonogram-workspace" : ""} ${isWordGuess ? "word-guess-workspace" : ""} ${isSolitaire ? "solitaire-workspace" : ""}`;
   const showSudokuValidationMessage =
     isSudoku && (statusMessage.startsWith("Sudoku solved") || statusMessage.startsWith("Sudoku validation"));
   const showNonogramValidationMessage = isNonogram && (statusMessage.startsWith("Solved") || statusMessage.startsWith("Not solved"));
   const sudokuValidationTone = statusMessage.startsWith("Sudoku solved") ? "success" : statusMessage.includes("incorrect") ? "error" : "progress";
   const nonogramValidationTone = statusMessage.startsWith("Solved") ? "success" : "error";
-  const generateWordGuessDaily = () => onSettingsCommit({ seed: getWordGuessDailySeed(), width, height });
-  const copySeed = async () => {
-    try {
-      if (typeof navigator !== "undefined" && navigator.clipboard) {
-        await navigator.clipboard.writeText(seed);
-      }
-    } finally {
-      setSeedCopied(true);
-
-      if (typeof window !== "undefined") {
-        window.setTimeout(() => setSeedCopied(false), 1400);
-      }
-    }
-  };
+  const generateDailyPuzzle = () => onSettingsCommit({ seed: getDailyPuzzleSeed(selectedDefinition.id), width, height });
   const seedInput = (
-    <div class="seed-control">
-      <input
-        value={seed}
-        onBlur={(event) => onSettingsCommit({ seed: event.currentTarget.value })}
-        onInput={(event) => onSeedChange(event.currentTarget.value)}
-        onKeyDown={blurOnEnter}
-      />
-      <button type="button" onClick={copySeed}>{seedCopied ? "Copied" : "Copy seed"}</button>
+    <SeedControl
+      seed={seed}
+      onSeedChange={onSeedChange}
+      onSeedCommit={(nextSeed) => onSettingsCommit({ seed: nextSeed })}
+    />
+  );
+  const solitaireActionControls = (
+    <div class="solitaire-action-row" aria-label="Solitaire controls">
+      <button type="button" onClick={onUndoSolitaire} disabled={!canUndoSolitaire} aria-label="Undo Solitaire move" title="Undo">
+        ↶
+      </button>
+      <button type="button" onClick={onRedoSolitaire} disabled={!canRedoSolitaire} aria-label="Redo Solitaire move" title="Redo">
+        ↷
+      </button>
+      <button type="button" onClick={onAutoMoveToFoundations} aria-label="Move all currently legal cards to foundations" title="Auto foundation">
+        ♣→
+      </button>
     </div>
   );
 
-  return (
-    <section class={`workspace-panel ${isSudoku ? "sudoku-workspace" : ""} ${isNonogram ? "nonogram-workspace" : ""} ${isWordGuess ? "word-guess-workspace" : ""}`} aria-label="Selected puzzle workspace">
-      <div class="workspace-copy">
-        <span class={`status ${selectedDefinition.status}`}>{selectedDefinition.status}</span>
-        <h2>{selectedDefinition.title}</h2>
-        {compactWorkspaceHeader ? null : <p>{selectedDefinition.description}</p>}
-        {compactWorkspaceHeader ? null : (
-          <div class="tag-row">
-            {selectedDefinition.tags.map((tag) => (
-              <span key={tag}>{tag}</span>
-            ))}
-          </div>
-        )}
-      </div>
+  const configurationSlot = !puzzle ? null : hasBottomSettingsBar ? (
+    <BottomPuzzleConfiguration
+      selectedDefinition={selectedDefinition}
+      selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
+      seedInput={seedInput}
+      width={width}
+      height={height}
+      difficulty={difficulty}
+      requireUniqueSolution={requireUniqueSolution}
+      isFixedSize={isFixedSize}
+      isNonogram={isNonogram}
+      isWordGuess={isWordGuess}
+      isSudoku={isSudoku}
+      isGenerating={isGenerating}
+      onWidthChange={onWidthChange}
+      onHeightChange={onHeightChange}
+      onSettingsCommit={onSettingsCommit}
+      onDifficultyChange={onDifficultyChange}
+      onUniqueSolutionChange={onUniqueSolutionChange}
+      onToday={generateDailyPuzzle}
+      onUseSeed={onGenerate}
+      onRandomize={onRandomize}
+    />
+  ) : (
+    <TopPuzzleConfiguration
+      selectedDefinition={selectedDefinition}
+      selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
+      seedInput={seedInput}
+      width={width}
+      height={height}
+      solitaireVariation={solitaireVariation}
+      isFixedSize={isFixedSize}
+      isGenerating={isGenerating}
+      isSolitaire={isSolitaire}
+      onWidthChange={onWidthChange}
+      onHeightChange={onHeightChange}
+      onSettingsCommit={onSettingsCommit}
+      onSolitaireVariationChange={onSolitaireVariationChange}
+      onToday={generateDailyPuzzle}
+      onUseSeed={onGenerate}
+      onRandomize={onRandomize}
+    />
+  );
 
-      {hasBottomSettingsBar ? null : (
-        <div class="control-panel" aria-label="Puzzle controls">
-          <label>
-            Seed
-            {seedInput}
-          </label>
-
-          {isFixedSize ? null : (
-            <>
-              <label>
-                Width
-                <input
-                  type="number"
-                  min={selectedDefinition.minWidth}
-                  max={selectedDefinition.maxWidth}
-                  value={width}
-                  onBlur={(event) => onSettingsCommit({ width: Number(event.currentTarget.value) })}
-                  onInput={(event) => onWidthChange(Number(event.currentTarget.value))}
-                  onKeyDown={blurOnEnter}
-                />
-              </label>
-
-              <label>
-                Height
-                <input
-                  type="number"
-                  min={selectedDefinition.minHeight}
-                  max={selectedDefinition.maxHeight}
-                  value={height}
-                  onBlur={(event) => onSettingsCommit({ height: Number(event.currentTarget.value) })}
-                  onInput={(event) => onHeightChange(Number(event.currentTarget.value))}
-                  onKeyDown={blurOnEnter}
-                />
-              </label>
-            </>
-          )}
-
-          {isSolitaire ? (
-            <SolitaireSettings
-              variation={solitaireVariation}
-              isGenerating={isGenerating}
-              onVariationChange={onSolitaireVariationChange}
-              onGenerate={onGenerate}
-              onRandomize={onRandomize}
-            />
-          ) : (
-            <div class="control-actions">
-              <button type="button" onClick={onGenerate} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-                {isGenerating ? "Generating..." : "Generate"}
-              </button>
-              <button type="button" onClick={onRandomize} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-                Randomize
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
+  const statusSlot = showStatusLine || showSudokuValidationMessage || showNonogramValidationMessage ? (
+    <>
       {showStatusLine ? (
         <p class="status-line" aria-live="polite">
           {statusMessage}
@@ -243,223 +201,98 @@ export const PuzzleWorkspace = ({
           {statusMessage}
         </p>
       ) : null}
+    </>
+  ) : null;
 
-      {puzzle ? (
-        <section class="puzzle-panel" aria-label="Generated puzzle preview">
-          <div class="puzzle-meta">
-            {puzzle.kind === "cards" ? null : isSudoku ? null : <span>{`${puzzle.width} x ${puzzle.height}`}</span>}
-            {puzzle.difficulty ? <span>{puzzle.difficulty}</span> : null}
-            {isNonogram ? <span>{puzzle.uniqueSolution ? "Unique" : "Open"}</span> : null}
-            {isWordGuess ? <span>Answer-list solvable</span> : null}
-            {puzzle.kind === "cards" ? <span>Random deal</span> : null}
-            {puzzle.kind === "cards" ? <span>{solitaireDrawModeLabels[puzzle.solitaireVariation.drawMode]}</span> : null}
-            {puzzle.kind === "cards" ? <span>{solitaireRedealLimitLabels[String(puzzle.solitaireVariation.redeals)]}</span> : null}
-            {puzzle.kind === "cards" ? <span>{solitaireWasteModeLabels[puzzle.solitaireVariation.wasteMode]}</span> : null}
-            {puzzle.kind === "cards" ? <span>{puzzle.solitaireVariation.knownSolvable ? "Solvability verified" : "Solvability not verified"}</span> : null}
-            {isSudoku ? (
-              <span>{getGivenCount(gridCells)} givens</span>
-            ) : isNonogram ? (
-              <span>{filledOpenCount}/{openCount} filled</span>
-            ) : wordGuessDailyLabel ? (
-              <span>Daily: {wordGuessDailyLabel}</span>
-            ) : puzzle.kind === "cards" ? null : (
-              <span>Seed: {puzzle.seed}</span>
-            )}
-            {isSudoku ? <span>Progress: {filledOpenCount} of {openCount}</span> : null}
-            {isSudoku ? <span>Seed: {puzzle.seed}</span> : null}
-          </div>
-
-          {puzzle.kind === "cards" ? (
-            <>
-              <div class="solitaire-action-row" aria-label="Solitaire controls">
-                <button type="button" onClick={onUndoSolitaire} disabled={!canUndoSolitaire} aria-label="Undo Solitaire move" title="Undo">
-                  ↶
-                </button>
-                <button type="button" onClick={onRedoSolitaire} disabled={!canRedoSolitaire} aria-label="Redo Solitaire move" title="Redo">
-                  ↷
-                </button>
-                <button type="button" onClick={onAutoMoveToFoundations} aria-label="Move all currently legal cards to foundations" title="Auto foundation">
-                  ♣→
-                </button>
-              </div>
-              <p class="solitaire-history-note">{solitaireHistoryLimitNotice}</p>
-            </>
-          ) : null}
-
-          {puzzle.kind === "cards" && cardStacks ? (
-            <CardPuzzlePreview
-              stacks={cardStacks}
-              selectedCard={selectedCard}
-              stats={solitaireStats}
-              variation={puzzle.solitaireVariation}
-              onCardClick={onCardClick}
-              onCardDoubleClick={onCardDoubleClick}
-              onStackClick={onStackClick}
-            />
-          ) : puzzle.kind === "tiles" ? (
-            <TilePuzzlePreview puzzle={puzzle} />
-          ) : puzzle.kind === "grid" && puzzle.puzzleId === "word-guess" && gridCells ? (
-            <WordGuessGame
-              puzzle={puzzle}
-              cells={gridCells}
-              statusMessage={statusMessage}
-              onCellInput={onCellInput}
-              onSubmitGuess={onCheck}
-              onRandomize={onRandomize}
-            />
-          ) : puzzle.kind === "grid" && gridCells ? (
-            <GridPuzzlePreview
-              puzzle={puzzle}
-              cells={gridCells}
-              selectedGridCell={selectedGridCell}
-              onCellClick={onCellClick}
-              onCellInput={onCellInput}
-            />
-          ) : null}
-
-          {puzzle.kind !== "cards" && (!hasBottomSettingsBar) ? (
-            <div class="puzzle-actions">
-              <button type="button" onClick={onCheck}>
-                Check
-              </button>
-            </div>
-          ) : null}
-
-          {hasBottomSettingsBar ? (
-            <div class="puzzle-settings-panel" aria-label={`${selectedDefinition.title} controls`}>
-              {isWordGuess ? null : (
-                <div class="puzzle-settings-actions">
-                  <button type="button" onClick={onCheck}>
-                    Check
-                  </button>
-                </div>
-              )}
-
-              {isWordGuess ? (
-                <>
-                  <label>
-                    Letters
-                    <input
-                      type="number"
-                      min={selectedDefinition.minWidth}
-                      max={selectedDefinition.maxWidth}
-                      value={width}
-                      onBlur={(event) => onSettingsCommit({ width: Number(event.currentTarget.value) })}
-                      onInput={(event) => onWidthChange(Number(event.currentTarget.value))}
-                      onKeyDown={blurOnEnter}
-                    />
-                  </label>
-                  <label>
-                    Guesses
-                    <input
-                      type="number"
-                      min={selectedDefinition.minHeight}
-                      max={selectedDefinition.maxHeight}
-                      value={height}
-                      onBlur={(event) => onSettingsCommit({ height: Number(event.currentTarget.value) })}
-                      onInput={(event) => onHeightChange(Number(event.currentTarget.value))}
-                      onKeyDown={blurOnEnter}
-                    />
-                  </label>
-                </>
-              ) : (
-                <label>
-                  Difficulty
-                  <select value={difficulty} onChange={(event) => onDifficultyChange(event.currentTarget.value as PuzzleDifficulty)}>
-                    <option>Easy</option>
-                    <option>Medium</option>
-                    <option>Hard</option>
-                    <option>Expert</option>
-                  </select>
-                </label>
-              )}
-
-              {isNonogram && !isFixedSize ? (
-                <div class="puzzle-size-control" aria-label="Nonogram size">
-                  <span class="control-label">Size</span>
-                  <label class="compact-number-control">
-                    <span>W</span>
-                    <input
-                      aria-label="Width"
-                      type="number"
-                      min={selectedDefinition.minWidth}
-                      max={selectedDefinition.maxWidth}
-                      value={width}
-                      onBlur={(event) => onSettingsCommit({ width: Number(event.currentTarget.value) })}
-                      onInput={(event) => onWidthChange(Number(event.currentTarget.value))}
-                      onKeyDown={blurOnEnter}
-                    />
-                  </label>
-                  <span class="size-separator">x</span>
-                  <label class="compact-number-control">
-                    <span>H</span>
-                    <input
-                      aria-label="Height"
-                      type="number"
-                      min={selectedDefinition.minHeight}
-                      max={selectedDefinition.maxHeight}
-                      value={height}
-                      onBlur={(event) => onSettingsCommit({ height: Number(event.currentTarget.value) })}
-                      onInput={(event) => onHeightChange(Number(event.currentTarget.value))}
-                      onKeyDown={blurOnEnter}
-                    />
-                  </label>
-                </div>
-              ) : null}
-
-              {isNonogram ? (
-                <div class="puzzle-generation-options" aria-label="Nonogram generation options">
-                  <label>
-                    Seed
-                    {seedInput}
-                  </label>
-
-                  <label class="puzzle-checkbox-control">
-                    <input
-                      checked={requireUniqueSolution}
-                      onChange={(event) => onUniqueSolutionChange(event.currentTarget.checked)}
-                      type="checkbox"
-                    />
-                    <span>Unique solution</span>
-                  </label>
-                </div>
-              ) : (
-                <label>
-                  Seed
-                  {seedInput}
-                </label>
-              )}
-
-              <div class="puzzle-settings-actions">
-                {isWordGuess ? (
-                  <button type="button" onClick={generateWordGuessDaily} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-                    Today
-                  </button>
-                ) : null}
-                {isWordGuess ? (
-                  <button type="button" onClick={onGenerate} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-                    {isGenerating ? "Generating..." : "Use seed"}
-                  </button>
-                ) : null}
-                <button type="button" onClick={onRandomize} disabled={isGenerating || !selectedPuzzleIsGeneratable}>
-                  {isWordGuess ? "Random" : "Randomize"}
-                </button>
-              </div>
-
-              {isWordGuess ? <p class="word-guess-solvability-note">Answer is always selected from this puzzle's answer list and is accepted as a valid guess.</p> : null}
-              {isSudoku ? <p class="sudoku-input-hint">Select an empty cell, then type 1-9 or tap a number. Press 0, Backspace, or Clear to empty a cell.</p> : null}
-            </div>
-          ) : null}
-
-          {hasBottomSettingsBar || puzzle.kind === "cards" || puzzle.notes.length === 0 ? null : (
-            <ul class="notes-list">
-              {puzzle.notes.map((note) => (
-                <li key={note}>{note}</li>
-              ))}
-            </ul>
-          )}
-        </section>
-      ) : null}
+  const loadingBoardSlot = (
+    <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label={`${selectedDefinition.title} is generating`}>
+      <div class="puzzle-loading-copy">
+        <strong>Generating {selectedDefinition.title}</strong>
+        <span>{statusMessage}</span>
+      </div>
+      <div class="puzzle-loading-grid" aria-hidden="true">
+        {Array.from({ length: selectedDefinition.id === "klondike-solitaire" ? 12 : 9 }, (_, index) => (
+          <span key={index} />
+        ))}
+      </div>
     </section>
+  );
+
+  const boardSlot = puzzle ? (
+    <section class="puzzle-panel" aria-label="Generated puzzle preview">
+      {puzzle.kind === "cards" ? null : (
+        <div class="puzzle-meta">
+          {isSudoku ? null : <span>{`${puzzle.width} x ${puzzle.height}`}</span>}
+          {puzzle.difficulty ? <span>{puzzle.difficulty}</span> : null}
+          {isNonogram ? <span>{puzzle.uniqueSolution ? "Unique" : "Open"}</span> : null}
+          {isWordGuess ? <span>Answer-list solvable</span> : null}
+          {isSudoku ? (
+            <span>{getGivenCount(gridCells)} givens</span>
+          ) : isNonogram ? (
+            <span>{filledOpenCount}/{openCount} filled</span>
+          ) : dailyLabel ? (
+            <span>Daily: {dailyLabel}</span>
+          ) : null}
+          {isSudoku ? <span>Progress: {filledOpenCount} of {openCount}</span> : null}
+        </div>
+      )}
+
+      {puzzle.kind === "cards" && cardStacks ? (
+        <CardPuzzlePreview
+          stacks={cardStacks}
+          selectedCard={selectedCard}
+          stats={solitaireStats}
+          toolbar={solitaireActionControls}
+          variation={puzzle.solitaireVariation}
+          onCardClick={onCardClick}
+          onCardDoubleClick={onCardDoubleClick}
+          onStackClick={onStackClick}
+        />
+      ) : puzzle.kind === "tiles" ? (
+        <TilePuzzlePreview puzzle={puzzle} />
+      ) : puzzle.kind === "grid" && puzzle.puzzleId === "word-guess" && gridCells ? (
+        <WordGuessGame
+          puzzle={puzzle}
+          cells={gridCells}
+          statusMessage={statusMessage}
+          onCellInput={onCellInput}
+          onSubmitGuess={onCheck}
+        />
+      ) : puzzle.kind === "grid" && gridCells ? (
+        <GridPuzzlePreview
+          puzzle={puzzle}
+          cells={gridCells}
+          selectedGridCell={selectedGridCell}
+          onCellClick={onCellClick}
+          onCellInput={onCellInput}
+        />
+      ) : null}
+
+      {hasBottomSettingsBar || puzzle.kind === "cards" || puzzle.notes.length === 0 ? null : (
+        <ul class="notes-list">
+          {puzzle.notes.map((note) => (
+            <li key={note}>{note}</li>
+          ))}
+        </ul>
+      )}
+    </section>
+  ) : isGenerating ? loadingBoardSlot : null;
+
+  const gameplaySlot = puzzle && puzzle.kind !== "cards" && !isWordGuess ? (
+    <div class="puzzle-actions">
+      <button type="button" onClick={onCheck}>
+        Check
+      </button>
+    </div>
+  ) : null;
+
+  return (
+    <PuzzleWorkspaceLayout
+      className={workspaceClass}
+      status={statusSlot}
+      board={boardSlot}
+      gameplay={gameplaySlot}
+      generation={configurationSlot}
+    />
   );
 };

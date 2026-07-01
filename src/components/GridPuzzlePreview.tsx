@@ -1,4 +1,4 @@
-import { useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { FILLED_NONOGRAM_CELL } from "../games/nonogram/solve";
 import { getGridInputMode, isSelectedGridCell, type GridCellSelection } from "../interactions/gridRules";
@@ -37,6 +37,7 @@ type GridPuzzlePreviewProps = {
 };
 
 export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick, onCellInput }: GridPuzzlePreviewProps) => {
+  const [highlightedSudokuDigit, setHighlightedSudokuDigit] = useState("");
   const inputMode = getGridInputMode(puzzle.puzzleId);
   const selectedCell = selectedGridCell
     ? cells.find((cell) => cell.row === selectedGridCell.row && cell.column === selectedGridCell.column)
@@ -45,11 +46,29 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
   const isNonogram = puzzle.puzzleId === "nonogram";
   const hasSudokuValidation = Boolean(isSudoku && cells.some((cell) => !cell.locked && (cell.tone === "answer" || cell.tone === "hint")));
   const canUseDigitPad = Boolean(isSudoku && selectedCell && !selectedCell.locked);
+  const activeSudokuValue = selectedCell?.value || highlightedSudokuDigit;
   const gridTemplateColumns = `repeat(${puzzle.width}, minmax(0, 1fr))`;
   const setSelectedSudokuValue = (value: string) => {
-    if (isSudoku && selectedCell && !selectedCell.locked) {
-      onCellInput(selectedCell, value);
+    if (!isSudoku) {
+      return;
     }
+
+    if (selectedCell && !selectedCell.locked) {
+      const nextValue = selectedCell.value === value ? "" : value;
+      setHighlightedSudokuDigit("");
+      onCellInput(selectedCell, nextValue);
+      return;
+    }
+
+    setHighlightedSudokuDigit((currentDigit) => (currentDigit === value ? "" : value));
+  };
+  const clearSudokuValue = () => {
+    if (selectedCell && !selectedCell.locked) {
+      onCellInput(selectedCell, "");
+      return;
+    }
+
+    setHighlightedSudokuDigit("");
   };
   const handleSudokuKeyDown = (event: KeyboardEvent, cell: PuzzleCell) => {
     if (!isSudoku || cell.locked) {
@@ -61,6 +80,10 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
       onCellInput(cell, "");
     }
   };
+
+  useEffect(() => {
+    setHighlightedSudokuDigit("");
+  }, [puzzle.puzzleId, puzzle.seed]);
 
   useEffect(() => {
     if (!isSudoku || !selectedCell || typeof document === "undefined") {
@@ -101,9 +124,10 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
             !isSelected &&
             (cell.row === selectedCell.row || cell.column === selectedCell.column || sameSudokuBox(cell, selectedCell)),
         );
-        const isSameValue = Boolean(isSudoku && selectedCell?.value && cell.value === selectedCell.value && !isSelected);
+        const isSameValue = Boolean(isSudoku && activeSudokuValue && cell.value === activeSudokuValue && !isSelected);
         const isCorrectValue = Boolean(isSudoku && hasSudokuValidation && !cell.locked && cell.tone === "answer");
-        const visualTone = isSudoku && cell.tone === "hint" ? "empty" : cell.tone;
+        const isIncorrectValue = Boolean(isSudoku && hasSudokuValidation && !cell.locked && cell.tone === "hint");
+        const visualTone = cell.tone;
         const cellClass = [
           "cell",
           visualTone,
@@ -112,6 +136,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
           isPeer ? "peer-cell" : "",
           isSameValue ? "same-value-cell" : "",
           isCorrectValue ? "correct-cell" : "",
+          isIncorrectValue ? "incorrect-cell" : "",
           isSudoku && cell.column % SUDOKU_BOX_SIZE === 0 && cell.column > 0 ? "box-left" : "",
           isSudoku && cell.row % SUDOKU_BOX_SIZE === 0 && cell.row > 0 ? "box-top" : "",
         ]
@@ -176,11 +201,17 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
       {isSudoku ? (
         <div class="sudoku-digit-pad" aria-label="Sudoku digit pad" data-sudoku-selection-scope="true">
           {sudokuDigits.map((digit) => (
-            <button key={digit} type="button" disabled={!canUseDigitPad} onClick={() => setSelectedSudokuValue(digit)}>
+            <button
+              class={highlightedSudokuDigit === digit ? "selected-sudoku-digit" : ""}
+              key={digit}
+              type="button"
+              aria-pressed={highlightedSudokuDigit === digit}
+              onClick={() => setSelectedSudokuValue(digit)}
+            >
               {digit}
             </button>
           ))}
-          <button class="sudoku-clear-button" type="button" disabled={!canUseDigitPad} onClick={() => setSelectedSudokuValue("")}>
+          <button class="sudoku-clear-button" type="button" disabled={!canUseDigitPad && !highlightedSudokuDigit} onClick={clearSudokuValue}>
             Clear
           </button>
         </div>

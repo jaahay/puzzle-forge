@@ -2,6 +2,7 @@ import { useRef } from "preact/hooks";
 import type { GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleId } from "../catalog/types";
 import { cloneStack } from "../interactions/cardRules";
 import { cloneGridCell, prepareGridCells } from "../interactions/gridRules";
+import { consumeHomeNavigation } from "./homeNavigation";
 import {
   initialSolitaireStats,
   loadPersistedPuzzleSessions,
@@ -141,13 +142,20 @@ export const usePuzzleSessions = () => {
     }
 
     hasLoadedPersistedSessions.current = true;
+
     const persisted = loadPersistedPuzzleSessions();
 
     if (!persisted) {
+      consumeHomeNavigation();
       return;
     }
 
     persistedSessionCache.current = persisted.sessions;
+
+    if (consumeHomeNavigation()) {
+      return;
+    }
+
     const activePersistedSession = persisted.sessions[persisted.activePuzzleId];
 
     if (activePersistedSession) {

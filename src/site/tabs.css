@@ -21,7 +21,12 @@
 
 .app-brand {
   gap: 0.5rem;
+  border: 0;
+  padding: 0;
   color: #f8fafc;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
   font-weight: 900;
   letter-spacing: 0.01em;
 }

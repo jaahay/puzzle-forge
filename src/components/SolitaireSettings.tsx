@@ -7,11 +7,14 @@ import {
   solitaireWasteModeLabels,
   solitaireWasteModes,
 } from "../games/solitaire/variation";
+import { GenerationActions } from "./GenerationActions";
 
 type SolitaireSettingsProps = {
   variation: SolitaireVariation;
   isGenerating: boolean;
+  canGenerate: boolean;
   onVariationChange: (variation: SolitaireVariation) => void;
+  onToday: () => void;
   onGenerate: () => void;
   onRandomize: () => void;
 };
@@ -22,7 +25,9 @@ const parseRedealLimit = (value: string): SolitaireRedealLimit =>
 export const SolitaireSettings = ({
   variation,
   isGenerating,
+  canGenerate,
   onVariationChange,
+  onToday,
   onGenerate,
   onRandomize,
 }: SolitaireSettingsProps) => {
@@ -73,23 +78,17 @@ export const SolitaireSettings = ({
         </select>
       </label>
 
-      <div class="solitaire-proof-state" aria-label="Solvability verification state">
-        <span>Solvability</span>
-        <strong>{variation.knownSolvable ? "Verified" : "Not verified"}</strong>
-      </div>
-
-      <div class="puzzle-settings-actions solitaire-settings-actions">
-        <button type="button" onClick={onGenerate} disabled={isGenerating}>
-          {isGenerating ? "Generating..." : "Use seed"}
-        </button>
-        <button type="button" onClick={onRandomize} disabled={isGenerating}>
-          Random
-        </button>
-      </div>
-
-      <p class="solitaire-solvability-note">
-        Standard waste plays the top card only. Relaxed waste lets any visible waste card move. Random deals are not solver-verified yet.
-      </p>
+      <GenerationActions
+        className="solitaire-settings-actions"
+        isGenerating={isGenerating}
+        canGenerate={canGenerate}
+        showToday
+        showUseSeed
+        randomLabel="Random"
+        onToday={onToday}
+        onUseSeed={onGenerate}
+        onRandomize={onRandomize}
+      />
     </div>
   );
 };

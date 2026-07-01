@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { CardStack, GeneratedPuzzle, PlayingCard } from "../catalog/types";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
+import { getInitialSelectedPuzzleId } from "./homeNavigation";
 import {
   buildPersistedPuzzleSession,
   completePersistedPuzzleSession,
@@ -14,6 +16,7 @@ import {
   type SolitaireHistoryEntry,
   type SolitaireStats,
 } from "./session";
+import { makeMissingPuzzleGenerationOptions, shouldRecoverMissingPuzzleSurface } from "./usePuzzleGeneration";
 
 const metadataStorageKey = "puzzle-forge.sessions.v1";
 const solitaireStorageKey = "puzzle-forge.session.v1.klondike-solitaire";
@@ -202,10 +205,74 @@ describe("app session persistence", () => {
       expect(persistedSession.solitaireVariation).toEqual(defaultSolitaireVariation);
       expect(persistedSession.progress.kind).toBe("cards");
       expect(loadPersistedPuzzleSessions()?.activePuzzleId).toBe("klondike-solitaire");
+      expect(getInitialSelectedPuzzleId()).toBe("klondike-solitaire");
 
       storage.set(solitaireStorageKey, JSON.stringify({ ...persistedSession, puzzle: makeCardPuzzle() }));
 
       expect(loadPersistedPuzzleSessions()).toBeNull();
+      expect(getInitialSelectedPuzzleId()).toBe("sudoku");
+    });
+  });
+});
+
+describe("missing puzzle surface recovery", () => {
+  it("only recovers an active generatable puzzle surface with no generated puzzle", () => {
+    const recoverableState = {
+      hasSelectedPuzzle: true,
+      isHomeSelected: false,
+      isGenerating: false,
+      hasPuzzle: false,
+      selectedPuzzleIsGeneratable: true,
+    };
+
+    expect(shouldRecoverMissingPuzzleSurface(recoverableState)).toBe(true);
+    expect(shouldRecoverMissingPuzzleSurface({ ...recoverableState, hasPuzzle: true })).toBe(false);
+    expect(shouldRecoverMissingPuzzleSurface({ ...recoverableState, isGenerating: true })).toBe(false);
+    expect(shouldRecoverMissingPuzzleSurface({ ...recoverableState, isHomeSelected: true })).toBe(false);
+    expect(shouldRecoverMissingPuzzleSurface({ ...recoverableState, selectedPuzzleIsGeneratable: false })).toBe(false);
+  });
+
+  it("builds missing-puzzle generation options from catalog defaults and runtime difficulty", () => {
+    const options = makeMissingPuzzleGenerationOptions({
+      selectedPuzzleId: "nonogram",
+      selectedDefinition: getPuzzleDefinition("nonogram"),
+      seed: "  ",
+      difficulty: "Hard",
+      requireUniqueSolution: false,
+      solitaireVariation: defaultSolitaireVariation,
+      makeSeed: () => "fallback-seed",
+    });
+
+    expect(options).toEqual({
+      puzzleId: "nonogram",
+      seed: "fallback-seed",
+      width: 8,
+      height: 8,
+      difficulty: "Hard",
+      requireUniqueSolution: false,
+      solitaireVariation: undefined,
+    });
+  });
+
+  it("keeps Solitaire variation only for Solitaire surface recovery", () => {
+    const options = makeMissingPuzzleGenerationOptions({
+      selectedPuzzleId: "klondike-solitaire",
+      selectedDefinition: getPuzzleDefinition("klondike-solitaire"),
+      seed: "deal-seed",
+      difficulty: "Medium",
+      requireUniqueSolution: true,
+      solitaireVariation: defaultSolitaireVariation,
+      makeSeed: () => "unused-fallback",
+    });
+
+    expect(options).toEqual({
+      puzzleId: "klondike-solitaire",
+      seed: "deal-seed",
+      width: 7,
+      height: 7,
+      difficulty: "Medium",
+      requireUniqueSolution: true,
+      solitaireVariation: defaultSolitaireVariation,
     });
   });
 });

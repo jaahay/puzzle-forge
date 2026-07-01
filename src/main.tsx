@@ -1,18 +1,19 @@
 import { render } from "preact";
 import { App } from "./App";
 import "./styles.css";
-import "./site/solitaire.css";
+import "./site/base.css";
+import "./site/tabs.css";
+import "./site/views.css";
+import "./site/footer.css";
+import "./site/app-shell.css";
+import "./site/workspace.css";
+import "./site/mobile-workspace.css";
+import "./site/grid.css";
 import "./site/sudoku.css";
 import "./site/nonogram.css";
 import "./site/word-guess.css";
 import "./site/jigsaw.css";
-import "./site/base.css";
-import "./site/tabs.css";
-import "./site/views.css";
-import "./site/app-shell.css";
-import "./site/footer.css";
-import "./site/mobile-workspace.css";
-import "./site/control-polish.css";
+import "./site/solitaire.css";
 
 const root = document.getElementById("app");
 

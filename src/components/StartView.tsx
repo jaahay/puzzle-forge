@@ -1,3 +1,4 @@
+import { puzzleIcons } from "../catalog/puzzleIcons";
 import type { PuzzleDefinition, PuzzleId } from "../catalog/types";
 
 type StartViewProps = {
@@ -15,78 +16,46 @@ type StartPuzzleButtonProps = {
 
 const StartPuzzleButton = ({ definition, label, onSelectPuzzle }: StartPuzzleButtonProps) => (
   <button class="start-puzzle-card" key={definition.id} type="button" onClick={() => onSelectPuzzle(definition.id)}>
+    <span class="start-puzzle-card-icon" aria-hidden="true">{puzzleIcons[definition.id]}</span>
     {label ? <span class={`status ${definition.status}`}>{label}</span> : null}
     <strong>{definition.title}</strong>
     <span>{definition.tagline}</span>
   </button>
 );
 
-const StartRailButton = ({ definition, label, onSelectPuzzle }: StartPuzzleButtonProps) => (
-  <button class="catalog-mini-card" key={definition.id} type="button" onClick={() => onSelectPuzzle(definition.id)}>
-    <span class="catalog-mini-title">{definition.title}</span>
-    {label ? <span class={`catalog-mini-status ${definition.status}`}>{label}</span> : null}
-  </button>
-);
-
 export const StartView = ({ readyPuzzles, previewPuzzles, plannedPuzzles, onSelectPuzzle }: StartViewProps) => (
-  <section class="catalog-layout start-catalog-layout" aria-labelledby="puzzle-start-title">
-    <aside class="catalog-panel start-catalog-panel" aria-label="Puzzle catalog">
-      <div class="panel-heading">
-        <span class="catalog-count">Puzzles</span>
-        <strong>{`${readyPuzzles.length} ready`}</strong>
-      </div>
-      <div class="catalog-mini-list">
-        <a class="catalog-mini-card home-card selected" href="/" aria-current="page">
-          <span class="catalog-mini-title">Home</span>
-        </a>
-        {readyPuzzles.map((definition) => (
-          <StartRailButton definition={definition} key={definition.id} onSelectPuzzle={onSelectPuzzle} />
-        ))}
-        {previewPuzzles.map((definition) => (
-          <StartRailButton definition={definition} key={definition.id} label="Preview" onSelectPuzzle={onSelectPuzzle} />
-        ))}
-        {plannedPuzzles.map((definition) => (
-          <button class="catalog-mini-card" disabled key={definition.id} type="button">
-            <span class="catalog-mini-title">{definition.title}</span>
-            <span class="catalog-mini-status planned">Soon</span>
-          </button>
-        ))}
-      </div>
-    </aside>
+  <section class="start-layout" aria-labelledby="puzzle-start-title">
+    <div class="puzzle-start-panel">
+      <h1 id="puzzle-start-title">Choose a puzzle</h1>
+      <p class="hero-copy">Seeded generators and playable puzzle workspaces.</p>
 
-    <div class="start-layout">
-      <div class="puzzle-start-panel">
-        <h1 id="puzzle-start-title">Choose a puzzle</h1>
-        <p class="hero-copy">Seeded generators and playable puzzle workspaces.</p>
+      <section class="start-section" aria-label="Ready puzzles">
+        <p class="start-section-label">Ready</p>
+        <div class="start-card-grid">
+          {readyPuzzles.map((definition) => (
+            <StartPuzzleButton definition={definition} key={definition.id} onSelectPuzzle={onSelectPuzzle} />
+          ))}
+        </div>
+      </section>
 
-        <section class="start-section" aria-label="Ready puzzles">
-          <p class="start-section-label">Ready</p>
-          <div class="start-card-grid">
-            {readyPuzzles.map((definition) => (
-              <StartPuzzleButton definition={definition} key={definition.id} onSelectPuzzle={onSelectPuzzle} />
+      {previewPuzzles.length > 0 ? (
+        <section class="start-section" aria-label="Preview puzzles">
+          <p class="start-section-label">Preview</p>
+          <div class="start-card-grid compact">
+            {previewPuzzles.map((definition) => (
+              <StartPuzzleButton definition={definition} key={definition.id} label="Preview" onSelectPuzzle={onSelectPuzzle} />
             ))}
           </div>
         </section>
+      ) : null}
 
-        {previewPuzzles.length > 0 ? (
-          <section class="start-section" aria-label="Preview puzzles">
-            <p class="start-section-label">Preview</p>
-            <div class="start-card-grid compact">
-              {previewPuzzles.map((definition) => (
-                <StartPuzzleButton definition={definition} key={definition.id} label="Preview" onSelectPuzzle={onSelectPuzzle} />
-              ))}
-            </div>
-          </section>
-        ) : null}
-
-        <div class="coming-soon-list" aria-label="Coming soon puzzles">
-          <span>Coming soon</span>
-          {plannedPuzzles.map((definition) => (
-            <button key={definition.id} type="button" disabled>
-              {definition.title}
-            </button>
-          ))}
-        </div>
+      <div class="coming-soon-list" aria-label="Coming soon puzzles">
+        <span>Coming soon</span>
+        {plannedPuzzles.map((definition) => (
+          <button key={definition.id} type="button" disabled>
+            {puzzleIcons[definition.id]} {definition.title}
+          </button>
+        ))}
       </div>
     </div>
   </section>

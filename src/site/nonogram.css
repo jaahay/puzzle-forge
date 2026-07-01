@@ -157,57 +157,127 @@
   align-items: center;
 }
 
-.nonogram-workspace .puzzle-settings-panel {
+.nonogram-settings-panel {
+  width: min(100%, 46rem);
+  justify-self: center;
+}
+
+.nonogram-settings-panel .check-actions,
+.nonogram-settings-panel .generation-actions {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
-  gap: 0.85rem;
+  grid-template-columns: 1fr;
+}
+
+.nonogram-settings-panel .check-actions button,
+.nonogram-settings-panel .generation-actions button {
+  width: 100%;
+  min-width: 0;
+}
+
+.nonogram-settings-panel > label,
+.nonogram-settings-panel .puzzle-size-control,
+.nonogram-settings-panel .puzzle-generation-options,
+.nonogram-settings-panel .puzzle-settings-actions {
+  min-width: 0;
+}
+
+.puzzle-size-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 0.4rem 0.55rem;
   align-items: end;
 }
 
-.nonogram-workspace .puzzle-settings-panel > div:first-of-type {
-  display: flex;
+.puzzle-size-control .control-label {
   grid-column: 1 / -1;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.compact-number-control {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.35rem;
   align-items: center;
-  justify-content: flex-start;
-  border-bottom: 1px solid #1e293b;
-  padding-bottom: 0.85rem;
 }
 
-.nonogram-workspace .puzzle-settings-panel > div:first-of-type button {
-  min-width: 7rem;
+.compact-number-control span,
+.size-separator {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 900;
 }
 
-.nonogram-workspace .puzzle-settings-panel > label,
-.nonogram-workspace .puzzle-size-control,
-.nonogram-workspace .puzzle-generation-options {
+.compact-number-control input {
   min-width: 0;
 }
 
-.nonogram-workspace .puzzle-generation-options {
-  grid-column: span 2;
-  grid-template-columns: minmax(0, 1fr) auto;
+.size-separator {
+  align-self: center;
+  padding-bottom: 0.8rem;
 }
 
-.nonogram-workspace .puzzle-generation-options label,
-.nonogram-workspace .puzzle-generation-options input {
-  min-width: 0;
-}
-
-.nonogram-workspace .puzzle-checkbox-control {
+.puzzle-checkbox-control {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
   min-width: max-content;
+  padding-bottom: 0.75rem;
 }
 
-.nonogram-workspace .puzzle-settings-panel > div:last-of-type {
-  justify-self: end;
+.puzzle-checkbox-control input {
+  width: 1rem;
+  height: 1rem;
 }
 
-.nonogram-workspace .puzzle-settings-actions button {
-  width: auto;
+@media (min-width: 941px) {
+  .nonogram-settings-panel {
+    grid-template-columns: minmax(7rem, 0.85fr) minmax(9rem, 0.9fr) minmax(13rem, 1.15fr) minmax(10rem, 0.85fr);
+  }
+
+  .nonogram-settings-panel .check-actions {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .nonogram-settings-panel > label {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .nonogram-settings-panel .puzzle-size-control {
+    grid-column: 3 / span 2;
+    grid-row: 1;
+  }
+
+  .nonogram-settings-panel .puzzle-generation-options {
+    grid-column: 1 / span 3;
+    grid-row: 2;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .nonogram-settings-panel .generation-actions {
+    grid-column: 4;
+    grid-row: 2;
+  }
 }
 
 @media (max-width: 940px) {
-  .nonogram-workspace .puzzle-generation-options {
-    grid-column: 1 / -1;
+  .nonogram-settings-panel,
+  .nonogram-settings-panel .puzzle-generation-options,
+  .puzzle-size-control {
+    grid-template-columns: 1fr;
+  }
+
+  .nonogram-settings-panel .puzzle-checkbox-control {
+    min-width: 0;
+    padding-bottom: 0;
+    white-space: normal;
+  }
+
+  .size-separator {
+    display: none;
   }
 }
 
@@ -232,27 +302,5 @@
   .nonogram-row-clue {
     min-width: 2.85rem;
     padding-inline: 0.32rem;
-  }
-
-  .nonogram-workspace .puzzle-settings-panel,
-  .nonogram-workspace .puzzle-generation-options {
-    grid-template-columns: 1fr;
-  }
-
-  .nonogram-workspace .puzzle-settings-panel > div:first-of-type {
-    padding-bottom: 0.65rem;
-  }
-
-  .nonogram-workspace .puzzle-settings-panel > div:last-of-type {
-    justify-self: stretch;
-  }
-
-  .nonogram-workspace .puzzle-settings-actions button {
-    width: 100%;
-  }
-
-  .nonogram-workspace .puzzle-checkbox-control {
-    min-width: 0;
-    white-space: normal;
   }
 }

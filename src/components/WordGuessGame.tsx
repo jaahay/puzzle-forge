@@ -28,7 +28,6 @@ type WordGuessGameProps = {
   statusMessage: string;
   onCellInput: (cell: PuzzleCell, value: string) => void;
   onSubmitGuess: () => void;
-  onRandomize: () => void;
 };
 
 const getRows = (cells: PuzzleCell[], rowCount: number) =>
@@ -68,7 +67,7 @@ const restoreGuessIntoRow = (rowCells: PuzzleCell[], guess: string, onCellInput:
   });
 };
 
-export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSubmitGuess, onRandomize }: WordGuessGameProps) => {
+export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSubmitGuess }: WordGuessGameProps) => {
   const answer = puzzle.answerKey?.join("").toUpperCase() ?? "";
   const wordBank = useMemo(() => getWordGuessBank(puzzle.width), [puzzle.width]);
   const rows = useMemo(() => getRows(cells, puzzle.height), [cells, puzzle.height]);
@@ -284,7 +283,6 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     <section class="word-guess-game" aria-label={`${puzzle.width}-letter Word Guess game`}>
       <div class="word-guess-status" aria-live="polite">
         <strong>{message}</strong>
-        <span>Type with your keyboard, or tap the board to use the device keyboard.</span>
       </div>
 
       <div class="word-guess-board-shell" onClick={focusNativeInput}>
@@ -381,20 +379,17 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
         <button type="button" onClick={submitGuess} disabled={status !== "playing"}>
           Submit
         </button>
-        <button type="button" onClick={onRandomize}>
-          New word
-        </button>
         <button type="button" onClick={copyShareText} disabled={submittedRows === 0}>
           {copiedShare ? "Copied" : "Share"}
         </button>
       </div>
 
       <details class="word-guess-solver-details">
-        <summary>Solver details</summary>
+        <summary>Solver</summary>
         <div class="word-guess-analysis-header">
           <div>
             <strong>{analysis.candidateCount}</strong>
-            <span>possible answer{analysis.candidateCount === 1 ? "" : "s"} remain</span>
+            <span>possible answer{analysis.candidateCount === 1 ? "" : "s"}</span>
           </div>
           <div>
             <strong>{difficultyLabels[analysis.difficultyBand]}</strong>
@@ -402,13 +397,13 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
           </div>
           <div>
             <strong>{analysis.bestStarter.guess || "—"}</strong>
-            <span>solver starter</span>
+            <span>starter</span>
           </div>
         </div>
 
         <label class="word-guess-hard-mode">
           <input type="checkbox" checked={hardMode} onChange={(event) => setHardMode(event.currentTarget.checked)} disabled={status !== "playing" && submittedRows > 0} />
-          <span>Hard mode: guesses must remain possible under prior feedback.</span>
+          <span>Hard mode</span>
         </label>
 
         {analysis.steps.length > 0 ? (
@@ -423,7 +418,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
           </ol>
         ) : (
           <p class="word-guess-analysis-note">
-            Dictionary: {wordBank.dictionaryId}. {wordBank.answers.length} possible answers, {wordBank.validGuesses.length} valid guesses.
+            Dictionary: {wordBank.dictionaryId}. {wordBank.answers.length} answers, {wordBank.validGuesses.length} guesses.
           </p>
         )}
       </details>

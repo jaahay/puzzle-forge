@@ -1,0 +1,485 @@
+/*
+ * Shared workspace and control styles.
+ *
+ * Keep this file structural and reusable. Puzzle-specific board rendering belongs in
+ * sudoku.css, nonogram.css, word-guess.css, jigsaw.css, and solitaire.css.
+ */
+
+.workspace-panel,
+.puzzle-panel,
+.control-panel,
+.puzzle-settings-panel {
+  min-width: 0;
+}
+
+.workspace-panel {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.workspace-copy {
+  display: grid;
+  gap: 0.65rem;
+  margin-bottom: 0;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 1.1rem;
+  padding: clamp(0.9rem, 2vw, 1.2rem);
+  background: rgba(17, 24, 39, 0.54);
+}
+
+.workspace-copy > .status.playable {
+  display: none;
+}
+
+.workspace-copy h2,
+.workspace-copy p {
+  margin-bottom: 0;
+}
+
+.workspace-copy p {
+  max-width: 58rem;
+}
+
+.sudoku-workspace .workspace-copy,
+.nonogram-workspace .workspace-copy {
+  min-height: auto;
+}
+
+.control-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
+  gap: 0.9rem;
+  align-items: end;
+  border-top: 1px solid rgba(30, 41, 59, 0.9);
+  padding-top: 0.9rem;
+}
+
+.control-panel > label,
+.control-actions,
+.solitaire-settings,
+.solitaire-settings > label,
+.solitaire-proof-state,
+.solitaire-settings-actions,
+.solitaire-solvability-note {
+  min-width: 0;
+}
+
+.control-actions,
+.puzzle-actions,
+.puzzle-settings-actions,
+.solitaire-settings-actions,
+.tile-puzzle-tools,
+.word-guess-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.control-panel button,
+.puzzle-actions button,
+.puzzle-settings-actions button,
+.solitaire-settings-actions button,
+.tile-puzzle-tools button,
+.word-guess-actions button {
+  min-height: 2.65rem;
+  min-width: 7rem;
+  border: 1px solid rgba(167, 243, 208, 0.46);
+  border-radius: 999px;
+  padding: 0.72rem 1rem;
+  color: #0f172a;
+  background: linear-gradient(180deg, #bbf7d0, #86efac);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34), 0 10px 24px rgba(2, 6, 23, 0.22);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.control-panel button:nth-child(2),
+.puzzle-actions button,
+.puzzle-settings-actions button:nth-child(n + 2),
+.solitaire-settings-actions button:nth-child(2),
+.tile-puzzle-tools button:nth-child(n + 2),
+.word-guess-actions button:nth-child(n + 2),
+.seed-control button {
+  border-color: rgba(148, 163, 184, 0.24);
+  color: #e5e7eb;
+  background: linear-gradient(180deg, #475569, #334155);
+}
+
+.control-panel button:hover:not(:disabled),
+.puzzle-actions button:hover:not(:disabled),
+.puzzle-settings-actions button:hover:not(:disabled),
+.solitaire-settings-actions button:hover:not(:disabled),
+.tile-puzzle-tools button:hover:not(:disabled),
+.word-guess-actions button:hover:not(:disabled),
+.seed-control button:hover:not(:disabled),
+.control-panel button:focus-visible,
+.puzzle-actions button:focus-visible,
+.puzzle-settings-actions button:focus-visible,
+.solitaire-settings-actions button:focus-visible,
+.tile-puzzle-tools button:focus-visible,
+.word-guess-actions button:focus-visible,
+.seed-control button:focus-visible {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.36), 0 0 0 3px rgba(167, 243, 208, 0.24), 0 12px 28px rgba(2, 6, 23, 0.28);
+  outline: none;
+}
+
+.control-panel button:disabled,
+.puzzle-actions button:disabled,
+.puzzle-settings-actions button:disabled,
+.solitaire-settings-actions button:disabled,
+.tile-puzzle-tools button:disabled,
+.word-guess-actions button:disabled,
+.seed-control button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.solitaire-control-panel {
+  width: min(100%, 44rem);
+  justify-self: center;
+  grid-template-columns: 1fr;
+  align-items: stretch;
+}
+
+.solitaire-control-panel > label {
+  order: 2;
+}
+
+.solitaire-settings {
+  order: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.8rem;
+  align-items: end;
+}
+
+.solitaire-proof-state {
+  display: grid;
+  min-height: 3.05rem;
+  align-content: center;
+  gap: 0.12rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 0.9rem;
+  padding: 0.55rem 0.7rem;
+  background: rgba(17, 24, 39, 0.46);
+}
+
+.solitaire-proof-state span {
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.solitaire-proof-state strong {
+  color: #f8fafc;
+}
+
+.solitaire-settings-actions {
+  grid-column: 1 / span 2;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.solitaire-settings-actions button {
+  width: 100%;
+  min-width: 0;
+}
+
+.solitaire-solvability-note {
+  grid-column: 3 / -1;
+  margin: 0;
+  align-self: center;
+  color: #cbd5e1;
+  line-height: 1.45;
+}
+
+.puzzle-panel {
+  display: grid;
+  gap: 1rem;
+  margin-top: 0;
+}
+
+.puzzle-meta {
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0;
+  border-bottom: 1px solid rgba(30, 41, 59, 0.9);
+  padding-bottom: 0.85rem;
+}
+
+.puzzle-meta span,
+.tag-row span {
+  min-height: 1.85rem;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.1;
+}
+
+.status-line {
+  margin: 0;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 1rem;
+  padding: 0.75rem 0.9rem;
+  background: rgba(17, 24, 39, 0.46);
+}
+
+.puzzle-loading-panel {
+  min-height: clamp(16rem, 42vw, 26rem);
+  align-content: center;
+  justify-items: center;
+  gap: 1.25rem;
+}
+
+.puzzle-loading-copy {
+  display: grid;
+  gap: 0.25rem;
+  text-align: center;
+}
+
+.puzzle-loading-copy strong {
+  color: #f8fafc;
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
+}
+
+.puzzle-loading-copy span {
+  color: #cbd5e1;
+}
+
+.puzzle-loading-grid {
+  display: grid;
+  width: min(100%, 18rem);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.puzzle-loading-grid span {
+  min-height: 3.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 0.75rem;
+  background: linear-gradient(90deg, rgba(30, 41, 59, 0.5), rgba(71, 85, 105, 0.58), rgba(30, 41, 59, 0.5));
+  background-size: 240% 100%;
+  animation: puzzle-loading-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes puzzle-loading-shimmer {
+  from {
+    background-position: 120% 0;
+  }
+
+  to {
+    background-position: -120% 0;
+  }
+}
+
+.puzzle-panel > .grid,
+.puzzle-panel > .nonogram-board,
+.puzzle-panel > .word-guess-game,
+.puzzle-panel > .cards-layout,
+.puzzle-panel > .tile-puzzle-preview,
+.puzzle-panel > .peg-solitaire-board {
+  justify-self: center;
+  min-width: 0;
+}
+
+.puzzle-panel > .grid,
+.word-guess-board-shell,
+.cards-layout,
+.tile-puzzle-preview {
+  width: min(100%, 44rem);
+}
+
+.cards-layout,
+.word-guess-game,
+.tile-puzzle-preview {
+  gap: 0.9rem;
+}
+
+.grid.sudoku,
+.nonogram-board,
+.word-guess-board,
+.tile-puzzle-board,
+.cards-layout {
+  margin-inline: auto;
+}
+
+.word-guess-board {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.solitaire-action-row,
+.puzzle-actions,
+.word-guess-actions,
+.notes-list,
+.puzzle-settings-panel {
+  border-top: 1px solid rgba(30, 41, 59, 0.9);
+  padding-top: 0.85rem;
+}
+
+.solitaire-action-row,
+.puzzle-actions,
+.notes-list,
+.puzzle-settings-panel {
+  margin-top: 0;
+}
+
+.solitaire-history-note {
+  margin-top: -0.45rem;
+}
+
+.puzzle-settings-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
+  gap: 0.85rem;
+  align-items: end;
+}
+
+.puzzle-settings-panel > label,
+.puzzle-generation-options,
+.puzzle-size-control,
+.puzzle-settings-actions,
+.seed-control {
+  min-width: 0;
+}
+
+.puzzle-generation-options,
+.seed-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: end;
+}
+
+.seed-control input {
+  min-width: 0;
+}
+
+.seed-control button {
+  min-height: 2.65rem;
+  min-width: 5.75rem;
+  border-radius: 999px;
+  padding: 0.72rem 1rem;
+  white-space: nowrap;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.puzzle-settings-actions {
+  justify-content: stretch;
+}
+
+.puzzle-settings-actions button {
+  flex: 1 1 7rem;
+}
+
+.word-guess-solvability-note,
+.sudoku-input-hint {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #cbd5e1;
+}
+
+@media (min-width: 941px) {
+  .sudoku-settings-panel {
+    width: min(100%, 44rem);
+    justify-self: center;
+    grid-template-columns: minmax(7rem, 0.75fr) minmax(9rem, 0.9fr) minmax(18rem, 1.65fr) minmax(10rem, 0.9fr);
+  }
+
+  .word-guess-settings-panel {
+    width: min(100%, 44rem);
+    justify-self: center;
+    grid-template-columns: minmax(5.5rem, 0.55fr) minmax(5.5rem, 0.55fr) minmax(18rem, 2fr);
+  }
+
+  .word-guess-settings-panel .generation-actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .word-guess-settings-panel .generation-actions button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .word-guess-solvability-note {
+    text-align: center;
+  }
+
+  .sudoku-settings-panel .check-actions,
+  .sudoku-settings-panel .generation-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .sudoku-settings-panel .check-actions button,
+  .sudoku-settings-panel .generation-actions button {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 940px) {
+  .control-panel,
+  .solitaire-control-panel,
+  .puzzle-settings-panel,
+  .sudoku-settings-panel,
+  .nonogram-settings-panel,
+  .word-guess-settings-panel,
+  .solitaire-settings {
+    grid-template-columns: 1fr;
+  }
+
+  .solitaire-control-panel,
+  .solitaire-control-panel > label,
+  .solitaire-settings {
+    order: initial;
+  }
+
+  .puzzle-generation-options,
+  .seed-control {
+    grid-template-columns: 1fr;
+  }
+
+  .solitaire-settings-actions,
+  .solitaire-solvability-note {
+    grid-column: 1 / -1;
+  }
+
+  .puzzle-settings-actions,
+  .solitaire-settings-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .puzzle-settings-actions button,
+  .solitaire-settings-actions button {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .workspace-copy {
+    padding: 0.8rem;
+  }
+
+  .workspace-copy h2 {
+    font-size: clamp(2.4rem, 13vw, 4.25rem);
+    line-height: 0.98;
+  }
+
+  .control-actions,
+  .word-guess-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .control-actions button,
+  .word-guess-actions button {
+    width: 100%;
+    min-width: 0;
+  }
+}
