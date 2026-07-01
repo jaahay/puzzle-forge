@@ -9,7 +9,7 @@ import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
 import { StartView } from "./components/StartView";
 import { defaultSolitaireVariation, normalizeSolitaireVariation, solitaireVariationsEqual } from "./games/solitaire/variation";
-import { markHomeNavigation, markPuzzleNavigation, shouldInitializePuzzleSurface } from "./app/homeNavigation";
+import { getInitialSelectedPuzzleId, markHomeNavigation, markPuzzleNavigation, shouldInitializePuzzleSurface } from "./app/homeNavigation";
 import { defaultSudokuDifficulty, getActiveView, makeRandomSeed } from "./app/runtime";
 import { useGridController } from "./app/useGridController";
 import {
@@ -30,8 +30,9 @@ type GenerationBehavior = {
 
 export const App = () => {
   const shouldStartOnPuzzleSurface = useMemo(shouldInitializePuzzleSurface, []);
+  const initialSelectedPuzzleId = useMemo(() => getInitialSelectedPuzzleId(), []);
   const [activeView, setActiveView] = useState<AppView>(getActiveView);
-  const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>("sudoku");
+  const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>(initialSelectedPuzzleId);
   const [seed, setSeed] = useState(makeRandomSeed);
   const [width, setWidth] = useState(9);
   const [height, setHeight] = useState(9);
