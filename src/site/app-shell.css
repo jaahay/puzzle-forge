@@ -287,16 +287,6 @@
 }
 
 @media (max-width: 640px) {
-  .app-shell {
-    width: min(100% - 1rem, 1240px);
-    padding-top: 0.5rem;
-  }
-
-  .app-header .catalog-panel {
-    width: 100%;
-    min-width: 0;
-  }
-
   .start-layout {
     place-items: stretch;
   }
