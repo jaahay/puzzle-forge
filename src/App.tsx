@@ -478,19 +478,22 @@ export const App = () => {
     grid.checkGrid(puzzle, setStatusMessage);
   };
 
+  const puzzleNavigation =
+    activeView === "catalog" ? (
+      <PuzzleCatalog
+        isCollapsed={isCatalogCollapsed}
+        isHomeSelected={isHomeSelected || !hasSelectedPuzzle}
+        selectedPuzzleId={selectedPuzzleId}
+        onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)}
+        onHomeSelect={selectHome}
+        onSelectPuzzle={selectPuzzle}
+      />
+    ) : null;
+
   return (
-    <AppShell activeView={activeView} onHomeSelect={selectHome}>
+    <AppShell activeView={activeView} headerControls={puzzleNavigation} onHomeSelect={selectHome}>
       {activeView === "catalog" ? (
         <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
-          <PuzzleCatalog
-            isCollapsed={isCatalogCollapsed}
-            isHomeSelected={isHomeSelected || !hasSelectedPuzzle}
-            selectedPuzzleId={selectedPuzzleId}
-            onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)}
-            onHomeSelect={selectHome}
-            onSelectPuzzle={selectPuzzle}
-          />
-
           {isHomeSelected || !hasSelectedPuzzle ? (
             <StartView readyPuzzles={readyPuzzles} previewPuzzles={previewPuzzles} onSelectPuzzle={selectPuzzle} />
           ) : (
