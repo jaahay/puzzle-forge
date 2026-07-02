@@ -219,6 +219,12 @@
   height: 1rem;
 }
 
+@media (min-width: 701px) {
+  .nonogram-settings-panel {
+    width: min(100%, 42rem);
+  }
+}
+
 @media (max-width: 700px) {
   .puzzle-size-control {
     gap: 0.45rem;
