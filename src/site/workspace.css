@@ -27,6 +27,11 @@
   gap: 0.8rem;
 }
 
+.workspace-layout-gameplay,
+.workspace-layout-generation {
+  justify-items: center;
+}
+
 .workspace-copy {
   display: grid;
   gap: 0.65rem;
@@ -94,6 +99,11 @@
   align-items: center;
 }
 
+.puzzle-actions {
+  width: min(100%, 42rem);
+  justify-content: center;
+}
+
 .control-panel button,
 .puzzle-actions button,
 .puzzle-settings-actions button,
@@ -113,8 +123,7 @@
 }
 
 .control-panel button:nth-child(2),
-.puzzle-actions button,
-.puzzle-settings-actions button:nth-child(n + 2),
+.puzzle-settings-actions button,
 .solitaire-settings-actions button:nth-child(2),
 .tile-puzzle-tools button:nth-child(n + 2),
 .word-guess-actions button:nth-child(n + 2),
@@ -122,6 +131,23 @@
   border-color: rgba(148, 163, 184, 0.24);
   color: #e5e7eb;
   background: linear-gradient(180deg, #475569, #334155);
+}
+
+.seed-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 2.85rem;
+  gap: 0.45rem;
+  align-items: stretch;
+}
+
+.seed-control button {
+  display: inline-grid;
+  width: 2.85rem;
+  min-width: 2.85rem;
+  min-height: 2.85rem;
+  place-items: center;
+  border-radius: 0.8rem;
+  padding: 0;
 }
 
 .control-panel button:hover:not(:disabled),
