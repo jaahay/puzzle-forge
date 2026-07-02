@@ -1,7 +1,7 @@
 @media (max-width: 700px) {
   .app-shell {
     width: min(100vw - 0.75rem, 1240px);
-    padding: 0.75rem 0 1rem;
+    padding: 0.75rem 0 1.4rem;
   }
 
   .app-header {
@@ -122,6 +122,10 @@
     order: 3;
   }
 
+  .puzzle-actions {
+    width: 100%;
+  }
+
   .hero-panel {
     padding: 1.25rem;
   }
@@ -170,6 +174,16 @@
     min-height: 2.55rem;
     padding: 0.68rem 0.55rem;
     font-size: 0.9rem;
+  }
+
+  .seed-control {
+    grid-template-columns: minmax(0, 1fr) 2.85rem;
+  }
+
+  .seed-control button {
+    width: 2.85rem;
+    min-width: 2.85rem;
+    padding: 0;
   }
 
   .status-line {
