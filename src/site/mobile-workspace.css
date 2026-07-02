@@ -53,9 +53,10 @@
     width: 100%;
     grid-template-columns: 1fr;
     margin: 0.85rem 0 0;
-    border-radius: 1.15rem;
-    padding: 0.45rem;
-    background: rgba(15, 23, 42, 0.7);
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
   }
 
   .site-footer p {
