@@ -187,11 +187,10 @@ select {
   display: grid;
   width: min(100%, 28rem);
   grid-template-columns: 1fr;
-  gap: 0.65rem;
+  gap: 0.8rem;
   align-items: stretch;
 }
 
-.sudoku-settings-panel .seed-control,
 .sudoku-settings-panel .generation-actions,
 .sudoku-settings-panel .seed-actions,
 .sudoku-settings-panel .check-actions {
