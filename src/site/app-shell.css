@@ -29,6 +29,12 @@
   box-shadow: none;
 }
 
+.app-header .catalog-panel {
+  flex: 1 1 22rem;
+  width: auto;
+  min-width: min(18rem, 100%);
+}
+
 .catalog-mobile-nav {
   display: grid;
   width: 100%;
@@ -58,18 +64,11 @@
   outline: none;
 }
 
-.workspace-panel,
-.puzzle-panel,
 .puzzle-start-panel {
   border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 1.5rem;
   background: rgba(15, 23, 42, 0.78);
   box-shadow: 0 24px 80px rgba(2, 6, 23, 0.36);
-}
-
-.workspace-panel,
-.puzzle-panel {
-  padding: 1rem;
 }
 
 .panel-heading,
@@ -291,6 +290,11 @@
   .app-shell {
     width: min(100% - 1rem, 1240px);
     padding-top: 0.5rem;
+  }
+
+  .app-header .catalog-panel {
+    width: 100%;
+    min-width: 0;
   }
 
   .start-layout {
