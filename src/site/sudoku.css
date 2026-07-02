@@ -207,8 +207,4 @@ select {
   .sudoku-digit-pad {
     display: none;
   }
-
-  .sudoku-settings-panel {
-    width: min(100%, 42rem);
-  }
 }
