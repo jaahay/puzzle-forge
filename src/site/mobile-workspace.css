@@ -169,7 +169,7 @@
 
   .control-panel button,
   .puzzle-actions button,
-  .puzzle-settings-panel button {
+  .puzzle-settings-actions button {
     width: 100%;
     min-height: 2.55rem;
     padding: 0.68rem 0.55rem;
@@ -178,12 +178,6 @@
 
   .seed-control {
     grid-template-columns: minmax(0, 1fr) 2.85rem;
-  }
-
-  .seed-control button {
-    width: 2.85rem;
-    min-width: 2.85rem;
-    padding: 0;
   }
 
   .status-line {
