@@ -19,6 +19,16 @@ export const AppShell = ({ activeView, children, headerControls, onHomeSelect }:
       </button>
 
       {headerControls}
+
+      <nav class="app-nav" aria-label="Site links">
+        <a href="https://github.com/jaahay/puzzle-forge">Source</a>
+        <a href="#changelog" aria-current={activeView === "changelog" ? "page" : undefined}>
+          Updates
+        </a>
+        <a href="#about" aria-current={activeView === "about" ? "page" : undefined}>
+          About
+        </a>
+      </nav>
     </header>
 
     {children}
