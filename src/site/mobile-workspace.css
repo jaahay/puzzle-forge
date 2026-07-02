@@ -30,7 +30,7 @@
     min-height: 3.05rem;
     border-color: rgba(148, 163, 184, 0.38);
     border-radius: 0.95rem;
-    background: #111827;
+    background-color: #111827;
     font-size: clamp(1.05rem, 5vw, 1.28rem);
   }
 
