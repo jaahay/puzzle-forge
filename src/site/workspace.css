@@ -100,7 +100,7 @@
 }
 
 .puzzle-actions {
-  width: min(100%, 42rem);
+  width: min(100%, 30rem);
   justify-content: center;
 }
 
