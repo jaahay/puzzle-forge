@@ -31,15 +31,17 @@
 
 .catalog-mobile-nav {
   display: grid;
-  width: min(100%, 42rem);
+  width: 100%;
+  justify-items: center;
   margin: 0 auto;
 }
 
 .catalog-mobile-nav select {
-  width: 100%;
+  width: min(100%, 24rem);
   min-height: 3rem;
   border-color: rgba(148, 163, 184, 0.3);
   border-radius: 0.95rem;
+  padding-right: 2rem;
   color: #f8fafc;
   background: #111827;
   font-size: clamp(1rem, 2.5vw, 1.2rem);
@@ -287,8 +289,8 @@
     padding-top: 0.5rem;
   }
 
-  .catalog-mobile-nav {
-    width: 100%;
+  .catalog-mobile-nav select {
+    width: min(100%, 15.5rem);
   }
 
   .start-layout {
