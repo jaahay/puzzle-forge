@@ -32,20 +32,24 @@
 .catalog-mobile-nav {
   display: grid;
   width: 100%;
-  justify-items: center;
   margin: 0 auto;
 }
 
 .catalog-mobile-nav select {
-  width: min(100%, 24rem);
+  width: 100%;
   min-height: 3rem;
   border-color: rgba(148, 163, 184, 0.3);
   border-radius: 0.95rem;
-  padding-right: 2rem;
+  padding-right: 3rem;
   color: #f8fafc;
-  background: #111827;
+  background-color: #111827;
+  background-image: linear-gradient(45deg, transparent 50%, #f8fafc 50%), linear-gradient(135deg, #f8fafc 50%, transparent 50%);
+  background-position: calc(100% - 1.28rem) 50%, calc(100% - 1rem) 50%;
+  background-repeat: no-repeat;
+  background-size: 0.35rem 0.35rem;
   font-size: clamp(1rem, 2.5vw, 1.2rem);
   font-weight: 900;
+  appearance: none;
 }
 
 .catalog-mobile-nav select:focus-visible {
@@ -287,10 +291,6 @@
   .app-shell {
     width: min(100% - 1rem, 1240px);
     padding-top: 0.5rem;
-  }
-
-  .catalog-mobile-nav select {
-    width: min(100%, 15.5rem);
   }
 
   .start-layout {
