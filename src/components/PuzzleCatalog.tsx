@@ -27,7 +27,7 @@ export const PuzzleCatalog = ({ isHomeSelected, selectedPuzzleId, onHomeSelect, 
   };
 
   return (
-    <aside class="catalog-panel" aria-label="Puzzle catalog" id="puzzle-catalog">
+    <nav class="catalog-panel" aria-label="Puzzle catalog" id="puzzle-catalog">
       <div class="catalog-mobile-nav">
         <select aria-label="Choose puzzle" value={selectedCatalogValue} onChange={handleNavigation}>
           <option value="home">{homeIcon} Home</option>
@@ -39,6 +39,6 @@ export const PuzzleCatalog = ({ isHomeSelected, selectedPuzzleId, onHomeSelect, 
           ))}
         </select>
       </div>
-    </aside>
+    </nav>
   );
 };
