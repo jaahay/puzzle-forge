@@ -142,18 +142,22 @@
 }
 
 .nonogram-settings-panel {
-  width: min(100%, 46rem);
+  width: min(100%, 30rem);
+  grid-template-columns: 1fr;
+  gap: 0.65rem;
   justify-self: center;
 }
 
 .nonogram-settings-panel .check-actions,
-.nonogram-settings-panel .generation-actions {
+.nonogram-settings-panel .generation-actions,
+.nonogram-settings-panel .seed-actions {
   display: grid;
   grid-template-columns: 1fr;
 }
 
 .nonogram-settings-panel .check-actions button,
-.nonogram-settings-panel .generation-actions button {
+.nonogram-settings-panel .generation-actions button,
+.nonogram-settings-panel .seed-actions button {
   width: 100%;
   min-width: 0;
 }
@@ -167,7 +171,7 @@
 
 .puzzle-size-control {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.4rem 0.55rem;
   align-items: end;
 }
@@ -207,7 +211,7 @@
   gap: 0.45rem;
   align-items: center;
   min-width: max-content;
-  padding-bottom: 0.75rem;
+  padding-bottom: 0;
 }
 
 .puzzle-checkbox-control input {
@@ -215,71 +219,16 @@
   height: 1rem;
 }
 
-@media (min-width: 941px) {
-  .nonogram-settings-panel {
-    grid-template-columns: minmax(7rem, 0.85fr) minmax(9rem, 0.9fr) minmax(13rem, 1.15fr) minmax(10rem, 0.85fr);
-  }
-
-  .nonogram-settings-panel .check-actions {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .nonogram-settings-panel > label {
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-  .nonogram-settings-panel .puzzle-size-control {
-    grid-column: 3 / span 2;
-    grid-row: 1;
-  }
-
-  .nonogram-settings-panel .puzzle-generation-options {
-    grid-column: 1 / span 3;
-    grid-row: 2;
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
-  .nonogram-settings-panel .generation-actions {
-    grid-column: 4;
-    grid-row: 2;
-  }
-}
-
-@media (max-width: 940px) {
-  .nonogram-settings-panel,
-  .nonogram-settings-panel .puzzle-generation-options,
+@media (max-width: 700px) {
   .puzzle-size-control {
-    grid-template-columns: 1fr;
+    gap: 0.45rem;
   }
 
-  .nonogram-settings-panel .puzzle-checkbox-control {
+  .compact-number-control {
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+  }
+
+  .puzzle-checkbox-control {
     min-width: 0;
-    padding-bottom: 0;
-    white-space: normal;
-  }
-
-  .size-separator {
-    display: none;
-  }
-}
-
-@media (max-width: 720px) {
-  .nonogram-board {
-    padding: 8px;
-  }
-
-  .nonogram-corner {
-    padding: 0.35rem;
-    font-size: 0.52rem;
-  }
-
-  .nonogram-clue {
-    font-size: clamp(0.58rem, calc(var(--board-cell-size) * 0.3), 0.66rem);
-  }
-
-  .nonogram-row-clue {
-    padding-inline: 0.32rem;
   }
 }

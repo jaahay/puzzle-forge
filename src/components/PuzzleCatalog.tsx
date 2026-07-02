@@ -2,7 +2,7 @@ import { getPuzzleAvailability } from "../catalog/puzzleAvailability";
 import { homeIcon, puzzleIcons } from "../catalog/puzzleIcons";
 import type { PuzzleId } from "../catalog/types";
 
-const { readyPuzzles, previewPuzzles, plannedPuzzles } = getPuzzleAvailability();
+const { readyPuzzles, previewPuzzles } = getPuzzleAvailability();
 
 type PuzzleCatalogProps = {
   isCollapsed: boolean;
@@ -27,7 +27,7 @@ export const PuzzleCatalog = ({ isHomeSelected, selectedPuzzleId, onHomeSelect, 
   };
 
   return (
-    <aside class="catalog-panel" aria-label="Puzzle catalog" id="puzzle-catalog">
+    <nav class="catalog-panel" aria-label="Puzzle catalog" id="puzzle-catalog">
       <div class="catalog-mobile-nav">
         <select aria-label="Choose puzzle" value={selectedCatalogValue} onChange={handleNavigation}>
           <option value="home">{homeIcon} Home</option>
@@ -37,11 +37,8 @@ export const PuzzleCatalog = ({ isHomeSelected, selectedPuzzleId, onHomeSelect, 
           {previewPuzzles.map((definition) => (
             <option key={definition.id} value={definition.id}>{puzzleIcons[definition.id]} {definition.title} · Preview</option>
           ))}
-          {plannedPuzzles.map((definition) => (
-            <option key={definition.id} value={definition.id} disabled>{puzzleIcons[definition.id]} {definition.title} · Coming soon</option>
-          ))}
         </select>
       </div>
-    </aside>
+    </nav>
   );
 };

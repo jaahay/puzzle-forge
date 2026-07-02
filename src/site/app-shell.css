@@ -29,9 +29,15 @@
   box-shadow: none;
 }
 
+.app-header .catalog-panel {
+  flex: 1 1 22rem;
+  width: auto;
+  min-width: min(18rem, 100%);
+}
+
 .catalog-mobile-nav {
   display: grid;
-  width: min(100%, 58rem);
+  width: 100%;
   margin: 0 auto;
 }
 
@@ -40,24 +46,29 @@
   min-height: 3rem;
   border-color: rgba(148, 163, 184, 0.3);
   border-radius: 0.95rem;
+  padding-right: 3rem;
   color: #f8fafc;
-  background: #111827;
+  background-color: #111827;
+  background-image: linear-gradient(45deg, transparent 50%, #f8fafc 50%), linear-gradient(135deg, #f8fafc 50%, transparent 50%);
+  background-position: calc(100% - 1.28rem) 50%, calc(100% - 1rem) 50%;
+  background-repeat: no-repeat;
+  background-size: 0.35rem 0.35rem;
   font-size: clamp(1rem, 2.5vw, 1.2rem);
   font-weight: 900;
+  appearance: none;
 }
 
-.workspace-panel,
-.puzzle-panel,
+.catalog-mobile-nav select:focus-visible {
+  border-color: #a7f3d0;
+  box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.2);
+  outline: none;
+}
+
 .puzzle-start-panel {
   border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 1.5rem;
   background: rgba(15, 23, 42, 0.78);
   box-shadow: 0 24px 80px rgba(2, 6, 23, 0.36);
-}
-
-.workspace-panel,
-.puzzle-panel {
-  padding: 1rem;
 }
 
 .panel-heading,
@@ -276,11 +287,6 @@
 }
 
 @media (max-width: 640px) {
-  .app-shell {
-    width: min(100% - 1rem, 1240px);
-    padding-top: 0.5rem;
-  }
-
   .start-layout {
     place-items: stretch;
   }

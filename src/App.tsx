@@ -50,7 +50,7 @@ export const App = () => {
   const sessions = usePuzzleSessions();
   const grid = useGridController();
   const solitaire = useSolitaireController({ statusMessage, onStatusMessage: setStatusMessage, solitaireVariation });
-  const { readyPuzzles, previewPuzzles, plannedPuzzles } = useMemo(() => getPuzzleAvailability(), []);
+  const { readyPuzzles, previewPuzzles } = useMemo(() => getPuzzleAvailability(), []);
   const selectedDefinition = getPuzzleDefinition(selectedPuzzleId);
   const selectedPuzzleIsGeneratable = isGeneratable(selectedDefinition);
 
@@ -478,26 +478,24 @@ export const App = () => {
     grid.checkGrid(puzzle, setStatusMessage);
   };
 
+  const puzzleNavigation =
+    activeView === "catalog" ? (
+      <PuzzleCatalog
+        isCollapsed={isCatalogCollapsed}
+        isHomeSelected={isHomeSelected || !hasSelectedPuzzle}
+        selectedPuzzleId={selectedPuzzleId}
+        onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)}
+        onHomeSelect={selectHome}
+        onSelectPuzzle={selectPuzzle}
+      />
+    ) : null;
+
   return (
-    <AppShell activeView={activeView} onHomeSelect={selectHome}>
+    <AppShell activeView={activeView} headerControls={puzzleNavigation} onHomeSelect={selectHome}>
       {activeView === "catalog" ? (
         <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
-          <PuzzleCatalog
-            isCollapsed={isCatalogCollapsed}
-            isHomeSelected={isHomeSelected || !hasSelectedPuzzle}
-            selectedPuzzleId={selectedPuzzleId}
-            onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)}
-            onHomeSelect={selectHome}
-            onSelectPuzzle={selectPuzzle}
-          />
-
           {isHomeSelected || !hasSelectedPuzzle ? (
-            <StartView
-              readyPuzzles={readyPuzzles}
-              previewPuzzles={previewPuzzles}
-              plannedPuzzles={plannedPuzzles}
-              onSelectPuzzle={selectPuzzle}
-            />
+            <StartView readyPuzzles={readyPuzzles} previewPuzzles={previewPuzzles} onSelectPuzzle={selectPuzzle} />
           ) : (
             <PuzzleWorkspace
               selectedDefinition={selectedDefinition}
