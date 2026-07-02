@@ -123,7 +123,9 @@
   }
 
   .puzzle-actions {
+    box-sizing: border-box;
     width: 100%;
+    padding-inline: 0.7rem;
   }
 
   .hero-panel {
