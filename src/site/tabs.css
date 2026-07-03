@@ -1,15 +1,22 @@
 .app-header {
   display: grid;
   width: min(100%, 42rem);
-  grid-template-columns: auto minmax(14rem, 1fr) auto;
-  gap: 0.65rem;
-  align-items: center;
-  margin: 0 auto 0.75rem;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  border-radius: 0.9rem;
-  padding: 0.5rem;
-  background: rgba(15, 23, 42, 0.54);
+  gap: 0.35rem;
+  margin: 0 auto 0.65rem;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
   box-shadow: none;
+}
+
+.app-header-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 0;
+  padding: 0 0.15rem;
 }
 
 .app-brand,
@@ -95,11 +102,10 @@
 @media (max-width: 700px) {
   .app-header {
     width: 100%;
-    grid-template-columns: 1fr;
+    gap: 0;
   }
 
-  .app-nav,
-  .app-brand {
+  .app-header-topline {
     display: none;
   }
 }
