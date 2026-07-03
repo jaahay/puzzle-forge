@@ -1,5 +1,5 @@
 import { useState } from "preact/hooks";
-import type { GeneratedPuzzle, PuzzleCell } from "../catalog/types";
+import type { GeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
 import { checkGridAnswer } from "../interactions/gridChecking";
 import {
   cloneGridCell,
@@ -16,16 +16,16 @@ export type GridControllerSnapshot = {
   selectedGridCell: GridCellSelection | null;
 };
 
-const clearValidationTone = (puzzle: GeneratedPuzzle, cell: PuzzleCell): PuzzleCell => {
-  if (puzzle.kind !== "grid" || cell.locked || cell.tone === "disabled") {
+const clearValidationTone = (puzzleId: PuzzleId, cell: PuzzleCell): PuzzleCell => {
+  if (cell.locked || cell.tone === "disabled") {
     return cell;
   }
 
-  if (puzzle.puzzleId === "sudoku" && (cell.tone === "answer" || cell.tone === "hint")) {
+  if (puzzleId === "sudoku" && (cell.tone === "answer" || cell.tone === "hint")) {
     return { ...cell, tone: "empty" };
   }
 
-  if (puzzle.puzzleId === "nonogram" && cell.tone === "hint") {
+  if (puzzleId === "nonogram" && cell.tone === "hint") {
     return { ...cell, tone: cell.value === "■" ? "accent" : "empty" };
   }
 
@@ -80,7 +80,7 @@ export const useGridController = () => {
 
     setSelectedGridCell({ row: cell.row, column: cell.column });
     updateGridCells((cells) => {
-      const editableCells = cells.map((candidate) => clearValidationTone(puzzle, candidate));
+      const editableCells = cells.map((candidate) => clearValidationTone(puzzle.puzzleId, candidate));
       const index = getCellIndex(editableCells, cell);
       const current = editableCells[index];
 
@@ -102,7 +102,7 @@ export const useGridController = () => {
   const toggleNonogramCell = (cell: PuzzleCell, onStatusMessage: (message: string) => void) => {
     clearGridInteraction();
     updateGridCells((cells) => {
-      const editableCells = cells.map((candidate) => clearValidationTone({ puzzleId: "nonogram", kind: "grid", width: 0, height: 0, title: "Nonogram", seed: "", cells: [] }, candidate));
+      const editableCells = cells.map((candidate) => clearValidationTone("nonogram", candidate));
       const index = getCellIndex(editableCells, cell);
       const current = editableCells[index];
 
