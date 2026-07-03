@@ -29,12 +29,6 @@
   box-shadow: none;
 }
 
-.app-header .catalog-panel {
-  flex: 1 1 22rem;
-  width: auto;
-  min-width: min(18rem, 100%);
-}
-
 .catalog-mobile-nav {
   display: grid;
   width: 100%;
