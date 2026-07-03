@@ -16,6 +16,22 @@ export type GridControllerSnapshot = {
   selectedGridCell: GridCellSelection | null;
 };
 
+const clearValidationTone = (puzzle: GeneratedPuzzle, cell: PuzzleCell): PuzzleCell => {
+  if (puzzle.kind !== "grid" || cell.locked || cell.tone === "disabled") {
+    return cell;
+  }
+
+  if (puzzle.puzzleId === "sudoku" && (cell.tone === "answer" || cell.tone === "hint")) {
+    return { ...cell, tone: "empty" };
+  }
+
+  if (puzzle.puzzleId === "nonogram" && cell.tone === "hint") {
+    return { ...cell, tone: cell.value === "■" ? "accent" : "empty" };
+  }
+
+  return cell;
+};
+
 export const useGridController = () => {
   const [gridCells, setGridCells] = useState<PuzzleCell[] | null>(null);
   const [selectedGridCell, setSelectedGridCell] = useState<GridCellSelection | null>(null);
@@ -64,43 +80,45 @@ export const useGridController = () => {
 
     setSelectedGridCell({ row: cell.row, column: cell.column });
     updateGridCells((cells) => {
-      const index = getCellIndex(cells, cell);
-      const current = cells[index];
+      const editableCells = cells.map((candidate) => clearValidationTone(puzzle, candidate));
+      const index = getCellIndex(editableCells, cell);
+      const current = editableCells[index];
 
       if (!current) {
-        return { cells, message: "Cell no longer exists." };
+        return { cells: editableCells, message: "Cell no longer exists." };
       }
 
-      cells[index] = {
+      editableCells[index] = {
         ...current,
         value: nextValue,
         tone: puzzle.puzzleId === "sudoku" ? "empty" : nextValue ? "answer" : "empty",
         ariaLabel: `${nextValue || "Empty"} cell at row ${current.row + 1}, column ${current.column + 1}`,
       };
 
-      return { cells, message: puzzle.puzzleId === "sudoku" ? "Sudoku entry updated." : nextValue ? `Set cell to ${nextValue}.` : "Cleared cell." };
+      return { cells: editableCells, message: puzzle.puzzleId === "sudoku" ? "Sudoku entry updated." : nextValue ? `Set cell to ${nextValue}.` : "Cleared cell." };
     }, onStatusMessage);
   };
 
   const toggleNonogramCell = (cell: PuzzleCell, onStatusMessage: (message: string) => void) => {
     clearGridInteraction();
     updateGridCells((cells) => {
-      const index = getCellIndex(cells, cell);
-      const current = cells[index];
+      const editableCells = cells.map((candidate) => clearValidationTone({ puzzleId: "nonogram", kind: "grid", width: 0, height: 0, title: "Nonogram", seed: "", cells: [] }, candidate));
+      const index = getCellIndex(editableCells, cell);
+      const current = editableCells[index];
 
       if (!current) {
-        return { cells, message: "Cell no longer exists." };
+        return { cells: editableCells, message: "Cell no longer exists." };
       }
 
       const nextValue = current.value === "■" ? "" : "■";
-      cells[index] = {
+      editableCells[index] = {
         ...current,
         value: nextValue,
         tone: nextValue ? "accent" : "empty",
         ariaLabel: `${nextValue ? "Filled" : "Empty"} nonogram cell at row ${current.row + 1}, column ${current.column + 1}`,
       };
 
-      return { cells, message: nextValue ? "Marked filled square." : "Cleared square." };
+      return { cells: editableCells, message: nextValue ? "Marked filled square." : "Cleared square." };
     }, onStatusMessage);
   };
 
