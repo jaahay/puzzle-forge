@@ -20,6 +20,7 @@ type TopPuzzleConfigurationProps = {
   onToday: () => void;
   onUseSeed: () => void;
   onRandomize: () => void;
+  onReset: () => void;
 };
 
 const blurOnEnter = (event: KeyboardEvent) => {
@@ -45,6 +46,7 @@ export const TopPuzzleConfiguration = ({
   onToday,
   onUseSeed,
   onRandomize,
+  onReset,
 }: TopPuzzleConfigurationProps) => (
   <div class={`control-panel ${isSolitaire ? "solitaire-control-panel" : ""}`} aria-label="Puzzle controls">
     <label>
@@ -91,6 +93,7 @@ export const TopPuzzleConfiguration = ({
         onToday={onToday}
         onGenerate={onUseSeed}
         onRandomize={onRandomize}
+        onReset={onReset}
       />
     ) : (
       <GenerationActions
@@ -98,10 +101,12 @@ export const TopPuzzleConfiguration = ({
         canGenerate={selectedPuzzleIsGeneratable}
         showToday
         showUseSeed
-        randomLabel="Random"
+        showReset
+        randomLabel="New"
         onToday={onToday}
         onUseSeed={onUseSeed}
         onRandomize={onRandomize}
+        onReset={onReset}
       />
     )}
   </div>
