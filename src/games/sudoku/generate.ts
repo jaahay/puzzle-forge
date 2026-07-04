@@ -7,11 +7,19 @@ const BOX_SIZE = 3;
 const CELL_COUNT = BOARD_SIZE * BOARD_SIZE;
 const sudokuDigits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
-const difficultyClueTargets: Record<PuzzleDifficulty, number> = {
-  Easy: 40,
-  Medium: 34,
-  Hard: 30,
-  Expert: 26,
+const difficultyClueTargetsByVariation: Record<SudokuVariation, Record<PuzzleDifficulty, number>> = {
+  classic: {
+    Easy: 40,
+    Medium: 34,
+    Hard: 30,
+    Expert: 26,
+  },
+  diagonal: {
+    Easy: 38,
+    Medium: 32,
+    Hard: 28,
+    Expert: 24,
+  },
 };
 
 const difficultyLabels: PuzzleDifficulty[] = ["Easy", "Medium", "Hard", "Expert"];
@@ -203,7 +211,8 @@ export const generateSudoku: PuzzleGenerator = ({ seed, difficulty, sudokuVariat
   const random = createRandom(`sudoku:${selectedVariation}:${normalizedSeed}:${selectedDifficulty}`);
   const peerMap = makePeerMap(selectedVariation);
   const solution = buildSolution(random, selectedVariation, peerMap);
-  const puzzleValues = removeClues(solution, random, difficultyClueTargets[selectedDifficulty], peerMap);
+  const clueTarget = difficultyClueTargetsByVariation[selectedVariation][selectedDifficulty];
+  const puzzleValues = removeClues(solution, random, clueTarget, peerMap);
   const givenCount = puzzleValues.filter(Boolean).length;
   const variationLabel = sudokuVariationLabels[selectedVariation];
   const title = selectedVariation === "classic" ? "Sudoku" : `${variationLabel} Sudoku`;
