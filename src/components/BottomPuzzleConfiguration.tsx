@@ -24,6 +24,7 @@ type BottomPuzzleConfigurationProps = {
   onToday: () => void;
   onUseSeed: () => void;
   onRandomize: () => void;
+  onReset: () => void;
 };
 
 const blurOnEnter = (event: KeyboardEvent) => {
@@ -111,15 +112,18 @@ export const BottomPuzzleConfiguration = ({
   onToday,
   onUseSeed,
   onRandomize,
+  onReset,
 }: BottomPuzzleConfigurationProps) => {
   const primaryGenerationActions = (
     <GenerationActions
       isGenerating={isGenerating}
       canGenerate={selectedPuzzleIsGeneratable}
       showToday
-      randomLabel="Random"
+      showReset
+      randomLabel="New"
       onToday={onToday}
       onRandomize={onRandomize}
+      onReset={onReset}
     />
   );
   const seedTools = <SeedTools seedInput={seedInput} isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} onUseSeed={onUseSeed} />;
@@ -155,8 +159,8 @@ export const BottomPuzzleConfiguration = ({
               onKeyDown={blurOnEnter}
             />
           </label>
-          {seedTools}
           {primaryGenerationActions}
+          {seedTools}
         </>
       ) : (
         <>
