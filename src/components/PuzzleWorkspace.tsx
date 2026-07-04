@@ -44,6 +44,7 @@ type PuzzleWorkspaceProps = {
   onUniqueSolutionChange: (requireUniqueSolution: boolean) => void;
   onGenerate: () => void;
   onRandomize: () => void;
+  onReset: () => void;
   onCheck: () => void;
   onSolitaireVariationChange: (variation: SolitaireVariation) => void;
   onAutoMoveToFoundations: () => void;
@@ -87,6 +88,7 @@ export const PuzzleWorkspace = ({
   onUniqueSolutionChange,
   onGenerate,
   onRandomize,
+  onReset,
   onCheck,
   onSolitaireVariationChange,
   onAutoMoveToFoundations,
@@ -111,10 +113,10 @@ export const PuzzleWorkspace = ({
   const openCount = getOpenCount(gridCells);
   const dailyLabel = puzzle ? getDailyPuzzleLabel(puzzle.puzzleId, puzzle.seed) : null;
   const workspaceClass = `${isSudoku ? "sudoku-workspace" : ""} ${isNonogram ? "nonogram-workspace" : ""} ${isWordGuess ? "word-guess-workspace" : ""} ${isSolitaire ? "solitaire-workspace" : ""}`;
-  const showSudokuValidationMessage = isSudoku && (statusMessage === "Solved." || statusMessage.startsWith("No mistakes") || statusMessage.includes("incorrect"));
-  const showNonogramValidationMessage = isNonogram && (statusMessage === "Solved." || statusMessage.startsWith("Not solved"));
-  const sudokuValidationTone = statusMessage === "Solved." ? "success" : statusMessage.includes("incorrect") ? "error" : "progress";
-  const nonogramValidationTone = statusMessage === "Solved." ? "success" : "error";
+  const showSudokuValidationMessage = isSudoku && (statusMessage === "Solved." || statusMessage.startsWith("No mistakes") || statusMessage.includes("need attention"));
+  const showNonogramValidationMessage = isNonogram && (statusMessage.startsWith("Solved.") || statusMessage.includes("do not match"));
+  const sudokuValidationTone = statusMessage === "Solved." ? "success" : statusMessage.includes("need attention") ? "error" : "progress";
+  const nonogramValidationTone = statusMessage.startsWith("Solved.") ? "success" : "error";
   const generateDailyPuzzle = () => onSettingsCommit({ seed: getDailyPuzzleSeed(selectedDefinition.id), width, height });
   const seedInput = (
     <SeedControl
@@ -159,6 +161,7 @@ export const PuzzleWorkspace = ({
       onToday={generateDailyPuzzle}
       onUseSeed={onGenerate}
       onRandomize={onRandomize}
+      onReset={onReset}
     />
   ) : (
     <TopPuzzleConfiguration
@@ -178,6 +181,7 @@ export const PuzzleWorkspace = ({
       onToday={generateDailyPuzzle}
       onUseSeed={onGenerate}
       onRandomize={onRandomize}
+      onReset={onReset}
     />
   );
 
