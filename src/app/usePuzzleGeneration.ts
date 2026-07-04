@@ -8,8 +8,10 @@ import type {
   PuzzleGenerationResponse,
   PuzzleId,
   SolitaireVariation,
+  SudokuVariation,
 } from "../catalog/types";
 import { defaultSudokuDifficulty, makeRequestId } from "./runtime";
+import { defaultSudokuVariation, normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
 
 export type BeginGenerationOptions = Partial<Omit<PuzzleGenerationRequest, "requestId">>;
 
@@ -25,6 +27,7 @@ export type PuzzleGenerationDefaults = {
   height: number;
   difficulty: PuzzleDifficulty;
   requireUniqueSolution: boolean;
+  sudokuVariation?: SudokuVariation;
 };
 
 type MissingPuzzleSurfaceState = {
@@ -41,6 +44,7 @@ type MissingPuzzleGenerationInput = {
   seed: string;
   difficulty: PuzzleDifficulty;
   requireUniqueSolution: boolean;
+  sudokuVariation: SudokuVariation;
   solitaireVariation: SolitaireVariation;
   makeSeed: () => string;
 };
@@ -71,6 +75,7 @@ export const makeMissingPuzzleGenerationOptions = ({
   seed,
   difficulty,
   requireUniqueSolution,
+  sudokuVariation,
   solitaireVariation,
   makeSeed,
 }: MissingPuzzleGenerationInput): BeginGenerationOptions => ({
@@ -80,6 +85,7 @@ export const makeMissingPuzzleGenerationOptions = ({
   height: selectedDefinition.defaultHeight,
   difficulty,
   requireUniqueSolution,
+  sudokuVariation: selectedPuzzleId === "sudoku" ? sudokuVariation : undefined,
   solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? solitaireVariation : undefined,
 });
 
@@ -101,6 +107,7 @@ export const usePuzzleGeneration = () => {
     const height = options.height ?? defaults.height;
     const difficulty = options.difficulty ?? defaults.difficulty;
     const requireUniqueSolution = options.requireUniqueSolution ?? defaults.requireUniqueSolution;
+    const sudokuVariation = puzzleId === "sudoku" ? normalizeSudokuVariation(options.sudokuVariation ?? defaults.sudokuVariation ?? defaultSudokuVariation) : undefined;
     const definition = getPuzzleDefinition(puzzleId);
 
     if (!isGeneratable(definition)) {
@@ -117,6 +124,7 @@ export const usePuzzleGeneration = () => {
       height,
       difficulty,
       requireUniqueSolution,
+      sudokuVariation,
       solitaireVariation: options.solitaireVariation,
     };
 
@@ -150,7 +158,7 @@ export const usePuzzleGeneration = () => {
 
   const makeReadyMessage = (puzzle: GeneratedPuzzle) =>
     puzzle.puzzleId === "sudoku"
-      ? `${puzzle.difficulty ?? defaultSudokuDifficulty} Sudoku ready.`
+      ? `${puzzle.difficulty ?? defaultSudokuDifficulty} ${sudokuVariationLabels[normalizeSudokuVariation(puzzle.sudokuVariation)]} Sudoku ready.`
       : puzzle.puzzleId === "nonogram"
         ? puzzle.uniqueSolution
           ? "Unique Nonogram ready."
