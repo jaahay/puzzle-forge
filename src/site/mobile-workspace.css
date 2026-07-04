@@ -9,10 +9,10 @@
     top: 0.5rem;
     z-index: 12;
     display: grid;
-    width: 100%;
+    width: calc(100% - 1.3rem);
     grid-template-columns: 1fr;
     gap: 0;
-    margin: 0 auto 0.45rem;
+    margin: 0 auto 0.5rem;
     border: 0;
     border-radius: 0;
     padding: 0;
@@ -92,13 +92,21 @@
   .workspace-panel {
     border: 0;
     border-radius: 0;
-    padding: 0.25rem 0 0;
+    padding: 0.2rem 0 0;
     background: transparent;
     box-shadow: none;
   }
 
+  .puzzle-workspace-layout,
+  .workspace-layout-board,
+  .workspace-layout-gameplay,
+  .workspace-layout-generation {
+    gap: 0.65rem;
+  }
+
   .puzzle-panel {
     border-radius: 1.15rem;
+    margin-top: 0.25rem;
     padding: 0.65rem;
     overflow: hidden;
   }
@@ -125,7 +133,7 @@
   .puzzle-actions {
     box-sizing: border-box;
     width: 100%;
-    padding-inline: 0.7rem;
+    padding-inline: 0.65rem;
   }
 
   .gameplay-control-stack {
@@ -140,12 +148,12 @@
   .control-panel,
   .puzzle-settings-panel {
     border-radius: 0.95rem;
-    padding: 0.7rem;
+    padding: 0.65rem;
   }
 
   .control-panel {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.7rem;
+    gap: 0.65rem;
   }
 
   .control-panel > label:first-child,
@@ -190,10 +198,6 @@
   .status-line {
     margin: 0.65rem 0 0;
     font-size: 0.92rem;
-  }
-
-  .puzzle-panel {
-    margin-top: 0.35rem;
   }
 }
 
