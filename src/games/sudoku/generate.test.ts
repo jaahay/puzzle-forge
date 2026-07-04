@@ -5,7 +5,11 @@ const expectedDigits = "123456789";
 const sorted = (values: string[]) => [...values].sort().join("");
 
 const expectUnit = (values: string[]) => expect(sorted(values)).toBe(expectedDigits);
-const countGivens = (puzzle: ReturnType<typeof generateSudoku>) => puzzle.cells.filter((cell) => cell.locked).length;
+const countGivens = (puzzle: ReturnType<typeof generateSudoku>) => {
+  expect(puzzle.kind).toBe("grid");
+  if (puzzle.kind !== "grid") throw new Error("Expected generated Sudoku to be a grid puzzle.");
+  return puzzle.cells.filter((cell) => cell.locked).length;
+};
 
 describe("generateSudoku", () => {
   it("generates classic Sudoku without a variant override", () => {
