@@ -12,6 +12,8 @@ const sameSudokuBox = (left: PuzzleCell, right: PuzzleCell) =>
   Math.floor(left.row / SUDOKU_BOX_SIZE) === Math.floor(right.row / SUDOKU_BOX_SIZE) &&
   Math.floor(left.column / SUDOKU_BOX_SIZE) === Math.floor(right.column / SUDOKU_BOX_SIZE);
 
+const isSudokuMainDiagonalCell = (cell: PuzzleCell, size: number) => cell.row === cell.column || cell.row + cell.column === size - 1;
+
 const getSudokuInputValue = (rawValue: string) => {
   const digits = Array.from(rawValue).filter((character) => "0123456789".includes(character));
   const lastDigit = digits[digits.length - 1] ?? "";
@@ -45,6 +47,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
     ? cells.find((cell) => cell.row === selectedGridCell.row && cell.column === selectedGridCell.column)
     : undefined;
   const isSudoku = puzzle.puzzleId === "sudoku";
+  const isDiagonalSudoku = isSudoku && puzzle.sudokuVariation === "diagonal";
   const isNonogram = puzzle.puzzleId === "nonogram";
   const hasSudokuValidation = Boolean(isSudoku && cells.some((cell) => !cell.locked && (cell.tone === "answer" || cell.tone === "hint")));
   const activeSudokuValue = selectedCell?.value || highlightedSudokuDigit;
@@ -76,7 +79,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
 
   useEffect(() => {
     setHighlightedSudokuDigit("");
-  }, [puzzle.puzzleId, puzzle.seed]);
+  }, [puzzle.puzzleId, puzzle.seed, puzzle.sudokuVariation]);
 
   useEffect(() => {
     if (!isSudoku || !selectedCell || typeof document === "undefined") {
@@ -102,8 +105,8 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
 
   const grid = (
     <div
-      aria-label={isSudoku ? `${puzzle.difficulty ?? "Medium"} Sudoku board` : isNonogram ? `${puzzle.width} by ${puzzle.height} Nonogram board` : undefined}
-      class={`grid ${puzzle.puzzleId}`}
+      aria-label={isSudoku ? `${puzzle.difficulty ?? "Medium"} ${isDiagonalSudoku ? "Diagonal " : ""}Sudoku board` : isNonogram ? `${puzzle.width} by ${puzzle.height} Nonogram board` : undefined}
+      class={`grid ${puzzle.puzzleId} ${isDiagonalSudoku ? "diagonal-sudoku" : ""}`}
       data-sudoku-selection-scope={isSudoku ? "true" : undefined}
       style={{ gridTemplateColumns }}
     >
@@ -120,6 +123,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
         const isSameValue = Boolean(isSudoku && activeSudokuValue && cell.value === activeSudokuValue && !isSelected);
         const isCorrectValue = Boolean(isSudoku && hasSudokuValidation && !cell.locked && cell.tone === "answer");
         const isIncorrectValue = Boolean(isSudoku && hasSudokuValidation && !cell.locked && cell.tone === "hint");
+        const isDiagonalCell = Boolean(isDiagonalSudoku && isSudokuMainDiagonalCell(cell, puzzle.width));
         const visualTone = cell.tone;
         const cellClass = [
           "cell",
@@ -130,6 +134,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
           isSameValue ? "same-value-cell" : "",
           isCorrectValue ? "correct-cell" : "",
           isIncorrectValue ? "incorrect-cell" : "",
+          isDiagonalCell ? "diagonal-cell" : "",
           isSudoku && cell.column % SUDOKU_BOX_SIZE === 0 && cell.column > 0 ? "box-left" : "",
           isSudoku && cell.row % SUDOKU_BOX_SIZE === 0 && cell.row > 0 ? "box-top" : "",
         ]
@@ -200,6 +205,9 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
   if (isSudoku) {
     return (
       <BoardViewport kind="sudoku" columns={puzzle.width} rows={puzzle.height}>
+        {isDiagonalSudoku ? (
+          <p class="sudoku-variant-rule">Diagonal rule: both main diagonals also contain 1-9.</p>
+        ) : null}
         {grid}
         <div class="sudoku-digit-pad" aria-label="Sudoku digit pad" data-sudoku-selection-scope="true">
           {sudokuDigits.map((digit) => (
