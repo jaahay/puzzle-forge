@@ -5,6 +5,7 @@ const expectedDigits = "123456789";
 const sorted = (values: string[]) => [...values].sort().join("");
 
 const expectUnit = (values: string[]) => expect(sorted(values)).toBe(expectedDigits);
+const countGivens = (puzzle: ReturnType<typeof generateSudoku>) => puzzle.cells.filter((cell) => cell.locked).length;
 
 describe("generateSudoku", () => {
   it("generates classic Sudoku without a variant override", () => {
@@ -16,6 +17,13 @@ describe("generateSudoku", () => {
     expect(puzzle.sudokuVariation).toBe("classic");
     expect(puzzle.title).toBe("Sudoku");
     expect(puzzle.answerKey).toHaveLength(81);
+  });
+
+  it("uses fewer givens for Diagonal Sudoku difficulty targets", () => {
+    const classicPuzzle = generateSudoku({ puzzleId: "sudoku", seed: "shared-seed", width: 9, height: 9, difficulty: "Medium" });
+    const diagonalPuzzle = generateSudoku({ puzzleId: "sudoku", seed: "shared-seed", width: 9, height: 9, difficulty: "Medium", sudokuVariation: "diagonal" });
+
+    expect(countGivens(diagonalPuzzle)).toBeLessThanOrEqual(countGivens(classicPuzzle));
   });
 
   it("generates diagonal Sudoku with valid diagonal units", () => {
