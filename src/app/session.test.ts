@@ -239,6 +239,7 @@ describe("missing puzzle surface recovery", () => {
       seed: "  ",
       difficulty: "Hard",
       requireUniqueSolution: false,
+      sudokuVariation: "classic",
       solitaireVariation: defaultSolitaireVariation,
       makeSeed: () => "fallback-seed",
     });
@@ -250,6 +251,7 @@ describe("missing puzzle surface recovery", () => {
       height: 8,
       difficulty: "Hard",
       requireUniqueSolution: false,
+      sudokuVariation: undefined,
       solitaireVariation: undefined,
     });
   });
@@ -261,6 +263,7 @@ describe("missing puzzle surface recovery", () => {
       seed: "deal-seed",
       difficulty: "Medium",
       requireUniqueSolution: true,
+      sudokuVariation: "classic",
       solitaireVariation: defaultSolitaireVariation,
       makeSeed: () => "unused-fallback",
     });
@@ -272,6 +275,7 @@ describe("missing puzzle surface recovery", () => {
       height: 7,
       difficulty: "Medium",
       requireUniqueSolution: true,
+      sudokuVariation: undefined,
       solitaireVariation: defaultSolitaireVariation,
     });
   });
