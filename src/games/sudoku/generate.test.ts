@@ -10,6 +10,9 @@ describe("generateSudoku", () => {
   it("generates classic Sudoku without a variant override", () => {
     const puzzle = generateSudoku({ puzzleId: "sudoku", seed: "classic-seed", width: 9, height: 9, difficulty: "Medium" });
 
+    expect(puzzle.kind).toBe("grid");
+    if (puzzle.kind !== "grid") throw new Error("Expected generated Sudoku to be a grid puzzle.");
+
     expect(puzzle.sudokuVariation).toBe("classic");
     expect(puzzle.title).toBe("Sudoku");
     expect(puzzle.answerKey).toHaveLength(81);
@@ -17,6 +20,10 @@ describe("generateSudoku", () => {
 
   it("generates diagonal Sudoku with valid diagonal units", () => {
     const puzzle = generateSudoku({ puzzleId: "sudoku", seed: "diagonal-seed", width: 9, height: 9, difficulty: "Medium", sudokuVariation: "diagonal" });
+
+    expect(puzzle.kind).toBe("grid");
+    if (puzzle.kind !== "grid") throw new Error("Expected generated Sudoku to be a grid puzzle.");
+
     const solution = puzzle.answerKey ?? [];
 
     expect(puzzle.sudokuVariation).toBe("diagonal");
