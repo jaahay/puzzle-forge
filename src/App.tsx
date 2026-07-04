@@ -11,6 +11,7 @@ import { StartView } from "./components/StartView";
 import { defaultSolitaireVariation, normalizeSolitaireVariation, solitaireVariationsEqual } from "./games/solitaire/variation";
 import { getInitialSelectedPuzzleId, markHomeNavigation, markPuzzleNavigation, shouldInitializePuzzleSurface } from "./app/homeNavigation";
 import { defaultSudokuDifficulty, getActiveView, makeRandomSeed } from "./app/runtime";
+import { initialSolitaireStats } from "./app/session";
 import { useGridController } from "./app/useGridController";
 import {
   makeMissingPuzzleGenerationOptions,
@@ -374,6 +375,31 @@ export const App = () => {
     beginGeneration({ seed: makeRandomSeed() }, { preserveScroll: true });
   };
 
+  const resetCurrentPuzzle = () => {
+    if (!puzzle) {
+      return;
+    }
+
+    rememberScrollPosition();
+    const readyMessage = generation.makeReadyMessage(puzzle);
+
+    if (puzzle.kind === "cards") {
+      solitaire.restoreSolitaireSnapshot({
+        cardStacks: puzzle.stacks,
+        selectedCard: null,
+        solitaireStats: initialSolitaireStats,
+        solitaireUndoStack: [],
+        solitaireRedoStack: [],
+        statusMessage: readyMessage,
+      });
+    } else {
+      grid.prepareGeneratedGrid(puzzle);
+      setStatusMessage(readyMessage);
+    }
+
+    restoreScrollPosition();
+  };
+
   const commitGenerationSettings = ({
     seed: nextSeed,
     width: nextWidth,
@@ -522,6 +548,7 @@ export const App = () => {
               onUniqueSolutionChange={handleUniqueSolutionChange}
               onGenerate={generate}
               onRandomize={randomize}
+              onReset={resetCurrentPuzzle}
               onCheck={handleCheck}
               onSolitaireVariationChange={(variation) => commitGenerationSettings({ solitaireVariation: variation })}
               onAutoMoveToFoundations={solitaire.autoMoveToFoundations}
