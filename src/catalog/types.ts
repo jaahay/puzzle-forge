@@ -15,6 +15,7 @@ export type PuzzleStatus = "playable" | "prototype" | "planned";
 export type PuzzleCategory = "numbers" | "logic" | "word" | "grid" | "cards";
 
 export type PuzzleDifficulty = "Easy" | "Medium" | "Hard" | "Expert";
+export type SudokuVariation = "classic" | "diagonal";
 
 export type PuzzleDefinition = {
   id: PuzzleId;
@@ -88,7 +89,7 @@ export type CardStack = {
 
 export type SolitaireDrawMode = "draw-1" | "draw-3";
 export type SolitaireRedealLimit = "unlimited" | 3 | 1 | 0;
-export type SolitaireWasteMode = "standard" | "relaxed";
+export type SolitaireWasteMode = "standard";
 
 export type SolitaireVariation = {
   drawMode: SolitaireDrawMode;
@@ -123,6 +124,7 @@ type BaseGeneratedPuzzle = {
   createdAt: string;
   difficulty?: PuzzleDifficulty;
   uniqueSolution?: boolean;
+  sudokuVariation?: SudokuVariation;
   notes: string[];
 };
 
@@ -155,6 +157,7 @@ export type PuzzleGenerationParams = {
   difficulty?: PuzzleDifficulty;
   requireUniqueSolution?: boolean;
   solitaireVariation?: SolitaireVariation;
+  sudokuVariation?: SudokuVariation;
 };
 
 export type PuzzleGenerationRequest = {
