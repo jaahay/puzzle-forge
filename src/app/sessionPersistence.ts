@@ -1,5 +1,6 @@
-import type { GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleId, SolitaireRedealLimit, SolitaireVariation } from "../catalog/types";
+import type { GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleId, SolitaireRedealLimit, SolitaireVariation, SudokuVariation } from "../catalog/types";
 import { normalizeSolitaireVariation, solitaireRedealLimits, solitaireVariationsEqual } from "../games/solitaire/variation";
+import { normalizeSudokuVariation } from "../games/sudoku/variation";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
 import {
@@ -35,6 +36,7 @@ export type PersistedPuzzleIdentity = {
   height: number;
   difficulty: PuzzleDifficulty;
   requireUniqueSolution: boolean;
+  sudokuVariation?: SudokuVariation;
   solitaireVariation?: SolitaireVariation;
   generatorVersion: 1;
 };
@@ -91,11 +93,13 @@ type PersistedPuzzleSessionMetadata = {
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 const isPuzzleId = (value: unknown): value is PuzzleId => typeof value === "string" && puzzleIds.includes(value as PuzzleId);
+const isSudokuVariation = (value: unknown): value is SudokuVariation => value === "classic" || value === "diagonal";
 const isSolitaireRedealLimit = (value: unknown): value is SolitaireRedealLimit => solitaireRedealLimits.includes(value as SolitaireRedealLimit);
 const isSolitaireVariation = (value: unknown): value is SolitaireVariation =>
   isRecord(value) &&
   (value.drawMode === "draw-1" || value.drawMode === "draw-3") &&
   isSolitaireRedealLimit(value.redeals) &&
+  (value.wasteMode === "standard" || value.wasteMode === "relaxed") &&
   typeof value.knownSolvable === "boolean";
 const isSolitaireStats = (value: unknown): value is SolitaireStats =>
   isRecord(value) && typeof value.moveCount === "number" && typeof value.drawCount === "number" && typeof value.recycleCount === "number" && typeof value.autoMoveCount === "number";
@@ -112,6 +116,10 @@ const isPersistedSolitaireHistoryEntry = (value: unknown): value is PersistedSol
 const cloneGridCell = (cell: PuzzleCell): PuzzleCell => ({ ...cell });
 
 export const buildPersistedPuzzleIdentity = (puzzleId: PuzzleId, session: PuzzleSession): PersistedPuzzleIdentity => {
+  const sudokuVariation =
+    puzzleId === "sudoku" || session.puzzle?.puzzleId === "sudoku"
+      ? normalizeSudokuVariation(session.sudokuVariation ?? session.puzzle?.sudokuVariation)
+      : undefined;
   const solitaireVariation =
     puzzleId === "klondike-solitaire" || session.puzzle?.kind === "cards"
       ? normalizeSolitaireVariation(session.solitaireVariation ?? (session.puzzle?.kind === "cards" ? session.puzzle.solitaireVariation : null))
@@ -124,6 +132,7 @@ export const buildPersistedPuzzleIdentity = (puzzleId: PuzzleId, session: Puzzle
     height: session.height,
     difficulty: session.difficulty,
     requireUniqueSolution: session.requireUniqueSolution,
+    ...(sudokuVariation ? { sudokuVariation } : {}),
     ...(solitaireVariation ? { solitaireVariation } : {}),
     generatorVersion: 1,
   };
@@ -209,6 +218,7 @@ const isPersistedPuzzleSession = (value: unknown): value is PersistedPuzzleSessi
   typeof value.height === "number" &&
   typeof value.difficulty === "string" &&
   typeof value.requireUniqueSolution === "boolean" &&
+  (value.sudokuVariation === undefined || isSudokuVariation(value.sudokuVariation)) &&
   (value.solitaireVariation === undefined || isSolitaireVariation(value.solitaireVariation)) &&
   value.generatorVersion === 1 &&
   value.progressVersion === 1 &&
@@ -245,6 +255,7 @@ const clonePersistedPuzzleProgress = (progress: PersistedPuzzleProgress): Persis
 
 export const clonePersistedPuzzleSession = (session: PersistedPuzzleSession): PersistedPuzzleSession => ({
   ...session,
+  sudokuVariation: session.sudokuVariation ? normalizeSudokuVariation(session.sudokuVariation) : undefined,
   solitaireVariation: session.solitaireVariation ? normalizeSolitaireVariation(session.solitaireVariation) : undefined,
   progress: clonePersistedPuzzleProgress(session.progress),
 });
@@ -255,6 +266,7 @@ const persistedIdentityMatchesPuzzle = (persisted: PersistedPuzzleSession, puzzl
   persisted.width === puzzle.width &&
   persisted.height === puzzle.height &&
   (!puzzle.difficulty || persisted.difficulty === puzzle.difficulty) &&
+  (puzzle.puzzleId !== "sudoku" || normalizeSudokuVariation(persisted.sudokuVariation) === normalizeSudokuVariation(puzzle.sudokuVariation)) &&
   (puzzle.kind !== "cards" || solitaireVariationsEqual(persisted.solitaireVariation, puzzle.solitaireVariation));
 
 export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSession, puzzle: GeneratedPuzzle): PuzzleSession | null => {
@@ -325,6 +337,7 @@ export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSess
       height: persisted.height,
       difficulty: persisted.difficulty,
       requireUniqueSolution: persisted.requireUniqueSolution,
+      sudokuVariation: puzzle.puzzleId === "sudoku" ? normalizeSudokuVariation(persisted.sudokuVariation ?? puzzle.sudokuVariation) : undefined,
       puzzle,
       cardStacks: null,
       selectedCard: null,
