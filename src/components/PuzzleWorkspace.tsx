@@ -44,6 +44,7 @@ type PuzzleWorkspaceProps = {
   onUniqueSolutionChange: (requireUniqueSolution: boolean) => void;
   onGenerate: () => void;
   onRandomize: () => void;
+  onReset: () => void;
   onCheck: () => void;
   onSolitaireVariationChange: (variation: SolitaireVariation) => void;
   onAutoMoveToFoundations: () => void;
@@ -87,6 +88,7 @@ export const PuzzleWorkspace = ({
   onUniqueSolutionChange,
   onGenerate,
   onRandomize,
+  onReset,
   onCheck,
   onSolitaireVariationChange,
   onAutoMoveToFoundations,
@@ -111,11 +113,10 @@ export const PuzzleWorkspace = ({
   const openCount = getOpenCount(gridCells);
   const dailyLabel = puzzle ? getDailyPuzzleLabel(puzzle.puzzleId, puzzle.seed) : null;
   const workspaceClass = `${isSudoku ? "sudoku-workspace" : ""} ${isNonogram ? "nonogram-workspace" : ""} ${isWordGuess ? "word-guess-workspace" : ""} ${isSolitaire ? "solitaire-workspace" : ""}`;
-  const showSudokuValidationMessage =
-    isSudoku && (statusMessage.startsWith("Sudoku solved") || statusMessage.startsWith("Sudoku validation"));
-  const showNonogramValidationMessage = isNonogram && (statusMessage.startsWith("Solved") || statusMessage.startsWith("Not solved"));
-  const sudokuValidationTone = statusMessage.startsWith("Sudoku solved") ? "success" : statusMessage.includes("incorrect") ? "error" : "progress";
-  const nonogramValidationTone = statusMessage.startsWith("Solved") ? "success" : "error";
+  const showSudokuValidationMessage = isSudoku && (statusMessage === "Solved." || statusMessage.startsWith("No mistakes") || statusMessage.includes("need attention"));
+  const showNonogramValidationMessage = isNonogram && (statusMessage.startsWith("Solved.") || statusMessage.includes("do not match"));
+  const sudokuValidationTone = statusMessage === "Solved." ? "success" : statusMessage.includes("need attention") ? "error" : "progress";
+  const nonogramValidationTone = statusMessage.startsWith("Solved.") ? "success" : "error";
   const generateDailyPuzzle = () => onSettingsCommit({ seed: getDailyPuzzleSeed(selectedDefinition.id), width, height });
   const seedInput = (
     <SeedControl
@@ -160,6 +161,7 @@ export const PuzzleWorkspace = ({
       onToday={generateDailyPuzzle}
       onUseSeed={onGenerate}
       onRandomize={onRandomize}
+      onReset={onReset}
     />
   ) : (
     <TopPuzzleConfiguration
@@ -179,29 +181,23 @@ export const PuzzleWorkspace = ({
       onToday={generateDailyPuzzle}
       onUseSeed={onGenerate}
       onRandomize={onRandomize}
+      onReset={onReset}
     />
   );
 
-  const statusSlot = showStatusLine || showSudokuValidationMessage || showNonogramValidationMessage ? (
-    <>
-      {showStatusLine ? (
-        <p class="status-line" aria-live="polite">
-          {statusMessage}
-        </p>
-      ) : null}
-
-      {showSudokuValidationMessage ? (
-        <p class={`sudoku-validation-message ${sudokuValidationTone}`} aria-live="polite">
-          {statusMessage}
-        </p>
-      ) : null}
-
-      {showNonogramValidationMessage ? (
-        <p class={`sudoku-validation-message ${nonogramValidationTone}`} aria-live="polite">
-          {statusMessage}
-        </p>
-      ) : null}
-    </>
+  const statusSlot = showStatusLine ? (
+    <p class="status-line" aria-live="polite">
+      {statusMessage}
+    </p>
+  ) : null;
+  const validationSlot = showSudokuValidationMessage ? (
+    <p class={`sudoku-validation-message ${sudokuValidationTone}`} aria-live="polite">
+      {statusMessage}
+    </p>
+  ) : showNonogramValidationMessage ? (
+    <p class={`sudoku-validation-message ${nonogramValidationTone}`} aria-live="polite">
+      {statusMessage}
+    </p>
   ) : null;
 
   const loadingBoardSlot = (
@@ -279,10 +275,13 @@ export const PuzzleWorkspace = ({
   ) : isGenerating ? loadingBoardSlot : null;
 
   const gameplaySlot = puzzle && puzzle.kind !== "cards" && !isWordGuess ? (
-    <div class="puzzle-actions">
-      <button type="button" onClick={onCheck}>
-        Check
-      </button>
+    <div class="gameplay-control-stack">
+      <div class="puzzle-actions">
+        <button type="button" onClick={onCheck}>
+          Check
+        </button>
+      </div>
+      {validationSlot}
     </div>
   ) : null;
 

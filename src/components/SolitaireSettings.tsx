@@ -17,6 +17,7 @@ type SolitaireSettingsProps = {
   onToday: () => void;
   onGenerate: () => void;
   onRandomize: () => void;
+  onReset: () => void;
 };
 
 const parseRedealLimit = (value: string): SolitaireRedealLimit =>
@@ -30,6 +31,7 @@ export const SolitaireSettings = ({
   onToday,
   onGenerate,
   onRandomize,
+  onReset,
 }: SolitaireSettingsProps) => {
   const updateDrawMode = (drawMode: SolitaireDrawMode) => {
     onVariationChange({ ...variation, drawMode, knownSolvable: false });
@@ -84,10 +86,12 @@ export const SolitaireSettings = ({
         canGenerate={canGenerate}
         showToday
         showUseSeed
-        randomLabel="Random"
+        showReset
+        randomLabel="New"
         onToday={onToday}
         onUseSeed={onGenerate}
         onRandomize={onRandomize}
+        onReset={onReset}
       />
     </div>
   );

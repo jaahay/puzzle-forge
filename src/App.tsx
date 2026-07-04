@@ -11,6 +11,7 @@ import { StartView } from "./components/StartView";
 import { defaultSolitaireVariation, normalizeSolitaireVariation, solitaireVariationsEqual } from "./games/solitaire/variation";
 import { getInitialSelectedPuzzleId, markHomeNavigation, markPuzzleNavigation, shouldInitializePuzzleSurface } from "./app/homeNavigation";
 import { defaultSudokuDifficulty, getActiveView, makeRandomSeed } from "./app/runtime";
+import { initialSolitaireStats } from "./app/session";
 import { useGridController } from "./app/useGridController";
 import {
   makeMissingPuzzleGenerationOptions,
@@ -50,7 +51,7 @@ export const App = () => {
   const sessions = usePuzzleSessions();
   const grid = useGridController();
   const solitaire = useSolitaireController({ statusMessage, onStatusMessage: setStatusMessage, solitaireVariation });
-  const { readyPuzzles, previewPuzzles, plannedPuzzles } = useMemo(() => getPuzzleAvailability(), []);
+  const { readyPuzzles, previewPuzzles } = useMemo(() => getPuzzleAvailability(), []);
   const selectedDefinition = getPuzzleDefinition(selectedPuzzleId);
   const selectedPuzzleIsGeneratable = isGeneratable(selectedDefinition);
 
@@ -374,6 +375,31 @@ export const App = () => {
     beginGeneration({ seed: makeRandomSeed() }, { preserveScroll: true });
   };
 
+  const resetCurrentPuzzle = () => {
+    if (!puzzle) {
+      return;
+    }
+
+    rememberScrollPosition();
+    const readyMessage = generation.makeReadyMessage(puzzle);
+
+    if (puzzle.kind === "cards") {
+      solitaire.restoreSolitaireSnapshot({
+        cardStacks: puzzle.stacks,
+        selectedCard: null,
+        solitaireStats: initialSolitaireStats,
+        solitaireUndoStack: [],
+        solitaireRedoStack: [],
+        statusMessage: readyMessage,
+      });
+    } else {
+      grid.prepareGeneratedGrid(puzzle);
+      setStatusMessage(readyMessage);
+    }
+
+    restoreScrollPosition();
+  };
+
   const commitGenerationSettings = ({
     seed: nextSeed,
     width: nextWidth,
@@ -478,26 +504,24 @@ export const App = () => {
     grid.checkGrid(puzzle, setStatusMessage);
   };
 
+  const puzzleNavigation =
+    activeView === "catalog" ? (
+      <PuzzleCatalog
+        isCollapsed={isCatalogCollapsed}
+        isHomeSelected={isHomeSelected || !hasSelectedPuzzle}
+        selectedPuzzleId={selectedPuzzleId}
+        onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)}
+        onHomeSelect={selectHome}
+        onSelectPuzzle={selectPuzzle}
+      />
+    ) : null;
+
   return (
-    <AppShell activeView={activeView} onHomeSelect={selectHome}>
+    <AppShell activeView={activeView} headerControls={puzzleNavigation} onHomeSelect={selectHome}>
       {activeView === "catalog" ? (
         <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
-          <PuzzleCatalog
-            isCollapsed={isCatalogCollapsed}
-            isHomeSelected={isHomeSelected || !hasSelectedPuzzle}
-            selectedPuzzleId={selectedPuzzleId}
-            onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)}
-            onHomeSelect={selectHome}
-            onSelectPuzzle={selectPuzzle}
-          />
-
           {isHomeSelected || !hasSelectedPuzzle ? (
-            <StartView
-              readyPuzzles={readyPuzzles}
-              previewPuzzles={previewPuzzles}
-              plannedPuzzles={plannedPuzzles}
-              onSelectPuzzle={selectPuzzle}
-            />
+            <StartView readyPuzzles={readyPuzzles} previewPuzzles={previewPuzzles} onSelectPuzzle={selectPuzzle} />
           ) : (
             <PuzzleWorkspace
               selectedDefinition={selectedDefinition}
@@ -524,6 +548,7 @@ export const App = () => {
               onUniqueSolutionChange={handleUniqueSolutionChange}
               onGenerate={generate}
               onRandomize={randomize}
+              onReset={resetCurrentPuzzle}
               onCheck={handleCheck}
               onSolitaireVariationChange={(variation) => commitGenerationSettings({ solitaireVariation: variation })}
               onAutoMoveToFoundations={solitaire.autoMoveToFoundations}

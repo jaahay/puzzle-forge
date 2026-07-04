@@ -24,6 +24,7 @@ type BottomPuzzleConfigurationProps = {
   onToday: () => void;
   onUseSeed: () => void;
   onRandomize: () => void;
+  onReset: () => void;
 };
 
 const blurOnEnter = (event: KeyboardEvent) => {
@@ -55,7 +56,6 @@ const SizeControl = ({
         onKeyDown={blurOnEnter}
       />
     </label>
-    <span class="size-separator">x</span>
     <label class="compact-number-control">
       <span>H</span>
       <input
@@ -70,6 +70,25 @@ const SizeControl = ({
       />
     </label>
   </div>
+);
+
+const SeedTools = ({
+  seedInput,
+  isGenerating,
+  canGenerate,
+  onUseSeed,
+}: Pick<BottomPuzzleConfigurationProps, "seedInput" | "isGenerating" | "onUseSeed"> & { canGenerate: boolean }) => (
+  <>
+    <label>
+      Seed
+      {seedInput}
+    </label>
+    <div class="puzzle-settings-actions seed-actions">
+      <button type="button" onClick={onUseSeed} disabled={isGenerating || !canGenerate}>
+        Use seed
+      </button>
+    </div>
+  </>
 );
 
 export const BottomPuzzleConfiguration = ({
@@ -93,90 +112,85 @@ export const BottomPuzzleConfiguration = ({
   onToday,
   onUseSeed,
   onRandomize,
-}: BottomPuzzleConfigurationProps) => (
-  <div
-    class={`puzzle-settings-panel ${isSudoku ? "sudoku-settings-panel" : ""} ${isNonogram ? "nonogram-settings-panel" : ""} ${isWordGuess ? "word-guess-settings-panel" : ""}`}
-    aria-label={`${selectedDefinition.title} controls`}
-  >
-    {isWordGuess ? (
-      <>
-        <label>
-          Letters
-          <input
-            type="number"
-            min={selectedDefinition.minWidth}
-            max={selectedDefinition.maxWidth}
-            value={width}
-            onBlur={(event) => onSettingsCommit({ width: Number(event.currentTarget.value) })}
-            onInput={(event) => onWidthChange(Number(event.currentTarget.value))}
-            onKeyDown={blurOnEnter}
-          />
-        </label>
-        <label>
-          Guesses
-          <input
-            type="number"
-            min={selectedDefinition.minHeight}
-            max={selectedDefinition.maxHeight}
-            value={height}
-            onBlur={(event) => onSettingsCommit({ height: Number(event.currentTarget.value) })}
-            onInput={(event) => onHeightChange(Number(event.currentTarget.value))}
-            onKeyDown={blurOnEnter}
-          />
-        </label>
-      </>
-    ) : (
-      <label>
-        Difficulty
-        <PuzzleDifficultySelect value={difficulty} onChange={onDifficultyChange} />
-      </label>
-    )}
-
-    {isNonogram && !isFixedSize ? (
-      <SizeControl
-        selectedDefinition={selectedDefinition}
-        width={width}
-        height={height}
-        onWidthChange={onWidthChange}
-        onHeightChange={onHeightChange}
-        onSettingsCommit={onSettingsCommit}
-      />
-    ) : null}
-
-    {isNonogram ? (
-      <div class="puzzle-generation-options" aria-label="Nonogram generation options">
-        <label>
-          Seed
-          {seedInput}
-        </label>
-
-        <label class="puzzle-checkbox-control">
-          <input
-            checked={requireUniqueSolution}
-            onChange={(event) => onUniqueSolutionChange(event.currentTarget.checked)}
-            type="checkbox"
-          />
-          <span>Unique solution</span>
-        </label>
-      </div>
-    ) : (
-      <label>
-        Seed
-        {seedInput}
-      </label>
-    )}
-
+  onReset,
+}: BottomPuzzleConfigurationProps) => {
+  const primaryGenerationActions = (
     <GenerationActions
       isGenerating={isGenerating}
       canGenerate={selectedPuzzleIsGeneratable}
       showToday
-      showUseSeed
-      randomLabel="Random"
+      showReset
+      randomLabel="New"
       onToday={onToday}
-      onUseSeed={onUseSeed}
       onRandomize={onRandomize}
+      onReset={onReset}
     />
+  );
+  const seedTools = <SeedTools seedInput={seedInput} isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} onUseSeed={onUseSeed} />;
 
-    {isSudoku ? <p class="sudoku-input-hint">Select a cell, then type 1-9. Touch devices can use the number pad.</p> : null}
-  </div>
-);
+  return (
+    <div
+      class={`puzzle-settings-panel ${isSudoku ? "sudoku-settings-panel" : ""} ${isNonogram ? "nonogram-settings-panel" : ""} ${isWordGuess ? "word-guess-settings-panel" : ""}`}
+      aria-label={`${selectedDefinition.title} controls`}
+    >
+      {isWordGuess ? (
+        <>
+          <label>
+            Letters
+            <input
+              type="number"
+              min={selectedDefinition.minWidth}
+              max={selectedDefinition.maxWidth}
+              value={width}
+              onBlur={(event) => onSettingsCommit({ width: Number(event.currentTarget.value) })}
+              onInput={(event) => onWidthChange(Number(event.currentTarget.value))}
+              onKeyDown={blurOnEnter}
+            />
+          </label>
+          <label>
+            Guesses
+            <input
+              type="number"
+              min={selectedDefinition.minHeight}
+              max={selectedDefinition.maxHeight}
+              value={height}
+              onBlur={(event) => onSettingsCommit({ height: Number(event.currentTarget.value) })}
+              onInput={(event) => onHeightChange(Number(event.currentTarget.value))}
+              onKeyDown={blurOnEnter}
+            />
+          </label>
+          {primaryGenerationActions}
+          {seedTools}
+        </>
+      ) : (
+        <>
+          <label>
+            Difficulty
+            <PuzzleDifficultySelect value={difficulty} onChange={onDifficultyChange} />
+          </label>
+
+          {isNonogram && !isFixedSize ? (
+            <SizeControl
+              selectedDefinition={selectedDefinition}
+              width={width}
+              height={height}
+              onWidthChange={onWidthChange}
+              onHeightChange={onHeightChange}
+              onSettingsCommit={onSettingsCommit}
+            />
+          ) : null}
+
+          {isNonogram ? (
+            <label class="puzzle-checkbox-control">
+              <input checked={requireUniqueSolution} onChange={(event) => onUniqueSolutionChange(event.currentTarget.checked)} type="checkbox" />
+              <span>Unique solution</span>
+            </label>
+          ) : null}
+
+          {primaryGenerationActions}
+          {seedTools}
+        </>
+      )}
+    </div>
+  );
+};

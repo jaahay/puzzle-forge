@@ -33,7 +33,7 @@ export type BoardViewportMetrics = {
 
 const sudokuMaxBoardSize = 672;
 const sudokuMinCellSize = 28;
-const nonogramMaxCellSize = 44.8;
+const nonogramMaxCellSize = 58;
 const nonogramMinCellSize = 24;
 const nonogramFrameWidth = 20;
 const nonogramClueSlotSize = 16;

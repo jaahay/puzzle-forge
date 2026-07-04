@@ -47,7 +47,6 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
   const isSudoku = puzzle.puzzleId === "sudoku";
   const isNonogram = puzzle.puzzleId === "nonogram";
   const hasSudokuValidation = Boolean(isSudoku && cells.some((cell) => !cell.locked && (cell.tone === "answer" || cell.tone === "hint")));
-  const canUseDigitPad = Boolean(isSudoku && selectedCell && !selectedCell.locked);
   const activeSudokuValue = selectedCell?.value || highlightedSudokuDigit;
   const gridTemplateColumns = `repeat(${puzzle.width}, minmax(0, 1fr))`;
   const setSelectedSudokuValue = (value: string) => {
@@ -63,14 +62,6 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
     }
 
     setHighlightedSudokuDigit((currentDigit) => (currentDigit === value ? "" : value));
-  };
-  const clearSudokuValue = () => {
-    if (selectedCell && !selectedCell.locked) {
-      onCellInput(selectedCell, "");
-      return;
-    }
-
-    setHighlightedSudokuDigit("");
   };
   const handleSudokuKeyDown = (event: KeyboardEvent, cell: PuzzleCell) => {
     if (!isSudoku || cell.locked) {
@@ -222,9 +213,6 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
               {digit}
             </button>
           ))}
-          <button class="sudoku-clear-button" type="button" disabled={!canUseDigitPad && !highlightedSudokuDigit} onClick={clearSudokuValue}>
-            Clear
-          </button>
         </div>
       </BoardViewport>
     );
