@@ -85,12 +85,12 @@ const checkNonogram = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) 
   });
 
   if (incorrectRowCount === 0 && incorrectColumnCount === 0) {
-    return { cells: nextCells, message: "Solved." };
+    return { cells: nextCells, message: "Solved. All clues match." };
   }
 
   return {
     cells: nextCells,
-    message: `Not solved yet: ${pluralize(incorrectRowCount, "row clue")} and ${pluralize(incorrectColumnCount, "column clue")} do not match.`,
+    message: `${pluralize(incorrectRowCount, "row clue")} and ${pluralize(incorrectColumnCount, "column clue")} do not match.`,
   };
 };
 
@@ -142,13 +142,13 @@ export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: Puzzl
     if (incorrectCount === 0) {
       return {
         cells: nextCells,
-        message: `No mistakes found. ${pluralize(emptyCount, "empty square")} remain.`,
+        message: `No mistakes found. ${pluralize(emptyCount, "square")} empty.`,
       };
     }
 
     return {
       cells: nextCells,
-      message: `${pluralize(incorrectCount, "incorrect entry", "incorrect entries")} marked${emptyCount > 0 ? `; ${pluralize(emptyCount, "empty square")} remain` : ""}.`,
+      message: `${pluralize(incorrectCount, "entry", "entries")} need attention${emptyCount > 0 ? `; ${pluralize(emptyCount, "square")} empty` : ""}.`,
     };
   }
 
