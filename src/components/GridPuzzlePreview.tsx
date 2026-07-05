@@ -12,6 +12,10 @@ const sameSudokuBox = (left: PuzzleCell, right: PuzzleCell) =>
   Math.floor(left.row / SUDOKU_BOX_SIZE) === Math.floor(right.row / SUDOKU_BOX_SIZE) &&
   Math.floor(left.column / SUDOKU_BOX_SIZE) === Math.floor(right.column / SUDOKU_BOX_SIZE);
 
+const sameSudokuDiagonal = (left: PuzzleCell, right: PuzzleCell, size: number) =>
+  (left.row === left.column && right.row === right.column) ||
+  (left.row + left.column === size - 1 && right.row + right.column === size - 1);
+
 const isSudokuMainDiagonalCell = (cell: PuzzleCell, size: number) => cell.row === cell.column || cell.row + cell.column === size - 1;
 
 const getSudokuInputValue = (rawValue: string) => {
@@ -114,11 +118,12 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
         const isSelectable = cell.tone !== "disabled" && (isSudoku || puzzle.puzzleId === "peg-solitaire" || !cell.locked);
         const isEditable = cell.tone !== "disabled" && (puzzle.puzzleId === "peg-solitaire" || !cell.locked);
         const isSelected = isSelectedGridCell(selectedGridCell, cell);
+        const isDiagonalPeer = Boolean(isDiagonalSudoku && selectedCell && sameSudokuDiagonal(cell, selectedCell, puzzle.width));
         const isPeer = Boolean(
           isSudoku &&
             selectedCell &&
             !isSelected &&
-            (cell.row === selectedCell.row || cell.column === selectedCell.column || sameSudokuBox(cell, selectedCell)),
+            (cell.row === selectedCell.row || cell.column === selectedCell.column || sameSudokuBox(cell, selectedCell) || isDiagonalPeer),
         );
         const isSameValue = Boolean(isSudoku && activeSudokuValue && cell.value === activeSudokuValue && !isSelected);
         const isCorrectValue = Boolean(isSudoku && hasSudokuValidation && !cell.locked && cell.tone === "answer");
@@ -205,9 +210,6 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
   if (isSudoku) {
     return (
       <BoardViewport kind="sudoku" columns={puzzle.width} rows={puzzle.height}>
-        {isDiagonalSudoku ? (
-          <p class="sudoku-variant-rule">Diagonal rule: both main diagonals also contain 1-9.</p>
-        ) : null}
         {grid}
         <div class="sudoku-digit-pad" aria-label="Sudoku digit pad" data-sudoku-selection-scope="true">
           {sudokuDigits.map((digit) => (
@@ -222,6 +224,9 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
             </button>
           ))}
         </div>
+        {isDiagonalSudoku ? (
+          <p class="sudoku-variant-rule">Diagonal rule: both main diagonals also contain 1-9.</p>
+        ) : null}
       </BoardViewport>
     );
   }
