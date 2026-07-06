@@ -54,6 +54,20 @@ select {
   max-width: 100%;
 }
 
+.sudoku-variant-rule {
+  width: var(--board-width);
+  max-width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(147, 197, 253, 0.42);
+  border-radius: 0.85rem;
+  margin: 0.65rem 0 0;
+  padding: 0.62rem 0.75rem;
+  color: #dbeafe;
+  background: rgba(30, 58, 138, 0.45);
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
 .grid.sudoku {
   gap: 0;
   width: var(--board-width);
@@ -99,6 +113,15 @@ select {
   border-top-color: #e5e7eb;
 }
 
+.grid.sudoku.diagonal-sudoku .cell.diagonal-cell {
+  background: #14213d;
+  box-shadow: inset 0 0 0 2px rgba(147, 197, 253, 0.24);
+}
+
+.grid.sudoku.diagonal-sudoku .cell.diagonal-cell.given {
+  background: #23314f;
+}
+
 .grid.sudoku .cell.given {
   color: #f8fafc;
   background: #1e293b;
@@ -112,8 +135,19 @@ select {
   background: #0f172a;
 }
 
+.grid.sudoku.diagonal-sudoku .cell.diagonal-cell.answer,
+.grid.sudoku.diagonal-sudoku .cell.diagonal-cell.hint,
+.grid.sudoku.diagonal-sudoku .cell.diagonal-cell.conflict-cell,
+.grid.sudoku.diagonal-sudoku .cell.diagonal-cell.mistake-cell {
+  background: #14213d;
+}
+
 .grid.sudoku .cell.peer-cell {
   background: #1e3a8a;
+}
+
+.grid.sudoku.diagonal-sudoku .cell.diagonal-cell.peer-cell {
+  background: #1d4ed8;
 }
 
 .grid.sudoku .cell.same-value-cell {

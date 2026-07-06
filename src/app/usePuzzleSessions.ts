@@ -1,5 +1,5 @@
 import { useRef } from "preact/hooks";
-import type { GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleId } from "../catalog/types";
+import type { GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleId, SudokuVariation } from "../catalog/types";
 import { cloneStack } from "../interactions/cardRules";
 import { cloneGridCell, prepareGridCells } from "../interactions/gridRules";
 import { consumeHomeNavigation } from "./homeNavigation";
@@ -23,6 +23,7 @@ export type RuntimeSessionDraft = {
   height: number;
   difficulty: PuzzleDifficulty;
   requireUniqueSolution: boolean;
+  sudokuVariation?: SudokuVariation;
   puzzle: PuzzleSession["puzzle"];
   cardStacks: PuzzleSession["cardStacks"];
   selectedCard: PuzzleSession["selectedCard"];
@@ -36,7 +37,7 @@ export type RuntimeSessionDraft = {
 
 export type RestoreSessionCallbacks = {
   restoreSession: (puzzleId: PuzzleId, session: PuzzleSession) => void;
-  beginGeneration: (session: Pick<PuzzleSession, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution" | "solitaireVariation"> & { puzzleId: PuzzleId }) => void;
+  beginGeneration: (session: Pick<PuzzleSession, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution" | "sudokuVariation" | "solitaireVariation"> & { puzzleId: PuzzleId }) => void;
 };
 
 const cloneSolitaireHistoryEntry = (entry: SolitaireHistoryEntry): SolitaireHistoryEntry => ({
@@ -72,6 +73,7 @@ export const buildRuntimeSession = ({
   height,
   difficulty,
   requireUniqueSolution,
+  sudokuVariation,
   puzzle,
   cardStacks,
   selectedCard,
@@ -87,6 +89,7 @@ export const buildRuntimeSession = ({
   height,
   difficulty,
   requireUniqueSolution,
+  sudokuVariation: puzzleId === "sudoku" ? sudokuVariation ?? puzzle?.sudokuVariation : undefined,
   solitaireVariation: puzzleId === "klondike-solitaire" && puzzle?.kind === "cards" ? { ...puzzle.solitaireVariation } : undefined,
   puzzle,
   cardStacks: cardStacks?.map(cloneStack) ?? null,
@@ -108,6 +111,7 @@ export const buildFreshSessionForGeneratedPuzzle = (
   height: generatedPuzzle.height,
   difficulty: generatedPuzzle.difficulty ?? "Easy",
   requireUniqueSolution: Boolean(generatedPuzzle.uniqueSolution),
+  sudokuVariation: generatedPuzzle.puzzleId === "sudoku" ? generatedPuzzle.sudokuVariation : undefined,
   solitaireVariation: generatedPuzzle.kind === "cards" ? { ...generatedPuzzle.solitaireVariation } : undefined,
   puzzle: generatedPuzzle,
   cardStacks: generatedPuzzle.kind === "cards" ? generatedPuzzle.stacks.map(cloneStack) : null,
@@ -167,6 +171,7 @@ export const usePuzzleSessions = () => {
         height: activePersistedSession.height,
         difficulty: activePersistedSession.difficulty,
         requireUniqueSolution: activePersistedSession.requireUniqueSolution,
+        sudokuVariation: activePersistedSession.sudokuVariation,
         solitaireVariation: activePersistedSession.solitaireVariation,
       });
     }

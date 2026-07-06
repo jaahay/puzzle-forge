@@ -1,16 +1,25 @@
-import type { PuzzleDifficulty, PuzzleGenerator } from "../../catalog/types";
+import type { PuzzleDifficulty, PuzzleGenerator, SudokuVariation } from "../../catalog/types";
 import { createGeneratedPuzzle, createRandom, normalizeSeed } from "../shared";
+import { normalizeSudokuVariation, sudokuVariationDescriptions, sudokuVariationLabels } from "./variation";
 
 const BOARD_SIZE = 9;
 const BOX_SIZE = 3;
 const CELL_COUNT = BOARD_SIZE * BOARD_SIZE;
 const sudokuDigits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
-const difficultyClueTargets: Record<PuzzleDifficulty, number> = {
-  Easy: 40,
-  Medium: 34,
-  Hard: 30,
-  Expert: 26,
+const difficultyClueTargetsByVariation: Record<SudokuVariation, Record<PuzzleDifficulty, number>> = {
+  classic: {
+    Easy: 40,
+    Medium: 34,
+    Hard: 30,
+    Expert: 26,
+  },
+  diagonal: {
+    Easy: 38,
+    Medium: 32,
+    Hard: 28,
+    Expert: 24,
+  },
 };
 
 const difficultyLabels: PuzzleDifficulty[] = ["Easy", "Medium", "Hard", "Expert"];
@@ -34,7 +43,7 @@ const shuffle = <T>(items: T[], random: () => number) => {
   return shuffled;
 };
 
-const buildSolution = (random: () => number) => {
+const buildClassicPatternSolution = (random: () => number) => {
   const digits = shuffle(sudokuDigits, random);
   const bands = shuffle([0, 1, 2], random);
   const stacks = shuffle([0, 1, 2], random);
@@ -49,7 +58,7 @@ const buildSolution = (random: () => number) => {
   );
 };
 
-const getPeers = (cellIndex: number) => {
+const getPeers = (cellIndex: number, variation: SudokuVariation) => {
   const row = Math.floor(cellIndex / BOARD_SIZE);
   const column = cellIndex % BOARD_SIZE;
   const boxRow = Math.floor(row / BOX_SIZE) * BOX_SIZE;
@@ -67,36 +76,85 @@ const getPeers = (cellIndex: number) => {
     }
   }
 
+  if (variation === "diagonal") {
+    if (row === column) {
+      for (let diagonalIndex = 0; diagonalIndex < BOARD_SIZE; diagonalIndex += 1) {
+        peers.add(diagonalIndex * BOARD_SIZE + diagonalIndex);
+      }
+    }
+
+    if (row + column === BOARD_SIZE - 1) {
+      for (let diagonalIndex = 0; diagonalIndex < BOARD_SIZE; diagonalIndex += 1) {
+        peers.add(diagonalIndex * BOARD_SIZE + (BOARD_SIZE - 1 - diagonalIndex));
+      }
+    }
+  }
+
   peers.delete(cellIndex);
   return [...peers];
 };
 
-const peerMap = Array.from({ length: CELL_COUNT }, (_, index) => getPeers(index));
+const makePeerMap = (variation: SudokuVariation) => Array.from({ length: CELL_COUNT }, (_, index) => getPeers(index, variation));
 
-const countSolutions = (board: string[], maxSolutions = 2) => {
+const getCandidates = (working: string[], peerMap: number[][], index: number) => {
+  const usedDigits = new Set(peerMap[index].map((peerIndex) => working[peerIndex]).filter(Boolean));
+  return sudokuDigits.filter((digit) => !usedDigits.has(digit));
+};
+
+const buildBacktrackingSolution = (random: () => number, peerMap: number[][]) => {
+  const working = Array.from({ length: CELL_COUNT }, () => "");
+
+  const search = (): boolean => {
+    let bestIndex = -1;
+    let bestCandidates: string[] = [];
+
+    for (let index = 0; index < CELL_COUNT; index += 1) {
+      if (working[index]) continue;
+
+      const candidates = getCandidates(working, peerMap, index);
+      if (candidates.length === 0) return false;
+      if (bestIndex < 0 || candidates.length < bestCandidates.length) {
+        bestIndex = index;
+        bestCandidates = candidates;
+      }
+    }
+
+    if (bestIndex < 0) return true;
+
+    for (const candidate of shuffle(bestCandidates, random)) {
+      working[bestIndex] = candidate;
+      if (search()) return true;
+      working[bestIndex] = "";
+    }
+
+    return false;
+  };
+
+  if (!search()) {
+    throw new Error("Unable to generate a Sudoku solution for the selected variation.");
+  }
+
+  return working;
+};
+
+const buildSolution = (random: () => number, variation: SudokuVariation, peerMap: number[][]) =>
+  variation === "classic" ? buildClassicPatternSolution(random) : buildBacktrackingSolution(random, peerMap);
+
+const countSolutions = (board: string[], peerMap: number[][], maxSolutions = 2) => {
   let solutionCount = 0;
   const working = [...board];
 
   const search = () => {
-    if (solutionCount >= maxSolutions) {
-      return;
-    }
+    if (solutionCount >= maxSolutions) return;
 
     let bestIndex = -1;
     let bestCandidates: string[] = [];
 
     for (let index = 0; index < CELL_COUNT; index += 1) {
-      if (working[index]) {
-        continue;
-      }
+      if (working[index]) continue;
 
-      const usedDigits = new Set(peerMap[index].map((peerIndex) => working[peerIndex]).filter(Boolean));
-      const candidates = sudokuDigits.filter((digit) => !usedDigits.has(digit));
-
-      if (candidates.length === 0) {
-        return;
-      }
-
+      const candidates = getCandidates(working, peerMap, index);
+      if (candidates.length === 0) return;
       if (bestIndex < 0 || candidates.length < bestCandidates.length) {
         bestIndex = index;
         bestCandidates = candidates;
@@ -112,10 +170,7 @@ const countSolutions = (board: string[], maxSolutions = 2) => {
       working[bestIndex] = candidate;
       search();
       working[bestIndex] = "";
-
-      if (solutionCount >= maxSolutions) {
-        return;
-      }
+      if (solutionCount >= maxSolutions) return;
     }
   };
 
@@ -123,39 +178,23 @@ const countSolutions = (board: string[], maxSolutions = 2) => {
   return solutionCount;
 };
 
-const removeClues = (solution: string[], random: () => number, clueTarget: number) => {
+const removeClues = (solution: string[], random: () => number, clueTarget: number, peerMap: number[][]) => {
   const puzzle = [...solution];
-  const pairStarts = shuffle(
-    Array.from({ length: Math.ceil(CELL_COUNT / 2) }, (_, index) => index),
-    random,
-  );
-
+  const pairStarts = shuffle(Array.from({ length: Math.ceil(CELL_COUNT / 2) }, (_, index) => index), random);
   let clueCount = CELL_COUNT;
 
   for (const index of pairStarts) {
-    if (clueCount <= clueTarget) {
-      break;
-    }
+    if (clueCount <= clueTarget) break;
 
     const mirrorIndex = CELL_COUNT - 1 - index;
     const removedValues: Array<[number, string]> = [[index, puzzle[index] ?? ""]];
+    if (mirrorIndex !== index) removedValues.push([mirrorIndex, puzzle[mirrorIndex] ?? ""]);
+    if (removedValues.some(([, value]) => value === "")) continue;
 
-    if (mirrorIndex !== index) {
-      removedValues.push([mirrorIndex, puzzle[mirrorIndex] ?? ""]);
-    }
+    for (const [cellIndex] of removedValues) puzzle[cellIndex] = "";
 
-    if (removedValues.some(([, value]) => value === "")) {
-      continue;
-    }
-
-    for (const [cellIndex] of removedValues) {
-      puzzle[cellIndex] = "";
-    }
-
-    if (countSolutions(puzzle, 2) !== 1) {
-      for (const [cellIndex, value] of removedValues) {
-        puzzle[cellIndex] = value;
-      }
+    if (countSolutions(puzzle, peerMap, 2) !== 1) {
+      for (const [cellIndex, value] of removedValues) puzzle[cellIndex] = value;
       continue;
     }
 
@@ -165,13 +204,18 @@ const removeClues = (solution: string[], random: () => number, clueTarget: numbe
   return puzzle;
 };
 
-export const generateSudoku: PuzzleGenerator = ({ seed, difficulty }) => {
+export const generateSudoku: PuzzleGenerator = ({ seed, difficulty, sudokuVariation }) => {
   const normalizedSeed = normalizeSeed(seed);
+  const selectedVariation = normalizeSudokuVariation(sudokuVariation);
   const selectedDifficulty = getDifficulty(difficulty, createRandom(`sudoku:${normalizedSeed}:difficulty`));
-  const random = createRandom(`sudoku:${normalizedSeed}:${selectedDifficulty}`);
-  const solution = buildSolution(random);
-  const puzzleValues = removeClues(solution, random, difficultyClueTargets[selectedDifficulty]);
+  const random = createRandom(`sudoku:${selectedVariation}:${normalizedSeed}:${selectedDifficulty}`);
+  const peerMap = makePeerMap(selectedVariation);
+  const solution = buildSolution(random, selectedVariation, peerMap);
+  const clueTarget = difficultyClueTargetsByVariation[selectedVariation][selectedDifficulty];
+  const puzzleValues = removeClues(solution, random, clueTarget, peerMap);
   const givenCount = puzzleValues.filter(Boolean).length;
+  const variationLabel = sudokuVariationLabels[selectedVariation];
+  const title = selectedVariation === "classic" ? "Sudoku" : `${variationLabel} Sudoku`;
 
   const cells = puzzleValues.map((value, index) => {
     const row = Math.floor(index / BOARD_SIZE);
@@ -188,16 +232,18 @@ export const generateSudoku: PuzzleGenerator = ({ seed, difficulty }) => {
     } as const;
   });
 
-  return createGeneratedPuzzle({
-    id: `sudoku-${normalizedSeed}-${selectedDifficulty.toLowerCase()}`,
+  const generatedPuzzle = createGeneratedPuzzle({
+    id: `sudoku-${selectedVariation}-${normalizedSeed}-${selectedDifficulty.toLowerCase()}`,
     puzzleId: "sudoku",
-    title: "Sudoku",
+    title,
     seed: normalizedSeed,
     width: BOARD_SIZE,
     height: BOARD_SIZE,
     difficulty: selectedDifficulty,
     cells,
     answerKey: solution,
-    notes: [`${selectedDifficulty} puzzle with ${givenCount} givens and a unique generated solution.`],
+    notes: [`${selectedDifficulty} ${variationLabel.toLowerCase()} puzzle with ${givenCount} givens and a unique generated solution.`, sudokuVariationDescriptions[selectedVariation]],
   });
+
+  return { ...generatedPuzzle, sudokuVariation: selectedVariation };
 };
