@@ -26,23 +26,6 @@
   width: fit-content;
   max-width: 100%;
   margin: 0 auto;
-  cursor: text;
-}
-
-.word-guess-native-input {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 1px;
-  height: 1px;
-  border: 0;
-  padding: 0;
-  opacity: 0;
-  color: transparent;
-  background: transparent;
-  caret-color: transparent;
-  font-size: 16px;
-  transform: translate(-50%, -50%);
 }
 
 .word-guess-board {
@@ -91,26 +74,30 @@
 }
 
 .word-guess-keyboard {
+  box-sizing: border-box;
   display: grid;
   gap: 0.45rem;
   justify-items: center;
   width: min(100%, 42rem);
   margin: 0.15rem auto 0;
+  padding: 0 0.2rem;
 }
 
 .word-guess-keyboard-row {
   display: flex;
   width: 100%;
-  gap: 0.35rem;
+  gap: clamp(0.18rem, 1.1vw, 0.35rem);
   justify-content: center;
 }
 
 .word-guess-key {
-  min-width: clamp(1.85rem, 6.8vw, 2.75rem);
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 2.75rem;
   min-height: 2.8rem;
   border: 1px solid #334155;
   border-radius: 0.65rem;
-  padding: 0.45rem 0.5rem;
+  padding: 0.45rem 0.2rem;
   color: #e5e7eb;
   background: #1e293b;
   cursor: pointer;
@@ -119,7 +106,8 @@
 }
 
 .word-guess-key.wide {
-  min-width: clamp(3.4rem, 12vw, 5.5rem);
+  flex-grow: 1.55;
+  max-width: 5.5rem;
   font-size: 0.78rem;
   text-transform: uppercase;
 }
@@ -298,23 +286,6 @@
 }
 
 @media (max-width: 620px) {
-  .word-guess-board-shell {
-    touch-action: manipulation;
-  }
-
-  .word-guess-board-shell::after {
-    display: block;
-    margin-top: 0.55rem;
-    color: #94a3b8;
-    content: "Tap the board to open your device keyboard.";
-    font-size: 0.82rem;
-    text-align: center;
-  }
-
-  .word-guess-keyboard {
-    display: none;
-  }
-
   .word-guess-analysis-header,
   .word-guess-candidate-steps li {
     grid-template-columns: 1fr;

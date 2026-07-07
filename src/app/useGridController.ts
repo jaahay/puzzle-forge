@@ -199,18 +199,22 @@ export const useGridController = () => {
     clearGridInteraction();
   };
 
+  const selectNumericGridCell = (cell: PuzzleCell) => {
+    if (selectedGridCell?.row === cell.row && selectedGridCell.column === cell.column) {
+      clearGridInteraction();
+      return;
+    }
+
+    setSelectedGridCell({ row: cell.row, column: cell.column });
+  };
+
   const handleGridCellClick = (puzzle: GeneratedPuzzle | null, cell: PuzzleCell, onStatusMessage: (message: string) => void) => {
     if (!puzzle || puzzle.kind !== "grid") {
       return;
     }
 
-    if (puzzle.puzzleId === "sudoku") {
-      if (selectedGridCell?.row === cell.row && selectedGridCell.column === cell.column) {
-        clearGridInteraction();
-        return;
-      }
-
-      setSelectedGridCell({ row: cell.row, column: cell.column });
+    if (getGridInputMode(puzzle.puzzleId) === "numeric") {
+      selectNumericGridCell(cell);
       return;
     }
 

@@ -40,6 +40,13 @@ const getLetterFromKey = (key: string) => {
   return letter.length === 1 && letter >= "A" && letter <= "Z" ? letter : "";
 };
 
+const isTextEditingTarget = (target: EventTarget | null) =>
+  target instanceof HTMLElement &&
+  (target.isContentEditable ||
+    target.tagName === "INPUT" ||
+    target.tagName === "TEXTAREA" ||
+    target.tagName === "SELECT");
+
 const getLetterMarks = (answer: string, submittedGuesses: string[]) => {
   const marks: Partial<Record<string, WordGuessMark>> = {};
 
@@ -78,7 +85,6 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
   const [hardMode, setHardMode] = useState(false);
   const restoredPuzzleId = useRef<string | null>(null);
   const skipNextSave = useRef(false);
-  const nativeInputRef = useRef<HTMLInputElement | null>(null);
   const activeRow = status === "playing" ? submittedRows : -1;
   const rowGuesses = rows.map(getGuess);
   const submittedGuesses = rowGuesses.slice(0, submittedRows).filter((guess) => guess.length === puzzle.width);
@@ -218,19 +224,9 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     setCopiedShare(false);
   };
 
-  const focusNativeInput = () => {
-    if (status === "playing") {
-      nativeInputRef.current?.focus({ preventScroll: true });
-    }
-  };
-
-  const handleNativeInput = (value: string) => {
-    Array.from(normalizeWordGuessWord(value)).forEach(inputLetter);
-  };
-
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.target === nativeInputRef.current || event.altKey || event.ctrlKey || event.metaKey) {
+      if (event.altKey || event.ctrlKey || event.metaKey || isTextEditingTarget(event.target)) {
         return;
       }
 
@@ -285,46 +281,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
         <strong>{message}</strong>
       </div>
 
-      <div class="word-guess-board-shell" onClick={focusNativeInput}>
-        <input
-          ref={nativeInputRef}
-          class="word-guess-native-input"
-          type="text"
-          inputMode="text"
-          enterKeyHint="go"
-          autoComplete="off"
-          autoCapitalize="characters"
-          spellcheck={false}
-          aria-label="Type your Word Guess answer"
-          disabled={status !== "playing"}
-          tabIndex={status === "playing" ? 0 : -1}
-          onInput={(event) => {
-            const input = event.currentTarget;
-            handleNativeInput(input.value);
-            input.value = "";
-          }}
-          onKeyDown={(event) => {
-            if (event.altKey || event.ctrlKey || event.metaKey) {
-              return;
-            }
-
-            if (event.key === "Enter") {
-              event.preventDefault();
-              event.stopPropagation();
-              submitGuess();
-              return;
-            }
-
-            if (event.key === "Backspace") {
-              event.preventDefault();
-              event.stopPropagation();
-              backspace();
-              return;
-            }
-
-            event.stopPropagation();
-          }}
-        />
+      <div class="word-guess-board-shell">
         <div class="word-guess-board" aria-label="Word Guess board">
           {rows.map((rowCells, rowIndex) => {
             const guess = getGuess(rowCells);
