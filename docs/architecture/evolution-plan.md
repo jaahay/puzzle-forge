@@ -42,6 +42,8 @@ Create shared controls for repeated concepts:
 
 Future puzzle modules should declare capabilities such as validation, undo, variants, daily puzzle, sharing, solver, and hints.
 
+Jigsaw-specific image sourcing, image slicing, edge-profile, and custom-edge rendering work is tracked in [Jigsaw Roadmap](./jigsaw-roadmap.md).
+
 ## Phase 5: Expand the catalog
 
 Good early additions:
