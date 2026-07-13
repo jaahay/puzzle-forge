@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" role="img" aria-labelledby="title description">
+  <title id="title">Desert Sunrise</title>
+  <desc id="description">A geometric sunrise over layered desert mesas and dunes.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#312e81"/>
+      <stop offset="0.48" stop-color="#c24170"/>
+      <stop offset="1" stop-color="#fb923c"/>
+    </linearGradient>
+    <linearGradient id="sand" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fdba74"/>
+      <stop offset="1" stop-color="#9a3412"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="1200" fill="url(#sky)"/>
+  <circle cx="600" cy="430" r="150" fill="#fef3c7" opacity="0.95"/>
+  <path d="M0 635 L160 540 L300 575 L420 470 L555 610 L690 515 L810 565 L950 455 L1200 620 L1200 810 L0 810 Z" fill="#7c2d4d"/>
+  <path d="M0 720 L215 600 L335 645 L490 555 L655 690 L810 605 L970 655 L1200 570 L1200 850 L0 850 Z" fill="#9a3412"/>
+  <path d="M0 790 C170 720 315 735 475 805 C645 880 795 785 930 740 C1045 700 1120 710 1200 745 L1200 1200 L0 1200 Z" fill="url(#sand)"/>
+  <path d="M0 920 C180 830 355 860 510 930 C690 1010 835 900 985 850 C1080 820 1140 830 1200 860 L1200 1200 L0 1200 Z" fill="#c2410c" opacity="0.72"/>
+  <path d="M0 1050 C185 980 340 1000 520 1065 C705 1135 865 1035 1035 995 C1100 980 1150 985 1200 1000 L1200 1200 L0 1200 Z" fill="#7c2d12" opacity="0.62"/>
+  <g fill="#431407">
+    <path d="M205 760 h36 v120 h-36z"/><path d="M180 785 h86 v28 h-86z"/>
+    <path d="M985 730 h30 v105 h-30z"/><path d="M955 755 h88 v24 h-88z"/>
+  </g>
+</svg>
