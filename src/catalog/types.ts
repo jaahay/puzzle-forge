@@ -36,7 +36,7 @@ export type SolitaireVariation = { drawMode: SolitaireDrawMode; redeals: Solitai
 export type PuzzleVariationSettings = { sudokuVariation?: SudokuVariation; solitaireVariation?: SolitaireVariation; jigsawImageId?: string };
 
 export type GeneratedTilePuzzleAsset = { id: string; title: string; kind: "generated"; palette: string[] };
-export type JigsawImageAsset = { kind: "image"; id: string; title: string; src: string; alt: string; attribution?: string };
+export type JigsawImageAsset = { kind: "image"; id: string; title: string; src: string; alt: string; attribution?: string; palette: string[] };
 export type TilePuzzleAsset = GeneratedTilePuzzleAsset | JigsawImageAsset;
 export type TilePuzzlePiece = { id: string; currentIndex: number; solvedIndex: number; row: number; column: number };
 
