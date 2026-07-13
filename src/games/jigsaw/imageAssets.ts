@@ -8,7 +8,7 @@ export const jigsawImageAssets = [
     src: "/jigsaw/aurora-lake.svg",
     alt: "A geometric night landscape with an aurora above mountains and a lake.",
     attribution: "Puzzle Forge original artwork",
-    palette: [],
+    palette: [] as string[],
   },
   {
     kind: "image",
@@ -17,7 +17,7 @@ export const jigsawImageAssets = [
     src: "/jigsaw/desert-sunrise.svg",
     alt: "A geometric sunrise over layered desert mesas and dunes.",
     attribution: "Puzzle Forge original artwork",
-    palette: [],
+    palette: [] as string[],
   },
 ] as const satisfies readonly JigsawImageAsset[];
 
