@@ -18,15 +18,22 @@ const shuffle = <T>(items: T[], seed: string) => {
   return shuffled;
 };
 
-export const generateJigsaw: TilePuzzleGenerator = ({ seed, width, height, jigsawImageId }) => {
+export const generateJigsaw: TilePuzzleGenerator = ({
+  seed,
+  width,
+  height,
+  jigsawImageId,
+  jigsawAssetRevision,
+}) => {
   const normalizedSeed = normalizeSeed(seed);
   const boundedWidth = normalizeDimension(width, 4, 2, 8);
   const boundedHeight = normalizeDimension(height, 4, 2, 8);
-  const asset = getJigsawImageAsset(jigsawImageId);
+  const asset = getJigsawImageAsset(jigsawImageId, jigsawAssetRevision);
+  const assetIdentity = `${asset.id}@${asset.assetRevision}`;
   const solvedIndexes = Array.from({ length: boundedWidth * boundedHeight }, (_, index) => index);
   const shuffledIndexes = shuffle(
     solvedIndexes,
-    `jigsaw:${normalizedSeed}:${boundedWidth}x${boundedHeight}:${asset.id}`,
+    `jigsaw:${normalizedSeed}:${boundedWidth}x${boundedHeight}:${assetIdentity}`,
   );
   const tiles = shuffledIndexes.map((solvedIndex, currentIndex) => ({
     id: `tile-${solvedIndex}`,
@@ -37,7 +44,7 @@ export const generateJigsaw: TilePuzzleGenerator = ({ seed, width, height, jigsa
   }));
 
   return createGeneratedTilePuzzle({
-    id: `jigsaw-${asset.id}-${normalizedSeed}-${boundedWidth}x${boundedHeight}`,
+    id: `jigsaw-${assetIdentity}-${normalizedSeed}-${boundedWidth}x${boundedHeight}`,
     puzzleId: "jigsaw",
     title: "Jigsaw",
     seed: normalizedSeed,
