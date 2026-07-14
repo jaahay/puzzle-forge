@@ -30,7 +30,7 @@ describe("generateJigsaw", () => {
 
     expect(puzzle.asset).toEqual(defaultJigsawImageAsset);
     expect(puzzle.asset.kind).toBe("image");
-    expect(puzzle.id).toContain(`${defaultJigsawImageAsset.id}-r${defaultJigsawImageAsset.assetRevision}`);
+    expect(puzzle.id).toContain(`${defaultJigsawImageAsset.id}@${defaultJigsawImageAsset.assetRevision}`);
   });
 
   it("creates one correctly indexed piece for every grid position", () => {
