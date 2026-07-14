@@ -11,6 +11,8 @@ type PersistedTileOrderEnvelope = {
   seed: string;
   width: number;
   height: number;
+  assetId?: string;
+  assetRevision?: number;
   tileOrder: PersistedTileOrder[];
   updatedAt: string;
 };
@@ -25,7 +27,7 @@ const getTileStyle = (puzzle: TileGeneratedPuzzle, tile: TilePuzzlePiece): TileS
 
   if (puzzle.asset.kind === "image") {
     return {
-      backgroundImage: `url(${puzzle.asset.src})`,
+      backgroundImage: `url(${puzzle.asset.files.puzzle})`,
       backgroundPosition: `${x}% ${y}%`,
       backgroundSize: `${puzzle.width * 100}% ${puzzle.height * 100}%`,
     };
@@ -50,6 +52,9 @@ const loadPersistedTileOrder = (puzzle: TileGeneratedPuzzle, fallbackTiles: Tile
     const envelope: unknown = JSON.parse(rawEnvelope);
     if (typeof envelope !== "object" || envelope === null || Array.isArray(envelope)) return fallbackTiles;
     const candidate = envelope as Partial<PersistedTileOrderEnvelope>;
+    const imageIdentityMatches =
+      puzzle.asset.kind !== "image" ||
+      (candidate.assetId === puzzle.asset.id && candidate.assetRevision === puzzle.asset.assetRevision);
     if (
       candidate.schemaVersion !== tileOrderSchemaVersion ||
       candidate.puzzleId !== "jigsaw" ||
@@ -57,6 +62,7 @@ const loadPersistedTileOrder = (puzzle: TileGeneratedPuzzle, fallbackTiles: Tile
       candidate.seed !== puzzle.seed ||
       candidate.width !== puzzle.width ||
       candidate.height !== puzzle.height ||
+      !imageIdentityMatches ||
       !Array.isArray(candidate.tileOrder)
     ) return fallbackTiles;
 
@@ -87,6 +93,9 @@ const savePersistedTileOrder = (puzzle: TileGeneratedPuzzle, tiles: TilePuzzlePi
     seed: puzzle.seed,
     width: puzzle.width,
     height: puzzle.height,
+    ...(puzzle.asset.kind === "image"
+      ? { assetId: puzzle.asset.id, assetRevision: puzzle.asset.assetRevision }
+      : {}),
     tileOrder: tiles.map(({ id, currentIndex }) => ({ id, currentIndex })),
     updatedAt: new Date().toISOString(),
   };
@@ -140,7 +149,7 @@ export const TilePuzzlePreview = ({ puzzle }: TilePuzzlePreviewProps) => {
   };
 
   const previewStyle = puzzle.asset.kind === "image"
-    ? { backgroundImage: `url(${puzzle.asset.src})` }
+    ? { backgroundImage: `url(${puzzle.asset.files.preview})` }
     : { backgroundImage: `linear-gradient(135deg, ${puzzle.asset.palette.join(", ")})` };
 
   return (
