@@ -1,29 +1,45 @@
 import type { JigsawImageAsset } from "../../catalog/types";
 
-export const jigsawImageAssets = [
-  {
+export const jigsawImageCatalog = {
+  "aurora-lake": {
     kind: "image",
     id: "aurora-lake",
+    assetRevision: 1,
     title: "Aurora Lake",
-    src: "/jigsaw/aurora-lake.svg",
     alt: "A geometric night landscape with an aurora above mountains and a lake.",
-    attribution: "Puzzle Forge original artwork",
-    palette: [] as string[],
+    orientation: "square",
+    intrinsicWidth: 1200,
+    intrinsicHeight: 1200,
+    files: {
+      puzzle: "/jigsaw/aurora-lake.svg",
+      preview: "/jigsaw/aurora-lake.svg",
+      thumbnail: "/jigsaw/aurora-lake.svg",
+    },
+    credit: {
+      text: "Puzzle Forge original artwork",
+      sourceName: "Puzzle Forge",
+    },
   },
-  {
-    kind: "image",
-    id: "desert-sunrise",
-    title: "Desert Sunrise",
-    src: "/jigsaw/desert-sunrise.svg",
-    alt: "A geometric sunrise over layered desert mesas and dunes.",
-    attribution: "Puzzle Forge original artwork",
-    palette: [] as string[],
-  },
-] as const satisfies readonly JigsawImageAsset[];
+} as const satisfies Record<string, JigsawImageAsset>;
 
-export type JigsawImageAssetId = (typeof jigsawImageAssets)[number]["id"];
+export type JigsawImageAssetId = keyof typeof jigsawImageCatalog;
 
-export const defaultJigsawImageAsset = jigsawImageAssets[0];
+export const jigsawImageAssets = Object.values(jigsawImageCatalog);
+export const defaultJigsawImageAsset = jigsawImageCatalog["aurora-lake"];
 
-export const getJigsawImageAsset = (imageId: string | undefined): JigsawImageAsset =>
-  jigsawImageAssets.find((asset) => asset.id === imageId) ?? defaultJigsawImageAsset;
+export const getJigsawImageAsset = (
+  imageId: string | undefined,
+  assetRevision?: number,
+): JigsawImageAsset => {
+  const asset = imageId ? jigsawImageCatalog[imageId as JigsawImageAssetId] : defaultJigsawImageAsset;
+
+  if (!asset) {
+    throw new Error(`Unknown bundled Jigsaw image: ${imageId}`);
+  }
+
+  if (assetRevision !== undefined && asset.assetRevision !== assetRevision) {
+    throw new Error(`Unsupported revision ${assetRevision} for bundled Jigsaw image ${asset.id}`);
+  }
+
+  return asset;
+};
