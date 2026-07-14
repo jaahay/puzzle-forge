@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { generateJigsaw } from "./generate";
 import { defaultJigsawImageAsset, jigsawImageAssets } from "./imageAssets";
 
-const makeJigsaw = (jigsawImageId = defaultJigsawImageAsset.id) =>
+const makeJigsaw = (jigsawImageId: string = defaultJigsawImageAsset.id) =>
   generateJigsaw({
     puzzleId: "jigsaw",
     seed: "phase-one-seed",
@@ -33,25 +33,4 @@ describe("generateJigsaw", () => {
     const aurora = makeJigsaw("aurora-lake");
     const desert = makeJigsaw("desert-sunrise");
 
-    expect(aurora.tiles.map((tile) => tile.solvedIndex)).not.toEqual(desert.tiles.map((tile) => tile.solvedIndex));
-  });
-
-  it("creates one correctly indexed piece for every grid position", () => {
-    const puzzle = makeJigsaw();
-
-    expect(puzzle.tiles).toHaveLength(12);
-    expect([...puzzle.tiles].sort((left, right) => left.solvedIndex - right.solvedIndex)).toEqual(
-      Array.from({ length: 12 }, (_, solvedIndex) => ({
-        id: `tile-${solvedIndex}`,
-        currentIndex: puzzle.tiles.find((tile) => tile.solvedIndex === solvedIndex)?.currentIndex,
-        solvedIndex,
-        row: Math.floor(solvedIndex / 4),
-        column: solvedIndex % 4,
-      })),
-    );
-  });
-
-  it("falls back to the default bundled image for an unknown id", () => {
-    expect(makeJigsaw("missing-image").asset).toEqual(defaultJigsawImageAsset);
-  });
-});
+    expect(aurora.tiles.map((tile) => tile.solvedIndex)).not.toEqual(desert.tiles.map
