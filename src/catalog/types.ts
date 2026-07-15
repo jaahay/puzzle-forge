@@ -101,14 +101,39 @@ export type SolitaireVariation = {
 export type PuzzleVariationSettings = {
   sudokuVariation?: SudokuVariation;
   solitaireVariation?: SolitaireVariation;
+  jigsawImageId?: string;
+  jigsawAssetRevision?: number;
 };
 
-export type TilePuzzleAsset = {
+export type GeneratedTilePuzzleAsset = {
   id: string;
   title: string;
   kind: "generated";
   palette: string[];
 };
+
+export type JigsawImageAsset = {
+  kind: "image";
+  id: string;
+  assetRevision: number;
+  title: string;
+  alt: string;
+  orientation: "landscape" | "portrait" | "square";
+  intrinsicWidth: number;
+  intrinsicHeight: number;
+  files: {
+    puzzle: string;
+    preview: string;
+    thumbnail: string;
+  };
+  credit: {
+    text: string;
+    sourceName: string;
+    sourceRecordUrl?: string;
+  };
+};
+
+export type TilePuzzleAsset = GeneratedTilePuzzleAsset | JigsawImageAsset;
 
 export type TilePuzzlePiece = {
   id: string;
