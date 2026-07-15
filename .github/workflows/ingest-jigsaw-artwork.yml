@@ -1,0 +1,24 @@
+name: Ingest verified Jigsaw artwork
+
+on:
+  push:
+    branches:
+      - codex/jigsaw-first-verified-artwork
+    paths:
+      - .github/workflows/ingest-jigsaw-artwork.yml
+
+permissions:
+  contents: write
+
+jobs:
+  ingest:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: codex/jigsaw-first-verified-artwork
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
