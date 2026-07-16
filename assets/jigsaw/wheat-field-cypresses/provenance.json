@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "assetId": "wheat-field-cypresses",
+  "assetRevision": 1,
+  "work": {
+    "title": "Wheat Field with Cypresses",
+    "creator": "Vincent van Gogh",
+    "date": "1889",
+    "medium": "Oil on canvas",
+    "dimensions": "28 13/16 \u00d7 36 3/4 in. (73.2 \u00d7 93.4 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 436535,
+    "accessionNumber": "1993.132",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/436535",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/436535",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg",
+    "retrievedAt": "2026-07-16T01:12:04.765932+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 8291194,
+    "sha256": "b46d02a42fd3bb13b022cefc5beaa997b1d7a28cd7b53e4413d940aa0dc4014d",
+    "width": 4000,
+    "height": 3184
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 436535.",
+    "reviewedAt": "2026-07-16"
+  },
+  "generation": {
+    "pythonVersion": "3.12",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "sourceColorConversion": "RGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/wheat-field-cypresses/puzzle.webp",
+      "width": 2048,
+      "height": 1630,
+      "byteSize": 1444742,
+      "sha256": "ee3c2904273e95f69af37ddf4a95e4a16a4eaeb1ae10cdb191c4397bce4c1eb8",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "RGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/wheat-field-cypresses/preview.webp",
+      "width": 1024,
+      "height": 815,
+      "byteSize": 274938,
+      "sha256": "be83ca0a468db1adc09112706c374bf963b706a3674489d1aaf3ac9330055543",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "RGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/wheat-field-cypresses/thumbnail.webp",
+      "width": 384,
+      "height": 306,
+      "byteSize": 29832,
+      "sha256": "6e3ed158957481bbaeb8d44f243d65fd4dffffbb0905172928c35071d0bfe13b",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "RGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

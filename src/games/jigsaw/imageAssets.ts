@@ -1,23 +1,24 @@
 import type { JigsawImageAsset } from "../../catalog/types";
 
 export const jigsawImageCatalog = {
-  "aurora-lake": {
+  "wheat-field-cypresses": {
     kind: "image",
-    id: "aurora-lake",
+    id: "wheat-field-cypresses",
     assetRevision: 1,
-    title: "Aurora Lake",
-    alt: "A geometric night landscape with an aurora above mountains and a lake.",
-    orientation: "square",
-    intrinsicWidth: 1200,
-    intrinsicHeight: 1200,
+    title: "Wheat Field with Cypresses",
+    alt: "A golden wheat field beneath swirling clouds, with dark green cypresses rising beside distant blue hills.",
+    orientation: "landscape",
+    intrinsicWidth: 2048,
+    intrinsicHeight: 1630,
     files: {
-      puzzle: "/jigsaw/aurora-lake.svg",
-      preview: "/jigsaw/aurora-lake.svg",
-      thumbnail: "/jigsaw/aurora-lake.svg",
+      puzzle: "/jigsaw/wheat-field-cypresses/puzzle.webp",
+      preview: "/jigsaw/wheat-field-cypresses/preview.webp",
+      thumbnail: "/jigsaw/wheat-field-cypresses/thumbnail.webp",
     },
     credit: {
-      text: "Puzzle Forge original artwork",
-      sourceName: "Puzzle Forge",
+      text: "Vincent van Gogh, Wheat Field with Cypresses, 1889. The Metropolitan Museum of Art, Open Access.",
+      sourceName: "The Metropolitan Museum of Art",
+      sourceRecordUrl: "https://www.metmuseum.org/art/collection/search/436535",
     },
   },
 } as const satisfies Record<string, JigsawImageAsset>;
@@ -25,7 +26,7 @@ export const jigsawImageCatalog = {
 export type JigsawImageAssetId = keyof typeof jigsawImageCatalog;
 
 export const jigsawImageAssets = Object.values(jigsawImageCatalog);
-export const defaultJigsawImageAsset = jigsawImageCatalog["aurora-lake"];
+export const defaultJigsawImageAsset = jigsawImageCatalog["wheat-field-cypresses"];
 
 export const getJigsawImageAsset = (
   imageId: string | undefined,
