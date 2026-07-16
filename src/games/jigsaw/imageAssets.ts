@@ -8,8 +8,8 @@ export const jigsawImageCatalog = {
     title: "Wheat Field with Cypresses",
     alt: "A golden wheat field beneath swirling clouds, with dark green cypresses rising beside distant blue hills.",
     orientation: "landscape",
-    intrinsicWidth: 4000,
-    intrinsicHeight: 3184,
+    intrinsicWidth: 2048,
+    intrinsicHeight: 1630,
     files: {
       puzzle: "/jigsaw/wheat-field-cypresses/puzzle.webp",
       preview: "/jigsaw/wheat-field-cypresses/preview.webp",
