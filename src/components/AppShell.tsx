@@ -6,9 +6,10 @@ type AppShellProps = {
   children: ComponentChildren;
   headerControls?: ComponentChildren;
   onHomeSelect: () => void;
+  onViewSelect: (view: Exclude<AppView, "catalog">) => void;
 };
 
-export const AppShell = ({ activeView, children, headerControls, onHomeSelect }: AppShellProps) => (
+export const AppShell = ({ activeView, children, headerControls, onHomeSelect, onViewSelect }: AppShellProps) => (
   <main class="app-shell">
     <header class="app-header" aria-label="Puzzle Forge navigation">
       <button class="app-brand" type="button" aria-label="Puzzle Forge home" aria-current={activeView === "catalog" ? "page" : undefined} onClick={onHomeSelect}>
@@ -22,10 +23,24 @@ export const AppShell = ({ activeView, children, headerControls, onHomeSelect }:
 
       <nav class="app-nav" aria-label="Site links">
         <a href="https://github.com/jaahay/puzzle-forge">Source</a>
-        <a href="#changelog" aria-current={activeView === "changelog" ? "page" : undefined}>
+        <a
+          href="/updates"
+          aria-current={activeView === "changelog" ? "page" : undefined}
+          onClick={(event) => {
+            event.preventDefault();
+            onViewSelect("changelog");
+          }}
+        >
           Updates
         </a>
-        <a href="#about" aria-current={activeView === "about" ? "page" : undefined}>
+        <a
+          href="/about"
+          aria-current={activeView === "about" ? "page" : undefined}
+          onClick={(event) => {
+            event.preventDefault();
+            onViewSelect("about");
+          }}
+        >
           About
         </a>
       </nav>
