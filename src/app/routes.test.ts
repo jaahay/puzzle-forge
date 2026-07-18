@@ -13,9 +13,9 @@ describe("pathname routing", () => {
     expect(parseAppRoute("/word-guess")).toEqual({ kind: "puzzle", puzzleId: "word-guess" });
   });
 
-  it("falls back to home for unknown or nested paths", () => {
-    expect(parseAppRoute("/missing")).toEqual({ kind: "home" });
-    expect(parseAppRoute("/jigsaw/example")).toEqual({ kind: "home" });
+  it("preserves unknown or nested paths as not-found routes", () => {
+    expect(parseAppRoute("/missing")).toEqual({ kind: "not-found", pathname: "/missing" });
+    expect(parseAppRoute("/jigsaw/example/")).toEqual({ kind: "not-found", pathname: "/jigsaw/example" });
   });
 
   it("serializes every route", () => {
@@ -23,5 +23,6 @@ describe("pathname routing", () => {
     expect(appRoutePath({ kind: "puzzle", puzzleId: "sudoku" })).toBe("/sudoku");
     expect(appRoutePath({ kind: "updates" })).toBe("/updates");
     expect(appRoutePath({ kind: "about" })).toBe("/about");
+    expect(appRoutePath({ kind: "not-found", pathname: "/missing" })).toBe("/missing");
   });
 });
