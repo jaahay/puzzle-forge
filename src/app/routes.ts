@@ -5,7 +5,8 @@ export type AppRoute =
   | { kind: "home" }
   | { kind: "puzzle"; puzzleId: PuzzleId }
   | { kind: "updates" }
-  | { kind: "about" };
+  | { kind: "about" }
+  | { kind: "not-found"; pathname: string };
 
 const puzzleIdSet = new Set<string>(puzzleIds);
 
@@ -21,7 +22,7 @@ export const parseAppRoute = (pathname: string): AppRoute => {
     return { kind: "puzzle", puzzleId: segment as PuzzleId };
   }
 
-  return { kind: "home" };
+  return { kind: "not-found", pathname: normalizedPath };
 };
 
 export const appRoutePath = (route: AppRoute): string => {
@@ -34,6 +35,8 @@ export const appRoutePath = (route: AppRoute): string => {
       return "/updates";
     case "about":
       return "/about";
+    case "not-found":
+      return route.pathname;
   }
 };
 
