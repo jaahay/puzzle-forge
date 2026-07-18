@@ -5,15 +5,16 @@ import type { GeneratedPuzzle, PuzzleDifficulty, PuzzleGenerationRequest, Puzzle
 import { AboutView } from "./components/AboutView";
 import { AppShell } from "./components/AppShell";
 import { ChangelogView } from "./components/ChangelogView";
+import { NotFoundView } from "./components/NotFoundView";
 import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
 import { StartView } from "./components/StartView";
 import { defaultSolitaireVariation, normalizeSolitaireVariation, solitaireVariationsEqual } from "./games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation } from "./games/sudoku/variation";
-import { getInitialSelectedPuzzleId, markHomeNavigation, markPuzzleNavigation, shouldInitializePuzzleSurface } from "./app/homeNavigation";
+import { getInitialSelectedPuzzleId, markHomeNavigation, markPuzzleNavigation } from "./app/homeNavigation";
 import { defaultSudokuDifficulty, makeRandomSeed } from "./app/runtime";
 import { getCurrentAppRoute, parseAppRoute, pushAppRoute, type AppRoute } from "./app/routes";
-import { initialSolitaireStats } from "./app/session";
+import { initialSolitaireStats, loadPersistedPuzzleSessions } from "./app/session";
 import { useGridController } from "./app/useGridController";
 import { makeMissingPuzzleGenerationOptions, shouldRecoverMissingPuzzleSurface, usePuzzleGeneration, type BeginGenerationOptions } from "./app/usePuzzleGeneration";
 import { buildRuntimeSession, usePuzzleSessions } from "./app/usePuzzleSessions";
@@ -24,9 +25,10 @@ const initialStatusMessage = "Pick a puzzle to start.";
 type GenerationBehavior = { preserveScroll?: boolean };
 type NavigationBehavior = { pushHistory?: boolean };
 
-const viewForRoute = (route: AppRoute): AppView => {
+const viewForRoute = (route: AppRoute): AppView | null => {
   if (route.kind === "updates") return "changelog";
   if (route.kind === "about") return "about";
+  if (route.kind === "not-found") return null;
   return "catalog";
 };
 
@@ -34,7 +36,7 @@ export const App = () => {
   const initialRoute = useMemo(getCurrentAppRoute, []);
   const storedPuzzleId = useMemo(() => getInitialSelectedPuzzleId(), []);
   const initialSelectedPuzzleId = initialRoute.kind === "puzzle" ? initialRoute.puzzleId : storedPuzzleId;
-  const shouldStartOnPuzzleSurface = initialRoute.kind === "puzzle" || (initialRoute.kind === "home" && shouldInitializePuzzleSurface());
+  const shouldStartOnPuzzleSurface = initialRoute.kind === "puzzle";
   const [route, setRoute] = useState<AppRoute>(initialRoute);
   const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>(initialSelectedPuzzleId);
   const [seed, setSeed] = useState(makeRandomSeed);
@@ -150,6 +152,23 @@ export const App = () => {
     setStatusMessage(`Generating ${title}...`);
   };
 
+  const beginPersistedPuzzle = (puzzleId: PuzzleId) => {
+    const persistedSession = sessions.persistedSessionCache.current[puzzleId];
+    if (!persistedSession) return false;
+    sessions.pendingRestorePuzzleId.current = puzzleId;
+    beginGeneration({
+      puzzleId,
+      seed: persistedSession.seed,
+      width: persistedSession.width,
+      height: persistedSession.height,
+      difficulty: persistedSession.difficulty,
+      requireUniqueSolution: persistedSession.requireUniqueSolution,
+      sudokuVariation: persistedSession.sudokuVariation,
+      solitaireVariation: persistedSession.solitaireVariation,
+    });
+    return true;
+  };
+
   const handleGeneratedPuzzle = (generatedPuzzle: GeneratedPuzzle) => {
     const restoredSession = sessions.restorePendingSessionForPuzzle(generatedPuzzle);
     if (restoredSession) { restoreSession(generatedPuzzle.puzzleId, restoredSession); return; }
@@ -169,7 +188,6 @@ export const App = () => {
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
     markHomeNavigation();
     setAppRoute({ kind: "home" }, behavior);
-    setHasSelectedPuzzle(true);
     setIsHomeSelected(true);
   };
 
@@ -181,6 +199,7 @@ export const App = () => {
     setIsHomeSelected(false);
     const cachedSession = sessions.getCachedSession(puzzleId);
     if (cachedSession?.puzzle) { restoreSession(puzzleId, cachedSession); return; }
+    if (beginPersistedPuzzle(puzzleId)) return;
     const definition = getPuzzleDefinition(puzzleId);
     beginGeneration({
       puzzleId,
@@ -196,7 +215,14 @@ export const App = () => {
 
   const selectSiteView = (view: Exclude<AppView, "catalog">, behavior: NavigationBehavior = {}) => {
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
+    setIsHomeSelected(true);
     setAppRoute(view === "changelog" ? { kind: "updates" } : { kind: "about" }, behavior);
+  };
+
+  const selectNotFound = (nextRoute: Extract<AppRoute, { kind: "not-found" }>, behavior: NavigationBehavior = {}) => {
+    if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
+    setIsHomeSelected(true);
+    setAppRoute(nextRoute, behavior);
   };
 
   useEffect(() => {
@@ -207,6 +233,8 @@ export const App = () => {
         selectPuzzle(nextRoute.puzzleId, { pushHistory: false });
       } else if (nextRoute.kind === "home") {
         selectHome({ pushHistory: false });
+      } else if (nextRoute.kind === "not-found") {
+        selectNotFound(nextRoute, { pushHistory: false });
       } else {
         selectSiteView(nextRoute.kind === "updates" ? "changelog" : "about", { pushHistory: false });
       }
@@ -222,12 +250,16 @@ export const App = () => {
       restoreScrollPosition();
     });
     generation.worker.addEventListener("message", handleMessage);
+
+    const persisted = loadPersistedPuzzleSessions();
+    if (persisted) sessions.persistedSessionCache.current = persisted.sessions;
+
     if (initialRoute.kind === "puzzle") {
-      markPuzzleNavigation(initialRoute.puzzleId);
-    } else {
+      selectPuzzle(initialRoute.puzzleId, { pushHistory: false });
+    } else if (initialRoute.kind === "home") {
       markHomeNavigation();
-      sessions.loadPersistedSessionsOnce({ restoreSession, beginGeneration: (session) => beginGeneration(session) });
     }
+
     return () => generation.worker.removeEventListener("message", handleMessage);
   }, [generation.worker]);
 
@@ -294,7 +326,9 @@ export const App = () => {
   const puzzleNavigation = activeView === "catalog" ? <PuzzleCatalog isCollapsed={isCatalogCollapsed} isHomeSelected={isHomeSelected || !hasSelectedPuzzle} selectedPuzzleId={selectedPuzzleId} onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)} onHomeSelect={() => selectHome()} onSelectPuzzle={(puzzleId) => selectPuzzle(puzzleId)} /> : null;
 
   let content;
-  if (activeView === "changelog") {
+  if (route.kind === "not-found") {
+    content = <NotFoundView pathname={route.pathname} onHomeSelect={() => selectHome()} />;
+  } else if (activeView === "changelog") {
     content = <ChangelogView />;
   } else if (activeView === "about") {
     content = <AboutView />;
