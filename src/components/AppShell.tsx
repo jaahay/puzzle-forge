@@ -2,7 +2,7 @@ import type { ComponentChildren } from "preact";
 import type { AppView } from "../site/views";
 
 type AppShellProps = {
-  activeView: AppView;
+  activeView: AppView | null;
   children: ComponentChildren;
   headerControls?: ComponentChildren;
   onHomeSelect: () => void;
