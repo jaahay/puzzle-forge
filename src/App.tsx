@@ -5,14 +5,16 @@ import type { GeneratedPuzzle, PuzzleDifficulty, PuzzleGenerationRequest, Puzzle
 import { AboutView } from "./components/AboutView";
 import { AppShell } from "./components/AppShell";
 import { ChangelogView } from "./components/ChangelogView";
+import { NotFoundView } from "./components/NotFoundView";
 import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
 import { StartView } from "./components/StartView";
 import { defaultSolitaireVariation, normalizeSolitaireVariation, solitaireVariationsEqual } from "./games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation } from "./games/sudoku/variation";
-import { getInitialSelectedPuzzleId, markHomeNavigation, markPuzzleNavigation, shouldInitializePuzzleSurface } from "./app/homeNavigation";
-import { defaultSudokuDifficulty, getActiveView, makeRandomSeed } from "./app/runtime";
-import { initialSolitaireStats } from "./app/session";
+import { getInitialSelectedPuzzleId, markHomeNavigation, markPuzzleNavigation } from "./app/homeNavigation";
+import { defaultSudokuDifficulty, makeRandomSeed } from "./app/runtime";
+import { getCurrentAppRoute, parseAppRoute, pushAppRoute, type AppRoute } from "./app/routes";
+import { initialSolitaireStats, loadPersistedPuzzleSessions } from "./app/session";
 import { useGridController } from "./app/useGridController";
 import { makeMissingPuzzleGenerationOptions, shouldRecoverMissingPuzzleSurface, usePuzzleGeneration, type BeginGenerationOptions } from "./app/usePuzzleGeneration";
 import { buildRuntimeSession, usePuzzleSessions } from "./app/usePuzzleSessions";
@@ -21,11 +23,21 @@ import type { AppView } from "./site/views";
 
 const initialStatusMessage = "Pick a puzzle to start.";
 type GenerationBehavior = { preserveScroll?: boolean };
+type NavigationBehavior = { pushHistory?: boolean };
+
+const viewForRoute = (route: AppRoute): AppView | null => {
+  if (route.kind === "updates") return "changelog";
+  if (route.kind === "about") return "about";
+  if (route.kind === "not-found") return null;
+  return "catalog";
+};
 
 export const App = () => {
-  const shouldStartOnPuzzleSurface = useMemo(shouldInitializePuzzleSurface, []);
-  const initialSelectedPuzzleId = useMemo(() => getInitialSelectedPuzzleId(), []);
-  const [activeView, setActiveView] = useState<AppView>(getActiveView);
+  const initialRoute = useMemo(getCurrentAppRoute, []);
+  const storedPuzzleId = useMemo(() => getInitialSelectedPuzzleId(), []);
+  const initialSelectedPuzzleId = initialRoute.kind === "puzzle" ? initialRoute.puzzleId : storedPuzzleId;
+  const shouldStartOnPuzzleSurface = initialRoute.kind === "puzzle";
+  const [route, setRoute] = useState<AppRoute>(initialRoute);
   const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>(initialSelectedPuzzleId);
   const [seed, setSeed] = useState(makeRandomSeed);
   const [width, setWidth] = useState(9);
@@ -48,6 +60,7 @@ export const App = () => {
   const { readyPuzzles, previewPuzzles } = useMemo(() => getPuzzleAvailability(), []);
   const selectedDefinition = getPuzzleDefinition(selectedPuzzleId);
   const selectedPuzzleIsGeneratable = isGeneratable(selectedDefinition);
+  const activeView = viewForRoute(route);
 
   const rememberScrollPosition = () => {
     if (typeof window !== "undefined") pendingScrollRestore.current = { x: window.scrollX, y: window.scrollY };
@@ -60,8 +73,13 @@ export const App = () => {
     window.requestAnimationFrame(() => window.requestAnimationFrame(() => window.scrollTo({ left: savedPosition.x, top: savedPosition.y, behavior: "auto" })));
   };
 
+  const setAppRoute = (nextRoute: AppRoute, behavior: NavigationBehavior = {}) => {
+    if (behavior.pushHistory !== false) pushAppRoute(nextRoute);
+    setRoute(nextRoute);
+  };
+
   const restoreSession = (puzzleId: PuzzleId, session: ReturnType<typeof buildRuntimeSession>) => {
-    markPuzzleNavigation();
+    markPuzzleNavigation(puzzleId);
     setHasSelectedPuzzle(true);
     setIsHomeSelected(false);
     setSelectedPuzzleId(puzzleId);
@@ -99,16 +117,17 @@ export const App = () => {
   const beginGeneration = (options: BeginGenerationOptions = {}, behavior: GenerationBehavior = {}) => {
     if (behavior.preserveScroll) rememberScrollPosition();
     const requestedPuzzleId = options.puzzleId ?? selectedPuzzleId;
-    const requestOptions = requestedPuzzleId === "klondike-solitaire"
-      ? { ...options, solitaireVariation: normalizeSolitaireVariation(options.solitaireVariation ?? solitaireVariation) }
-      : requestedPuzzleId === "sudoku"
-        ? { ...options, sudokuVariation: normalizeSudokuVariation(options.sudokuVariation ?? sudokuVariation) }
-        : options;
+    let requestOptions = options;
+    if (requestedPuzzleId === "klondike-solitaire") {
+      requestOptions = { ...options, solitaireVariation: normalizeSolitaireVariation(options.solitaireVariation ?? solitaireVariation) };
+    } else if (requestedPuzzleId === "sudoku") {
+      requestOptions = { ...options, sudokuVariation: normalizeSudokuVariation(options.sudokuVariation ?? sudokuVariation) };
+    }
     const result = generation.beginGeneration({ selectedPuzzleId, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation }, requestOptions);
 
     setHasSelectedPuzzle(true);
     setIsHomeSelected(false);
-    markPuzzleNavigation();
+    markPuzzleNavigation(requestedPuzzleId);
     if (result.kind === "planned") {
       const definition = getPuzzleDefinition(result.puzzleId);
       setSelectedPuzzleId(result.puzzleId);
@@ -133,6 +152,23 @@ export const App = () => {
     setStatusMessage(`Generating ${title}...`);
   };
 
+  const beginPersistedPuzzle = (puzzleId: PuzzleId) => {
+    const persistedSession = sessions.persistedSessionCache.current[puzzleId];
+    if (!persistedSession) return false;
+    sessions.pendingRestorePuzzleId.current = puzzleId;
+    beginGeneration({
+      puzzleId,
+      seed: persistedSession.seed,
+      width: persistedSession.width,
+      height: persistedSession.height,
+      difficulty: persistedSession.difficulty,
+      requireUniqueSolution: persistedSession.requireUniqueSolution,
+      sudokuVariation: persistedSession.sudokuVariation,
+      solitaireVariation: persistedSession.solitaireVariation,
+    });
+    return true;
+  };
+
   const handleGeneratedPuzzle = (generatedPuzzle: GeneratedPuzzle) => {
     const restoredSession = sessions.restorePendingSessionForPuzzle(generatedPuzzle);
     if (restoredSession) { restoreSession(generatedPuzzle.puzzleId, restoredSession); return; }
@@ -148,12 +184,64 @@ export const App = () => {
     restoreScrollPosition();
   };
 
+  const selectHome = (behavior: NavigationBehavior = {}) => {
+    if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
+    markHomeNavigation();
+    setAppRoute({ kind: "home" }, behavior);
+    setIsHomeSelected(true);
+  };
+
+  const selectPuzzle = (puzzleId: PuzzleId, behavior: NavigationBehavior = {}) => {
+    setAppRoute({ kind: "puzzle", puzzleId }, behavior);
+    if (puzzleId === selectedPuzzleId && hasSelectedPuzzle && !isHomeSelected && puzzle) return;
+    if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
+    markPuzzleNavigation(puzzleId);
+    setIsHomeSelected(false);
+    const cachedSession = sessions.getCachedSession(puzzleId);
+    if (cachedSession?.puzzle) { restoreSession(puzzleId, cachedSession); return; }
+    if (beginPersistedPuzzle(puzzleId)) return;
+    const definition = getPuzzleDefinition(puzzleId);
+    beginGeneration({
+      puzzleId,
+      seed: makeRandomSeed(),
+      width: definition.defaultWidth,
+      height: definition.defaultHeight,
+      difficulty: puzzleId === "sudoku" ? defaultSudokuDifficulty : difficulty,
+      requireUniqueSolution,
+      sudokuVariation: puzzleId === "sudoku" ? defaultSudokuVariation : undefined,
+      solitaireVariation: puzzleId === "klondike-solitaire" ? solitaireVariation : undefined,
+    });
+  };
+
+  const selectSiteView = (view: Exclude<AppView, "catalog">, behavior: NavigationBehavior = {}) => {
+    if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
+    setIsHomeSelected(true);
+    setAppRoute(view === "changelog" ? { kind: "updates" } : { kind: "about" }, behavior);
+  };
+
+  const selectNotFound = (nextRoute: Extract<AppRoute, { kind: "not-found" }>, behavior: NavigationBehavior = {}) => {
+    if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
+    setIsHomeSelected(true);
+    setAppRoute(nextRoute, behavior);
+  };
+
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const syncActiveView = () => setActiveView(getActiveView());
-    window.addEventListener("hashchange", syncActiveView);
-    return () => window.removeEventListener("hashchange", syncActiveView);
-  }, []);
+    const handlePopState = () => {
+      const nextRoute = parseAppRoute(window.location.pathname);
+      if (nextRoute.kind === "puzzle") {
+        selectPuzzle(nextRoute.puzzleId, { pushHistory: false });
+      } else if (nextRoute.kind === "home") {
+        selectHome({ pushHistory: false });
+      } else if (nextRoute.kind === "not-found") {
+        selectNotFound(nextRoute, { pushHistory: false });
+      } else {
+        selectSiteView(nextRoute.kind === "updates" ? "changelog" : "about", { pushHistory: false });
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [selectedPuzzleId, hasSelectedPuzzle, isHomeSelected, puzzle]);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => generation.handleGenerationMessage(event, handleGeneratedPuzzle, (error) => {
@@ -162,7 +250,16 @@ export const App = () => {
       restoreScrollPosition();
     });
     generation.worker.addEventListener("message", handleMessage);
-    sessions.loadPersistedSessionsOnce({ restoreSession, beginGeneration: (session) => beginGeneration(session) });
+
+    const persisted = loadPersistedPuzzleSessions();
+    if (persisted) sessions.persistedSessionCache.current = persisted.sessions;
+
+    if (initialRoute.kind === "puzzle") {
+      selectPuzzle(initialRoute.puzzleId, { pushHistory: false });
+    } else if (initialRoute.kind === "home") {
+      markHomeNavigation();
+    }
+
     return () => generation.worker.removeEventListener("message", handleMessage);
   }, [generation.worker]);
 
@@ -176,35 +273,6 @@ export const App = () => {
     if (!hasSelectedPuzzle || generation.isGenerating || isHomeSelected || !puzzle) return;
     saveCurrentSession();
   }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, selectedPuzzleId, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, puzzle, solitaire.cardStacks, solitaire.selectedCard, solitaire.solitaireStats, solitaire.solitaireUndoStack, solitaire.solitaireRedoStack, grid.gridCells, grid.selectedGridCell, statusMessage]);
-
-  const selectHome = () => {
-    if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
-    markHomeNavigation();
-    setActiveView("catalog");
-    setHasSelectedPuzzle(true);
-    setIsHomeSelected(true);
-    if (typeof window !== "undefined" && window.location.hash) window.history.pushState(null, "", `${window.location.pathname}${window.location.search}`);
-  };
-
-  const selectPuzzle = (puzzleId: PuzzleId) => {
-    if (puzzleId === selectedPuzzleId && hasSelectedPuzzle && !isHomeSelected && puzzle) return;
-    if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
-    markPuzzleNavigation();
-    setIsHomeSelected(false);
-    const cachedSession = sessions.getCachedSession(puzzleId);
-    if (cachedSession?.puzzle) { restoreSession(puzzleId, cachedSession); return; }
-    const definition = getPuzzleDefinition(puzzleId);
-    beginGeneration({
-      puzzleId,
-      seed: makeRandomSeed(),
-      width: definition.defaultWidth,
-      height: definition.defaultHeight,
-      difficulty: puzzleId === "sudoku" ? defaultSudokuDifficulty : difficulty,
-      requireUniqueSolution,
-      sudokuVariation: puzzleId === "sudoku" ? defaultSudokuVariation : undefined,
-      solitaireVariation: puzzleId === "klondike-solitaire" ? solitaireVariation : undefined,
-    });
-  };
 
   const generate = () => beginGeneration({}, { preserveScroll: true });
   const randomize = () => beginGeneration({ seed: makeRandomSeed() }, { preserveScroll: true });
@@ -255,57 +323,68 @@ export const App = () => {
   const handleUniqueSolutionChange = (nextRequireUniqueSolution: boolean) => selectedPuzzleId === "nonogram" ? commitGenerationSettings({ requireUniqueSolution: nextRequireUniqueSolution }) : setRequireUniqueSolution(nextRequireUniqueSolution);
   const handleCheck = () => { if (!puzzle) return; puzzle.kind === "cards" ? solitaire.checkSolitaire() : grid.checkGrid(puzzle, setStatusMessage); };
 
-  const puzzleNavigation = activeView === "catalog" ? <PuzzleCatalog isCollapsed={isCatalogCollapsed} isHomeSelected={isHomeSelected || !hasSelectedPuzzle} selectedPuzzleId={selectedPuzzleId} onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)} onHomeSelect={selectHome} onSelectPuzzle={selectPuzzle} /> : null;
+  const puzzleNavigation = activeView === "catalog" ? <PuzzleCatalog isCollapsed={isCatalogCollapsed} isHomeSelected={isHomeSelected || !hasSelectedPuzzle} selectedPuzzleId={selectedPuzzleId} onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)} onHomeSelect={() => selectHome()} onSelectPuzzle={(puzzleId) => selectPuzzle(puzzleId)} /> : null;
+
+  let content;
+  if (route.kind === "not-found") {
+    content = <NotFoundView pathname={route.pathname} onHomeSelect={() => selectHome()} />;
+  } else if (activeView === "changelog") {
+    content = <ChangelogView />;
+  } else if (activeView === "about") {
+    content = <AboutView />;
+  } else {
+    content = (
+      <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
+        {isHomeSelected || !hasSelectedPuzzle ? <StartView readyPuzzles={readyPuzzles} previewPuzzles={previewPuzzles} onSelectPuzzle={(puzzleId) => selectPuzzle(puzzleId)} /> : (
+          <PuzzleWorkspace
+            selectedDefinition={selectedDefinition}
+            selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
+            seed={seed}
+            width={width}
+            height={height}
+            difficulty={difficulty}
+            requireUniqueSolution={requireUniqueSolution}
+            sudokuVariation={puzzle?.puzzleId === "sudoku" ? normalizeSudokuVariation(puzzle.sudokuVariation) : sudokuVariation}
+            puzzle={puzzle}
+            solitaireVariation={puzzle?.kind === "cards" ? puzzle.solitaireVariation : solitaireVariation}
+            cardStacks={solitaire.cardStacks}
+            selectedCard={solitaire.selectedCard}
+            solitaireStats={solitaire.solitaireStats}
+            gridCells={grid.gridCells}
+            selectedGridCell={grid.selectedGridCell}
+            statusMessage={statusMessage}
+            isGenerating={generation.isGenerating || (!puzzle && selectedPuzzleIsGeneratable && !isHomeSelected)}
+            onSeedChange={setSeed}
+            onWidthChange={setWidth}
+            onHeightChange={setHeight}
+            onSettingsCommit={commitGenerationSettings}
+            onDifficultyChange={handleDifficultyChange}
+            onSudokuVariationChange={handleSudokuVariationChange}
+            onUniqueSolutionChange={handleUniqueSolutionChange}
+            onGenerate={generate}
+            onRandomize={randomize}
+            onReset={resetCurrentPuzzle}
+            onCheck={handleCheck}
+            onSolitaireVariationChange={(variation) => commitGenerationSettings({ solitaireVariation: variation })}
+            onAutoMoveToFoundations={solitaire.autoMoveToFoundations}
+            onUndoSolitaire={solitaire.undoSolitaireMove}
+            onRedoSolitaire={solitaire.redoSolitaireMove}
+            canUndoSolitaire={solitaire.solitaireUndoStack.length > 0}
+            canRedoSolitaire={solitaire.solitaireRedoStack.length > 0}
+            onCardClick={solitaire.handleCardClick}
+            onCardDoubleClick={solitaire.moveSingleCardToFoundation}
+            onStackClick={solitaire.handleStackClick}
+            onCellClick={(cell) => grid.handleGridCellClick(puzzle, cell, setStatusMessage)}
+            onCellInput={(cell, value) => grid.handleGridCellInput(puzzle, cell, value, setStatusMessage)}
+          />
+        )}
+      </section>
+    );
+  }
 
   return (
-    <AppShell activeView={activeView} headerControls={puzzleNavigation} onHomeSelect={selectHome}>
-      {activeView === "catalog" ? (
-        <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
-          {isHomeSelected || !hasSelectedPuzzle ? <StartView readyPuzzles={readyPuzzles} previewPuzzles={previewPuzzles} onSelectPuzzle={selectPuzzle} /> : (
-            <PuzzleWorkspace
-              selectedDefinition={selectedDefinition}
-              selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
-              seed={seed}
-              width={width}
-              height={height}
-              difficulty={difficulty}
-              requireUniqueSolution={requireUniqueSolution}
-              sudokuVariation={puzzle?.puzzleId === "sudoku" ? normalizeSudokuVariation(puzzle.sudokuVariation) : sudokuVariation}
-              puzzle={puzzle}
-              solitaireVariation={puzzle?.kind === "cards" ? puzzle.solitaireVariation : solitaireVariation}
-              cardStacks={solitaire.cardStacks}
-              selectedCard={solitaire.selectedCard}
-              solitaireStats={solitaire.solitaireStats}
-              gridCells={grid.gridCells}
-              selectedGridCell={grid.selectedGridCell}
-              statusMessage={statusMessage}
-              isGenerating={generation.isGenerating || (!puzzle && selectedPuzzleIsGeneratable && !isHomeSelected)}
-              onSeedChange={setSeed}
-              onWidthChange={setWidth}
-              onHeightChange={setHeight}
-              onSettingsCommit={commitGenerationSettings}
-              onDifficultyChange={handleDifficultyChange}
-              onSudokuVariationChange={handleSudokuVariationChange}
-              onUniqueSolutionChange={handleUniqueSolutionChange}
-              onGenerate={generate}
-              onRandomize={randomize}
-              onReset={resetCurrentPuzzle}
-              onCheck={handleCheck}
-              onSolitaireVariationChange={(variation) => commitGenerationSettings({ solitaireVariation: variation })}
-              onAutoMoveToFoundations={solitaire.autoMoveToFoundations}
-              onUndoSolitaire={solitaire.undoSolitaireMove}
-              onRedoSolitaire={solitaire.redoSolitaireMove}
-              canUndoSolitaire={solitaire.solitaireUndoStack.length > 0}
-              canRedoSolitaire={solitaire.solitaireRedoStack.length > 0}
-              onCardClick={solitaire.handleCardClick}
-              onCardDoubleClick={solitaire.moveSingleCardToFoundation}
-              onStackClick={solitaire.handleStackClick}
-              onCellClick={(cell) => grid.handleGridCellClick(puzzle, cell, setStatusMessage)}
-              onCellInput={(cell, value) => grid.handleGridCellInput(puzzle, cell, value, setStatusMessage)}
-            />
-          )}
-        </section>
-      ) : activeView === "changelog" ? <ChangelogView /> : <AboutView />}
+    <AppShell activeView={activeView} headerControls={puzzleNavigation} onHomeSelect={() => selectHome()} onViewSelect={(view) => selectSiteView(view)}>
+      {content}
     </AppShell>
   );
 };
