@@ -7,14 +7,15 @@ const { readyPuzzles, previewPuzzles } = getPuzzleAvailability();
 type PuzzleCatalogProps = {
   isCollapsed: boolean;
   isHomeSelected: boolean;
+  isNotFound?: boolean;
   selectedPuzzleId: PuzzleId;
   onCollapseToggle: () => void;
   onHomeSelect: () => void;
   onSelectPuzzle: (puzzleId: PuzzleId) => void;
 };
 
-export const PuzzleCatalog = ({ isHomeSelected, selectedPuzzleId, onHomeSelect, onSelectPuzzle }: PuzzleCatalogProps) => {
-  const selectedCatalogValue = isHomeSelected ? "home" : selectedPuzzleId;
+export const PuzzleCatalog = ({ isHomeSelected, isNotFound = false, selectedPuzzleId, onHomeSelect, onSelectPuzzle }: PuzzleCatalogProps) => {
+  const selectedCatalogValue = isNotFound ? "not-found" : isHomeSelected ? "home" : selectedPuzzleId;
   const handleNavigation = (event: Event) => {
     const value = (event.currentTarget as HTMLSelectElement).value;
 
@@ -30,6 +31,7 @@ export const PuzzleCatalog = ({ isHomeSelected, selectedPuzzleId, onHomeSelect, 
     <nav class="catalog-panel" aria-label="Puzzle catalog" id="puzzle-catalog">
       <div class="catalog-mobile-nav">
         <select aria-label="Choose puzzle" value={selectedCatalogValue} onChange={handleNavigation}>
+          {isNotFound ? <option value="not-found" disabled>Page not found</option> : null}
           <option value="home">{homeIcon} Home</option>
           {readyPuzzles.map((definition) => (
             <option key={definition.id} value={definition.id}>{puzzleIcons[definition.id]} {definition.title}</option>
