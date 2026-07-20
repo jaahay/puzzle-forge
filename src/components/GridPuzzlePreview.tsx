@@ -17,6 +17,39 @@ const sameSudokuDiagonal = (left: PuzzleCell, right: PuzzleCell, size: number) =
   (left.row + left.column === size - 1 && right.row + right.column === size - 1);
 
 const isSudokuMainDiagonalCell = (cell: PuzzleCell, size: number) => cell.row === cell.column || cell.row + cell.column === size - 1;
+const gridCellKey = (row: number, column: number) => `${row}-${column}`;
+
+type KillerCageDecoration = {
+  sum: number;
+  isClueCell: boolean;
+  top: boolean;
+  right: boolean;
+  bottom: boolean;
+  left: boolean;
+};
+
+const makeKillerCageDecorations = (puzzle: GridGeneratedPuzzle) => {
+  const decorations = new Map<string, KillerCageDecoration>();
+
+  for (const cage of puzzle.cages ?? []) {
+    const cageCellKeys = new Set(cage.cells.map((cell) => gridCellKey(cell.row, cell.column)));
+    const clueCell = [...cage.cells].sort((left, right) => left.row - right.row || left.column - right.column)[0];
+    const clueKey = clueCell ? gridCellKey(clueCell.row, clueCell.column) : "";
+
+    for (const cell of cage.cells) {
+      decorations.set(gridCellKey(cell.row, cell.column), {
+        sum: cage.sum,
+        isClueCell: gridCellKey(cell.row, cell.column) === clueKey,
+        top: !cageCellKeys.has(gridCellKey(cell.row - 1, cell.column)),
+        right: !cageCellKeys.has(gridCellKey(cell.row, cell.column + 1)),
+        bottom: !cageCellKeys.has(gridCellKey(cell.row + 1, cell.column)),
+        left: !cageCellKeys.has(gridCellKey(cell.row, cell.column - 1)),
+      });
+    }
+  }
+
+  return decorations;
+};
 
 const formatClueLabel = (values: number[]) => (values.length > 0 ? values.join(", ") : "0");
 const getClueValues = (values: number[]) => (values.length > 0 ? values : [0]);
@@ -54,7 +87,9 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
   const isSudoku = puzzle.puzzleId === "sudoku";
   const isNumericGridPuzzle = inputMode === "numeric";
   const isDiagonalSudoku = isSudoku && puzzle.sudokuVariation === "diagonal";
+  const isZeroKillerSudoku = isSudoku && puzzle.sudokuVariation === "zero-killer";
   const isNonogram = puzzle.puzzleId === "nonogram";
+  const killerCageDecorations = isZeroKillerSudoku ? makeKillerCageDecorations(puzzle) : new Map<string, KillerCageDecoration>();
   const hasSudokuValidation = Boolean(isSudoku && cells.some((cell) => !cell.locked && (cell.tone === "answer" || cell.tone === "hint")));
   const activeNumericValue = selectedCell?.value || highlightedNumericDigit;
   const gridTemplateColumns = `repeat(${puzzle.width}, minmax(0, 1fr))`;
@@ -167,12 +202,13 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
 
   const grid = (
     <div
-      aria-label={isSudoku ? `${puzzle.difficulty ?? "Medium"} ${isDiagonalSudoku ? "Diagonal " : ""}Sudoku board` : isNonogram ? `${puzzle.width} by ${puzzle.height} Nonogram board` : undefined}
-      class={`grid ${puzzle.puzzleId} ${isDiagonalSudoku ? "diagonal-sudoku" : ""}`}
+      aria-label={isSudoku ? `${puzzle.difficulty ?? "Medium"} ${puzzle.title} board` : isNonogram ? `${puzzle.width} by ${puzzle.height} Nonogram board` : undefined}
+      class={`grid ${puzzle.puzzleId} ${isDiagonalSudoku ? "diagonal-sudoku" : ""} ${isZeroKillerSudoku ? "zero-killer-sudoku" : ""}`}
       data-grid-selection-scope={isNumericGridPuzzle ? "true" : undefined}
       style={{ gridTemplateColumns }}
     >
       {cells.map((cell) => {
+        const killerCage = killerCageDecorations.get(gridCellKey(cell.row, cell.column));
         const isSelectable = cell.tone !== "disabled" && (isNumericGridPuzzle || puzzle.puzzleId === "peg-solitaire" || !cell.locked);
         const isEditable = cell.tone !== "disabled" && (puzzle.puzzleId === "peg-solitaire" || !cell.locked);
         const isSelected = isSelectedGridCell(selectedGridCell, cell);
@@ -198,6 +234,11 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
           isCorrectValue ? "correct-cell" : "",
           isIncorrectValue ? "incorrect-cell" : "",
           isDiagonalCell ? "diagonal-cell" : "",
+          killerCage ? "killer-cage-cell" : "",
+          killerCage?.top ? "killer-cage-top" : "",
+          killerCage?.right ? "killer-cage-right" : "",
+          killerCage?.bottom ? "killer-cage-bottom" : "",
+          killerCage?.left ? "killer-cage-left" : "",
           isSudoku && cell.column % SUDOKU_BOX_SIZE === 0 && cell.column > 0 ? "box-left" : "",
           isSudoku && cell.row % SUDOKU_BOX_SIZE === 0 && cell.row > 0 ? "box-top" : "",
         ]
@@ -232,7 +273,14 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
             onClick={() => onCellClick(cell)}
             type="button"
           >
-            {isNonogram ? "" : cell.value}
+            {isNonogram ? "" : isSudoku ? (
+              <>
+                {killerCage?.isClueCell ? <span class="killer-cage-sum">{killerCage.sum}</span> : null}
+                <span class="sudoku-cell-value">{cell.value}</span>
+              </>
+            ) : (
+              cell.value
+            )}
           </button>
         );
       })}
@@ -271,6 +319,8 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
         {digitPad}
         {isDiagonalSudoku ? (
           <p class="sudoku-variant-rule">Diagonal rule: both main diagonals also contain 1-9.</p>
+        ) : isZeroKillerSudoku ? (
+          <p class="sudoku-variant-rule">Zero Killer rule: the remaining killer cages are the necessary sum clues; uncaged cells follow normal Sudoku rules only.</p>
         ) : null}
       </BoardViewport>
     );

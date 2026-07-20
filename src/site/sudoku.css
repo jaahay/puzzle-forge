@@ -83,6 +83,8 @@ select {
 .grid.sudoku .cell,
 .sudoku-board-viewport .grid.logic-grid .cell {
   position: relative;
+  display: grid;
+  place-items: center;
   width: var(--board-cell-size);
   aspect-ratio: 1;
   min-height: 0;
@@ -92,6 +94,51 @@ select {
   background: #0f172a;
   font-size: clamp(1.05rem, 5.25vw, 2rem);
   font-weight: 800;
+}
+
+.grid.sudoku .sudoku-cell-value {
+  line-height: 1;
+}
+
+.grid.sudoku.zero-killer-sudoku .cell.killer-cage-cell::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  z-index: 0;
+  border: 1px dashed transparent;
+  pointer-events: none;
+}
+
+.grid.sudoku.zero-killer-sudoku .cell.killer-cage-top::before {
+  border-top-color: rgba(167, 243, 208, 0.86);
+}
+
+.grid.sudoku.zero-killer-sudoku .cell.killer-cage-right::before {
+  border-right-color: rgba(167, 243, 208, 0.86);
+}
+
+.grid.sudoku.zero-killer-sudoku .cell.killer-cage-bottom::before {
+  border-bottom-color: rgba(167, 243, 208, 0.86);
+}
+
+.grid.sudoku.zero-killer-sudoku .cell.killer-cage-left::before {
+  border-left-color: rgba(167, 243, 208, 0.86);
+}
+
+.grid.sudoku.zero-killer-sudoku .cell > * {
+  position: relative;
+  z-index: 1;
+}
+
+.grid.sudoku.zero-killer-sudoku .killer-cage-sum {
+  position: absolute;
+  top: 0.18rem;
+  left: 0.18rem;
+  color: #a7f3d0;
+  font-size: clamp(0.46rem, 1.6vw, 0.68rem);
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
 }
 
 .grid.sudoku .cell.interactive-cell,
