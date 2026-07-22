@@ -162,7 +162,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
 
   useEffect(() => {
     setHighlightedNumericDigit("");
-  }, [puzzle.puzzleId, puzzzle.seed, puzzle.sudokuVariation]);
+  }, [puzzle.puzzleId, puzzle.seed, puzzle.sudokuVariation]);
 
   useEffect(() => {
     if (!isNumericGridPuzzle || !selectedCell || typeof document === "undefined") {
