@@ -7,27 +7,53 @@ const BOX_SIZE = 3;
 const CELL_COUNT = BOARD_SIZE * BOARD_SIZE;
 const FULL_DIGIT_MASK = (1 << BOARD_SIZE) - 1;
 const KILLER_SUM_LIMIT = 45;
-const KILLER_SEARCH_NODE_LIMIT = 2_000;
 const sudokuDigits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+
+const ZERO_KILLER_GENERATOR_POLICY = {
+  version: 1,
+  uniquenessNodeLimit: 2_000,
+  maxCageSizes: {
+    Easy: 2,
+    Medium: 3,
+    Hard: 3,
+    Expert: 4,
+  },
+  preferredMaximumSingletonRatios: {
+    Easy: 0.5,
+    Medium: 0.35,
+    Hard: 0.25,
+    Expert: 0.15,
+  },
+  maximumCagedCellCounts: {
+    Easy: 60,
+    Medium: 60,
+    Hard: 58,
+    Expert: 58,
+  },
+  extraGrowthTargets: {
+    Easy: 0,
+    Medium: 2,
+    Hard: 4,
+    Expert: 8,
+  },
+  maximumExpansionChecks: {
+    Easy: 24,
+    Medium: 32,
+    Hard: 40,
+    Expert: 48,
+  },
+  maximumExpansionNodes: {
+    Easy: 12_000,
+    Medium: 24_000,
+    Hard: 40_000,
+    Expert: 60_000,
+  },
+} as const;
 
 const difficultyClueTargetsByVariation: Record<SudokuVariation, Record<PuzzleDifficulty, number>> = {
   classic: { Easy: 40, Medium: 34, Hard: 30, Expert: 26 },
   diagonal: { Easy: 38, Medium: 32, Hard: 28, Expert: 24 },
   "zero-killer": { Easy: 40, Medium: 34, Hard: 30, Expert: 26 },
-};
-
-const zeroKillerMergeTargets: Record<PuzzleDifficulty, number> = {
-  Easy: 8,
-  Medium: 12,
-  Hard: 16,
-  Expert: 20,
-};
-
-const zeroKillerMaxCageSizes: Record<PuzzleDifficulty, number> = {
-  Easy: 2,
-  Medium: 3,
-  Hard: 3,
-  Expert: 4,
 };
 
 type InternalKillerCage = { id: string; cells: number[]; sum: number };
@@ -230,10 +256,16 @@ const getOrthogonalNeighbors = (cellIndex: number) => {
 };
 const renumberKillerCages = (cages: InternalKillerCage[]) => cages.map((cage, index) => ({ ...cage, id: `zk-${index + 1}` }));
 
+const killerCagesMatchTargetSolution = (cages: InternalKillerCage[], targetSolution: string[]) =>
+  cages.every((cage) => {
+    const values = cage.cells.map((cellIndex) => targetSolution[cellIndex] ?? "");
+    return values.every(Boolean) && new Set(values).size === values.length && sumSolutionCells(targetSolution, cage.cells) === cage.sum;
+  });
+
 const searchForAlternativeKillerSolution = (
   cages: InternalKillerCage[],
   targetSolution: string[],
-  nodeLimit = KILLER_SEARCH_NODE_LIMIT,
+  nodeLimit: number = ZERO_KILLER_GENERATOR_POLICY.uniquenessNodeLimit,
 ): KillerSearchResult => {
   const board = new Uint8Array(CELL_COUNT);
   const rowMasks = new Uint16Array(BOARD_SIZE);
@@ -241,7 +273,7 @@ const searchForAlternativeKillerSolution = (
   const boxMasks = new Uint16Array(BOARD_SIZE);
   const cageByCell = new Int16Array(CELL_COUNT);
   const cageUsedMasks = new Uint16Array(cages.length);
-  const cageRemainingSums = new Uint8Array(cages.length);
+  const cageRemainingSums = new Int16Array(cages.length);
   const cageRemainingCounts = new Uint8Array(cages.length);
   cageByCell.fill(-1);
 
@@ -266,8 +298,10 @@ const searchForAlternativeKillerSolution = (
     for (let bits = candidates; bits !== 0; bits &= bits - 1) {
       const bit = bits & -bits;
       const digit = digitByBit[bit];
+      const nextRemainingSum = remainingSum - digit;
+      if (nextRemainingSum < 0) continue;
       const availableMask = FULL_DIGIT_MASK & ~(cageUsedMasks[cageIndex] | bit);
-      if (canMakeKillerSum(availableMask, remainingCount, remainingSum - digit)) feasibleCandidates |= bit;
+      if (canMakeKillerSum(availableMask, remainingCount, nextRemainingSum)) feasibleCandidates |= bit;
     }
     return feasibleCandidates;
   };
@@ -343,8 +377,10 @@ const proveUniqueKillerSolution = (
   cages: InternalKillerCage[],
   targetSolution: string[],
   stats?: KillerGenerationStats,
-  nodeLimit = KILLER_SEARCH_NODE_LIMIT,
+  nodeLimit: number = ZERO_KILLER_GENERATOR_POLICY.uniquenessNodeLimit,
 ) => {
+  if (!killerCagesMatchTargetSolution(cages, targetSolution)) return false;
+
   const result = searchForAlternativeKillerSolution(cages, targetSolution, nodeLimit);
   if (stats) {
     stats.uniquenessChecks += 1;
@@ -379,12 +415,9 @@ const removeSingletonCages = (
   return renumberKillerCages(cages);
 };
 
-const cagesAreAdjacent = (left: InternalKillerCage, right: InternalKillerCage) => {
-  const rightCells = new Set(right.cells);
-  return left.cells.some((cellIndex) => getOrthogonalNeighbors(cellIndex).some((neighbor) => rightCells.has(neighbor)));
-};
+const countSingletonCages = (cages: InternalKillerCage[]) => cages.filter((cage) => cage.cells.length === 1).length;
 
-const mergeKillerCages = (
+const expandKillerCages = (
   solution: string[],
   initialCages: InternalKillerCage[],
   random: () => number,
@@ -392,33 +425,58 @@ const mergeKillerCages = (
   stats: KillerGenerationStats,
 ) => {
   let cages = renumberKillerCages(initialCages);
-  let mergeCount = 0;
-  const maxMergedSize = zeroKillerMaxCageSizes[difficulty];
-  const maxMergeCount = zeroKillerMergeTargets[difficulty];
+  const maxCageSize = ZERO_KILLER_GENERATOR_POLICY.maxCageSizes[difficulty];
+  const preferredMaximumSingletonRatio = ZERO_KILLER_GENERATOR_POLICY.preferredMaximumSingletonRatios[difficulty];
+  const maximumCagedCellCount = ZERO_KILLER_GENERATOR_POLICY.maximumCagedCellCounts[difficulty];
+  const extraGrowthTarget = ZERO_KILLER_GENERATOR_POLICY.extraGrowthTargets[difficulty];
+  const maximumExpansionChecks = ZERO_KILLER_GENERATOR_POLICY.maximumExpansionChecks[difficulty];
+  const maximumExpansionNodes = ZERO_KILLER_GENERATOR_POLICY.maximumExpansionNodes[difficulty];
+  const startingCheckCount = stats.uniquenessChecks;
+  const startingNodeCount = stats.nodesVisited;
+  let extraGrowthCount = 0;
+  const expansionBudgetAvailable = () =>
+    stats.uniquenessChecks - startingCheckCount < maximumExpansionChecks &&
+    stats.nodesVisited - startingNodeCount < maximumExpansionNodes;
 
-  while (mergeCount < maxMergeCount) {
-    const pairs = shuffle(
-      cages.flatMap((left, leftIndex) => cages.slice(leftIndex + 1).map((right) => [left, right] as const)),
-      random,
-    ).filter(([left, right]) => {
-      const cells = [...left.cells, ...right.cells];
-      if (cells.length > maxMergedSize || !cagesAreAdjacent(left, right)) return false;
-      const values = cells.map((cellIndex) => solution[cellIndex] ?? "");
-      return new Set(values).size === values.length;
-    });
+  while (expansionBudgetAvailable()) {
+    const singletonRatio = countSingletonCages(cages) / Math.max(1, cages.length);
+    const shouldReduceSingletons = singletonRatio > preferredMaximumSingletonRatio;
+    const shouldGrowLargerCages = !shouldReduceSingletons && extraGrowthCount < extraGrowthTarget;
+    const cagedCells = new Set(cages.flatMap((cage) => cage.cells));
+    if ((!shouldReduceSingletons && !shouldGrowLargerCages) || cagedCells.size >= maximumCagedCellCount) break;
 
-    let merged = false;
-    for (const [left, right] of pairs) {
-      const cells = [...left.cells, ...right.cells];
-      const mergedCage: InternalKillerCage = { id: left.id, cells, sum: sumSolutionCells(solution, cells) };
-      const testCages = renumberKillerCages(cages.filter((cage) => cage !== left && cage !== right).concat(mergedCage));
-      if (!proveUniqueKillerSolution(testCages, solution, stats)) continue;
-      cages = testCages;
-      mergeCount += 1;
-      merged = true;
-      break;
+    const candidates = shuffle(cages.filter((cage) => cage.cells.length < maxCageSize), random)
+      .sort((left, right) =>
+        shouldReduceSingletons
+          ? Number(right.cells.length === 1) - Number(left.cells.length === 1)
+          : right.cells.length - left.cells.length,
+      );
+    let expanded = false;
+
+    for (const cage of candidates) {
+      const usedValues = new Set(cage.cells.map((cellIndex) => solution[cellIndex] ?? ""));
+      const frontier = shuffle(
+        [...new Set(cage.cells.flatMap(getOrthogonalNeighbors))]
+          .filter((cellIndex) => !cagedCells.has(cellIndex) && !usedValues.has(solution[cellIndex] ?? "")),
+        random,
+      );
+
+      for (const cellIndex of frontier) {
+        if (!expansionBudgetAvailable()) break;
+        const cells = [...cage.cells, cellIndex];
+        const expandedCage: InternalKillerCage = { ...cage, cells, sum: sumSolutionCells(solution, cells) };
+        const testCages = renumberKillerCages(cages.map((candidate) => candidate === cage ? expandedCage : candidate));
+        if (!proveUniqueKillerSolution(testCages, solution, stats)) continue;
+        cages = testCages;
+        if (!shouldReduceSingletons) extraGrowthCount += 1;
+        expanded = true;
+        break;
+      }
+
+      if (expanded) break;
     }
-    if (!merged) break;
+
+    if (!expanded) break;
   }
 
   return cages;
@@ -426,8 +484,13 @@ const mergeKillerCages = (
 
 const buildZeroKillerCages = (solution: string[], random: () => number, difficulty: PuzzleDifficulty) => {
   const stats: KillerGenerationStats = { uniquenessChecks: 0, nodesVisited: 0, budgetRejections: 0 };
-  const sparseSingletons = removeSingletonCages(solution, random, difficultyClueTargetsByVariation["zero-killer"][difficulty], stats);
-  const cages = mergeKillerCages(solution, sparseSingletons, random, difficulty, stats);
+  const sparseSingletons = removeSingletonCages(
+    solution,
+    random,
+    difficultyClueTargetsByVariation["zero-killer"][difficulty],
+    stats,
+  );
+  const cages = expandKillerCages(solution, sparseSingletons, random, difficulty, stats);
   return { cages: renumberKillerCages(cages), stats };
 };
 
@@ -447,6 +510,8 @@ const makeSudokuCells = (values: string[], title: string) =>
   });
 
 export const sudokuTestHooks = {
+  zeroKillerGeneratorVersion: ZERO_KILLER_GENERATOR_POLICY.version,
+  zeroKillerPolicy: ZERO_KILLER_GENERATOR_POLICY,
   hasUniqueKillerSolution: (cages: GridPuzzleCage[], solution: string[], nodeLimit = 1_000_000) =>
     proveUniqueKillerSolution(
       cages.map((cage) => ({ id: cage.id, sum: cage.sum, cells: cage.cells.map((cell) => toCellIndex(cell.row, cell.column)) })),
@@ -460,20 +525,23 @@ export const generateSudoku: PuzzleGenerator = ({ seed, difficulty, sudokuVariat
   const normalizedSeed = normalizeSeed(seed);
   const selectedVariation = normalizeSudokuVariation(sudokuVariation);
   const selectedDifficulty = getDifficulty(difficulty, createRandom(`sudoku:${normalizedSeed}:difficulty`));
-  const random = createRandom(`sudoku:${selectedVariation}:${normalizedSeed}:${selectedDifficulty}`);
+  const variationSeed = selectedVariation === "zero-killer"
+    ? `sudoku:${selectedVariation}:v${ZERO_KILLER_GENERATOR_POLICY.version}:${normalizedSeed}:${selectedDifficulty}`
+    : `sudoku:${selectedVariation}:${normalizedSeed}:${selectedDifficulty}`;
+  const random = createRandom(variationSeed);
   const peerMap = makePeerMap(selectedVariation);
   const solution = buildSolution(random, selectedVariation, peerMap);
   const variationLabel = sudokuVariationLabels[selectedVariation];
   const title = selectedVariation === "classic" ? "Sudoku" : `${variationLabel} Sudoku`;
 
   if (selectedVariation === "zero-killer") {
-    const { cages: internalCages, stats } = buildZeroKillerCages(solution, random, selectedDifficulty);
+    const { cages: internalCages } = buildZeroKillerCages(solution, random, selectedDifficulty);
     const cages = internalCages.map(toPublicCage);
     const cagedCells = new Set(cages.flatMap((cage) => cage.cells.map((cell) => cellKey(cell.row, cell.column))));
     const uncagedCount = CELL_COUNT - cagedCells.size;
     const cells = makeSudokuCells(Array.from({ length: CELL_COUNT }, () => ""), title);
     const generatedPuzzle = createGeneratedPuzzle({
-      id: `sudoku-${selectedVariation}-${normalizedSeed}-${selectedDifficulty.toLowerCase()}`,
+      id: `sudoku-${selectedVariation}-v${ZERO_KILLER_GENERATOR_POLICY.version}-${normalizedSeed}-${selectedDifficulty.toLowerCase()}`,
       puzzleId: "sudoku",
       title,
       seed: normalizedSeed,
@@ -487,7 +555,6 @@ export const generateSudoku: PuzzleGenerator = ({ seed, difficulty, sudokuVariat
       notes: [
         `${selectedDifficulty} zero killer puzzle with ${cages.length} cages and ${uncagedCount} uncaged cells.`,
         sudokuVariationDescriptions[selectedVariation],
-        `Generated with ${stats.uniquenessChecks} bounded uniqueness checks.`,
       ],
     });
     return { ...generatedPuzzle, sudokuVariation: selectedVariation };

@@ -33,13 +33,20 @@ const expectValidZeroKillerPuzzle = (puzzle: ReturnType<typeof generateSudoku>) 
   expect(puzzle.sudokuVariation).toBe("zero-killer");
   expect(puzzle.title).toBe("Zero Killer Sudoku");
   expect(puzzle.uniqueSolution).toBe(true);
+  expect(puzzle.id).toContain(`zero-killer-v${sudokuTestHooks.zeroKillerGeneratorVersion}`);
   expect(solution).toHaveLength(81);
   expectStandardUnits(solution);
   expect(puzzle.cells.every((cell) => !cell.locked && cell.value === "")).toBe(true);
   expect(cages.length).toBeGreaterThan(0);
+  expect(cages.some((cage) => cage.cells.length > 1)).toBe(true);
+  expect(cages.filter((cage) => cage.cells.length === 1).length / cages.length).toBeLessThanOrEqual(0.6);
+  expect(Math.max(...cages.map((cage) => cage.cells.length))).toBeLessThanOrEqual(
+    sudokuTestHooks.zeroKillerPolicy.maxCageSizes[puzzle.difficulty ?? "Medium"],
+  );
   expect(new Set(cagedCellKeys).size).toBe(cagedCellKeys.length);
   expect(cagedCellKeys.length).toBeLessThan(81);
   expect(sudokuTestHooks.hasUniqueKillerSolution(cages, solution)).toBe(true);
+  expect(puzzle.notes.every((note) => !note.includes("uniqueness checks"))).toBe(true);
 
   for (const cage of cages) {
     const cageValues = cage.cells.map((cell) => solution[cell.row * 9 + cell.column] ?? "");
@@ -83,9 +90,23 @@ describe("generateSudoku", () => {
     expect(first.kind).toBe("grid");
     expect(second.kind).toBe("grid");
     if (first.kind !== "grid" || second.kind !== "grid") throw new Error("Expected generated Sudoku to be a grid puzzle.");
+    expect(second.id).toBe(first.id);
     expect(second.cages).toEqual(first.cages);
     expect(second.answerKey).toEqual(first.answerKey);
     expect(second.checksum).toBe(first.checksum);
+  });
+
+  it("versions the Zero Killer generation policy", () => {
+    expect(sudokuTestHooks.zeroKillerGeneratorVersion).toBe(1);
+    expect(sudokuTestHooks.zeroKillerPolicy.uniquenessNodeLimit).toBeGreaterThan(0);
+  });
+
+  it("rejects cage definitions that do not match the target solution", () => {
+    const puzzle = generateSudoku({ puzzleId: "sudoku", seed: "zero-killer-invalid-cage", width: 9, height: 9, difficulty: "Medium", sudokuVariation: "zero-killer" });
+    expect(puzzle.kind).toBe("grid");
+    if (puzzle.kind !== "grid") throw new Error("Expected generated Sudoku to be a grid puzzle.");
+    const cages = (puzzle.cages ?? []).map((cage, index) => index === 0 ? { ...cage, sum: cage.sum - 1 } : cage);
+    expect(sudokuTestHooks.hasUniqueKillerSolution(cages, puzzle.answerKey ?? [])).toBe(false);
   });
 
   it("keeps the bounded runtime generator robust across difficulties and seeds", () => {
