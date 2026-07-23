@@ -1,6 +1,7 @@
 import type {
   GeneratedPuzzle,
   GridGeneratedPuzzle,
+  GridPuzzleCage,
   GridPuzzleClues,
   PuzzleCell,
   PuzzleDifficulty,
@@ -48,8 +49,9 @@ export const makeChecksumFromParts = (parts: string[]) => {
   return total.toString(36).padStart(6, "0");
 };
 
-export const makeChecksum = (cells: PuzzleCell[]) => {
+export const makeChecksum = (cells: PuzzleCell[], cages: GridPuzzleCage[] = []) => {
   const parts = cells.map((cell) => `${cell.row}:${cell.column}:${cell.value}:${cell.locked ? "locked" : "open"}:${cell.tone}`);
+  parts.push(...cages.map((cage) => `${cage.id}:${cage.sum}:${cage.cells.map((cell) => `${cell.row},${cell.column}`).join("|")}`));
 
   return makeChecksumFromParts(parts);
 };
@@ -67,6 +69,7 @@ export const createGeneratedPuzzle = ({
   notes,
   answerKey,
   clues,
+  cages,
 }: {
   id: string;
   puzzleId: PuzzleId;
@@ -80,6 +83,7 @@ export const createGeneratedPuzzle = ({
   notes: string[];
   answerKey?: string[];
   clues?: GridPuzzleClues;
+  cages?: GridPuzzleCage[];
 }): GridGeneratedPuzzle => ({
   kind: "grid",
   id,
@@ -93,7 +97,8 @@ export const createGeneratedPuzzle = ({
   cells,
   answerKey,
   clues,
-  checksum: makeChecksum(cells),
+  cages,
+  checksum: makeChecksum(cells, cages),
   createdAt: new Date().toISOString(),
   notes,
 });

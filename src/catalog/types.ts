@@ -15,7 +15,7 @@ export type PuzzleStatus = "playable" | "prototype" | "planned";
 export type PuzzleCategory = "numbers" | "logic" | "word" | "grid" | "cards";
 
 export type PuzzleDifficulty = "Easy" | "Medium" | "Hard" | "Expert";
-export type SudokuVariation = "classic" | "diagonal";
+export type SudokuVariation = "classic" | "diagonal" | "zero-killer";
 
 export type PuzzleDefinition = {
   id: PuzzleId;
@@ -47,6 +47,12 @@ export type PuzzleCell = {
 export type GridPuzzleClues = {
   rows?: number[][];
   columns?: number[][];
+};
+
+export type GridPuzzleCage = {
+  id: string;
+  cells: Array<{ row: number; column: number }>;
+  sum: number;
 };
 
 export type CardSuit = "clubs" | "diamonds" | "hearts" | "spades";
@@ -163,6 +169,7 @@ export type GridGeneratedPuzzle = BaseGeneratedPuzzle & {
   cells: PuzzleCell[];
   answerKey?: string[];
   clues?: GridPuzzleClues;
+  cages?: GridPuzzleCage[];
 };
 
 export type CardGeneratedPuzzle = BaseGeneratedPuzzle & {

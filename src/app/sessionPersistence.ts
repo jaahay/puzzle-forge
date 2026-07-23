@@ -93,7 +93,7 @@ type PersistedPuzzleSessionMetadata = {
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 const isPuzzleId = (value: unknown): value is PuzzleId => typeof value === "string" && puzzleIds.includes(value as PuzzleId);
-const isSudokuVariation = (value: unknown): value is SudokuVariation => value === "classic" || value === "diagonal";
+const isSudokuVariation = (value: unknown): value is SudokuVariation => value === "classic" || value === "diagonal" || value === "zero-killer";
 const isSolitaireRedealLimit = (value: unknown): value is SolitaireRedealLimit => solitaireRedealLimits.includes(value as SolitaireRedealLimit);
 const isSolitaireVariation = (value: unknown): value is SolitaireVariation =>
   isRecord(value) &&
