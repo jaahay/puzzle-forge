@@ -13,7 +13,7 @@ const letterCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 export const cloneGridCell = (cell: PuzzleCell): PuzzleCell => ({ ...cell });
 
 export const getGridInputMode = (puzzleId: PuzzleId): GridInputMode => {
-  if (puzzleId === "sudoku" || puzzleId === "logic-grid") {
+  if (puzzleId === "sudoku" || puzzleId === "logic-grid" || puzzleId === "futoshiki") {
     return "numeric";
   }
 
@@ -64,7 +64,7 @@ export const prepareGridCells = (puzzle: GridGeneratedPuzzle): PuzzleCell[] =>
       };
     }
 
-    if (!cell.locked && (puzzle.puzzleId === "sudoku" || puzzle.puzzleId === "logic-grid")) {
+    if (!cell.locked && (puzzle.puzzleId === "sudoku" || puzzle.puzzleId === "logic-grid" || puzzle.puzzleId === "futoshiki")) {
       return {
         ...cell,
         value: "",
