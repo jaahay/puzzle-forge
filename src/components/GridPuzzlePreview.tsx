@@ -1,12 +1,10 @@
-import { useEffect, useState } from "preact/hooks";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { FILLED_NONOGRAM_CELL } from "../games/nonogram/solve";
 import { getGridInputMode, isSelectedGridCell, type GridCellSelection } from "../interactions/gridRules";
 import { BoardViewport } from "./BoardViewport";
+import { NumericGridDigitPad, useNumericGridInput } from "./NumericGridInput";
 
 const SUDOKU_BOX_SIZE = 3;
-const numericDigits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
-const gridSelectionScopeSelector = '[data-grid-selection-scope="true"]';
 
 const sameSudokuBox = (left: PuzzleCell, right: PuzzleCell) =>
   Math.floor(left.row / SUDOKU_BOX_SIZE) === Math.floor(right.row / SUDOKU_BOX_SIZE) &&
@@ -77,13 +75,6 @@ const renderClue = (values: number[], prefix: string, index: number, className: 
   </div>
 );
 
-const isTextEditingTarget = (target: EventTarget | null) =>
-  target instanceof HTMLElement &&
-  (target.isContentEditable ||
-    target.tagName === "INPUT" ||
-    target.tagName === "TEXTAREA" ||
-    target.tagName === "SELECT");
-
 type GridPuzzlePreviewProps = {
   puzzle: GridGeneratedPuzzle;
   cells: PuzzleCell[];
@@ -93,127 +84,37 @@ type GridPuzzlePreviewProps = {
 };
 
 export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick, onCellInput }: GridPuzzlePreviewProps) => {
-  const [highlightedNumericDigit, setHighlightedNumericDigit] = useState("");
   const inputMode = getGridInputMode(puzzle.puzzleId);
-  const selectedCell = selectedGridCell
-    ? cells.find((cell) => cell.row === selectedGridCell.row && cell.column === selectedGridCell.column)
-    : undefined;
   const isSudoku = puzzle.puzzleId === "sudoku";
   const isNumericGridPuzzle = inputMode === "numeric";
   const isDiagonalSudoku = isSudoku && puzzle.sudokuVariation === "diagonal";
   const isZeroKillerSudoku = isSudoku && puzzle.sudokuVariation === "zero-killer";
   const isNonogram = puzzle.puzzleId === "nonogram";
+  const numericInput = useNumericGridInput({
+    enabled: isNumericGridPuzzle,
+    puzzleIdentity: `${puzzle.puzzleId}:${puzzle.seed}:${puzzle.sudokuVariation ?? ""}:${puzzle.width}:${puzzle.height}`,
+    digitCount: puzzle.width,
+    cells,
+    selectedGridCell,
+    onCellClick,
+    onCellInput,
+  });
+  const selectedCell = numericInput.selectedCell;
   const killerCageDecorations = isZeroKillerSudoku ? makeKillerCageDecorations(puzzle) : new Map<string, KillerCageDecoration>();
   const hasSudokuValidation = Boolean(isSudoku && cells.some((cell) => !cell.locked && (cell.tone === "answer" || cell.tone === "hint")));
-  const activeNumericValue = selectedCell?.value || highlightedNumericDigit;
   const gridTemplateColumns = `repeat(${puzzle.width}, minmax(0, 1fr))`;
-  const canClearSelectedNumericCell = Boolean(isNumericGridPuzzle && selectedCell && !selectedCell.locked && selectedCell.value);
   const sudokuVariantRuleId = isDiagonalSudoku || isZeroKillerSudoku ? "sudoku-variant-rule" : undefined;
 
-  const setSelectedNumericValue = (value: string) => {
-    if (!isNumericGridPuzzle) {
-      return;
-    }
-
-    if (selectedCell && !selectedCell.locked) {
-      const nextValue = selectedCell.value === value ? "" : value;
-      setHighlightedNumericDigit("");
-      onCellInput(selectedCell, nextValue);
-      return;
-    }
-
-    if (value) {
-      setHighlightedNumericDigit((currentDigit) => (currentDigit === value ? "" : value));
-    }
-  };
-
-  const clearSelectedNumericValue = () => {
-    setHighlightedNumericDigit("");
-
-    if (selectedCell && !selectedCell.locked) {
-      onCellInput(selectedCell, "");
-    }
-  };
-
   const digitPad = isNumericGridPuzzle ? (
-    <div class="sudoku-digit-pad" aria-label={`${puzzle.title} digit pad`} data-grid-selection-scope="true">
-      {numericDigits.map((digit) => (
-        <button
-          class={activeNumericValue === digit ? "selected-sudoku-digit" : ""}
-          key={digit}
-          type="button"
-          aria-pressed={activeNumericValue === digit}
-          onClick={() => setSelectedNumericValue(digit)}
-        >
-          {digit}
-        </button>
-      ))}
-      <button
-        class="sudoku-erase-button"
-        type="button"
-        onClick={clearSelectedNumericValue}
-        disabled={!canClearSelectedNumericCell}
-        aria-label={`Erase selected ${puzzle.title} cell`}
-      >
-        Erase
-      </button>
-    </div>
+    <NumericGridDigitPad
+      title={puzzle.title}
+      digits={numericInput.digits}
+      activeValue={numericInput.activeValue}
+      canClearSelectedCell={numericInput.canClearSelectedCell}
+      onDigit={numericInput.setSelectedValue}
+      onClear={numericInput.clearSelectedValue}
+    />
   ) : null;
-
-  useEffect(() => {
-    setHighlightedNumericDigit("");
-  }, [puzzle.puzzleId, puzzle.seed, puzzle.sudokuVariation]);
-
-  useEffect(() => {
-    if (!isNumericGridPuzzle || !selectedCell || typeof document === "undefined") {
-      return;
-    }
-
-    const clearSelectionFromOutsideClick = (event: PointerEvent) => {
-      const target = event.target;
-
-      if (target instanceof Element && target.closest(gridSelectionScopeSelector)) {
-        return;
-      }
-
-      onCellClick(selectedCell);
-    };
-
-    document.addEventListener("pointerdown", clearSelectionFromOutsideClick);
-
-    return () => {
-      document.removeEventListener("pointerdown", clearSelectionFromOutsideClick);
-    };
-  }, [isNumericGridPuzzle, onCellClick, selectedCell]);
-
-  useEffect(() => {
-    if (!isNumericGridPuzzle || !selectedCell || typeof document === "undefined") {
-      return;
-    }
-
-    const handleNumericKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || isTextEditingTarget(event.target)) {
-        return;
-      }
-
-      if (numericDigits.includes(event.key)) {
-        event.preventDefault();
-        setSelectedNumericValue(event.key);
-        return;
-      }
-
-      if (event.key === "Backspace" || event.key === "Delete" || event.key === "0") {
-        event.preventDefault();
-        clearSelectedNumericValue();
-      }
-    };
-
-    document.addEventListener("keydown", handleNumericKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleNumericKeyDown);
-    };
-  }, [isNumericGridPuzzle, selectedCell]);
 
   const grid = (
     <div
@@ -235,7 +136,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
             !isSelected &&
             (cell.row === selectedCell.row || cell.column === selectedCell.column || sameSudokuBox(cell, selectedCell) || isDiagonalPeer),
         );
-        const isSameValue = Boolean(isNumericGridPuzzle && activeNumericValue && cell.value === activeNumericValue && !isSelected);
+        const isSameValue = Boolean(isNumericGridPuzzle && numericInput.activeValue && cell.value === numericInput.activeValue && !isSelected);
         const isCorrectValue = Boolean(isSudoku && hasSudokuValidation && !cell.locked && cell.tone === "answer");
         const isIncorrectValue = Boolean(isSudoku && hasSudokuValidation && !cell.locked && cell.tone === "hint");
         const isDiagonalCell = Boolean(isDiagonalSudoku && isSudokuMainDiagonalCell(cell, puzzle.width));
