@@ -5,6 +5,7 @@ export type PuzzleId =
   | "logic-grid"
   | "klondike-solitaire"
   | "peg-solitaire"
+  | "futoshiki"
   | "kenken"
   | "minesweeper"
   | "jigsaw"
@@ -53,6 +54,11 @@ export type GridPuzzleCage = {
   id: string;
   cells: Array<{ row: number; column: number }>;
   sum: number;
+};
+
+export type GridPuzzleInequality = {
+  lesser: { row: number; column: number };
+  greater: { row: number; column: number };
 };
 
 export type CardSuit = "clubs" | "diamonds" | "hearts" | "spades";
@@ -170,6 +176,7 @@ export type GridGeneratedPuzzle = BaseGeneratedPuzzle & {
   answerKey?: string[];
   clues?: GridPuzzleClues;
   cages?: GridPuzzleCage[];
+  inequalities?: GridPuzzleInequality[];
 };
 
 export type CardGeneratedPuzzle = BaseGeneratedPuzzle & {
