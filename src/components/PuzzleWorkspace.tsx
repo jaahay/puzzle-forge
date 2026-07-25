@@ -15,6 +15,7 @@ const workspaceRegistry = {
   "logic-grid": StandardPuzzleWorkspace,
   "klondike-solitaire": StandardPuzzleWorkspace,
   "peg-solitaire": StandardPuzzleWorkspace,
+  futoshiki: StandardPuzzleWorkspace,
   kenken: StandardPuzzleWorkspace,
   minesweeper: StandardPuzzleWorkspace,
   jigsaw: JigsawWorkspace,
