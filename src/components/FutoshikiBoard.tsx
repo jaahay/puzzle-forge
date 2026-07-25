@@ -1,6 +1,7 @@
 import type { GridGeneratedPuzzle, GridPuzzleInequality, PuzzleCell } from "../catalog/types";
 import { isSelectedGridCell, type GridCellSelection } from "../interactions/gridRules";
 import { BoardViewport } from "./BoardViewport";
+import { NumericGridDigitPad, useNumericGridInput } from "./NumericGridInput";
 
 type FutoshikiBoardProps = {
   puzzle: GridGeneratedPuzzle;
@@ -10,129 +11,157 @@ type FutoshikiBoardProps = {
   onCellInput: (cell: PuzzleCell, value: string) => void;
 };
 
-const cellKey = (row: number, column: number) => `${row}-${column}`;
+type Coordinate = GridPuzzleInequality["lesser"];
+type Direction = "above" | "below" | "left" | "right";
+type InequalityPresentation = {
+  key: string;
+  slotRow: number;
+  slotColumn: number;
+  rotation: "right" | "down" | "left" | "up";
+};
 
-const getInequalityPresentation = (inequality: GridPuzzleInequality) => {
+const cellKey = (row: number, column: number) => `${row}-${column}`;
+const sameCoordinate = (left: Coordinate, right: Coordinate) => left.row === right.row && left.column === right.column;
+
+const describeRelativePosition = (origin: Coordinate, target: Coordinate): Direction => {
+  if (target.row < origin.row) return "above";
+  if (target.row > origin.row) return "below";
+  if (target.column < origin.column) return "left";
+  return "right";
+};
+
+export const getFutoshikiCellConstraintLabels = (cell: PuzzleCell, inequalities: GridPuzzleInequality[]) =>
+  inequalities.flatMap((inequality) => {
+    if (sameCoordinate(cell, inequality.lesser)) {
+      return [`Less than the cell ${describeRelativePosition(inequality.lesser, inequality.greater)}`];
+    }
+
+    if (sameCoordinate(cell, inequality.greater)) {
+      return [`Greater than the cell ${describeRelativePosition(inequality.greater, inequality.lesser)}`];
+    }
+
+    return [];
+  });
+
+export const getFutoshikiCellAriaLabel = (cell: PuzzleCell, inequalities: GridPuzzleInequality[]) => {
+  const baseLabel = cell.ariaLabel ?? `Cell at row ${cell.row + 1}, column ${cell.column + 1}`;
+  const constraintLabels = getFutoshikiCellConstraintLabels(cell, inequalities);
+  return constraintLabels.length > 0 ? `${baseLabel}. ${constraintLabels.join(". ")}.` : baseLabel;
+};
+
+export const getFutoshikiInequalityPresentation = (inequality: GridPuzzleInequality): InequalityPresentation => {
   const { lesser, greater } = inequality;
+
   if (lesser.row === greater.row) {
-    const leftIsLesser = lesser.column < greater.column;
+    const lesserIsLeft = lesser.column < greater.column;
     return {
       key: `${cellKey(lesser.row, lesser.column)}-${cellKey(greater.row, greater.column)}`,
-      row: lesser.row * 2 + 1,
-      column: Math.min(lesser.column, greater.column) * 2 + 2,
-      symbol: leftIsLesser ? "<" : ">",
-      label: `Row ${lesser.row + 1}, column ${lesser.column + 1} is less than row ${greater.row + 1}, column ${greater.column + 1}`,
+      slotRow: lesser.row * 2,
+      slotColumn: Math.min(lesser.column, greater.column) * 2 + 1,
+      rotation: lesserIsLeft ? "right" : "left",
     };
   }
 
-  const topIsLesser = lesser.row < greater.row;
+  const lesserIsAbove = lesser.row < greater.row;
   return {
     key: `${cellKey(lesser.row, lesser.column)}-${cellKey(greater.row, greater.column)}`,
-    row: Math.min(lesser.row, greater.row) * 2 + 2,
-    column: lesser.column * 2 + 1,
-    symbol: topIsLesser ? "∧" : "∨",
-    label: `Row ${lesser.row + 1}, column ${lesser.column + 1} is less than row ${greater.row + 1}, column ${greater.column + 1}`,
+    slotRow: Math.min(lesser.row, greater.row) * 2 + 1,
+    slotColumn: lesser.column * 2,
+    rotation: lesserIsAbove ? "down" : "up",
   };
 };
 
 export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, onCellClick, onCellInput }: FutoshikiBoardProps) => {
-  const selectedCell = selectedGridCell
-    ? cells.find((cell) => cell.row === selectedGridCell.row && cell.column === selectedGridCell.column)
-    : undefined;
-  const digits = Array.from({ length: puzzle.width }, (_, index) => String(index + 1));
-  const activeValue = selectedCell?.value ?? "";
-  const gridSize = puzzle.width * 2 - 1;
-  const trackTemplate = Array.from({ length: gridSize }, (_, index) => index % 2 === 0 ? "minmax(0, 1fr)" : "clamp(1rem, 4vw, 1.5rem)").join(" ");
-
-  const setSelectedValue = (value: string) => {
-    if (!selectedCell || selectedCell.locked) return;
-    onCellInput(selectedCell, selectedCell.value === value ? "" : value);
-  };
+  const inequalities = puzzle.inequalities ?? [];
+  const input = useNumericGridInput({
+    enabled: true,
+    puzzleIdentity: `${puzzle.puzzleId}:${puzzle.seed}:${puzzle.width}:${puzzle.height}`,
+    digitCount: puzzle.width,
+    cells,
+    selectedGridCell,
+    onCellClick,
+    onCellInput,
+  });
+  const cellBySlot = new Map(cells.map((cell) => [cellKey(cell.row * 2, cell.column * 2), cell]));
+  const inequalityBySlot = new Map(
+    inequalities.map((inequality) => {
+      const presentation = getFutoshikiInequalityPresentation(inequality);
+      return [cellKey(presentation.slotRow, presentation.slotColumn), presentation] as const;
+    }),
+  );
+  const slotCount = puzzle.width * 2 - 1;
+  const slots = Array.from({ length: slotCount * slotCount }, (_, index) => ({
+    row: Math.floor(index / slotCount),
+    column: index % slotCount,
+  }));
 
   return (
     <BoardViewport kind="sudoku" columns={puzzle.width} rows={puzzle.height}>
       <div
+        aria-describedby="futoshiki-rule"
         aria-label={`${puzzle.width} by ${puzzle.height} Futoshiki board`}
-        class="grid futoshiki-board"
+        class="futoshiki-board"
         data-grid-selection-scope="true"
-        style={{
-          display: "grid",
-          gridTemplateColumns: trackTemplate,
-          gridTemplateRows: trackTemplate,
-          alignItems: "center",
-          justifyItems: "center",
-          gap: 0,
-          width: "100%",
-          aspectRatio: "1 / 1",
-        }}
       >
-        {cells.map((cell) => {
-          const selected = isSelectedGridCell(selectedGridCell, cell);
-          return (
-            <button
-              aria-label={cell.ariaLabel}
-              aria-pressed={selected}
-              class={`cell ${cell.tone} interactive-cell ${selected ? "selected-grid-cell" : ""}`}
-              key={cellKey(cell.row, cell.column)}
-              onClick={() => onCellClick(cell)}
-              style={{
-                gridRow: cell.row * 2 + 1,
-                gridColumn: cell.column * 2 + 1,
-                width: "100%",
-                height: "100%",
-                minWidth: 0,
-                minHeight: 0,
-              }}
-              type="button"
-            >
-              {cell.value}
-            </button>
-          );
-        })}
-        {(puzzle.inequalities ?? []).map((inequality) => {
-          const presentation = getInequalityPresentation(inequality);
-          return (
-            <span
-              aria-label={presentation.label}
-              key={presentation.key}
-              role="img"
-              style={{
-                gridRow: presentation.row,
-                gridColumn: presentation.column,
-                fontSize: "clamp(0.8rem, 4vw, 1.35rem)",
-                fontWeight: 800,
-                lineHeight: 1,
-                pointerEvents: "none",
-              }}
-            >
-              {presentation.symbol}
+        {slots.map(({ row, column }) => {
+          const key = cellKey(row, column);
+          const cell = cellBySlot.get(key);
+
+          if (cell) {
+            const selected = isSelectedGridCell(selectedGridCell, cell);
+            const isPeer = Boolean(input.selectedCell && !selected && (cell.row === input.selectedCell.row || cell.column === input.selectedCell.column));
+            const isSameValue = Boolean(input.activeValue && cell.value === input.activeValue && !selected);
+            const hasValidation = cells.some((candidate) => !candidate.locked && (candidate.tone === "answer" || candidate.tone === "hint"));
+            const cellClass = [
+              "cell",
+              cell.tone,
+              "interactive-cell",
+              selected ? "selected-grid-cell" : "",
+              isPeer ? "peer-cell" : "",
+              isSameValue ? "same-value-cell" : "",
+              hasValidation && !cell.locked && cell.tone === "answer" ? "correct-cell" : "",
+              hasValidation && !cell.locked && cell.tone === "hint" ? "incorrect-cell" : "",
+            ]
+              .filter(Boolean)
+              .join(" ");
+
+            return (
+              <button
+                aria-label={getFutoshikiCellAriaLabel(cell, inequalities)}
+                aria-pressed={selected}
+                class={cellClass}
+                key={key}
+                onClick={() => onCellClick(cell)}
+                type="button"
+              >
+                {cell.value}
+              </button>
+            );
+          }
+
+          const inequality = inequalityBySlot.get(key);
+          return inequality ? (
+            <span aria-hidden="true" class={`futoshiki-inequality ${inequality.rotation}`} key={inequality.key}>
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M7 4l10 8L7 20" />
+              </svg>
             </span>
+          ) : (
+            <span aria-hidden="true" class="futoshiki-spacer" key={key} />
           );
         })}
       </div>
-      <div class="sudoku-digit-pad" aria-label="Futoshiki digit pad" data-grid-selection-scope="true">
-        {digits.map((digit) => (
-          <button
-            class={activeValue === digit ? "selected-sudoku-digit" : ""}
-            key={digit}
-            type="button"
-            aria-pressed={activeValue === digit}
-            onClick={() => setSelectedValue(digit)}
-          >
-            {digit}
-          </button>
-        ))}
-        <button
-          class="sudoku-erase-button"
-          type="button"
-          onClick={() => selectedCell && !selectedCell.locked && onCellInput(selectedCell, "")}
-          disabled={!selectedCell || selectedCell.locked || !selectedCell.value}
-          aria-label="Erase selected Futoshiki cell"
-        >
-          Erase
-        </button>
-      </div>
-      <p class="sudoku-variant-rule">Use each digit once per row and column. The narrow side of each inequality points to the smaller number.</p>
+      <NumericGridDigitPad
+        title={puzzle.title}
+        digits={input.digits}
+        activeValue={input.activeValue}
+        canClearSelectedCell={input.canClearSelectedCell}
+        onDigit={input.setSelectedValue}
+        onClear={input.clearSelectedValue}
+      />
+      <p class="sudoku-variant-rule" id="futoshiki-rule">
+        Use each digit once per row and column. The narrow side of each inequality points to the smaller number.
+      </p>
     </BoardViewport>
   );
 };
