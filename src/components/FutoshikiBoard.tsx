@@ -58,7 +58,7 @@ export const getFutoshikiInequalityPresentation = (inequality: GridPuzzleInequal
       key: `${cellKey(lesser.row, lesser.column)}-${cellKey(greater.row, greater.column)}`,
       slotRow: lesser.row * 2,
       slotColumn: Math.min(lesser.column, greater.column) * 2 + 1,
-      rotation: lesserIsLeft ? "right" : "left",
+      rotation: lesserIsLeft ? "left" : "right",
     };
   }
 
@@ -67,7 +67,7 @@ export const getFutoshikiInequalityPresentation = (inequality: GridPuzzleInequal
     key: `${cellKey(lesser.row, lesser.column)}-${cellKey(greater.row, greater.column)}`,
     slotRow: Math.min(lesser.row, greater.row) * 2 + 1,
     slotColumn: lesser.column * 2,
-    rotation: lesserIsAbove ? "down" : "up",
+    rotation: lesserIsAbove ? "up" : "down",
   };
 };
 
@@ -94,6 +94,7 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, onCellClick, o
     row: Math.floor(index / slotCount),
     column: index % slotCount,
   }));
+  const hasValidation = cells.some((cell) => !cell.locked && (cell.tone === "answer" || cell.tone === "hint"));
 
   return (
     <BoardViewport kind="sudoku" columns={puzzle.width} rows={puzzle.height}>
@@ -111,7 +112,6 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, onCellClick, o
             const selected = isSelectedGridCell(selectedGridCell, cell);
             const isPeer = Boolean(input.selectedCell && !selected && (cell.row === input.selectedCell.row || cell.column === input.selectedCell.column));
             const isSameValue = Boolean(input.activeValue && cell.value === input.activeValue && !selected);
-            const hasValidation = cells.some((candidate) => !candidate.locked && (candidate.tone === "answer" || candidate.tone === "hint"));
             const cellClass = [
               "cell",
               cell.tone,
