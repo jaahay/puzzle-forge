@@ -16,10 +16,9 @@ const getInequalityPresentation = (inequality: GridPuzzleInequality) => {
   const { lesser, greater } = inequality;
   if (lesser.row === greater.row) {
     const leftIsLesser = lesser.column < greater.column;
-    const left = leftIsLesser ? lesser : greater;
     return {
       key: `${cellKey(lesser.row, lesser.column)}-${cellKey(greater.row, greater.column)}`,
-      row: left.row * 2 + 1,
+      row: lesser.row * 2 + 1,
       column: Math.min(lesser.column, greater.column) * 2 + 2,
       symbol: leftIsLesser ? "<" : ">",
       label: `Row ${lesser.row + 1}, column ${lesser.column + 1} is less than row ${greater.row + 1}, column ${greater.column + 1}`,
@@ -43,6 +42,7 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, onCellClick, o
   const digits = Array.from({ length: puzzle.width }, (_, index) => String(index + 1));
   const activeValue = selectedCell?.value ?? "";
   const gridSize = puzzle.width * 2 - 1;
+  const trackTemplate = Array.from({ length: gridSize }, (_, index) => index % 2 === 0 ? "minmax(0, 1fr)" : "clamp(1rem, 4vw, 1.5rem)").join(" ");
 
   const setSelectedValue = (value: string) => {
     if (!selectedCell || selectedCell.locked) return;
@@ -53,15 +53,15 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, onCellClick, o
     <BoardViewport kind="sudoku" columns={puzzle.width} rows={puzzle.height}>
       <div
         aria-label={`${puzzle.width} by ${puzzle.height} Futoshiki board`}
-        class="futoshiki-board"
+        class="grid futoshiki-board"
         data-grid-selection-scope="true"
         style={{
           display: "grid",
-          gridTemplateColumns: `repeat(${gridSize}, minmax(0, ${gridSize % 2 === 1 ? "1fr" : "auto"}))`,
-          gridTemplateRows: `repeat(${gridSize}, minmax(0, 1fr))`,
+          gridTemplateColumns: trackTemplate,
+          gridTemplateRows: trackTemplate,
           alignItems: "center",
           justifyItems: "center",
-          gap: "0.2rem",
+          gap: 0,
           width: "100%",
           aspectRatio: "1 / 1",
         }}
@@ -73,7 +73,6 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, onCellClick, o
               aria-label={cell.ariaLabel}
               aria-pressed={selected}
               class={`cell ${cell.tone} interactive-cell ${selected ? "selected-grid-cell" : ""}`}
-              disabled={false}
               key={cellKey(cell.row, cell.column)}
               onClick={() => onCellClick(cell)}
               style={{
