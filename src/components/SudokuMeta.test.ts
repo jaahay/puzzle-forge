@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
-import { getStandardSudokuMetadata, getZeroKillerSudokuMetadata } from "./SudokuMeta";
+import {
+  formatSudokuMetaCount,
+  getStandardSudokuMetadata,
+  getSudokuMetaKind,
+  getZeroKillerSudokuMetadata,
+} from "./SudokuMeta.logic";
 
 const cells = [
   { row: 0, column: 0, value: "4", locked: true, tone: "given" },
@@ -9,6 +14,19 @@ const cells = [
 ] satisfies PuzzleCell[];
 
 describe("Sudoku metadata", () => {
+  it("routes only Zero Killer to cage-oriented metadata", () => {
+    expect(getSudokuMetaKind({ sudokuVariation: "zero-killer" })).toBe("zero-killer");
+    expect(getSudokuMetaKind({ sudokuVariation: "classic" })).toBe("standard");
+    expect(getSudokuMetaKind({ sudokuVariation: "diagonal" })).toBe("standard");
+  });
+
+  it("formats singular and plural metadata labels", () => {
+    expect(formatSudokuMetaCount(1, "cage")).toBe("1 cage");
+    expect(formatSudokuMetaCount(2, "cage")).toBe("2 cages");
+    expect(formatSudokuMetaCount(1, "uncaged cell")).toBe("1 uncaged cell");
+    expect(formatSudokuMetaCount(2, "uncaged cell")).toBe("2 uncaged cells");
+  });
+
   it("retains standard Sudoku given and open-cell progress counts", () => {
     expect(getStandardSudokuMetadata(cells)).toEqual({
       givens: 1,
@@ -17,7 +35,7 @@ describe("Sudoku metadata", () => {
     });
   });
 
-  it("reports cage-oriented Zero Killer metadata", () => {
+  it("reports cage-oriented Zero Killer metadata against the 81-cell board", () => {
     const puzzle = {
       width: 9,
       height: 9,
