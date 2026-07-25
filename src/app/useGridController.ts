@@ -16,12 +16,14 @@ export type GridControllerSnapshot = {
   selectedGridCell: GridCellSelection | null;
 };
 
-const clearValidationTone = (puzzleId: PuzzleId, cell: PuzzleCell): PuzzleCell => {
+const usesNeutralNumericEntryTone = (puzzleId: PuzzleId) => puzzleId === "sudoku" || puzzleId === "futoshiki";
+
+export const clearGridValidationTone = (puzzleId: PuzzleId, cell: PuzzleCell): PuzzleCell => {
   if (cell.locked || cell.tone === "disabled") {
     return cell;
   }
 
-  if (puzzleId === "sudoku" && (cell.tone === "answer" || cell.tone === "hint")) {
+  if (usesNeutralNumericEntryTone(puzzleId) && (cell.tone === "answer" || cell.tone === "hint")) {
     return { ...cell, tone: "empty" };
   }
 
@@ -31,6 +33,9 @@ const clearValidationTone = (puzzleId: PuzzleId, cell: PuzzleCell): PuzzleCell =
 
   return cell;
 };
+
+export const getGridEntryTone = (puzzleId: PuzzleId, value: string): PuzzleCell["tone"] =>
+  usesNeutralNumericEntryTone(puzzleId) ? "empty" : value ? "answer" : "empty";
 
 export const useGridController = () => {
   const [gridCells, setGridCells] = useState<PuzzleCell[] | null>(null);
@@ -80,7 +85,7 @@ export const useGridController = () => {
 
     setSelectedGridCell({ row: cell.row, column: cell.column });
     updateGridCells((cells) => {
-      const editableCells = cells.map((candidate) => clearValidationTone(puzzle.puzzleId, candidate));
+      const editableCells = cells.map((candidate) => clearGridValidationTone(puzzle.puzzleId, candidate));
       const index = getCellIndex(editableCells, cell);
       const current = editableCells[index];
 
@@ -91,18 +96,22 @@ export const useGridController = () => {
       editableCells[index] = {
         ...current,
         value: nextValue,
-        tone: puzzle.puzzleId === "sudoku" ? "empty" : nextValue ? "answer" : "empty",
+        tone: getGridEntryTone(puzzle.puzzleId, nextValue),
         ariaLabel: `${nextValue || "Empty"} cell at row ${current.row + 1}, column ${current.column + 1}`,
       };
 
-      return { cells: editableCells, message: puzzle.puzzleId === "sudoku" ? "Sudoku entry updated." : nextValue ? `Set cell to ${nextValue}.` : "Cleared cell." };
+      const puzzleName = puzzle.puzzleId === "sudoku" ? "Sudoku" : puzzle.puzzleId === "futoshiki" ? "Futoshiki" : null;
+      return {
+        cells: editableCells,
+        message: puzzleName ? `${puzzleName} entry updated.` : nextValue ? `Set cell to ${nextValue}.` : "Cleared cell.",
+      };
     }, onStatusMessage);
   };
 
   const toggleNonogramCell = (cell: PuzzleCell, onStatusMessage: (message: string) => void) => {
     clearGridInteraction();
     updateGridCells((cells) => {
-      const editableCells = cells.map((candidate) => clearValidationTone("nonogram", candidate));
+      const editableCells = cells.map((candidate) => clearGridValidationTone("nonogram", candidate));
       const index = getCellIndex(editableCells, cell);
       const current = editableCells[index];
 
