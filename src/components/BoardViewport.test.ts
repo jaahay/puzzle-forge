@@ -4,7 +4,7 @@ import { makeBoardViewportMetrics } from "./BoardViewport";
 describe("board viewport sizing", () => {
   it("sizes Sudoku from available inline width", () => {
     const metrics = makeBoardViewportMetrics({
-      kind: "sudoku",
+      kind: "square-grid",
       availableInlineSize: 328,
       columns: 9,
       rows: 9,
