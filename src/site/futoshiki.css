@@ -12,8 +12,8 @@
   grid-template-columns: repeat(var(--board-column-gap-count), minmax(0, 1fr) minmax(1rem, 0.36fr)) minmax(0, 1fr);
   grid-template-rows: repeat(var(--board-row-gap-count), minmax(0, 1fr) minmax(1rem, 0.36fr)) minmax(0, 1fr);
   width: var(--board-width);
+  height: var(--board-height);
   max-width: 100%;
-  aspect-ratio: 1;
   overflow: hidden;
   border: 2px solid #e5e7eb;
   border-radius: 0.65rem;
