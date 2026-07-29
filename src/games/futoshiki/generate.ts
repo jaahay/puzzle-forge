@@ -1,4 +1,4 @@
-import type { GridPuzzleInequality, PuzzleDifficulty, PuzzleGenerator } from "../../catalog/types";
+import type { GridPuzzleGenerator, GridPuzzleInequality, PuzzleDifficulty } from "../../catalog/types";
 import { createGeneratedPuzzle, createRandom, normalizeDimension, normalizeSeed } from "../shared";
 
 const difficultyConfig: Record<PuzzleDifficulty, { givenRatio: number; inequalityRatio: number }> = {
@@ -114,7 +114,7 @@ export const countFutoshikiSolutions = (
   return solutionCount;
 };
 
-export const generateFutoshiki: PuzzleGenerator = ({ seed, width, difficulty }) => {
+export const generateFutoshiki: GridPuzzleGenerator = ({ seed, width, difficulty }) => {
   const normalizedSeed = normalizeSeed(seed);
   const size = normalizeDimension(width, 5, 4, 6);
   const normalizedDifficulty = difficulty ?? "Medium";
