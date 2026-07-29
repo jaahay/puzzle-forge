@@ -31,8 +31,8 @@ describe("Futoshiki board presentation", () => {
       { lesser: { row: 0, column: 1 }, greater: { row: 1, column: 1 } },
     ];
 
-    expect(getFutoshikiCellAriaLabel(makeCell(1, 1), inequalities)).toContain("Less than the cell right");
+    expect(getFutoshikiCellAriaLabel(makeCell(1, 1), inequalities)).toContain("Less than the cell to the right");
     expect(getFutoshikiCellAriaLabel(makeCell(1, 1), inequalities)).toContain("Greater than the cell above");
-    expect(getFutoshikiCellAriaLabel(makeCell(1, 2), inequalities)).toContain("Greater than the cell left");
+    expect(getFutoshikiCellAriaLabel(makeCell(1, 2), inequalities)).toContain("Greater than the cell to the left");
   });
 });
