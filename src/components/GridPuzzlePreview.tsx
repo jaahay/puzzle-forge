@@ -231,7 +231,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
 
   if (isNumericGridPuzzle) {
     return (
-      <BoardViewport kind="sudoku" columns={puzzle.width} rows={puzzle.height}>
+      <BoardViewport kind="square-grid" columns={puzzle.width} rows={puzzle.height}>
         {grid}
         {digitPad}
         {isDiagonalSudoku ? (
