@@ -30,14 +30,17 @@ const describeRelativePosition = (origin: Coordinate, target: Coordinate): Direc
   return "right";
 };
 
+const describeRelativeCell = (direction: Direction) =>
+  direction === "above" || direction === "below" ? `the cell ${direction}` : `the cell to the ${direction}`;
+
 export const getFutoshikiCellConstraintLabels = (cell: PuzzleCell, inequalities: GridPuzzleInequality[]) =>
   inequalities.flatMap((inequality) => {
     if (sameCoordinate(cell, inequality.lesser)) {
-      return [`Less than the cell ${describeRelativePosition(inequality.lesser, inequality.greater)}`];
+      return [`Less than ${describeRelativeCell(describeRelativePosition(inequality.lesser, inequality.greater))}`];
     }
 
     if (sameCoordinate(cell, inequality.greater)) {
-      return [`Greater than the cell ${describeRelativePosition(inequality.greater, inequality.lesser)}`];
+      return [`Greater than ${describeRelativeCell(describeRelativePosition(inequality.greater, inequality.lesser))}`];
     }
 
     return [];
@@ -97,7 +100,7 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, onCellClick, o
   const hasValidation = cells.some((cell) => !cell.locked && (cell.tone === "answer" || cell.tone === "hint"));
 
   return (
-    <BoardViewport kind="sudoku" columns={puzzle.width} rows={puzzle.height}>
+    <BoardViewport kind="square-grid" columns={puzzle.width} rows={puzzle.height}>
       <div
         aria-describedby="futoshiki-rule"
         aria-label={`${puzzle.width} by ${puzzle.height} Futoshiki board`}
