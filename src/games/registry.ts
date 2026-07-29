@@ -1,4 +1,5 @@
 import type { PuzzleGenerator, PuzzleId } from "../catalog/types";
+import { generateFutoshiki } from "./futoshiki/generate";
 import { generateJigsaw } from "./jigsaw/generate";
 import { generateLogicGrid } from "./logicGrid/generate";
 import { generateNonogram } from "./nonogram/generate";
@@ -15,6 +16,7 @@ const generators: Partial<Record<PuzzleId, PuzzleGenerator>> = {
   jigsaw: generateJigsaw,
   "klondike-solitaire": generateSolitaire,
   "peg-solitaire": generatePegSolitaire,
+  futoshiki: generateFutoshiki,
 };
 
 export const hasPuzzleGenerator = (puzzleId: PuzzleId) => Boolean(generators[puzzleId]);

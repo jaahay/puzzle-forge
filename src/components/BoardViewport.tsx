@@ -1,7 +1,7 @@
 import type { ComponentChildren, JSX } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 
-export type BoardViewportKind = "sudoku" | "nonogram";
+export type BoardViewportKind = "square-grid" | "nonogram";
 
 type BoardViewportProps = {
   kind: BoardViewportKind;
@@ -31,8 +31,8 @@ export type BoardViewportMetrics = {
   columnClueHeight: number;
 };
 
-const sudokuMaxBoardSize = 672;
-const sudokuMinCellSize = 28;
+const squareGridMaxBoardSize = 672;
+const squareGridMinCellSize = 28;
 const nonogramMaxCellSize = 58;
 const nonogramMinCellSize = 24;
 const nonogramFrameWidth = 20;
@@ -58,9 +58,9 @@ export const makeBoardViewportMetrics = ({
   const safeRows = normalizeCount(rows);
   const availableWidth = Math.max(0, availableInlineSize);
 
-  if (kind === "sudoku") {
-    const targetBoardWidth = Math.min(availableWidth || sudokuMaxBoardSize, sudokuMaxBoardSize);
-    const cellSize = clamp(targetBoardWidth / safeColumns, sudokuMinCellSize, sudokuMaxBoardSize / safeColumns);
+  if (kind === "square-grid") {
+    const targetBoardWidth = Math.min(availableWidth || squareGridMaxBoardSize, squareGridMaxBoardSize);
+    const cellSize = clamp(targetBoardWidth / safeColumns, squareGridMinCellSize, squareGridMaxBoardSize / safeColumns);
     const boardSize = roundMetric(cellSize * safeColumns);
 
     return {
@@ -103,6 +103,8 @@ const getObservedInlineSize = (entry: ResizeObserverEntry, fallback: HTMLElement
 export const BoardViewport = ({ kind, columns, rows, rowClueSlots, columnClueSlots, children }: BoardViewportProps) => {
   const viewportRef = useRef<HTMLDivElement>(null);
   const [availableInlineSize, setAvailableInlineSize] = useState(0);
+  const safeColumns = normalizeCount(columns);
+  const safeRows = normalizeCount(rows);
   const metrics = useMemo(
     () =>
       makeBoardViewportMetrics({
@@ -116,8 +118,10 @@ export const BoardViewport = ({ kind, columns, rows, rowClueSlots, columnClueSlo
     [availableInlineSize, columnClueSlots, columns, kind, rowClueSlots, rows],
   );
   const viewportStyle = {
-    "--board-columns": String(normalizeCount(columns)),
-    "--board-rows": String(normalizeCount(rows)),
+    "--board-columns": String(safeColumns),
+    "--board-rows": String(safeRows),
+    "--board-column-gap-count": String(Math.max(0, safeColumns - 1)),
+    "--board-row-gap-count": String(Math.max(0, safeRows - 1)),
     "--board-cell-size": `${metrics.cellSize}px`,
     "--board-grid-width": `${metrics.gridWidth}px`,
     "--board-grid-height": `${metrics.gridHeight}px`,
@@ -126,6 +130,7 @@ export const BoardViewport = ({ kind, columns, rows, rowClueSlots, columnClueSlo
     "--nonogram-row-clue-width": `${metrics.rowClueWidth}px`,
     "--nonogram-column-clue-height": `${metrics.columnClueHeight}px`,
   } as JSX.CSSProperties;
+  const viewportKindClass = kind === "square-grid" ? "square-grid-board-viewport sudoku-board-viewport" : "nonogram-board-viewport";
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -168,7 +173,7 @@ export const BoardViewport = ({ kind, columns, rows, rowClueSlots, columnClueSlo
   }, []);
 
   return (
-    <div class={`board-viewport ${kind}-board-viewport`} ref={viewportRef} style={viewportStyle}>
+    <div class={`board-viewport ${viewportKindClass}`} ref={viewportRef} style={viewportStyle}>
       <div class="board-viewport-inner">{children}</div>
     </div>
   );

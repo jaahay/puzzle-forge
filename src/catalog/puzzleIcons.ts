@@ -7,6 +7,7 @@ export const puzzleIcons: Record<PuzzleId, string> = {
   "logic-grid": "⌗",
   "klondike-solitaire": "♠",
   "peg-solitaire": "●",
+  futoshiki: "<>",
   kenken: "∑",
   minesweeper: "✹",
   jigsaw: "▧",
