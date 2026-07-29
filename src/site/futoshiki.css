@@ -9,8 +9,8 @@
 
 .futoshiki-board {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr) minmax(1rem, 0.36fr)) minmax(0, 1fr);
-  grid-template-rows: repeat(4, minmax(0, 1fr) minmax(1rem, 0.36fr)) minmax(0, 1fr);
+  grid-template-columns: repeat(var(--board-column-gap-count), minmax(0, 1fr) minmax(1rem, 0.36fr)) minmax(0, 1fr);
+  grid-template-rows: repeat(var(--board-row-gap-count), minmax(0, 1fr) minmax(1rem, 0.36fr)) minmax(0, 1fr);
   width: var(--board-width);
   max-width: 100%;
   aspect-ratio: 1;
@@ -119,8 +119,8 @@
 
 @media (max-width: 540px) {
   .futoshiki-board {
-    grid-template-columns: repeat(4, minmax(0, 1fr) minmax(0.72rem, 0.3fr)) minmax(0, 1fr);
-    grid-template-rows: repeat(4, minmax(0, 1fr) minmax(0.72rem, 0.3fr)) minmax(0, 1fr);
+    grid-template-columns: repeat(var(--board-column-gap-count), minmax(0, 1fr) minmax(0.72rem, 0.3fr)) minmax(0, 1fr);
+    grid-template-rows: repeat(var(--board-row-gap-count), minmax(0, 1fr) minmax(0.72rem, 0.3fr)) minmax(0, 1fr);
     border-radius: 0.45rem;
   }
 
