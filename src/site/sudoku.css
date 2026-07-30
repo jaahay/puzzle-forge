@@ -132,12 +132,22 @@ select {
 
 .grid.sudoku.zero-killer-sudoku .killer-cage-sum {
   position: absolute;
-  top: 0.18rem;
-  left: 0.18rem;
-  color: #a7f3d0;
-  font-size: clamp(0.46rem, 1.6vw, 0.68rem);
-  font-weight: 900;
+  top: 0.42rem;
+  left: 0.42rem;
+  min-width: 1.15em;
+  box-sizing: border-box;
+  border-radius: 0.24rem;
+  padding: 0.08em 0.22em 0.1em;
+  color: #d1fae5;
+  background: rgba(15, 23, 42, 0.88);
+  box-shadow: 0 0 0 1px rgba(167, 243, 208, 0.26);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: clamp(0.44rem, 1.45vw, 0.64rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  letter-spacing: -0.04em;
   line-height: 1;
+  text-align: center;
   pointer-events: none;
 }
 
