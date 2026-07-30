@@ -185,6 +185,8 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
             aria-label={getGridCellAriaLabel(cell, killerCage)}
             aria-pressed={isNonogram ? cell.value === FILLED_NONOGRAM_CELL : isSelected}
             class={cellClass}
+            data-grid-cell-column={isNumericGridPuzzle ? cell.column : undefined}
+            data-grid-cell-row={isNumericGridPuzzle ? cell.row : undefined}
             disabled={!isSelectable}
             key={`${cell.row}-${cell.column}`}
             onClick={() => onCellClick(cell)}

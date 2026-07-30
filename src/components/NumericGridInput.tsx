@@ -16,6 +16,21 @@ export const getNumericGridDigits = (digitCount: number) =>
 
 export const isNumericGridClearKey = (key: string) => key === "Backspace" || key === "Delete" || key === "0";
 
+export const getNumericGridArrowDelta = (key: string) => {
+  switch (key) {
+    case "ArrowUp":
+      return { row: -1, column: 0 };
+    case "ArrowRight":
+      return { row: 0, column: 1 };
+    case "ArrowDown":
+      return { row: 1, column: 0 };
+    case "ArrowLeft":
+      return { row: 0, column: -1 };
+    default:
+      return null;
+  }
+};
+
 type UseNumericGridInputProps = {
   enabled: boolean;
   puzzleIdentity: string;
@@ -102,6 +117,32 @@ export const useNumericGridInput = ({
         return;
       }
 
+      const arrowDelta = getNumericGridArrowDelta(event.key);
+
+      if (arrowDelta) {
+        const nextCell = cells.find(
+          (cell) =>
+            cell.row === selectedCell.row + arrowDelta.row &&
+            cell.column === selectedCell.column + arrowDelta.column &&
+            cell.tone !== "disabled",
+        );
+
+        if (!nextCell) {
+          return;
+        }
+
+        event.preventDefault();
+        onCellClick(nextCell);
+        requestAnimationFrame(() => {
+          document
+            .querySelector<HTMLElement>(
+              `${gridSelectionScopeSelector} [data-grid-cell-row="${nextCell.row}"][data-grid-cell-column="${nextCell.column}"]`,
+            )
+            ?.focus();
+        });
+        return;
+      }
+
       if (digits.includes(event.key)) {
         event.preventDefault();
         setSelectedValue(event.key);
@@ -119,7 +160,7 @@ export const useNumericGridInput = ({
     return () => {
       document.removeEventListener("keydown", handleNumericKeyDown);
     };
-  }, [digits, enabled, onCellInput, selectedCell]);
+  }, [cells, digits, enabled, onCellClick, onCellInput, selectedCell]);
 
   return {
     digits,

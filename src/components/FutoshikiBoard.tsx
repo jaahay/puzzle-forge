@@ -133,6 +133,8 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, onCellClick, o
                 aria-label={getFutoshikiCellAriaLabel(cell, inequalities)}
                 aria-pressed={selected}
                 class={cellClass}
+                data-grid-cell-column={cell.column}
+                data-grid-cell-row={cell.row}
                 key={key}
                 onClick={() => onCellClick(cell)}
                 type="button"
