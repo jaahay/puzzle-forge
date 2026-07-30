@@ -58,14 +58,15 @@ select {
   width: var(--board-width);
   max-width: 100%;
   box-sizing: border-box;
-  border: 1px solid rgba(147, 197, 253, 0.42);
+  border: 1px solid rgba(148, 163, 184, 0.28);
   border-radius: 0.85rem;
   margin: 0.65rem 0 0;
-  padding: 0.62rem 0.75rem;
-  color: #dbeafe;
-  background: rgba(30, 58, 138, 0.45);
-  font-size: 0.88rem;
-  font-weight: 800;
+  padding: 0.68rem 0.78rem;
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, 0.78);
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.4;
 }
 
 .grid.sudoku,
@@ -208,11 +209,11 @@ select {
 }
 
 .grid.sudoku .cell.peer-cell {
-  background: #1e3a8a;
+  background: #172554;
 }
 
 .grid.sudoku.diagonal-sudoku .cell.diagonal-cell.peer-cell {
-  background: #1d4ed8;
+  background: #1e3a5f;
 }
 
 .grid.sudoku .cell.same-value-cell,
@@ -269,7 +270,12 @@ select {
 }
 
 .sudoku-digit-pad .sudoku-erase-button {
-  font-size: 0.78rem;
+  border-color: #475569;
+  color: #cbd5e1;
+  background: #111827;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.055em;
   text-transform: uppercase;
 }
 
@@ -279,6 +285,12 @@ select {
   border-color: #a7f3d0;
   box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.22);
   outline: none;
+}
+
+.sudoku-digit-pad .sudoku-erase-button:hover:not(:disabled),
+.sudoku-digit-pad .sudoku-erase-button:focus-visible {
+  color: #f8fafc;
+  background: #1e293b;
 }
 
 .sudoku-digit-pad button.selected-sudoku-digit {
