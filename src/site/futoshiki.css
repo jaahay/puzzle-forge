@@ -7,6 +7,24 @@
   margin-bottom: 0;
 }
 
+.futoshiki-workspace .puzzle-settings-panel {
+  display: grid;
+  width: min(100%, 42rem);
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.futoshiki-workspace .puzzle-settings-panel .generation-actions,
+.futoshiki-workspace .puzzle-settings-panel .seed-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.futoshiki-workspace .puzzle-settings-panel button {
+  width: 100%;
+}
+
 .futoshiki-board {
   display: grid;
   grid-template-columns: repeat(var(--board-column-gap-count), minmax(0, 1fr) minmax(1rem, 0.36fr)) minmax(0, 1fr);
