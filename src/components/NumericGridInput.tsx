@@ -31,6 +31,25 @@ export const getNumericGridArrowDelta = (key: string) => {
   }
 };
 
+export const getNumericGridArrowTarget = (
+  cells: PuzzleCell[],
+  selectedCell: Pick<PuzzleCell, "row" | "column">,
+  key: string,
+) => {
+  const arrowDelta = getNumericGridArrowDelta(key);
+
+  if (!arrowDelta) {
+    return undefined;
+  }
+
+  return cells.find(
+    (cell) =>
+      cell.row === selectedCell.row + arrowDelta.row &&
+      cell.column === selectedCell.column + arrowDelta.column &&
+      cell.tone !== "disabled",
+  );
+};
+
 type UseNumericGridInputProps = {
   enabled: boolean;
   puzzleIdentity: string;
@@ -120,18 +139,14 @@ export const useNumericGridInput = ({
       const arrowDelta = getNumericGridArrowDelta(event.key);
 
       if (arrowDelta) {
-        const nextCell = cells.find(
-          (cell) =>
-            cell.row === selectedCell.row + arrowDelta.row &&
-            cell.column === selectedCell.column + arrowDelta.column &&
-            cell.tone !== "disabled",
-        );
+        event.preventDefault();
+
+        const nextCell = getNumericGridArrowTarget(cells, selectedCell, event.key);
 
         if (!nextCell) {
           return;
         }
 
-        event.preventDefault();
         onCellClick(nextCell);
         requestAnimationFrame(() => {
           document
