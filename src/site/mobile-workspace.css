@@ -16,8 +16,8 @@
     border: 0;
     border-radius: 0;
     padding: 0;
-    background: #0f172a;
-    box-shadow: 0 12px 28px rgba(2, 6, 23, 0.42);
+    background: transparent;
+    box-shadow: none;
   }
 
   .app-brand,
@@ -45,6 +45,7 @@
     border-color: rgba(148, 163, 184, 0.38);
     border-radius: 0.95rem;
     background-color: #111827;
+    box-shadow: 0 12px 28px rgba(2, 6, 23, 0.42);
     font-size: clamp(1.05rem, 5vw, 1.28rem);
   }
 
