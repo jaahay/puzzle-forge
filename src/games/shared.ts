@@ -58,6 +58,15 @@ export const makeChecksum = (cells: PuzzleCell[], cages: GridPuzzleCage[] = [], 
   return makeChecksumFromParts(parts);
 };
 
+const makeTileChecksumPart = (tile: TilePuzzlePiece) => {
+  const edgeParts = (tile.edges ?? []).map(
+    (edge) =>
+      `${edge.edgeId}:${edge.side ?? "unspecified"}:${edge.neighborPieceId ?? "none"}:${edge.neighborEdgeId ?? "none"}:${edge.boundary ? "boundary" : "interior"}:${edge.profileId}:${edge.polarity}:${edge.seedOffset}`,
+  );
+
+  return `${tile.id}:${tile.currentIndex}:${tile.solvedIndex}:${edgeParts.join("|")}`;
+};
+
 export const createGeneratedPuzzle = ({
   id,
   puzzleId,
@@ -138,8 +147,7 @@ export const createGeneratedTilePuzzle = ({
   height,
   tiles,
   asset,
-  checksum: makeChecksumFromParts(tiles.map((tile) => `
-${tile.id}:${tile.currentIndex}:${tile.solvedIndex}`)),
+  checksum: makeChecksumFromParts(tiles.map(makeTileChecksumPart)),
   createdAt: new Date().toISOString(),
   notes,
 });
