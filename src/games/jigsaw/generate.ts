@@ -1,6 +1,31 @@
-import type { TilePuzzleGenerator } from "../../catalog/types";
+import type {
+  JigsawEdgePolarity,
+  JigsawEdgeSide,
+  JigsawPieceEdge,
+  TilePuzzleGenerator,
+  TilePuzzlePiece,
+} from "../../catalog/types";
 import { createGeneratedTilePuzzle, createRandom, normalizeDimension, normalizeSeed } from "../shared";
+import {
+  defaultJigsawEdgeProfileId,
+  jigsawEdgeProfileCatalogRevision,
+  jigsawEdgeProfileIds,
+} from "./edgeProfiles";
 import { getJigsawImageAsset } from "./imageAssets";
+
+const edgeSides: readonly JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
+const oppositeSide: Record<JigsawEdgeSide, JigsawEdgeSide> = {
+  top: "bottom",
+  right: "left",
+  bottom: "top",
+  left: "right",
+};
+const neighborOffset: Record<JigsawEdgeSide, { row: number; column: number }> = {
+  top: { row: -1, column: 0 },
+  right: { row: 0, column: 1 },
+  bottom: { row: 1, column: 0 },
+  left: { row: 0, column: -1 },
+};
 
 const shuffle = <T>(items: T[], seed: string) => {
   const random = createRandom(seed);
@@ -18,6 +43,72 @@ const shuffle = <T>(items: T[], seed: string) => {
   return shuffled;
 };
 
+const makeEdgeId = (pieceId: string, side: JigsawEdgeSide) => `${pieceId}:edge:${side}`;
+
+const makeEdgePairKey = (row: number, column: number, side: JigsawEdgeSide) => {
+  if (side === "right") return `horizontal:${row}:${column}`;
+  if (side === "left") return `horizontal:${row}:${column - 1}`;
+  if (side === "bottom") return `vertical:${row}:${column}`;
+  return `vertical:${row - 1}:${column}`;
+};
+
+const invertPolarity = (polarity: Exclude<JigsawEdgePolarity, "flat">): Exclude<JigsawEdgePolarity, "flat"> =>
+  polarity === "tab" ? "blank" : "tab";
+
+const makePieceEdges = ({
+  pieceId,
+  row,
+  column,
+  width,
+  height,
+  edgeSeed,
+}: {
+  pieceId: string;
+  row: number;
+  column: number;
+  width: number;
+  height: number;
+  edgeSeed: string;
+}): JigsawPieceEdge[] =>
+  edgeSides.map((side) => {
+    const offset = neighborOffset[side];
+    const neighborRow = row + offset.row;
+    const neighborColumn = column + offset.column;
+    const boundary = neighborRow < 0 || neighborRow >= height || neighborColumn < 0 || neighborColumn >= width;
+
+    if (boundary) {
+      return {
+        edgeId: makeEdgeId(pieceId, side),
+        side,
+        neighborPieceId: null,
+        neighborEdgeId: null,
+        boundary: true,
+        profileId: defaultJigsawEdgeProfileId,
+        polarity: "flat",
+        seedOffset: 0,
+      };
+    }
+
+    const pairKey = makeEdgePairKey(row, column, side);
+    const random = createRandom(`${edgeSeed}:${pairKey}`);
+    const profileId = jigsawEdgeProfileIds[Math.floor(random() * jigsawEdgeProfileIds.length)];
+    const leadingPolarity: Exclude<JigsawEdgePolarity, "flat"> = random() < 0.5 ? "tab" : "blank";
+    const seedOffset = Math.floor(random() * 1_000_000);
+    const isLeadingPiece = side === "right" || side === "bottom";
+    const neighborPieceId = `tile-${neighborRow * width + neighborColumn}`;
+
+    return {
+      edgeId: makeEdgeId(pieceId, side),
+      side,
+      neighborPieceId,
+      neighborEdgeId: makeEdgeId(neighborPieceId, oppositeSide[side]),
+      boundary: false,
+      profileId,
+      polarity: isLeadingPiece ? leadingPolarity : invertPolarity(leadingPolarity),
+      seedOffset,
+    };
+  });
+
 export const generateJigsaw: TilePuzzleGenerator = ({
   seed,
   width,
@@ -31,16 +122,33 @@ export const generateJigsaw: TilePuzzleGenerator = ({
   const asset = getJigsawImageAsset(jigsawImageId, jigsawAssetRevision);
   const assetIdentity = `${asset.id}@${asset.assetRevision}`;
   const solvedIndexes = Array.from({ length: boundedWidth * boundedHeight }, (_, index) => index);
-  const shuffledIndexes = shuffle(
-    solvedIndexes,
-    `jigsaw:${normalizedSeed}:${boundedWidth}x${boundedHeight}:${assetIdentity}`,
-  );
+  const shuffleSeed = `jigsaw:${normalizedSeed}:${boundedWidth}x${boundedHeight}:${assetIdentity}`;
+  const edgeSeed = `${shuffleSeed}:edges@${jigsawEdgeProfileCatalogRevision}`;
+  const piecesBySolvedIndex = solvedIndexes.map((solvedIndex): TilePuzzlePiece => {
+    const row = Math.floor(solvedIndex / boundedWidth);
+    const column = solvedIndex % boundedWidth;
+    const id = `tile-${solvedIndex}`;
+
+    return {
+      id,
+      currentIndex: solvedIndex,
+      solvedIndex,
+      row,
+      column,
+      edges: makePieceEdges({
+        pieceId: id,
+        row,
+        column,
+        width: boundedWidth,
+        height: boundedHeight,
+        edgeSeed,
+      }),
+    };
+  });
+  const shuffledIndexes = shuffle(solvedIndexes, shuffleSeed);
   const tiles = shuffledIndexes.map((solvedIndex, currentIndex) => ({
-    id: `tile-${solvedIndex}`,
+    ...piecesBySolvedIndex[solvedIndex],
     currentIndex,
-    solvedIndex,
-    row: Math.floor(solvedIndex / boundedWidth),
-    column: solvedIndex % boundedWidth,
   }));
 
   return createGeneratedTilePuzzle({
