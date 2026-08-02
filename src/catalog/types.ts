@@ -147,12 +147,37 @@ export type JigsawImageAsset = {
 
 export type TilePuzzleAsset = GeneratedTilePuzzleAsset | JigsawImageAsset;
 
+export type JigsawEdgeSide = "top" | "right" | "bottom" | "left";
+export type JigsawEdgePolarity = "flat" | "tab" | "blank";
+export type JigsawEdgePathFamily = "round-tab" | "angular-tab" | "wave-tab";
+export type JigsawEdgeProfileId = "classic-round" | "soft-round" | "angular" | "wave" | "simple-lock";
+
+export type JigsawEdgeProfile = {
+  id: JigsawEdgeProfileId;
+  label: string;
+  description: string;
+  pathFamily: JigsawEdgePathFamily;
+  difficultyWeight: number;
+};
+
+export type JigsawPieceEdge = {
+  edgeId: string;
+  side?: JigsawEdgeSide;
+  neighborPieceId: string | null;
+  neighborEdgeId: string | null;
+  boundary: boolean;
+  profileId: JigsawEdgeProfileId;
+  polarity: JigsawEdgePolarity;
+  seedOffset: number;
+};
+
 export type TilePuzzlePiece = {
   id: string;
   currentIndex: number;
   solvedIndex: number;
   row: number;
   column: number;
+  edges?: JigsawPieceEdge[];
 };
 
 type BaseGeneratedPuzzle = {
