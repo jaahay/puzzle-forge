@@ -1,15 +1,15 @@
 import type {
-  GeneratedPuzzle,
   GridGeneratedPuzzle,
   GridPuzzleCage,
   GridPuzzleClues,
   GridPuzzleInequality,
+  JigsawEdgeModel,
+  JigsawGeneratedPuzzle,
+  JigsawImageAsset,
+  JigsawPiece,
   PuzzleCell,
   PuzzleDifficulty,
   PuzzleId,
-  TileGeneratedPuzzle,
-  TilePuzzleAsset,
-  TilePuzzlePiece,
 } from "../catalog/types";
 
 const RNG_MODULUS = 2147483647;
@@ -58,10 +58,13 @@ export const makeChecksum = (cells: PuzzleCell[], cages: GridPuzzleCage[] = [], 
   return makeChecksumFromParts(parts);
 };
 
-const makeTileChecksumPart = (tile: TilePuzzlePiece) => {
-  const edgeParts = (tile.edges ?? []).map(
+const makeJigsawEdgeModelChecksumPart = (edgeModel: JigsawEdgeModel) =>
+  `edge-model:${edgeModel.catalogRevision}:${edgeModel.profileIds.join("|")}`;
+
+const makeJigsawTileChecksumPart = (tile: JigsawPiece) => {
+  const edgeParts = tile.edges.map(
     (edge) =>
-      `${edge.edgeId}:${edge.side ?? "unspecified"}:${edge.neighborPieceId ?? "none"}:${edge.neighborEdgeId ?? "none"}:${edge.boundary ? "boundary" : "interior"}:${edge.profileId}:${edge.polarity}:${edge.seedOffset}`,
+      `${edge.edgeId}:${edge.side}:${edge.neighborPieceId ?? "none"}:${edge.neighborEdgeId ?? "none"}:${edge.boundary ? "boundary" : "interior"}:${edge.profileId ?? "flat"}:${edge.polarity}:${edge.seedOffset}`,
   );
 
   return `${tile.id}:${tile.currentIndex}:${tile.solvedIndex}:${edgeParts.join("|")}`;
@@ -117,37 +120,41 @@ export const createGeneratedPuzzle = ({
   notes,
 });
 
-export const createGeneratedTilePuzzle = ({
+export const createGeneratedJigsawPuzzle = ({
   id,
-  puzzleId,
   title,
   seed,
   width,
   height,
   tiles,
   asset,
+  edgeModel,
   notes,
 }: {
   id: string;
-  puzzleId: PuzzleId;
   title: string;
   seed: string;
   width: number;
   height: number;
-  tiles: TilePuzzlePiece[];
-  asset: TilePuzzleAsset;
+  tiles: JigsawPiece[];
+  asset: JigsawImageAsset;
+  edgeModel: JigsawEdgeModel;
   notes: string[];
-}): TileGeneratedPuzzle => ({
+}): JigsawGeneratedPuzzle => ({
   kind: "tiles",
   id,
-  puzzleId,
+  puzzleId: "jigsaw",
   title,
   seed,
   width,
   height,
   tiles,
   asset,
-  checksum: makeChecksumFromParts(tiles.map(makeTileChecksumPart)),
+  edgeModel,
+  checksum: makeChecksumFromParts([
+    makeJigsawEdgeModelChecksumPart(edgeModel),
+    ...tiles.map(makeJigsawTileChecksumPart),
+  ]),
   createdAt: new Date().toISOString(),
   notes,
 });
