@@ -2,6 +2,14 @@ import type { JigsawEdgeProfile, JigsawEdgeProfileId } from "../../catalog/types
 
 export const jigsawEdgeProfileCatalogRevision = 1;
 
+export const jigsawEdgeProfileIds = [
+  "classic-round",
+  "soft-round",
+  "angular",
+  "wave",
+  "simple-lock",
+] as const satisfies readonly JigsawEdgeProfileId[];
+
 export const jigsawEdgeProfileCatalog = {
   "classic-round": {
     id: "classic-round",
@@ -40,7 +48,6 @@ export const jigsawEdgeProfileCatalog = {
   },
 } as const satisfies Record<JigsawEdgeProfileId, JigsawEdgeProfile>;
 
-export const jigsawEdgeProfileIds = Object.keys(jigsawEdgeProfileCatalog) as JigsawEdgeProfileId[];
 export const defaultJigsawEdgeProfileId: JigsawEdgeProfileId = "classic-round";
 
 export const getJigsawEdgeProfile = (profileId: JigsawEdgeProfileId): JigsawEdgeProfile =>
