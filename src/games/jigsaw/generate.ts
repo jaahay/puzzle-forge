@@ -1,16 +1,12 @@
 import type {
   JigsawEdgePolarity,
   JigsawEdgeSide,
+  JigsawPiece,
   JigsawPieceEdge,
   TilePuzzleGenerator,
-  TilePuzzlePiece,
 } from "../../catalog/types";
-import { createGeneratedTilePuzzle, createRandom, normalizeDimension, normalizeSeed } from "../shared";
-import {
-  defaultJigsawEdgeProfileId,
-  jigsawEdgeProfileCatalogRevision,
-  jigsawEdgeProfileIds,
-} from "./edgeProfiles";
+import { createGeneratedJigsawPuzzle, createRandom, normalizeDimension, normalizeSeed } from "../shared";
+import { jigsawEdgeProfileCatalogRevision, jigsawEdgeProfileIds } from "./edgeProfiles";
 import { getJigsawImageAsset } from "./imageAssets";
 
 const edgeSides: readonly JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
@@ -83,7 +79,7 @@ const makePieceEdges = ({
         neighborPieceId: null,
         neighborEdgeId: null,
         boundary: true,
-        profileId: defaultJigsawEdgeProfileId,
+        profileId: null,
         polarity: "flat",
         seedOffset: 0,
       };
@@ -121,10 +117,15 @@ export const generateJigsaw: TilePuzzleGenerator = ({
   const boundedHeight = normalizeDimension(height, 4, 2, 8);
   const asset = getJigsawImageAsset(jigsawImageId, jigsawAssetRevision);
   const assetIdentity = `${asset.id}@${asset.assetRevision}`;
+  const edgeIdentity = `edges@${jigsawEdgeProfileCatalogRevision}`;
+  const edgeModel = {
+    catalogRevision: jigsawEdgeProfileCatalogRevision,
+    profileIds: [...jigsawEdgeProfileIds],
+  };
   const solvedIndexes = Array.from({ length: boundedWidth * boundedHeight }, (_, index) => index);
   const shuffleSeed = `jigsaw:${normalizedSeed}:${boundedWidth}x${boundedHeight}:${assetIdentity}`;
-  const edgeSeed = `${shuffleSeed}:edges@${jigsawEdgeProfileCatalogRevision}`;
-  const piecesBySolvedIndex = solvedIndexes.map((solvedIndex): TilePuzzlePiece => {
+  const edgeSeed = `${shuffleSeed}:${edgeIdentity}`;
+  const piecesBySolvedIndex = solvedIndexes.map((solvedIndex): JigsawPiece => {
     const row = Math.floor(solvedIndex / boundedWidth);
     const column = solvedIndex % boundedWidth;
     const id = `tile-${solvedIndex}`;
@@ -151,15 +152,15 @@ export const generateJigsaw: TilePuzzleGenerator = ({
     currentIndex,
   }));
 
-  return createGeneratedTilePuzzle({
-    id: `jigsaw-${assetIdentity}-${normalizedSeed}-${boundedWidth}x${boundedHeight}`,
-    puzzleId: "jigsaw",
+  return createGeneratedJigsawPuzzle({
+    id: `jigsaw-${assetIdentity}-${edgeIdentity}-${normalizedSeed}-${boundedWidth}x${boundedHeight}`,
     title: "Jigsaw",
     seed: normalizedSeed,
     width: boundedWidth,
     height: boundedHeight,
     tiles,
     asset,
+    edgeModel,
     notes: [`Square-piece Jigsaw using the bundled ${asset.title} image.`],
   });
 };
