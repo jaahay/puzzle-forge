@@ -160,15 +160,34 @@ export type JigsawEdgeProfile = {
   difficultyWeight: number;
 };
 
-export type JigsawPieceEdge = {
+type JigsawPieceEdgeBase = {
   edgeId: string;
-  side?: JigsawEdgeSide;
-  neighborPieceId: string | null;
-  neighborEdgeId: string | null;
-  boundary: boolean;
+  side: JigsawEdgeSide;
+};
+
+export type JigsawBoundaryEdge = JigsawPieceEdgeBase & {
+  boundary: true;
+  neighborPieceId: null;
+  neighborEdgeId: null;
+  profileId: null;
+  polarity: "flat";
+  seedOffset: 0;
+};
+
+export type JigsawInteriorEdge = JigsawPieceEdgeBase & {
+  boundary: false;
+  neighborPieceId: string;
+  neighborEdgeId: string;
   profileId: JigsawEdgeProfileId;
-  polarity: JigsawEdgePolarity;
+  polarity: Exclude<JigsawEdgePolarity, "flat">;
   seedOffset: number;
+};
+
+export type JigsawPieceEdge = JigsawBoundaryEdge | JigsawInteriorEdge;
+
+export type JigsawEdgeModel = {
+  catalogRevision: number;
+  profileIds: readonly JigsawEdgeProfileId[];
 };
 
 export type TilePuzzlePiece = {
@@ -177,7 +196,10 @@ export type TilePuzzlePiece = {
   solvedIndex: number;
   row: number;
   column: number;
-  edges?: JigsawPieceEdge[];
+};
+
+export type JigsawPiece = TilePuzzlePiece & {
+  edges: JigsawPieceEdge[];
 };
 
 type BaseGeneratedPuzzle = {
@@ -216,7 +238,14 @@ export type TileGeneratedPuzzle = BaseGeneratedPuzzle & {
   asset: TilePuzzleAsset;
 };
 
-export type GeneratedPuzzle = GridGeneratedPuzzle | CardGeneratedPuzzle | TileGeneratedPuzzle;
+export type JigsawGeneratedPuzzle = TileGeneratedPuzzle & {
+  puzzleId: "jigsaw";
+  tiles: JigsawPiece[];
+  asset: JigsawImageAsset;
+  edgeModel: JigsawEdgeModel;
+};
+
+export type GeneratedPuzzle = GridGeneratedPuzzle | CardGeneratedPuzzle | JigsawGeneratedPuzzle;
 
 export type PuzzleGenerationParams = {
   puzzleId: PuzzleId;
@@ -245,6 +274,6 @@ export type GridPuzzleGenerator = (params: PuzzleGenerationParams) => GridGenera
 
 export type CardPuzzleGenerator = (params: PuzzleGenerationParams) => CardGeneratedPuzzle;
 
-export type TilePuzzleGenerator = (params: PuzzleGenerationParams) => TileGeneratedPuzzle;
+export type TilePuzzleGenerator = (params: PuzzleGenerationParams) => JigsawGeneratedPuzzle;
 
 export type PuzzleGenerator = GridPuzzleGenerator | CardPuzzleGenerator | TilePuzzleGenerator;
