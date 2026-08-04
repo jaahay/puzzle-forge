@@ -1,49 +1,41 @@
 import { useEffect, useMemo, useState } from "preact/hooks";
-import type { TileGeneratedPuzzle, TilePuzzlePiece } from "../catalog/types";
+import type { JigsawGeneratedPuzzle, JigsawPiece } from "../catalog/types";
 
-type TilePuzzlePreviewProps = { puzzle: TileGeneratedPuzzle };
+type TilePuzzlePreviewProps = { puzzle: JigsawGeneratedPuzzle };
 type TileStyle = { backgroundImage: string; backgroundPosition: string; backgroundSize: string };
 type PersistedTileOrder = { id: string; currentIndex: number };
 type PersistedTileOrderEnvelope = {
-  schemaVersion: 1;
+  schemaVersion: 2;
   puzzleId: "jigsaw";
   puzzleInstanceId: string;
   seed: string;
   width: number;
   height: number;
-  assetId?: string;
-  assetRevision?: number;
+  assetId: string;
+  assetRevision: number;
+  edgeModelRevision: number;
   tileOrder: PersistedTileOrder[];
   updatedAt: string;
 };
 
-const tileOrderSchemaVersion = 1;
-const getTileOrderStorageKey = (puzzle: TileGeneratedPuzzle) =>
+const tileOrderSchemaVersion = 2;
+const getTileOrderStorageKey = (puzzle: JigsawGeneratedPuzzle) =>
   `puzzle-forge.jigsaw.${tileOrderSchemaVersion}.${puzzle.id}.${puzzle.seed}.${puzzle.width}x${puzzle.height}`;
 
-const getTileStyle = (puzzle: TileGeneratedPuzzle, tile: TilePuzzlePiece): TileStyle => {
+const getTileStyle = (puzzle: JigsawGeneratedPuzzle, tile: JigsawPiece): TileStyle => {
   const x = puzzle.width === 1 ? 50 : (tile.column / (puzzle.width - 1)) * 100;
   const y = puzzle.height === 1 ? 50 : (tile.row / (puzzle.height - 1)) * 100;
 
-  if (puzzle.asset.kind === "image") {
-    return {
-      backgroundImage: `url(${puzzle.asset.files.puzzle})`,
-      backgroundPosition: `${x}% ${y}%`,
-      backgroundSize: `${puzzle.width * 100}% ${puzzle.height * 100}%`,
-    };
-  }
-
-  const [first, second, third, fourth] = puzzle.asset.palette;
   return {
-    backgroundImage: `radial-gradient(circle at ${20 + tile.column * 12}% ${18 + tile.row * 10}%, ${third} 0 9%, transparent 25%), linear-gradient(135deg, ${first}, ${second} 48%, ${fourth})`,
+    backgroundImage: `url(${puzzle.asset.files.puzzle})`,
     backgroundPosition: `${x}% ${y}%`,
     backgroundSize: `${puzzle.width * 100}% ${puzzle.height * 100}%`,
   };
 };
 
-const sortByCurrentIndex = (tiles: TilePuzzlePiece[]) => [...tiles].sort((left, right) => left.currentIndex - right.currentIndex);
+const sortByCurrentIndex = (tiles: JigsawPiece[]) => [...tiles].sort((left, right) => left.currentIndex - right.currentIndex);
 
-const loadPersistedTileOrder = (puzzle: TileGeneratedPuzzle, fallbackTiles: TilePuzzlePiece[]) => {
+const loadPersistedTileOrder = (puzzle: JigsawGeneratedPuzzle, fallbackTiles: JigsawPiece[]) => {
   if (typeof window === "undefined") return fallbackTiles;
   const rawEnvelope = window.localStorage.getItem(getTileOrderStorageKey(puzzle));
   if (!rawEnvelope) return fallbackTiles;
@@ -52,9 +44,6 @@ const loadPersistedTileOrder = (puzzle: TileGeneratedPuzzle, fallbackTiles: Tile
     const envelope: unknown = JSON.parse(rawEnvelope);
     if (typeof envelope !== "object" || envelope === null || Array.isArray(envelope)) return fallbackTiles;
     const candidate = envelope as Partial<PersistedTileOrderEnvelope>;
-    const imageIdentityMatches =
-      puzzle.asset.kind !== "image" ||
-      (candidate.assetId === puzzle.asset.id && candidate.assetRevision === puzzle.asset.assetRevision);
     if (
       candidate.schemaVersion !== tileOrderSchemaVersion ||
       candidate.puzzleId !== "jigsaw" ||
@@ -62,7 +51,9 @@ const loadPersistedTileOrder = (puzzle: TileGeneratedPuzzle, fallbackTiles: Tile
       candidate.seed !== puzzle.seed ||
       candidate.width !== puzzle.width ||
       candidate.height !== puzzle.height ||
-      !imageIdentityMatches ||
+      candidate.assetId !== puzzle.asset.id ||
+      candidate.assetRevision !== puzzle.asset.assetRevision ||
+      candidate.edgeModelRevision !== puzzle.edgeModel.catalogRevision ||
       !Array.isArray(candidate.tileOrder)
     ) return fallbackTiles;
 
@@ -84,7 +75,7 @@ const loadPersistedTileOrder = (puzzle: TileGeneratedPuzzle, fallbackTiles: Tile
   }
 };
 
-const savePersistedTileOrder = (puzzle: TileGeneratedPuzzle, tiles: TilePuzzlePiece[]) => {
+const savePersistedTileOrder = (puzzle: JigsawGeneratedPuzzle, tiles: JigsawPiece[]) => {
   if (typeof window === "undefined") return;
   const envelope: PersistedTileOrderEnvelope = {
     schemaVersion: tileOrderSchemaVersion,
@@ -93,9 +84,9 @@ const savePersistedTileOrder = (puzzle: TileGeneratedPuzzle, tiles: TilePuzzlePi
     seed: puzzle.seed,
     width: puzzle.width,
     height: puzzle.height,
-    ...(puzzle.asset.kind === "image"
-      ? { assetId: puzzle.asset.id, assetRevision: puzzle.asset.assetRevision }
-      : {}),
+    assetId: puzzle.asset.id,
+    assetRevision: puzzle.asset.assetRevision,
+    edgeModelRevision: puzzle.edgeModel.catalogRevision,
     tileOrder: tiles.map(({ id, currentIndex }) => ({ id, currentIndex })),
     updatedAt: new Date().toISOString(),
   };
@@ -104,7 +95,7 @@ const savePersistedTileOrder = (puzzle: TileGeneratedPuzzle, tiles: TilePuzzlePi
 
 export const TilePuzzlePreview = ({ puzzle }: TilePuzzlePreviewProps) => {
   const initialTiles = useMemo(() => sortByCurrentIndex(puzzle.tiles), [puzzle.id, puzzle.tiles]);
-  const [tiles, setTiles] = useState<TilePuzzlePiece[]>(() => loadPersistedTileOrder(puzzle, initialTiles));
+  const [tiles, setTiles] = useState<JigsawPiece[]>(() => loadPersistedTileOrder(puzzle, initialTiles));
   const [selectedTileId, setSelectedTileId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const solvedCount = tiles.filter((tile) => tile.currentIndex === tile.solvedIndex).length;
@@ -148,17 +139,13 @@ export const TilePuzzlePreview = ({ puzzle }: TilePuzzlePreviewProps) => {
     setSelectedTileId(null);
   };
 
-  const previewStyle = puzzle.asset.kind === "image"
-    ? {
-        backgroundImage: `url(${puzzle.asset.files.preview})`,
-        aspectRatio: `${puzzle.asset.intrinsicWidth} / ${puzzle.asset.intrinsicHeight}`,
-      }
-    : { backgroundImage: `linear-gradient(135deg, ${puzzle.asset.palette.join(", ")})` };
+  const previewStyle = {
+    backgroundImage: `url(${puzzle.asset.files.preview})`,
+    aspectRatio: `${puzzle.asset.intrinsicWidth} / ${puzzle.asset.intrinsicHeight}`,
+  };
   const boardStyle = {
     gridTemplateColumns: `repeat(${puzzle.width}, minmax(0, 1fr))`,
-    ...(puzzle.asset.kind === "image"
-      ? { aspectRatio: `${puzzle.asset.intrinsicWidth} / ${puzzle.asset.intrinsicHeight}` }
-      : {}),
+    aspectRatio: `${puzzle.asset.intrinsicWidth} / ${puzzle.asset.intrinsicHeight}`,
   };
 
   return (
@@ -175,10 +162,10 @@ export const TilePuzzlePreview = ({ puzzle }: TilePuzzlePreviewProps) => {
       </div>
 
       {showPreview ? (
-        <div class="tile-puzzle-art-preview" aria-label={puzzle.asset.kind === "image" ? puzzle.asset.alt : "Solved Jigsaw preview image"} style={previewStyle} />
+        <div class="tile-puzzle-art-preview" aria-label={puzzle.asset.alt} style={previewStyle} />
       ) : null}
 
-      <div class={`tile-puzzle-board ${puzzle.asset.kind === "image" ? "image-backed" : ""} ${isSolved ? "solved" : ""}`} style={boardStyle}>
+      <div class={`tile-puzzle-board image-backed ${isSolved ? "solved" : ""}`} style={boardStyle}>
         {tiles.map((tile) => {
           const selected = tile.id === selectedTileId;
           const placed = tile.currentIndex === tile.solvedIndex;
