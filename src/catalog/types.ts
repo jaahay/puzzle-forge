@@ -238,7 +238,7 @@ export type TileGeneratedPuzzle = BaseGeneratedPuzzle & {
   asset: TilePuzzleAsset;
 };
 
-export type JigsawGeneratedPuzzle = TileGeneratedPuzzle & {
+export type JigsawGeneratedPuzzle = Omit<TileGeneratedPuzzle, "puzzleId" | "tiles" | "asset"> & {
   puzzleId: "jigsaw";
   tiles: JigsawPiece[];
   asset: JigsawImageAsset;
