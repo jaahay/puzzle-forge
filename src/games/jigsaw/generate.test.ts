@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { JigsawEdgeSide, JigsawPieceEdge, TileGeneratedPuzzle, TilePuzzlePiece } from "../../catalog/types";
-import { createGeneratedTilePuzzle } from "../shared";
-import { getJigsawEdgeProfile, jigsawEdgeProfileIds } from "./edgeProfiles";
+import type { JigsawEdgeSide, JigsawGeneratedPuzzle, JigsawPiece, JigsawPieceEdge } from "../../catalog/types";
+import { createGeneratedJigsawPuzzle } from "../shared";
+import {
+  getJigsawEdgeProfile,
+  jigsawEdgeProfileCatalogRevision,
+  jigsawEdgeProfileIds,
+} from "./edgeProfiles";
 import { generateJigsaw } from "./generate";
 import { defaultJigsawImageAsset } from "./imageAssets";
 
@@ -18,39 +22,45 @@ const makeJigsaw = (
     jigsawAssetRevision,
   });
 
-const getTile = (puzzle: TileGeneratedPuzzle, row: number, column: number) => {
+const getTile = (puzzle: JigsawGeneratedPuzzle, row: number, column: number) => {
   const tile = puzzle.tiles.find((candidate) => candidate.row === row && candidate.column === column);
   if (!tile) throw new Error(`Missing tile at ${row},${column}`);
   return tile;
 };
 
-const getEdge = (tile: TilePuzzlePiece, side: JigsawEdgeSide): JigsawPieceEdge => {
-  const edge = tile.edges?.find((candidate) => candidate.side === side);
+const getEdge = (tile: JigsawPiece, side: JigsawEdgeSide): JigsawPieceEdge => {
+  const edge = tile.edges.find((candidate) => candidate.side === side);
   if (!edge) throw new Error(`Missing ${side} edge for ${tile.id}`);
   return edge;
 };
 
-const getAllEdges = (puzzle: TileGeneratedPuzzle) => puzzle.tiles.flatMap((tile) => tile.edges ?? []);
+const getAllEdges = (puzzle: JigsawGeneratedPuzzle) => puzzle.tiles.flatMap((tile) => tile.edges);
 
 describe("generateJigsaw", () => {
-  it("is deterministic for seed, dimensions, image id, asset revision, and edge profiles", () => {
+  it("is deterministic for seed, dimensions, image id, asset revision, and edge model", () => {
     const first = makeJigsaw();
     const second = makeJigsaw();
 
     expect(first.id).toBe(second.id);
     expect(first.checksum).toBe(second.checksum);
+    expect(first.edgeModel).toEqual(second.edgeModel);
     expect(first.tiles).toEqual(second.tiles);
   });
 
-  it("records the selected bundled image asset identity", () => {
+  it("records the selected image and explicit edge model identities", () => {
     const puzzle = makeJigsaw();
 
     expect(puzzle.asset).toEqual(defaultJigsawImageAsset);
     expect(puzzle.asset.kind).toBe("image");
+    expect(puzzle.edgeModel).toEqual({
+      catalogRevision: jigsawEdgeProfileCatalogRevision,
+      profileIds: [...jigsawEdgeProfileIds],
+    });
     expect(puzzle.id).toContain(`${defaultJigsawImageAsset.id}@${defaultJigsawImageAsset.assetRevision}`);
+    expect(puzzle.id).toContain(`edges@${jigsawEdgeProfileCatalogRevision}`);
   });
 
-  it("creates one correctly indexed piece with four semantic edges for every grid position", () => {
+  it("creates one correctly indexed piece with four required semantic edges for every grid position", () => {
     const puzzle = makeJigsaw();
     const sortedTiles = [...puzzle.tiles].sort((left, right) => left.solvedIndex - right.solvedIndex);
 
@@ -68,10 +78,10 @@ describe("generateJigsaw", () => {
     expect(sortedTiles.map((tile) => tile.currentIndex).sort((left, right) => left - right)).toEqual(
       Array.from({ length: 12 }, (_, index) => index),
     );
-    expect(sortedTiles.every((tile) => tile.edges?.length === 4)).toBe(true);
+    expect(sortedTiles.every((tile) => tile.edges.length === 4)).toBe(true);
   });
 
-  it("provides a complete typed edge profile repository", () => {
+  it("provides a complete, explicitly ordered edge profile repository", () => {
     expect(jigsawEdgeProfileIds).toEqual([
       "classic-round",
       "soft-round",
@@ -88,7 +98,7 @@ describe("generateJigsaw", () => {
     }
   });
 
-  it("makes every border edge flat and unpaired", () => {
+  it("makes every border edge flat, unpaired, and profile-free", () => {
     const puzzle = makeJigsaw();
     const boundaryEdges = getAllEdges(puzzle).filter((edge) => edge.boundary);
 
@@ -97,8 +107,8 @@ describe("generateJigsaw", () => {
       expect(edge.polarity).toBe("flat");
       expect(edge.neighborPieceId).toBeNull();
       expect(edge.neighborEdgeId).toBeNull();
+      expect(edge.profileId).toBeNull();
       expect(edge.seedOffset).toBe(0);
-      expect(jigsawEdgeProfileIds).toContain(edge.profileId);
     }
   });
 
@@ -112,6 +122,8 @@ describe("generateJigsaw", () => {
         const rightEdge = getEdge(leftTile, "right");
         const leftEdge = getEdge(rightTile, "left");
 
+        expect(rightEdge.boundary).toBe(false);
+        expect(leftEdge.boundary).toBe(false);
         expect(rightEdge.neighborPieceId).toBe(rightTile.id);
         expect(rightEdge.neighborEdgeId).toBe(leftEdge.edgeId);
         expect(leftEdge.neighborPieceId).toBe(leftTile.id);
@@ -133,6 +145,8 @@ describe("generateJigsaw", () => {
         const bottomEdge = getEdge(topTile, "bottom");
         const topEdge = getEdge(bottomTile, "top");
 
+        expect(bottomEdge.boundary).toBe(false);
+        expect(topEdge.boundary).toBe(false);
         expect(bottomEdge.neighborPieceId).toBe(bottomTile.id);
         expect(bottomEdge.neighborEdgeId).toBe(topEdge.edgeId);
         expect(topEdge.neighborPieceId).toBe(topTile.id);
@@ -148,22 +162,17 @@ describe("generateJigsaw", () => {
     const puzzle = makeJigsaw();
     const allEdges = getAllEdges(puzzle);
     const edgeById = new Map(allEdges.map((edge) => [edge.edgeId, edge]));
-    const interiorEdges = allEdges.filter((edge) => !edge.boundary);
     const uniquePairs = new Set<string>();
 
-    for (const edge of interiorEdges) {
-      expect(edge.polarity).not.toBe("flat");
-      expect(edge.neighborPieceId).not.toBeNull();
-      expect(edge.neighborEdgeId).not.toBeNull();
+    for (const edge of allEdges) {
+      if (edge.boundary) continue;
 
-      const neighborEdge = edge.neighborEdgeId ? edgeById.get(edge.neighborEdgeId) : undefined;
+      expect(edge.polarity).not.toBe("flat");
+      const neighborEdge = edgeById.get(edge.neighborEdgeId);
       expect(neighborEdge).toBeDefined();
       expect(neighborEdge?.neighborEdgeId).toBe(edge.edgeId);
       expect(neighborEdge?.neighborPieceId).toBe(edge.edgeId.split(":edge:")[0]);
-
-      if (edge.neighborEdgeId) {
-        uniquePairs.add([edge.edgeId, edge.neighborEdgeId].sort().join("|"));
-      }
+      uniquePairs.add([edge.edgeId, edge.neighborEdgeId].sort().join("|"));
     }
 
     expect(uniquePairs.size).toBe(
@@ -171,31 +180,42 @@ describe("generateJigsaw", () => {
     );
   });
 
-  it("includes edge metadata in the generated checksum", () => {
+  it("includes edge graph and edge model metadata in the generated checksum", () => {
     const puzzle = makeJigsaw();
-    const changedTiles = puzzle.tiles.map((tile, tileIndex) =>
-      tileIndex === 0
-        ? {
-            ...tile,
-            edges: tile.edges?.map((edge, edgeIndex) =>
-              edgeIndex === 0 ? { ...edge, seedOffset: edge.seedOffset + 1 } : edge,
-            ),
-          }
-        : tile,
-    );
-    const changedPuzzle = createGeneratedTilePuzzle({
+    const changedTiles = puzzle.tiles.map((tile) => ({
+      ...tile,
+      edges: tile.edges.map((edge) =>
+        edge.boundary ? edge : { ...edge, seedOffset: edge.seedOffset + 1 },
+      ),
+    }));
+    const changedEdgesPuzzle = createGeneratedJigsawPuzzle({
       id: puzzle.id,
-      puzzleId: puzzle.puzzleId,
       title: puzzle.title,
       seed: puzzle.seed,
       width: puzzle.width,
       height: puzzle.height,
       tiles: changedTiles,
       asset: puzzle.asset,
+      edgeModel: puzzle.edgeModel,
+      notes: puzzle.notes,
+    });
+    const changedModelPuzzle = createGeneratedJigsawPuzzle({
+      id: puzzle.id,
+      title: puzzle.title,
+      seed: puzzle.seed,
+      width: puzzle.width,
+      height: puzzle.height,
+      tiles: puzzle.tiles,
+      asset: puzzle.asset,
+      edgeModel: {
+        ...puzzle.edgeModel,
+        catalogRevision: puzzle.edgeModel.catalogRevision + 1,
+      },
       notes: puzzle.notes,
     });
 
-    expect(changedPuzzle.checksum).not.toBe(puzzle.checksum);
+    expect(changedEdgesPuzzle.checksum).not.toBe(puzzle.checksum);
+    expect(changedModelPuzzle.checksum).not.toBe(puzzle.checksum);
   });
 
   it("rejects an unknown bundled image id", () => {
