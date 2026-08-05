@@ -57,15 +57,19 @@ export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => ({
         ? { ...session.puzzle, cells: session.puzzle.cells.map(cloneGridCell), answerKey: session.puzzle.answerKey ? [...session.puzzle.answerKey] : undefined }
         : {
             ...session.puzzle,
-            tiles: session.puzzle.tiles.map((tile) => ({ ...tile })),
-            asset:
-              session.puzzle.asset.kind === "generated"
-                ? { ...session.puzzle.asset, palette: [...session.puzzle.asset.palette] }
-                : {
-                    ...session.puzzle.asset,
-                    files: { ...session.puzzle.asset.files },
-                    credit: { ...session.puzzle.asset.credit },
-                  },
+            tiles: session.puzzle.tiles.map((tile) => ({
+              ...tile,
+              edges: tile.edges.map((edge) => ({ ...edge })),
+            })),
+            asset: {
+              ...session.puzzle.asset,
+              files: { ...session.puzzle.asset.files },
+              credit: { ...session.puzzle.asset.credit },
+            },
+            edgeModel: {
+              ...session.puzzle.edgeModel,
+              profileIds: [...session.puzzle.edgeModel.profileIds],
+            },
           }
     : null,
   cardStacks: session.cardStacks?.map(cloneStack) ?? null,
