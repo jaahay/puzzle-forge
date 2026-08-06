@@ -3,12 +3,18 @@
 .tile-puzzle-summary span { border: 1px solid rgba(167, 243, 208, 0.22); border-radius: 999px; padding: 0.35rem 0.65rem; color: #d1fae5; background: rgba(6, 78, 59, 0.28); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase; }
 .tile-puzzle-tools button { border-radius: 999px; padding: 0.6rem 1rem; color: #0f172a; background: #a7f3d0; cursor: pointer; font-weight: 800; }
 .tile-puzzle-tools button:nth-child(2) { color: #e5e7eb; background: #334155; }
+.tile-puzzle-tools button[aria-pressed="true"] { color: #172554; background: #bfdbfe; }
 .tile-puzzle-art-preview { width: min(100%, 24rem); aspect-ratio: 1; border: 1px solid rgba(248, 250, 252, 0.28); border-radius: 1rem; background-position: center; background-repeat: no-repeat; background-size: cover; box-shadow: 0 18px 50px rgba(2, 6, 23, 0.32); }
-.tile-puzzle-board { display: grid; width: min(100%, 34rem); gap: 0.35rem; padding: 0.5rem; border: 1px solid rgba(167, 243, 208, 0.25); border-radius: 1rem; background: rgba(15, 23, 42, 0.52); }
-.tile-puzzle-piece { display: grid; min-height: clamp(3.4rem, 11vw, 6rem); place-items: center; border: 1px solid rgba(248, 250, 252, 0.32); border-radius: 0.65rem; background-repeat: no-repeat; color: #f8fafc; cursor: pointer; font-weight: 900; overflow: hidden; text-shadow: 0 1px 3px rgba(2, 6, 23, 0.72); box-shadow: 0 10px 28px rgba(2, 6, 23, 0.3); transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease; }
-.tile-puzzle-piece:hover, .tile-puzzle-piece:focus-visible { border-color: #a7f3d0; box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.28), 0 10px 28px rgba(2, 6, 23, 0.3); outline: none; transform: translateY(-1px); }
-.tile-puzzle-piece.selected { border-color: #facc15; box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.36), 0 10px 28px rgba(2, 6, 23, 0.3); transform: translateY(-2px); }
+.tile-puzzle-board { display: grid; width: min(100%, 34rem); gap: 0.35rem; padding: 0.5rem; border: 1px solid rgba(167, 243, 208, 0.25); border-radius: 1rem; background: rgba(15, 23, 42, 0.52); overflow: visible; }
+.tile-puzzle-piece { position: relative; isolation: isolate; z-index: 1; display: grid; min-height: clamp(3.4rem, 11vw, 6rem); place-items: center; border: 1px solid rgba(248, 250, 252, 0.32); border-radius: 0.65rem; background-repeat: no-repeat; color: #f8fafc; cursor: pointer; font-weight: 900; overflow: visible; text-shadow: 0 1px 3px rgba(2, 6, 23, 0.72); box-shadow: 0 10px 28px rgba(2, 6, 23, 0.3); transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease; }
+.tile-puzzle-piece:hover, .tile-puzzle-piece:focus-visible { z-index: 3; border-color: #a7f3d0; box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.28), 0 10px 28px rgba(2, 6, 23, 0.3); outline: none; transform: translateY(-1px); }
+.tile-puzzle-piece.selected { z-index: 4; border-color: #facc15; box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.36), 0 10px 28px rgba(2, 6, 23, 0.3); transform: translateY(-2px); }
 .tile-puzzle-piece.placed { box-shadow: inset 0 0 0 2px rgba(167, 243, 208, 0.3), 0 10px 28px rgba(2, 6, 23, 0.3); }
 .tile-puzzle-board.solved .tile-puzzle-piece { cursor: default; }
-.tile-puzzle-piece span { display: grid; width: 1.9rem; height: 1.9rem; place-items: center; border-radius: 999px; background: rgba(15, 23, 42, 0.48); font-size: 0.78rem; }
+.tile-puzzle-edge-seams { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.tile-puzzle-edge-seam { fill: none; stroke: rgba(248, 250, 252, 0.88); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; filter: drop-shadow(0 1px 1px rgba(2, 6, 23, 0.9)); }
+.tile-puzzle-edge-seam.boundary { stroke: rgba(248, 250, 252, 0.42); }
+.tile-puzzle-piece.placed .tile-puzzle-edge-seam.interior { stroke: rgba(167, 243, 208, 0.92); }
+.tile-puzzle-piece.selected .tile-puzzle-edge-seam { stroke: #fde047; stroke-width: 2.2; }
+.tile-puzzle-piece span { position: relative; z-index: 2; display: grid; width: 1.9rem; height: 1.9rem; place-items: center; border-radius: 999px; background: rgba(15, 23, 42, 0.48); font-size: 0.78rem; }
 .tile-puzzle-hint { margin: 0; color: #cbd5e1; font-weight: 700; }

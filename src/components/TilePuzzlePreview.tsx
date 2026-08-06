@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "preact/hooks";
 import type { JigsawGeneratedPuzzle, JigsawPiece } from "../catalog/types";
+import { getJigsawPieceSeamPaths } from "../games/jigsaw/edgePaths";
 
 type TilePuzzlePreviewProps = { puzzle: JigsawGeneratedPuzzle };
 type TileStyle = { backgroundImage: string; backgroundPosition: string; backgroundSize: string };
@@ -98,6 +99,7 @@ export const TilePuzzlePreview = ({ puzzle }: TilePuzzlePreviewProps) => {
   const [tiles, setTiles] = useState<JigsawPiece[]>(() => loadPersistedTileOrder(puzzle, initialTiles));
   const [selectedTileId, setSelectedTileId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [showEdgeSeams, setShowEdgeSeams] = useState(true);
   const solvedCount = tiles.filter((tile) => tile.currentIndex === tile.solvedIndex).length;
   const isSolved = solvedCount === tiles.length;
 
@@ -159,13 +161,20 @@ export const TilePuzzlePreview = ({ puzzle }: TilePuzzlePreviewProps) => {
       <div class="tile-puzzle-tools">
         <button type="button" onClick={() => setShowPreview((current) => !current)}>{showPreview ? "Hide preview" : "Preview image"}</button>
         <button type="button" onClick={resetTiles}>Reset shuffle</button>
+        <button
+          type="button"
+          aria-pressed={showEdgeSeams}
+          onClick={() => setShowEdgeSeams((current) => !current)}
+        >
+          {showEdgeSeams ? "Hide edge guides" : "Show edge guides"}
+        </button>
       </div>
 
       {showPreview ? (
         <div class="tile-puzzle-art-preview" aria-label={puzzle.asset.alt} style={previewStyle} />
       ) : null}
 
-      <div class={`tile-puzzle-board image-backed ${isSolved ? "solved" : ""}`} style={boardStyle}>
+      <div class={`tile-puzzle-board image-backed ${showEdgeSeams ? "edge-seams" : ""} ${isSolved ? "solved" : ""}`} style={boardStyle}>
         {tiles.map((tile) => {
           const selected = tile.id === selectedTileId;
           const placed = tile.currentIndex === tile.solvedIndex;
@@ -178,6 +187,22 @@ export const TilePuzzlePreview = ({ puzzle }: TilePuzzlePreviewProps) => {
               type="button"
               aria-label={`Tile ${tile.solvedIndex + 1}${placed ? ", placed" : ""}${selected ? ", selected" : ""}`}
             >
+              {showEdgeSeams ? (
+                <svg
+                  class="tile-puzzle-edge-seams"
+                  viewBox="0 0 100 100"
+                  preserveAspectRatio="none"
+                  aria-hidden="true"
+                >
+                  {getJigsawPieceSeamPaths(tile).map((seam) => (
+                    <path
+                      class={`tile-puzzle-edge-seam ${seam.boundary ? "boundary" : "interior"} ${seam.polarity}`}
+                      d={seam.d}
+                      key={seam.edgeId}
+                    />
+                  ))}
+                </svg>
+              ) : null}
               <span>{tile.solvedIndex + 1}</span>
             </button>
           );
