@@ -89,10 +89,12 @@ export const getJigsawEdgePoints = (edge: JigsawPieceEdge): JigsawEdgePoint[] =>
   const depth = geometry.depth * (0.9 + seededUnit(edge.seedOffset, 0x7f4a) * 0.2);
   const asymmetry = (seededUnit(edge.seedOffset, 0x2c1b) - 0.5) * 0.5;
   const direction = edge.polarity === "tab" ? 1 : -1;
+  const reversesCanonicalDirection = edge.side === "left" || edge.side === "bottom";
 
   return Array.from({ length: edgeSampleCount + 1 }, (_, index) => {
     const u = (index / edgeSampleCount) * 100;
-    const distance = (u - center) / (width / 2);
+    const profileU = reversesCanonicalDirection ? 100 - u : u;
+    const distance = (profileU - center) / (width / 2);
     const v = direction * depth * shapeAt(geometry.shape, distance, asymmetry);
     const point = transformPoint(edge.side, u, v);
     return { x: roundCoordinate(point.x), y: roundCoordinate(point.y) };
