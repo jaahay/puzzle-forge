@@ -46,6 +46,11 @@ const roundCoordinate = (value: number) => {
   return Object.is(rounded, -0) ? 0 : rounded;
 };
 
+const normalizePoint = (point: JigsawEdgePoint): JigsawEdgePoint => ({
+  x: roundCoordinate(point.x),
+  y: roundCoordinate(point.y),
+});
+
 const shapeAt = (
   shape: EdgeProfileGeometry["shape"],
   distance: number,
@@ -81,7 +86,7 @@ const transformPoint = (
 
 export const getJigsawEdgePoints = (edge: JigsawPieceEdge): JigsawEdgePoint[] => {
   if (edge.boundary) {
-    return [transformPoint(edge.side, 0, 0), transformPoint(edge.side, 100, 0)];
+    return [normalizePoint(transformPoint(edge.side, 0, 0)), normalizePoint(transformPoint(edge.side, 100, 0))];
   }
 
   const geometry = edgeProfileGeometry[edge.profileId];
@@ -97,8 +102,7 @@ export const getJigsawEdgePoints = (edge: JigsawPieceEdge): JigsawEdgePoint[] =>
     const profileU = reversesCanonicalDirection ? 100 - u : u;
     const distance = (profileU - center) / (width / 2);
     const v = direction * depth * shapeAt(geometry.shape, distance, asymmetry);
-    const point = transformPoint(edge.side, u, v);
-    return { x: roundCoordinate(point.x), y: roundCoordinate(point.y) };
+    return normalizePoint(transformPoint(edge.side, u, v));
   });
 };
 
