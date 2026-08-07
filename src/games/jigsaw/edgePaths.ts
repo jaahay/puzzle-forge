@@ -34,6 +34,7 @@ const edgeProfileGeometry = {
 } as const satisfies Record<JigsawEdgeProfileId, EdgeProfileGeometry>;
 
 const edgeSampleCount = 32;
+const pieceEdgeOrder: readonly JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
 
 const seededUnit = (seedOffset: number, salt: number) => {
   const mixed = Math.imul((seedOffset ^ salt) >>> 0, 2_654_435_761) >>> 0;
@@ -105,6 +106,19 @@ export const getJigsawEdgePath = (edge: JigsawPieceEdge) =>
   getJigsawEdgePoints(edge)
     .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
     .join(" ");
+
+export const getJigsawPieceOutlinePoints = (piece: JigsawPiece): JigsawEdgePoint[] =>
+  pieceEdgeOrder.flatMap((side, edgeIndex) => {
+    const edge = piece.edges.find((candidate) => candidate.side === side);
+    if (!edge) throw new Error(`Jigsaw piece ${piece.id} is missing its ${side} edge.`);
+    const points = getJigsawEdgePoints(edge);
+    return edgeIndex === 0 ? points : points.slice(1);
+  });
+
+export const getJigsawPieceOutlinePath = (piece: JigsawPiece) =>
+  `${getJigsawPieceOutlinePoints(piece)
+    .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
+    .join(" ")} Z`;
 
 export const getJigsawPieceSeamPaths = (piece: JigsawPiece): JigsawPieceSeamPath[] =>
   piece.edges.map((edge) => ({
