@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from "preact/hooks";
 import type { JigsawGeneratedPuzzle, JigsawPiece } from "../catalog/types";
-import { getJigsawPieceSeamPaths } from "../games/jigsaw/edgePaths";
+import { getJigsawPieceOutlinePath, getJigsawPieceSeamPaths } from "../games/jigsaw/edgePaths";
 
 type TilePuzzlePreviewProps = { puzzle: JigsawGeneratedPuzzle };
-type TileStyle = { backgroundImage: string; backgroundPosition: string; backgroundSize: string };
 type PersistedTileOrder = { id: string; currentIndex: number };
 type PersistedTileOrderEnvelope = {
   schemaVersion: 2;
@@ -23,16 +22,8 @@ const tileOrderSchemaVersion = 2;
 const getTileOrderStorageKey = (puzzle: JigsawGeneratedPuzzle) =>
   `puzzle-forge.jigsaw.${tileOrderSchemaVersion}.${puzzle.id}.${puzzle.seed}.${puzzle.width}x${puzzle.height}`;
 
-const getTileStyle = (puzzle: JigsawGeneratedPuzzle, tile: JigsawPiece): TileStyle => {
-  const x = puzzle.width === 1 ? 50 : (tile.column / (puzzle.width - 1)) * 100;
-  const y = puzzle.height === 1 ? 50 : (tile.row / (puzzle.height - 1)) * 100;
-
-  return {
-    backgroundImage: `url(${puzzle.asset.files.puzzle})`,
-    backgroundPosition: `${x}% ${y}%`,
-    backgroundSize: `${puzzle.width * 100}% ${puzzle.height * 100}%`,
-  };
-};
+const getPieceClipPathId = (puzzle: JigsawGeneratedPuzzle, tile: JigsawPiece) =>
+  `jigsaw-piece-${puzzle.id}-${tile.id}`.replace(/[^a-zA-Z0-9_-]/g, "-");
 
 const sortByCurrentIndex = (tiles: JigsawPiece[]) => [...tiles].sort((left, right) => left.currentIndex - right.currentIndex);
 
@@ -178,31 +169,46 @@ export const TilePuzzlePreview = ({ puzzle }: TilePuzzlePreviewProps) => {
         {tiles.map((tile) => {
           const selected = tile.id === selectedTileId;
           const placed = tile.currentIndex === tile.solvedIndex;
+          const outlinePath = getJigsawPieceOutlinePath(tile);
+          const clipPathId = getPieceClipPathId(puzzle, tile);
           return (
             <button
               class={`tile-puzzle-piece ${selected ? "selected" : ""} ${placed ? "placed" : ""}`}
               key={tile.id}
               onClick={() => selectOrSwapTile(tile.id)}
-              style={getTileStyle(puzzle, tile)}
               type="button"
               aria-label={`Tile ${tile.solvedIndex + 1}${placed ? ", placed" : ""}${selected ? ", selected" : ""}`}
             >
-              {showEdgeSeams ? (
-                <svg
-                  class="tile-puzzle-edge-seams"
-                  viewBox="0 0 100 100"
+              <svg
+                class="tile-puzzle-piece-visual"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <defs>
+                  <clipPath id={clipPathId} clipPathUnits="userSpaceOnUse">
+                    <path d={outlinePath} />
+                  </clipPath>
+                </defs>
+                <image
+                  class="tile-puzzle-piece-image"
+                  href={puzzle.asset.files.puzzle}
+                  x={-tile.column * 100}
+                  y={-tile.row * 100}
+                  width={puzzle.width * 100}
+                  height={puzzle.height * 100}
                   preserveAspectRatio="none"
-                  aria-hidden="true"
-                >
-                  {getJigsawPieceSeamPaths(tile).map((seam) => (
-                    <path
-                      class={`tile-puzzle-edge-seam ${seam.boundary ? "boundary" : "interior"} ${seam.polarity}`}
-                      d={seam.d}
-                      key={seam.edgeId}
-                    />
-                  ))}
-                </svg>
-              ) : null}
+                  clipPath={`url(#${clipPathId})`}
+                />
+                <path class="tile-puzzle-piece-outline" d={outlinePath} />
+                {showEdgeSeams ? getJigsawPieceSeamPaths(tile).map((seam) => (
+                  <path
+                    class={`tile-puzzle-edge-seam ${seam.boundary ? "boundary" : "interior"} ${seam.polarity}`}
+                    d={seam.d}
+                    key={seam.edgeId}
+                  />
+                )) : null}
+              </svg>
               <span>{tile.solvedIndex + 1}</span>
             </button>
           );

@@ -34,6 +34,7 @@ const edgeProfileGeometry = {
 } as const satisfies Record<JigsawEdgeProfileId, EdgeProfileGeometry>;
 
 const edgeSampleCount = 32;
+const pieceEdgeOrder: readonly JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
 
 const seededUnit = (seedOffset: number, salt: number) => {
   const mixed = Math.imul((seedOffset ^ salt) >>> 0, 2_654_435_761) >>> 0;
@@ -44,6 +45,11 @@ const roundCoordinate = (value: number) => {
   const rounded = Math.round(value * 1_000) / 1_000;
   return Object.is(rounded, -0) ? 0 : rounded;
 };
+
+const normalizePoint = (point: JigsawEdgePoint): JigsawEdgePoint => ({
+  x: roundCoordinate(point.x),
+  y: roundCoordinate(point.y),
+});
 
 const shapeAt = (
   shape: EdgeProfileGeometry["shape"],
@@ -80,7 +86,7 @@ const transformPoint = (
 
 export const getJigsawEdgePoints = (edge: JigsawPieceEdge): JigsawEdgePoint[] => {
   if (edge.boundary) {
-    return [transformPoint(edge.side, 0, 0), transformPoint(edge.side, 100, 0)];
+    return [normalizePoint(transformPoint(edge.side, 0, 0)), normalizePoint(transformPoint(edge.side, 100, 0))];
   }
 
   const geometry = edgeProfileGeometry[edge.profileId];
@@ -96,8 +102,7 @@ export const getJigsawEdgePoints = (edge: JigsawPieceEdge): JigsawEdgePoint[] =>
     const profileU = reversesCanonicalDirection ? 100 - u : u;
     const distance = (profileU - center) / (width / 2);
     const v = direction * depth * shapeAt(geometry.shape, distance, asymmetry);
-    const point = transformPoint(edge.side, u, v);
-    return { x: roundCoordinate(point.x), y: roundCoordinate(point.y) };
+    return normalizePoint(transformPoint(edge.side, u, v));
   });
 };
 
@@ -105,6 +110,19 @@ export const getJigsawEdgePath = (edge: JigsawPieceEdge) =>
   getJigsawEdgePoints(edge)
     .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
     .join(" ");
+
+export const getJigsawPieceOutlinePoints = (piece: JigsawPiece): JigsawEdgePoint[] =>
+  pieceEdgeOrder.flatMap((side, edgeIndex) => {
+    const edge = piece.edges.find((candidate) => candidate.side === side);
+    if (!edge) throw new Error(`Jigsaw piece ${piece.id} is missing its ${side} edge.`);
+    const points = getJigsawEdgePoints(edge);
+    return edgeIndex === 0 ? points : points.slice(1);
+  });
+
+export const getJigsawPieceOutlinePath = (piece: JigsawPiece) =>
+  `${getJigsawPieceOutlinePoints(piece)
+    .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
+    .join(" ")} Z`;
 
 export const getJigsawPieceSeamPaths = (piece: JigsawPiece): JigsawPieceSeamPath[] =>
   piece.edges.map((edge) => ({

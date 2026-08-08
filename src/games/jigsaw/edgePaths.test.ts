@@ -4,9 +4,15 @@ import type {
   JigsawEdgeProfileId,
   JigsawEdgeSide,
   JigsawInteriorEdge,
+  JigsawPiece,
 } from "../../catalog/types";
 import { jigsawEdgeProfileIds } from "./edgeProfiles";
-import { getJigsawEdgePath, getJigsawEdgePoints } from "./edgePaths";
+import {
+  getJigsawEdgePath,
+  getJigsawEdgePoints,
+  getJigsawPieceOutlinePath,
+  getJigsawPieceOutlinePoints,
+} from "./edgePaths";
 
 const makeBoundaryEdge = (side: JigsawEdgeSide): JigsawBoundaryEdge => ({
   edgeId: `boundary:${side}`,
@@ -38,6 +44,15 @@ const makeInteriorEdge = ({
   profileId,
   polarity,
   seedOffset,
+});
+
+const makePiece = (edges: JigsawPiece["edges"]): JigsawPiece => ({
+  id: "piece",
+  currentIndex: 0,
+  solvedIndex: 0,
+  row: 0,
+  column: 0,
+  edges,
 });
 
 const expectPointsToMatch = (
@@ -103,5 +118,36 @@ describe("Jigsaw edge paths", () => {
 
     expect(Math.max(...tab.map((point) => point.x))).toBeGreaterThan(100);
     expect(Math.min(...blank.map((point) => point.x))).toBeLessThan(100);
+  });
+
+  it("joins the four directed edges into one closed piece outline", () => {
+    const piece = makePiece([
+      makeBoundaryEdge("top"),
+      makeInteriorEdge({ side: "right", polarity: "tab" }),
+      makeInteriorEdge({ side: "bottom", polarity: "blank", seedOffset: 20 }),
+      makeBoundaryEdge("left"),
+    ]);
+    const points = getJigsawPieceOutlinePoints(piece);
+    const path = getJigsawPieceOutlinePath(piece);
+
+    expect(points[0]).toEqual({ x: 0, y: 0 });
+    expect(points.at(-1)).toEqual({ x: 0, y: 0 });
+    expect(Math.max(...points.map((point) => point.x))).toBeGreaterThan(100);
+    expect(path.startsWith("M 0 0 L 100 0")).toBe(true);
+    expect(path.endsWith(" Z")).toBe(true);
+    expect(path).not.toMatch(/NaN|Infinity/);
+  });
+
+  it("does not depend on the stored edge array order when building an outline", () => {
+    const edges = [
+      makeInteriorEdge({ side: "bottom", polarity: "blank", seedOffset: 20 }),
+      makeBoundaryEdge("left"),
+      makeBoundaryEdge("top"),
+      makeInteriorEdge({ side: "right", polarity: "tab" }),
+    ];
+
+    expect(getJigsawPieceOutlinePath(makePiece(edges))).toBe(
+      getJigsawPieceOutlinePath(makePiece([edges[2], edges[3], edges[0], edges[1]])),
+    );
   });
 });
