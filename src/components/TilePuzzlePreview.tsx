@@ -25,6 +25,10 @@ const getTileOrderStorageKey = (puzzle: JigsawGeneratedPuzzle) =>
 const getPieceClipPathId = (puzzle: JigsawGeneratedPuzzle, tile: JigsawPiece) =>
   `jigsaw-piece-${puzzle.id}-${tile.id}`.replace(/[^a-zA-Z0-9_-]/g, "-");
 
+export const getPieceImageClipPathProps = (clipPathId: string) => ({
+  "clip-path": `url(#${clipPathId})`,
+});
+
 const sortByCurrentIndex = (tiles: JigsawPiece[]) => [...tiles].sort((left, right) => left.currentIndex - right.currentIndex);
 
 const loadPersistedTileOrder = (puzzle: JigsawGeneratedPuzzle, fallbackTiles: JigsawPiece[]) => {
@@ -198,7 +202,7 @@ export const TilePuzzlePreview = ({ puzzle }: TilePuzzlePreviewProps) => {
                   width={puzzle.width * 100}
                   height={puzzle.height * 100}
                   preserveAspectRatio="none"
-                  clipPath={`url(#${clipPathId})`}
+                  {...getPieceImageClipPathProps(clipPathId)}
                 />
                 <path class="tile-puzzle-piece-outline" d={outlinePath} />
                 {showEdgeSeams ? getJigsawPieceSeamPaths(tile).map((seam) => (
