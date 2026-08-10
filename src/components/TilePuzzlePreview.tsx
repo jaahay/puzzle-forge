@@ -67,8 +67,12 @@ export const getPieceHitTargetProps = () => ({
   "pointer-events": "fill",
 });
 
-export const getPieceZIndex = (tile: Pick<JigsawPiece, "currentIndex">, snapped: boolean, active: boolean) =>
-  active ? 1000 : snapped ? 4 : 10 + tile.currentIndex;
+export const getPieceZIndex = (
+  tile: Pick<JigsawPiece, "currentIndex">,
+  snapped: boolean,
+  active: boolean,
+  raised: boolean,
+) => active ? 1000 : snapped ? 4 : raised ? 900 : 10 + tile.currentIndex;
 
 const isPersistedPlacement = (value: unknown): value is JigsawPlacement => {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
@@ -156,6 +160,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
   const [stageWidth, setStageWidth] = useState(0);
   const [placementState, setPlacementState] = useState<PlacementState | null>(null);
   const [activeTileId, setActiveTileId] = useState<string | null>(null);
+  const [raisedTileId, setRaisedTileId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [showEdgeSeams, setShowEdgeSeams] = useState(false);
 
@@ -189,6 +194,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
   useEffect(() => {
     dragRef.current = null;
     setActiveTileId(null);
+    setRaisedTileId(null);
   }, [puzzle.id]);
 
   useEffect(() => {
@@ -225,6 +231,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
   const scatterPieces = () => {
     dragRef.current = null;
     setActiveTileId(null);
+    setRaisedTileId(null);
     setPlacementState({
       puzzleId: puzzle.id,
       layoutMode: layout.mode,
@@ -266,6 +273,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
     };
     target.focus({ preventScroll: true });
     target.setPointerCapture(event.pointerId);
+    setRaisedTileId(tile.id);
     setActiveTileId(tile.id);
     event.preventDefault();
   };
@@ -311,6 +319,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
     if (placement.snapped || isSolved) return;
     const direction = event.key;
     if (!["ArrowUp", "ArrowRight", "ArrowDown", "ArrowLeft"].includes(direction)) return;
+    setRaisedTileId(tile.id);
 
     const current = getJigsawPlacementPosition(layout, tile, placement);
     const step = Math.max(8, Math.min(layout.pieceWidth, layout.pieceHeight) * (event.shiftKey ? 0.48 : 0.18));
@@ -380,13 +389,14 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
           if (!placement) return null;
           const position = getJigsawPlacementPosition(layout, tile, placement);
           const active = tile.id === activeTileId;
+          const raised = tile.id === raisedTileId;
           const outlinePath = getJigsawPieceOutlinePath(tile);
           const clipPathId = getPieceClipPathId(puzzle, tile);
           const pieceStyle = {
             width: `${layout.pieceWidth}px`,
             height: `${layout.pieceHeight}px`,
             transform: `translate3d(${position.left}px, ${position.top}px, 0)`,
-            zIndex: getPieceZIndex(tile, placement.snapped, active),
+            zIndex: getPieceZIndex(tile, placement.snapped, active, raised),
           } as JSX.CSSProperties;
 
           return (
