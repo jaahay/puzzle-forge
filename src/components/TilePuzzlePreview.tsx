@@ -62,6 +62,18 @@ export const getPieceImageClipPathProps = (clipPathId: string) => ({
   "clip-path": `url(#${clipPathId})`,
 });
 
+export const getPieceHitTargetProps = () => ({
+  fill: "transparent",
+  "pointer-events": "fill",
+});
+
+export const getPieceZIndex = (
+  tile: Pick<JigsawPiece, "currentIndex">,
+  snapped: boolean,
+  active: boolean,
+  raised: boolean,
+) => active ? 1000 : snapped ? 4 : raised ? 900 : 10 + tile.currentIndex;
+
 const isPersistedPlacement = (value: unknown): value is JigsawPlacement => {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
   const candidate = value as Partial<JigsawPlacement>;
@@ -148,9 +160,9 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
   const [stageWidth, setStageWidth] = useState(0);
   const [placementState, setPlacementState] = useState<PlacementState | null>(null);
   const [activeTileId, setActiveTileId] = useState<string | null>(null);
+  const [raisedTileId, setRaisedTileId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [showEdgeSeams, setShowEdgeSeams] = useState(false);
-  const [interactionMessage, setInteractionMessage] = useState("Drag loose pieces onto the board. Pieces snap when they reach the correct position.");
 
   const layout = useMemo(() => createJigsawStageLayout({
     stageWidth: stageWidth || fallbackStageWidth,
@@ -182,7 +194,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
   useEffect(() => {
     dragRef.current = null;
     setActiveTileId(null);
-    setInteractionMessage("Drag loose pieces onto the board. Pieces snap when they reach the correct position.");
+    setRaisedTileId(null);
   }, [puzzle.id]);
 
   useEffect(() => {
@@ -219,12 +231,12 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
   const scatterPieces = () => {
     dragRef.current = null;
     setActiveTileId(null);
+    setRaisedTileId(null);
     setPlacementState({
       puzzleId: puzzle.id,
       layoutMode: layout.mode,
       placements: createInitialJigsawPlacements(layout, puzzle.tiles),
     });
-    setInteractionMessage("Pieces scattered. Drag a loose piece toward its matching position on the board.");
   };
 
   useEffect(() => {
@@ -259,9 +271,10 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
       offsetX: event.clientX - pieceRect.left,
       offsetY: event.clientY - pieceRect.top,
     };
+    target.focus({ preventScroll: true });
     target.setPointerCapture(event.pointerId);
+    setRaisedTileId(tile.id);
     setActiveTileId(tile.id);
-    setInteractionMessage(`Moving piece ${tile.solvedIndex + 1}.`);
     event.preventDefault();
   };
 
@@ -292,15 +305,6 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
       ...current,
       placements: updatePlacement(current.placements, tile.id, (placement) => ({ ...placement, ...nextPosition, snapped: snaps })),
     } : current);
-
-    const nextSolvedCount = solvedCount + (snaps && !placementById.get(tile.id)?.snapped ? 1 : 0);
-    if (snaps && nextSolvedCount === puzzle.tiles.length) {
-      setInteractionMessage("Jigsaw solved.");
-    } else if (snaps) {
-      setInteractionMessage(`Piece ${tile.solvedIndex + 1} snapped into place. ${nextSolvedCount}/${puzzle.tiles.length} placed.`);
-    } else {
-      setInteractionMessage(`Piece ${tile.solvedIndex + 1} left loose.`);
-    }
     event.preventDefault();
   };
 
@@ -315,6 +319,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
     if (placement.snapped || isSolved) return;
     const direction = event.key;
     if (!["ArrowUp", "ArrowRight", "ArrowDown", "ArrowLeft"].includes(direction)) return;
+    setRaisedTileId(tile.id);
 
     const current = getJigsawPlacementPosition(layout, tile, placement);
     const step = Math.max(8, Math.min(layout.pieceWidth, layout.pieceHeight) * (event.shiftKey ? 0.48 : 0.18));
@@ -331,13 +336,6 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
         snapped: snaps,
       })),
     } : currentState);
-
-    const nextSolvedCount = solvedCount + (snaps ? 1 : 0);
-    setInteractionMessage(snaps
-      ? nextSolvedCount === puzzle.tiles.length
-        ? "Jigsaw solved."
-        : `Piece ${tile.solvedIndex + 1} snapped into place. ${nextSolvedCount}/${puzzle.tiles.length} placed.`
-      : `Moved piece ${tile.solvedIndex + 1}.`);
     event.preventDefault();
   };
 
@@ -391,13 +389,14 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
           if (!placement) return null;
           const position = getJigsawPlacementPosition(layout, tile, placement);
           const active = tile.id === activeTileId;
+          const raised = tile.id === raisedTileId;
           const outlinePath = getJigsawPieceOutlinePath(tile);
           const clipPathId = getPieceClipPathId(puzzle, tile);
           const pieceStyle = {
             width: `${layout.pieceWidth}px`,
             height: `${layout.pieceHeight}px`,
             transform: `translate3d(${position.left}px, ${position.top}px, 0)`,
-            zIndex: active ? 1000 : placement.snapped ? 20 + tile.solvedIndex : 10 + tile.currentIndex,
+            zIndex: getPieceZIndex(tile, placement.snapped, active, raised),
           } as JSX.CSSProperties;
 
           return (
@@ -435,6 +434,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
                   preserveAspectRatio="none"
                   {...getPieceImageClipPathProps(clipPathId)}
                 />
+                <path class="tile-puzzle-piece-hit-target" d={outlinePath} {...getPieceHitTargetProps()} />
                 <path class="tile-puzzle-piece-outline" d={outlinePath} />
                 {showEdgeSeams ? getJigsawPieceSeamPaths(tile).map((seam) => (
                   <path
@@ -448,8 +448,6 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
           );
         })}
       </div>
-
-      <p class="tile-puzzle-hint" aria-live="polite">{interactionMessage} Loose pieces also move with the arrow keys; hold Shift for larger steps.</p>
     </section>
   );
 };

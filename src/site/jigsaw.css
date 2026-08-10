@@ -136,6 +136,7 @@
   color: #f8fafc;
   cursor: grab;
   overflow: visible;
+  pointer-events: none;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
@@ -188,6 +189,21 @@
   pointer-events: none;
 }
 
+.tile-puzzle-piece-hit-target {
+  stroke: none;
+  pointer-events: fill;
+  cursor: grab;
+}
+
+.tile-puzzle-piece.dragging .tile-puzzle-piece-hit-target {
+  cursor: grabbing;
+}
+
+.tile-puzzle-piece.placed .tile-puzzle-piece-hit-target {
+  pointer-events: none;
+  cursor: default;
+}
+
 .tile-puzzle-piece-outline {
   fill: none;
   stroke: rgba(248, 250, 252, 0.5);
@@ -226,14 +242,6 @@
 
 .tile-puzzle-piece.placed .tile-puzzle-edge-seam.interior {
   stroke: rgba(167, 243, 208, 0.82);
-}
-
-.tile-puzzle-hint {
-  margin: 0;
-  max-width: 46rem;
-  color: #cbd5e1;
-  font-weight: 700;
-  text-align: center;
 }
 
 @media (max-width: 700px) {
