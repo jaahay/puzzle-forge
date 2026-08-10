@@ -17,9 +17,12 @@ describe("TilePuzzlePreview SVG clipping", () => {
 });
 
 describe("TilePuzzlePreview piece stacking", () => {
-  it("keeps loose pieces above snapped pieces and the active piece above both", () => {
-    expect(getPieceZIndex({ currentIndex: 0 }, true, false)).toBe(4);
-    expect(getPieceZIndex({ currentIndex: 0 }, false, false)).toBeGreaterThan(4);
-    expect(getPieceZIndex({ currentIndex: 63 }, false, true)).toBe(1000);
+  it("keeps snapped, loose, recently interacted, and active pieces in tabletop order", () => {
+    expect(getPieceZIndex({ currentIndex: 0 }, true, false, true)).toBe(4);
+    expect(getPieceZIndex({ currentIndex: 0 }, false, false, false)).toBeGreaterThan(4);
+    expect(getPieceZIndex({ currentIndex: 63 }, false, false, false)).toBeLessThan(
+      getPieceZIndex({ currentIndex: 0 }, false, false, true),
+    );
+    expect(getPieceZIndex({ currentIndex: 0 }, false, true, true)).toBe(1000);
   });
 });
