@@ -122,6 +122,13 @@ export const App = () => {
       requestOptions = { ...options, solitaireVariation: normalizeSolitaireVariation(options.solitaireVariation ?? solitaireVariation) };
     } else if (requestedPuzzleId === "sudoku") {
       requestOptions = { ...options, sudokuVariation: normalizeSudokuVariation(options.sudokuVariation ?? sudokuVariation) };
+    } else if (requestedPuzzleId === "jigsaw") {
+      const currentJigsawAsset = puzzle?.puzzleId === "jigsaw" ? puzzle.asset : null;
+      requestOptions = {
+        ...options,
+        jigsawImageId: options.jigsawImageId ?? currentJigsawAsset?.id,
+        jigsawAssetRevision: options.jigsawAssetRevision ?? currentJigsawAsset?.assetRevision,
+      };
     }
     const result = generation.beginGeneration({ selectedPuzzleId, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation }, requestOptions);
 
@@ -155,6 +162,7 @@ export const App = () => {
   const beginPersistedPuzzle = (puzzleId: PuzzleId) => {
     const persistedSession = sessions.persistedSessionCache.current[puzzleId];
     if (!persistedSession) return false;
+    const persistedJigsawAsset = persistedSession.puzzle?.puzzleId === "jigsaw" ? persistedSession.puzzle.asset : null;
     sessions.pendingRestorePuzzleId.current = puzzleId;
     beginGeneration({
       puzzleId,
@@ -165,6 +173,8 @@ export const App = () => {
       requireUniqueSolution: persistedSession.requireUniqueSolution,
       sudokuVariation: persistedSession.sudokuVariation,
       solitaireVariation: persistedSession.solitaireVariation,
+      jigsawImageId: persistedJigsawAsset?.id,
+      jigsawAssetRevision: persistedJigsawAsset?.assetRevision,
     });
     return true;
   };
@@ -290,7 +300,7 @@ export const App = () => {
     restoreScrollPosition();
   };
 
-  const commitGenerationSettings = ({ seed: nextSeed, width: nextWidth, height: nextHeight, difficulty: nextDifficulty, requireUniqueSolution: nextRequireUniqueSolution, sudokuVariation: nextSudokuVariation, solitaireVariation: nextSolitaireVariation }: Partial<Pick<PuzzleGenerationRequest, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution" | "sudokuVariation" | "solitaireVariation">> = {}) => {
+  const commitGenerationSettings = ({ seed: nextSeed, width: nextWidth, height: nextHeight, difficulty: nextDifficulty, requireUniqueSolution: nextRequireUniqueSolution, sudokuVariation: nextSudokuVariation, solitaireVariation: nextSolitaireVariation, jigsawImageId: nextJigsawImageId, jigsawAssetRevision: nextJigsawAssetRevision }: Partial<Pick<PuzzleGenerationRequest, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution" | "sudokuVariation" | "solitaireVariation" | "jigsawImageId" | "jigsawAssetRevision">> = {}) => {
     const definition = getPuzzleDefinition(selectedPuzzleId);
     const normalizedSeed = (typeof nextSeed === "string" ? nextSeed.trim() : seed.trim()) || puzzle?.seed || makeRandomSeed();
     const generationWidth = Number.isFinite(nextWidth) ? Number(nextWidth) : width || definition.defaultWidth;
@@ -301,7 +311,10 @@ export const App = () => {
     const currentGrid = puzzle?.kind === "grid" ? puzzle : null;
     const currentSolitaireVariation = puzzle?.kind === "cards" ? puzzle.solitaireVariation : undefined;
     const generationSolitaireVariation = normalizeSolitaireVariation(nextSolitaireVariation ?? currentSolitaireVariation ?? solitaireVariation);
-    const settingsAreCurrent = puzzle?.puzzleId === selectedPuzzleId && puzzle.seed === normalizedSeed && (!currentGrid || (currentGrid.width === generationWidth && currentGrid.height === generationHeight)) && (selectedPuzzleId !== "sudoku" || (puzzle.difficulty === generationDifficulty && normalizeSudokuVariation(puzzle.sudokuVariation) === generationSudokuVariation)) && (selectedPuzzleId !== "nonogram" || (puzzle.difficulty === generationDifficulty && Boolean(puzzle.uniqueSolution) === generationRequireUniqueSolution)) && (selectedPuzzleId !== "klondike-solitaire" || solitaireVariationsEqual(currentSolitaireVariation, generationSolitaireVariation));
+    const currentJigsawAsset = puzzle?.puzzleId === "jigsaw" ? puzzle.asset : null;
+    const generationJigsawImageId = nextJigsawImageId ?? currentJigsawAsset?.id;
+    const generationJigsawAssetRevision = nextJigsawAssetRevision ?? (generationJigsawImageId === currentJigsawAsset?.id ? currentJigsawAsset.assetRevision : undefined);
+    const settingsAreCurrent = puzzle?.puzzleId === selectedPuzzleId && puzzle.seed === normalizedSeed && (!currentGrid || (currentGrid.width === generationWidth && currentGrid.height === generationHeight)) && (selectedPuzzleId !== "sudoku" || (puzzle.difficulty === generationDifficulty && normalizeSudokuVariation(puzzle.sudokuVariation) === generationSudokuVariation)) && (selectedPuzzleId !== "nonogram" || (puzzle.difficulty === generationDifficulty && Boolean(puzzle.uniqueSolution) === generationRequireUniqueSolution)) && (selectedPuzzleId !== "klondike-solitaire" || solitaireVariationsEqual(currentSolitaireVariation, generationSolitaireVariation)) && (selectedPuzzleId !== "jigsaw" || (puzzle.width === generationWidth && puzzle.height === generationHeight && currentJigsawAsset?.id === generationJigsawImageId && currentJigsawAsset?.assetRevision === generationJigsawAssetRevision));
 
     if (normalizedSeed !== seed) setSeed(normalizedSeed);
     if (generationWidth !== width) setWidth(generationWidth);
@@ -311,7 +324,7 @@ export const App = () => {
     if (selectedPuzzleId === "sudoku") setSudokuVariation(generationSudokuVariation);
     if (selectedPuzzleId === "klondike-solitaire") setSolitaireVariation(generationSolitaireVariation);
     if (settingsAreCurrent) return;
-    beginGeneration({ seed: normalizedSeed, width: generationWidth, height: generationHeight, difficulty: generationDifficulty, requireUniqueSolution: generationRequireUniqueSolution, sudokuVariation: selectedPuzzleId === "sudoku" ? generationSudokuVariation : undefined, solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? generationSolitaireVariation : undefined }, { preserveScroll: true });
+    beginGeneration({ seed: normalizedSeed, width: generationWidth, height: generationHeight, difficulty: generationDifficulty, requireUniqueSolution: generationRequireUniqueSolution, sudokuVariation: selectedPuzzleId === "sudoku" ? generationSudokuVariation : undefined, solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? generationSolitaireVariation : undefined, jigsawImageId: selectedPuzzleId === "jigsaw" ? generationJigsawImageId : undefined, jigsawAssetRevision: selectedPuzzleId === "jigsaw" ? generationJigsawAssetRevision : undefined }, { preserveScroll: true });
   };
 
   const handleDifficultyChange = (nextDifficulty: PuzzleDifficulty) => {
