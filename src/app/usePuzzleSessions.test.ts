@@ -10,8 +10,7 @@ const makeJigsawSession = (): PuzzleSession => {
     seed: "clone-edge-model",
     width: 4,
     height: 3,
-    jigsawImageId: defaultJigsawImageAsset.id,
-    jigsawAssetRevision: defaultJigsawImageAsset.assetRevision,
+    imageId: defaultJigsawImageAsset.id,
   });
 
   return {

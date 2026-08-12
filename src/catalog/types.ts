@@ -113,8 +113,7 @@ export type SolitaireVariation = {
 export type PuzzleVariationSettings = {
   sudokuVariation?: SudokuVariation;
   solitaireVariation?: SolitaireVariation;
-  jigsawImageId?: string;
-  jigsawAssetRevision?: number;
+  imageId?: string;
 };
 
 export type GeneratedTilePuzzleAsset = {
@@ -127,7 +126,6 @@ export type GeneratedTilePuzzleAsset = {
 export type JigsawImageAsset = {
   kind: "image";
   id: string;
-  assetRevision: number;
   title: string;
   alt: string;
   orientation: "landscape" | "portrait" | "square";

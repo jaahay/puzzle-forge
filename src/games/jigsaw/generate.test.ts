@@ -9,17 +9,13 @@ import {
 import { generateJigsaw } from "./generate";
 import { defaultJigsawImageAsset } from "./imageAssets";
 
-const makeJigsaw = (
-  jigsawImageId: string = defaultJigsawImageAsset.id,
-  jigsawAssetRevision: number = defaultJigsawImageAsset.assetRevision,
-) =>
+const makeJigsaw = (imageId: string = defaultJigsawImageAsset.id) =>
   generateJigsaw({
     puzzleId: "jigsaw",
     seed: "phase-one-seed",
     width: 4,
     height: 3,
-    jigsawImageId,
-    jigsawAssetRevision,
+    imageId,
   });
 
 const getTile = (puzzle: JigsawGeneratedPuzzle, row: number, column: number) => {
@@ -37,7 +33,7 @@ const getEdge = (tile: JigsawPiece, side: JigsawEdgeSide): JigsawPieceEdge => {
 const getAllEdges = (puzzle: JigsawGeneratedPuzzle) => puzzle.tiles.flatMap((tile) => tile.edges);
 
 describe("generateJigsaw", () => {
-  it("is deterministic for seed, dimensions, image id, asset revision, and edge model", () => {
+  it("is deterministic for seed, dimensions, image id, and edge model", () => {
     const first = makeJigsaw();
     const second = makeJigsaw();
 
@@ -56,7 +52,7 @@ describe("generateJigsaw", () => {
       catalogRevision: jigsawEdgeProfileCatalogRevision,
       profileIds: [...jigsawEdgeProfileIds],
     });
-    expect(puzzle.id).toContain(`${defaultJigsawImageAsset.id}@${defaultJigsawImageAsset.assetRevision}`);
+    expect(puzzle.id).toContain(defaultJigsawImageAsset.id);
     expect(puzzle.id).toContain(`edges@${jigsawEdgeProfileCatalogRevision}`);
   });
 
@@ -220,11 +216,5 @@ describe("generateJigsaw", () => {
 
   it("rejects an unknown bundled image id", () => {
     expect(() => makeJigsaw("missing-image")).toThrow("Unknown bundled Jigsaw image");
-  });
-
-  it("rejects an unsupported asset revision", () => {
-    expect(() => makeJigsaw(defaultJigsawImageAsset.id, defaultJigsawImageAsset.assetRevision + 1)).toThrow(
-      "Unsupported revision",
-    );
   });
 });

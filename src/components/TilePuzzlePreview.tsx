@@ -26,7 +26,6 @@ type PersistedJigsawPlacementEnvelope = {
   width: number;
   height: number;
   assetId: string;
-  assetRevision: number;
   edgeModelRevision: number;
   layoutMode: JigsawLayoutMode;
   placements: JigsawPlacement[];
@@ -107,7 +106,6 @@ const loadPersistedPlacements = (puzzle: JigsawGeneratedPuzzle) => {
       candidate.width !== puzzle.width ||
       candidate.height !== puzzle.height ||
       candidate.assetId !== puzzle.asset.id ||
-      candidate.assetRevision !== puzzle.asset.assetRevision ||
       candidate.edgeModelRevision !== puzzle.edgeModel.catalogRevision ||
       (candidate.layoutMode !== "scatter" && candidate.layoutMode !== "tray") ||
       !placements ||
@@ -138,7 +136,6 @@ const savePersistedPlacements = (
     width: puzzle.width,
     height: puzzle.height,
     assetId: puzzle.asset.id,
-    assetRevision: puzzle.asset.assetRevision,
     edgeModelRevision: puzzle.edgeModel.catalogRevision,
     layoutMode,
     placements,

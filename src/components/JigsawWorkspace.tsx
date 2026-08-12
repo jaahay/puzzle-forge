@@ -9,8 +9,7 @@ import { SeedControl } from "./SeedControl";
 import { TilePuzzlePreview } from "./TilePuzzlePreview";
 
 export const makeJigsawImageSelectionSettings = (asset: JigsawImageAsset) => ({
-  jigsawImageId: asset.id,
-  jigsawAssetRevision: asset.assetRevision,
+  imageId: asset.id,
 });
 
 export const JigsawWorkspace = ({
@@ -61,7 +60,7 @@ export const JigsawWorkspace = ({
         </div>
         <div class="jigsaw-image-library-grid">
           {jigsawImageAssets.map((asset) => {
-            const selected = puzzle.asset.id === asset.id && puzzle.asset.assetRevision === asset.assetRevision;
+            const selected = puzzle.asset.id === asset.id;
             return (
               <button
                 class="jigsaw-image-option"
@@ -69,7 +68,7 @@ export const JigsawWorkspace = ({
                 aria-pressed={selected}
                 disabled={isGenerating}
                 onClick={() => { if (!selected) onSettingsCommit(makeJigsawImageSelectionSettings(asset)); }}
-                key={`${asset.id}@${asset.assetRevision}`}
+                key={asset.id}
               >
                 <img src={asset.files.thumbnail} alt="" />
                 <span>{asset.title}</span>
