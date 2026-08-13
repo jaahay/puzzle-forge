@@ -41,6 +41,11 @@ const stagePadding = 12;
 const clamp = (value: number, minimum: number, maximum: number) =>
   Math.min(maximum, Math.max(minimum, value));
 
+const fitAspectRatio = (imageRatio: number, maxWidth: number, maxHeight: number) => {
+  const width = Math.min(maxWidth, maxHeight * imageRatio);
+  return { width, height: width / imageRatio };
+};
+
 const mixSlotIndex = (value: number) => {
   let mixed = Math.imul(value ^ 0x9e37_79b9, 0x85eb_ca6b);
   mixed ^= mixed >>> 13;
@@ -73,12 +78,17 @@ export const createJigsawStageLayout = ({
   pieceCount,
 }: JigsawStageLayoutInput): JigsawStageLayout => {
   const safeStageWidth = Math.max(280, stageWidth);
-  const imageRatio = Math.max(0.25, imageWidth / Math.max(1, imageHeight));
+  const imageRatio = Math.max(0.01, imageWidth / Math.max(1, imageHeight));
   const mode: JigsawLayoutMode = safeStageWidth < compactBreakpoint ? "tray" : "scatter";
 
   if (mode === "tray") {
-    const boardWidth = safeStageWidth - stagePadding * 2;
-    const boardHeight = boardWidth / imageRatio;
+    const maximumBoardWidth = safeStageWidth - stagePadding * 2;
+    const maximumBoardHeight = Math.min(520, safeStageWidth * 1.1);
+    const { width: boardWidth, height: boardHeight } = fitAspectRatio(
+      imageRatio,
+      maximumBoardWidth,
+      maximumBoardHeight,
+    );
     const pieceWidth = boardWidth / puzzleWidth;
     const pieceHeight = boardHeight / puzzleHeight;
     const stepX = Math.max(24, pieceWidth * 0.8);
@@ -93,7 +103,7 @@ export const createJigsawStageLayout = ({
       mode,
       stageWidth: safeStageWidth,
       stageHeight: trayTop + trayHeight + stagePadding,
-      boardX: stagePadding,
+      boardX: (safeStageWidth - boardWidth) / 2,
       boardY: stagePadding,
       boardWidth,
       boardHeight,
@@ -102,8 +112,13 @@ export const createJigsawStageLayout = ({
     };
   }
 
-  const boardWidth = Math.min(safeStageWidth * 0.56, 640);
-  const boardHeight = boardWidth / imageRatio;
+  const maximumBoardWidth = Math.min(safeStageWidth * 0.56, 640);
+  const maximumBoardHeight = Math.min(540, safeStageWidth * 0.62);
+  const { width: boardWidth, height: boardHeight } = fitAspectRatio(
+    imageRatio,
+    maximumBoardWidth,
+    maximumBoardHeight,
+  );
   const pieceWidth = boardWidth / puzzleWidth;
   const pieceHeight = boardHeight / puzzleHeight;
   const verticalMargin = Math.max(84, pieceHeight * 1.3);
