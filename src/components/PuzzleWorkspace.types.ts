@@ -3,7 +3,7 @@ import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
 
 export type SolitaireStats = { moveCount: number; drawCount: number; recycleCount: number; autoMoveCount: number };
-export type GenerationSettings = Partial<Pick<PuzzleGenerationRequest, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution" | "sudokuVariation" | "solitaireVariation">>;
+export type GenerationSettings = Partial<Pick<PuzzleGenerationRequest, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution" | "sudokuVariation" | "solitaireVariation" | "imageId">>;
 
 export type PuzzleWorkspaceProps = {
   selectedDefinition: PuzzleDefinition;

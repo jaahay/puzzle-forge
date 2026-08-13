@@ -105,25 +105,19 @@ const makePieceEdges = ({
     };
   });
 
-export const generateJigsaw: TilePuzzleGenerator = ({
-  seed,
-  width,
-  height,
-  jigsawImageId,
-  jigsawAssetRevision,
-}) => {
+export const generateJigsaw: TilePuzzleGenerator = ({ seed, width, height, imageId }) => {
   const normalizedSeed = normalizeSeed(seed);
   const boundedWidth = normalizeDimension(width, 4, 2, 8);
   const boundedHeight = normalizeDimension(height, 4, 2, 8);
-  const asset = getJigsawImageAsset(jigsawImageId, jigsawAssetRevision);
-  const assetIdentity = `${asset.id}@${asset.assetRevision}`;
+  const asset = getJigsawImageAsset(imageId);
+  const imageIdentity = asset.id;
   const edgeIdentity = `edges@${jigsawEdgeProfileCatalogRevision}`;
   const edgeModel = {
     catalogRevision: jigsawEdgeProfileCatalogRevision,
     profileIds: [...jigsawEdgeProfileIds],
   };
   const solvedIndexes = Array.from({ length: boundedWidth * boundedHeight }, (_, index) => index);
-  const shuffleSeed = `jigsaw:${normalizedSeed}:${boundedWidth}x${boundedHeight}:${assetIdentity}`;
+  const shuffleSeed = `jigsaw:${normalizedSeed}:${boundedWidth}x${boundedHeight}:${imageIdentity}`;
   const edgeSeed = `${shuffleSeed}:${edgeIdentity}`;
   const piecesBySolvedIndex = solvedIndexes.map((solvedIndex): JigsawPiece => {
     const row = Math.floor(solvedIndex / boundedWidth);
@@ -153,7 +147,7 @@ export const generateJigsaw: TilePuzzleGenerator = ({
   }));
 
   return createGeneratedJigsawPuzzle({
-    id: `jigsaw-${assetIdentity}-${edgeIdentity}-${normalizedSeed}-${boundedWidth}x${boundedHeight}`,
+    id: `jigsaw-${imageIdentity}-${edgeIdentity}-${normalizedSeed}-${boundedWidth}x${boundedHeight}`,
     title: "Jigsaw",
     seed: normalizedSeed,
     width: boundedWidth,
@@ -161,6 +155,6 @@ export const generateJigsaw: TilePuzzleGenerator = ({
     tiles,
     asset,
     edgeModel,
-    notes: [`Square-piece Jigsaw using the bundled ${asset.title} image.`],
+    notes: [`Jigsaw using the bundled ${asset.title} image.`],
   });
 };

@@ -126,6 +126,7 @@ export const usePuzzleGeneration = () => {
       requireUniqueSolution,
       sudokuVariation,
       solitaireVariation: options.solitaireVariation,
+      imageId: puzzleId === "jigsaw" ? options.imageId : undefined,
     };
 
     activeRequestId.current = request.requestId;

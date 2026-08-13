@@ -38,6 +38,7 @@ export type PersistedPuzzleIdentity = {
   requireUniqueSolution: boolean;
   sudokuVariation?: SudokuVariation;
   solitaireVariation?: SolitaireVariation;
+  imageId?: string;
   generatorVersion: 1;
 };
 
@@ -124,6 +125,7 @@ export const buildPersistedPuzzleIdentity = (puzzleId: PuzzleId, session: Puzzle
     puzzleId === "klondike-solitaire" || session.puzzle?.kind === "cards"
       ? normalizeSolitaireVariation(session.solitaireVariation ?? (session.puzzle?.kind === "cards" ? session.puzzle.solitaireVariation : null))
       : undefined;
+  const imageId = puzzleId === "jigsaw" && session.puzzle?.kind === "tiles" ? session.puzzle.asset.id : undefined;
 
   return {
     puzzleId,
@@ -134,6 +136,7 @@ export const buildPersistedPuzzleIdentity = (puzzleId: PuzzleId, session: Puzzle
     requireUniqueSolution: session.requireUniqueSolution,
     ...(sudokuVariation ? { sudokuVariation } : {}),
     ...(solitaireVariation ? { solitaireVariation } : {}),
+    ...(imageId ? { imageId } : {}),
     generatorVersion: 1,
   };
 };
@@ -220,6 +223,7 @@ const isPersistedPuzzleSession = (value: unknown): value is PersistedPuzzleSessi
   typeof value.requireUniqueSolution === "boolean" &&
   (value.sudokuVariation === undefined || isSudokuVariation(value.sudokuVariation)) &&
   (value.solitaireVariation === undefined || isSolitaireVariation(value.solitaireVariation)) &&
+  (value.imageId === undefined || typeof value.imageId === "string") &&
   value.generatorVersion === 1 &&
   value.progressVersion === 1 &&
   typeof value.statusMessage === "string" &&
@@ -267,7 +271,8 @@ const persistedIdentityMatchesPuzzle = (persisted: PersistedPuzzleSession, puzzl
   persisted.height === puzzle.height &&
   (!puzzle.difficulty || persisted.difficulty === puzzle.difficulty) &&
   (puzzle.puzzleId !== "sudoku" || normalizeSudokuVariation(persisted.sudokuVariation) === normalizeSudokuVariation(puzzle.sudokuVariation)) &&
-  (puzzle.kind !== "cards" || solitaireVariationsEqual(persisted.solitaireVariation, puzzle.solitaireVariation));
+  (puzzle.kind !== "cards" || solitaireVariationsEqual(persisted.solitaireVariation, puzzle.solitaireVariation)) &&
+  (puzzle.kind !== "tiles" || persisted.imageId === undefined || persisted.imageId === puzzle.asset.id);
 
 export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSession, puzzle: GeneratedPuzzle): PuzzleSession | null => {
   if (!persistedIdentityMatchesPuzzle(persisted, puzzle)) {
