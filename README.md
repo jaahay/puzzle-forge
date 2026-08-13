@@ -98,6 +98,44 @@ Grid generators return `GridGeneratedPuzzle` previews with cells and optional pu
 
 The UI posts a `PuzzleGenerationRequest` to `src/workers/puzzleWorker.ts` with a request id, puzzle id, seed, width, and height. The worker calls the registry, returns a `PuzzleGenerationResponse`, and includes the same request id so the UI can ignore stale responses.
 
+## Jigsaw artwork ingestion
+
+Bundled Jigsaw images are source-controlled, same-origin assets with explicit provenance. Adding or regenerating artwork is deliberately a **manual local process**.
+
+Rules:
+
+- Original artwork bytes must be downloaded by a developer running the repository script locally on an explicit feature branch.
+- Do **not** fetch, read, transfer, or verify artwork binary bytes through the GitHub connector or other repository API tooling.
+- Do **not** create GitHub Actions workflows that download or commit Jigsaw artwork binaries.
+- Acquisition identifiers live in `assets/jigsaw/sources.json`; executable Python should not contain the artwork list.
+- Use `scripts/ingest_jigsaw_images.py` as the canonical ingestion path for supported source records.
+- The script must verify the official Met object record reports `isPublicDomain=true` and exposes a primary image before downloading it.
+- Generated derivatives normalize EXIF orientation, convert embedded ICC color profiles to sRGB when present, preserve aspect ratio without cropping, and write local WebP puzzle/preview/thumbnail files plus `provenance.json` hashes and source metadata.
+- Treat an existing `imageId` as a stable logical artwork. Conservative re-encoding/resizing may keep the same ID; changing the artwork or materially changing its composition/crop requires a new ID.
+- Ingestion is create-only by default, not an upsert. Existing asset directories cause the script to stop unless `--overwrite` is explicitly supplied.
+
+To add a bundled image, first add its stable `assetId`, provider, and official source identifier to `assets/jigsaw/sources.json`. Then run the script for that explicit asset id:
+
+```sh
+# Start on the feature branch that will contain the image addition.
+python -m pip install "Pillow==12.3.0"
+
+# Metadata/public-domain preflight only; no image bytes are downloaded.
+python scripts/ingest_jigsaw_images.py new-asset-id --verify-only
+
+# Download and generate only that asset locally.
+python scripts/ingest_jigsaw_images.py new-asset-id
+
+# Review all generated files before staging them.
+git status
+git diff -- assets/jigsaw
+
+# After catalog wiring/tests are updated, run the full project validation.
+pnpm build
+```
+
+Use `python scripts/ingest_jigsaw_images.py --all --verify-only` to revalidate every configured source record without touching image bytes. Use `--overwrite` only for an intentional regeneration after reviewing the stable-identity implications; the script replaces generated directories rather than merging individual files.
+
 ## Product direction
 
 The branch now targets a catalog destination rather than a single puzzle workbench. Future work should add richer per-puzzle renderers, puzzle-specific settings, curated word dictionaries, Nonogram clue derivation, Sudoku uniqueness checks, Solitaire move validation, Peg Solitaire solver hints, and eventually deployment configuration for the chosen `puzzles.*` host.

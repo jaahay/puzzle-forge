@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "canal-in-venice",
+  "assetRevision": 1,
+  "work": {
+    "title": "A Canal in Venice",
+    "creator": "Martín Rico y Ortega",
+    "date": "1879",
+    "medium": "Oil on canvas",
+    "dimensions": "19 3/4 x 26 3/4 in. (50.2 x 67.9 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 437460,
+    "accessionNumber": "87.15.57",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/437460",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/437460",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP267029.jpg",
+    "retrievedAt": "2026-08-13T05:15:30.686714+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 2396595,
+    "sha256": "bf928d3c34dd4aa434b86602bd79f234979ff3dc22a725cf1667ff5f314d543d",
+    "width": 1955,
+    "height": 1472
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 437460.",
+    "reviewedAt": "2026-08-13"
+  },
+  "generation": {
+    "pythonVersion": "3.14.2",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; converted to RGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/canal-in-venice/puzzle.webp",
+      "width": 1955,
+      "height": 1472,
+      "byteSize": 708416,
+      "sha256": "530fcd68f2cdf6b72bbbd444867047dddfd18dca19e0af7914755969a219cafa",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/canal-in-venice/preview.webp",
+      "width": 1024,
+      "height": 771,
+      "byteSize": 166642,
+      "sha256": "50dc4afaf0a1fc3f304481f37aed4e631507e6137a24c0ba871031a2535519de",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/canal-in-venice/thumbnail.webp",
+      "width": 384,
+      "height": 289,
+      "byteSize": 23852,
+      "sha256": "1e45f04fe2a32979795fef59ce92a70f22cfdde956887caccbf9df6bb408def1",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

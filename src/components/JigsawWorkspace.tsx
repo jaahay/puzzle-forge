@@ -70,7 +70,11 @@ export const JigsawWorkspace = ({
                 onClick={() => { if (!selected) onSettingsCommit(makeJigsawImageSelectionSettings(asset)); }}
                 key={asset.id}
               >
-                <img src={asset.files.thumbnail} alt="" />
+                <img
+                  src={asset.files.thumbnail}
+                  alt=""
+                  style={{ objectFit: "contain", background: "rgba(2, 6, 23, 0.35)" }}
+                />
                 <span>{asset.title}</span>
               </button>
             );
