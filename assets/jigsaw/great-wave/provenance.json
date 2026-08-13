@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "assetId": "great-wave",
+  "assetRevision": 1,
+  "work": {
+    "title": "Under the Wave off Kanagawa (Kanagawa oki nami ura), also known as The Great Wave, from the series Thirty-six Views of Mount Fuji (Fugaku sanjūrokkei)",
+    "creator": "Katsushika Hokusai",
+    "date": "ca. 1830–32",
+    "medium": "Woodblock print; ink and color on paper",
+    "dimensions": "10 1/8 x 14 15/16 in. (25.7 x 37.9 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 45434,
+    "accessionNumber": "JP1847",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/45434",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/45434",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/as/original/DP130155.jpg",
+    "retrievedAt": "2026-08-13T02:35:57.966035+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 2342637,
+    "sha256": "cbb9988f2f18b9180a1cc0cf5dbb0e3bbf8f2e85d17930cf6ca9ab36fac36303",
+    "width": 3859,
+    "height": 2594
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 45434.",
+    "reviewedAt": "2026-08-13"
+  },
+  "generation": {
+    "pythonVersion": "3.12.13",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "sourceColorConversion": "RGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/great-wave/puzzle.webp",
+      "width": 2048,
+      "height": 1377,
+      "byteSize": 936836,
+      "sha256": "422dd35de99aa37ad6044b1a367ae3fb3851024dd7506d88362065069e502f66",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "RGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/great-wave/preview.webp",
+      "width": 1024,
+      "height": 688,
+      "byteSize": 194942,
+      "sha256": "fafdcffecbf42c227a3cde56b8724de8d468427e1656d107d6f9cb2f74de5afb",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "RGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/great-wave/thumbnail.webp",
+      "width": 384,
+      "height": 258,
+      "byteSize": 27304,
+      "sha256": "692fad7f2ff82d6636c198d3c6235b049046666a00f33aa55125f03e29ef85d3",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "RGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}
