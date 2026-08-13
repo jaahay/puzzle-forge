@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "carrara-marble-quarries",
+  "assetRevision": 1,
+  "work": {
+    "title": "Bringing Down Marble from the Quarries to Carrara",
+    "creator": "John Singer Sargent",
+    "date": "1911",
+    "medium": "Oil on canvas",
+    "dimensions": "28 1/8 x 36 1/8 in. (71.4 x 91.8 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 12052,
+    "accessionNumber": "17.97.1",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/12052",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/12052",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/ad/original/DT5584.jpg",
+    "retrievedAt": "2026-08-13T05:15:30.686714+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 4070605,
+    "sha256": "e582e761158da934017320fc4ca9ad164d683b96b133447e20dacaf105bb8d91",
+    "width": 3783,
+    "height": 2947
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 12052.",
+    "reviewedAt": "2026-08-13"
+  },
+  "generation": {
+    "pythonVersion": "3.14.2",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; converted to RGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/carrara-marble-quarries/puzzle.webp",
+      "width": 2048,
+      "height": 1595,
+      "byteSize": 1285552,
+      "sha256": "e903aeb6f90928cd6f917e65a497db9ee03ad82f61d7f4ab9acc3160c53505cb",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/carrara-marble-quarries/preview.webp",
+      "width": 1024,
+      "height": 798,
+      "byteSize": 250886,
+      "sha256": "209fee89d4d1bea8303888edd887f2a1a6803f61fb11b507b8023b9f433ae579",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/carrara-marble-quarries/thumbnail.webp",
+      "width": 384,
+      "height": 299,
+      "byteSize": 29960,
+      "sha256": "51a8cd4ff326a01733e84163e892f1516a5b80497976547e8c25a1343d59ba18",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

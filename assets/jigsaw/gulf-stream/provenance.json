@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "gulf-stream",
+  "assetRevision": 1,
+  "work": {
+    "title": "The Gulf Stream",
+    "creator": "Winslow Homer",
+    "date": "1899; reworked by 1906",
+    "medium": "Oil on canvas",
+    "dimensions": "28 1/8 x 49 1/8 in. (71.4 x 124.8 cm)\r\nFramed: 42 5/16 x 62 11/16 x 5 7/8 in. (107.5 x 159.3 x 15 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 11122,
+    "accessionNumber": "06.1234",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/11122",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/11122",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/ad/original/DP-20821-001.jpg",
+    "retrievedAt": "2026-08-13T05:15:30.686714+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 3879918,
+    "sha256": "67fd3b2bb4e07f41dc1991c0e538981ba187ab6e3c08722636f6c347f0611b70",
+    "width": 4000,
+    "height": 2468
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 11122.",
+    "reviewedAt": "2026-08-13"
+  },
+  "generation": {
+    "pythonVersion": "3.14.2",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "embedded ICC profile converted to sRGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/gulf-stream/puzzle.webp",
+      "width": 2048,
+      "height": 1264,
+      "byteSize": 621026,
+      "sha256": "6455523136001b9236f7b82768b87f99ef5be1f3e44f3bd594ffc1c8b1f3cfbb",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/gulf-stream/preview.webp",
+      "width": 1024,
+      "height": 632,
+      "byteSize": 106550,
+      "sha256": "0fee4bcf546a5727832e30597491f19b4f8df4103163d7d11f81a49fbe5f169b",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/gulf-stream/thumbnail.webp",
+      "width": 384,
+      "height": 237,
+      "byteSize": 14466,
+      "sha256": "3fe3a54836c6f0f70683dff956ba8a4de61c7def95037ef671ebdc3d5b57ff44",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}
