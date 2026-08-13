@@ -5,6 +5,7 @@ import hashlib
 import io
 import json
 import platform
+import re
 import shutil
 import sys
 import tempfile
@@ -24,29 +25,16 @@ except ImportError as exc:
 
 MET_OBJECT_API = "https://collectionapi.metmuseum.org/public/collection/v1/objects/{object_id}"
 MET_OPEN_ACCESS_POLICY = "https://www.metmuseum.org/hubs/open-access"
+SOURCE_MANIFEST_PATH = Path("assets/jigsaw/sources.json")
+ASSET_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
 @dataclass(frozen=True)
 class Artwork:
     asset_id: str
+    provider: str
     object_id: int
 
-
-# Together with the existing `wheat-field-cypresses` asset, these eleven works
-# bring the bundled Jigsaw library to twelve images.
-ARTWORKS = (
-    Artwork("great-wave", 45434),
-    Artwork("canal-in-venice", 437460),
-    Artwork("gulf-stream", 11122),
-    Artwork("cypresses", 437980),
-    Artwork("roses", 436534),
-    Artwork("view-of-toledo", 436575),
-    Artwork("merced-river-yosemite", 10150),
-    Artwork("canadian-rockies-lake-louise", 10149),
-    Artwork("snowy-gorge", 56683),
-    Artwork("carrara-marble-quarries", 12052),
-    Artwork("self-portrait-dou", 436210),
-)
 
 DERIVATIVES = {
     "puzzle": {"max_dimension": 2048, "quality": 90},
@@ -58,27 +46,93 @@ DERIVATIVES = {
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Manually ingest verified public-domain Met artwork into the bundled "
+            "Manually ingest verified public-domain artwork into the bundled "
             "Puzzle Forge Jigsaw image library."
         )
     )
     parser.add_argument(
-        "--asset",
-        action="append",
-        choices=[artwork.asset_id for artwork in ARTWORKS],
-        help="Ingest only the named configured asset. Repeat to select several.",
+        "asset_ids",
+        nargs="*",
+        metavar="ASSET_ID",
+        help="One or more asset ids declared in assets/jigsaw/sources.json.",
+    )
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Process every artwork declared in assets/jigsaw/sources.json.",
     )
     parser.add_argument(
         "--verify-only",
         action="store_true",
-        help="Validate Met records and print the plan without downloading image bytes.",
+        help="Validate source records and print the plan without downloading image bytes.",
     )
     parser.add_argument(
         "--overwrite",
         action="store_true",
         help="Replace existing generated asset directories. Off by default.",
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.all and args.asset_ids:
+        parser.error("Use either --all or explicit ASSET_ID arguments, not both.")
+    if not args.all and not args.asset_ids:
+        parser.error("Specify one or more ASSET_ID arguments, or use --all.")
+    return args
+
+
+def load_artworks(repo_root: Path) -> tuple[Artwork, ...]:
+    manifest_path = repo_root / SOURCE_MANIFEST_PATH
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise RuntimeError(f"Missing Jigsaw source manifest: {manifest_path}") from exc
+
+    if manifest.get("schemaVersion") != 1:
+        raise RuntimeError(
+            f"Unsupported Jigsaw source manifest schemaVersion: {manifest.get('schemaVersion')!r}"
+        )
+
+    entries = manifest.get("artworks")
+    if not isinstance(entries, list) or not entries:
+        raise RuntimeError("Jigsaw source manifest must contain a non-empty artworks array")
+
+    artworks: list[Artwork] = []
+    seen_ids: set[str] = set()
+    for entry in entries:
+        if not isinstance(entry, dict):
+            raise RuntimeError("Every Jigsaw source manifest entry must be an object")
+
+        asset_id = entry.get("assetId")
+        provider = entry.get("provider")
+        object_id = entry.get("objectId")
+
+        if not isinstance(asset_id, str) or not ASSET_ID_PATTERN.fullmatch(asset_id):
+            raise RuntimeError(f"Invalid Jigsaw assetId in source manifest: {asset_id!r}")
+        if asset_id in seen_ids:
+            raise RuntimeError(f"Duplicate Jigsaw assetId in source manifest: {asset_id}")
+        if provider != "met":
+            raise RuntimeError(f"Unsupported Jigsaw source provider for {asset_id}: {provider!r}")
+        if not isinstance(object_id, int) or object_id <= 0:
+            raise RuntimeError(f"Invalid Met objectId for {asset_id}: {object_id!r}")
+
+        seen_ids.add(asset_id)
+        artworks.append(Artwork(asset_id=asset_id, provider=provider, object_id=object_id))
+
+    return tuple(artworks)
+
+
+def select_artworks(artworks: tuple[Artwork, ...], args: argparse.Namespace) -> list[Artwork]:
+    if args.all:
+        return list(artworks)
+
+    by_id = {artwork.asset_id: artwork for artwork in artworks}
+    unknown = [asset_id for asset_id in args.asset_ids if asset_id not in by_id]
+    if unknown:
+        raise RuntimeError(
+            "Unknown Jigsaw asset id(s): " + ", ".join(unknown) + ". Check assets/jigsaw/sources.json."
+        )
+
+    requested = set(args.asset_ids)
+    return [artwork for artwork in artworks if artwork.asset_id in requested]
 
 
 def fetch_json(url: str) -> dict:
@@ -94,6 +148,8 @@ def fetch_bytes(url: str) -> tuple[bytes, str]:
 
 
 def validate_record(artwork: Artwork, record: dict) -> None:
+    if artwork.provider != "met":
+        raise RuntimeError(f"Unsupported source provider: {artwork.provider}")
     if record.get("objectID") != artwork.object_id:
         raise RuntimeError(
             f"Met object mismatch for {artwork.asset_id}: expected {artwork.object_id}, "
@@ -111,7 +167,7 @@ def to_srgb(opened: Image.Image) -> tuple[Image.Image, str]:
     icc_bytes = opened.info.get("icc_profile")
     normalized = ImageOps.exif_transpose(opened)
     if not icc_bytes:
-        return normalized.convert("RGB"), "no embedded ICC profile; converted to RGB"
+        return normalized.convert("RGB"), "no embedded ICC profile; assumed sRGB after RGB conversion"
 
     try:
         source_profile = ImageCms.ImageCmsProfile(io.BytesIO(icc_bytes))
@@ -250,28 +306,33 @@ def publish_asset(repo_root: Path, staging_root: Path, artwork: Artwork, overwri
         shutil.copytree(source, destination)
 
 
-def main() -> int:
-    args = parse_args()
-    if not features.check("webp"):
-        raise RuntimeError("This Pillow build does not include WebP support")
-
-    repo_root = Path(__file__).resolve().parents[1]
-    selected_ids = set(args.asset or [])
-    selected = [
-        artwork for artwork in ARTWORKS if not selected_ids or artwork.asset_id in selected_ids
-    ]
+def ensure_targets_available(repo_root: Path, selected: list[Artwork], overwrite: bool) -> None:
+    if overwrite:
+        return
 
     for artwork in selected:
         for destination in (
             repo_root / "public" / "jigsaw" / artwork.asset_id,
             repo_root / "assets" / "jigsaw" / artwork.asset_id,
         ):
-            if destination.exists() and not args.overwrite:
+            if destination.exists():
                 raise RuntimeError(
                     f"Target already exists: {destination}. Use --overwrite only when intentionally regenerating it."
                 )
 
-    print(f"Validating {len(selected)} Met records...")
+
+def main() -> int:
+    args = parse_args()
+    repo_root = Path(__file__).resolve().parents[1]
+    artworks = load_artworks(repo_root)
+    selected = select_artworks(artworks, args)
+
+    if not args.verify_only:
+        if not features.check("webp"):
+            raise RuntimeError("This Pillow build does not include WebP support")
+        ensure_targets_available(repo_root, selected, args.overwrite)
+
+    print(f"Validating {len(selected)} source records...")
     records: dict[str, dict] = {}
     for artwork in selected:
         api_url = MET_OBJECT_API.format(object_id=artwork.object_id)

@@ -107,22 +107,24 @@ Rules:
 - Original artwork bytes must be downloaded by a developer running the repository script locally on an explicit feature branch.
 - Do **not** fetch, read, transfer, or verify artwork binary bytes through the GitHub connector or other repository API tooling.
 - Do **not** create GitHub Actions workflows that download or commit Jigsaw artwork binaries.
-- Use `scripts/ingest_jigsaw_images.py` as the canonical ingestion path for supported Met Open Access works.
+- Acquisition identifiers live in `assets/jigsaw/sources.json`; executable Python should not contain the artwork list.
+- Use `scripts/ingest_jigsaw_images.py` as the canonical ingestion path for supported source records.
 - The script must verify the official Met object record reports `isPublicDomain=true` and exposes a primary image before downloading it.
 - Generated derivatives normalize EXIF orientation, convert embedded ICC color profiles to sRGB when present, preserve aspect ratio without cropping, and write local WebP puzzle/preview/thumbnail files plus `provenance.json` hashes and source metadata.
 - Treat an existing `imageId` as a stable logical artwork. Conservative re-encoding/resizing may keep the same ID; changing the artwork or materially changing its composition/crop requires a new ID.
+- Ingestion is create-only by default, not an upsert. Existing asset directories cause the script to stop unless `--overwrite` is explicitly supplied.
 
-Manual process:
+To add a bundled image, first add its stable `assetId`, provider, and official source identifier to `assets/jigsaw/sources.json`. Then run the script for that explicit asset id:
 
 ```sh
-# Start on the feature branch that will contain the image additions.
+# Start on the feature branch that will contain the image addition.
 python -m pip install "Pillow==12.3.0"
 
-# Optional metadata-only preflight. This does not download image bytes.
-python scripts/ingest_jigsaw_images.py --verify-only
+# Metadata/public-domain preflight only; no image bytes are downloaded.
+python scripts/ingest_jigsaw_images.py new-asset-id --verify-only
 
-# Download and generate the configured artwork locally.
-python scripts/ingest_jigsaw_images.py
+# Download and generate only that asset locally.
+python scripts/ingest_jigsaw_images.py new-asset-id
 
 # Review all generated files before staging them.
 git status
@@ -132,7 +134,7 @@ git diff -- assets/jigsaw
 pnpm build
 ```
 
-The ingestion script refuses to replace an existing asset directory by default. Use `--overwrite` only for an intentional regeneration after reviewing the stable-identity implications.
+Use `python scripts/ingest_jigsaw_images.py --all --verify-only` to revalidate every configured source record without touching image bytes. Use `--overwrite` only for an intentional regeneration after reviewing the stable-identity implications; the script replaces generated directories rather than merging individual files.
 
 ## Product direction
 
