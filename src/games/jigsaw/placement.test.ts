@@ -89,6 +89,44 @@ describe("Jigsaw free-position layout", () => {
     }
   });
 
+  it("preserves extreme artwork ratios while fitting the board within layout bounds", () => {
+    const portrait = createJigsawStageLayout({
+      stageWidth: 900,
+      imageWidth: 721,
+      imageHeight: 2048,
+      puzzleWidth: 4,
+      puzzleHeight: 4,
+      pieceCount: 16,
+    });
+    const panorama = createJigsawStageLayout({
+      stageWidth: 900,
+      imageWidth: 3200,
+      imageHeight: 800,
+      puzzleWidth: 4,
+      puzzleHeight: 4,
+      pieceCount: 16,
+    });
+    const compactPortrait = createJigsawStageLayout({
+      stageWidth: 390,
+      imageWidth: 721,
+      imageHeight: 2048,
+      puzzleWidth: 4,
+      puzzleHeight: 4,
+      pieceCount: 16,
+    });
+
+    expect(portrait.boardWidth / portrait.boardHeight).toBeCloseTo(721 / 2048);
+    expect(portrait.boardHeight).toBeLessThanOrEqual(540);
+    expect(portrait.boardX).toBeCloseTo((portrait.stageWidth - portrait.boardWidth) / 2);
+
+    expect(panorama.boardWidth / panorama.boardHeight).toBeCloseTo(4);
+    expect(panorama.boardWidth).toBeLessThanOrEqual(900 * 0.56);
+
+    expect(compactPortrait.boardWidth / compactPortrait.boardHeight).toBeCloseTo(721 / 2048);
+    expect(compactPortrait.boardHeight).toBeLessThanOrEqual(390 * 1.1);
+    expect(compactPortrait.boardX).toBeCloseTo((compactPortrait.stageWidth - compactPortrait.boardWidth) / 2);
+  });
+
   it("maps solved pieces to their exact board row and column", () => {
     const layout = createJigsawStageLayout({
       stageWidth: 900,
