@@ -98,6 +98,42 @@ Grid generators return `GridGeneratedPuzzle` previews with cells and optional pu
 
 The UI posts a `PuzzleGenerationRequest` to `src/workers/puzzleWorker.ts` with a request id, puzzle id, seed, width, and height. The worker calls the registry, returns a `PuzzleGenerationResponse`, and includes the same request id so the UI can ignore stale responses.
 
+## Jigsaw artwork ingestion
+
+Bundled Jigsaw images are source-controlled, same-origin assets with explicit provenance. Adding or regenerating artwork is deliberately a **manual local process**.
+
+Rules:
+
+- Original artwork bytes must be downloaded by a developer running the repository script locally on an explicit feature branch.
+- Do **not** fetch, read, transfer, or verify artwork binary bytes through the GitHub connector or other repository API tooling.
+- Do **not** create GitHub Actions workflows that download or commit Jigsaw artwork binaries.
+- Use `scripts/ingest_jigsaw_images.py` as the canonical ingestion path for supported Met Open Access works.
+- The script must verify the official Met object record reports `isPublicDomain=true` and exposes a primary image before downloading it.
+- Generated derivatives normalize EXIF orientation, convert embedded ICC color profiles to sRGB when present, preserve aspect ratio without cropping, and write local WebP puzzle/preview/thumbnail files plus `provenance.json` hashes and source metadata.
+- Treat an existing `imageId` as a stable logical artwork. Conservative re-encoding/resizing may keep the same ID; changing the artwork or materially changing its composition/crop requires a new ID.
+
+Manual process:
+
+```sh
+# Start on the feature branch that will contain the image additions.
+python -m pip install "Pillow==12.3.0"
+
+# Optional metadata-only preflight. This does not download image bytes.
+python scripts/ingest_jigsaw_images.py --verify-only
+
+# Download and generate the configured artwork locally.
+python scripts/ingest_jigsaw_images.py
+
+# Review all generated files before staging them.
+git status
+git diff -- assets/jigsaw
+
+# After catalog wiring/tests are updated, run the full project validation.
+pnpm build
+```
+
+The ingestion script refuses to replace an existing asset directory by default. Use `--overwrite` only for an intentional regeneration after reviewing the stable-identity implications.
+
 ## Product direction
 
 The branch now targets a catalog destination rather than a single puzzle workbench. Future work should add richer per-puzzle renderers, puzzle-specific settings, curated word dictionaries, Nonogram clue derivation, Sudoku uniqueness checks, Solitaire move validation, Peg Solitaire solver hints, and eventually deployment configuration for the chosen `puzzles.*` host.
