@@ -1,0 +1,203 @@
+name: Ingest Jigsaw image library
+
+on:
+  push:
+    branches:
+      - agent/jigsaw-library-content-20260812
+    paths:
+      - .github/workflows/ingest-jigsaw-library.yml
+
+permissions:
+  contents: write
+
+jobs:
+  ingest:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/jigsaw-library-content-20260812
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install image tooling
+        run: python -m pip install --disable-pip-version-check pillow
+
+      - name: Verify source records and build derivatives
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+
+          import hashlib
+          import json
+          import platform
+          import urllib.request
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          import PIL
+          from PIL import Image, ImageOps
+
+          artworks = [
+              {
+                  "object_id": 45434,
+                  "asset_id": "great-wave",
+                  "expected_artist": "Katsushika Hokusai",
+              },
+              {
+                  "object_id": 437460,
+                  "asset_id": "canal-in-venice",
+                  "expected_artist": "Martín Rico y Ortega",
+              },
+              {
+                  "object_id": 11122,
+                  "asset_id": "gulf-stream",
+                  "expected_artist": "Winslow Homer",
+              },
+          ]
+
+          derivative_recipes = {
+              "puzzle": {"maxDimension": 2048, "quality": 90},
+              "preview": {"maxDimension": 1024, "quality": 86},
+              "thumbnail": {"maxDimension": 384, "quality": 82},
+          }
+
+          retrieved_at = datetime.now(timezone.utc)
+          reviewed_at = retrieved_at.date().isoformat()
+
+          for artwork in artworks:
+              object_id = artwork["object_id"]
+              asset_id = artwork["asset_id"]
+              record_url = f"https://collectionapi.metmuseum.org/public/collection/v1/objects/{object_id}"
+
+              with urllib.request.urlopen(record_url, timeout=60) as response:
+                  record = json.load(response)
+
+              expected = {
+                  "objectID": object_id,
+                  "artistDisplayName": artwork["expected_artist"],
+                  "isPublicDomain": True,
+              }
+              for field, value in expected.items():
+                  if record.get(field) != value:
+                      raise RuntimeError(
+                          f"Unexpected Met record field {field} for object {object_id}: {record.get(field)!r}"
+                      )
+
+              source_image_url = record.get("primaryImage")
+              if not source_image_url:
+                  raise RuntimeError(f"Met object {object_id} does not expose a primary image")
+
+              source_dir = Path(".artwork-ingestion") / asset_id
+              public_dir = Path("public/jigsaw") / asset_id
+              provenance_dir = Path("assets/jigsaw") / asset_id
+              source_dir.mkdir(parents=True, exist_ok=True)
+              public_dir.mkdir(parents=True, exist_ok=True)
+              provenance_dir.mkdir(parents=True, exist_ok=True)
+
+              source_path = source_dir / "source-image"
+              with urllib.request.urlopen(source_image_url, timeout=120) as response:
+                  source_bytes = response.read()
+                  source_mime_type = response.headers.get_content_type()
+              source_path.write_bytes(source_bytes)
+
+              source_sha256 = hashlib.sha256(source_bytes).hexdigest()
+
+              with Image.open(source_path) as opened:
+                  image = ImageOps.exif_transpose(opened).convert("RGB")
+                  source_width, source_height = image.size
+                  generated = {}
+
+                  for name, recipe in derivative_recipes.items():
+                      derivative = image.copy()
+                      derivative.thumbnail(
+                          (recipe["maxDimension"], recipe["maxDimension"]),
+                          Image.Resampling.LANCZOS,
+                      )
+                      output_path = public_dir / f"{name}.webp"
+                      derivative.save(
+                          output_path,
+                          format="WEBP",
+                          quality=recipe["quality"],
+                          method=6,
+                      )
+                      output_bytes = output_path.read_bytes()
+                      generated[name] = {
+                          "path": f"/{output_path.as_posix().removeprefix('public/')}",
+                          "width": derivative.width,
+                          "height": derivative.height,
+                          "byteSize": len(output_bytes),
+                          "sha256": hashlib.sha256(output_bytes).hexdigest(),
+                          "recipe": {
+                              "maxDimension": recipe["maxDimension"],
+                              "resizeMode": "contain",
+                              "resampling": "Lanczos",
+                              "crop": "none",
+                              "outputColorMode": "RGB",
+                              "format": "WebP",
+                              "quality": recipe["quality"],
+                              "method": 6,
+                          },
+                      }
+
+              provenance = {
+                  "schemaVersion": 1,
+                  "assetId": asset_id,
+                  "assetRevision": 1,
+                  "work": {
+                      "title": record.get("title"),
+                      "creator": record.get("artistDisplayName"),
+                      "date": record.get("objectDate"),
+                      "medium": record.get("medium"),
+                      "dimensions": record.get("dimensions"),
+                  },
+                  "source": {
+                      "institution": "The Metropolitan Museum of Art",
+                      "objectId": object_id,
+                      "accessionNumber": record.get("accessionNumber"),
+                      "recordUrl": record.get("objectURL"),
+                      "apiRecordUrl": record_url,
+                      "sourceImageUrl": source_image_url,
+                      "retrievedAt": retrieved_at.isoformat(),
+                      "mimeType": source_mime_type,
+                      "byteSize": len(source_bytes),
+                      "sha256": source_sha256,
+                      "width": source_width,
+                      "height": source_height,
+                  },
+                  "rights": {
+                      "isPublicDomain": True,
+                      "policy": "The Met Open Access",
+                      "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+                      "verification": f"The Met object API returned isPublicDomain=true for object {object_id}.",
+                      "reviewedAt": reviewed_at,
+                  },
+                  "generation": {
+                      "pythonVersion": platform.python_version(),
+                      "encoder": "Pillow",
+                      "encoderVersion": PIL.__version__,
+                      "exifOrientation": "normalized",
+                      "sourceColorConversion": "RGB",
+                  },
+                  "derivatives": generated,
+              }
+              (provenance_dir / "provenance.json").write_text(
+                  json.dumps(provenance, indent=2, ensure_ascii=False) + "\n",
+                  encoding="utf-8",
+              )
+          PY
+
+      - name: Commit verified derivatives and provenance
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            public/jigsaw/great-wave assets/jigsaw/great-wave \
+            public/jigsaw/canal-in-venice assets/jigsaw/canal-in-venice \
+            public/jigsaw/gulf-stream assets/jigsaw/gulf-stream
+          git commit -m "Ingest verified Jigsaw library artwork"
+          git push origin HEAD:agent/jigsaw-library-content-20260812
