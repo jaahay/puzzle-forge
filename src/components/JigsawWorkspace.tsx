@@ -1,5 +1,10 @@
 import { useState } from "preact/hooks";
-import type { JigsawImageAsset } from "../catalog/types";
+import type { JigsawImageAsset, PuzzleDifficulty } from "../catalog/types";
+import {
+  getJigsawDifficultyForDimensions,
+  jigsawDifficultyOrder,
+  resolveJigsawDifficultyDimensions,
+} from "../games/jigsaw/difficulty";
 import { jigsawImageAssets } from "../games/jigsaw/imageAssets";
 import { getDailyPuzzleLabel, getDailyPuzzleSeed } from "../games/shared/daily";
 import { TopPuzzleConfiguration } from "./PuzzleConfiguration";
@@ -8,9 +13,16 @@ import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { SeedControl } from "./SeedControl";
 import { TilePuzzlePreview } from "./TilePuzzlePreview";
 
-export const makeJigsawImageSelectionSettings = (asset: JigsawImageAsset) => ({
-  imageId: asset.id,
-});
+export const makeJigsawImageSelectionSettings = (
+  asset: JigsawImageAsset,
+  difficulty?: PuzzleDifficulty,
+) => {
+  const dimensions = difficulty ? resolveJigsawDifficultyDimensions(asset, difficulty) : null;
+  return {
+    imageId: asset.id,
+    ...(dimensions ? { width: dimensions.width, height: dimensions.height } : {}),
+  };
+};
 
 export const JigsawWorkspace = ({
   selectedDefinition, selectedPuzzleIsGeneratable, seed, width, height, puzzle,
@@ -27,27 +39,57 @@ export const JigsawWorkspace = ({
     setResetVersion((current) => current + 1);
   };
   const seedInput = <SeedControl seed={seed} onSeedChange={onSeedChange} onSeedCommit={(nextSeed) => onSettingsCommit({ seed: nextSeed })} />;
+  const selectedDifficulty = puzzle?.kind === "tiles"
+    ? getJigsawDifficultyForDimensions(puzzle.asset, width, height)
+    : null;
 
-  const generation = puzzle ? (
-    <TopPuzzleConfiguration
-      selectedDefinition={selectedDefinition}
-      selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
-      seedInput={seedInput}
-      width={width}
-      height={height}
-      solitaireVariation={solitaireVariation}
-      isFixedSize={isFixedSize}
-      isGenerating={isGenerating}
-      isSolitaire={false}
-      onWidthChange={onWidthChange}
-      onHeightChange={onHeightChange}
-      onSettingsCommit={onSettingsCommit}
-      onSolitaireVariationChange={onSolitaireVariationChange}
-      onToday={generateDailyPuzzle}
-      onUseSeed={onGenerate}
-      onRandomize={onRandomize}
-      onReset={resetJigsaw}
-    />
+  const generation = puzzle?.kind === "tiles" ? (
+    <div class="jigsaw-generation-stack">
+      <div class="jigsaw-difficulty-settings" role="group" aria-label="Jigsaw difficulty">
+        <div class="jigsaw-difficulty-heading">
+          <strong>Difficulty</strong>
+          <span>{selectedDifficulty ?? "Custom"} · {width} x {height}</span>
+        </div>
+        <div class="jigsaw-difficulty-options">
+          {jigsawDifficultyOrder.map((difficulty) => {
+            const dimensions = resolveJigsawDifficultyDimensions(puzzle.asset, difficulty);
+            return (
+              <button
+                type="button"
+                class="jigsaw-difficulty-option"
+                aria-pressed={selectedDifficulty === difficulty}
+                disabled={isGenerating}
+                onClick={() => onSettingsCommit({ width: dimensions.width, height: dimensions.height })}
+                key={difficulty}
+              >
+                <strong>{difficulty}</strong>
+                <span>{dimensions.width} x {dimensions.height} · {dimensions.pieceCount}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <TopPuzzleConfiguration
+        selectedDefinition={selectedDefinition}
+        selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
+        seedInput={seedInput}
+        width={width}
+        height={height}
+        solitaireVariation={solitaireVariation}
+        isFixedSize={isFixedSize}
+        isGenerating={isGenerating}
+        isSolitaire={false}
+        onWidthChange={onWidthChange}
+        onHeightChange={onHeightChange}
+        onSettingsCommit={onSettingsCommit}
+        onSolitaireVariationChange={onSolitaireVariationChange}
+        onToday={generateDailyPuzzle}
+        onUseSeed={onGenerate}
+        onRandomize={onRandomize}
+        onReset={resetJigsaw}
+      />
+    </div>
   ) : null;
 
   const loadingBoard = <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label="Jigsaw is generating"><div class="puzzle-loading-copy"><strong>Generating Jigsaw</strong><span>{statusMessage}</span></div><div class="puzzle-loading-grid" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <span key={index} />)}</div></section>;
@@ -67,7 +109,11 @@ export const JigsawWorkspace = ({
                 type="button"
                 aria-pressed={selected}
                 disabled={isGenerating}
-                onClick={() => { if (!selected) onSettingsCommit(makeJigsawImageSelectionSettings(asset)); }}
+                onClick={() => {
+                  if (!selected) {
+                    onSettingsCommit(makeJigsawImageSelectionSettings(asset, selectedDifficulty ?? undefined));
+                  }
+                }}
                 key={asset.id}
               >
                 <img
