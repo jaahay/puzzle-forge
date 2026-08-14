@@ -77,6 +77,20 @@ describe("generateJigsaw", () => {
     expect(sortedTiles.every((tile) => tile.edges.length === 4)).toBe(true);
   });
 
+  it("clamps custom dimensions to the 32 by 32 technical ceiling", () => {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "technical-ceiling",
+      width: 40,
+      height: 33,
+      imageId: defaultJigsawImageAsset.id,
+    });
+
+    expect(puzzle.width).toBe(32);
+    expect(puzzle.height).toBe(32);
+    expect(puzzle.tiles).toHaveLength(1024);
+  });
+
   it("provides a complete, explicitly ordered edge profile repository", () => {
     expect(jigsawEdgeProfileIds).toEqual([
       "classic-round",

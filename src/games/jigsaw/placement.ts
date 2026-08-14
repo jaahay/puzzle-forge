@@ -1,18 +1,15 @@
 import type { JigsawPiece } from "../../catalog/types";
 
-export type JigsawLayoutMode = "scatter" | "tray";
-
 export type JigsawPlacement = {
   id: string;
-  x: number;
-  y: number;
+  worldX: number;
+  worldY: number;
   snapped: boolean;
 };
 
-export type JigsawStageLayout = {
-  mode: JigsawLayoutMode;
-  stageWidth: number;
-  stageHeight: number;
+export type JigsawWorldLayout = {
+  worldWidth: number;
+  worldHeight: number;
   boardX: number;
   boardY: number;
   boardWidth: number;
@@ -21,30 +18,46 @@ export type JigsawStageLayout = {
   pieceHeight: number;
 };
 
-type JigsawStageLayoutInput = {
-  stageWidth: number;
+export type JigsawViewport = {
+  width: number;
+  height: number;
+};
+
+export type JigsawCamera = {
+  centerX: number;
+  centerY: number;
+  zoom: number;
+};
+
+export type JigsawFitTarget = "workspace" | "board";
+
+type JigsawWorldLayoutInput = {
   imageWidth: number;
   imageHeight: number;
   puzzleWidth: number;
   puzzleHeight: number;
-  pieceCount: number;
 };
 
-type PixelPosition = {
+type WorldPosition = {
   left: number;
   top: number;
 };
 
-const compactBreakpoint = 680;
-const stagePadding = 12;
+type WorldPoint = {
+  x: number;
+  y: number;
+};
+
+const basePieceSize = 96;
+const worldPadding = 48;
+const worldScale = 1.55;
+const minimumStagingPiecesPerAxis = 5;
+
+export const jigsawCameraMinimumZoom = 0.05;
+export const jigsawCameraMaximumZoom = 4;
 
 const clamp = (value: number, minimum: number, maximum: number) =>
   Math.min(maximum, Math.max(minimum, value));
-
-const fitAspectRatio = (imageRatio: number, maxWidth: number, maxHeight: number) => {
-  const width = Math.min(maxWidth, maxHeight * imageRatio);
-  return { width, height: width / imageRatio };
-};
 
 const mixSlotIndex = (value: number) => {
   let mixed = Math.imul(value ^ 0x9e37_79b9, 0x85eb_ca6b);
@@ -69,67 +82,34 @@ const rectanglesOverlap = (
   top < boardTop + boardHeight + gap &&
   top + height > boardTop - gap;
 
-export const createJigsawStageLayout = ({
-  stageWidth,
+export const createJigsawWorldLayout = ({
   imageWidth,
   imageHeight,
   puzzleWidth,
   puzzleHeight,
-  pieceCount,
-}: JigsawStageLayoutInput): JigsawStageLayout => {
-  const safeStageWidth = Math.max(280, stageWidth);
+}: JigsawWorldLayoutInput): JigsawWorldLayout => {
+  const safePuzzleWidth = Math.max(1, puzzleWidth);
+  const safePuzzleHeight = Math.max(1, puzzleHeight);
   const imageRatio = Math.max(0.01, imageWidth / Math.max(1, imageHeight));
-  const mode: JigsawLayoutMode = safeStageWidth < compactBreakpoint ? "tray" : "scatter";
-
-  if (mode === "tray") {
-    const maximumBoardWidth = safeStageWidth - stagePadding * 2;
-    const maximumBoardHeight = Math.min(520, safeStageWidth * 1.1);
-    const { width: boardWidth, height: boardHeight } = fitAspectRatio(
-      imageRatio,
-      maximumBoardWidth,
-      maximumBoardHeight,
-    );
-    const pieceWidth = boardWidth / puzzleWidth;
-    const pieceHeight = boardHeight / puzzleHeight;
-    const stepX = Math.max(24, pieceWidth * 0.8);
-    const stepY = Math.max(20, pieceHeight * 0.76);
-    const availableWidth = safeStageWidth - stagePadding * 2;
-    const columns = Math.max(2, Math.floor((availableWidth - pieceWidth) / stepX) + 1);
-    const rows = Math.max(1, Math.ceil(pieceCount / columns));
-    const trayTop = stagePadding + boardHeight + Math.max(32, pieceHeight * 0.55);
-    const trayHeight = pieceHeight + (rows - 1) * stepY;
-
-    return {
-      mode,
-      stageWidth: safeStageWidth,
-      stageHeight: trayTop + trayHeight + stagePadding,
-      boardX: (safeStageWidth - boardWidth) / 2,
-      boardY: stagePadding,
-      boardWidth,
-      boardHeight,
-      pieceWidth,
-      pieceHeight,
-    };
-  }
-
-  const maximumBoardWidth = Math.min(safeStageWidth * 0.56, 640);
-  const maximumBoardHeight = Math.min(540, safeStageWidth * 0.62);
-  const { width: boardWidth, height: boardHeight } = fitAspectRatio(
-    imageRatio,
-    maximumBoardWidth,
-    maximumBoardHeight,
-  );
-  const pieceWidth = boardWidth / puzzleWidth;
-  const pieceHeight = boardHeight / puzzleHeight;
-  const verticalMargin = Math.max(84, pieceHeight * 1.3);
-  const stageHeight = Math.max(520, boardHeight + verticalMargin * 2);
+  const pieceAspectRatio = Math.max(0.01, imageRatio * safePuzzleHeight / safePuzzleWidth);
+  const pieceWidth = basePieceSize * Math.sqrt(pieceAspectRatio);
+  const pieceHeight = basePieceSize / Math.sqrt(pieceAspectRatio);
+  const boardWidth = pieceWidth * safePuzzleWidth;
+  const boardHeight = pieceHeight * safePuzzleHeight;
+  const worldWidth = Math.max(
+    boardWidth * worldScale,
+    boardWidth + pieceWidth * minimumStagingPiecesPerAxis,
+  ) + worldPadding * 2;
+  const worldHeight = Math.max(
+    boardHeight * worldScale,
+    boardHeight + pieceHeight * minimumStagingPiecesPerAxis,
+  ) + worldPadding * 2;
 
   return {
-    mode,
-    stageWidth: safeStageWidth,
-    stageHeight,
-    boardX: (safeStageWidth - boardWidth) / 2,
-    boardY: (stageHeight - boardHeight) / 2,
+    worldWidth,
+    worldHeight,
+    boardX: (worldWidth - boardWidth) / 2,
+    boardY: (worldHeight - boardHeight) / 2,
     boardWidth,
     boardHeight,
     pieceWidth,
@@ -137,16 +117,16 @@ export const createJigsawStageLayout = ({
   };
 };
 
-const createScatterSlots = (layout: JigsawStageLayout): PixelPosition[] => {
-  const stepX = Math.max(28, layout.pieceWidth * 0.78);
-  const stepY = Math.max(24, layout.pieceHeight * 0.78);
-  const slots: PixelPosition[] = [];
-  const maximumLeft = layout.stageWidth - layout.pieceWidth - stagePadding;
-  const maximumTop = layout.stageHeight - layout.pieceHeight - stagePadding;
-  const boardGap = Math.max(8, Math.min(layout.pieceWidth, layout.pieceHeight) * 0.12);
+const createScatterSlots = (layout: JigsawWorldLayout): WorldPosition[] => {
+  const stepX = Math.max(18, layout.pieceWidth * 0.82);
+  const stepY = Math.max(18, layout.pieceHeight * 0.82);
+  const slots: WorldPosition[] = [];
+  const maximumLeft = layout.worldWidth - layout.pieceWidth - worldPadding;
+  const maximumTop = layout.worldHeight - layout.pieceHeight - worldPadding;
+  const boardGap = Math.max(10, Math.min(layout.pieceWidth, layout.pieceHeight) * 0.14);
 
-  for (let top = stagePadding; top <= maximumTop + 0.5; top += stepY) {
-    for (let left = stagePadding; left <= maximumLeft + 0.5; left += stepX) {
+  for (let top = worldPadding; top <= maximumTop + 0.5; top += stepY) {
+    for (let left = worldPadding; left <= maximumLeft + 0.5; left += stepX) {
       if (
         rectanglesOverlap(
           left,
@@ -173,71 +153,54 @@ const createScatterSlots = (layout: JigsawStageLayout): PixelPosition[] => {
     .map(({ slot }) => slot);
 };
 
-const createTraySlots = (layout: JigsawStageLayout, pieceCount: number): PixelPosition[] => {
-  const stepX = Math.max(24, layout.pieceWidth * 0.8);
-  const stepY = Math.max(20, layout.pieceHeight * 0.76);
-  const availableWidth = layout.stageWidth - stagePadding * 2;
-  const columns = Math.max(2, Math.floor((availableWidth - layout.pieceWidth) / stepX) + 1);
-  const trayTop = layout.boardY + layout.boardHeight + Math.max(32, layout.pieceHeight * 0.55);
-
-  return Array.from({ length: pieceCount }, (_, index) => ({
-    left: stagePadding + (index % columns) * stepX,
-    top: trayTop + Math.floor(index / columns) * stepY,
-  }));
-};
-
-export const normalizeJigsawPosition = (
-  layout: JigsawStageLayout,
+export const normalizeJigsawWorldPosition = (
+  layout: JigsawWorldLayout,
   left: number,
   top: number,
-): Pick<JigsawPlacement, "x" | "y"> => {
-  const maximumLeft = Math.max(0, layout.stageWidth - layout.pieceWidth);
-  const maximumTop = Math.max(0, layout.stageHeight - layout.pieceHeight);
-  return {
-    x: clamp(left, 0, maximumLeft) / layout.stageWidth,
-    y: clamp(top, 0, maximumTop) / layout.stageHeight,
-  };
-};
+): Pick<JigsawPlacement, "worldX" | "worldY"> => ({
+  worldX: clamp(left, 0, Math.max(0, layout.worldWidth - layout.pieceWidth)),
+  worldY: clamp(top, 0, Math.max(0, layout.worldHeight - layout.pieceHeight)),
+});
 
 export const getJigsawSolvedPosition = (
-  layout: JigsawStageLayout,
+  layout: JigsawWorldLayout,
   piece: Pick<JigsawPiece, "row" | "column">,
-): PixelPosition => ({
+): WorldPosition => ({
   left: layout.boardX + piece.column * layout.pieceWidth,
   top: layout.boardY + piece.row * layout.pieceHeight,
 });
 
 export const getJigsawPlacementPosition = (
-  layout: JigsawStageLayout,
+  layout: JigsawWorldLayout,
   piece: Pick<JigsawPiece, "row" | "column">,
   placement: JigsawPlacement,
-): PixelPosition =>
+): WorldPosition =>
   placement.snapped
     ? getJigsawSolvedPosition(layout, piece)
     : {
-        left: clamp(placement.x * layout.stageWidth, 0, Math.max(0, layout.stageWidth - layout.pieceWidth)),
-        top: clamp(placement.y * layout.stageHeight, 0, Math.max(0, layout.stageHeight - layout.pieceHeight)),
+        left: clamp(placement.worldX, 0, Math.max(0, layout.worldWidth - layout.pieceWidth)),
+        top: clamp(placement.worldY, 0, Math.max(0, layout.worldHeight - layout.pieceHeight)),
       };
 
 export const createInitialJigsawPlacements = (
-  layout: JigsawStageLayout,
+  layout: JigsawWorldLayout,
   pieces: readonly JigsawPiece[],
 ): JigsawPlacement[] => {
   const orderedPieces = [...pieces].sort((left, right) => left.currentIndex - right.currentIndex);
-  const slots = layout.mode === "tray" ? createTraySlots(layout, orderedPieces.length) : createScatterSlots(layout);
-  const fallbackSlots = slots.length > 0 ? slots : [{ left: stagePadding, top: stagePadding }];
+  const slots = createScatterSlots(layout);
+  const fallbackSlots = slots.length > 0 ? slots : [{ left: worldPadding, top: worldPadding }];
 
   return orderedPieces.map((piece, index) => {
     const slot = fallbackSlots[index % fallbackSlots.length];
     const repeatedLayer = Math.floor(index / fallbackSlots.length);
     const offset = repeatedLayer * 6;
-    const normalized = normalizeJigsawPosition(layout, slot.left + offset, slot.top + offset);
-    return { id: piece.id, ...normalized, snapped: false };
+    const position = normalizeJigsawWorldPosition(layout, slot.left + offset, slot.top + offset);
+    return { id: piece.id, ...position, snapped: false };
   });
 };
 
 export const restageLooseJigsawPlacements = (
-  layout: JigsawStageLayout,
+  layout: JigsawWorldLayout,
   pieces: readonly JigsawPiece[],
   placements: readonly JigsawPlacement[],
 ): JigsawPlacement[] => {
@@ -249,14 +212,112 @@ export const restageLooseJigsawPlacements = (
 };
 
 export const shouldSnapJigsawPlacement = (
-  layout: JigsawStageLayout,
+  layout: JigsawWorldLayout,
   piece: Pick<JigsawPiece, "row" | "column">,
-  placement: Pick<JigsawPlacement, "x" | "y">,
+  placement: Pick<JigsawPlacement, "worldX" | "worldY">,
 ) => {
   const target = getJigsawSolvedPosition(layout, piece);
-  const currentLeft = placement.x * layout.stageWidth;
-  const currentTop = placement.y * layout.stageHeight;
-  const distance = Math.hypot(currentLeft - target.left, currentTop - target.top);
+  const distance = Math.hypot(placement.worldX - target.left, placement.worldY - target.top);
   const threshold = Math.max(18, Math.min(layout.pieceWidth, layout.pieceHeight) * 0.42);
   return distance <= threshold;
+};
+
+const clampCameraAxis = (center: number, worldSize: number, visibleSize: number) => {
+  const halfVisible = visibleSize / 2;
+  const overscroll = Math.min(worldSize * 0.12, visibleSize * 0.2);
+  const minimumCenter = halfVisible - overscroll;
+  const maximumCenter = worldSize - halfVisible + overscroll;
+  if (minimumCenter > maximumCenter) return worldSize / 2;
+  return clamp(center, minimumCenter, maximumCenter);
+};
+
+export const clampJigsawCamera = (
+  layout: JigsawWorldLayout,
+  viewport: JigsawViewport,
+  camera: JigsawCamera,
+): JigsawCamera => {
+  const zoom = clamp(camera.zoom, jigsawCameraMinimumZoom, jigsawCameraMaximumZoom);
+  const safeViewportWidth = Math.max(1, viewport.width);
+  const safeViewportHeight = Math.max(1, viewport.height);
+
+  return {
+    centerX: clampCameraAxis(camera.centerX, layout.worldWidth, safeViewportWidth / zoom),
+    centerY: clampCameraAxis(camera.centerY, layout.worldHeight, safeViewportHeight / zoom),
+    zoom,
+  };
+};
+
+export const createJigsawFitCamera = (
+  layout: JigsawWorldLayout,
+  viewport: JigsawViewport,
+  target: JigsawFitTarget = "workspace",
+  padding = 32,
+): JigsawCamera => {
+  const safeViewportWidth = Math.max(1, viewport.width - padding * 2);
+  const safeViewportHeight = Math.max(1, viewport.height - padding * 2);
+  const targetX = target === "board" ? layout.boardX : 0;
+  const targetY = target === "board" ? layout.boardY : 0;
+  const targetWidth = target === "board" ? layout.boardWidth : layout.worldWidth;
+  const targetHeight = target === "board" ? layout.boardHeight : layout.worldHeight;
+  const zoom = clamp(
+    Math.min(safeViewportWidth / targetWidth, safeViewportHeight / targetHeight),
+    jigsawCameraMinimumZoom,
+    jigsawCameraMaximumZoom,
+  );
+
+  return clampJigsawCamera(layout, viewport, {
+    centerX: targetX + targetWidth / 2,
+    centerY: targetY + targetHeight / 2,
+    zoom,
+  });
+};
+
+export const screenToJigsawWorld = (
+  camera: JigsawCamera,
+  viewport: JigsawViewport,
+  screenX: number,
+  screenY: number,
+): WorldPoint => ({
+  x: camera.centerX + (screenX - viewport.width / 2) / camera.zoom,
+  y: camera.centerY + (screenY - viewport.height / 2) / camera.zoom,
+});
+
+export const getJigsawCameraTransform = (
+  camera: JigsawCamera,
+  viewport: JigsawViewport,
+) => ({
+  translateX: viewport.width / 2 - camera.centerX * camera.zoom,
+  translateY: viewport.height / 2 - camera.centerY * camera.zoom,
+  scale: camera.zoom,
+});
+
+export const panJigsawCamera = (
+  layout: JigsawWorldLayout,
+  viewport: JigsawViewport,
+  camera: JigsawCamera,
+  deltaScreenX: number,
+  deltaScreenY: number,
+): JigsawCamera =>
+  clampJigsawCamera(layout, viewport, {
+    ...camera,
+    centerX: camera.centerX + deltaScreenX / camera.zoom,
+    centerY: camera.centerY + deltaScreenY / camera.zoom,
+  });
+
+export const zoomJigsawCameraAtPoint = (
+  layout: JigsawWorldLayout,
+  viewport: JigsawViewport,
+  camera: JigsawCamera,
+  nextZoom: number,
+  screenX: number,
+  screenY: number,
+): JigsawCamera => {
+  const worldPoint = screenToJigsawWorld(camera, viewport, screenX, screenY);
+  const zoom = clamp(nextZoom, jigsawCameraMinimumZoom, jigsawCameraMaximumZoom);
+
+  return clampJigsawCamera(layout, viewport, {
+    centerX: worldPoint.x - (screenX - viewport.width / 2) / zoom,
+    centerY: worldPoint.y - (screenY - viewport.height / 2) / zoom,
+    zoom,
+  });
 };

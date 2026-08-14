@@ -1,11 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { defaultJigsawImageAsset, jigsawImageAssets } from "../games/jigsaw/imageAssets";
-import { makeJigsawImageSelectionSettings } from "./JigsawWorkspace";
+import { jigsawCustomPreset, makeJigsawImageSelectionSettings } from "./JigsawWorkspace";
 
 describe("Jigsaw image library", () => {
-  it("converts a catalog asset into image selection settings", () => {
-    expect(makeJigsawImageSelectionSettings(defaultJigsawImageAsset)).toEqual({
+  it("preserves explicit custom dimensions across image changes", () => {
+    expect(makeJigsawImageSelectionSettings(defaultJigsawImageAsset, jigsawCustomPreset)).toEqual({
       imageId: defaultJigsawImageAsset.id,
+    });
+  });
+
+  it("carries an active difficulty across image changes with aspect-aware dimensions", () => {
+    const portrait = jigsawImageAssets.find((asset) => asset.id === "snowy-gorge");
+    expect(portrait).toBeDefined();
+
+    expect(makeJigsawImageSelectionSettings(portrait!, "Expert")).toEqual({
+      imageId: "snowy-gorge",
+      width: 6,
+      height: 17,
     });
   });
 
