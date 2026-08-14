@@ -13,14 +13,22 @@ import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { SeedControl } from "./SeedControl";
 import { TilePuzzlePreview } from "./TilePuzzlePreview";
 
+export const jigsawCustomPreset = "Custom" as const;
+export type JigsawPresetSelection = PuzzleDifficulty | typeof jigsawCustomPreset;
+
 export const makeJigsawImageSelectionSettings = (
   asset: JigsawImageAsset,
-  difficulty?: PuzzleDifficulty,
+  preset: JigsawPresetSelection,
 ) => {
-  const dimensions = difficulty ? resolveJigsawDifficultyDimensions(asset, difficulty) : null;
+  if (preset === jigsawCustomPreset) {
+    return { imageId: asset.id };
+  }
+
+  const dimensions = resolveJigsawDifficultyDimensions(asset, preset);
   return {
     imageId: asset.id,
-    ...(dimensions ? { width: dimensions.width, height: dimensions.height } : {}),
+    width: dimensions.width,
+    height: dimensions.height,
   };
 };
 
@@ -31,6 +39,10 @@ export const JigsawWorkspace = ({
   onSolitaireVariationChange,
 }: PuzzleWorkspaceProps) => {
   const [resetVersion, setResetVersion] = useState(0);
+  const initialPreset: JigsawPresetSelection = puzzle?.kind === "tiles"
+    ? getJigsawDifficultyForDimensions(puzzle.asset, width, height) ?? jigsawCustomPreset
+    : jigsawCustomPreset;
+  const [selectedPreset, setSelectedPreset] = useState<JigsawPresetSelection>(initialPreset);
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
   const dailyLabel = puzzle ? getDailyPuzzleLabel(puzzle.puzzleId, puzzle.seed) : null;
   const generateDailyPuzzle = () => onSettingsCommit({ seed: getDailyPuzzleSeed("jigsaw"), width, height });
@@ -38,17 +50,26 @@ export const JigsawWorkspace = ({
     onReset();
     setResetVersion((current) => current + 1);
   };
+  const selectCustomWidth = (nextWidth: number) => {
+    setSelectedPreset(jigsawCustomPreset);
+    onWidthChange(nextWidth);
+  };
+  const selectCustomHeight = (nextHeight: number) => {
+    setSelectedPreset(jigsawCustomPreset);
+    onHeightChange(nextHeight);
+  };
+  const commitCustomDimensions = (settings?: { width?: number; height?: number }) => {
+    setSelectedPreset(jigsawCustomPreset);
+    onSettingsCommit(settings);
+  };
   const seedInput = <SeedControl seed={seed} onSeedChange={onSeedChange} onSeedCommit={(nextSeed) => onSettingsCommit({ seed: nextSeed })} />;
-  const selectedDifficulty = puzzle?.kind === "tiles"
-    ? getJigsawDifficultyForDimensions(puzzle.asset, width, height)
-    : null;
 
   const generation = puzzle?.kind === "tiles" ? (
     <div class="jigsaw-generation-stack">
       <div class="jigsaw-difficulty-settings" role="group" aria-label="Jigsaw difficulty">
         <div class="jigsaw-difficulty-heading">
           <strong>Difficulty</strong>
-          <span>{selectedDifficulty ?? "Custom"} · {width} x {height}</span>
+          <span>{selectedPreset} · {width} x {height}</span>
         </div>
         <div class="jigsaw-difficulty-options">
           {jigsawDifficultyOrder.map((difficulty) => {
@@ -57,9 +78,12 @@ export const JigsawWorkspace = ({
               <button
                 type="button"
                 class="jigsaw-difficulty-option"
-                aria-pressed={selectedDifficulty === difficulty}
+                aria-pressed={selectedPreset === difficulty}
                 disabled={isGenerating}
-                onClick={() => onSettingsCommit({ width: dimensions.width, height: dimensions.height })}
+                onClick={() => {
+                  setSelectedPreset(difficulty);
+                  onSettingsCommit({ width: dimensions.width, height: dimensions.height });
+                }}
                 key={difficulty}
               >
                 <strong>{difficulty}</strong>
@@ -80,9 +104,9 @@ export const JigsawWorkspace = ({
         isFixedSize={isFixedSize}
         isGenerating={isGenerating}
         isSolitaire={false}
-        onWidthChange={onWidthChange}
-        onHeightChange={onHeightChange}
-        onSettingsCommit={onSettingsCommit}
+        onWidthChange={selectCustomWidth}
+        onHeightChange={selectCustomHeight}
+        onSettingsCommit={commitCustomDimensions}
         onSolitaireVariationChange={onSolitaireVariationChange}
         onToday={generateDailyPuzzle}
         onUseSeed={onGenerate}
@@ -111,7 +135,7 @@ export const JigsawWorkspace = ({
                 disabled={isGenerating}
                 onClick={() => {
                   if (!selected) {
-                    onSettingsCommit(makeJigsawImageSelectionSettings(asset, selectedDifficulty ?? undefined));
+                    onSettingsCommit(makeJigsawImageSelectionSettings(asset, selectedPreset));
                   }
                 }}
                 key={asset.id}

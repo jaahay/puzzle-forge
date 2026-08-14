@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { defaultJigsawImageAsset, jigsawImageAssets } from "../games/jigsaw/imageAssets";
-import { makeJigsawImageSelectionSettings } from "./JigsawWorkspace";
+import { jigsawCustomPreset, makeJigsawImageSelectionSettings } from "./JigsawWorkspace";
 
 describe("Jigsaw image library", () => {
-  it("converts a catalog asset into image selection settings", () => {
-    expect(makeJigsawImageSelectionSettings(defaultJigsawImageAsset)).toEqual({
+  it("preserves explicit custom dimensions across image changes", () => {
+    expect(makeJigsawImageSelectionSettings(defaultJigsawImageAsset, jigsawCustomPreset)).toEqual({
       imageId: defaultJigsawImageAsset.id,
     });
   });
