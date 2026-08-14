@@ -6,6 +6,7 @@ import type {
   TilePuzzleGenerator,
 } from "../../catalog/types";
 import { createGeneratedJigsawPuzzle, createRandom, normalizeDimension, normalizeSeed } from "../shared";
+import { jigsawMaximumAxis, jigsawMinimumAxis } from "./difficulty";
 import { jigsawEdgeProfileCatalogRevision, jigsawEdgeProfileIds } from "./edgeProfiles";
 import { getJigsawImageAsset } from "./imageAssets";
 
@@ -107,8 +108,8 @@ const makePieceEdges = ({
 
 export const generateJigsaw: TilePuzzleGenerator = ({ seed, width, height, imageId }) => {
   const normalizedSeed = normalizeSeed(seed);
-  const boundedWidth = normalizeDimension(width, 4, 2, 8);
-  const boundedHeight = normalizeDimension(height, 4, 2, 8);
+  const boundedWidth = normalizeDimension(width, 4, jigsawMinimumAxis, jigsawMaximumAxis);
+  const boundedHeight = normalizeDimension(height, 4, jigsawMinimumAxis, jigsawMaximumAxis);
   const asset = getJigsawImageAsset(imageId);
   const imageIdentity = asset.id;
   const edgeIdentity = `edges@${jigsawEdgeProfileCatalogRevision}`;
