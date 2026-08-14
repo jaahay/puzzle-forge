@@ -9,6 +9,17 @@ describe("Jigsaw image library", () => {
     });
   });
 
+  it("carries an active difficulty across image changes with aspect-aware dimensions", () => {
+    const portrait = jigsawImageAssets.find((asset) => asset.id === "snowy-gorge");
+    expect(portrait).toBeDefined();
+
+    expect(makeJigsawImageSelectionSettings(portrait!, "Expert")).toEqual({
+      imageId: "snowy-gorge",
+      width: 6,
+      height: 17,
+    });
+  });
+
   it("exposes the twelve bundled images with unique ids and same-origin derivatives", () => {
     const imageIds = jigsawImageAssets.map((asset) => asset.id);
 
