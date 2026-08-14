@@ -2,10 +2,12 @@
   display: grid;
   gap: 1rem;
   justify-items: center;
+  width: 100%;
 }
 
 .tile-puzzle-summary,
-.tile-puzzle-tools {
+.tile-puzzle-tools,
+.jigsaw-camera-tools {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -24,7 +26,8 @@
   text-transform: uppercase;
 }
 
-.tile-puzzle-tools button {
+.tile-puzzle-tools button,
+.jigsaw-camera-tools button {
   border-radius: 999px;
   padding: 0.6rem 1rem;
   color: #0f172a;
@@ -43,6 +46,31 @@
   background: #bfdbfe;
 }
 
+.jigsaw-camera-tools {
+  align-items: center;
+}
+
+.jigsaw-camera-tools button {
+  min-width: 2.6rem;
+  padding: 0.48rem 0.78rem;
+  color: #dbeafe;
+  background: rgba(30, 64, 175, 0.52);
+  border: 1px solid rgba(147, 197, 253, 0.28);
+}
+
+.jigsaw-camera-tools button:hover,
+.jigsaw-camera-tools button:focus-visible {
+  background: rgba(37, 99, 235, 0.62);
+}
+
+.jigsaw-camera-tools span {
+  min-width: 4rem;
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-align: center;
+}
+
 .tile-puzzle-art-preview {
   width: min(100%, 24rem);
   aspect-ratio: 1;
@@ -56,6 +84,84 @@
 
 .jigsaw-puzzle-panel {
   overflow: visible;
+}
+
+.jigsaw-generation-stack {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.jigsaw-difficulty-settings {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.jigsaw-difficulty-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #e2e8f0;
+}
+
+.jigsaw-difficulty-heading strong {
+  font-size: 0.9rem;
+}
+
+.jigsaw-difficulty-heading span {
+  color: #94a3b8;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+.jigsaw-difficulty-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.jigsaw-difficulty-option {
+  display: grid;
+  gap: 0.16rem;
+  min-width: 0;
+  padding: 0.58rem 0.7rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 0.7rem;
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, 0.68);
+  cursor: pointer;
+  text-align: left;
+}
+
+.jigsaw-difficulty-option:hover,
+.jigsaw-difficulty-option:focus-visible {
+  border-color: rgba(125, 211, 252, 0.72);
+}
+
+.jigsaw-difficulty-option[aria-pressed="true"] {
+  border-color: rgba(167, 243, 208, 0.72);
+  background: rgba(6, 78, 59, 0.26);
+  color: #d1fae5;
+}
+
+.jigsaw-difficulty-option:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.jigsaw-difficulty-option strong {
+  font-size: 0.82rem;
+}
+
+.jigsaw-difficulty-option span {
+  overflow: hidden;
+  color: #94a3b8;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .jigsaw-image-library {
@@ -150,22 +256,33 @@
 .jigsaw-freeform-stage {
   position: relative;
   isolation: isolate;
-  width: min(100%, 62rem);
-  min-height: 32rem;
+  width: min(100%, 72rem);
+  height: clamp(34rem, 68vh, 50rem);
+  min-height: 34rem;
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 1.15rem;
   background:
     radial-gradient(circle at 50% 42%, rgba(30, 64, 175, 0.12), transparent 44%),
     linear-gradient(180deg, rgba(15, 23, 42, 0.72), rgba(8, 15, 30, 0.82));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025), 0 18px 42px rgba(2, 6, 23, 0.2);
-  overflow: visible;
-  transition: height 180ms ease;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  overscroll-behavior: contain;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.jigsaw-freeform-stage.tray {
-  background:
-    linear-gradient(180deg, rgba(30, 64, 175, 0.08), transparent 48%),
-    linear-gradient(180deg, rgba(15, 23, 42, 0.74), rgba(8, 15, 30, 0.86));
+.jigsaw-freeform-stage.panning {
+  cursor: grabbing;
+}
+
+.jigsaw-world-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  will-change: transform;
 }
 
 .jigsaw-assembly-board {
@@ -339,9 +456,14 @@
     overflow: visible;
   }
 
+  .jigsaw-difficulty-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .jigsaw-freeform-stage {
     width: 100%;
-    min-height: 0;
+    height: min(70vh, 40rem);
+    min-height: 28rem;
     border-radius: 0.95rem;
   }
 
@@ -366,17 +488,21 @@
     font-size: 0.68rem;
   }
 
-  .tile-puzzle-tools {
+  .tile-puzzle-tools,
+  .jigsaw-camera-tools {
     width: 100%;
   }
 
   .tile-puzzle-tools button {
     flex: 1 1 8rem;
   }
+
+  .jigsaw-camera-tools button {
+    flex: 1 1 auto;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .jigsaw-freeform-stage,
   .tile-puzzle-piece-visual,
   .tile-puzzle-piece-outline {
     transition: none;
