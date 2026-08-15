@@ -14,6 +14,8 @@ import {
   screenToJigsawWorld,
   shouldSnapJigsawPlacement,
   zoomJigsawCameraAtPoint,
+  jigsawCameraMaximumZoom,
+  jigsawCameraMinimumZoom,
   type JigsawCamera,
   type JigsawPlacement,
   type JigsawViewport,
@@ -51,7 +53,7 @@ type CameraState = {
 type PiecePointerEvent = JSX.TargetedPointerEvent<HTMLButtonElement>;
 type PieceKeyboardEvent = JSX.TargetedKeyboardEvent<HTMLButtonElement>;
 type StagePointerEvent = JSX.TargetedPointerEvent<HTMLDivElement>;
-type StageWheelEvent = JSX.TargetedWheelEvent<HTMLDivElement>;
+type StageKeyboardEvent = JSX.TargetedKeyboardEvent<HTMLDivElement>;
 
 type ActiveDrag = {
   tileId: string;
@@ -70,6 +72,35 @@ const placementSchemaVersion = 4;
 const fallbackViewport: JigsawViewport = { width: 760, height: 560 };
 const edgePanZone = 56;
 const edgePanSpeed = 18;
+const keyboardPanStep = 56;
+const jigsawZoomStops = [
+  jigsawCameraMinimumZoom,
+  0.1,
+  0.15,
+  0.2,
+  0.25,
+  0.33,
+  0.5,
+  0.67,
+  0.8,
+  1,
+  1.25,
+  1.5,
+  2,
+  3,
+  jigsawCameraMaximumZoom,
+];
+const zoomStepEpsilon = 0.001;
+
+export const getJigsawZoomStep = (currentZoom: number, direction: "in" | "out") => {
+  if (direction === "in") {
+    return jigsawZoomStops.find((stop) => stop > currentZoom + zoomStepEpsilon) ?? jigsawCameraMaximumZoom;
+  }
+
+  return [...jigsawZoomStops]
+    .reverse()
+    .find((stop) => stop < currentZoom - zoomStepEpsilon) ?? jigsawCameraMinimumZoom;
+};
 
 const getPlacementStorageKey = (puzzle: JigsawGeneratedPuzzle) =>
   `puzzle-forge.jigsaw.${placementSchemaVersion}.${puzzle.id}.${puzzle.seed}.${puzzle.width}x${puzzle.height}`;
@@ -402,6 +433,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
       lastClientX: event.clientX,
       lastClientY: event.clientY,
     };
+    event.currentTarget.focus({ preventScroll: true });
     event.currentTarget.setPointerCapture(event.pointerId);
     setIsPanning(true);
     event.preventDefault();
@@ -427,7 +459,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
     event.preventDefault();
   };
 
-  const handleWheel = (event: StageWheelEvent) => {
+  const handleWheel = (event: WheelEvent) => {
     const stagePoint = getStagePoint(event.clientX, event.clientY);
     if (!stagePoint) return;
 
@@ -449,15 +481,46 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
     event.preventDefault();
   };
 
-  const zoomView = (factor: number) => {
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    stage.addEventListener("wheel", handleWheel, { passive: false });
+    return () => stage.removeEventListener("wheel", handleWheel);
+  }, [activeCamera, layout, renderViewport]);
+
+  const setZoomAtCenter = (zoom: number) => {
     setCamera(zoomJigsawCameraAtPoint(
       layout,
       renderViewport,
       activeCamera,
-      activeCamera.zoom * factor,
+      zoom,
       renderViewport.width / 2,
       renderViewport.height / 2,
     ));
+  };
+
+  const zoomView = (direction: "in" | "out") => {
+    setZoomAtCenter(getJigsawZoomStep(activeCamera.zoom, direction));
+  };
+
+  const handleStageKeyDown = (event: StageKeyboardEvent) => {
+    const target = event.target as Element | null;
+    if (target?.closest(".tile-puzzle-piece")) return;
+
+    if (event.key === "Escape" && event.target === event.currentTarget) {
+      event.currentTarget.blur();
+      event.preventDefault();
+      return;
+    }
+
+    const direction = event.key;
+    if (!["ArrowUp", "ArrowRight", "ArrowDown", "ArrowLeft"].includes(direction)) return;
+    const step = event.shiftKey ? keyboardPanStep * 2 : keyboardPanStep;
+    const deltaX = direction === "ArrowRight" ? step : direction === "ArrowLeft" ? -step : 0;
+    const deltaY = direction === "ArrowDown" ? step : direction === "ArrowUp" ? -step : 0;
+    setCamera(panJigsawCamera(layout, renderViewport, activeCamera, deltaX, deltaY));
+    event.preventDefault();
   };
 
   const movePieceWithKeyboard = (event: PieceKeyboardEvent, tile: JigsawPiece, placement: JigsawPlacement) => {
@@ -522,9 +585,16 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
       </div>
 
       <div class="jigsaw-camera-tools" aria-label="Jigsaw view controls">
-        <button type="button" onClick={() => zoomView(1 / 1.25)} aria-label="Zoom out">−</button>
-        <span>{Math.round(activeCamera.zoom * 100)}%</span>
-        <button type="button" onClick={() => zoomView(1.25)} aria-label="Zoom in">+</button>
+        <button type="button" onClick={() => zoomView("out")} aria-label="Zoom out">−</button>
+        <button
+          type="button"
+          onClick={() => setZoomAtCenter(1)}
+          aria-label={`Reset zoom to 100 percent. Current zoom ${Math.round(activeCamera.zoom * 100)} percent`}
+          title="Reset zoom to 100%"
+        >
+          {Math.round(activeCamera.zoom * 100)}%
+        </button>
+        <button type="button" onClick={() => zoomView("in")} aria-label="Zoom in">+</button>
         <button type="button" onClick={() => fitView("board")}>Fit board</button>
         <button type="button" onClick={() => fitView("workspace")}>Fit workspace</button>
       </div>
@@ -540,8 +610,9 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
         onPointerMove={movePan}
         onPointerUp={finishPan}
         onPointerCancel={finishPan}
-        onWheel={handleWheel}
-        aria-label="Jigsaw workspace. Drag the background to pan. Use the mouse wheel or trackpad to move, and pinch or Control plus wheel to zoom."
+        onKeyDown={handleStageKeyDown}
+        tabIndex={0}
+        aria-label="Jigsaw workspace. Drag the background or use the mouse wheel or trackpad to pan. When focused, use the arrow keys to pan. Pinch or Control plus wheel to zoom."
       >
         <div class="jigsaw-world-layer" style={worldStyle}>
           <div class="jigsaw-assembly-board" style={boardStyle} aria-hidden="true">
