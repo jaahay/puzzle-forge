@@ -235,6 +235,18 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
   const activeCamera = cameraState?.puzzleId === puzzle.id
     ? cameraState.camera
     : createJigsawFitCamera(layout, renderViewport, "workspace");
+  const wheelStateRef = useRef({
+    puzzleId: puzzle.id,
+    camera: activeCamera,
+    layout,
+    viewport: renderViewport,
+  });
+  wheelStateRef.current = {
+    puzzleId: puzzle.id,
+    camera: activeCamera,
+    layout,
+    viewport: renderViewport,
+  };
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -462,21 +474,34 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
   const handleWheel = (event: WheelEvent) => {
     const stagePoint = getStagePoint(event.clientX, event.clientY);
     if (!stagePoint) return;
+    const current = wheelStateRef.current;
 
     if (event.ctrlKey || event.metaKey) {
       const zoomFactor = Math.exp(-event.deltaY * 0.002);
-      setCamera(zoomJigsawCameraAtPoint(
-        layout,
-        renderViewport,
-        activeCamera,
-        activeCamera.zoom * zoomFactor,
-        stagePoint.x,
-        stagePoint.y,
-      ));
+      setCameraState({
+        puzzleId: current.puzzleId,
+        camera: zoomJigsawCameraAtPoint(
+          current.layout,
+          current.viewport,
+          current.camera,
+          current.camera.zoom * zoomFactor,
+          stagePoint.x,
+          stagePoint.y,
+        ),
+      });
     } else {
       const horizontalDelta = event.shiftKey && Math.abs(event.deltaX) < 1 ? event.deltaY : event.deltaX;
       const verticalDelta = event.shiftKey && Math.abs(event.deltaX) < 1 ? 0 : event.deltaY;
-      setCamera(panJigsawCamera(layout, renderViewport, activeCamera, horizontalDelta, verticalDelta));
+      setCameraState({
+        puzzleId: current.puzzleId,
+        camera: panJigsawCamera(
+          current.layout,
+          current.viewport,
+          current.camera,
+          horizontalDelta,
+          verticalDelta,
+        ),
+      });
     }
     event.preventDefault();
   };
@@ -487,7 +512,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
 
     stage.addEventListener("wheel", handleWheel, { passive: false });
     return () => stage.removeEventListener("wheel", handleWheel);
-  }, [activeCamera, layout, renderViewport]);
+  }, []);
 
   const setZoomAtCenter = (zoom: number) => {
     setCamera(zoomJigsawCameraAtPoint(
