@@ -476,33 +476,25 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
     if (!stagePoint) return;
     const current = wheelStateRef.current;
 
-    if (event.ctrlKey || event.metaKey) {
-      const zoomFactor = Math.exp(-event.deltaY * 0.002);
-      setCameraState({
-        puzzleId: current.puzzleId,
-        camera: zoomJigsawCameraAtPoint(
+    const nextCamera = event.ctrlKey || event.metaKey
+      ? zoomJigsawCameraAtPoint(
           current.layout,
           current.viewport,
           current.camera,
-          current.camera.zoom * zoomFactor,
+          current.camera.zoom * Math.exp(-event.deltaY * 0.002),
           stagePoint.x,
           stagePoint.y,
-        ),
-      });
-    } else {
-      const horizontalDelta = event.shiftKey && Math.abs(event.deltaX) < 1 ? event.deltaY : event.deltaX;
-      const verticalDelta = event.shiftKey && Math.abs(event.deltaX) < 1 ? 0 : event.deltaY;
-      setCameraState({
-        puzzleId: current.puzzleId,
-        camera: panJigsawCamera(
+        )
+      : panJigsawCamera(
           current.layout,
           current.viewport,
           current.camera,
-          horizontalDelta,
-          verticalDelta,
-        ),
-      });
-    }
+          event.shiftKey && Math.abs(event.deltaX) < 1 ? event.deltaY : event.deltaX,
+          event.shiftKey && Math.abs(event.deltaX) < 1 ? 0 : event.deltaY,
+        );
+
+    wheelStateRef.current = { ...current, camera: nextCamera };
+    setCameraState({ puzzleId: current.puzzleId, camera: nextCamera });
     event.preventDefault();
   };
 
