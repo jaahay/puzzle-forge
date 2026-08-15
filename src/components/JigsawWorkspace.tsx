@@ -163,5 +163,5 @@ export const JigsawWorkspace = ({
     </section>
   ) : isGenerating ? loadingBoard : null;
 
-  return <PuzzleWorkspaceLayout className="jigsaw-workspace" status={<p class="status-line" aria-live="polite">{statusMessage}</p>} board={board} generation={generation} />;
+  return <PuzzleWorkspaceLayout className="jigsaw-workspace" status={<p class="status-line" aria-live="polite">{statusMessage}</p>} board={board} generation={generation} enableImmersive />;
 };

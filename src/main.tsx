@@ -7,6 +7,7 @@ import "./site/views.css";
 import "./site/footer.css";
 import "./site/app-shell.css";
 import "./site/workspace.css";
+import "./site/immersive.css";
 import "./site/mobile-workspace.css";
 import "./site/grid.css";
 import "./site/sudoku.css";
