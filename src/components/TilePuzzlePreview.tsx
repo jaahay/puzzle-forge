@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { JigsawGeneratedPuzzle, JigsawPiece } from "../catalog/types";
 import { getJigsawPieceOutlinePath, getJigsawPieceSeamPaths } from "../games/jigsaw/edgePaths";
 import {
-  clampJigsawCamera,
   createInitialJigsawPlacements,
   createJigsawFitCamera,
   createJigsawWorldLayout,
@@ -101,6 +100,12 @@ export const getJigsawZoomStep = (currentZoom: number, direction: "in" | "out") 
     .reverse()
     .find((stop) => stop < currentZoom - zoomStepEpsilon) ?? jigsawCameraMinimumZoom;
 };
+
+export const initializeOrPreserveJigsawCamera = (
+  layout: JigsawWorldLayout,
+  viewport: JigsawViewport,
+  currentCamera: JigsawCamera | null,
+) => currentCamera ?? createJigsawFitCamera(layout, viewport, "workspace");
 
 const getPlacementStorageKey = (puzzle: JigsawGeneratedPuzzle) =>
   `puzzle-forge.jigsaw.${placementSchemaVersion}.${puzzle.id}.${puzzle.seed}.${puzzle.width}x${puzzle.height}`;
@@ -290,9 +295,14 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
 
   useEffect(() => {
     if (viewport.width <= 0 || viewport.height <= 0) return;
-    setCameraState((current) => current?.puzzleId === puzzle.id
-      ? { puzzleId: puzzle.id, camera: clampJigsawCamera(layout, viewport, current.camera) }
-      : { puzzleId: puzzle.id, camera: createJigsawFitCamera(layout, viewport, "workspace") });
+    setCameraState((current) => ({
+      puzzleId: puzzle.id,
+      camera: initializeOrPreserveJigsawCamera(
+        layout,
+        viewport,
+        current?.puzzleId === puzzle.id ? current.camera : null,
+      ),
+    }));
   }, [layout, puzzle.id, viewport.height, viewport.width]);
 
   useEffect(() => {

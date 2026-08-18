@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { getJigsawZoomStep, getPieceHitTargetProps, getPieceImageClipPathProps, getPieceZIndex } from "./TilePuzzlePreview";
+import { clampJigsawCamera, createJigsawFitCamera, createJigsawWorldLayout } from "../games/jigsaw/placement";
+import {
+  getJigsawZoomStep,
+  getPieceHitTargetProps,
+  getPieceImageClipPathProps,
+  getPieceZIndex,
+  initializeOrPreserveJigsawCamera,
+} from "./TilePuzzlePreview";
 
 describe("TilePuzzlePreview SVG clipping", () => {
   it("uses Preact's raw kebab-case clip-path SVG attribute", () => {
@@ -40,5 +47,35 @@ describe("TilePuzzlePreview camera controls", () => {
   it("moves cleanly around the 100 percent zoom stop", () => {
     expect(getJigsawZoomStep(1, "out")).toBe(0.8);
     expect(getJigsawZoomStep(1, "in")).toBe(1.25);
+  });
+
+  it("preserves camera center and zoom across viewport-only resizes", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 2048,
+      imageHeight: 1536,
+      puzzleWidth: 10,
+      puzzleHeight: 8,
+    });
+    const compactViewport = { width: 760, height: 560 };
+    const expandedViewport = { width: 1600, height: 900 };
+    const camera = { centerX: 0, centerY: 0, zoom: 1 };
+
+    expect(clampJigsawCamera(layout, expandedViewport, camera)).not.toEqual(camera);
+    expect(initializeOrPreserveJigsawCamera(layout, expandedViewport, camera)).toBe(camera);
+    expect(initializeOrPreserveJigsawCamera(layout, compactViewport, camera)).toBe(camera);
+  });
+
+  it("fits the workspace when a puzzle camera has not initialized yet", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 2048,
+      imageHeight: 1536,
+      puzzleWidth: 10,
+      puzzleHeight: 8,
+    });
+    const viewport = { width: 1200, height: 800 };
+
+    expect(initializeOrPreserveJigsawCamera(layout, viewport, null)).toEqual(
+      createJigsawFitCamera(layout, viewport, "workspace"),
+    );
   });
 });
