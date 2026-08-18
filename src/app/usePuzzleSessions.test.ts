@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
+import type { PuzzleCell } from "../catalog/types";
 import { generateJigsaw } from "../games/jigsaw/generate";
 import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
 import { initialSolitaireStats, type PuzzleSession } from "./session";
-import { clonePuzzleSession } from "./usePuzzleSessions";
+import { buildRuntimeSession, clonePuzzleSession } from "./usePuzzleSessions";
 
 const makeJigsawSession = (): PuzzleSession => {
   const puzzle = generateJigsaw({
@@ -51,5 +52,37 @@ describe("clonePuzzleSession", () => {
     expect(cloned.puzzle.asset.credit).not.toBe(session.puzzle.asset.credit);
     expect(cloned.puzzle.edgeModel).not.toBe(session.puzzle.edgeModel);
     expect(cloned.puzzle.edgeModel.profileIds).not.toBe(session.puzzle.edgeModel.profileIds);
+  });
+});
+
+describe("buildRuntimeSession", () => {
+  it("does not retain transient Sudoku validation tones in saved session state", () => {
+    const gridCells: PuzzleCell[] = [
+      { row: 0, column: 0, value: "1", locked: false, tone: "answer" },
+      { row: 0, column: 1, value: "9", locked: false, tone: "hint" },
+      { row: 0, column: 2, value: "3", locked: true, tone: "given" },
+    ];
+
+    const session = buildRuntimeSession({
+      puzzleId: "sudoku",
+      seed: "transient-feedback",
+      width: 9,
+      height: 9,
+      difficulty: "Easy",
+      requireUniqueSolution: true,
+      sudokuVariation: "classic",
+      puzzle: null,
+      cardStacks: null,
+      selectedCard: null,
+      solitaireStats: { ...initialSolitaireStats },
+      solitaireUndoStack: [],
+      solitaireRedoStack: [],
+      gridCells,
+      selectedGridCell: null,
+      statusMessage: "1 entry needs attention.",
+    });
+
+    expect(session.gridCells?.map((cell) => cell.tone)).toEqual(["empty", "empty", "given"]);
+    expect(gridCells.map((cell) => cell.tone)).toEqual(["answer", "hint", "given"]);
   });
 });
