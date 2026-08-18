@@ -130,13 +130,18 @@ export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: Puzzl
 
     return {
       ...cell,
-      tone: isEmpty ? "empty" : isCorrect ? "answer" : "hint",
+      tone: currentPuzzle.puzzleId === "sudoku" ? (isEmpty || isCorrect ? "empty" : "hint") : isEmpty ? "empty" : isCorrect ? "answer" : "hint",
     };
   });
 
   if (currentPuzzle.puzzleId === "sudoku") {
     if (emptyCount === 0 && incorrectCount === 0) {
-      return { cells: nextCells, message: "Solved." };
+      return {
+        cells: nextCells.map((cell): PuzzleCell =>
+          cell.tone === "disabled" || cell.locked ? cell : { ...cell, tone: "answer" },
+        ),
+        message: "Solved.",
+      };
     }
 
     if (incorrectCount === 0) {
