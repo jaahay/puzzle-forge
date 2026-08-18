@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useRef, useState } from "preact/hooks";
 import type { GeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
 import { checkGridAnswer } from "../interactions/gridChecking";
 import {
@@ -16,6 +16,7 @@ export type GridControllerSnapshot = {
   selectedGridCell: GridCellSelection | null;
 };
 
+const SUDOKU_CHECK_FEEDBACK_MS = 750;
 const usesNeutralNumericEntryTone = (puzzleId: PuzzleId) => puzzleId === "sudoku" || puzzleId === "futoshiki";
 
 export const clearGridValidationTone = (puzzleId: PuzzleId, cell: PuzzleCell): PuzzleCell => {
@@ -40,22 +41,41 @@ export const getGridEntryTone = (puzzleId: PuzzleId, value: string): PuzzleCell[
 export const useGridController = () => {
   const [gridCells, setGridCells] = useState<PuzzleCell[] | null>(null);
   const [selectedGridCell, setSelectedGridCell] = useState<GridCellSelection | null>(null);
+  const sudokuValidationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearSudokuValidationTimer = () => {
+    if (sudokuValidationTimer.current !== null) {
+      clearTimeout(sudokuValidationTimer.current);
+      sudokuValidationTimer.current = null;
+    }
+  };
+
+  const scheduleSudokuValidationReset = () => {
+    clearSudokuValidationTimer();
+    sudokuValidationTimer.current = setTimeout(() => {
+      setGridCells((currentCells) => currentCells?.map((cell) => clearGridValidationTone("sudoku", cell)) ?? currentCells);
+      sudokuValidationTimer.current = null;
+    }, SUDOKU_CHECK_FEEDBACK_MS);
+  };
 
   const clearGridInteraction = () => {
     setSelectedGridCell(null);
   };
 
   const resetGrid = () => {
+    clearSudokuValidationTimer();
     setGridCells(null);
     clearGridInteraction();
   };
 
   const restoreGridSnapshot = ({ gridCells: nextGridCells, selectedGridCell: nextSelectedGridCell }: GridControllerSnapshot) => {
+    clearSudokuValidationTimer();
     setGridCells(nextGridCells?.map(cloneGridCell) ?? null);
     setSelectedGridCell(nextSelectedGridCell ? { ...nextSelectedGridCell } : null);
   };
 
   const prepareGeneratedGrid = (puzzle: GeneratedPuzzle) => {
+    clearSudokuValidationTimer();
     setGridCells(puzzle.kind === "grid" ? prepareGridCells(puzzle) : null);
     clearGridInteraction();
   };
@@ -78,6 +98,10 @@ export const useGridController = () => {
   const handleGridCellInput = (puzzle: GeneratedPuzzle | null, cell: PuzzleCell, rawValue: string, onStatusMessage: (message: string) => void) => {
     if (!puzzle || puzzle.kind !== "grid" || cell.locked) {
       return;
+    }
+
+    if (puzzle.puzzleId === "sudoku") {
+      clearSudokuValidationTimer();
     }
 
     const inputMode = getGridInputMode(puzzle.puzzleId);
@@ -249,6 +273,10 @@ export const useGridController = () => {
     }
 
     updateGridCells((cells) => checkGridAnswer(puzzle, cells), onStatusMessage);
+
+    if (puzzle.puzzleId === "sudoku") {
+      scheduleSudokuValidationReset();
+    }
   };
 
   return {
