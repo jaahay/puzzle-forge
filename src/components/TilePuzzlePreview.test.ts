@@ -5,7 +5,7 @@ import {
   getPieceHitTargetProps,
   getPieceImageClipPathProps,
   getPieceZIndex,
-  resolveJigsawCameraForViewport,
+  initializeOrPreserveJigsawCamera,
 } from "./TilePuzzlePreview";
 
 describe("TilePuzzlePreview SVG clipping", () => {
@@ -61,8 +61,8 @@ describe("TilePuzzlePreview camera controls", () => {
     const camera = { centerX: 0, centerY: 0, zoom: 1 };
 
     expect(clampJigsawCamera(layout, expandedViewport, camera)).not.toEqual(camera);
-    expect(resolveJigsawCameraForViewport(layout, expandedViewport, camera)).toBe(camera);
-    expect(resolveJigsawCameraForViewport(layout, compactViewport, camera)).toBe(camera);
+    expect(initializeOrPreserveJigsawCamera(layout, expandedViewport, camera)).toBe(camera);
+    expect(initializeOrPreserveJigsawCamera(layout, compactViewport, camera)).toBe(camera);
   });
 
   it("fits the workspace when a puzzle camera has not initialized yet", () => {
@@ -74,7 +74,7 @@ describe("TilePuzzlePreview camera controls", () => {
     });
     const viewport = { width: 1200, height: 800 };
 
-    expect(resolveJigsawCameraForViewport(layout, viewport, null)).toEqual(
+    expect(initializeOrPreserveJigsawCamera(layout, viewport, null)).toEqual(
       createJigsawFitCamera(layout, viewport, "workspace"),
     );
   });
