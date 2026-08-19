@@ -18,6 +18,7 @@ type BottomPuzzleConfigurationProps = {
   isWordGuess: boolean;
   isSudoku: boolean;
   isGenerating: boolean;
+  showRandomize?: boolean;
   onWidthChange: (width: number) => void;
   onHeightChange: (height: number) => void;
   onSettingsCommit: (settings?: { width?: number; height?: number }) => void;
@@ -55,8 +56,8 @@ const SeedTools = ({ seedInput, isGenerating, canGenerate, onUseSeed }: Pick<Bot
   </>
 );
 
-export const BottomPuzzleConfiguration = ({ selectedDefinition, selectedPuzzleIsGeneratable, seedInput, width, height, difficulty, requireUniqueSolution, sudokuVariation, isFixedSize, isNonogram, isWordGuess, isSudoku, isGenerating, onWidthChange, onHeightChange, onSettingsCommit, onDifficultyChange, onSudokuVariationChange, onUniqueSolutionChange, onToday, onUseSeed, onRandomize, onReset }: BottomPuzzleConfigurationProps) => {
-  const primaryGenerationActions = <GenerationActions isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showToday showReset randomLabel="New" onToday={onToday} onRandomize={onRandomize} onReset={onReset} />;
+export const BottomPuzzleConfiguration = ({ selectedDefinition, selectedPuzzleIsGeneratable, seedInput, width, height, difficulty, requireUniqueSolution, sudokuVariation, isFixedSize, isNonogram, isWordGuess, isSudoku, isGenerating, showRandomize = true, onWidthChange, onHeightChange, onSettingsCommit, onDifficultyChange, onSudokuVariationChange, onUniqueSolutionChange, onToday, onUseSeed, onRandomize, onReset }: BottomPuzzleConfigurationProps) => {
+  const primaryGenerationActions = <GenerationActions isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showToday showReset showRandomize={showRandomize} randomLabel="New" onToday={onToday} onRandomize={onRandomize} onReset={onReset} />;
   const seedTools = <SeedTools seedInput={seedInput} isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} onUseSeed={onUseSeed} />;
 
   return (
