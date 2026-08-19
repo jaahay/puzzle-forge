@@ -105,6 +105,11 @@ export const useGridController = () => {
       return;
     }
 
+    if (puzzle.puzzleId === "sudoku" && gridCells && isGridAnswerCompleteAndCorrect(puzzle, gridCells)) {
+      onStatusMessage("Solved.");
+      return;
+    }
+
     if (puzzle.puzzleId === "sudoku") {
       clearSudokuValidationTimer();
     }
@@ -256,6 +261,10 @@ export const useGridController = () => {
 
   const handleGridCellClick = (puzzle: GeneratedPuzzle | null, cell: PuzzleCell, onStatusMessage: (message: string) => void) => {
     if (!puzzle || puzzle.kind !== "grid") {
+      return;
+    }
+
+    if (puzzle.puzzleId === "sudoku" && gridCells && isGridAnswerCompleteAndCorrect(puzzle, gridCells)) {
       return;
     }
 
