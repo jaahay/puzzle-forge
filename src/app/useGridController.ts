@@ -1,6 +1,6 @@
 import { useRef, useState } from "preact/hooks";
 import type { GeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
-import { checkGridAnswer } from "../interactions/gridChecking";
+import { checkGridAnswer, isGridAnswerCompleteAndCorrect } from "../interactions/gridChecking";
 import {
   cloneGridCell,
   getCellIndex,
@@ -37,6 +37,11 @@ export const clearGridValidationTone = (puzzleId: PuzzleId, cell: PuzzleCell): P
 
 export const getGridEntryTone = (puzzleId: PuzzleId, value: string): PuzzleCell["tone"] =>
   usesNeutralNumericEntryTone(puzzleId) ? "empty" : value ? "answer" : "empty";
+
+const applySolvedSudokuTone = (cells: PuzzleCell[]) =>
+  cells.map((candidate): PuzzleCell =>
+    candidate.tone === "disabled" || candidate.locked ? candidate : { ...candidate, tone: "answer" },
+  );
 
 export const useGridController = () => {
   const [gridCells, setGridCells] = useState<PuzzleCell[] | null>(null);
@@ -124,12 +129,20 @@ export const useGridController = () => {
         ariaLabel: `${nextValue || "Empty"} cell at row ${current.row + 1}, column ${current.column + 1}`,
       };
 
+      if (puzzle.puzzleId === "sudoku" && isGridAnswerCompleteAndCorrect(puzzle, editableCells)) {
+        return { cells: applySolvedSudokuTone(editableCells), message: "Solved." };
+      }
+
       const puzzleName = puzzle.puzzleId === "sudoku" ? "Sudoku" : puzzle.puzzleId === "futoshiki" ? "Futoshiki" : null;
       return {
         cells: editableCells,
         message: puzzleName ? `${puzzleName} entry updated.` : nextValue ? `Set cell to ${nextValue}.` : "Cleared cell.",
       };
     }, onStatusMessage);
+
+    if (puzzle.puzzleId === "sudoku") {
+      scheduleSudokuValidationReset();
+    }
   };
 
   const toggleNonogramCell = (cell: PuzzleCell, onStatusMessage: (message: string) => void) => {
