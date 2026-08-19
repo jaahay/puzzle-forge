@@ -1,5 +1,6 @@
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { FILLED_NONOGRAM_CELL } from "../games/nonogram/solve";
+import { isGridAnswerCompleteAndCorrect } from "../interactions/gridChecking";
 import { getGridInputMode, isSelectedGridCell, type GridCellSelection } from "../interactions/gridRules";
 import { BoardViewport } from "./BoardViewport";
 import { NumericGridDigitPad, useNumericGridInput } from "./NumericGridInput";
@@ -86,16 +87,17 @@ type GridPuzzlePreviewProps = {
 export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick, onCellInput }: GridPuzzlePreviewProps) => {
   const inputMode = getGridInputMode(puzzle.puzzleId);
   const isSudoku = puzzle.puzzleId === "sudoku";
+  const isSudokuSolved = isSudoku && isGridAnswerCompleteAndCorrect(puzzle, cells);
   const isNumericGridPuzzle = inputMode === "numeric";
   const isDiagonalSudoku = isSudoku && puzzle.sudokuVariation === "diagonal";
   const isZeroKillerSudoku = isSudoku && puzzle.sudokuVariation === "zero-killer";
   const isNonogram = puzzle.puzzleId === "nonogram";
   const numericInput = useNumericGridInput({
-    enabled: isNumericGridPuzzle,
+    enabled: isNumericGridPuzzle && !isSudokuSolved,
     puzzleIdentity: `${puzzle.puzzleId}:${puzzle.seed}:${puzzle.sudokuVariation ?? ""}:${puzzle.width}:${puzzle.height}`,
     digitCount: puzzle.width,
     cells,
-    selectedGridCell,
+    selectedGridCell: isSudokuSolved ? null : selectedGridCell,
     onCellClick,
     onCellInput,
   });
@@ -105,7 +107,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
   const gridTemplateColumns = `repeat(${puzzle.width}, minmax(0, 1fr))`;
   const sudokuVariantRuleId = isDiagonalSudoku || isZeroKillerSudoku ? "sudoku-variant-rule" : undefined;
 
-  const digitPad = isNumericGridPuzzle ? (
+  const digitPad = isNumericGridPuzzle && !isSudokuSolved ? (
     <NumericGridDigitPad
       title={puzzle.title}
       digits={numericInput.digits}
@@ -119,16 +121,16 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
   const grid = (
     <div
       aria-describedby={sudokuVariantRuleId}
-      aria-label={isSudoku ? `${puzzle.difficulty ?? "Medium"} ${puzzle.title} board` : isNonogram ? `${puzzle.width} by ${puzzle.height} Nonogram board` : undefined}
-      class={`grid ${puzzle.puzzleId} ${isDiagonalSudoku ? "diagonal-sudoku" : ""} ${isZeroKillerSudoku ? "zero-killer-sudoku" : ""}`}
-      data-grid-selection-scope={isNumericGridPuzzle ? "true" : undefined}
+      aria-label={isSudoku ? `${puzzle.difficulty ?? "Medium"} ${puzzle.title} board${isSudokuSolved ? ", solved" : ""}` : isNonogram ? `${puzzle.width} by ${puzzle.height} Nonogram board` : undefined}
+      class={`grid ${puzzle.puzzleId} ${isDiagonalSudoku ? "diagonal-sudoku" : ""} ${isZeroKillerSudoku ? "zero-killer-sudoku" : ""} ${isSudokuSolved ? "solved-grid" : ""}`}
+      data-grid-selection-scope={isNumericGridPuzzle && !isSudokuSolved ? "true" : undefined}
       style={{ gridTemplateColumns }}
     >
       {cells.map((cell) => {
         const killerCage = killerCageDecorations.get(gridCellKey(cell.row, cell.column));
-        const isSelectable = cell.tone !== "disabled" && (isNumericGridPuzzle || puzzle.puzzleId === "peg-solitaire" || !cell.locked);
-        const isEditable = cell.tone !== "disabled" && (puzzle.puzzleId === "peg-solitaire" || !cell.locked);
-        const isSelected = isSelectedGridCell(selectedGridCell, cell);
+        const isSelectable = !isSudokuSolved && cell.tone !== "disabled" && (isNumericGridPuzzle || puzzle.puzzleId === "peg-solitaire" || !cell.locked);
+        const isEditable = !isSudokuSolved && cell.tone !== "disabled" && (puzzle.puzzleId === "peg-solitaire" || !cell.locked);
+        const isSelected = !isSudokuSolved && isSelectedGridCell(selectedGridCell, cell);
         const isDiagonalPeer = Boolean(isDiagonalSudoku && selectedCell && sameSudokuDiagonal(cell, selectedCell, puzzle.width));
         const isPeer = Boolean(
           isSudoku &&
