@@ -116,8 +116,11 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
 
   useEffect(() => {
     const previous = sudokuCompletionBaseline.current;
+    const puzzleChanged = previous.identity !== puzzleIdentity;
 
-    if (isSudoku && shouldCelebrateSudokuCompletion(previous.identity, previous.solved, puzzleIdentity, isSudokuSolved)) {
+    if (!isSudoku || puzzleChanged || !isSudokuSolved) {
+      setSudokuCompletionEvent(null);
+    } else if (shouldCelebrateSudokuCompletion(previous.identity, previous.solved, puzzleIdentity, isSudokuSolved)) {
       setSudokuCompletionEvent((current) => ({
         identity: puzzleIdentity,
         sequence: (current?.sequence ?? 0) + 1,
@@ -128,7 +131,9 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
   }, [isSudoku, isSudokuSolved, puzzleIdentity]);
 
   const showSudokuCompletionEffect = Boolean(
-    isSudokuSolved && sudokuCompletionEvent?.identity === puzzleIdentity,
+    isSudokuSolved &&
+      sudokuCompletionBaseline.current.identity === puzzleIdentity &&
+      sudokuCompletionEvent?.identity === puzzleIdentity,
   );
   const numericInput = useNumericGridInput({
     enabled: isNumericGridPuzzle && !isSudokuSolved,
