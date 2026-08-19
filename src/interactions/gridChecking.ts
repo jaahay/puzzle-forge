@@ -94,6 +94,12 @@ const checkNonogram = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) 
   };
 };
 
+export const isGridAnswerCompleteAndCorrect = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) => {
+  const answerKey = currentPuzzle.answerKey;
+
+  return Boolean(answerKey?.length) && cells.length === answerKey?.length && cells.every((cell, index) => cell.value === (answerKey?.[index] ?? ""));
+};
+
 export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) => {
   if (currentPuzzle.puzzleId === "word-guess") {
     return checkWordGuess(currentPuzzle, cells);
