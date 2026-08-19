@@ -169,6 +169,9 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
       class={`grid ${puzzle.puzzleId} ${isDiagonalSudoku ? "diagonal-sudoku" : ""} ${isZeroKillerSudoku ? "zero-killer-sudoku" : ""} ${showSudokuCompletionEffect ? "solved-grid" : ""}`}
       data-completion-event={showSudokuCompletionEffect ? sudokuCompletionEvent?.sequence : undefined}
       data-grid-selection-scope={isNumericGridPuzzle && !isSudokuSolved ? "true" : undefined}
+      onAnimationEnd={() => {
+        if (showSudokuCompletionEffect) setSudokuCompletionEvent(null);
+      }}
       style={{ gridTemplateColumns }}
     >
       {cells.map((cell) => {
