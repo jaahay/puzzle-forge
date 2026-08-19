@@ -1,5 +1,6 @@
 import type { PuzzleCell } from "../catalog/types";
 import { getDailyPuzzleLabel, getDailyPuzzleSeed } from "../games/shared/daily";
+import { isGridAnswerCompleteAndCorrect } from "../interactions/gridChecking";
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
 import { FutoshikiBoard } from "./FutoshikiBoard";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
@@ -28,7 +29,9 @@ export const StandardPuzzleWorkspace = ({
   const isWordGuess = selectedDefinition.id === "word-guess";
   const isFutoshiki = selectedDefinition.id === "futoshiki";
   const isSolitaire = selectedDefinition.id === "klondike-solitaire";
-  const isSudokuSolved = isSudoku && statusMessage === "Solved.";
+  const isSudokuSolved = Boolean(
+    isSudoku && puzzle?.kind === "grid" && gridCells && isGridAnswerCompleteAndCorrect(puzzle, gridCells),
+  );
   const hasBottomSettingsBar = isSudoku || isNonogram || isWordGuess || isFutoshiki;
   const showStatusLine = !hasBottomSettingsBar;
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
@@ -60,7 +63,7 @@ export const StandardPuzzleWorkspace = ({
         <strong>Puzzle solved</strong>
         <span>Every square is correct.</span>
       </div>
-      <button type="button" onClick={onRandomize}>New game</button>
+      <button type="button" onClick={onRandomize}>New puzzle</button>
     </section>
   ) : null;
   const loadingBoardSlot = <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label={`${selectedDefinition.title} is generating`}><div class="puzzle-loading-copy"><strong>Generating {selectedDefinition.title}</strong><span>{statusMessage}</span></div><div class="puzzle-loading-grid" aria-hidden="true">{Array.from({ length: isSolitaire ? 12 : 9 }, (_, index) => <span key={index} />)}</div></section>;
