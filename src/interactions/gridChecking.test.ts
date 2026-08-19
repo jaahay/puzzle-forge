@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
-import { checkGridAnswer } from "./gridChecking";
+import { checkGridAnswer, isGridAnswerCompleteAndCorrect } from "./gridChecking";
 
 const makeSudokuPuzzle = (): GridGeneratedPuzzle => ({
   id: "test-sudoku",
@@ -61,5 +61,32 @@ describe("Sudoku grid checking feedback", () => {
 
     expect(result.cells.map((cell) => cell.tone)).toEqual(["answer", "answer", "answer", "given"]);
     expect(result.message).toBe("Solved.");
+  });
+});
+
+describe("automatic Sudoku completion detection", () => {
+  it("recognizes only a fully filled correct answer", () => {
+    const puzzle = makeSudokuPuzzle();
+
+    expect(isGridAnswerCompleteAndCorrect(puzzle, [
+      makeCell(0, 0, "1"),
+      makeCell(0, 1, "2"),
+      makeCell(1, 0, "3"),
+      makeCell(1, 1, "4", true),
+    ])).toBe(true);
+
+    expect(isGridAnswerCompleteAndCorrect(puzzle, [
+      makeCell(0, 0, "1"),
+      makeCell(0, 1, "2"),
+      makeCell(1, 0, ""),
+      makeCell(1, 1, "4", true),
+    ])).toBe(false);
+
+    expect(isGridAnswerCompleteAndCorrect(puzzle, [
+      makeCell(0, 0, "1"),
+      makeCell(0, 1, "9"),
+      makeCell(1, 0, "3"),
+      makeCell(1, 1, "4", true),
+    ])).toBe(false);
   });
 });
