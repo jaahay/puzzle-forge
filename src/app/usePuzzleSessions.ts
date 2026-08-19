@@ -47,6 +47,16 @@ const cloneSolitaireHistoryEntry = (entry: SolitaireHistoryEntry): SolitaireHist
   statusMessage: entry.statusMessage,
 });
 
+const cloneSessionGridCell = (puzzleId: PuzzleId, cell: PuzzleCell): PuzzleCell => {
+  const clonedCell = cloneGridCell(cell);
+
+  if (puzzleId === "sudoku" && !clonedCell.locked && (clonedCell.tone === "answer" || clonedCell.tone === "hint")) {
+    return { ...clonedCell, tone: "empty" };
+  }
+
+  return clonedCell;
+};
+
 export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => ({
   ...session,
   solitaireVariation: session.solitaireVariation ? { ...session.solitaireVariation } : undefined,
@@ -112,7 +122,7 @@ export const buildRuntimeSession = ({
   solitaireStats: { ...solitaireStats },
   solitaireUndoStack: solitaireUndoStack.map(cloneSolitaireHistoryEntry),
   solitaireRedoStack: solitaireRedoStack.map(cloneSolitaireHistoryEntry),
-  gridCells: gridCells?.map(cloneGridCell) ?? null,
+  gridCells: gridCells?.map((cell) => cloneSessionGridCell(puzzleId, cell)) ?? null,
   selectedGridCell: selectedGridCell ? { ...selectedGridCell } : null,
   statusMessage,
 });

@@ -1,5 +1,6 @@
 import type { PuzzleCell } from "../catalog/types";
 import { getDailyPuzzleLabel, getDailyPuzzleSeed } from "../games/shared/daily";
+import { isGridAnswerCompleteAndCorrect } from "../interactions/gridChecking";
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
 import { FutoshikiBoard } from "./FutoshikiBoard";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
@@ -28,6 +29,9 @@ export const StandardPuzzleWorkspace = ({
   const isWordGuess = selectedDefinition.id === "word-guess";
   const isFutoshiki = selectedDefinition.id === "futoshiki";
   const isSolitaire = selectedDefinition.id === "klondike-solitaire";
+  const isSudokuSolved = Boolean(
+    isSudoku && puzzle?.kind === "grid" && gridCells && isGridAnswerCompleteAndCorrect(puzzle, gridCells),
+  );
   const hasBottomSettingsBar = isSudoku || isNonogram || isWordGuess || isFutoshiki;
   const showStatusLine = !hasBottomSettingsBar;
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
@@ -35,9 +39,9 @@ export const StandardPuzzleWorkspace = ({
   const openCount = getOpenCount(gridCells);
   const dailyLabel = puzzle ? getDailyPuzzleLabel(puzzle.puzzleId, puzzle.seed) : null;
   const workspaceClass = `${isSudoku ? "sudoku-workspace" : ""} ${isNonogram ? "nonogram-workspace" : ""} ${isWordGuess ? "word-guess-workspace" : ""} ${isFutoshiki ? "futoshiki-workspace" : ""} ${isSolitaire ? "solitaire-workspace" : ""}`;
-  const showSudokuValidationMessage = isSudoku && (statusMessage === "Solved." || statusMessage.startsWith("No mistakes") || statusMessage.includes("need attention"));
+  const showSudokuValidationMessage = isSudoku && !isSudokuSolved && (statusMessage.startsWith("No mistakes") || statusMessage.includes("need attention"));
   const showNonogramValidationMessage = isNonogram && (statusMessage.startsWith("Solved.") || statusMessage.includes("do not match"));
-  const sudokuValidationTone = statusMessage === "Solved." ? "success" : statusMessage.includes("need attention") ? "error" : "progress";
+  const sudokuValidationTone = statusMessage.includes("need attention") ? "error" : "progress";
   const nonogramValidationTone = statusMessage.startsWith("Solved.") ? "success" : "error";
   const futoshikiValidationTone = statusMessage.startsWith("Solved.") ? "success" : statusMessage.startsWith("Not solved") ? "error" : "progress";
   const generateDailyPuzzle = () => onSettingsCommit({ seed: getDailyPuzzleSeed(selectedDefinition.id), width, height });
@@ -52,6 +56,16 @@ export const StandardPuzzleWorkspace = ({
 
   const statusSlot = showStatusLine ? <p class="status-line" aria-live="polite">{statusMessage}</p> : null;
   const validationSlot = showSudokuValidationMessage ? <p class={`sudoku-validation-message ${sudokuValidationTone}`} aria-live="polite">{statusMessage}</p> : showNonogramValidationMessage ? <p class={`sudoku-validation-message ${nonogramValidationTone}`} aria-live="polite">{statusMessage}</p> : isFutoshiki ? <p class={`sudoku-validation-message ${futoshikiValidationTone}`} aria-live="polite">{statusMessage}</p> : null;
+  const sudokuCompletionSlot = isSudokuSolved ? (
+    <section class="sudoku-completion-card" aria-live="polite" aria-label="Sudoku solved">
+      <span class="sudoku-completion-mark" aria-hidden="true">✓</span>
+      <div class="sudoku-completion-copy">
+        <strong>Puzzle solved</strong>
+        <span>Every square is correct.</span>
+      </div>
+      <button type="button" onClick={onRandomize}>New puzzle</button>
+    </section>
+  ) : null;
   const loadingBoardSlot = <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label={`${selectedDefinition.title} is generating`}><div class="puzzle-loading-copy"><strong>Generating {selectedDefinition.title}</strong><span>{statusMessage}</span></div><div class="puzzle-loading-grid" aria-hidden="true">{Array.from({ length: isSolitaire ? 12 : 9 }, (_, index) => <span key={index} />)}</div></section>;
 
   const boardSlot = puzzle ? (
@@ -62,6 +76,10 @@ export const StandardPuzzleWorkspace = ({
     </section>
   ) : isGenerating ? loadingBoardSlot : null;
 
-  const gameplaySlot = puzzle && puzzle.kind !== "cards" && !isWordGuess ? <div class="gameplay-control-stack"><div class="puzzle-actions"><button type="button" onClick={onCheck}>Check</button></div>{validationSlot}</div> : null;
+  const gameplaySlot = puzzle && puzzle.kind !== "cards" && !isWordGuess ? (
+    <div class="gameplay-control-stack">
+      {sudokuCompletionSlot ?? <><div class="puzzle-actions"><button type="button" onClick={onCheck}>Check</button></div>{validationSlot}</>}
+    </div>
+  ) : null;
   return <PuzzleWorkspaceLayout className={workspaceClass} status={statusSlot} board={boardSlot} gameplay={gameplaySlot} generation={configurationSlot} />;
 };

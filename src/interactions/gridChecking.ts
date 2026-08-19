@@ -94,6 +94,12 @@ const checkNonogram = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) 
   };
 };
 
+export const isGridAnswerCompleteAndCorrect = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) => {
+  const answerKey = currentPuzzle.answerKey;
+
+  return Boolean(answerKey?.length) && cells.length === answerKey?.length && cells.every((cell, index) => cell.value === (answerKey?.[index] ?? ""));
+};
+
 export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) => {
   if (currentPuzzle.puzzleId === "word-guess") {
     return checkWordGuess(currentPuzzle, cells);
@@ -130,13 +136,18 @@ export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: Puzzl
 
     return {
       ...cell,
-      tone: isEmpty ? "empty" : isCorrect ? "answer" : "hint",
+      tone: currentPuzzle.puzzleId === "sudoku" ? (isEmpty || isCorrect ? "empty" : "hint") : isEmpty ? "empty" : isCorrect ? "answer" : "hint",
     };
   });
 
   if (currentPuzzle.puzzleId === "sudoku") {
     if (emptyCount === 0 && incorrectCount === 0) {
-      return { cells: nextCells, message: "Solved." };
+      return {
+        cells: nextCells.map((cell): PuzzleCell =>
+          cell.tone === "disabled" || cell.locked ? cell : { ...cell, tone: "answer" },
+        ),
+        message: "Solved.",
+      };
     }
 
     if (incorrectCount === 0) {
