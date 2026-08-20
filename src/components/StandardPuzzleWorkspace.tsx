@@ -49,7 +49,7 @@ export const StandardPuzzleWorkspace = ({
   const solitaireActionControls = <div class="solitaire-action-row" aria-label="Solitaire controls"><button type="button" onClick={onUndoSolitaire} disabled={!canUndoSolitaire} aria-label="Undo Solitaire move" title="Undo">↶</button><button type="button" onClick={onRedoSolitaire} disabled={!canRedoSolitaire} aria-label="Redo Solitaire move" title="Redo">↷</button><button type="button" onClick={onAutoMoveToFoundations} aria-label="Move all currently legal cards to foundations" title="Auto foundation">♣→</button></div>;
 
   const configurationSlot = !puzzle ? null : hasBottomSettingsBar ? (
-    <BottomPuzzleConfiguration selectedDefinition={selectedDefinition} selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable} seedInput={seedInput} width={width} height={height} difficulty={difficulty} requireUniqueSolution={requireUniqueSolution} sudokuVariation={sudokuVariation} isFixedSize={isFixedSize} isNonogram={isNonogram} isWordGuess={isWordGuess} isSudoku={isSudoku} isGenerating={isGenerating} onWidthChange={onWidthChange} onHeightChange={onHeightChange} onSettingsCommit={onSettingsCommit} onDifficultyChange={onDifficultyChange} onSudokuVariationChange={onSudokuVariationChange} onUniqueSolutionChange={onUniqueSolutionChange} onToday={generateDailyPuzzle} onUseSeed={onGenerate} onRandomize={onRandomize} onReset={onReset} />
+    <BottomPuzzleConfiguration selectedDefinition={selectedDefinition} selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable} seedInput={seedInput} width={width} height={height} difficulty={difficulty} requireUniqueSolution={requireUniqueSolution} sudokuVariation={sudokuVariation} isFixedSize={isFixedSize} isNonogram={isNonogram} isWordGuess={isWordGuess} isSudoku={isSudoku} isGenerating={isGenerating} showRandomize={!isSudokuSolved} onWidthChange={onWidthChange} onHeightChange={onHeightChange} onSettingsCommit={onSettingsCommit} onDifficultyChange={onDifficultyChange} onSudokuVariationChange={onSudokuVariationChange} onUniqueSolutionChange={onUniqueSolutionChange} onToday={generateDailyPuzzle} onUseSeed={onGenerate} onRandomize={onRandomize} onReset={onReset} />
   ) : (
     <TopPuzzleConfiguration selectedDefinition={selectedDefinition} selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable} seedInput={seedInput} width={width} height={height} solitaireVariation={solitaireVariation} isFixedSize={isFixedSize} isGenerating={isGenerating} isSolitaire={isSolitaire} onWidthChange={onWidthChange} onHeightChange={onHeightChange} onSettingsCommit={onSettingsCommit} onSolitaireVariationChange={onSolitaireVariationChange} onToday={generateDailyPuzzle} onUseSeed={onGenerate} onRandomize={onRandomize} onReset={onReset} />
   );
@@ -57,13 +57,14 @@ export const StandardPuzzleWorkspace = ({
   const statusSlot = showStatusLine ? <p class="status-line" aria-live="polite">{statusMessage}</p> : null;
   const validationSlot = showSudokuValidationMessage ? <p class={`sudoku-validation-message ${sudokuValidationTone}`} aria-live="polite">{statusMessage}</p> : showNonogramValidationMessage ? <p class={`sudoku-validation-message ${nonogramValidationTone}`} aria-live="polite">{statusMessage}</p> : isFutoshiki ? <p class={`sudoku-validation-message ${futoshikiValidationTone}`} aria-live="polite">{statusMessage}</p> : null;
   const sudokuCompletionSlot = isSudokuSolved ? (
-    <section class="sudoku-completion-card" aria-live="polite" aria-label="Sudoku solved">
-      <span class="sudoku-completion-mark" aria-hidden="true">✓</span>
-      <div class="sudoku-completion-copy">
+    <section class="completion-dock" aria-live="polite" aria-label="Sudoku solved">
+      <div class="completion-dock-copy">
+        <span class="completion-dock-mark" aria-hidden="true">✓</span>
         <strong>Puzzle solved</strong>
-        <span>Every square is correct.</span>
       </div>
-      <button type="button" onClick={onRandomize}>New puzzle</button>
+      <div class="puzzle-actions">
+        <button type="button" onClick={onRandomize}>New puzzle</button>
+      </div>
     </section>
   ) : null;
   const loadingBoardSlot = <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label={`${selectedDefinition.title} is generating`}><div class="puzzle-loading-copy"><strong>Generating {selectedDefinition.title}</strong><span>{statusMessage}</span></div><div class="puzzle-loading-grid" aria-hidden="true">{Array.from({ length: isSolitaire ? 12 : 9 }, (_, index) => <span key={index} />)}</div></section>;

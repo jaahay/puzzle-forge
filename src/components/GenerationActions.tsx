@@ -4,6 +4,7 @@ type GenerationActionsProps = {
   showToday?: boolean;
   showUseSeed?: boolean;
   showReset?: boolean;
+  showRandomize?: boolean;
   randomLabel?: "New" | "Randomize";
   className?: string;
   onToday?: () => void;
@@ -18,6 +19,7 @@ export const GenerationActions = ({
   showToday = false,
   showUseSeed = false,
   showReset = false,
+  showRandomize = true,
   randomLabel = "New",
   className = "",
   onToday,
@@ -32,9 +34,11 @@ export const GenerationActions = ({
       </button>
     ) : null}
 
-    <button type="button" onClick={onRandomize} disabled={isGenerating || !canGenerate} aria-label="Generate a new random puzzle">
-      {randomLabel}
-    </button>
+    {showRandomize ? (
+      <button type="button" onClick={onRandomize} disabled={isGenerating || !canGenerate} aria-label="Generate a new random puzzle">
+        {randomLabel}
+      </button>
+    ) : null}
 
     {showReset ? (
       <button type="button" onClick={onReset} disabled={isGenerating || !canGenerate || !onReset} aria-label="Reset the current puzzle">

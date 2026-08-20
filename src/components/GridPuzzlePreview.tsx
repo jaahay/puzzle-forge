@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "preact/hooks";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { FILLED_NONOGRAM_CELL } from "../games/nonogram/solve";
 import { isGridAnswerCompleteAndCorrect } from "../interactions/gridChecking";
@@ -29,6 +30,13 @@ export type KillerCageDecoration = {
   bottom: boolean;
   left: boolean;
 };
+
+export const shouldCelebrateSudokuCompletion = (
+  previousIdentity: string,
+  previousSolved: boolean,
+  currentIdentity: string,
+  currentSolved: boolean,
+) => previousIdentity === currentIdentity && !previousSolved && currentSolved;
 
 export const makeKillerCageDecorations = (puzzle: GridGeneratedPuzzle) => {
   const decorations = new Map<string, KillerCageDecoration>();
@@ -84,6 +92,16 @@ type GridPuzzlePreviewProps = {
   onCellInput: (cell: PuzzleCell, value: string) => void;
 };
 
+type SudokuCompletionBaseline = {
+  identity: string;
+  solved: boolean;
+};
+
+type SudokuCompletionEvent = {
+  identity: string;
+  sequence: number;
+};
+
 export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick, onCellInput }: GridPuzzlePreviewProps) => {
   const inputMode = getGridInputMode(puzzle.puzzleId);
   const isSudoku = puzzle.puzzleId === "sudoku";
@@ -92,9 +110,34 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
   const isDiagonalSudoku = isSudoku && puzzle.sudokuVariation === "diagonal";
   const isZeroKillerSudoku = isSudoku && puzzle.sudokuVariation === "zero-killer";
   const isNonogram = puzzle.puzzleId === "nonogram";
+  const puzzleIdentity = `${puzzle.puzzleId}:${puzzle.seed}:${puzzle.sudokuVariation ?? ""}:${puzzle.width}:${puzzle.height}`;
+  const sudokuCompletionBaseline = useRef<SudokuCompletionBaseline>({ identity: puzzleIdentity, solved: isSudokuSolved });
+  const [sudokuCompletionEvent, setSudokuCompletionEvent] = useState<SudokuCompletionEvent | null>(null);
+
+  useEffect(() => {
+    const previous = sudokuCompletionBaseline.current;
+    const puzzleChanged = previous.identity !== puzzleIdentity;
+
+    if (!isSudoku || puzzleChanged || !isSudokuSolved) {
+      setSudokuCompletionEvent(null);
+    } else if (shouldCelebrateSudokuCompletion(previous.identity, previous.solved, puzzleIdentity, isSudokuSolved)) {
+      setSudokuCompletionEvent((current) => ({
+        identity: puzzleIdentity,
+        sequence: (current?.sequence ?? 0) + 1,
+      }));
+    }
+
+    sudokuCompletionBaseline.current = { identity: puzzleIdentity, solved: isSudokuSolved };
+  }, [isSudoku, isSudokuSolved, puzzleIdentity]);
+
+  const showSudokuCompletionEffect = Boolean(
+    isSudokuSolved &&
+      sudokuCompletionBaseline.current.identity === puzzleIdentity &&
+      sudokuCompletionEvent?.identity === puzzleIdentity,
+  );
   const numericInput = useNumericGridInput({
     enabled: isNumericGridPuzzle && !isSudokuSolved,
-    puzzleIdentity: `${puzzle.puzzleId}:${puzzle.seed}:${puzzle.sudokuVariation ?? ""}:${puzzle.width}:${puzzle.height}`,
+    puzzleIdentity,
     digitCount: puzzle.width,
     cells,
     selectedGridCell: isSudokuSolved ? null : selectedGridCell,
@@ -102,6 +145,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
     onCellInput,
   });
   const selectedCell = numericInput.selectedCell;
+  const activeNumericValue = isSudokuSolved ? null : numericInput.activeValue;
   const killerCageDecorations = isZeroKillerSudoku ? makeKillerCageDecorations(puzzle) : new Map<string, KillerCageDecoration>();
   const hasSudokuValidation = Boolean(isSudoku && cells.some((cell) => !cell.locked && (cell.tone === "answer" || cell.tone === "hint")));
   const gridTemplateColumns = `repeat(${puzzle.width}, minmax(0, 1fr))`;
@@ -122,8 +166,12 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
     <div
       aria-describedby={sudokuVariantRuleId}
       aria-label={isSudoku ? `${puzzle.difficulty ?? "Medium"} ${puzzle.title} board${isSudokuSolved ? ", solved" : ""}` : isNonogram ? `${puzzle.width} by ${puzzle.height} Nonogram board` : undefined}
-      class={`grid ${puzzle.puzzleId} ${isDiagonalSudoku ? "diagonal-sudoku" : ""} ${isZeroKillerSudoku ? "zero-killer-sudoku" : ""} ${isSudokuSolved ? "solved-grid" : ""}`}
+      class={`grid ${puzzle.puzzleId} ${isDiagonalSudoku ? "diagonal-sudoku" : ""} ${isZeroKillerSudoku ? "zero-killer-sudoku" : ""} ${showSudokuCompletionEffect ? "solved-grid" : ""}`}
+      data-completion-event={showSudokuCompletionEffect ? sudokuCompletionEvent?.sequence : undefined}
       data-grid-selection-scope={isNumericGridPuzzle && !isSudokuSolved ? "true" : undefined}
+      onAnimationEnd={() => {
+        if (showSudokuCompletionEffect) setSudokuCompletionEvent(null);
+      }}
       style={{ gridTemplateColumns }}
     >
       {cells.map((cell) => {
@@ -138,7 +186,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
             !isSelected &&
             (cell.row === selectedCell.row || cell.column === selectedCell.column || sameSudokuBox(cell, selectedCell) || isDiagonalPeer),
         );
-        const isSameValue = Boolean(isNumericGridPuzzle && numericInput.activeValue && cell.value === numericInput.activeValue && !isSelected);
+        const isSameValue = Boolean(isNumericGridPuzzle && activeNumericValue && cell.value === activeNumericValue && !isSelected);
         const isCorrectValue = Boolean(isSudoku && hasSudokuValidation && !cell.locked && cell.tone === "answer");
         const isIncorrectValue = Boolean(isSudoku && hasSudokuValidation && !cell.locked && cell.tone === "hint");
         const isDiagonalCell = Boolean(isDiagonalSudoku && isSudokuMainDiagonalCell(cell, puzzle.width));
@@ -197,7 +245,15 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
             {isNonogram ? "" : isSudoku ? (
               <>
                 {killerCage?.isClueCell ? <span aria-hidden="true" class="killer-cage-sum">{killerCage.sum}</span> : null}
-                <span class="sudoku-cell-value">{cell.value}</span>
+                <span
+                  class={`sudoku-cell-value ${cell.locked ? "sudoku-given-value" : "sudoku-player-value"}`}
+                  style={{
+                    color: cell.locked ? "#f8fafc" : "#cbd5e1",
+                    fontWeight: cell.locked ? 900 : 600,
+                  }}
+                >
+                  {cell.value}
+                </span>
               </>
             ) : (
               cell.value
