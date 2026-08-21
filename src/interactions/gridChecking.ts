@@ -94,11 +94,68 @@ const checkNonogram = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) 
   };
 };
 
-export const isGridAnswerCompleteAndCorrect = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) => {
+export type GridAnswerAssessment = {
+  hasAnswerKey: boolean;
+  filled: boolean;
+  solved: boolean;
+  emptyCount: number;
+  incorrectCount: number;
+  emptyCellIndices: number[];
+  incorrectCellIndices: number[];
+};
+
+export const assessGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]): GridAnswerAssessment => {
   const answerKey = currentPuzzle.answerKey;
 
-  return Boolean(answerKey?.length) && cells.length === answerKey?.length && cells.every((cell, index) => cell.value === (answerKey?.[index] ?? ""));
+  if (!answerKey?.length) {
+    return {
+      hasAnswerKey: false,
+      filled: false,
+      solved: false,
+      emptyCount: 0,
+      incorrectCount: 0,
+      emptyCellIndices: [],
+      incorrectCellIndices: [],
+    };
+  }
+
+  const emptyCellIndices: number[] = [];
+  const incorrectCellIndices: number[] = [];
+
+  for (let index = 0; index < answerKey.length; index += 1) {
+    const expected = answerKey[index] ?? "";
+    const actual = cells[index]?.value ?? "";
+
+    if (expected !== "" && actual === "") {
+      emptyCellIndices.push(index);
+    } else if (actual !== expected) {
+      incorrectCellIndices.push(index);
+    }
+  }
+
+  if (cells.length > answerKey.length) {
+    for (let index = answerKey.length; index < cells.length; index += 1) {
+      incorrectCellIndices.push(index);
+    }
+  }
+
+  const cellCountMatches = cells.length === answerKey.length;
+  const emptyCount = emptyCellIndices.length;
+  const incorrectCount = incorrectCellIndices.length;
+
+  return {
+    hasAnswerKey: true,
+    filled: cellCountMatches && emptyCount === 0,
+    solved: cellCountMatches && emptyCount === 0 && incorrectCount === 0,
+    emptyCount,
+    incorrectCount,
+    emptyCellIndices,
+    incorrectCellIndices,
+  };
 };
+
+export const isGridAnswerCompleteAndCorrect = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) =>
+  assessGridAnswer(currentPuzzle, cells).solved;
 
 export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) => {
   if (currentPuzzle.puzzleId === "word-guess") {
@@ -110,13 +167,11 @@ export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: Puzzl
   }
 
   const answerKey = currentPuzzle.answerKey;
+  const assessment = assessGridAnswer(currentPuzzle, cells);
 
-  if (!answerKey?.length) {
+  if (!assessment.hasAnswerKey || !answerKey?.length) {
     return { cells, message: `${currentPuzzle.title} does not expose a checker yet.` };
   }
-
-  let emptyCount = 0;
-  let incorrectCount = 0;
 
   const nextCells = cells.map((cell, index): PuzzleCell => {
     if (cell.tone === "disabled" || cell.locked) {
@@ -128,12 +183,6 @@ export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: Puzzl
     const isEmpty = actual === "";
     const isCorrect = actual === expected;
 
-    if (isEmpty && expected !== "") {
-      emptyCount += 1;
-    } else if (!isCorrect) {
-      incorrectCount += 1;
-    }
-
     return {
       ...cell,
       tone: currentPuzzle.puzzleId === "sudoku" ? (isEmpty || isCorrect ? "empty" : "hint") : isEmpty ? "empty" : isCorrect ? "answer" : "hint",
@@ -141,7 +190,7 @@ export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: Puzzl
   });
 
   if (currentPuzzle.puzzleId === "sudoku") {
-    if (emptyCount === 0 && incorrectCount === 0) {
+    if (assessment.solved) {
       return {
         cells: nextCells.map((cell): PuzzleCell =>
           cell.tone === "disabled" || cell.locked ? cell : { ...cell, tone: "answer" },
@@ -150,25 +199,25 @@ export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: Puzzl
       };
     }
 
-    if (incorrectCount === 0) {
+    if (assessment.incorrectCount === 0) {
       return {
         cells: nextCells,
-        message: `No mistakes found. ${pluralize(emptyCount, "square")} empty.`,
+        message: `No mistakes found. ${pluralize(assessment.emptyCount, "square")} empty.`,
       };
     }
 
     return {
       cells: nextCells,
-      message: `${pluralize(incorrectCount, "entry", "entries")} need attention${emptyCount > 0 ? `; ${pluralize(emptyCount, "square")} empty` : ""}.`,
+      message: `${pluralize(assessment.incorrectCount, "entry", "entries")} need attention${assessment.emptyCount > 0 ? `; ${pluralize(assessment.emptyCount, "square")} empty` : ""}.`,
     };
   }
 
-  if (emptyCount === 0 && incorrectCount === 0) {
+  if (assessment.solved) {
     return { cells: nextCells, message: `Solved. ${currentPuzzle.title} is correct.` };
   }
 
   return {
     cells: nextCells,
-    message: `Not solved: ${emptyCount} empty cell(s), ${incorrectCount} incorrect cell(s).`,
+    message: `Not solved: ${assessment.emptyCount} empty cell(s), ${assessment.incorrectCount} incorrect cell(s).`,
   };
 };
