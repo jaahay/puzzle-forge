@@ -194,7 +194,7 @@
   opacity: 0.62;
 }
 
-.completion-inert button:disabled {
+.completion-inert[aria-disabled="true"] button:disabled {
   cursor: default;
   opacity: 1;
 }
