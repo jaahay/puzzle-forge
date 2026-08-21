@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 
 export type CompletionPresentationPhase = "playing" | "settling" | "celebrating" | "completed";
 
@@ -32,6 +32,11 @@ export const shouldStartCompletionPresentation = (
 
 export const isTrackedCompletionKey = (key: string, trackedKeys: readonly string[]) =>
   trackedKeys.includes(key);
+
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" &&
+  typeof window.matchMedia === "function" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export const usePuzzleCompletionPresentation = ({
   enabled,
@@ -84,8 +89,14 @@ export const usePuzzleCompletionPresentation = ({
       }
 
       pendingSettlement.current = false;
-      setPhase("celebrating");
       clearCompletionFallbackTimer();
+
+      if (prefersReducedMotion()) {
+        setPhase("completed");
+        return;
+      }
+
+      setPhase("celebrating");
       completionFallbackTimer.current = setTimeout(() => {
         completionFallbackTimer.current = null;
         setPhase("completed");
@@ -99,7 +110,7 @@ export const usePuzzleCompletionPresentation = ({
   };
 
   useEffect(() => {
-    if (!enabled || typeof window === "undefined") {
+    if (!enabled || typeof window === "undefined" || typeof document === "undefined") {
       activeKeys.current.clear();
       activePointers.current.clear();
       return;
@@ -164,7 +175,7 @@ export const usePuzzleCompletionPresentation = ({
     };
   }, [enabled, trackedKeySignature]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const previous = baseline.current;
     const current = { enabled, identity, solved };
     const identityChanged = previous.identity !== identity;
