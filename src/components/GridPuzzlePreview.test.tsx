@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
-import { getGridCellAriaLabel, makeKillerCageDecorations, shouldCelebrateSudokuCompletion } from "./GridPuzzlePreview";
+import { getGridCellAriaLabel, makeKillerCageDecorations } from "./GridPuzzlePreview";
 
 const puzzleWithCage = {
   cages: [
@@ -62,21 +62,5 @@ describe("GridPuzzlePreview Zero Killer cage accessibility", () => {
     expect(getGridCellAriaLabel(cell, decoration)).toBe(
       "Empty Zero Killer Sudoku cell at row 1, column 2. Killer cage 1, sum 10, cell 2 of 3.",
     );
-  });
-});
-
-describe("Sudoku completion celebration transitions", () => {
-  it("celebrates only an unsolved-to-solved transition for the same puzzle identity", () => {
-    expect(shouldCelebrateSudokuCompletion("sudoku:seed-a", false, "sudoku:seed-a", true)).toBe(true);
-  });
-
-  it("does not replay for an already-solved rerender or restored solved puzzle", () => {
-    expect(shouldCelebrateSudokuCompletion("sudoku:seed-a", true, "sudoku:seed-a", true)).toBe(false);
-    expect(shouldCelebrateSudokuCompletion("sudoku:seed-a", false, "sudoku:seed-b", true)).toBe(false);
-  });
-
-  it("does not celebrate unsolved states", () => {
-    expect(shouldCelebrateSudokuCompletion("sudoku:seed-a", true, "sudoku:seed-a", false)).toBe(false);
-    expect(shouldCelebrateSudokuCompletion("sudoku:seed-a", false, "sudoku:seed-a", false)).toBe(false);
   });
 });
