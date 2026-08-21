@@ -128,6 +128,7 @@ export const GridPuzzlePreview = ({
       digits={numericInput.digits}
       activeValue={numericInput.activeValue}
       canClearSelectedCell={numericInput.canClearSelectedCell}
+      disabled={isSudokuSolved}
       onDigit={numericInput.setSelectedValue}
       onClear={numericInput.clearSelectedValue}
     />
