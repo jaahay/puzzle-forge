@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
-import { checkGridAnswer, isGridAnswerCompleteAndCorrect } from "./gridChecking";
+import { assessGridAnswer, checkGridAnswer, isGridAnswerCompleteAndCorrect } from "./gridChecking";
 
 const makeSudokuPuzzle = (): GridGeneratedPuzzle => ({
   id: "test-sudoku",
@@ -17,6 +17,13 @@ const makeSudokuPuzzle = (): GridGeneratedPuzzle => ({
   answerKey: ["1", "2", "3", "4"],
 });
 
+const makeFutoshikiPuzzle = (): GridGeneratedPuzzle => ({
+  ...makeSudokuPuzzle(),
+  id: "test-futoshiki",
+  puzzleId: "futoshiki",
+  title: "Futoshiki",
+});
+
 const makeCell = (row: number, column: number, value: string, locked = false): PuzzleCell => ({
   row,
   column,
@@ -24,6 +31,74 @@ const makeCell = (row: number, column: number, value: string, locked = false): P
   locked,
   tone: locked ? "given" : "empty",
   ariaLabel: `${value || "Empty"} cell at row ${row + 1}, column ${column + 1}`,
+});
+
+const solvedCells = () => [
+  makeCell(0, 0, "1"),
+  makeCell(0, 1, "2"),
+  makeCell(1, 0, "3"),
+  makeCell(1, 1, "4", true),
+];
+
+describe("shared answer-grid assessment", () => {
+  it("distinguishes a solved board from incomplete and full-but-wrong boards", () => {
+    const puzzle = makeSudokuPuzzle();
+    const solved = assessGridAnswer(puzzle, solvedCells());
+    const incomplete = assessGridAnswer(puzzle, [
+      makeCell(0, 0, "1"),
+      makeCell(0, 1, "2"),
+      makeCell(1, 0, ""),
+      makeCell(1, 1, "4", true),
+    ]);
+    const fullButWrong = assessGridAnswer(puzzle, [
+      makeCell(0, 0, "1"),
+      makeCell(0, 1, "9"),
+      makeCell(1, 0, "3"),
+      makeCell(1, 1, "4", true),
+    ]);
+
+    expect(solved).toMatchObject({
+      hasAnswerKey: true,
+      filled: true,
+      solved: true,
+      emptyCount: 0,
+      incorrectCount: 0,
+    });
+    expect(solved.emptyCellIndices).toEqual([]);
+    expect(solved.incorrectCellIndices).toEqual([]);
+
+    expect(incomplete).toMatchObject({
+      hasAnswerKey: true,
+      filled: false,
+      solved: false,
+      emptyCount: 1,
+      incorrectCount: 0,
+    });
+    expect(incomplete.emptyCellIndices).toEqual([2]);
+
+    expect(fullButWrong).toMatchObject({
+      hasAnswerKey: true,
+      filled: true,
+      solved: false,
+      emptyCount: 0,
+      incorrectCount: 1,
+    });
+    expect(fullButWrong.incorrectCellIndices).toEqual([1]);
+  });
+
+  it("reports unavailable answer truth without manufacturing diagnostics", () => {
+    const assessment = assessGridAnswer({ ...makeSudokuPuzzle(), answerKey: undefined }, solvedCells());
+
+    expect(assessment).toEqual({
+      hasAnswerKey: false,
+      filled: false,
+      solved: false,
+      emptyCount: 0,
+      incorrectCount: 0,
+      emptyCellIndices: [],
+      incorrectCellIndices: [],
+    });
+  });
 });
 
 describe("Sudoku grid checking feedback", () => {
@@ -52,15 +127,24 @@ describe("Sudoku grid checking feedback", () => {
   });
 
   it("uses a temporary success tone only when the puzzle is solved", () => {
-    const result = checkGridAnswer(makeSudokuPuzzle(), [
+    const result = checkGridAnswer(makeSudokuPuzzle(), solvedCells());
+
+    expect(result.cells.map((cell) => cell.tone)).toEqual(["answer", "answer", "answer", "given"]);
+    expect(result.message).toBe("Solved.");
+  });
+});
+
+describe("shared answer-key checking", () => {
+  it("uses the same assessment semantics for a full but incorrect Futoshiki board", () => {
+    const result = checkGridAnswer(makeFutoshikiPuzzle(), [
       makeCell(0, 0, "1"),
-      makeCell(0, 1, "2"),
+      makeCell(0, 1, "9"),
       makeCell(1, 0, "3"),
       makeCell(1, 1, "4", true),
     ]);
 
-    expect(result.cells.map((cell) => cell.tone)).toEqual(["answer", "answer", "answer", "given"]);
-    expect(result.message).toBe("Solved.");
+    expect(result.cells.map((cell) => cell.tone)).toEqual(["answer", "hint", "answer", "given"]);
+    expect(result.message).toBe("Not solved: 0 empty cell(s), 1 incorrect cell(s).");
   });
 });
 
@@ -68,12 +152,7 @@ describe("automatic Sudoku completion detection", () => {
   it("recognizes only a fully filled correct answer", () => {
     const puzzle = makeSudokuPuzzle();
 
-    expect(isGridAnswerCompleteAndCorrect(puzzle, [
-      makeCell(0, 0, "1"),
-      makeCell(0, 1, "2"),
-      makeCell(1, 0, "3"),
-      makeCell(1, 1, "4", true),
-    ])).toBe(true);
+    expect(isGridAnswerCompleteAndCorrect(puzzle, solvedCells())).toBe(true);
 
     expect(isGridAnswerCompleteAndCorrect(puzzle, [
       makeCell(0, 0, "1"),
