@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "preact/hooks";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { FILLED_NONOGRAM_CELL } from "../games/nonogram/solve";
 import { isGridAnswerCompleteAndCorrect } from "../interactions/gridChecking";
 import { getGridInputMode, isSelectedGridCell, type GridCellSelection } from "../interactions/gridRules";
 import { BoardViewport } from "./BoardViewport";
 import { NumericGridDigitPad, useNumericGridInput } from "./NumericGridInput";
+import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
 
 const SUDOKU_BOX_SIZE = 3;
 
@@ -30,13 +30,6 @@ export type KillerCageDecoration = {
   bottom: boolean;
   left: boolean;
 };
-
-export const shouldCelebrateSudokuCompletion = (
-  previousIdentity: string,
-  previousSolved: boolean,
-  currentIdentity: string,
-  currentSolved: boolean,
-) => previousIdentity === currentIdentity && !previousSolved && currentSolved;
 
 export const makeKillerCageDecorations = (puzzle: GridGeneratedPuzzle) => {
   const decorations = new Map<string, KillerCageDecoration>();
@@ -88,21 +81,21 @@ type GridPuzzlePreviewProps = {
   puzzle: GridGeneratedPuzzle;
   cells: PuzzleCell[];
   selectedGridCell: GridCellSelection | null;
+  completionPhase?: CompletionPresentationPhase;
+  onCompletionAnimationEnd?: () => void;
   onCellClick: (cell: PuzzleCell) => void;
   onCellInput: (cell: PuzzleCell, value: string) => void;
 };
 
-type SudokuCompletionBaseline = {
-  identity: string;
-  solved: boolean;
-};
-
-type SudokuCompletionEvent = {
-  identity: string;
-  sequence: number;
-};
-
-export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick, onCellInput }: GridPuzzlePreviewProps) => {
+export const GridPuzzlePreview = ({
+  puzzle,
+  cells,
+  selectedGridCell,
+  completionPhase = "playing",
+  onCompletionAnimationEnd,
+  onCellClick,
+  onCellInput,
+}: GridPuzzlePreviewProps) => {
   const inputMode = getGridInputMode(puzzle.puzzleId);
   const isSudoku = puzzle.puzzleId === "sudoku";
   const isSudokuSolved = isSudoku && isGridAnswerCompleteAndCorrect(puzzle, cells);
@@ -111,30 +104,8 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
   const isZeroKillerSudoku = isSudoku && puzzle.sudokuVariation === "zero-killer";
   const isNonogram = puzzle.puzzleId === "nonogram";
   const puzzleIdentity = `${puzzle.puzzleId}:${puzzle.seed}:${puzzle.sudokuVariation ?? ""}:${puzzle.width}:${puzzle.height}`;
-  const sudokuCompletionBaseline = useRef<SudokuCompletionBaseline>({ identity: puzzleIdentity, solved: isSudokuSolved });
-  const [sudokuCompletionEvent, setSudokuCompletionEvent] = useState<SudokuCompletionEvent | null>(null);
-
-  useEffect(() => {
-    const previous = sudokuCompletionBaseline.current;
-    const puzzleChanged = previous.identity !== puzzleIdentity;
-
-    if (!isSudoku || puzzleChanged || !isSudokuSolved) {
-      setSudokuCompletionEvent(null);
-    } else if (shouldCelebrateSudokuCompletion(previous.identity, previous.solved, puzzleIdentity, isSudokuSolved)) {
-      setSudokuCompletionEvent((current) => ({
-        identity: puzzleIdentity,
-        sequence: (current?.sequence ?? 0) + 1,
-      }));
-    }
-
-    sudokuCompletionBaseline.current = { identity: puzzleIdentity, solved: isSudokuSolved };
-  }, [isSudoku, isSudokuSolved, puzzleIdentity]);
-
-  const showSudokuCompletionEffect = Boolean(
-    isSudokuSolved &&
-      sudokuCompletionBaseline.current.identity === puzzleIdentity &&
-      sudokuCompletionEvent?.identity === puzzleIdentity,
-  );
+  const showSudokuCompletionEffect = isSudokuSolved && completionPhase === "celebrating";
+  const showCompletedSudokuPresentation = isSudokuSolved && completionPhase === "completed";
   const numericInput = useNumericGridInput({
     enabled: isNumericGridPuzzle && !isSudokuSolved,
     puzzleIdentity,
@@ -151,7 +122,7 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
   const gridTemplateColumns = `repeat(${puzzle.width}, minmax(0, 1fr))`;
   const sudokuVariantRuleId = isDiagonalSudoku || isZeroKillerSudoku ? "sudoku-variant-rule" : undefined;
 
-  const digitPad = isNumericGridPuzzle && !isSudokuSolved ? (
+  const digitPad = isNumericGridPuzzle && !showCompletedSudokuPresentation ? (
     <NumericGridDigitPad
       title={puzzle.title}
       digits={numericInput.digits}
@@ -167,10 +138,11 @@ export const GridPuzzlePreview = ({ puzzle, cells, selectedGridCell, onCellClick
       aria-describedby={sudokuVariantRuleId}
       aria-label={isSudoku ? `${puzzle.difficulty ?? "Medium"} ${puzzle.title} board${isSudokuSolved ? ", solved" : ""}` : isNonogram ? `${puzzle.width} by ${puzzle.height} Nonogram board` : undefined}
       class={`grid ${puzzle.puzzleId} ${isDiagonalSudoku ? "diagonal-sudoku" : ""} ${isZeroKillerSudoku ? "zero-killer-sudoku" : ""} ${showSudokuCompletionEffect ? "solved-grid" : ""}`}
-      data-completion-event={showSudokuCompletionEffect ? sudokuCompletionEvent?.sequence : undefined}
       data-grid-selection-scope={isNumericGridPuzzle && !isSudokuSolved ? "true" : undefined}
-      onAnimationEnd={() => {
-        if (showSudokuCompletionEffect) setSudokuCompletionEvent(null);
+      onAnimationEnd={(event) => {
+        if (showSudokuCompletionEffect && event.target === event.currentTarget) {
+          onCompletionAnimationEnd?.();
+        }
       }}
       style={{ gridTemplateColumns }}
     >
