@@ -337,7 +337,7 @@
   padding: 0.5rem 0.85rem;
 }
 
-@media (max-width: 420px) {
+@media (max-width: 300px) {
   .completion-dock {
     align-items: stretch;
   }
