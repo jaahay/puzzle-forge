@@ -30,6 +30,12 @@ export const shouldStartCompletionPresentation = (
   !previous.solved &&
   current.solved;
 
+export const shouldStageCompletionPresentation = (
+  previous: CompletionBaseline,
+  current: CompletionBaseline,
+  hasCausativeInput: boolean,
+) => hasCausativeInput && shouldStartCompletionPresentation(previous, current);
+
 export const isTrackedCompletionKey = (key: string, trackedKeys: readonly string[]) =>
   trackedKeys.includes(key);
 
@@ -49,10 +55,11 @@ export const usePuzzleCompletionPresentation = ({
   const [phase, setPhase] = useState<CompletionPresentationPhase>(enabled && solved ? "completed" : "playing");
   const baseline = useRef<CompletionBaseline>({ enabled, identity, solved });
   const activeKeys = useRef(new Set<string>());
-  const activePointers = useRef(new Set<number>());
+  const hasCausativeInput = useRef(false);
   const pendingSettlement = useRef(false);
   const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const completionFallbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const causativeInputTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const trackedKeySignature = trackedKeys.join("\u0000");
 
   const clearSettleTimer = () => {
@@ -69,12 +76,36 @@ export const usePuzzleCompletionPresentation = ({
     }
   };
 
+  const clearCausativeInputTimer = () => {
+    if (causativeInputTimer.current !== null) {
+      clearTimeout(causativeInputTimer.current);
+      causativeInputTimer.current = null;
+    }
+  };
+
   const clearPresentationTimers = () => {
     clearSettleTimer();
     clearCompletionFallbackTimer();
   };
 
-  const interactionsAreSettled = () => activeKeys.current.size === 0 && activePointers.current.size === 0;
+  const clearCausativeInput = () => {
+    hasCausativeInput.current = false;
+    clearCausativeInputTimer();
+  };
+
+  const markCausativeInput = () => {
+    hasCausativeInput.current = true;
+    clearCausativeInputTimer();
+    causativeInputTimer.current = setTimeout(() => {
+      causativeInputTimer.current = null;
+
+      if (!pendingSettlement.current) {
+        hasCausativeInput.current = false;
+      }
+    }, 0);
+  };
+
+  const interactionsAreSettled = () => activeKeys.current.size === 0;
 
   const beginCelebrationWhenSettled = () => {
     if (!pendingSettlement.current || !interactionsAreSettled() || settleTimer.current !== null) {
@@ -112,7 +143,7 @@ export const usePuzzleCompletionPresentation = ({
   useEffect(() => {
     if (!enabled || typeof window === "undefined" || typeof document === "undefined") {
       activeKeys.current.clear();
-      activePointers.current.clear();
+      clearCausativeInput();
       return;
     }
 
@@ -123,6 +154,7 @@ export const usePuzzleCompletionPresentation = ({
         return;
       }
 
+      markCausativeInput();
       activeKeys.current.add(event.code || event.key);
     };
 
@@ -135,18 +167,17 @@ export const usePuzzleCompletionPresentation = ({
       beginCelebrationWhenSettled();
     };
 
-    const handlePointerDown = (event: PointerEvent) => {
-      activePointers.current.add(event.pointerId);
-    };
-
-    const handlePointerEnd = (event: PointerEvent) => {
-      activePointers.current.delete(event.pointerId);
-      beginCelebrationWhenSettled();
+    const handleClick = () => {
+      markCausativeInput();
     };
 
     const settleAbandonedInteraction = () => {
       activeKeys.current.clear();
-      activePointers.current.clear();
+
+      if (!pendingSettlement.current) {
+        clearCausativeInput();
+      }
+
       beginCelebrationWhenSettled();
     };
 
@@ -158,18 +189,14 @@ export const usePuzzleCompletionPresentation = ({
 
     window.addEventListener("keydown", handleKeyDown, true);
     window.addEventListener("keyup", handleKeyUp, true);
-    window.addEventListener("pointerdown", handlePointerDown, true);
-    window.addEventListener("pointerup", handlePointerEnd, true);
-    window.addEventListener("pointercancel", handlePointerEnd, true);
+    window.addEventListener("click", handleClick, true);
     window.addEventListener("blur", settleAbandonedInteraction);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown, true);
       window.removeEventListener("keyup", handleKeyUp, true);
-      window.removeEventListener("pointerdown", handlePointerDown, true);
-      window.removeEventListener("pointerup", handlePointerEnd, true);
-      window.removeEventListener("pointercancel", handlePointerEnd, true);
+      window.removeEventListener("click", handleClick, true);
       window.removeEventListener("blur", settleAbandonedInteraction);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
@@ -182,18 +209,28 @@ export const usePuzzleCompletionPresentation = ({
 
     if (!enabled) {
       cancelPendingPresentation();
+      clearCausativeInput();
       setPhase("playing");
     } else if (!previous.enabled || identityChanged) {
       cancelPendingPresentation();
+      clearCausativeInput();
       setPhase(solved ? "completed" : "playing");
     } else if (!solved) {
       cancelPendingPresentation();
+      clearCausativeInput();
       setPhase("playing");
     } else if (shouldStartCompletionPresentation(previous, current)) {
       cancelPendingPresentation();
-      pendingSettlement.current = true;
-      setPhase("settling");
-      beginCelebrationWhenSettled();
+
+      if (shouldStageCompletionPresentation(previous, current, hasCausativeInput.current)) {
+        clearCausativeInput();
+        pendingSettlement.current = true;
+        setPhase("settling");
+        beginCelebrationWhenSettled();
+      } else {
+        clearCausativeInput();
+        setPhase("completed");
+      }
     }
 
     baseline.current = current;
@@ -202,8 +239,8 @@ export const usePuzzleCompletionPresentation = ({
   useEffect(
     () => () => {
       cancelPendingPresentation();
+      clearCausativeInput();
       activeKeys.current.clear();
-      activePointers.current.clear();
     },
     [],
   );
