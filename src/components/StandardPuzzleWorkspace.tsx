@@ -41,9 +41,15 @@ export const StandardPuzzleWorkspace = ({
     enabled: Boolean(isSudoku && puzzle?.kind === "grid" && gridCells),
     identity: sudokuCompletionIdentity,
     solved: isSudokuSolved,
-    trackedKeys: puzzle?.kind === "grid" && puzzle.puzzleId === "sudoku" ? getNumericGridDigits(puzzle.width) : [],
+    trackedKeys: puzzle?.kind === "grid" && puzzle.puzzleId === "sudoku"
+      ? [...getNumericGridDigits(puzzle.width), "Enter", " "]
+      : [],
   });
   const isSudokuPresentationCompleted = isSudokuSolved && sudokuCompletion.phase === "completed";
+  const handleSudokuCellInput = (cell: PuzzleCell, value: string) => {
+    sudokuCompletion.recordCausativeInput();
+    onCellInput(cell, value);
+  };
   const hasBottomSettingsBar = isSudoku || isNonogram || isWordGuess || isFutoshiki;
   const showStatusLine = !hasBottomSettingsBar;
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
@@ -107,7 +113,7 @@ export const StandardPuzzleWorkspace = ({
   const boardSlot = puzzle ? (
     <section class="puzzle-panel" aria-label="Generated puzzle preview">
       {puzzle.kind === "cards" ? null : <div class="puzzle-meta">{isSudoku && puzzle.kind === "grid" && gridCells ? <SudokuMeta puzzle={puzzle} cells={gridCells} /> : <>{isSudoku ? null : <span>{`${puzzle.width} x ${puzzle.height}`}</span>}{puzzle.difficulty ? <span>{puzzle.difficulty}</span> : null}{isNonogram || isFutoshiki ? <span>{puzzle.uniqueSolution ? "Unique" : "Open"}</span> : null}{isWordGuess ? <span>Answer-list solvable</span> : null}{isNonogram ? <span>{filledOpenCount}/{openCount} filled</span> : isFutoshiki ? <span>{filledOpenCount}/{openCount} filled</span> : dailyLabel ? <span>Daily: {dailyLabel}</span> : null}</>}</div>}
-      {puzzle.kind === "cards" && cardStacks ? <CardPuzzlePreview stacks={cardStacks} selectedCard={selectedCard} stats={solitaireStats} toolbar={solitaireActionControls} variation={puzzle.solitaireVariation} onCardClick={onCardClick} onCardDoubleClick={onCardDoubleClick} onStackClick={onStackClick} /> : puzzle.kind === "grid" && puzzle.puzzleId === "word-guess" && gridCells ? <WordGuessGame puzzle={puzzle} cells={gridCells} statusMessage={statusMessage} onCellInput={onCellInput} onSubmitGuess={onCheck} /> : puzzle.kind === "grid" && puzzle.puzzleId === "futoshiki" && gridCells ? <FutoshikiBoard puzzle={puzzle} cells={gridCells} selectedGridCell={selectedGridCell} onCellClick={onCellClick} onCellInput={onCellInput} /> : puzzle.kind === "grid" && gridCells ? <GridPuzzlePreview puzzle={puzzle} cells={gridCells} selectedGridCell={selectedGridCell} completionPhase={isSudoku ? sudokuCompletion.phase : undefined} onCompletionAnimationEnd={isSudoku ? sudokuCompletion.completePresentation : undefined} onCellClick={onCellClick} onCellInput={onCellInput} /> : null}
+      {puzzle.kind === "cards" && cardStacks ? <CardPuzzlePreview stacks={cardStacks} selectedCard={selectedCard} stats={solitaireStats} toolbar={solitaireActionControls} variation={puzzle.solitaireVariation} onCardClick={onCardClick} onCardDoubleClick={onCardDoubleClick} onStackClick={onStackClick} /> : puzzle.kind === "grid" && puzzle.puzzleId === "word-guess" && gridCells ? <WordGuessGame puzzle={puzzle} cells={gridCells} statusMessage={statusMessage} onCellInput={onCellInput} onSubmitGuess={onCheck} /> : puzzle.kind === "grid" && puzzle.puzzleId === "futoshiki" && gridCells ? <FutoshikiBoard puzzle={puzzle} cells={gridCells} selectedGridCell={selectedGridCell} onCellClick={onCellClick} onCellInput={onCellInput} /> : puzzle.kind === "grid" && gridCells ? <GridPuzzlePreview puzzle={puzzle} cells={gridCells} selectedGridCell={selectedGridCell} completionPhase={isSudoku ? sudokuCompletion.phase : undefined} onCompletionAnimationEnd={isSudoku ? sudokuCompletion.completePresentation : undefined} onCellClick={onCellClick} onCellInput={isSudoku ? handleSudokuCellInput : onCellInput} /> : null}
       {hasBottomSettingsBar || puzzle.kind === "cards" || puzzle.notes.length === 0 ? null : <ul class="notes-list">{puzzle.notes.map((note) => <li key={note}>{note}</li>)}</ul>}
     </section>
   ) : isGenerating ? loadingBoardSlot : null;
