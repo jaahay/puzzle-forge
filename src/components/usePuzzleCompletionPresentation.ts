@@ -59,7 +59,6 @@ export const usePuzzleCompletionPresentation = ({
   const pendingSettlement = useRef(false);
   const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const completionFallbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const causativeInputTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const trackedKeySignature = trackedKeys.join("\u0000");
 
   const clearSettleTimer = () => {
@@ -76,13 +75,6 @@ export const usePuzzleCompletionPresentation = ({
     }
   };
 
-  const clearCausativeInputTimer = () => {
-    if (causativeInputTimer.current !== null) {
-      clearTimeout(causativeInputTimer.current);
-      causativeInputTimer.current = null;
-    }
-  };
-
   const clearPresentationTimers = () => {
     clearSettleTimer();
     clearCompletionFallbackTimer();
@@ -90,19 +82,10 @@ export const usePuzzleCompletionPresentation = ({
 
   const clearCausativeInput = () => {
     hasCausativeInput.current = false;
-    clearCausativeInputTimer();
   };
 
-  const markCausativeInput = () => {
+  const recordCausativeInput = () => {
     hasCausativeInput.current = true;
-    clearCausativeInputTimer();
-    causativeInputTimer.current = setTimeout(() => {
-      causativeInputTimer.current = null;
-
-      if (!pendingSettlement.current) {
-        hasCausativeInput.current = false;
-      }
-    }, 0);
   };
 
   const interactionsAreSettled = () => activeKeys.current.size === 0;
@@ -154,7 +137,6 @@ export const usePuzzleCompletionPresentation = ({
         return;
       }
 
-      markCausativeInput();
       activeKeys.current.add(event.code || event.key);
     };
 
@@ -167,17 +149,8 @@ export const usePuzzleCompletionPresentation = ({
       beginCelebrationWhenSettled();
     };
 
-    const handleClick = () => {
-      markCausativeInput();
-    };
-
     const settleAbandonedInteraction = () => {
       activeKeys.current.clear();
-
-      if (!pendingSettlement.current) {
-        clearCausativeInput();
-      }
-
       beginCelebrationWhenSettled();
     };
 
@@ -189,14 +162,12 @@ export const usePuzzleCompletionPresentation = ({
 
     window.addEventListener("keydown", handleKeyDown, true);
     window.addEventListener("keyup", handleKeyUp, true);
-    window.addEventListener("click", handleClick, true);
     window.addEventListener("blur", settleAbandonedInteraction);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown, true);
       window.removeEventListener("keyup", handleKeyUp, true);
-      window.removeEventListener("click", handleClick, true);
       window.removeEventListener("blur", settleAbandonedInteraction);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
@@ -256,6 +227,7 @@ export const usePuzzleCompletionPresentation = ({
 
   return {
     phase,
+    recordCausativeInput,
     completePresentation,
   };
 };
