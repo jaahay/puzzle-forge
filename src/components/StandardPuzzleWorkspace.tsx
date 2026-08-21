@@ -72,7 +72,7 @@ export const StandardPuzzleWorkspace = ({
     <section
       class="completion-dock"
       aria-hidden={sudokuCompletion.phase !== "completed" || undefined}
-      aria-live="polite"
+      aria-live={isSudokuPresentationCompleted ? "polite" : "off"}
       aria-label="Sudoku solved"
     >
       <div class="completion-dock-copy">
@@ -80,7 +80,7 @@ export const StandardPuzzleWorkspace = ({
         <strong>Puzzle solved</strong>
       </div>
       <div class="puzzle-actions">
-        <button type="button" onClick={onRandomize}>New puzzle</button>
+        <button type="button" onClick={onRandomize} tabIndex={isSudokuPresentationCompleted ? 0 : -1}>New puzzle</button>
       </div>
     </section>
   ) : null;
