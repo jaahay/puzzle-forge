@@ -194,6 +194,11 @@
   opacity: 0.62;
 }
 
+.completion-inert button:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
 .completion-control-stage {
   display: grid;
   width: 100%;
