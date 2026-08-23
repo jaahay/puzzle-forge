@@ -192,6 +192,7 @@ type NumericGridDigitPadProps = {
   digits: string[];
   activeValue: string;
   canClearSelectedCell: boolean;
+  disabled?: boolean;
   onDigit: (digit: string) => void;
   onClear: () => void;
 };
@@ -201,13 +202,20 @@ export const NumericGridDigitPad = ({
   digits,
   activeValue,
   canClearSelectedCell,
+  disabled = false,
   onDigit,
   onClear,
 }: NumericGridDigitPadProps) => (
-  <div class="sudoku-digit-pad" aria-label={`${title} digit pad`} data-grid-selection-scope="true">
+  <div
+    class={`sudoku-digit-pad ${disabled ? "completion-inert" : ""}`}
+    aria-disabled={disabled || undefined}
+    aria-label={`${title} digit pad`}
+    data-grid-selection-scope="true"
+  >
     {digits.map((digit) => (
       <button
         class={activeValue === digit ? "selected-sudoku-digit" : ""}
+        disabled={disabled}
         key={digit}
         type="button"
         aria-pressed={activeValue === digit}
@@ -220,7 +228,7 @@ export const NumericGridDigitPad = ({
       class="sudoku-erase-button"
       type="button"
       onClick={onClear}
-      disabled={!canClearSelectedCell}
+      disabled={disabled || !canClearSelectedCell}
       aria-label={`Erase selected ${title} cell`}
     >
       Erase

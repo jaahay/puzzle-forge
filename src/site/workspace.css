@@ -194,6 +194,98 @@
   opacity: 0.62;
 }
 
+.completion-inert[aria-disabled="true"] button:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.completion-control-stage {
+  display: grid;
+  width: 100%;
+  min-height: 3.15rem;
+  align-items: center;
+}
+
+.completion-control-layer {
+  grid-area: 1 / 1;
+  width: 100%;
+  min-width: 0;
+}
+
+.completion-control-playing {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.completion-control-solved {
+  opacity: 0;
+  transform: translateY(0.2rem);
+  pointer-events: none;
+}
+
+.completion-control-stage[data-phase="settling"] .completion-control-playing .puzzle-actions button:disabled,
+.completion-control-stage[data-phase="celebrating"] .completion-control-playing .puzzle-actions button:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.completion-control-stage[data-phase="celebrating"] .completion-control-playing {
+  animation: completion-control-out 180ms ease 260ms forwards;
+  pointer-events: none;
+}
+
+.completion-control-stage[data-phase="celebrating"] .completion-control-solved {
+  animation: completion-control-in 190ms ease 320ms both;
+}
+
+.completion-control-stage[data-phase="completed"] .completion-control-playing {
+  opacity: 0;
+  transform: translateY(-0.12rem);
+  pointer-events: none;
+}
+
+.completion-control-stage[data-phase="completed"] .completion-control-solved {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+@keyframes completion-control-out {
+  to {
+    opacity: 0;
+    transform: translateY(-0.12rem);
+  }
+}
+
+@keyframes completion-control-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.2rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .completion-control-stage[data-phase="celebrating"] .completion-control-playing,
+  .completion-control-stage[data-phase="celebrating"] .completion-control-solved {
+    animation: none;
+  }
+
+  .completion-control-stage[data-phase="celebrating"] .completion-control-playing {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .completion-control-stage[data-phase="celebrating"] .completion-control-solved {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .completion-dock {
   box-sizing: border-box;
   display: flex;
@@ -245,7 +337,7 @@
   padding: 0.5rem 0.85rem;
 }
 
-@media (max-width: 420px) {
+@media (max-width: 300px) {
   .completion-dock {
     align-items: stretch;
   }
