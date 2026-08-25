@@ -51,7 +51,6 @@ type CameraState = {
 };
 
 type PiecePointerEvent = JSX.TargetedPointerEvent<HTMLButtonElement>;
-type PieceKeyboardEvent = JSX.TargetedKeyboardEvent<HTMLButtonElement>;
 type StagePointerEvent = JSX.TargetedPointerEvent<HTMLDivElement>;
 type StageKeyboardEvent = JSX.TargetedKeyboardEvent<HTMLDivElement>;
 
@@ -484,7 +483,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
       offsetWorldX: worldPoint.x - position.left,
       offsetWorldY: worldPoint.y - position.top,
     };
-    target.focus({ preventScroll: true });
+    stageRef.current?.focus({ preventScroll: true });
     target.setPointerCapture(event.pointerId);
     setRaisedTileId(tile.id);
     setActiveTileId(tile.id);
@@ -634,9 +633,6 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
   };
 
   const handleStageKeyDown = (event: StageKeyboardEvent) => {
-    const target = event.target as Element | null;
-    if (target?.closest(".tile-puzzle-piece")) return;
-
     if (event.key === "Escape" && event.target === event.currentTarget) {
       event.currentTarget.blur();
       event.preventDefault();
@@ -649,30 +645,6 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
     const deltaX = direction === "ArrowRight" ? step : direction === "ArrowLeft" ? -step : 0;
     const deltaY = direction === "ArrowDown" ? step : direction === "ArrowUp" ? -step : 0;
     setCamera(panJigsawCamera(layout, renderViewport, activeCamera, deltaX, deltaY));
-    event.preventDefault();
-  };
-
-  const movePieceWithKeyboard = (event: PieceKeyboardEvent, tile: JigsawPiece, placement: JigsawPlacement) => {
-    if (placement.snapped || isSolved) return;
-    const direction = event.key;
-    if (!["ArrowUp", "ArrowRight", "ArrowDown", "ArrowLeft"].includes(direction)) return;
-    setRaisedTileId(tile.id);
-
-    const current = getJigsawPlacementPosition(layout, tile, placement);
-    const step = Math.max(8, Math.min(layout.pieceWidth, layout.pieceHeight) * (event.shiftKey ? 0.48 : 0.18));
-    const nextLeft = current.left + (direction === "ArrowRight" ? step : direction === "ArrowLeft" ? -step : 0);
-    const nextTop = current.top + (direction === "ArrowDown" ? step : direction === "ArrowUp" ? -step : 0);
-    const nextPosition = normalizeJigsawWorldPosition(layout, nextLeft, nextTop);
-    const snaps = shouldSnapJigsawPlacement(layout, tile, nextPosition);
-
-    setPlacementState((currentState) => currentState?.puzzleId === puzzle.id ? {
-      ...currentState,
-      placements: updatePlacement(currentState.placements, tile.id, (currentPlacement) => ({
-        ...currentPlacement,
-        ...nextPosition,
-        snapped: snaps,
-      })),
-    } : currentState);
     event.preventDefault();
   };
 
@@ -776,8 +748,8 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
                 onPointerMove={moveDrag}
                 onPointerUp={(event) => finishDrag(event, tile)}
                 onPointerCancel={cancelDrag}
-                onKeyDown={(event) => movePieceWithKeyboard(event, tile, placement)}
                 type="button"
+                tabIndex={-1}
                 disabled={placement.snapped}
                 aria-label={`Piece ${tile.solvedIndex + 1}, ${placement.snapped ? "placed" : "loose"}`}
               >
