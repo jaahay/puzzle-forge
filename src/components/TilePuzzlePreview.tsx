@@ -2,6 +2,7 @@ import type { JSX } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { JigsawGeneratedPuzzle, JigsawPiece } from "../catalog/types";
 import { getJigsawPieceOutlinePath, getJigsawPieceSeamPaths } from "../games/jigsaw/edgePaths";
+import { getJigsawPinchCamera, type JigsawPinchPair, type JigsawPinchPoint } from "../games/jigsaw/pinch";
 import {
   createInitialJigsawPlacements,
   createJigsawFitCamera,
@@ -65,6 +66,12 @@ type ActivePan = {
   pointerId: number;
   lastClientX: number;
   lastClientY: number;
+};
+
+type ActivePinch = {
+  pointerIds: readonly [number, number];
+  startPoints: JigsawPinchPair;
+  startCamera: JigsawCamera;
 };
 
 const placementSchemaVersion = 4;
@@ -217,8 +224,11 @@ const getEdgePanDelta = (position: number, extent: number) => {
 
 export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePreviewProps) => {
   const stageRef = useRef<HTMLDivElement>(null);
+  const worldLayerRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<ActiveDrag | null>(null);
   const panRef = useRef<ActivePan | null>(null);
+  const touchPointsRef = useRef(new Map<number, JigsawPinchPoint>());
+  const pinchRef = useRef<ActivePinch | null>(null);
   const lastResetVersion = useRef(resetVersion);
   const [viewport, setViewport] = useState<JigsawViewport>({ width: 0, height: 0 });
   const [placementState, setPlacementState] = useState<PlacementState | null>(null);
@@ -246,9 +256,11 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
     layout,
     viewport: renderViewport,
   });
+  const preservePinchCamera = pinchRef.current !== null && wheelStateRef.current.puzzleId === puzzle.id;
+  const renderCamera = preservePinchCamera ? wheelStateRef.current.camera : activeCamera;
   wheelStateRef.current = {
     puzzleId: puzzle.id,
-    camera: activeCamera,
+    camera: renderCamera,
     layout,
     viewport: renderViewport,
   };
@@ -277,6 +289,8 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
   useEffect(() => {
     dragRef.current = null;
     panRef.current = null;
+    touchPointsRef.current.clear();
+    pinchRef.current = null;
     setActiveTileId(null);
     setRaisedTileId(null);
     setIsPanning(false);
@@ -311,6 +325,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
   }, [placementState, puzzle]);
 
   const setCamera = (camera: JigsawCamera) => {
+    wheelStateRef.current = { ...wheelStateRef.current, puzzleId: puzzle.id, camera };
     setCameraState({ puzzleId: puzzle.id, camera });
   };
 
@@ -322,6 +337,8 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
   const scatterPieces = () => {
     dragRef.current = null;
     panRef.current = null;
+    touchPointsRef.current.clear();
+    pinchRef.current = null;
     setActiveTileId(null);
     setRaisedTileId(null);
     setIsPanning(false);
@@ -355,6 +372,89 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
     };
   };
 
+  const getPinchPair = (pointerIds: ActivePinch["pointerIds"]): JigsawPinchPair | null => {
+    const first = touchPointsRef.current.get(pointerIds[0]);
+    const second = touchPointsRef.current.get(pointerIds[1]);
+    return first && second ? [first, second] : null;
+  };
+
+  const renderCameraImmediately = (camera: JigsawCamera) => {
+    const worldLayer = worldLayerRef.current;
+    if (!worldLayer) return;
+    const transform = getJigsawCameraTransform(camera, renderViewport);
+    worldLayer.style.transform = `translate3d(${transform.translateX}px, ${transform.translateY}px, 0) scale(${transform.scale})`;
+  };
+
+  const beginTouchPinch = (event: StagePointerEvent) => {
+    if (event.pointerType !== "touch") return;
+    const point = getStagePoint(event.clientX, event.clientY);
+    if (!point) return;
+    touchPointsRef.current.set(event.pointerId, point);
+
+    if (!pinchRef.current && touchPointsRef.current.size >= 2) {
+      const pointerIds = Array.from(touchPointsRef.current.keys()).slice(0, 2) as [number, number];
+      const startPoints = getPinchPair(pointerIds);
+      if (startPoints) {
+        pinchRef.current = {
+          pointerIds,
+          startPoints,
+          startCamera: wheelStateRef.current.camera,
+        };
+        dragRef.current = null;
+        panRef.current = null;
+        setActiveTileId(null);
+        setIsPanning(false);
+      }
+    }
+
+    if (pinchRef.current) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  };
+
+  const moveTouchPinch = (event: StagePointerEvent) => {
+    if (event.pointerType !== "touch" || !touchPointsRef.current.has(event.pointerId)) return;
+    const point = getStagePoint(event.clientX, event.clientY);
+    if (!point) return;
+    touchPointsRef.current.set(event.pointerId, point);
+
+    const pinch = pinchRef.current;
+    if (!pinch) return;
+    const currentPoints = getPinchPair(pinch.pointerIds);
+    if (currentPoints) {
+      const nextCamera = getJigsawPinchCamera(
+        layout,
+        renderViewport,
+        pinch.startCamera,
+        pinch.startPoints,
+        currentPoints,
+      );
+      wheelStateRef.current = { ...wheelStateRef.current, camera: nextCamera };
+      renderCameraImmediately(nextCamera);
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  const endTouchPinch = (event: StagePointerEvent) => {
+    if (event.pointerType !== "touch") return;
+    const pinch = pinchRef.current;
+    const wasPinching = Boolean(pinch);
+    touchPointsRef.current.delete(event.pointerId);
+
+    if (pinch?.pointerIds.includes(event.pointerId)) {
+      pinchRef.current = null;
+      setCamera(wheelStateRef.current.camera);
+    }
+
+    if (wasPinching) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  };
+
   const getPointerPlacement = (
     clientX: number,
     clientY: number,
@@ -372,7 +472,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
   };
 
   const beginDrag = (event: PiecePointerEvent, tile: JigsawPiece, placement: JigsawPlacement) => {
-    if (placement.snapped || isSolved) return;
+    if (placement.snapped || isSolved || pinchRef.current) return;
     const stagePoint = getStagePoint(event.clientX, event.clientY);
     if (!stagePoint) return;
     const worldPoint = screenToJigsawWorld(activeCamera, renderViewport, stagePoint.x, stagePoint.y);
@@ -393,6 +493,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
   };
 
   const moveDrag = (event: PiecePointerEvent) => {
+    if (pinchRef.current) return;
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
     const stagePoint = getStagePoint(event.clientX, event.clientY);
@@ -445,7 +546,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
   };
 
   const beginPan = (event: StagePointerEvent) => {
-    if (dragRef.current) return;
+    if (dragRef.current || pinchRef.current) return;
     const target = event.target as Element | null;
     if (target?.closest(".tile-puzzle-piece")) return;
     if (event.pointerType === "mouse" && event.button !== 0 && event.button !== 1) return;
@@ -462,6 +563,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
   };
 
   const movePan = (event: StagePointerEvent) => {
+    if (pinchRef.current) return;
     const pan = panRef.current;
     if (!pan || pan.pointerId !== event.pointerId) return;
     const deltaX = event.clientX - pan.lastClientX;
@@ -578,7 +680,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
     backgroundImage: `url(${puzzle.asset.files.preview})`,
     aspectRatio: `${puzzle.asset.intrinsicWidth} / ${puzzle.asset.intrinsicHeight}`,
   };
-  const cameraTransform = getJigsawCameraTransform(activeCamera, renderViewport);
+  const cameraTransform = getJigsawCameraTransform(renderCamera, renderViewport);
   const worldStyle = {
     width: `${layout.worldWidth}px`,
     height: `${layout.worldHeight}px`,
@@ -633,6 +735,10 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
       <div
         class={`jigsaw-freeform-stage ${isSolved ? "solved" : ""} ${isPanning ? "panning" : ""}`}
         ref={stageRef}
+        onPointerDownCapture={beginTouchPinch}
+        onPointerMoveCapture={moveTouchPinch}
+        onPointerUpCapture={endTouchPinch}
+        onPointerCancelCapture={endTouchPinch}
         onPointerDown={beginPan}
         onPointerMove={movePan}
         onPointerUp={finishPan}
@@ -641,7 +747,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
         tabIndex={0}
         aria-label="Jigsaw workspace. Drag the background or use the mouse wheel or trackpad to pan. When focused, use the arrow keys to pan. Pinch or Control plus wheel to zoom."
       >
-        <div class="jigsaw-world-layer" style={worldStyle}>
+        <div class="jigsaw-world-layer" ref={worldLayerRef} style={worldStyle}>
           <div class="jigsaw-assembly-board" style={boardStyle} aria-hidden="true">
             <span>Assembly board</span>
           </div>
