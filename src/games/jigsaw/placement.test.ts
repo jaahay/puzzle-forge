@@ -7,6 +7,7 @@ import {
   getJigsawCameraTransform,
   getJigsawPlacementPosition,
   getJigsawSolvedPosition,
+  getJigsawStagingMode,
   normalizeJigsawWorldPosition,
   panJigsawCamera,
   screenToJigsawWorld,
@@ -37,6 +38,18 @@ const overlapsBoard = (
   left + pieceWidth > boardX &&
   top < boardY + boardHeight &&
   top + pieceHeight > boardY;
+
+const isSideStaged = (
+  layout: ReturnType<typeof createJigsawWorldLayout>,
+  worldX: number,
+) =>
+  worldX + layout.pieceWidth <= layout.boardX || worldX >= layout.boardX + layout.boardWidth;
+
+const isTopBottomStaged = (
+  layout: ReturnType<typeof createJigsawWorldLayout>,
+  worldY: number,
+) =>
+  worldY + layout.pieceHeight <= layout.boardY || worldY >= layout.boardY + layout.boardHeight;
 
 describe("Jigsaw world layout", () => {
   it("keeps artwork composition exact while making world size independent of the viewport", () => {
@@ -69,7 +82,7 @@ describe("Jigsaw world layout", () => {
       puzzleHeight: 4,
     });
     const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index));
-    const placements = createInitialJigsawPlacements(layout, pieces);
+    const placements = createInitialJigsawPlacements(layout, pieces, { width: 1000, height: 750 });
 
     expect(placements).toHaveLength(16);
     for (const piece of pieces) {
@@ -89,6 +102,53 @@ describe("Jigsaw world layout", () => {
     }
   });
 
+  it("prefers balanced side trays for a portrait puzzle on a wide display", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 721,
+      imageHeight: 2048,
+      puzzleWidth: 6,
+      puzzleHeight: 17,
+    });
+    const pieces = Array.from({ length: 48 }, (_, index) => makePiece(index, 6));
+    const viewport = { width: 1440, height: 800 };
+    const placements = createInitialJigsawPlacements(layout, pieces, viewport);
+
+    expect(getJigsawStagingMode(layout, pieces.length, viewport)).toBe("sides");
+    expect(placements.every((placement) => isSideStaged(layout, placement.worldX))).toBe(true);
+    expect(placements.some((placement) => placement.worldX < layout.boardX)).toBe(true);
+    expect(placements.some((placement) => placement.worldX > layout.boardX + layout.boardWidth)).toBe(true);
+  });
+
+  it("prefers top and bottom trays for a panoramic puzzle on a tall display", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 2048,
+      imageHeight: 721,
+      puzzleWidth: 17,
+      puzzleHeight: 6,
+    });
+    const pieces = Array.from({ length: 48 }, (_, index) => makePiece(index, 17));
+    const viewport = { width: 760, height: 1280 };
+    const placements = createInitialJigsawPlacements(layout, pieces, viewport);
+
+    expect(getJigsawStagingMode(layout, pieces.length, viewport)).toBe("top-bottom");
+    expect(placements.every((placement) => isTopBottomStaged(layout, placement.worldY))).toBe(true);
+    expect(placements.some((placement) => placement.worldY < layout.boardY)).toBe(true);
+    expect(placements.some((placement) => placement.worldY > layout.boardY + layout.boardHeight)).toBe(true);
+  });
+
+  it("uses piece count to decide when moderate extra side space should become trays", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 1200,
+      imageHeight: 1200,
+      puzzleWidth: 8,
+      puzzleHeight: 8,
+    });
+    const viewport = { width: 1200, height: 800 };
+
+    expect(getJigsawStagingMode(layout, 4, viewport)).toBe("perimeter");
+    expect(getJigsawStagingMode(layout, 64, viewport)).toBe("sides");
+  });
+
   it("provides unique staging positions at the 32 by 32 technical ceiling", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1600,
@@ -97,7 +157,7 @@ describe("Jigsaw world layout", () => {
       puzzleHeight: 32,
     });
     const pieces = Array.from({ length: 1024 }, (_, index) => makePiece(index, 32));
-    const placements = createInitialJigsawPlacements(layout, pieces);
+    const placements = createInitialJigsawPlacements(layout, pieces, { width: 900, height: 900 });
 
     expect(placements).toHaveLength(1024);
     expect(new Set(placements.map(({ worldX, worldY }) => `${worldX.toFixed(3)}:${worldY.toFixed(3)}`)).size).toBe(1024);
