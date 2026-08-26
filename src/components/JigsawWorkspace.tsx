@@ -1,11 +1,11 @@
 import { useState } from "preact/hooks";
 import type { JigsawImageAsset, PuzzleDifficulty } from "../catalog/types";
+import { getPuzzleImageAssetsFor } from "../games/imageAssets";
 import {
   getJigsawDifficultyForDimensions,
   jigsawDifficultyOrder,
   resolveJigsawDifficultyDimensions,
 } from "../games/jigsaw/difficulty";
-import { jigsawImageAssets } from "../games/jigsaw/imageAssets";
 import { getDailyPuzzleLabel, getDailyPuzzleSeed } from "../games/shared/daily";
 import { TopPuzzleConfiguration } from "./PuzzleConfiguration";
 import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
@@ -15,6 +15,7 @@ import { TilePuzzlePreview } from "./TilePuzzlePreview";
 
 export const jigsawCustomPreset = "Custom" as const;
 export type JigsawPresetSelection = PuzzleDifficulty | typeof jigsawCustomPreset;
+const jigsawArtworkAssets = getPuzzleImageAssetsFor("jigsaw");
 
 export const makeJigsawImageSelectionSettings = (
   asset: JigsawImageAsset,
@@ -122,10 +123,10 @@ export const JigsawWorkspace = ({
       <div class="jigsaw-image-library" role="group" aria-label="Jigsaw image library">
         <div class="jigsaw-image-library-heading">
           <strong>Image library</strong>
-          <span>{jigsawImageAssets.length} bundled</span>
+          <span>{jigsawArtworkAssets.length} bundled</span>
         </div>
         <div class="jigsaw-image-library-grid">
-          {jigsawImageAssets.map((asset) => {
+          {jigsawArtworkAssets.map((asset) => {
             const selected = puzzle.asset.id === asset.id;
             return (
               <button

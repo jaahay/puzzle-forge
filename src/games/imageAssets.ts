@@ -1,7 +1,6 @@
 import type { ImageBackedPuzzleId, PuzzleId, PuzzleImageAsset } from "../catalog/types";
 import {
   defaultJigsawImageAsset,
-  getJigsawImageAsset,
   jigsawImageAssets,
   jigsawImageCatalog,
 } from "./jigsaw/imageAssets";
@@ -22,9 +21,19 @@ export const getPuzzleImageAsset = (
   imageId: string | undefined,
   puzzleId: ImageBackedPuzzleId,
 ): PuzzleImageAsset => {
-  const asset = getJigsawImageAsset(imageId);
-  if (asset.eligiblePuzzleIds && !asset.eligiblePuzzleIds.includes(puzzleId)) {
-    throw new Error(`${asset.title} is not available for ${puzzleId}.`);
+  const eligibleAssets = getPuzzleImageAssetsFor(puzzleId);
+  if (eligibleAssets.length === 0) {
+    throw new Error(`No bundled artwork is available for ${puzzleId}.`);
   }
+
+  if (!imageId) {
+    return eligibleAssets[0];
+  }
+
+  const asset = eligibleAssets.find((candidate) => candidate.id === imageId);
+  if (!asset) {
+    throw new Error(`Unknown or unavailable bundled artwork for ${puzzleId}: ${imageId}`);
+  }
+
   return asset;
 };

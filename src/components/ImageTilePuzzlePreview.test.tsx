@@ -1,7 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { generateSlidingPuzzle } from "../games/slidingPuzzle/generate";
 import { generateTileSwap } from "../games/tileSwap/generate";
-import { restoreImageTileProgress } from "./ImageTilePuzzlePreview";
+import { getImageTileBoardStyle, restoreImageTileProgress } from "./ImageTilePuzzlePreview";
+
+describe("ImageTilePuzzlePreview layout", () => {
+  it("defines both grid axes and caps tall boards by viewport height", () => {
+    expect(getImageTileBoardStyle(2, 8)).toMatchObject({
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+      gridTemplateRows: "repeat(8, minmax(0, 1fr))",
+      aspectRatio: "2 / 8",
+      width: "min(100%, 42rem, 18vh)",
+    });
+  });
+});
 
 describe("ImageTilePuzzlePreview progress restoration", () => {
   it("restores a matching Tile Swap position using canonical tile metadata", () => {

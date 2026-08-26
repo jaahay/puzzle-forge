@@ -50,6 +50,19 @@ const makeInitialProgress = (puzzle: ImageTileGeneratedPuzzle): ImageTileProgres
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
+export const getImageTileBoardStyle = (width: number, height: number): JSX.CSSProperties => {
+  const safeWidth = Math.max(1, Math.floor(width));
+  const safeHeight = Math.max(1, Math.floor(height));
+  const viewportWidthCap = (72 * safeWidth) / safeHeight;
+
+  return {
+    gridTemplateColumns: `repeat(${safeWidth}, minmax(0, 1fr))`,
+    gridTemplateRows: `repeat(${safeHeight}, minmax(0, 1fr))`,
+    aspectRatio: `${safeWidth} / ${safeHeight}`,
+    width: `min(100%, 42rem, ${viewportWidthCap}vh)`,
+  };
+};
+
 export const restoreImageTileProgress = (
   puzzle: ImageTileGeneratedPuzzle,
   value: unknown,
@@ -204,9 +217,10 @@ export const ImageTilePuzzlePreview = ({
   };
 
   const tileByCurrentIndex = new Map(progress.tiles.map((tile) => [tile.currentIndex, tile] as const));
-  const boardStyle = {
-    gridTemplateColumns: `repeat(${puzzle.width}, minmax(0, 1fr))`,
-    aspectRatio: `${puzzle.width} / ${puzzle.height}`,
+  const boardStyle = getImageTileBoardStyle(puzzle.width, puzzle.height);
+  const frameStyle = {
+    aspectRatio: boardStyle.aspectRatio,
+    width: boardStyle.width,
   } as JSX.CSSProperties;
 
   return (
@@ -232,7 +246,7 @@ export const ImageTilePuzzlePreview = ({
       </div>
 
       {showPreview ? (
-        <div class="image-tile-reference" style={{ aspectRatio: `${puzzle.width} / ${puzzle.height}` }}>
+        <div class="image-tile-reference" style={frameStyle}>
           <img src={puzzle.asset.files.puzzle} alt={puzzle.asset.alt} />
         </div>
       ) : null}
@@ -284,6 +298,7 @@ export const ImageTilePuzzlePreview = ({
             left: `${crop.leftPercent}%`,
             top: `${crop.topPercent}%`,
           } as JSX.CSSProperties;
+          const unavailable = isSolved || (isSliding && !canMove);
           const actionLabel = isSliding
             ? canMove ? "Move into empty space" : "Not adjacent to empty space"
             : selected ? "Selected; choose again to cancel" : "Select to swap";
@@ -293,7 +308,8 @@ export const ImageTilePuzzlePreview = ({
               type="button"
               class={`image-tile ${selected ? "selected" : ""} ${canMove ? "can-move" : ""}`}
               aria-pressed={isSliding ? undefined : selected}
-              aria-disabled={isSolved || (isSliding && !canMove)}
+              aria-disabled={unavailable}
+              disabled={unavailable}
               aria-label={`Image tile ${tile.solvedIndex + 1}. ${actionLabel}.`}
               onClick={() => moveTile(tile)}
               key={tile.id}
