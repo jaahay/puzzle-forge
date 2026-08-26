@@ -39,7 +39,7 @@ export const JigsawWorkspace = ({
   onSolitaireVariationChange,
 }: PuzzleWorkspaceProps) => {
   const [resetVersion, setResetVersion] = useState(0);
-  const initialPreset: JigsawPresetSelection = puzzle?.kind === "tiles"
+  const initialPreset: JigsawPresetSelection = puzzle?.puzzleId === "jigsaw"
     ? getJigsawDifficultyForDimensions(puzzle.asset, width, height) ?? jigsawCustomPreset
     : jigsawCustomPreset;
   const [selectedPreset, setSelectedPreset] = useState<JigsawPresetSelection>(initialPreset);
@@ -64,7 +64,7 @@ export const JigsawWorkspace = ({
   };
   const seedInput = <SeedControl seed={seed} onSeedChange={onSeedChange} onSeedCommit={(nextSeed) => onSettingsCommit({ seed: nextSeed })} />;
 
-  const generation = puzzle?.kind === "tiles" ? (
+  const generation = puzzle?.puzzleId === "jigsaw" ? (
     <div class="jigsaw-generation-stack">
       <div class="jigsaw-difficulty-settings" role="group" aria-label="Jigsaw difficulty">
         <div class="jigsaw-difficulty-heading">
@@ -117,7 +117,7 @@ export const JigsawWorkspace = ({
   ) : null;
 
   const loadingBoard = <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label="Jigsaw is generating"><div class="puzzle-loading-copy"><strong>Generating Jigsaw</strong><span>{statusMessage}</span></div><div class="puzzle-loading-grid" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <span key={index} />)}</div></section>;
-  const board = puzzle?.kind === "tiles" ? (
+  const board = puzzle?.puzzleId === "jigsaw" ? (
     <section class="puzzle-panel jigsaw-puzzle-panel" aria-label="Generated Jigsaw puzzle">
       <div class="jigsaw-image-library" role="group" aria-label="Jigsaw image library">
         <div class="jigsaw-image-library-heading">

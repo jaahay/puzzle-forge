@@ -3,7 +3,7 @@ import type {
   JigsawEdgeSide,
   JigsawPiece,
   JigsawPieceEdge,
-  TilePuzzleGenerator,
+  JigsawPuzzleGenerator,
 } from "../../catalog/types";
 import { createGeneratedJigsawPuzzle, createRandom, normalizeDimension, normalizeSeed } from "../shared";
 import { jigsawMaximumAxis, jigsawMinimumAxis } from "./difficulty";
@@ -106,7 +106,7 @@ const makePieceEdges = ({
     };
   });
 
-export const generateJigsaw: TilePuzzleGenerator = ({ seed, width, height, imageId }) => {
+export const generateJigsaw: JigsawPuzzleGenerator = ({ seed, width, height, imageId }) => {
   const normalizedSeed = normalizeSeed(seed);
   const boundedWidth = normalizeDimension(width, 4, jigsawMinimumAxis, jigsawMaximumAxis);
   const boundedHeight = normalizeDimension(height, 4, jigsawMinimumAxis, jigsawMaximumAxis);

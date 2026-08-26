@@ -15,6 +15,7 @@ import "./site/futoshiki.css";
 import "./site/nonogram.css";
 import "./site/word-guess.css";
 import "./site/jigsaw.css";
+import "./site/image-tiles.css";
 import "./site/solitaire.css";
 
 const root = document.getElementById("app");

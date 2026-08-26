@@ -1,0 +1,59 @@
+import { describe, expect, it } from "vitest";
+import { generateSlidingPuzzle } from "../games/slidingPuzzle/generate";
+import { generateTileSwap } from "../games/tileSwap/generate";
+import { restoreImageTileProgress } from "./ImageTilePuzzlePreview";
+
+describe("ImageTilePuzzlePreview progress restoration", () => {
+  it("restores a matching Tile Swap position using canonical tile metadata", () => {
+    const puzzle = generateTileSwap({ puzzleId: "tile-swap", seed: "restore-swap", width: 3, height: 3 });
+    const swappedIndexes = puzzle.tiles.map((tile) => ({ id: tile.id, currentIndex: (tile.currentIndex + 1) % 9 }));
+    const restored = restoreImageTileProgress(puzzle, {
+      schemaVersion: 1,
+      puzzleId: "tile-swap",
+      puzzleInstanceId: puzzle.id,
+      assetId: puzzle.asset.id,
+      width: 3,
+      height: 3,
+      tileOrder: swappedIndexes,
+      moveCount: 4,
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    });
+
+    expect(restored?.moveCount).toBe(4);
+    expect(restored?.tiles.map((tile) => tile.currentIndex)).toEqual(swappedIndexes.map((tile) => tile.currentIndex));
+    expect(restored?.tiles.map((tile) => tile.solvedIndex)).toEqual(puzzle.tiles.map((tile) => tile.solvedIndex));
+  });
+
+  it("rejects progress from a different concrete puzzle instance", () => {
+    const puzzle = generateTileSwap({ puzzleId: "tile-swap", seed: "restore-swap", width: 3, height: 3 });
+    expect(restoreImageTileProgress(puzzle, {
+      schemaVersion: 1,
+      puzzleId: "tile-swap",
+      puzzleInstanceId: "other-instance",
+      assetId: puzzle.asset.id,
+      width: 3,
+      height: 3,
+      tileOrder: puzzle.tiles.map(({ id, currentIndex }) => ({ id, currentIndex })),
+      moveCount: 1,
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    })).toBeNull();
+  });
+
+  it("requires a valid unoccupied gap for Sliding Puzzle progress", () => {
+    const puzzle = generateSlidingPuzzle({ puzzleId: "sliding-puzzle", seed: "restore-slide", width: 4, height: 4 });
+    const base = {
+      schemaVersion: 1,
+      puzzleId: "sliding-puzzle",
+      puzzleInstanceId: puzzle.id,
+      assetId: puzzle.asset.id,
+      width: 4,
+      height: 4,
+      tileOrder: puzzle.tiles.map(({ id, currentIndex }) => ({ id, currentIndex })),
+      moveCount: 3,
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    };
+
+    expect(restoreImageTileProgress(puzzle, { ...base, emptyIndex: puzzle.emptyIndex })).not.toBeNull();
+    expect(restoreImageTileProgress(puzzle, { ...base, emptyIndex: puzzle.tiles[0].currentIndex })).toBeNull();
+  });
+});

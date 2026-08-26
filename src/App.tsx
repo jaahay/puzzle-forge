@@ -9,6 +9,7 @@ import { NotFoundView } from "./components/NotFoundView";
 import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
 import { StartView } from "./components/StartView";
+import { isImageBackedPuzzleId } from "./games/imageAssets";
 import { defaultSolitaireVariation, normalizeSolitaireVariation, solitaireVariationsEqual } from "./games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation } from "./games/sudoku/variation";
 import { getInitialSelectedPuzzleId, markHomeNavigation, markPuzzleNavigation } from "./app/homeNavigation";
@@ -122,11 +123,13 @@ export const App = () => {
       requestOptions = { ...options, solitaireVariation: normalizeSolitaireVariation(options.solitaireVariation ?? solitaireVariation) };
     } else if (requestedPuzzleId === "sudoku") {
       requestOptions = { ...options, sudokuVariation: normalizeSudokuVariation(options.sudokuVariation ?? sudokuVariation) };
-    } else if (requestedPuzzleId === "jigsaw") {
-      const currentJigsawAsset = puzzle?.kind === "tiles" ? puzzle.asset : null;
+    } else if (isImageBackedPuzzleId(requestedPuzzleId)) {
+      const currentImageAsset = puzzle?.kind === "tiles" && puzzle.puzzleId === requestedPuzzleId && puzzle.asset.kind === "image"
+        ? puzzle.asset
+        : null;
       requestOptions = {
         ...options,
-        imageId: options.imageId ?? currentJigsawAsset?.id,
+        imageId: options.imageId ?? currentImageAsset?.id,
       };
     }
     const result = generation.beginGeneration({ selectedPuzzleId, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation }, requestOptions);
@@ -308,9 +311,12 @@ export const App = () => {
     const currentGrid = puzzle?.kind === "grid" ? puzzle : null;
     const currentSolitaireVariation = puzzle?.kind === "cards" ? puzzle.solitaireVariation : undefined;
     const generationSolitaireVariation = normalizeSolitaireVariation(nextSolitaireVariation ?? currentSolitaireVariation ?? solitaireVariation);
-    const currentJigsawAsset = puzzle?.kind === "tiles" ? puzzle.asset : null;
-    const generationImageId = nextImageId ?? currentJigsawAsset?.id;
-    const settingsAreCurrent = puzzle?.puzzleId === selectedPuzzleId && puzzle.seed === normalizedSeed && (!currentGrid || (currentGrid.width === generationWidth && currentGrid.height === generationHeight)) && (selectedPuzzleId !== "sudoku" || (puzzle.difficulty === generationDifficulty && normalizeSudokuVariation(puzzle.sudokuVariation) === generationSudokuVariation)) && (selectedPuzzleId !== "nonogram" || (puzzle.difficulty === generationDifficulty && Boolean(puzzle.uniqueSolution) === generationRequireUniqueSolution)) && (selectedPuzzleId !== "klondike-solitaire" || solitaireVariationsEqual(currentSolitaireVariation, generationSolitaireVariation)) && (selectedPuzzleId !== "jigsaw" || (puzzle.width === generationWidth && puzzle.height === generationHeight && currentJigsawAsset?.id === generationImageId));
+    const imageBacked = isImageBackedPuzzleId(selectedPuzzleId);
+    const currentImageAsset = puzzle?.kind === "tiles" && puzzle.puzzleId === selectedPuzzleId && puzzle.asset.kind === "image"
+      ? puzzle.asset
+      : null;
+    const generationImageId = nextImageId ?? currentImageAsset?.id;
+    const settingsAreCurrent = puzzle?.puzzleId === selectedPuzzleId && puzzle.seed === normalizedSeed && (!currentGrid || (currentGrid.width === generationWidth && currentGrid.height === generationHeight)) && (selectedPuzzleId !== "sudoku" || (puzzle.difficulty === generationDifficulty && normalizeSudokuVariation(puzzle.sudokuVariation) === generationSudokuVariation)) && (selectedPuzzleId !== "nonogram" || (puzzle.difficulty === generationDifficulty && Boolean(puzzle.uniqueSolution) === generationRequireUniqueSolution)) && (selectedPuzzleId !== "klondike-solitaire" || solitaireVariationsEqual(currentSolitaireVariation, generationSolitaireVariation)) && (!imageBacked || (puzzle.kind === "tiles" && puzzle.width === generationWidth && puzzle.height === generationHeight && currentImageAsset?.id === generationImageId));
 
     if (normalizedSeed !== seed) setSeed(normalizedSeed);
     if (generationWidth !== width) setWidth(generationWidth);
@@ -320,7 +326,7 @@ export const App = () => {
     if (selectedPuzzleId === "sudoku") setSudokuVariation(generationSudokuVariation);
     if (selectedPuzzleId === "klondike-solitaire") setSolitaireVariation(generationSolitaireVariation);
     if (settingsAreCurrent) return;
-    beginGeneration({ seed: normalizedSeed, width: generationWidth, height: generationHeight, difficulty: generationDifficulty, requireUniqueSolution: generationRequireUniqueSolution, sudokuVariation: selectedPuzzleId === "sudoku" ? generationSudokuVariation : undefined, solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? generationSolitaireVariation : undefined, imageId: selectedPuzzleId === "jigsaw" ? generationImageId : undefined }, { preserveScroll: true });
+    beginGeneration({ seed: normalizedSeed, width: generationWidth, height: generationHeight, difficulty: generationDifficulty, requireUniqueSolution: generationRequireUniqueSolution, sudokuVariation: selectedPuzzleId === "sudoku" ? generationSudokuVariation : undefined, solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? generationSolitaireVariation : undefined, imageId: imageBacked ? generationImageId : undefined }, { preserveScroll: true });
   };
 
   const handleDifficultyChange = (nextDifficulty: PuzzleDifficulty) => {

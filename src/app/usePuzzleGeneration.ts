@@ -10,6 +10,7 @@ import type {
   SolitaireVariation,
   SudokuVariation,
 } from "../catalog/types";
+import { isImageBackedPuzzleId } from "../games/imageAssets";
 import { defaultSudokuDifficulty, makeRequestId } from "./runtime";
 import { defaultSudokuVariation, normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
 
@@ -126,7 +127,7 @@ export const usePuzzleGeneration = () => {
       requireUniqueSolution,
       sudokuVariation,
       solitaireVariation: options.solitaireVariation,
-      imageId: puzzleId === "jigsaw" ? options.imageId : undefined,
+      imageId: isImageBackedPuzzleId(puzzleId) ? options.imageId : undefined,
     };
 
     activeRequestId.current = request.requestId;

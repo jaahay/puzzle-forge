@@ -9,7 +9,12 @@ export type PuzzleId =
   | "kenken"
   | "minesweeper"
   | "jigsaw"
+  | "tile-swap"
+  | "sliding-puzzle"
   | "slitherlink";
+
+export type ImageTilePuzzleId = "tile-swap" | "sliding-puzzle";
+export type ImageBackedPuzzleId = "jigsaw" | ImageTilePuzzleId;
 
 export type PuzzleStatus = "playable" | "prototype" | "planned";
 
@@ -123,7 +128,7 @@ export type GeneratedTilePuzzleAsset = {
   palette: string[];
 };
 
-export type JigsawImageAsset = {
+export type PuzzleImageAsset = {
   kind: "image";
   id: string;
   title: string;
@@ -131,6 +136,7 @@ export type JigsawImageAsset = {
   orientation: "landscape" | "portrait" | "square";
   intrinsicWidth: number;
   intrinsicHeight: number;
+  eligiblePuzzleIds?: readonly ImageBackedPuzzleId[];
   files: {
     puzzle: string;
     preview: string;
@@ -143,7 +149,8 @@ export type JigsawImageAsset = {
   };
 };
 
-export type TilePuzzleAsset = GeneratedTilePuzzleAsset | JigsawImageAsset;
+export type JigsawImageAsset = PuzzleImageAsset;
+export type TilePuzzleAsset = GeneratedTilePuzzleAsset | PuzzleImageAsset;
 
 export type JigsawEdgeSide = "top" | "right" | "bottom" | "left";
 export type JigsawEdgePolarity = "flat" | "tab" | "blank";
@@ -239,11 +246,28 @@ export type TileGeneratedPuzzle = BaseGeneratedPuzzle & {
 export type JigsawGeneratedPuzzle = Omit<TileGeneratedPuzzle, "puzzleId" | "tiles" | "asset"> & {
   puzzleId: "jigsaw";
   tiles: JigsawPiece[];
-  asset: JigsawImageAsset;
+  asset: PuzzleImageAsset;
   edgeModel: JigsawEdgeModel;
 };
 
-export type GeneratedPuzzle = GridGeneratedPuzzle | CardGeneratedPuzzle | JigsawGeneratedPuzzle;
+export type TileSwapGeneratedPuzzle = Omit<TileGeneratedPuzzle, "puzzleId" | "asset"> & {
+  puzzleId: "tile-swap";
+  asset: PuzzleImageAsset;
+};
+
+export type SlidingPuzzleGeneratedPuzzle = Omit<TileGeneratedPuzzle, "puzzleId" | "asset"> & {
+  puzzleId: "sliding-puzzle";
+  asset: PuzzleImageAsset;
+  emptyIndex: number;
+};
+
+export type ImageTileGeneratedPuzzle = TileSwapGeneratedPuzzle | SlidingPuzzleGeneratedPuzzle;
+
+export type GeneratedPuzzle =
+  | GridGeneratedPuzzle
+  | CardGeneratedPuzzle
+  | JigsawGeneratedPuzzle
+  | ImageTileGeneratedPuzzle;
 
 export type PuzzleGenerationParams = {
   puzzleId: PuzzleId;
@@ -269,9 +293,10 @@ export type PuzzleGenerationResponse =
     };
 
 export type GridPuzzleGenerator = (params: PuzzleGenerationParams) => GridGeneratedPuzzle;
-
 export type CardPuzzleGenerator = (params: PuzzleGenerationParams) => CardGeneratedPuzzle;
-
-export type TilePuzzleGenerator = (params: PuzzleGenerationParams) => JigsawGeneratedPuzzle;
+export type JigsawPuzzleGenerator = (params: PuzzleGenerationParams) => JigsawGeneratedPuzzle;
+export type TileSwapPuzzleGenerator = (params: PuzzleGenerationParams) => TileSwapGeneratedPuzzle;
+export type SlidingPuzzleGenerator = (params: PuzzleGenerationParams) => SlidingPuzzleGeneratedPuzzle;
+export type TilePuzzleGenerator = (params: PuzzleGenerationParams) => JigsawGeneratedPuzzle | ImageTileGeneratedPuzzle;
 
 export type PuzzleGenerator = GridPuzzleGenerator | CardPuzzleGenerator | TilePuzzleGenerator;

@@ -111,7 +111,7 @@ const isPersistedSolitaireHistoryEntry = (value: unknown): value is PersistedSol
   Array.isArray(value.cardStacks) &&
   value.cardStacks.every(isPersistedCardStack) &&
   isCardSelection(value.selectedCard) &&
-  isSolitaireStats(value.solitaireStats) &&
+  isSolitaireStats(value.stats) &&
   typeof value.statusMessage === "string";
 
 const cloneGridCell = (cell: PuzzleCell): PuzzleCell => ({ ...cell });
@@ -125,7 +125,7 @@ export const buildPersistedPuzzleIdentity = (puzzleId: PuzzleId, session: Puzzle
     puzzleId === "klondike-solitaire" || session.puzzle?.kind === "cards"
       ? normalizeSolitaireVariation(session.solitaireVariation ?? (session.puzzle?.kind === "cards" ? session.puzzle.solitaireVariation : null))
       : undefined;
-  const imageId = puzzleId === "jigsaw" && session.puzzle?.kind === "tiles" ? session.puzzle.asset.id : undefined;
+  const imageId = session.puzzle?.kind === "tiles" ? session.puzzle.asset.id : undefined;
 
   return {
     puzzleId,

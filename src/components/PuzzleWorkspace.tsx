@@ -1,5 +1,6 @@
 import type { FunctionComponent } from "preact";
 import type { PuzzleId } from "../catalog/types";
+import { ImageTilePuzzleWorkspace } from "./ImageTilePuzzleWorkspace";
 import { JigsawWorkspace } from "./JigsawWorkspace";
 import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
 import { StandardPuzzleWorkspace } from "./StandardPuzzleWorkspace";
@@ -19,6 +20,8 @@ const workspaceRegistry = {
   kenken: StandardPuzzleWorkspace,
   minesweeper: StandardPuzzleWorkspace,
   jigsaw: JigsawWorkspace,
+  "tile-swap": ImageTilePuzzleWorkspace,
+  "sliding-puzzle": ImageTilePuzzleWorkspace,
   slitherlink: StandardPuzzleWorkspace,
 } satisfies Record<PuzzleId, WorkspaceComponent>;
 

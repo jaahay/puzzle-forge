@@ -4,8 +4,10 @@ import { generateJigsaw } from "./jigsaw/generate";
 import { generateLogicGrid } from "./logicGrid/generate";
 import { generateNonogram } from "./nonogram/generate";
 import { generatePegSolitaire } from "./pegSolitaire/generate";
+import { generateSlidingPuzzle } from "./slidingPuzzle/generate";
 import { generateSolitaire } from "./solitaire/generate";
 import { generateSudoku } from "./sudoku/generate";
+import { generateTileSwap } from "./tileSwap/generate";
 import { generateWordGuess } from "./wordGuess/generate";
 
 const generators: Partial<Record<PuzzleId, PuzzleGenerator>> = {
@@ -14,6 +16,8 @@ const generators: Partial<Record<PuzzleId, PuzzleGenerator>> = {
   "word-guess": generateWordGuess,
   "logic-grid": generateLogicGrid,
   jigsaw: generateJigsaw,
+  "tile-swap": generateTileSwap,
+  "sliding-puzzle": generateSlidingPuzzle,
   "klondike-solitaire": generateSolitaire,
   "peg-solitaire": generatePegSolitaire,
   futoshiki: generateFutoshiki,

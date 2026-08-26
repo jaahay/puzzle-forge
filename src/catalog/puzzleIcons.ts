@@ -11,6 +11,8 @@ export const puzzleIcons: Record<PuzzleId, string> = {
   kenken: "∑",
   minesweeper: "✹",
   jigsaw: "▧",
+  "tile-swap": "⇄",
+  "sliding-puzzle": "▣",
   slitherlink: "∞",
 };
 
