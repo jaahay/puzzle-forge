@@ -122,13 +122,15 @@ export const createJigsawWorldLayout = ({
   };
 };
 
-const getRuntimeViewport = (): JigsawViewport | null => {
-  if (typeof window === "undefined") return null;
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
-  return { width, height };
-};
+export const isUsableJigsawViewport = (
+  viewport: JigsawViewport | null | undefined,
+): viewport is JigsawViewport => Boolean(
+  viewport &&
+  Number.isFinite(viewport.width) &&
+  Number.isFinite(viewport.height) &&
+  viewport.width > 0 &&
+  viewport.height > 0,
+);
 
 const getStagingAspectThreshold = (pieceCount: number) => {
   if (pieceCount >= 64) return 1.2;
@@ -140,12 +142,12 @@ const getStagingAspectThreshold = (pieceCount: number) => {
 export const getJigsawStagingMode = (
   layout: JigsawWorldLayout,
   pieceCount: number,
-  viewport: JigsawViewport | null = getRuntimeViewport(),
+  viewport: JigsawViewport | null = null,
 ): JigsawStagingMode => {
-  if (!viewport || viewport.width <= 0 || viewport.height <= 0) return "perimeter";
+  if (!isUsableJigsawViewport(viewport)) return "perimeter";
 
   const boardAspectRatio = layout.boardWidth / Math.max(1, layout.boardHeight);
-  const viewportAspectRatio = viewport.width / Math.max(1, viewport.height);
+  const viewportAspectRatio = viewport.width / viewport.height;
   const relativeAspectRatio = viewportAspectRatio / Math.max(0.01, boardAspectRatio);
   const threshold = getStagingAspectThreshold(pieceCount);
 
@@ -175,10 +177,65 @@ const interleaveScatterSlots = (
   return slots;
 };
 
+const isBoardAlignedScatterSlot = (
+  layout: JigsawWorldLayout,
+  slot: ScatterSlot,
+  stagingMode: Exclude<JigsawStagingMode, "perimeter">,
+) => {
+  if (stagingMode === "sides") {
+    const centerY = slot.top + layout.pieceHeight / 2;
+    return centerY >= layout.boardY && centerY <= layout.boardY + layout.boardHeight;
+  }
+
+  const centerX = slot.left + layout.pieceWidth / 2;
+  return centerX >= layout.boardX && centerX <= layout.boardX + layout.boardWidth;
+};
+
+const createPreferredScatterSlots = (
+  layout: JigsawWorldLayout,
+  slots: readonly ScatterSlot[],
+  stagingMode: Exclude<JigsawStagingMode, "perimeter">,
+  boardGap: number,
+) => {
+  const boardLeft = layout.boardX - boardGap;
+  const boardRight = layout.boardX + layout.boardWidth + boardGap;
+  const boardTop = layout.boardY - boardGap;
+  const boardBottom = layout.boardY + layout.boardHeight + boardGap;
+  const firstSide = stagingMode === "sides"
+    ? slots.filter((slot) => slot.left + layout.pieceWidth <= boardLeft)
+    : slots.filter((slot) => slot.top + layout.pieceHeight <= boardTop);
+  const secondSide = stagingMode === "sides"
+    ? slots.filter((slot) => slot.left >= boardRight)
+    : slots.filter((slot) => slot.top >= boardBottom);
+  const firstSalt = stagingMode === "sides" ? 17 : 29;
+  const secondSalt = stagingMode === "sides" ? 53 : 71;
+  const alignedFirst = sortScatterSlots(
+    firstSide.filter((slot) => isBoardAlignedScatterSlot(layout, slot, stagingMode)),
+    firstSalt,
+  );
+  const alignedSecond = sortScatterSlots(
+    secondSide.filter((slot) => isBoardAlignedScatterSlot(layout, slot, stagingMode)),
+    secondSalt,
+  );
+  const overflowFirst = sortScatterSlots(
+    firstSide.filter((slot) => !isBoardAlignedScatterSlot(layout, slot, stagingMode)),
+    firstSalt + 101,
+  );
+  const overflowSecond = sortScatterSlots(
+    secondSide.filter((slot) => !isBoardAlignedScatterSlot(layout, slot, stagingMode)),
+    secondSalt + 101,
+  );
+
+  return [
+    ...interleaveScatterSlots(alignedFirst, alignedSecond),
+    ...interleaveScatterSlots(overflowFirst, overflowSecond),
+  ];
+};
+
 const createScatterSlots = (
   layout: JigsawWorldLayout,
   pieceCount: number,
-  viewport?: JigsawViewport | null,
+  viewport: JigsawViewport | null = null,
 ): WorldPosition[] => {
   const stepX = Math.max(18, layout.pieceWidth * 0.82);
   const stepY = Math.max(18, layout.pieceHeight * 0.82);
@@ -209,28 +266,16 @@ const createScatterSlots = (
     }
   }
 
-  const stagingMode = getJigsawStagingMode(layout, pieceCount, viewport ?? getRuntimeViewport());
+  const stagingMode = getJigsawStagingMode(layout, pieceCount, viewport);
   if (stagingMode === "perimeter") {
     return sortScatterSlots(slots).map(({ left, top }) => ({ left, top }));
   }
 
-  const boardLeft = layout.boardX - boardGap;
-  const boardRight = layout.boardX + layout.boardWidth + boardGap;
-  const boardTop = layout.boardY - boardGap;
-  const boardBottom = layout.boardY + layout.boardHeight + boardGap;
-  const preferredFirst = stagingMode === "sides"
-    ? interleaveScatterSlots(
-        sortScatterSlots(slots.filter((slot) => slot.left + layout.pieceWidth <= boardLeft), 17),
-        sortScatterSlots(slots.filter((slot) => slot.left >= boardRight), 53),
-      )
-    : interleaveScatterSlots(
-        sortScatterSlots(slots.filter((slot) => slot.top + layout.pieceHeight <= boardTop), 29),
-        sortScatterSlots(slots.filter((slot) => slot.top >= boardBottom), 71),
-      );
-  const preferredIds = new Set(preferredFirst.map((slot) => slot.index));
+  const preferred = createPreferredScatterSlots(layout, slots, stagingMode, boardGap);
+  const preferredIds = new Set(preferred.map((slot) => slot.index));
   const fallback = sortScatterSlots(slots.filter((slot) => !preferredIds.has(slot.index)), 97);
 
-  return [...preferredFirst, ...fallback].map(({ left, top }) => ({ left, top }));
+  return [...preferred, ...fallback].map(({ left, top }) => ({ left, top }));
 };
 
 export const normalizeJigsawWorldPosition = (
@@ -265,7 +310,7 @@ export const getJigsawPlacementPosition = (
 export const createInitialJigsawPlacements = (
   layout: JigsawWorldLayout,
   pieces: readonly JigsawPiece[],
-  viewport?: JigsawViewport | null,
+  viewport: JigsawViewport | null = null,
 ): JigsawPlacement[] => {
   const orderedPieces = [...pieces].sort((left, right) => left.currentIndex - right.currentIndex);
   const slots = createScatterSlots(layout, pieces.length, viewport);
@@ -284,7 +329,7 @@ export const restageLooseJigsawPlacements = (
   layout: JigsawWorldLayout,
   pieces: readonly JigsawPiece[],
   placements: readonly JigsawPlacement[],
-  viewport?: JigsawViewport | null,
+  viewport: JigsawViewport | null = null,
 ): JigsawPlacement[] => {
   const snappedIds = new Set(placements.filter((placement) => placement.snapped).map((placement) => placement.id));
   return createInitialJigsawPlacements(layout, pieces, viewport).map((placement) => ({
