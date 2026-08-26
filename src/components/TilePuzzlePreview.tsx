@@ -173,10 +173,11 @@ const isPersistedPlacement = (value: unknown, layout: JigsawWorldLayout): value 
 
 const loadPersistedPlacements = (puzzle: JigsawGeneratedPuzzle, layout: JigsawWorldLayout) => {
   if (typeof window === "undefined") return null;
-  const rawEnvelope = window.localStorage.getItem(getPlacementStorageKey(puzzle));
-  if (!rawEnvelope) return null;
 
   try {
+    const rawEnvelope = window.localStorage.getItem(getPlacementStorageKey(puzzle));
+    if (!rawEnvelope) return null;
+
     const envelope: unknown = JSON.parse(rawEnvelope);
     if (typeof envelope !== "object" || envelope === null || Array.isArray(envelope)) return null;
     const candidate = envelope as Partial<PersistedJigsawPlacementEnvelope>;
@@ -225,7 +226,12 @@ const savePersistedPlacements = (
     placements,
     updatedAt: new Date().toISOString(),
   };
-  window.localStorage.setItem(getPlacementStorageKey(puzzle), JSON.stringify(envelope));
+
+  try {
+    window.localStorage.setItem(getPlacementStorageKey(puzzle), JSON.stringify(envelope));
+  } catch {
+    // Persistence is best-effort; Jigsaw remains playable when browser storage is unavailable.
+  }
 };
 
 const updatePlacement = (
