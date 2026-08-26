@@ -111,7 +111,7 @@ const isPersistedSolitaireHistoryEntry = (value: unknown): value is PersistedSol
   Array.isArray(value.cardStacks) &&
   value.cardStacks.every(isPersistedCardStack) &&
   isCardSelection(value.selectedCard) &&
-  isSolitaireStats(value.stats) &&
+  isSolitaireStats(value.solitaireStats) &&
   typeof value.statusMessage === "string";
 
 const cloneGridCell = (cell: PuzzleCell): PuzzleCell => ({ ...cell });
