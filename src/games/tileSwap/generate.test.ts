@@ -3,7 +3,7 @@ import { isImageTileSolved } from "../imageTiles/state";
 import { generateTileSwap, tileSwapMaximumAxis, tileSwapMinimumAxis } from "./generate";
 
 describe("generateTileSwap", () => {
-  it("is deterministic for seed, dimensions, and concrete artwork", () => {
+  it("is deterministic for seed, dimensions, concrete artwork, and shuffle revision", () => {
     const first = generateTileSwap({
       puzzleId: "tile-swap",
       seed: "gallery-night",
@@ -18,11 +18,20 @@ describe("generateTileSwap", () => {
       height: 3,
       imageId: "great-wave",
     });
+    const alternateArtwork = generateTileSwap({
+      puzzleId: "tile-swap",
+      seed: "gallery-night",
+      width: 4,
+      height: 3,
+      imageId: "roses",
+    });
 
     expect(first.asset.id).toBe("great-wave");
+    expect(first.id).toContain("shuffle@1");
     expect(first.tiles).toEqual(second.tiles);
     expect(first.checksum).toBe(second.checksum);
     expect(first.id).toBe(second.id);
+    expect(alternateArtwork.id).not.toBe(first.id);
   });
 
   it("starts with a complete, unique, non-solved permutation", () => {

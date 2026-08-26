@@ -4,6 +4,7 @@ import { createRandom, makeChecksumFromParts, normalizeDimension, normalizeSeed 
 
 export const tileSwapMinimumAxis = 2;
 export const tileSwapMaximumAxis = 8;
+const tileSwapShuffleRevision = 1;
 
 const shuffleIndexes = (indexes: readonly number[], seed: string) => {
   const random = createRandom(seed);
@@ -26,10 +27,11 @@ export const generateTileSwap: TileSwapPuzzleGenerator = ({ seed, width, height,
   const boundedWidth = normalizeDimension(width, 4, tileSwapMinimumAxis, tileSwapMaximumAxis);
   const boundedHeight = normalizeDimension(height, 4, tileSwapMinimumAxis, tileSwapMaximumAxis);
   const asset = getPuzzleImageAsset(imageId, "tile-swap");
+  const shuffleIdentity = `shuffle@${tileSwapShuffleRevision}`;
   const solvedIndexes = Array.from({ length: boundedWidth * boundedHeight }, (_, index) => index);
   const shuffledIndexes = shuffleIndexes(
     solvedIndexes,
-    `tile-swap:${normalizedSeed}:${boundedWidth}x${boundedHeight}:${asset.id}`,
+    `tile-swap:${shuffleIdentity}:${normalizedSeed}:${boundedWidth}x${boundedHeight}:${asset.id}`,
   );
   const tiles: TilePuzzlePiece[] = shuffledIndexes.map((solvedIndex, currentIndex) => ({
     id: `tile-${solvedIndex}`,
@@ -41,7 +43,7 @@ export const generateTileSwap: TileSwapPuzzleGenerator = ({ seed, width, height,
 
   return {
     kind: "tiles",
-    id: `tile-swap-${asset.id}-${normalizedSeed}-${boundedWidth}x${boundedHeight}`,
+    id: `tile-swap-${asset.id}-${shuffleIdentity}-${normalizedSeed}-${boundedWidth}x${boundedHeight}`,
     puzzleId: "tile-swap",
     title: "Tile Swap",
     seed: normalizedSeed,

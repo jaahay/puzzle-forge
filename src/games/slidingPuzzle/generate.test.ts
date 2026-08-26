@@ -58,7 +58,7 @@ describe("generateSlidingPuzzle", () => {
   });
 
   it("produces positions in the reachable sliding-puzzle parity class across seeds and board shapes", () => {
-    for (const [width, height] of [[3, 3], [4, 4], [5, 4]] as const) {
+    for (const [width, height] of [[2, 3], [3, 3], [4, 4], [4, 5], [5, 4], [6, 5]] as const) {
       for (let seedIndex = 0; seedIndex < 24; seedIndex += 1) {
         const puzzle = generateSlidingPuzzle({
           puzzleId: "sliding-puzzle",

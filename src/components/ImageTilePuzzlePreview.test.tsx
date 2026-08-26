@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { canSlideTile, slideTileIntoGap } from "../games/imageTiles/state";
 import { generateSlidingPuzzle } from "../games/slidingPuzzle/generate";
 import { generateTileSwap } from "../games/tileSwap/generate";
 import { getImageTileBoardStyle, restoreImageTileProgress } from "./ImageTilePuzzlePreview";
@@ -48,6 +49,32 @@ describe("ImageTilePuzzlePreview progress restoration", () => {
       moveCount: 1,
       updatedAt: "2026-01-01T00:00:00.000Z",
     })).toBeNull();
+  });
+
+  it("restores a progressed Sliding Puzzle position with its moved gap", () => {
+    const puzzle = generateSlidingPuzzle({ puzzleId: "sliding-puzzle", seed: "restore-moved-slide", width: 4, height: 4 });
+    const movableTile = puzzle.tiles.find((tile) => canSlideTile(tile, puzzle.emptyIndex, puzzle.width, puzzle.height));
+    expect(movableTile).toBeDefined();
+    if (!movableTile) return;
+
+    const moved = slideTileIntoGap(puzzle.tiles, movableTile.id, puzzle.emptyIndex, puzzle.width, puzzle.height);
+    expect(moved.moved).toBe(true);
+    const restored = restoreImageTileProgress(puzzle, {
+      schemaVersion: 1,
+      puzzleId: "sliding-puzzle",
+      puzzleInstanceId: puzzle.id,
+      assetId: puzzle.asset.id,
+      width: puzzle.width,
+      height: puzzle.height,
+      tileOrder: moved.tiles.map(({ id, currentIndex }) => ({ id, currentIndex })),
+      emptyIndex: moved.emptyIndex,
+      moveCount: 1,
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    });
+
+    expect(restored?.moveCount).toBe(1);
+    expect(restored?.emptyIndex).toBe(moved.emptyIndex);
+    expect(restored?.tiles.map((tile) => tile.currentIndex)).toEqual(moved.tiles.map((tile) => tile.currentIndex));
   });
 
   it("requires a valid unoccupied gap for Sliding Puzzle progress", () => {

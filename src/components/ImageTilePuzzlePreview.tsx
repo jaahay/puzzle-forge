@@ -225,7 +225,7 @@ export const ImageTilePuzzlePreview = ({
 
   return (
     <section class="image-tile-preview" aria-label={`${puzzle.title} board`}>
-      <div class="image-tile-summary" aria-live="polite">
+      <div class="image-tile-summary">
         <span>{isSolved ? "Solved" : `${progress.moveCount} ${progress.moveCount === 1 ? "move" : "moves"}`}</span>
         <span>{puzzle.asset.title}</span>
         <span>{puzzle.width} × {puzzle.height}</span>
