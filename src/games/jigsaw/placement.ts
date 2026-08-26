@@ -30,6 +30,7 @@ export type JigsawCamera = {
 };
 
 export type JigsawFitTarget = "workspace" | "board";
+export type JigsawStagingMode = "perimeter" | "sides" | "top-bottom";
 
 type JigsawWorldLayoutInput = {
   imageWidth: number;
@@ -41,6 +42,10 @@ type JigsawWorldLayoutInput = {
 type WorldPosition = {
   left: number;
   top: number;
+};
+
+type ScatterSlot = WorldPosition & {
+  index: number;
 };
 
 type WorldPoint = {
@@ -117,10 +122,124 @@ export const createJigsawWorldLayout = ({
   };
 };
 
-const createScatterSlots = (layout: JigsawWorldLayout): WorldPosition[] => {
+export const isUsableJigsawViewport = (
+  viewport: JigsawViewport | null | undefined,
+): viewport is JigsawViewport => Boolean(
+  viewport &&
+  Number.isFinite(viewport.width) &&
+  Number.isFinite(viewport.height) &&
+  viewport.width > 0 &&
+  viewport.height > 0,
+);
+
+const getStagingAspectThreshold = (pieceCount: number) => {
+  if (pieceCount >= 64) return 1.2;
+  if (pieceCount >= 24) return 1.3;
+  if (pieceCount >= 8) return 1.45;
+  return 1.65;
+};
+
+export const getJigsawStagingMode = (
+  layout: JigsawWorldLayout,
+  pieceCount: number,
+  viewport: JigsawViewport | null = null,
+): JigsawStagingMode => {
+  if (!isUsableJigsawViewport(viewport)) return "perimeter";
+
+  const boardAspectRatio = layout.boardWidth / Math.max(1, layout.boardHeight);
+  const viewportAspectRatio = viewport.width / viewport.height;
+  const relativeAspectRatio = viewportAspectRatio / Math.max(0.01, boardAspectRatio);
+  const threshold = getStagingAspectThreshold(pieceCount);
+
+  if (relativeAspectRatio >= threshold) return "sides";
+  if (relativeAspectRatio <= 1 / threshold) return "top-bottom";
+  return "perimeter";
+};
+
+const sortScatterSlots = (slots: readonly ScatterSlot[], salt = 0) =>
+  [...slots].sort((left, right) =>
+    mixSlotIndex(left.index + 1 + salt) - mixSlotIndex(right.index + 1 + salt));
+
+const interleaveScatterSlots = (
+  first: readonly ScatterSlot[],
+  second: readonly ScatterSlot[],
+) => {
+  const slots: ScatterSlot[] = [];
+  const length = Math.max(first.length, second.length);
+
+  for (let index = 0; index < length; index += 1) {
+    const firstSlot = first[index];
+    const secondSlot = second[index];
+    if (firstSlot) slots.push(firstSlot);
+    if (secondSlot) slots.push(secondSlot);
+  }
+
+  return slots;
+};
+
+const isBoardAlignedScatterSlot = (
+  layout: JigsawWorldLayout,
+  slot: ScatterSlot,
+  stagingMode: Exclude<JigsawStagingMode, "perimeter">,
+) => {
+  if (stagingMode === "sides") {
+    const centerY = slot.top + layout.pieceHeight / 2;
+    return centerY >= layout.boardY && centerY <= layout.boardY + layout.boardHeight;
+  }
+
+  const centerX = slot.left + layout.pieceWidth / 2;
+  return centerX >= layout.boardX && centerX <= layout.boardX + layout.boardWidth;
+};
+
+const createPreferredScatterSlots = (
+  layout: JigsawWorldLayout,
+  slots: readonly ScatterSlot[],
+  stagingMode: Exclude<JigsawStagingMode, "perimeter">,
+  boardGap: number,
+) => {
+  const boardLeft = layout.boardX - boardGap;
+  const boardRight = layout.boardX + layout.boardWidth + boardGap;
+  const boardTop = layout.boardY - boardGap;
+  const boardBottom = layout.boardY + layout.boardHeight + boardGap;
+  const firstSide = stagingMode === "sides"
+    ? slots.filter((slot) => slot.left + layout.pieceWidth <= boardLeft)
+    : slots.filter((slot) => slot.top + layout.pieceHeight <= boardTop);
+  const secondSide = stagingMode === "sides"
+    ? slots.filter((slot) => slot.left >= boardRight)
+    : slots.filter((slot) => slot.top >= boardBottom);
+  const firstSalt = stagingMode === "sides" ? 17 : 29;
+  const secondSalt = stagingMode === "sides" ? 53 : 71;
+  const alignedFirst = sortScatterSlots(
+    firstSide.filter((slot) => isBoardAlignedScatterSlot(layout, slot, stagingMode)),
+    firstSalt,
+  );
+  const alignedSecond = sortScatterSlots(
+    secondSide.filter((slot) => isBoardAlignedScatterSlot(layout, slot, stagingMode)),
+    secondSalt,
+  );
+  const overflowFirst = sortScatterSlots(
+    firstSide.filter((slot) => !isBoardAlignedScatterSlot(layout, slot, stagingMode)),
+    firstSalt + 101,
+  );
+  const overflowSecond = sortScatterSlots(
+    secondSide.filter((slot) => !isBoardAlignedScatterSlot(layout, slot, stagingMode)),
+    secondSalt + 101,
+  );
+
+  return [
+    ...interleaveScatterSlots(alignedFirst, alignedSecond),
+    ...interleaveScatterSlots(overflowFirst, overflowSecond),
+  ];
+};
+
+const createScatterSlots = (
+  layout: JigsawWorldLayout,
+  pieceCount: number,
+  viewport: JigsawViewport | null = null,
+): WorldPosition[] => {
   const stepX = Math.max(18, layout.pieceWidth * 0.82);
   const stepY = Math.max(18, layout.pieceHeight * 0.82);
-  const slots: WorldPosition[] = [];
+  const slots: ScatterSlot[] = [];
   const maximumLeft = layout.worldWidth - layout.pieceWidth - worldPadding;
   const maximumTop = layout.worldHeight - layout.pieceHeight - worldPadding;
   const boardGap = Math.max(10, Math.min(layout.pieceWidth, layout.pieceHeight) * 0.14);
@@ -143,14 +262,20 @@ const createScatterSlots = (layout: JigsawWorldLayout): WorldPosition[] => {
         continue;
       }
 
-      slots.push({ left, top });
+      slots.push({ left, top, index: slots.length });
     }
   }
 
-  return slots
-    .map((slot, index) => ({ slot, order: mixSlotIndex(index + 1) }))
-    .sort((left, right) => left.order - right.order)
-    .map(({ slot }) => slot);
+  const stagingMode = getJigsawStagingMode(layout, pieceCount, viewport);
+  if (stagingMode === "perimeter") {
+    return sortScatterSlots(slots).map(({ left, top }) => ({ left, top }));
+  }
+
+  const preferred = createPreferredScatterSlots(layout, slots, stagingMode, boardGap);
+  const preferredIds = new Set(preferred.map((slot) => slot.index));
+  const fallback = sortScatterSlots(slots.filter((slot) => !preferredIds.has(slot.index)), 97);
+
+  return [...preferred, ...fallback].map(({ left, top }) => ({ left, top }));
 };
 
 export const normalizeJigsawWorldPosition = (
@@ -185,9 +310,10 @@ export const getJigsawPlacementPosition = (
 export const createInitialJigsawPlacements = (
   layout: JigsawWorldLayout,
   pieces: readonly JigsawPiece[],
+  viewport: JigsawViewport | null = null,
 ): JigsawPlacement[] => {
   const orderedPieces = [...pieces].sort((left, right) => left.currentIndex - right.currentIndex);
-  const slots = createScatterSlots(layout);
+  const slots = createScatterSlots(layout, pieces.length, viewport);
   const fallbackSlots = slots.length > 0 ? slots : [{ left: worldPadding, top: worldPadding }];
 
   return orderedPieces.map((piece, index) => {
@@ -203,9 +329,10 @@ export const restageLooseJigsawPlacements = (
   layout: JigsawWorldLayout,
   pieces: readonly JigsawPiece[],
   placements: readonly JigsawPlacement[],
+  viewport: JigsawViewport | null = null,
 ): JigsawPlacement[] => {
   const snappedIds = new Set(placements.filter((placement) => placement.snapped).map((placement) => placement.id));
-  return createInitialJigsawPlacements(layout, pieces).map((placement) => ({
+  return createInitialJigsawPlacements(layout, pieces, viewport).map((placement) => ({
     ...placement,
     snapped: snappedIds.has(placement.id),
   }));

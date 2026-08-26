@@ -7,8 +7,11 @@ import {
   getJigsawCameraTransform,
   getJigsawPlacementPosition,
   getJigsawSolvedPosition,
+  getJigsawStagingMode,
+  isUsableJigsawViewport,
   normalizeJigsawWorldPosition,
   panJigsawCamera,
+  restageLooseJigsawPlacements,
   screenToJigsawWorld,
   shouldSnapJigsawPlacement,
   zoomJigsawCameraAtPoint,
@@ -38,6 +41,34 @@ const overlapsBoard = (
   top < boardY + boardHeight &&
   top + pieceHeight > boardY;
 
+const isSideStaged = (
+  layout: ReturnType<typeof createJigsawWorldLayout>,
+  worldX: number,
+) =>
+  worldX + layout.pieceWidth <= layout.boardX || worldX >= layout.boardX + layout.boardWidth;
+
+const isTopBottomStaged = (
+  layout: ReturnType<typeof createJigsawWorldLayout>,
+  worldY: number,
+) =>
+  worldY + layout.pieceHeight <= layout.boardY || worldY >= layout.boardY + layout.boardHeight;
+
+const isBoardAlignedSideSlot = (
+  layout: ReturnType<typeof createJigsawWorldLayout>,
+  worldY: number,
+) => {
+  const centerY = worldY + layout.pieceHeight / 2;
+  return centerY >= layout.boardY && centerY <= layout.boardY + layout.boardHeight;
+};
+
+const isBoardAlignedTopBottomSlot = (
+  layout: ReturnType<typeof createJigsawWorldLayout>,
+  worldX: number,
+) => {
+  const centerX = worldX + layout.pieceWidth / 2;
+  return centerX >= layout.boardX && centerX <= layout.boardX + layout.boardWidth;
+};
+
 describe("Jigsaw world layout", () => {
   it("keeps artwork composition exact while making world size independent of the viewport", () => {
     const landscape = createJigsawWorldLayout({
@@ -61,6 +92,25 @@ describe("Jigsaw world layout", () => {
     expect(landscape.worldHeight).toBeGreaterThan(landscape.boardHeight);
   });
 
+  it("recognizes only finite, positive play-surface measurements", () => {
+    expect(isUsableJigsawViewport({ width: 1200, height: 800 })).toBe(true);
+    expect(isUsableJigsawViewport(null)).toBe(false);
+    expect(isUsableJigsawViewport({ width: 0, height: 800 })).toBe(false);
+    expect(isUsableJigsawViewport({ width: 1200, height: Number.POSITIVE_INFINITY })).toBe(false);
+  });
+
+  it("falls back to neutral perimeter staging when no measured play surface is available", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 1200,
+      imageHeight: 1200,
+      puzzleWidth: 8,
+      puzzleHeight: 8,
+    });
+
+    expect(getJigsawStagingMode(layout, 64, null)).toBe("perimeter");
+    expect(getJigsawStagingMode(layout, 64, { width: 0, height: 800 })).toBe("perimeter");
+  });
+
   it("scatters loose pieces around the board in logical world coordinates", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1200,
@@ -69,7 +119,7 @@ describe("Jigsaw world layout", () => {
       puzzleHeight: 4,
     });
     const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index));
-    const placements = createInitialJigsawPlacements(layout, pieces);
+    const placements = createInitialJigsawPlacements(layout, pieces, { width: 1000, height: 750 });
 
     expect(placements).toHaveLength(16);
     for (const piece of pieces) {
@@ -89,6 +139,95 @@ describe("Jigsaw world layout", () => {
     }
   });
 
+  it("prefers balanced, board-aligned side trays for a portrait puzzle on a wide display", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 721,
+      imageHeight: 2048,
+      puzzleWidth: 6,
+      puzzleHeight: 17,
+    });
+    const pieces = Array.from({ length: 48 }, (_, index) => makePiece(index, 6));
+    const viewport = { width: 1440, height: 800 };
+    const placements = createInitialJigsawPlacements(layout, pieces, viewport);
+
+    expect(getJigsawStagingMode(layout, pieces.length, viewport)).toBe("sides");
+    expect(placements.every((placement) => isSideStaged(layout, placement.worldX))).toBe(true);
+    expect(placements.slice(0, 24).every((placement) => isBoardAlignedSideSlot(layout, placement.worldY))).toBe(true);
+    expect(placements.some((placement) => placement.worldX < layout.boardX)).toBe(true);
+    expect(placements.some((placement) => placement.worldX > layout.boardX + layout.boardWidth)).toBe(true);
+  });
+
+  it("prefers balanced, board-aligned top and bottom trays for a panoramic puzzle on a tall display", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 2048,
+      imageHeight: 721,
+      puzzleWidth: 17,
+      puzzleHeight: 6,
+    });
+    const pieces = Array.from({ length: 48 }, (_, index) => makePiece(index, 17));
+    const viewport = { width: 760, height: 1280 };
+    const placements = createInitialJigsawPlacements(layout, pieces, viewport);
+
+    expect(getJigsawStagingMode(layout, pieces.length, viewport)).toBe("top-bottom");
+    expect(placements.every((placement) => isTopBottomStaged(layout, placement.worldY))).toBe(true);
+    expect(placements.slice(0, 24).every((placement) => isBoardAlignedTopBottomSlot(layout, placement.worldX))).toBe(true);
+    expect(placements.some((placement) => placement.worldY < layout.boardY)).toBe(true);
+    expect(placements.some((placement) => placement.worldY > layout.boardY + layout.boardHeight)).toBe(true);
+  });
+
+  it("uses piece count to decide when moderate extra side space should become trays", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 1200,
+      imageHeight: 1200,
+      puzzleWidth: 8,
+      puzzleHeight: 8,
+    });
+    const viewport = { width: 1200, height: 800 };
+
+    expect(getJigsawStagingMode(layout, 4, viewport)).toBe("perimeter");
+    expect(getJigsawStagingMode(layout, 64, viewport)).toBe("sides");
+  });
+
+  it("keeps adaptive staging deterministic for the same puzzle and play surface", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 721,
+      imageHeight: 2048,
+      puzzleWidth: 6,
+      puzzleHeight: 17,
+    });
+    const pieces = Array.from({ length: 48 }, (_, index) => makePiece(index, 6));
+    const viewport = { width: 1440, height: 800 };
+
+    expect(createInitialJigsawPlacements(layout, pieces, viewport)).toEqual(
+      createInitialJigsawPlacements(layout, pieces, viewport),
+    );
+  });
+
+  it("uses an explicit viewport when intentionally restaging while preserving snapped pieces", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 1200,
+      imageHeight: 1200,
+      puzzleWidth: 4,
+      puzzleHeight: 4,
+    });
+    const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index));
+    const initial = createInitialJigsawPlacements(layout, pieces, { width: 1200, height: 600 });
+    const withSnappedPiece = initial.map((placement, index) => index === 0
+      ? { ...placement, snapped: true }
+      : placement);
+    const restaged = restageLooseJigsawPlacements(
+      layout,
+      pieces,
+      withSnappedPiece,
+      { width: 600, height: 1200 },
+    );
+
+    expect(getJigsawStagingMode(layout, pieces.length, { width: 600, height: 1200 })).toBe("top-bottom");
+    expect(restaged.find((placement) => placement.id === withSnappedPiece[0].id)?.snapped).toBe(true);
+    expect(restaged.filter((placement) => !placement.snapped).every((placement) =>
+      isTopBottomStaged(layout, placement.worldY))).toBe(true);
+  });
+
   it("provides unique staging positions at the 32 by 32 technical ceiling", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1600,
@@ -97,7 +236,7 @@ describe("Jigsaw world layout", () => {
       puzzleHeight: 32,
     });
     const pieces = Array.from({ length: 1024 }, (_, index) => makePiece(index, 32));
-    const placements = createInitialJigsawPlacements(layout, pieces);
+    const placements = createInitialJigsawPlacements(layout, pieces, { width: 900, height: 900 });
 
     expect(placements).toHaveLength(1024);
     expect(new Set(placements.map(({ worldX, worldY }) => `${worldX.toFixed(3)}:${worldY.toFixed(3)}`)).size).toBe(1024);

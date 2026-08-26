@@ -9,6 +9,7 @@ import {
   createJigsawWorldLayout,
   getJigsawCameraTransform,
   getJigsawPlacementPosition,
+  isUsableJigsawViewport,
   normalizeJigsawWorldPosition,
   panJigsawCamera,
   screenToJigsawWorld,
@@ -113,6 +114,28 @@ export const initializeOrPreserveJigsawCamera = (
   currentCamera: JigsawCamera | null,
 ) => currentCamera ?? createJigsawFitCamera(layout, viewport, "workspace");
 
+export const getMeasuredJigsawViewport = (
+  stage: Pick<HTMLElement, "clientWidth" | "clientHeight"> | null,
+): JigsawViewport | null => {
+  if (!stage) return null;
+  const viewport = {
+    width: stage.clientWidth,
+    height: stage.clientHeight,
+  };
+  return isUsableJigsawViewport(viewport) ? viewport : null;
+};
+
+export const resolveInitialJigsawPlacements = (
+  persistedPlacements: JigsawPlacement[] | null,
+  layout: JigsawWorldLayout,
+  pieces: readonly JigsawPiece[],
+  stagingViewport: JigsawViewport | null,
+) => {
+  if (persistedPlacements) return persistedPlacements;
+  if (!isUsableJigsawViewport(stagingViewport)) return null;
+  return createInitialJigsawPlacements(layout, pieces, stagingViewport);
+};
+
 const getPlacementStorageKey = (puzzle: JigsawGeneratedPuzzle) =>
   `puzzle-forge.jigsaw.${placementSchemaVersion}.${puzzle.id}.${puzzle.seed}.${puzzle.width}x${puzzle.height}`;
 
@@ -150,10 +173,11 @@ const isPersistedPlacement = (value: unknown, layout: JigsawWorldLayout): value 
 
 const loadPersistedPlacements = (puzzle: JigsawGeneratedPuzzle, layout: JigsawWorldLayout) => {
   if (typeof window === "undefined") return null;
-  const rawEnvelope = window.localStorage.getItem(getPlacementStorageKey(puzzle));
-  if (!rawEnvelope) return null;
 
   try {
+    const rawEnvelope = window.localStorage.getItem(getPlacementStorageKey(puzzle));
+    if (!rawEnvelope) return null;
+
     const envelope: unknown = JSON.parse(rawEnvelope);
     if (typeof envelope !== "object" || envelope === null || Array.isArray(envelope)) return null;
     const candidate = envelope as Partial<PersistedJigsawPlacementEnvelope>;
@@ -202,7 +226,12 @@ const savePersistedPlacements = (
     placements,
     updatedAt: new Date().toISOString(),
   };
-  window.localStorage.setItem(getPlacementStorageKey(puzzle), JSON.stringify(envelope));
+
+  try {
+    window.localStorage.setItem(getPlacementStorageKey(puzzle), JSON.stringify(envelope));
+  } catch {
+    // Persistence is best-effort; Jigsaw remains playable when browser storage is unavailable.
+  }
 };
 
 const updatePlacement = (
@@ -245,7 +274,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
     puzzleHeight: puzzle.height,
   }), [puzzle.asset.intrinsicHeight, puzzle.asset.intrinsicWidth, puzzle.height, puzzle.width]);
 
-  const renderViewport = viewport.width > 0 && viewport.height > 0 ? viewport : fallbackViewport;
+  const renderViewport = isUsableJigsawViewport(viewport) ? viewport : fallbackViewport;
   const activeCamera = cameraState?.puzzleId === puzzle.id
     ? cameraState.camera
     : createJigsawFitCamera(layout, renderViewport, "workspace");
@@ -268,10 +297,14 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
     const stage = stageRef.current;
     if (!stage) return;
 
-    const measure = () => setViewport({
-      width: stage.clientWidth,
-      height: stage.clientHeight,
-    });
+    const measure = () => {
+      const measuredViewport = getMeasuredJigsawViewport(stage);
+      if (!measuredViewport) return;
+      setViewport((current) =>
+        current.width === measuredViewport.width && current.height === measuredViewport.height
+          ? current
+          : measuredViewport);
+    };
     measure();
 
     if (typeof ResizeObserver !== "undefined") {
@@ -299,15 +332,18 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
     setPlacementState((current) => {
       if (current?.puzzleId === puzzle.id) return current;
       const persisted = loadPersistedPlacements(puzzle, layout);
-      return {
-        puzzleId: puzzle.id,
-        placements: persisted ?? createInitialJigsawPlacements(layout, puzzle.tiles),
-      };
+      const placements = resolveInitialJigsawPlacements(
+        persisted,
+        layout,
+        puzzle.tiles,
+        getMeasuredJigsawViewport(stageRef.current),
+      );
+      return placements ? { puzzleId: puzzle.id, placements } : current;
     });
-  }, [layout, puzzle, puzzle.id, puzzle.tiles]);
+  }, [layout, puzzle, puzzle.id, puzzle.tiles, viewport.height, viewport.width]);
 
   useEffect(() => {
-    if (viewport.width <= 0 || viewport.height <= 0) return;
+    if (!isUsableJigsawViewport(viewport)) return;
     setCameraState((current) => ({
       puzzleId: puzzle.id,
       camera: initializeOrPreserveJigsawCamera(
@@ -329,11 +365,14 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
   };
 
   const fitView = (target: "workspace" | "board") => {
-    if (viewport.width <= 0 || viewport.height <= 0) return;
+    if (!isUsableJigsawViewport(viewport)) return;
     setCamera(createJigsawFitCamera(layout, viewport, target));
   };
 
   const scatterPieces = () => {
+    const stagingViewport = getMeasuredJigsawViewport(stageRef.current);
+    if (!stagingViewport) return false;
+
     dragRef.current = null;
     panRef.current = null;
     touchPointsRef.current.clear();
@@ -343,18 +382,17 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
     setIsPanning(false);
     setPlacementState({
       puzzleId: puzzle.id,
-      placements: createInitialJigsawPlacements(layout, puzzle.tiles),
+      placements: createInitialJigsawPlacements(layout, puzzle.tiles, stagingViewport),
     });
-    if (viewport.width > 0 && viewport.height > 0) {
-      setCamera(createJigsawFitCamera(layout, viewport, "workspace"));
-    }
+    setCamera(createJigsawFitCamera(layout, stagingViewport, "workspace"));
+    return true;
   };
 
   useEffect(() => {
     if (lastResetVersion.current === resetVersion) return;
+    if (!scatterPieces()) return;
     lastResetVersion.current = resetVersion;
-    scatterPieces();
-  }, [resetVersion]);
+  }, [layout, puzzle.id, puzzle.tiles, resetVersion, viewport.height, viewport.width]);
 
   const placements = placementState?.puzzleId === puzzle.id ? placementState.placements : [];
   const placementById = new Map(placements.map((placement) => [placement.id, placement] as const));
