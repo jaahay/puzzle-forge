@@ -40,3 +40,23 @@ export const getPuzzleImageAsset = (
 
   return asset;
 };
+
+export const getSurprisePuzzleImageAsset = (
+  puzzleId: ImageBackedPuzzleId,
+  currentImageId: string | undefined,
+  randomValue = Math.random(),
+): PuzzleImageAsset => {
+  const eligibleAssets = getPuzzleImageAssetsFor(puzzleId);
+  if (eligibleAssets.length === 0) {
+    throw new Error(`No bundled artwork is available for ${puzzleId}.`);
+  }
+
+  const candidates = eligibleAssets.length > 1
+    ? eligibleAssets.filter((asset) => asset.id !== currentImageId)
+    : eligibleAssets;
+  const boundedRandomValue = Number.isFinite(randomValue)
+    ? Math.min(Math.max(randomValue, 0), 0.9999999999999999)
+    : 0;
+
+  return candidates[Math.floor(boundedRandomValue * candidates.length)] ?? candidates[0];
+};

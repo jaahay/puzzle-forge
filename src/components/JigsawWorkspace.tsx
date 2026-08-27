@@ -1,12 +1,12 @@
 import { useState } from "preact/hooks";
 import type { JigsawImageAsset, PuzzleDifficulty } from "../catalog/types";
-import { getPuzzleImageAssetsFor } from "../games/imageAssets";
 import {
   getJigsawDifficultyForDimensions,
   jigsawDifficultyOrder,
   resolveJigsawDifficultyDimensions,
 } from "../games/jigsaw/difficulty";
 import { getDailyPuzzleLabel, getDailyPuzzleSeed } from "../games/shared/daily";
+import { ArtworkAlbum } from "./ArtworkAlbum";
 import { TopPuzzleConfiguration } from "./PuzzleConfiguration";
 import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
@@ -15,7 +15,6 @@ import { TilePuzzlePreview } from "./TilePuzzlePreview";
 
 export const jigsawCustomPreset = "Custom" as const;
 export type JigsawPresetSelection = PuzzleDifficulty | typeof jigsawCustomPreset;
-const jigsawArtworkAssets = getPuzzleImageAssetsFor("jigsaw");
 
 export const makeJigsawImageSelectionSettings = (
   asset: JigsawImageAsset,
@@ -121,44 +120,13 @@ export const JigsawWorkspace = ({
   const loadingBoard = <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label="Jigsaw is generating"><div class="puzzle-loading-copy"><strong>Generating Jigsaw</strong><span>{statusMessage}</span></div><div class="puzzle-loading-grid" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <span key={index} />)}</div></section>;
   const board = jigsawPuzzle ? (
     <section class="puzzle-panel jigsaw-puzzle-panel" aria-label="Generated Jigsaw puzzle">
-      <div class="jigsaw-image-library" role="group" aria-label="Jigsaw image library">
-        <div class="jigsaw-image-library-heading">
-          <strong>Image library</strong>
-          <span>{jigsawArtworkAssets.length} bundled</span>
-        </div>
-        <div class="jigsaw-image-library-grid">
-          {jigsawArtworkAssets.map((asset) => {
-            const selected = jigsawPuzzle.asset.id === asset.id;
-            return (
-              <button
-                class="jigsaw-image-option"
-                type="button"
-                aria-pressed={selected}
-                disabled={isGenerating}
-                onClick={() => {
-                  if (!selected) {
-                    onSettingsCommit(makeJigsawImageSelectionSettings(asset, selectedPreset));
-                  }
-                }}
-                key={asset.id}
-              >
-                <img
-                  src={asset.files.thumbnail}
-                  alt=""
-                  style={{ objectFit: "contain", background: "rgba(2, 6, 23, 0.35)" }}
-                />
-                <span>{asset.title}</span>
-              </button>
-            );
-          })}
-        </div>
-        <p class="jigsaw-image-credit">
-          {jigsawPuzzle.asset.credit.text}
-          {jigsawPuzzle.asset.credit.sourceRecordUrl ? (
-            <> <a href={jigsawPuzzle.asset.credit.sourceRecordUrl} target="_blank" rel="noreferrer">Source</a></>
-          ) : null}
-        </p>
-      </div>
+      <ArtworkAlbum
+        puzzleId="jigsaw"
+        puzzleTitle={selectedDefinition.title}
+        selectedAsset={jigsawPuzzle.asset}
+        disabled={isGenerating}
+        onSelectAsset={(asset) => onSettingsCommit(makeJigsawImageSelectionSettings(asset, selectedPreset))}
+      />
       <div class="puzzle-meta"><span>{`${jigsawPuzzle.width} x ${jigsawPuzzle.height}`}</span>{dailyLabel ? <span>Daily: {dailyLabel}</span> : null}</div>
       <TilePuzzlePreview puzzle={jigsawPuzzle} resetVersion={resetVersion} />
       {jigsawPuzzle.notes.length === 0 ? null : <ul class="notes-list">{jigsawPuzzle.notes.map((note) => <li key={note}>{note}</li>)}</ul>}
