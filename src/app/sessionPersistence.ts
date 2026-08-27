@@ -277,8 +277,8 @@ const persistedIdentityMatchesPuzzle = (persisted: PersistedPuzzleSession, puzzl
   (!puzzle.difficulty || persisted.difficulty === puzzle.difficulty) &&
   (puzzle.puzzleId !== "sudoku" || normalizeSudokuVariation(persisted.sudokuVariation) === normalizeSudokuVariation(puzzle.sudokuVariation)) &&
   (puzzle.kind !== "cards" || solitaireVariationsEqual(persisted.solitaireVariation, puzzle.solitaireVariation)) &&
-  (persisted.puzzleInstanceId === undefined || persisted.puzzleInstanceId === puzzle.id) &&
-  (puzzle.kind !== "tiles" || persisted.imageId === undefined || persisted.imageId === puzzle.asset.id);
+  (puzzle.kind !== "tiles" || persisted.puzzleInstanceId === puzzle.id) &&
+  (puzzle.kind !== "tiles" || persisted.imageId === puzzle.asset.id);
 
 export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSession, puzzle: GeneratedPuzzle): PuzzleSession | null => {
   if (!persistedIdentityMatchesPuzzle(persisted, puzzle)) {
