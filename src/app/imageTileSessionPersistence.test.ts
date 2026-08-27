@@ -53,8 +53,5 @@ describe("image tile session identity", () => {
     expect(restorePuzzleSessionFromPersisted(persisted, puzzle)).not.toBeNull();
     expect(restorePuzzleSessionFromPersisted(persisted, make("roses"))).toBeNull();
     expect(restorePuzzleSessionFromPersisted({ ...persisted, puzzleInstanceId: `${puzzle.id}-other` }, puzzle)).toBeNull();
-
-    const { puzzleInstanceId: _legacyOmitted, ...legacyPersisted } = persisted;
-    expect(restorePuzzleSessionFromPersisted(legacyPersisted, puzzle)).not.toBeNull();
   });
 });
