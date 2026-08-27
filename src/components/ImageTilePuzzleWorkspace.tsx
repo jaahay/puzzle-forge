@@ -1,7 +1,7 @@
 import { useCallback, useState } from "preact/hooks";
 import type { ImageTileGeneratedPuzzle, ImageTilePuzzleId } from "../catalog/types";
-import { getPuzzleImageAssetsFor } from "../games/imageAssets";
 import { getDailyPuzzleSeed } from "../games/shared/daily";
+import { ArtworkAlbum } from "./ArtworkAlbum";
 import { TopPuzzleConfiguration } from "./PuzzleConfiguration";
 import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
@@ -55,7 +55,6 @@ export const ImageTilePuzzleWorkspace = ({
     trackedKeys: ["Enter", " "],
   });
   const isCompletionPresented = isSolved && completionPresentation.phase === "completed";
-  const eligibleArtwork = getPuzzleImageAssetsFor(puzzleId);
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
   const handleSolvedChange = useCallback((solved: boolean) => {
     const puzzleInstanceId = imagePuzzle?.id ?? null;
@@ -84,29 +83,13 @@ export const ImageTilePuzzleWorkspace = ({
   );
 
   const artworkControl = imagePuzzle ? (
-    <section class="image-tile-artwork" aria-label="Selected artwork">
-      <img class="image-tile-artwork-thumb" src={imagePuzzle.asset.files.thumbnail} alt="" />
-      <div class="image-tile-artwork-copy">
-        <span>Artwork</span>
-        <strong>{imagePuzzle.asset.title}</strong>
-      </div>
-      <label class="image-tile-artwork-select">
-        Choose artwork
-        <select
-          value={imagePuzzle.asset.id}
-          disabled={isGenerating}
-          onChange={(event) => onSettingsCommit({ imageId: event.currentTarget.value })}
-        >
-          {eligibleArtwork.map((asset) => <option value={asset.id} key={asset.id}>{asset.title}</option>)}
-        </select>
-      </label>
-      <p class="image-tile-artwork-credit">
-        {imagePuzzle.asset.credit.text}
-        {imagePuzzle.asset.credit.sourceRecordUrl ? (
-          <> <a href={imagePuzzle.asset.credit.sourceRecordUrl} target="_blank" rel="noreferrer">Source</a></>
-        ) : null}
-      </p>
-    </section>
+    <ArtworkAlbum
+      puzzleId={puzzleId}
+      puzzleTitle={selectedDefinition.title}
+      selectedAsset={imagePuzzle.asset}
+      disabled={isGenerating}
+      onSelectAsset={(asset) => onSettingsCommit({ imageId: asset.id })}
+    />
   ) : null;
 
   const generation = (
