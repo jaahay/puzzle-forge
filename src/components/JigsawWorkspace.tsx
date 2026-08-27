@@ -40,12 +40,13 @@ export const JigsawWorkspace = ({
   onSolitaireVariationChange,
 }: PuzzleWorkspaceProps) => {
   const [resetVersion, setResetVersion] = useState(0);
-  const initialPreset: JigsawPresetSelection = puzzle?.puzzleId === "jigsaw"
-    ? getJigsawDifficultyForDimensions(puzzle.asset, width, height) ?? jigsawCustomPreset
+  const jigsawPuzzle = puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw" ? puzzle : null;
+  const initialPreset: JigsawPresetSelection = jigsawPuzzle
+    ? getJigsawDifficultyForDimensions(jigsawPuzzle.asset, width, height) ?? jigsawCustomPreset
     : jigsawCustomPreset;
   const [selectedPreset, setSelectedPreset] = useState<JigsawPresetSelection>(initialPreset);
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
-  const dailyLabel = puzzle ? getDailyPuzzleLabel(puzzle.puzzleId, puzzle.seed) : null;
+  const dailyLabel = jigsawPuzzle ? getDailyPuzzleLabel(jigsawPuzzle.puzzleId, jigsawPuzzle.seed) : null;
   const generateDailyPuzzle = () => onSettingsCommit({ seed: getDailyPuzzleSeed("jigsaw"), width, height });
   const resetJigsaw = () => {
     onReset();
@@ -65,7 +66,7 @@ export const JigsawWorkspace = ({
   };
   const seedInput = <SeedControl seed={seed} onSeedChange={onSeedChange} onSeedCommit={(nextSeed) => onSettingsCommit({ seed: nextSeed })} />;
 
-  const generation = puzzle?.puzzleId === "jigsaw" ? (
+  const generation = jigsawPuzzle ? (
     <div class="jigsaw-generation-stack">
       <div class="jigsaw-difficulty-settings" role="group" aria-label="Jigsaw difficulty">
         <div class="jigsaw-difficulty-heading">
@@ -74,7 +75,7 @@ export const JigsawWorkspace = ({
         </div>
         <div class="jigsaw-difficulty-options">
           {jigsawDifficultyOrder.map((difficulty) => {
-            const dimensions = resolveJigsawDifficultyDimensions(puzzle.asset, difficulty);
+            const dimensions = resolveJigsawDifficultyDimensions(jigsawPuzzle.asset, difficulty);
             return (
               <button
                 type="button"
@@ -118,7 +119,7 @@ export const JigsawWorkspace = ({
   ) : null;
 
   const loadingBoard = <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label="Jigsaw is generating"><div class="puzzle-loading-copy"><strong>Generating Jigsaw</strong><span>{statusMessage}</span></div><div class="puzzle-loading-grid" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <span key={index} />)}</div></section>;
-  const board = puzzle?.puzzleId === "jigsaw" ? (
+  const board = jigsawPuzzle ? (
     <section class="puzzle-panel jigsaw-puzzle-panel" aria-label="Generated Jigsaw puzzle">
       <div class="jigsaw-image-library" role="group" aria-label="Jigsaw image library">
         <div class="jigsaw-image-library-heading">
@@ -127,7 +128,7 @@ export const JigsawWorkspace = ({
         </div>
         <div class="jigsaw-image-library-grid">
           {jigsawArtworkAssets.map((asset) => {
-            const selected = puzzle.asset.id === asset.id;
+            const selected = jigsawPuzzle.asset.id === asset.id;
             return (
               <button
                 class="jigsaw-image-option"
@@ -152,15 +153,15 @@ export const JigsawWorkspace = ({
           })}
         </div>
         <p class="jigsaw-image-credit">
-          {puzzle.asset.credit.text}
-          {puzzle.asset.credit.sourceRecordUrl ? (
-            <> <a href={puzzle.asset.credit.sourceRecordUrl} target="_blank" rel="noreferrer">Source</a></>
+          {jigsawPuzzle.asset.credit.text}
+          {jigsawPuzzle.asset.credit.sourceRecordUrl ? (
+            <> <a href={jigsawPuzzle.asset.credit.sourceRecordUrl} target="_blank" rel="noreferrer">Source</a></>
           ) : null}
         </p>
       </div>
-      <div class="puzzle-meta"><span>{`${puzzle.width} x ${puzzle.height}`}</span>{dailyLabel ? <span>Daily: {dailyLabel}</span> : null}</div>
-      <TilePuzzlePreview puzzle={puzzle} resetVersion={resetVersion} />
-      {puzzle.notes.length === 0 ? null : <ul class="notes-list">{puzzle.notes.map((note) => <li key={note}>{note}</li>)}</ul>}
+      <div class="puzzle-meta"><span>{`${jigsawPuzzle.width} x ${jigsawPuzzle.height}`}</span>{dailyLabel ? <span>Daily: {dailyLabel}</span> : null}</div>
+      <TilePuzzlePreview puzzle={jigsawPuzzle} resetVersion={resetVersion} />
+      {jigsawPuzzle.notes.length === 0 ? null : <ul class="notes-list">{jigsawPuzzle.notes.map((note) => <li key={note}>{note}</li>)}</ul>}
     </section>
   ) : isGenerating ? loadingBoard : null;
 
