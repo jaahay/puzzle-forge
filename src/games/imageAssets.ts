@@ -32,6 +32,9 @@ export const getPuzzleImageAsset = (
 
   const asset = eligibleAssets.find((candidate) => candidate.id === imageId);
   if (!asset) {
+    if (puzzleId === "jigsaw") {
+      throw new Error(`Unknown bundled Jigsaw image: ${imageId}`);
+    }
     throw new Error(`Unknown or unavailable bundled artwork for ${puzzleId}: ${imageId}`);
   }
 

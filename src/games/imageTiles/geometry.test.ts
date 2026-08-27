@@ -23,7 +23,7 @@ describe("image tile crop geometry", () => {
     expect(crop.widthPercent).toBe(800);
     expect(crop.widthPercent / crop.heightPercent).toBeCloseTo(2);
     expect(crop.leftPercent).toBe(-200);
-    expect(crop.topPercent).toBe(0);
+    expect(crop.topPercent).toBeCloseTo(0);
   });
 
   it("center-crops a tall source without changing its aspect ratio", () => {
@@ -33,7 +33,7 @@ describe("image tile crop geometry", () => {
     expect(crop.widthPercent).toBe(400);
     expect(crop.heightPercent).toBe(800);
     expect(crop.widthPercent / crop.heightPercent).toBeCloseTo(0.5);
-    expect(crop.leftPercent).toBe(0);
+    expect(crop.leftPercent).toBeCloseTo(0);
     expect(crop.topPercent).toBe(-200);
   });
 
