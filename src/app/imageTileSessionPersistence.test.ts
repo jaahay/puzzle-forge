@@ -41,15 +41,20 @@ const cases: Array<{
 ];
 
 describe("image tile session identity", () => {
-  it.each(cases)("persists concrete artwork for $puzzleId", ({ puzzleId, make }) => {
+  it.each(cases)("persists concrete artwork and generated identity for $puzzleId", ({ puzzleId, make }) => {
     const puzzle = make("great-wave");
     const persisted = buildPersistedPuzzleSession(puzzleId, makeTileSession(puzzle));
 
     expect(persisted?.imageId).toBe("great-wave");
+    expect(persisted?.puzzleInstanceId).toBe(puzzle.id);
     expect(persisted).not.toBeNull();
     if (!persisted) return;
 
     expect(restorePuzzleSessionFromPersisted(persisted, puzzle)).not.toBeNull();
     expect(restorePuzzleSessionFromPersisted(persisted, make("roses"))).toBeNull();
+    expect(restorePuzzleSessionFromPersisted({ ...persisted, puzzleInstanceId: `${puzzle.id}-other` }, puzzle)).toBeNull();
+
+    const { puzzleInstanceId: _legacyOmitted, ...legacyPersisted } = persisted;
+    expect(restorePuzzleSessionFromPersisted(legacyPersisted, puzzle)).not.toBeNull();
   });
 });

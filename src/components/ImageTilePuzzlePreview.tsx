@@ -67,6 +67,13 @@ export const getImageTileBoardStyle = (width: number, height: number): JSX.CSSPr
   };
 };
 
+export const shouldRevealSlidingCompletionGap = (
+  solved: boolean,
+  completionPhase?: CompletionPresentationPhase,
+) =>
+  solved &&
+  (completionPhase === undefined || completionPhase === "celebrating" || completionPhase === "completed");
+
 export const restoreImageTileProgress = (
   puzzle: ImageTileGeneratedPuzzle,
   value: unknown,
@@ -159,6 +166,7 @@ export const ImageTilePuzzlePreview = ({
   const isSolved = isImageTileSolved(progress.tiles, progress.emptyIndex, isSliding ? boardCellCount : undefined);
   const showCompletionEffect = isSolved && completionPhase === "celebrating";
   const showSolvedPresentation = isSolved && (completionPhase === undefined || completionPhase === "completed");
+  const revealSlidingCompletionGap = isSliding && shouldRevealSlidingCompletionGap(isSolved, completionPhase);
 
   useEffect(() => {
     if (lastResetVersion.current === resetVersion) return;
@@ -259,7 +267,7 @@ export const ImageTilePuzzlePreview = ({
         {Array.from({ length: boardCellCount }, (_, currentIndex) => {
           const tile = tileByCurrentIndex.get(currentIndex);
           if (!tile) {
-            if (isSliding && isSolved) {
+            if (revealSlidingCompletionGap) {
               const solvedIndex = boardCellCount - 1;
               const row = Math.floor(solvedIndex / puzzle.width);
               const column = solvedIndex % puzzle.width;

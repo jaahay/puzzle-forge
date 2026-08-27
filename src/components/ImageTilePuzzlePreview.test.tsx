@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 import { canSlideTile, slideTileIntoGap } from "../games/imageTiles/state";
 import { generateSlidingPuzzle } from "../games/slidingPuzzle/generate";
 import { generateTileSwap } from "../games/tileSwap/generate";
-import { getImageTileBoardStyle, restoreImageTileProgress } from "./ImageTilePuzzlePreview";
+import {
+  getImageTileBoardStyle,
+  restoreImageTileProgress,
+  shouldRevealSlidingCompletionGap,
+} from "./ImageTilePuzzlePreview";
 
 describe("ImageTilePuzzlePreview layout", () => {
   it("defines both grid axes and caps tall boards by viewport height", () => {
@@ -12,6 +16,15 @@ describe("ImageTilePuzzlePreview layout", () => {
       aspectRatio: "2 / 8",
       width: "min(100%, 42rem, 18vh)",
     });
+  });
+
+  it("keeps the Sliding Puzzle gap empty until completion presentation begins", () => {
+    expect(shouldRevealSlidingCompletionGap(true, "playing")).toBe(false);
+    expect(shouldRevealSlidingCompletionGap(true, "settling")).toBe(false);
+    expect(shouldRevealSlidingCompletionGap(true, "celebrating")).toBe(true);
+    expect(shouldRevealSlidingCompletionGap(true, "completed")).toBe(true);
+    expect(shouldRevealSlidingCompletionGap(true)).toBe(true);
+    expect(shouldRevealSlidingCompletionGap(false, "completed")).toBe(false);
   });
 });
 
