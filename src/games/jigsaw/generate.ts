@@ -3,12 +3,12 @@ import type {
   JigsawEdgeSide,
   JigsawPiece,
   JigsawPieceEdge,
-  TilePuzzleGenerator,
+  JigsawPuzzleGenerator,
 } from "../../catalog/types";
+import { getPuzzleImageAsset } from "../imageAssets";
 import { createGeneratedJigsawPuzzle, createRandom, normalizeDimension, normalizeSeed } from "../shared";
 import { jigsawMaximumAxis, jigsawMinimumAxis } from "./difficulty";
 import { jigsawEdgeProfileCatalogRevision, jigsawEdgeProfileIds } from "./edgeProfiles";
-import { getJigsawImageAsset } from "./imageAssets";
 
 const edgeSides: readonly JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
 const oppositeSide: Record<JigsawEdgeSide, JigsawEdgeSide> = {
@@ -106,11 +106,11 @@ const makePieceEdges = ({
     };
   });
 
-export const generateJigsaw: TilePuzzleGenerator = ({ seed, width, height, imageId }) => {
+export const generateJigsaw: JigsawPuzzleGenerator = ({ seed, width, height, imageId }) => {
   const normalizedSeed = normalizeSeed(seed);
   const boundedWidth = normalizeDimension(width, 4, jigsawMinimumAxis, jigsawMaximumAxis);
   const boundedHeight = normalizeDimension(height, 4, jigsawMinimumAxis, jigsawMaximumAxis);
-  const asset = getJigsawImageAsset(imageId);
+  const asset = getPuzzleImageAsset(imageId, "jigsaw");
   const imageIdentity = asset.id;
   const edgeIdentity = `edges@${jigsawEdgeProfileCatalogRevision}`;
   const edgeModel = {

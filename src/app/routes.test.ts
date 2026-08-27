@@ -10,6 +10,8 @@ describe("pathname routing", () => {
 
   it("parses puzzle paths", () => {
     expect(parseAppRoute("/jigsaw")).toEqual({ kind: "puzzle", puzzleId: "jigsaw" });
+    expect(parseAppRoute("/tile-swap")).toEqual({ kind: "puzzle", puzzleId: "tile-swap" });
+    expect(parseAppRoute("/sliding-puzzle")).toEqual({ kind: "puzzle", puzzleId: "sliding-puzzle" });
     expect(parseAppRoute("/word-guess")).toEqual({ kind: "puzzle", puzzleId: "word-guess" });
   });
 
@@ -21,6 +23,8 @@ describe("pathname routing", () => {
   it("serializes every route", () => {
     expect(appRoutePath({ kind: "home" })).toBe("/");
     expect(appRoutePath({ kind: "puzzle", puzzleId: "sudoku" })).toBe("/sudoku");
+    expect(appRoutePath({ kind: "puzzle", puzzleId: "tile-swap" })).toBe("/tile-swap");
+    expect(appRoutePath({ kind: "puzzle", puzzleId: "sliding-puzzle" })).toBe("/sliding-puzzle");
     expect(appRoutePath({ kind: "updates" })).toBe("/updates");
     expect(appRoutePath({ kind: "about" })).toBe("/about");
     expect(appRoutePath({ kind: "not-found", pathname: "/missing" })).toBe("/missing");

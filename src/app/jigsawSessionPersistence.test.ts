@@ -5,7 +5,6 @@ import {
   buildPersistedPuzzleSession,
   initialSolitaireStats,
   restorePuzzleSessionFromPersisted,
-  type PersistedPuzzleSession,
   type PuzzleSession,
 } from "./session";
 
@@ -37,7 +36,7 @@ const makeJigsawSession = (): PuzzleSession => {
 };
 
 describe("Jigsaw session image identity", () => {
-  it("persists imageId and requires it to match on restore", () => {
+  it("persists exact image and generated identity for restore", () => {
     const session = makeJigsawSession();
     const puzzle = session.puzzle;
     expect(puzzle?.kind).toBe("tiles");
@@ -45,6 +44,7 @@ describe("Jigsaw session image identity", () => {
 
     const persisted = buildPersistedPuzzleSession("jigsaw", session);
     expect(persisted?.imageId).toBe(defaultJigsawImageAsset.id);
+    expect(persisted?.puzzleInstanceId).toBe(puzzle.id);
     expect(persisted).not.toBeNull();
     if (!persisted) return;
 
@@ -55,21 +55,6 @@ describe("Jigsaw session image identity", () => {
       asset: { ...puzzle.asset, id: "other-image" },
     };
     expect(restorePuzzleSessionFromPersisted(persisted, otherImagePuzzle)).toBeNull();
-  });
-
-  it("keeps pre-library Jigsaw sessions compatible by treating a missing imageId as default", () => {
-    const session = makeJigsawSession();
-    const puzzle = session.puzzle;
-    expect(puzzle?.kind).toBe("tiles");
-    if (!puzzle || puzzle.kind !== "tiles") return;
-
-    const persisted = buildPersistedPuzzleSession("jigsaw", session);
-    expect(persisted).not.toBeNull();
-    if (!persisted) return;
-
-    const legacy: PersistedPuzzleSession = { ...persisted };
-    delete legacy.imageId;
-
-    expect(restorePuzzleSessionFromPersisted(legacy, puzzle)).not.toBeNull();
+    expect(restorePuzzleSessionFromPersisted({ ...persisted, puzzleInstanceId: `${puzzle.id}-other` }, puzzle)).toBeNull();
   });
 });

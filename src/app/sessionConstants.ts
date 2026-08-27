@@ -11,6 +11,8 @@ export const puzzleIds: readonly PuzzleId[] = [
   "kenken",
   "minesweeper",
   "jigsaw",
+  "tile-swap",
+  "sliding-puzzle",
   "slitherlink",
 ];
 

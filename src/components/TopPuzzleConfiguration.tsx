@@ -13,6 +13,7 @@ type TopPuzzleConfigurationProps = {
   isFixedSize: boolean;
   isGenerating: boolean;
   isSolitaire: boolean;
+  showRandomize?: boolean;
   onWidthChange: (width: number) => void;
   onHeightChange: (height: number) => void;
   onSettingsCommit: (settings?: { width?: number; height?: number }) => void;
@@ -39,6 +40,7 @@ export const TopPuzzleConfiguration = ({
   isFixedSize,
   isGenerating,
   isSolitaire,
+  showRandomize = true,
   onWidthChange,
   onHeightChange,
   onSettingsCommit,
@@ -102,6 +104,7 @@ export const TopPuzzleConfiguration = ({
         showToday
         showUseSeed
         showReset
+        showRandomize={showRandomize}
         randomLabel="New"
         onToday={onToday}
         onUseSeed={onUseSeed}
