@@ -100,6 +100,23 @@ describe("image tile state", () => {
     expect(hasUniqueTilePositions(result.tiles, 12)).toBe(true);
   });
 
+  it("slides aligned segments toward the gap from the opposite direction", () => {
+    const horizontalTiles = makeBoard(4, 3, 4);
+    const horizontal = slideTileTowardGap(horizontalTiles, "tile-7", 4, 4, 3);
+    expect(horizontal.moved).toBe(true);
+    expect(horizontal.emptyIndex).toBe(7);
+    expect(horizontal.tiles.find((tile) => tile.id === "tile-5")?.currentIndex).toBe(4);
+    expect(horizontal.tiles.find((tile) => tile.id === "tile-6")?.currentIndex).toBe(5);
+    expect(horizontal.tiles.find((tile) => tile.id === "tile-7")?.currentIndex).toBe(6);
+
+    const verticalTiles = makeBoard(4, 3, 2);
+    const vertical = slideTileTowardGap(verticalTiles, "tile-10", 2, 4, 3);
+    expect(vertical.moved).toBe(true);
+    expect(vertical.emptyIndex).toBe(10);
+    expect(vertical.tiles.find((tile) => tile.id === "tile-6")?.currentIndex).toBe(2);
+    expect(vertical.tiles.find((tile) => tile.id === "tile-10")?.currentIndex).toBe(6);
+  });
+
   it("matches the equivalent sequence of ordinary adjacent slides", () => {
     const tiles = makeBoard(4, 3, 7);
     const lineSlide = slideTileTowardGap(tiles, "tile-4", 7, 4, 3);
