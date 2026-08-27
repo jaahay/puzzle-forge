@@ -38,8 +38,15 @@ describe("clonePuzzleSession", () => {
     const cloned = clonePuzzleSession(session);
 
     expect(session.puzzle?.kind).toBe("tiles");
+    expect(session.puzzle?.puzzleId).toBe("jigsaw");
     expect(cloned.puzzle?.kind).toBe("tiles");
-    if (session.puzzle?.kind !== "tiles" || cloned.puzzle?.kind !== "tiles") return;
+    expect(cloned.puzzle?.puzzleId).toBe("jigsaw");
+    if (
+      session.puzzle?.kind !== "tiles" ||
+      session.puzzle.puzzleId !== "jigsaw" ||
+      cloned.puzzle?.kind !== "tiles" ||
+      cloned.puzzle.puzzleId !== "jigsaw"
+    ) return;
 
     expect(cloned.puzzle).toEqual(session.puzzle);
     expect(cloned.puzzle).not.toBe(session.puzzle);
