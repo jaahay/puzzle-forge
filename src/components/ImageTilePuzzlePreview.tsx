@@ -3,10 +3,10 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import type { ImageTileGeneratedPuzzle, TilePuzzlePiece } from "../catalog/types";
 import { getImageTileCrop } from "../games/imageTiles/geometry";
 import {
-  canSlideTile,
+  canSlideTileTowardGap,
   hasUniqueTilePositions,
   isImageTileSolved,
-  slideTileIntoGap,
+  slideTileTowardGap,
   swapTilePositions,
 } from "../games/imageTiles/state";
 import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
@@ -187,11 +187,11 @@ export const ImageTilePuzzlePreview = ({
     if (isSolved) return;
 
     if (isSliding) {
-      if (progress.emptyIndex === undefined || !canSlideTile(tile, progress.emptyIndex, puzzle.width, puzzle.height)) return;
+      if (progress.emptyIndex === undefined || !canSlideTileTowardGap(tile, progress.emptyIndex, puzzle.width, puzzle.height)) return;
       onCausativeInput?.();
       setProgress((current) => {
         if (current.emptyIndex === undefined) return current;
-        const next = slideTileIntoGap(current.tiles, tile.id, current.emptyIndex, puzzle.width, puzzle.height);
+        const next = slideTileTowardGap(current.tiles, tile.id, current.emptyIndex, puzzle.width, puzzle.height);
         if (!next.moved) return current;
         return {
           ...current,
@@ -238,7 +238,7 @@ export const ImageTilePuzzlePreview = ({
 
       <p class="image-tile-instruction">
         {isSliding
-          ? "Move a tile next to the empty space. Every generated board is reachable through legal moves."
+          ? "Choose any tile in the empty space's row or column. The tiles between it and the gap slide together."
           : selectedTileId
             ? "Choose a second tile to exchange with the selected tile."
             : "Choose one tile, then another, to exchange their positions."}
@@ -294,7 +294,7 @@ export const ImageTilePuzzlePreview = ({
 
           const crop = getImageTileCrop(puzzle.asset, puzzle.width, puzzle.height, tile.row, tile.column);
           const canMove = isSliding
-            ? progress.emptyIndex !== undefined && canSlideTile(tile, progress.emptyIndex, puzzle.width, puzzle.height)
+            ? progress.emptyIndex !== undefined && canSlideTileTowardGap(tile, progress.emptyIndex, puzzle.width, puzzle.height)
             : true;
           const selected = selectedTileId === tile.id;
           const imageStyle = {
@@ -305,7 +305,7 @@ export const ImageTilePuzzlePreview = ({
           } as JSX.CSSProperties;
           const unavailable = isSolved || (isSliding && !canMove);
           const actionLabel = isSliding
-            ? canMove ? "Move into empty space" : "Not adjacent to empty space"
+            ? canMove ? "Slide row or column toward empty space" : "Not in the empty space's row or column"
             : selected ? "Selected; choose again to cancel" : "Select to swap";
 
           return (

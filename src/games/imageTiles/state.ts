@@ -62,6 +62,70 @@ export const canSlideTile = (
   height: number,
 ) => getSlidingNeighborIndexes(emptyIndex, width, height).includes(tile.currentIndex);
 
+const getSlidingLineStep = (
+  tileIndex: number,
+  emptyIndex: number,
+  width: number,
+  height: number,
+): number | null => {
+  const cellCount = width * height;
+  if (
+    !Number.isInteger(tileIndex) ||
+    !Number.isInteger(emptyIndex) ||
+    tileIndex < 0 ||
+    tileIndex >= cellCount ||
+    emptyIndex < 0 ||
+    emptyIndex >= cellCount ||
+    tileIndex === emptyIndex
+  ) return null;
+
+  const tileRow = Math.floor(tileIndex / width);
+  const emptyRow = Math.floor(emptyIndex / width);
+  if (tileRow === emptyRow) return 1;
+  if (tileIndex % width === emptyIndex % width) return width;
+  return null;
+};
+
+export const canSlideTileTowardGap = (
+  tile: Pick<TilePuzzlePiece, "currentIndex">,
+  emptyIndex: number,
+  width: number,
+  height: number,
+) => getSlidingLineStep(tile.currentIndex, emptyIndex, width, height) !== null;
+
+export const slideTileTowardGap = (
+  tiles: readonly TilePuzzlePiece[],
+  tileId: string,
+  emptyIndex: number,
+  width: number,
+  height: number,
+): { tiles: TilePuzzlePiece[]; emptyIndex: number; moved: boolean } => {
+  const tile = tiles.find((candidate) => candidate.id === tileId);
+  if (!tile) return { tiles: [...tiles], emptyIndex, moved: false };
+
+  const step = getSlidingLineStep(tile.currentIndex, emptyIndex, width, height);
+  if (step === null) return { tiles: [...tiles], emptyIndex, moved: false };
+
+  const shift = tile.currentIndex < emptyIndex ? step : -step;
+  const shiftedIndexes = new Set<number>();
+  for (let index = tile.currentIndex; index !== emptyIndex; index += shift) {
+    shiftedIndexes.add(index);
+  }
+
+  const occupiedIndexes = new Set(tiles.map((candidate) => candidate.currentIndex));
+  if ([...shiftedIndexes].some((index) => !occupiedIndexes.has(index))) {
+    return { tiles: [...tiles], emptyIndex, moved: false };
+  }
+
+  return {
+    tiles: tiles.map((candidate) => shiftedIndexes.has(candidate.currentIndex)
+      ? { ...candidate, currentIndex: candidate.currentIndex + shift }
+      : candidate),
+    emptyIndex: tile.currentIndex,
+    moved: true,
+  };
+};
+
 export const slideTileIntoGap = (
   tiles: readonly TilePuzzlePiece[],
   tileId: string,
