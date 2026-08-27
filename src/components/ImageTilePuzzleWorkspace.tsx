@@ -7,6 +7,7 @@ import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { SeedControl } from "./SeedControl";
 import { ImageTilePuzzlePreview } from "./ImageTilePuzzlePreview";
+import { usePuzzleCompletionPresentation } from "./usePuzzleCompletionPresentation";
 
 const asImageTilePuzzle = (
   puzzle: PuzzleWorkspaceProps["puzzle"],
@@ -47,6 +48,13 @@ export const ImageTilePuzzleWorkspace = ({
     completionState.puzzleInstanceId === imagePuzzle.id &&
     completionState.solved,
   );
+  const completionPresentation = usePuzzleCompletionPresentation({
+    enabled: Boolean(imagePuzzle),
+    identity: imagePuzzle?.id ?? `${puzzleId}:pending`,
+    solved: isSolved,
+    trackedKeys: ["Enter", " "],
+  });
+  const isCompletionPresented = isSolved && completionPresentation.phase === "completed";
   const eligibleArtwork = getPuzzleImageAssetsFor(puzzleId);
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
   const handleSolvedChange = useCallback((solved: boolean) => {
@@ -112,7 +120,7 @@ export const ImageTilePuzzleWorkspace = ({
       isFixedSize={isFixedSize}
       isGenerating={isGenerating}
       isSolitaire={false}
-      showRandomize={!isSolved}
+      showRandomize={!isCompletionPresented}
       onWidthChange={onWidthChange}
       onHeightChange={onHeightChange}
       onSettingsCommit={onSettingsCommit}
@@ -138,12 +146,15 @@ export const ImageTilePuzzleWorkspace = ({
         key={imagePuzzle.id}
         puzzle={imagePuzzle}
         resetVersion={resetVersion}
+        completionPhase={completionPresentation.phase}
+        onCausativeInput={completionPresentation.recordCausativeInput}
+        onCompletionAnimationEnd={completionPresentation.completePresentation}
         onSolvedChange={handleSolvedChange}
       />
     </section>
   ) : isGenerating ? loadingBoard : null;
 
-  const gameplay = isSolved ? (
+  const gameplay = isCompletionPresented ? (
     <section class="completion-dock" aria-live="polite" aria-label={`${selectedDefinition.title} solved`}>
       <div class="completion-dock-copy">
         <span class="completion-dock-mark" aria-hidden="true">✓</span>

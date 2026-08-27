@@ -9,10 +9,14 @@ import {
   slideTileIntoGap,
   swapTilePositions,
 } from "../games/imageTiles/state";
+import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
 
 type ImageTilePuzzlePreviewProps = {
   puzzle: ImageTileGeneratedPuzzle;
   resetVersion?: number;
+  completionPhase?: CompletionPresentationPhase;
+  onCausativeInput?: () => void;
+  onCompletionAnimationEnd?: () => void;
   onSolvedChange?: (solved: boolean) => void;
 };
 
@@ -140,25 +144,25 @@ const saveImageTileProgress = (puzzle: ImageTileGeneratedPuzzle, progress: Image
 export const ImageTilePuzzlePreview = ({
   puzzle,
   resetVersion = 0,
+  completionPhase,
+  onCausativeInput,
+  onCompletionAnimationEnd,
   onSolvedChange,
 }: ImageTilePuzzlePreviewProps) => {
   const [progress, setProgress] = useState<ImageTileProgress>(() =>
     loadImageTileProgress(puzzle) ?? makeInitialProgress(puzzle));
   const [selectedTileId, setSelectedTileId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
-  const [celebrateCompletion, setCelebrateCompletion] = useState(false);
   const lastResetVersion = useRef(resetVersion);
-  const playerMutationRef = useRef(false);
   const boardCellCount = puzzle.width * puzzle.height;
   const isSliding = puzzle.puzzleId === "sliding-puzzle";
   const isSolved = isImageTileSolved(progress.tiles, progress.emptyIndex, isSliding ? boardCellCount : undefined);
-  const previousSolvedRef = useRef(isSolved);
+  const showCompletionEffect = isSolved && completionPhase === "celebrating";
+  const showSolvedPresentation = isSolved && (completionPhase === undefined || completionPhase === "completed");
 
   useEffect(() => {
     if (lastResetVersion.current === resetVersion) return;
     lastResetVersion.current = resetVersion;
-    playerMutationRef.current = false;
-    setCelebrateCompletion(false);
     setProgress(makeInitialProgress(puzzle));
     setSelectedTileId(null);
   }, [puzzle, resetVersion]);
@@ -168,14 +172,6 @@ export const ImageTilePuzzlePreview = ({
   }, [progress, puzzle]);
 
   useEffect(() => {
-    const previousSolved = previousSolvedRef.current;
-    if (!previousSolved && isSolved && playerMutationRef.current) {
-      setCelebrateCompletion(true);
-    } else if (!isSolved) {
-      setCelebrateCompletion(false);
-    }
-    previousSolvedRef.current = isSolved;
-    if (isSolved) playerMutationRef.current = false;
     onSolvedChange?.(isSolved);
   }, [isSolved, onSolvedChange]);
 
@@ -183,11 +179,12 @@ export const ImageTilePuzzlePreview = ({
     if (isSolved) return;
 
     if (isSliding) {
+      if (progress.emptyIndex === undefined || !canSlideTile(tile, progress.emptyIndex, puzzle.width, puzzle.height)) return;
+      onCausativeInput?.();
       setProgress((current) => {
         if (current.emptyIndex === undefined) return current;
         const next = slideTileIntoGap(current.tiles, tile.id, current.emptyIndex, puzzle.width, puzzle.height);
         if (!next.moved) return current;
-        playerMutationRef.current = true;
         return {
           ...current,
           tiles: next.tiles,
@@ -207,7 +204,7 @@ export const ImageTilePuzzlePreview = ({
       return;
     }
 
-    playerMutationRef.current = true;
+    onCausativeInput?.();
     setProgress((current) => ({
       ...current,
       tiles: swapTilePositions(current.tiles, selectedTileId, tile.id),
@@ -226,7 +223,7 @@ export const ImageTilePuzzlePreview = ({
   return (
     <section class="image-tile-preview" aria-label={`${puzzle.title} board`}>
       <div class="image-tile-summary">
-        <span>{isSolved ? "Solved" : `${progress.moveCount} ${progress.moveCount === 1 ? "move" : "moves"}`}</span>
+        <span>{showSolvedPresentation ? "Solved" : `${progress.moveCount} ${progress.moveCount === 1 ? "move" : "moves"}`}</span>
         <span>{puzzle.asset.title}</span>
         <span>{puzzle.width} × {puzzle.height}</span>
       </div>
@@ -252,11 +249,11 @@ export const ImageTilePuzzlePreview = ({
       ) : null}
 
       <div
-        class={`image-tile-board ${isSolved ? "solved" : ""} ${celebrateCompletion ? "just-solved" : ""}`}
+        class={`image-tile-board ${showSolvedPresentation ? "solved" : ""} ${showCompletionEffect ? "just-solved" : ""}`}
         style={boardStyle}
         aria-label={`${puzzle.title}, ${puzzle.width} by ${puzzle.height}`}
         onAnimationEnd={(event) => {
-          if (event.target === event.currentTarget) setCelebrateCompletion(false);
+          if (showCompletionEffect && event.target === event.currentTarget) onCompletionAnimationEnd?.();
         }}
       >
         {Array.from({ length: boardCellCount }, (_, currentIndex) => {
