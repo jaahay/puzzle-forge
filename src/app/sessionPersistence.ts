@@ -312,10 +312,29 @@ export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSess
       return null;
     }
 
-    const restoredPuzzle: GeneratedPuzzle = {
-      ...puzzle,
-      tiles: puzzle.tiles.map((tile) => ({ ...tile, currentIndex: tileIndexes.get(tile.id) ?? tile.currentIndex })),
-    };
+    const restoredPuzzle: GeneratedPuzzle = puzzle.puzzleId === "jigsaw"
+      ? {
+          ...puzzle,
+          tiles: puzzle.tiles.map((tile) => ({
+            ...tile,
+            currentIndex: tileIndexes.get(tile.id) ?? tile.currentIndex,
+          })),
+        }
+      : puzzle.puzzleId === "sliding-puzzle"
+        ? {
+            ...puzzle,
+            tiles: puzzle.tiles.map((tile) => ({
+              ...tile,
+              currentIndex: tileIndexes.get(tile.id) ?? tile.currentIndex,
+            })),
+          }
+        : {
+            ...puzzle,
+            tiles: puzzle.tiles.map((tile) => ({
+              ...tile,
+              currentIndex: tileIndexes.get(tile.id) ?? tile.currentIndex,
+            })),
+          };
 
     return {
       seed: persisted.seed,
