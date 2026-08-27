@@ -11,6 +11,10 @@
   background: rgba(15, 23, 42, 0.58);
 }
 
+.puzzle-workspace-layout.is-immersive .artwork-control {
+  display: none;
+}
+
 .artwork-control-thumb {
   display: block;
   width: 4.5rem;
@@ -199,7 +203,11 @@
 .artwork-album-option:hover,
 .artwork-album-option:focus-visible {
   border-color: rgba(125, 211, 252, 0.78);
-  outline: none;
+}
+
+.artwork-album-option:focus-visible {
+  outline: 3px solid rgba(125, 211, 252, 0.42);
+  outline-offset: 2px;
 }
 
 .artwork-album-option[aria-pressed="true"] {
