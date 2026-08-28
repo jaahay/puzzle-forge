@@ -7,32 +7,16 @@ import {
   solitaireWasteModeLabels,
   solitaireWasteModes,
 } from "../games/solitaire/variation";
-import { GenerationActions } from "./GenerationActions";
 
 type SolitaireSettingsProps = {
   variation: SolitaireVariation;
-  isGenerating: boolean;
-  canGenerate: boolean;
   onVariationChange: (variation: SolitaireVariation) => void;
-  onToday: () => void;
-  onGenerate: () => void;
-  onRandomize: () => void;
-  onReset: () => void;
 };
 
 const parseRedealLimit = (value: string): SolitaireRedealLimit =>
   value === "unlimited" ? "unlimited" : value === "3" ? 3 : value === "1" ? 1 : 0;
 
-export const SolitaireSettings = ({
-  variation,
-  isGenerating,
-  canGenerate,
-  onVariationChange,
-  onToday,
-  onGenerate,
-  onRandomize,
-  onReset,
-}: SolitaireSettingsProps) => {
+export const SolitaireSettings = ({ variation, onVariationChange }: SolitaireSettingsProps) => {
   const updateDrawMode = (drawMode: SolitaireDrawMode) => {
     onVariationChange({ ...variation, drawMode, knownSolvable: false });
   };
@@ -46,7 +30,7 @@ export const SolitaireSettings = ({
   };
 
   return (
-    <div class="solitaire-settings" aria-label="Solitaire variation settings">
+    <div class="solitaire-settings" aria-label="Next Solitaire variation">
       <label>
         Draw
         <select value={variation.drawMode} onChange={(event) => updateDrawMode(event.currentTarget.value as SolitaireDrawMode)}>
@@ -79,20 +63,6 @@ export const SolitaireSettings = ({
           ))}
         </select>
       </label>
-
-      <GenerationActions
-        className="solitaire-settings-actions"
-        isGenerating={isGenerating}
-        canGenerate={canGenerate}
-        showToday
-        showUseSeed
-        showReset
-        randomLabel="New"
-        onToday={onToday}
-        onUseSeed={onGenerate}
-        onRandomize={onRandomize}
-        onReset={onReset}
-      />
     </div>
   );
 };
