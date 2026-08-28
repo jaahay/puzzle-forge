@@ -5,6 +5,15 @@ import type { GridCellSelection } from "../interactions/gridRules";
 export type SolitaireStats = { moveCount: number; drawCount: number; recycleCount: number; autoMoveCount: number };
 export type GenerationSettings = Partial<Pick<PuzzleGenerationRequest, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution" | "sudokuVariation" | "solitaireVariation" | "imageId">>;
 
+export type NextPuzzleDraft = {
+  width: number;
+  height: number;
+  difficulty: PuzzleDifficulty;
+  requireUniqueSolution: boolean;
+  sudokuVariation: SudokuVariation;
+  solitaireVariation: SolitaireVariation;
+};
+
 export type PuzzleWorkspaceProps = {
   selectedDefinition: PuzzleDefinition;
   selectedPuzzleIsGeneratable: boolean;
@@ -16,6 +25,8 @@ export type PuzzleWorkspaceProps = {
   sudokuVariation: SudokuVariation;
   puzzle: GeneratedPuzzle | null;
   solitaireVariation: SolitaireVariation;
+  nextPuzzleDraft: NextPuzzleDraft;
+  seedLoadInput: string;
   cardStacks: CardStack[] | null;
   selectedCard: CardSelection | null;
   solitaireStats: SolitaireStats;
@@ -35,6 +46,11 @@ export type PuzzleWorkspaceProps = {
   onReset: () => void;
   onCheck: () => void;
   onSolitaireVariationChange: (variation: SolitaireVariation) => void;
+  onNextPuzzleDraftChange: (settings: GenerationSettings) => void;
+  onSeedLoadInputChange: (seed: string) => void;
+  onNewPuzzle: () => void;
+  onToday: () => void;
+  onLoadSeed: () => void;
   onAutoMoveToFoundations: () => void;
   onUndoSolitaire: () => void;
   onRedoSolitaire: () => void;
