@@ -17,6 +17,7 @@ permissions:
 jobs:
   build:
     name: Test, typecheck, and build
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
 
     steps:
@@ -25,11 +26,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10.32.1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
