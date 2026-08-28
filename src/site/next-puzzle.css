@@ -58,8 +58,24 @@
   min-width: 0;
 }
 
+.solitaire-control-panel > label,
+.solitaire-settings {
+  order: initial;
+}
+
+.solitaire-settings {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 700px) {
+  .solitaire-settings {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 430px) {
-  .seed-tools {
+  .seed-tools,
+  .solitaire-settings {
     grid-template-columns: 1fr;
   }
 }
