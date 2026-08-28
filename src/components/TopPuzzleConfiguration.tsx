@@ -51,10 +51,7 @@ export const TopPuzzleConfiguration = ({
   onReset,
 }: TopPuzzleConfigurationProps) => (
   <div class={`control-panel ${isSolitaire ? "solitaire-control-panel" : ""}`} aria-label="Puzzle controls">
-    <label>
-      Seed
-      {seedInput}
-    </label>
+    <span class="puzzle-settings-section-label">Next puzzle</span>
 
     {isFixedSize ? null : (
       <>
@@ -86,31 +83,43 @@ export const TopPuzzleConfiguration = ({
       </>
     )}
 
-    {isSolitaire ? (
-      <SolitaireSettings
-        variation={solitaireVariation}
-        isGenerating={isGenerating}
-        canGenerate={selectedPuzzleIsGeneratable}
-        onVariationChange={onSolitaireVariationChange}
-        onToday={onToday}
-        onGenerate={onUseSeed}
-        onRandomize={onRandomize}
-        onReset={onReset}
-      />
-    ) : (
-      <GenerationActions
-        isGenerating={isGenerating}
-        canGenerate={selectedPuzzleIsGeneratable}
-        showToday
-        showUseSeed
-        showReset
-        showRandomize={showRandomize}
-        randomLabel="New"
-        onToday={onToday}
-        onUseSeed={onUseSeed}
-        onRandomize={onRandomize}
-        onReset={onReset}
-      />
-    )}
+    {isSolitaire ? <SolitaireSettings variation={solitaireVariation} onVariationChange={onSolitaireVariationChange} /> : null}
+
+    <GenerationActions
+      isGenerating={isGenerating}
+      canGenerate={selectedPuzzleIsGeneratable}
+      showRandomize={showRandomize}
+      randomLabel="New puzzle"
+      onRandomize={onRandomize}
+    />
+
+    <span class="puzzle-settings-section-label">Load</span>
+    <GenerationActions
+      isGenerating={isGenerating}
+      canGenerate={selectedPuzzleIsGeneratable}
+      showToday
+      showRandomize={false}
+      onToday={onToday}
+      onRandomize={onRandomize}
+    />
+    {seedInput}
+    <GenerationActions
+      isGenerating={isGenerating}
+      canGenerate={selectedPuzzleIsGeneratable}
+      showUseSeed
+      showRandomize={false}
+      onUseSeed={onUseSeed}
+      onRandomize={onRandomize}
+    />
+
+    <span class="puzzle-settings-section-label">Current puzzle</span>
+    <GenerationActions
+      isGenerating={isGenerating}
+      canGenerate={selectedPuzzleIsGeneratable}
+      showReset
+      showRandomize={false}
+      onRandomize={onRandomize}
+      onReset={onReset}
+    />
   </div>
 );
