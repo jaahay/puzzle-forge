@@ -21,7 +21,7 @@ type BottomPuzzleConfigurationProps = {
   showRandomize?: boolean;
   onWidthChange: (width: number) => void;
   onHeightChange: (height: number) => void;
-  onSettingsCommit: (settings?: { width?: number; height?: number }) => void;
+  onSettingsCommit: (settings: { width?: number; height?: number }) => void;
   onDifficultyChange: (difficulty: PuzzleDifficulty) => void;
   onSudokuVariationChange: (variation: SudokuVariation) => void;
   onUniqueSolutionChange: (requireUniqueSolution: boolean) => void;
