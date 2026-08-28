@@ -16,7 +16,7 @@ type TopPuzzleConfigurationProps = {
   showRandomize?: boolean;
   onWidthChange: (width: number) => void;
   onHeightChange: (height: number) => void;
-  onSettingsCommit: (settings?: { width?: number; height?: number }) => void;
+  onSettingsCommit: (settings: { width?: number; height?: number }) => void;
   onSolitaireVariationChange: (variation: SolitaireVariation) => void;
   onToday: () => void;
   onUseSeed: () => void;
