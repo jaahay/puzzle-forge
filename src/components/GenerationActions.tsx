@@ -5,7 +5,7 @@ type GenerationActionsProps = {
   showUseSeed?: boolean;
   showReset?: boolean;
   showRandomize?: boolean;
-  randomLabel?: "New" | "Randomize";
+  randomLabel?: "New" | "New puzzle" | "Randomize";
   className?: string;
   onToday?: () => void;
   onUseSeed?: () => void;
@@ -48,7 +48,7 @@ export const GenerationActions = ({
 
     {showUseSeed ? (
       <button type="button" onClick={onUseSeed} disabled={isGenerating || !canGenerate || !onUseSeed}>
-        Use seed
+        Load seed
       </button>
     ) : null}
   </div>
