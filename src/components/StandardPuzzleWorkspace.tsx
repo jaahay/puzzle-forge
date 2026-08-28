@@ -1,5 +1,5 @@
 import type { PuzzleCell } from "../catalog/types";
-import { getDailyPuzzleLabel, getDailyPuzzleSeed } from "../games/shared/daily";
+import { getDailyPuzzleLabel } from "../games/shared/daily";
 import { isGridAnswerCompleteAndCorrect } from "../interactions/gridChecking";
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
 import { FutoshikiBoard } from "./FutoshikiBoard";
@@ -17,14 +17,12 @@ const getFilledOpenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) 
 const getOpenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => !cell.locked).length ?? 0;
 
 export const StandardPuzzleWorkspace = ({
-  selectedDefinition, selectedPuzzleIsGeneratable, seed, width, height, difficulty,
-  requireUniqueSolution, sudokuVariation, puzzle, solitaireVariation, cardStacks,
-  selectedCard, solitaireStats, gridCells, selectedGridCell, statusMessage, isGenerating,
-  onSeedChange, onWidthChange, onHeightChange, onSettingsCommit, onDifficultyChange,
-  onSudokuVariationChange, onUniqueSolutionChange, onGenerate, onRandomize, onReset,
-  onCheck, onSolitaireVariationChange, onAutoMoveToFoundations, onUndoSolitaire,
-  onRedoSolitaire, canUndoSolitaire, canRedoSolitaire, onCardClick, onCardDoubleClick,
-  onStackClick, onCellClick, onCellInput,
+  selectedDefinition, selectedPuzzleIsGeneratable, seed, width, height, sudokuVariation,
+  puzzle, nextPuzzleDraft, seedLoadInput, cardStacks, selectedCard, solitaireStats,
+  gridCells, selectedGridCell, statusMessage, isGenerating, onReset, onCheck,
+  onNextPuzzleDraftChange, onSeedLoadInputChange, onNewPuzzle, onToday, onLoadSeed,
+  onAutoMoveToFoundations, onUndoSolitaire, onRedoSolitaire, canUndoSolitaire,
+  canRedoSolitaire, onCardClick, onCardDoubleClick, onStackClick, onCellClick, onCellInput,
 }: PuzzleWorkspaceProps) => {
   const isSudoku = selectedDefinition.id === "sudoku";
   const isNonogram = selectedDefinition.id === "nonogram";
@@ -62,14 +60,56 @@ export const StandardPuzzleWorkspace = ({
   const sudokuValidationTone = statusMessage.includes("need attention") ? "error" : "progress";
   const nonogramValidationTone = statusMessage.startsWith("Solved.") ? "success" : "error";
   const futoshikiValidationTone = statusMessage.startsWith("Solved.") ? "success" : statusMessage.startsWith("Not solved") ? "error" : "progress";
-  const generateDailyPuzzle = () => onSettingsCommit({ seed: getDailyPuzzleSeed(selectedDefinition.id), width, height });
-  const seedInput = <SeedControl seed={seed} onSeedChange={onSeedChange} onSeedCommit={(nextSeed) => onSettingsCommit({ seed: nextSeed })} />;
+  const seedInput = <SeedControl currentSeed={puzzle?.seed ?? seed} seed={seedLoadInput} onSeedChange={onSeedLoadInputChange} />;
   const solitaireActionControls = <div class="solitaire-action-row" aria-label="Solitaire controls"><button type="button" onClick={onUndoSolitaire} disabled={!canUndoSolitaire} aria-label="Undo Solitaire move" title="Undo">↶</button><button type="button" onClick={onRedoSolitaire} disabled={!canRedoSolitaire} aria-label="Redo Solitaire move" title="Redo">↷</button><button type="button" onClick={onAutoMoveToFoundations} aria-label="Move all currently legal cards to foundations" title="Auto foundation">♣→</button></div>;
 
   const configurationSlot = !puzzle ? null : hasBottomSettingsBar ? (
-    <BottomPuzzleConfiguration selectedDefinition={selectedDefinition} selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable} seedInput={seedInput} width={width} height={height} difficulty={difficulty} requireUniqueSolution={requireUniqueSolution} sudokuVariation={sudokuVariation} isFixedSize={isFixedSize} isNonogram={isNonogram} isWordGuess={isWordGuess} isSudoku={isSudoku} isGenerating={isGenerating} showRandomize={!isSudokuPresentationCompleted} onWidthChange={onWidthChange} onHeightChange={onHeightChange} onSettingsCommit={onSettingsCommit} onDifficultyChange={onDifficultyChange} onSudokuVariationChange={onSudokuVariationChange} onUniqueSolutionChange={onUniqueSolutionChange} onToday={generateDailyPuzzle} onUseSeed={onGenerate} onRandomize={onRandomize} onReset={onReset} />
+    <BottomPuzzleConfiguration
+      selectedDefinition={selectedDefinition}
+      selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
+      seedInput={seedInput}
+      width={nextPuzzleDraft.width}
+      height={nextPuzzleDraft.height}
+      difficulty={nextPuzzleDraft.difficulty}
+      requireUniqueSolution={nextPuzzleDraft.requireUniqueSolution}
+      sudokuVariation={nextPuzzleDraft.sudokuVariation}
+      isFixedSize={isFixedSize}
+      isNonogram={isNonogram}
+      isWordGuess={isWordGuess}
+      isSudoku={isSudoku}
+      isGenerating={isGenerating}
+      showRandomize={!isSudokuPresentationCompleted}
+      onWidthChange={(nextWidth) => onNextPuzzleDraftChange({ width: nextWidth })}
+      onHeightChange={(nextHeight) => onNextPuzzleDraftChange({ height: nextHeight })}
+      onSettingsCommit={onNextPuzzleDraftChange}
+      onDifficultyChange={(nextDifficulty) => onNextPuzzleDraftChange({ difficulty: nextDifficulty })}
+      onSudokuVariationChange={(nextVariation) => onNextPuzzleDraftChange({ sudokuVariation: nextVariation })}
+      onUniqueSolutionChange={(nextRequireUniqueSolution) => onNextPuzzleDraftChange({ requireUniqueSolution: nextRequireUniqueSolution })}
+      onToday={onToday}
+      onUseSeed={onLoadSeed}
+      onRandomize={onNewPuzzle}
+      onReset={onReset}
+    />
   ) : (
-    <TopPuzzleConfiguration selectedDefinition={selectedDefinition} selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable} seedInput={seedInput} width={width} height={height} solitaireVariation={solitaireVariation} isFixedSize={isFixedSize} isGenerating={isGenerating} isSolitaire={isSolitaire} onWidthChange={onWidthChange} onHeightChange={onHeightChange} onSettingsCommit={onSettingsCommit} onSolitaireVariationChange={onSolitaireVariationChange} onToday={generateDailyPuzzle} onUseSeed={onGenerate} onRandomize={onRandomize} onReset={onReset} />
+    <TopPuzzleConfiguration
+      selectedDefinition={selectedDefinition}
+      selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
+      seedInput={seedInput}
+      width={nextPuzzleDraft.width}
+      height={nextPuzzleDraft.height}
+      solitaireVariation={nextPuzzleDraft.solitaireVariation}
+      isFixedSize={isFixedSize}
+      isGenerating={isGenerating}
+      isSolitaire={isSolitaire}
+      onWidthChange={(nextWidth) => onNextPuzzleDraftChange({ width: nextWidth })}
+      onHeightChange={(nextHeight) => onNextPuzzleDraftChange({ height: nextHeight })}
+      onSettingsCommit={onNextPuzzleDraftChange}
+      onSolitaireVariationChange={(nextVariation) => onNextPuzzleDraftChange({ solitaireVariation: nextVariation })}
+      onToday={onToday}
+      onUseSeed={onLoadSeed}
+      onRandomize={onNewPuzzle}
+      onReset={onReset}
+    />
   );
 
   const statusSlot = showStatusLine ? <p class="status-line" aria-live="polite">{statusMessage}</p> : null;
@@ -86,7 +126,7 @@ export const StandardPuzzleWorkspace = ({
         <strong>Puzzle solved</strong>
       </div>
       <div class="puzzle-actions">
-        <button type="button" onClick={onRandomize} tabIndex={isSudokuPresentationCompleted ? 0 : -1}>New puzzle</button>
+        <button type="button" onClick={onNewPuzzle} tabIndex={isSudokuPresentationCompleted ? 0 : -1}>New puzzle</button>
       </div>
     </section>
   ) : null;
