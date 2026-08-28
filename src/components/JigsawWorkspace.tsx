@@ -1,11 +1,12 @@
 import { useState } from "preact/hooks";
 import type { JigsawImageAsset, PuzzleDifficulty } from "../catalog/types";
+import { getPuzzleImageAssetsFor } from "../games/imageAssets";
 import {
   getJigsawDifficultyForDimensions,
   jigsawDifficultyOrder,
   resolveJigsawDifficultyDimensions,
 } from "../games/jigsaw/difficulty";
-import { getDailyPuzzleLabel } from "../games/shared/daily";
+import { getDailyPuzzleLabel, getDailyPuzzleSeed } from "../games/shared/daily";
 import { ArtworkAlbum } from "./ArtworkAlbum";
 import { TopPuzzleConfiguration } from "./PuzzleConfiguration";
 import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
@@ -36,7 +37,7 @@ export const JigsawWorkspace = ({
   selectedDefinition, selectedPuzzleIsGeneratable, seed, width, height, puzzle,
   solitaireVariation, statusMessage, isGenerating, onSeedChange, onWidthChange,
   onHeightChange, onSettingsCommit, onGenerate, onRandomize, onReset,
-  onSolitaireVariationChange, onToday,
+  onSolitaireVariationChange,
 }: PuzzleWorkspaceProps) => {
   const [resetVersion, setResetVersion] = useState(0);
   const jigsawPuzzle = puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw" ? puzzle : null;
@@ -46,6 +47,12 @@ export const JigsawWorkspace = ({
   const [selectedPreset, setSelectedPreset] = useState<JigsawPresetSelection>(initialPreset);
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
   const dailyLabel = jigsawPuzzle ? getDailyPuzzleLabel(jigsawPuzzle.puzzleId, jigsawPuzzle.seed) : null;
+  const generateDailyPuzzle = () => onSettingsCommit({
+    seed: getDailyPuzzleSeed("jigsaw"),
+    width: selectedDefinition.defaultWidth,
+    height: selectedDefinition.defaultHeight,
+    imageId: getPuzzleImageAssetsFor("jigsaw")[0]?.id,
+  });
   const resetJigsaw = () => {
     onReset();
     setResetVersion((current) => current + 1);
@@ -108,7 +115,7 @@ export const JigsawWorkspace = ({
         onHeightChange={selectCustomHeight}
         onSettingsCommit={commitCustomDimensions}
         onSolitaireVariationChange={onSolitaireVariationChange}
-        onToday={onToday}
+        onToday={generateDailyPuzzle}
         onUseSeed={onGenerate}
         onRandomize={onRandomize}
         onReset={resetJigsaw}
