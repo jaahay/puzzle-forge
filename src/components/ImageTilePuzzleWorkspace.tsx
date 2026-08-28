@@ -1,5 +1,7 @@
 import { useCallback, useState } from "preact/hooks";
 import type { ImageTileGeneratedPuzzle, ImageTilePuzzleId } from "../catalog/types";
+import { getPuzzleImageAssetsFor } from "../games/imageAssets";
+import { getDailyPuzzleSeed } from "../games/shared/daily";
 import { ArtworkAlbum } from "./ArtworkAlbum";
 import { TopPuzzleConfiguration } from "./PuzzleConfiguration";
 import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
@@ -37,7 +39,6 @@ export const ImageTilePuzzleWorkspace = ({
   onRandomize,
   onReset,
   onSolitaireVariationChange,
-  onToday,
 }: PuzzleWorkspaceProps) => {
   const puzzleId: ImageTilePuzzleId = selectedDefinition.id === "sliding-puzzle" ? "sliding-puzzle" : "tile-swap";
   const imagePuzzle = asImageTilePuzzle(puzzle, puzzleId);
@@ -69,6 +70,12 @@ export const ImageTilePuzzleWorkspace = ({
     setResetVersion((current) => current + 1);
     setCompletionState({ puzzleInstanceId: imagePuzzle?.id ?? null, solved: false });
   };
+  const generateDailyPuzzle = () => onSettingsCommit({
+    seed: getDailyPuzzleSeed(puzzleId),
+    width: selectedDefinition.defaultWidth,
+    height: selectedDefinition.defaultHeight,
+    imageId: getPuzzleImageAssetsFor(puzzleId)[0]?.id,
+  });
   const seedInput = (
     <SeedControl
       seed={seed}
@@ -103,7 +110,7 @@ export const ImageTilePuzzleWorkspace = ({
       onHeightChange={onHeightChange}
       onSettingsCommit={onSettingsCommit}
       onSolitaireVariationChange={onSolitaireVariationChange}
-      onToday={onToday}
+      onToday={generateDailyPuzzle}
       onUseSeed={onGenerate}
       onRandomize={onRandomize}
       onReset={resetPuzzle}
