@@ -89,7 +89,7 @@ describe("generated puzzle identity matching", () => {
   });
 
   it("includes image identity and dimensions for image-backed puzzles", () => {
-    const puzzle = {
+    const puzzle: GeneratedPuzzle = {
       id: "tile-1",
       puzzleId: "tile-swap",
       title: "Tile Swap",
@@ -101,8 +101,25 @@ describe("generated puzzle identity matching", () => {
       notes: [],
       kind: "tiles",
       tiles: [],
-      asset: { kind: "image", id: "art-1" },
-    } as GeneratedPuzzle;
+      asset: {
+        kind: "image",
+        id: "art-1",
+        title: "Artwork",
+        alt: "Artwork",
+        orientation: "square",
+        intrinsicWidth: 100,
+        intrinsicHeight: 100,
+        files: {
+          puzzle: "/art-puzzle.jpg",
+          preview: "/art-preview.jpg",
+          thumbnail: "/art-thumb.jpg",
+        },
+        credit: {
+          text: "Test",
+          sourceName: "Test",
+        },
+      },
+    };
     const identity = { ...baseIdentity("tile-swap"), width: 4, height: 4, imageId: "art-1" };
 
     expect(generatedPuzzleMatchesIdentity(puzzle, identity)).toBe(true);
