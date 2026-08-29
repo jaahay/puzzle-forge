@@ -115,7 +115,7 @@ describe("waste mode", () => {
 });
 
 describe("Solitaire variation session integration", () => {
-  it("preserves variation metadata when building fresh and runtime sessions", () => {
+  it("keeps variation metadata authoritative on the generated puzzle", () => {
     const solitaireVariation = variation({ drawMode: "draw-3", redeals: 1, wasteMode: "relaxed" });
     const puzzle = {
       kind: "cards" as const,
@@ -134,24 +134,21 @@ describe("Solitaire variation session integration", () => {
 
     const freshSession = buildFreshSessionForGeneratedPuzzle(puzzle, "Ready.");
     const runtimeSession = buildRuntimeSession({
-      puzzleId: "klondike-solitaire",
-      seed: freshSession.seed,
-      width: freshSession.width,
-      height: freshSession.height,
-      difficulty: freshSession.difficulty,
-      requireUniqueSolution: freshSession.requireUniqueSolution,
       puzzle: freshSession.puzzle,
       cardStacks: freshSession.cardStacks,
       selectedCard: freshSession.selectedCard,
       solitaireStats: freshSession.solitaireStats,
-      solitaireUndoStack: freshSession.solitaireUndoStack ?? [],
-      solitaireRedoStack: freshSession.solitaireRedoStack ?? [],
+      solitaireUndoStack: freshSession.solitaireUndoStack,
+      solitaireRedoStack: freshSession.solitaireRedoStack,
       gridCells: freshSession.gridCells,
       selectedGridCell: freshSession.selectedGridCell,
       statusMessage: freshSession.statusMessage,
     });
 
-    expect(freshSession.solitaireVariation).toEqual(solitaireVariation);
-    expect(runtimeSession.solitaireVariation).toEqual(solitaireVariation);
+    expect(freshSession.puzzle.kind).toBe("cards");
+    expect(runtimeSession.puzzle.kind).toBe("cards");
+    if (freshSession.puzzle.kind !== "cards" || runtimeSession.puzzle.kind !== "cards") return;
+    expect(freshSession.puzzle.solitaireVariation).toEqual(solitaireVariation);
+    expect(runtimeSession.puzzle.solitaireVariation).toEqual(solitaireVariation);
   });
 });
