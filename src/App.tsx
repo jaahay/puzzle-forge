@@ -8,7 +8,7 @@ import { ChangelogView } from "./components/ChangelogView";
 import { NotFoundView } from "./components/NotFoundView";
 import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
-import type { GenerationSettings, NextPuzzleDraft } from "./components/PuzzleWorkspace.types";
+import type { GenerationSettings } from "./components/PuzzleWorkspace.types";
 import { StartView } from "./components/StartView";
 import { getCanonicalDailyGenerationSettings } from "./games/shared/daily";
 import { isImageBackedPuzzleId } from "./games/imageAssets";
@@ -24,6 +24,7 @@ import { defaultSudokuDifficulty, makeRandomSeed } from "./app/runtime";
 import { getCurrentAppRoute, parseAppRoute, pushAppRoute, type AppRoute } from "./app/routes";
 import { initialSolitaireStats, loadPersistedPuzzleSessions } from "./app/session";
 import { useGridController } from "./app/useGridController";
+import { useNextPuzzleDrafts } from "./app/useNextPuzzleDrafts";
 import { makeMissingPuzzleGenerationOptions, shouldRecoverMissingPuzzleSurface, usePuzzleGeneration, type BeginGenerationOptions } from "./app/usePuzzleGeneration";
 import { buildRuntimeSession, usePuzzleSessions } from "./app/usePuzzleSessions";
 import { useSolitaireController } from "./app/useSolitaireController";
@@ -63,8 +64,6 @@ export const App = () => {
   const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(true);
   const [hasSelectedPuzzle, setHasSelectedPuzzle] = useState(shouldStartOnPuzzleSurface);
   const [isHomeSelected, setIsHomeSelected] = useState(!shouldStartOnPuzzleSurface);
-  const [nextPuzzleDrafts, setNextPuzzleDrafts] = useState<Partial<Record<PuzzleId, NextPuzzleDraft>>>({});
-  const [seedLoadInputs, setSeedLoadInputs] = useState<Partial<Record<PuzzleId, string>>>({});
   const pendingScrollRestore = useRef<{ x: number; y: number } | null>(null);
   const generatedPuzzleHandlerRef = useRef<(generatedPuzzle: GeneratedPuzzle) => void>(() => undefined);
   const routeNavigationHandlerRef = useRef<(route: AppRoute) => void>(() => undefined);
@@ -78,55 +77,17 @@ export const App = () => {
   const sessions = usePuzzleSessions();
   const grid = useGridController();
   const solitaire = useSolitaireController({ statusMessage, onStatusMessage: setStatusMessage, solitaireVariation });
+  const {
+    nextPuzzleDraft,
+    seedLoadInput,
+    updateNextPuzzleDraft,
+    updateSeedLoadInput,
+    rememberNextPuzzleDraft,
+  } = useNextPuzzleDrafts({ selectedPuzzleId, puzzle, runtimeSettings: generationDefaults });
   const { readyPuzzles, previewPuzzles } = useMemo(() => getPuzzleAvailability(), []);
   const selectedDefinition = getPuzzleDefinition(selectedPuzzleId);
   const selectedPuzzleIsGeneratable = isGeneratable(selectedDefinition);
   const activeView = viewForRoute(route);
-
-  const makeNextPuzzleDraft = (puzzleId: PuzzleId): NextPuzzleDraft => {
-    const definition = getPuzzleDefinition(puzzleId);
-    const currentPuzzle = puzzle?.puzzleId === puzzleId ? puzzle : null;
-    const currentCards = currentPuzzle?.kind === "cards" ? currentPuzzle : null;
-
-    return {
-      width: currentPuzzle?.width ?? (puzzleId === selectedPuzzleId ? width : definition.defaultWidth),
-      height: currentPuzzle?.height ?? (puzzleId === selectedPuzzleId ? height : definition.defaultHeight),
-      difficulty: currentPuzzle?.difficulty ?? (puzzleId === selectedPuzzleId ? difficulty : defaultSudokuDifficulty),
-      requireUniqueSolution: currentPuzzle?.uniqueSolution ?? (puzzleId === selectedPuzzleId ? requireUniqueSolution : true),
-      sudokuVariation: currentPuzzle?.puzzleId === "sudoku"
-        ? normalizeSudokuVariation(currentPuzzle.sudokuVariation)
-        : puzzleId === selectedPuzzleId
-          ? normalizeSudokuVariation(sudokuVariation)
-          : defaultSudokuVariation,
-      solitaireVariation: currentCards?.puzzleId === "klondike-solitaire"
-        ? normalizeSolitaireVariation(currentCards.solitaireVariation)
-        : puzzleId === selectedPuzzleId
-          ? normalizeSolitaireVariation(solitaireVariation)
-          : defaultSolitaireVariation,
-    };
-  };
-
-  const nextPuzzleDraft = nextPuzzleDrafts[selectedPuzzleId] ?? makeNextPuzzleDraft(selectedPuzzleId);
-  const seedLoadInput = seedLoadInputs[selectedPuzzleId] ?? "";
-
-  const updateNextPuzzleDraft = (settings: GenerationSettings) => {
-    setNextPuzzleDrafts((current) => {
-      const base = current[selectedPuzzleId] ?? makeNextPuzzleDraft(selectedPuzzleId);
-      const next: NextPuzzleDraft = {
-        width: Number.isFinite(settings.width) ? Number(settings.width) : base.width,
-        height: Number.isFinite(settings.height) ? Number(settings.height) : base.height,
-        difficulty: settings.difficulty ?? base.difficulty,
-        requireUniqueSolution: typeof settings.requireUniqueSolution === "boolean" ? settings.requireUniqueSolution : base.requireUniqueSolution,
-        sudokuVariation: settings.sudokuVariation ? normalizeSudokuVariation(settings.sudokuVariation) : base.sudokuVariation,
-        solitaireVariation: settings.solitaireVariation ? normalizeSolitaireVariation(settings.solitaireVariation) : base.solitaireVariation,
-      };
-      return { ...current, [selectedPuzzleId]: next };
-    });
-  };
-
-  const updateSeedLoadInput = (nextSeed: string) => {
-    setSeedLoadInputs((current) => ({ ...current, [selectedPuzzleId]: nextSeed }));
-  };
 
   const rememberScrollPosition = () => {
     if (typeof window !== "undefined") pendingScrollRestore.current = { x: window.scrollX, y: window.scrollY };
@@ -428,24 +389,20 @@ export const App = () => {
     beginGeneration({ seed: normalizedSeed, width: generationWidth, height: generationHeight, difficulty: generationDifficulty, requireUniqueSolution: generationRequireUniqueSolution, sudokuVariation: selectedPuzzleId === "sudoku" ? generationSudokuVariation : undefined, solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? generationSolitaireVariation : undefined, imageId: imageBacked ? generationImageId : undefined }, { preserveScroll: true });
   };
 
-  const rememberProspectiveDraft = () => {
-    setNextPuzzleDrafts((current) => current[selectedPuzzleId] ? current : { ...current, [selectedPuzzleId]: nextPuzzleDraft });
-  };
-
   const generateNextPuzzle = () => {
-    rememberProspectiveDraft();
+    rememberNextPuzzleDraft();
     commitGenerationSettings({ ...nextPuzzleDraft, seed: makeRandomSeed() });
   };
 
   const loadSeededPuzzle = () => {
     const nextSeed = seedLoadInput.trim();
     if (!nextSeed) return;
-    rememberProspectiveDraft();
+    rememberNextPuzzleDraft();
     commitGenerationSettings({ ...nextPuzzleDraft, seed: nextSeed });
   };
 
   const loadToday = () => {
-    rememberProspectiveDraft();
+    rememberNextPuzzleDraft();
     commitGenerationSettings(getCanonicalDailyGenerationSettings(selectedPuzzleId));
   };
 
