@@ -13,6 +13,7 @@ import {
   type SolitaireHistoryEntry,
   type SolitaireStats,
 } from "./session";
+import { cloneSolitaireHistoryEntry } from "./solitaireHistory";
 
 export type RuntimeSessionDraft = {
   puzzleId: PuzzleId;
@@ -32,13 +33,6 @@ export type RuntimeSessionDraft = {
   selectedGridCell: PuzzleSession["selectedGridCell"];
   statusMessage: string;
 };
-
-const cloneSolitaireHistoryEntry = (entry: SolitaireHistoryEntry): SolitaireHistoryEntry => ({
-  cardStacks: entry.cardStacks.map(cloneStack),
-  selectedCard: entry.selectedCard ? { ...entry.selectedCard } : null,
-  solitaireStats: { ...entry.solitaireStats },
-  statusMessage: entry.statusMessage,
-});
 
 const cloneSessionGridCell = (puzzleId: PuzzleId, cell: PuzzleCell): PuzzleCell => {
   const clonedCell = cloneGridCell(cell);
