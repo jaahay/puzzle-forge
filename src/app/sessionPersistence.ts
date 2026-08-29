@@ -21,6 +21,8 @@ import type { PuzzleSession, PuzzleSessionCache, SolitaireStats } from "./sessio
 const persistenceSchemaVersion = 1;
 const persistenceMetadataStorageKey = "puzzle-forge.sessions.v1";
 const persistenceSessionStorageKeyPrefix = "puzzle-forge.session.v1.";
+const puzzleDifficulties = ["Easy", "Medium", "Hard", "Expert"] as const satisfies readonly PuzzleDifficulty[];
+const puzzleCellTones = ["given", "empty", "accent", "answer", "hint", "disabled"] as const satisfies readonly PuzzleCell["tone"][];
 
 const emptySolitaireStats: SolitaireStats = {
   moveCount: 0,
@@ -94,7 +96,13 @@ type PersistedPuzzleSessionMetadata = {
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
+const isNonNegativeInteger = (value: unknown): value is number => typeof value === "number" && Number.isInteger(value) && value >= 0;
+const isPositiveInteger = (value: unknown): value is number => typeof value === "number" && Number.isInteger(value) && value > 0;
 const isPuzzleId = (value: unknown): value is PuzzleId => typeof value === "string" && puzzleIds.includes(value as PuzzleId);
+const isPuzzleDifficulty = (value: unknown): value is PuzzleDifficulty =>
+  typeof value === "string" && puzzleDifficulties.includes(value as PuzzleDifficulty);
+const isPuzzleCellTone = (value: unknown): value is PuzzleCell["tone"] =>
+  typeof value === "string" && puzzleCellTones.includes(value as PuzzleCell["tone"]);
 const isSudokuVariation = (value: unknown): value is SudokuVariation => value === "classic" || value === "diagonal" || value === "zero-killer";
 const isSolitaireRedealLimit = (value: unknown): value is SolitaireRedealLimit => solitaireRedealLimits.includes(value as SolitaireRedealLimit);
 const isSolitaireVariation = (value: unknown): value is SolitaireVariation =>
@@ -104,9 +112,25 @@ const isSolitaireVariation = (value: unknown): value is SolitaireVariation =>
   (value.wasteMode === "standard" || value.wasteMode === "relaxed") &&
   typeof value.knownSolvable === "boolean";
 const isSolitaireStats = (value: unknown): value is SolitaireStats =>
-  isRecord(value) && typeof value.moveCount === "number" && typeof value.drawCount === "number" && typeof value.recycleCount === "number" && typeof value.autoMoveCount === "number";
+  isRecord(value) &&
+  isNonNegativeInteger(value.moveCount) &&
+  isNonNegativeInteger(value.drawCount) &&
+  isNonNegativeInteger(value.recycleCount) &&
+  isNonNegativeInteger(value.autoMoveCount);
 const isCardSelection = (value: unknown): value is CardSelection | null =>
-  value === null || (isRecord(value) && typeof value.stackId === "string" && typeof value.cardIndex === "number");
+  value === null || (isRecord(value) && typeof value.stackId === "string" && isNonNegativeInteger(value.cardIndex));
+const isGridCellSelection = (value: unknown): value is GridCellSelection | null =>
+  value === null || (isRecord(value) && isNonNegativeInteger(value.row) && isNonNegativeInteger(value.column));
+const isPuzzleCell = (value: unknown): value is PuzzleCell =>
+  isRecord(value) &&
+  isNonNegativeInteger(value.row) &&
+  isNonNegativeInteger(value.column) &&
+  typeof value.value === "string" &&
+  typeof value.locked === "boolean" &&
+  isPuzzleCellTone(value.tone) &&
+  (value.ariaLabel === undefined || typeof value.ariaLabel === "string");
+const isPersistedTileOrderEntry = (value: unknown): value is PersistedTileProgress["tileOrder"][number] =>
+  isRecord(value) && typeof value.id === "string" && isNonNegativeInteger(value.currentIndex);
 const isPersistedSolitaireHistoryEntry = (value: unknown): value is PersistedSolitaireHistoryEntry =>
   isRecord(value) &&
   Array.isArray(value.cardStacks) &&
@@ -209,11 +233,19 @@ const isPersistedCardProgress = (value: Record<string, unknown>): value is Persi
   Array.isArray(value.redoStack) &&
   value.redoStack.every(isPersistedSolitaireHistoryEntry);
 
+const isPersistedTileProgress = (value: Record<string, unknown>): value is PersistedTileProgress =>
+  Array.isArray(value.tileOrder) &&
+  value.tileOrder.every(isPersistedTileOrderEntry) &&
+  (value.selectedTileId === null || typeof value.selectedTileId === "string");
+
+const isPersistedGridProgress = (value: Record<string, unknown>): value is PersistedGridProgress =>
+  Array.isArray(value.cells) && value.cells.every(isPuzzleCell) && isGridCellSelection(value.selectedCell);
+
 const isPersistedPuzzleProgress = (value: unknown): value is PersistedPuzzleProgress => {
   if (!isRecord(value)) return false;
   if (value.kind === "cards") return isPersistedCardProgress(value);
-  if (value.kind === "tiles") return Array.isArray(value.tileOrder);
-  return value.kind === "grid" && Array.isArray(value.cells);
+  if (value.kind === "tiles") return isPersistedTileProgress(value);
+  return value.kind === "grid" && isPersistedGridProgress(value);
 };
 
 const isPersistedPuzzleSession = (value: unknown): value is PersistedPuzzleSession =>
@@ -221,9 +253,9 @@ const isPersistedPuzzleSession = (value: unknown): value is PersistedPuzzleSessi
   !("puzzle" in value) &&
   isPuzzleId(value.puzzleId) &&
   typeof value.seed === "string" &&
-  typeof value.width === "number" &&
-  typeof value.height === "number" &&
-  typeof value.difficulty === "string" &&
+  isPositiveInteger(value.width) &&
+  isPositiveInteger(value.height) &&
+  isPuzzleDifficulty(value.difficulty) &&
   typeof value.requireUniqueSolution === "boolean" &&
   (value.sudokuVariation === undefined || isSudokuVariation(value.sudokuVariation)) &&
   (value.solitaireVariation === undefined || isSolitaireVariation(value.solitaireVariation)) &&
@@ -233,6 +265,7 @@ const isPersistedPuzzleSession = (value: unknown): value is PersistedPuzzleSessi
   value.progressVersion === 1 &&
   typeof value.statusMessage === "string" &&
   typeof value.updatedAt === "string" &&
+  (value.completedAt === undefined || typeof value.completedAt === "string") &&
   isPersistedPuzzleProgress(value.progress);
 
 const isPersistedPuzzleSessionMetadata = (value: unknown): value is PersistedPuzzleSessionMetadata =>
@@ -256,10 +289,18 @@ const clonePersistedPuzzleProgress = (progress: PersistedPuzzleProgress): Persis
   }
 
   if (progress.kind === "tiles") {
-    return { kind: "tiles", tileOrder: progress.tileOrder.map(({ id, currentIndex }) => ({ id, currentIndex })), selectedTileId: progress.selectedTileId ?? null };
+    return {
+      kind: "tiles",
+      tileOrder: progress.tileOrder.map(({ id, currentIndex }) => ({ id, currentIndex })),
+      selectedTileId: progress.selectedTileId ?? null,
+    };
   }
 
-  return { kind: "grid", cells: progress.cells.map(cloneGridCell), selectedCell: progress.selectedCell ? { ...progress.selectedCell } : null };
+  return {
+    kind: "grid",
+    cells: progress.cells.map(cloneGridCell),
+    selectedCell: progress.selectedCell ? { ...progress.selectedCell } : null,
+  };
 };
 
 export const clonePersistedPuzzleSession = (session: PersistedPuzzleSession): PersistedPuzzleSession => ({
@@ -318,29 +359,14 @@ export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSess
       return null;
     }
 
+    const restoreTileOrder = <T extends { id: string; currentIndex: number }>(tiles: T[]) =>
+      tiles.map((tile) => ({ ...tile, currentIndex: tileIndexes.get(tile.id) ?? tile.currentIndex }));
+
     const restoredPuzzle: GeneratedPuzzle = puzzle.puzzleId === "jigsaw"
-      ? {
-          ...puzzle,
-          tiles: puzzle.tiles.map((tile) => ({
-            ...tile,
-            currentIndex: tileIndexes.get(tile.id) ?? tile.currentIndex,
-          })),
-        }
+      ? { ...puzzle, tiles: restoreTileOrder(puzzle.tiles) }
       : puzzle.puzzleId === "sliding-puzzle"
-        ? {
-            ...puzzle,
-            tiles: puzzle.tiles.map((tile) => ({
-              ...tile,
-              currentIndex: tileIndexes.get(tile.id) ?? tile.currentIndex,
-            })),
-          }
-        : {
-            ...puzzle,
-            tiles: puzzle.tiles.map((tile) => ({
-              ...tile,
-              currentIndex: tileIndexes.get(tile.id) ?? tile.currentIndex,
-            })),
-          };
+        ? { ...puzzle, tiles: restoreTileOrder(puzzle.tiles) }
+        : { ...puzzle, tiles: restoreTileOrder(puzzle.tiles) };
 
     return {
       seed: persisted.seed,
