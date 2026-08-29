@@ -9,7 +9,7 @@ import {
 import { getCanonicalDailyGenerationSettings, getCanonicalDailyPuzzleLabel } from "../games/shared/daily";
 import { ArtworkAlbum } from "./ArtworkAlbum";
 import { ImmediateTopPuzzleConfiguration } from "./PuzzleConfiguration";
-import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
+import type { ImmediateImageWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { SeedControl } from "./SeedControl";
 import { TilePuzzlePreview } from "./TilePuzzlePreview";
@@ -49,7 +49,7 @@ export const JigsawWorkspace = ({
   onGenerate,
   onRandomize,
   onReset,
-}: PuzzleWorkspaceProps) => {
+}: ImmediateImageWorkspaceProps) => {
   const [resetVersion, setResetVersion] = useState(0);
   const jigsawPuzzle = puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw" ? puzzle : null;
   const initialPreset: JigsawPresetSelection = jigsawPuzzle
