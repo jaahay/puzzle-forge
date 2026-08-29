@@ -1,9 +1,9 @@
+import type { SolitaireStats } from "../app/session";
 import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition, PuzzleDifficulty, PuzzleGenerationRequest, SolitaireVariation, SudokuVariation } from "../catalog/types";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCheckFeedbackTone } from "../interactions/gridChecking";
 import type { GridCellSelection } from "../interactions/gridRules";
 
-export type SolitaireStats = { moveCount: number; drawCount: number; recycleCount: number; autoMoveCount: number };
 export type GenerationSettings = Partial<Pick<PuzzleGenerationRequest, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution" | "sudokuVariation" | "solitaireVariation" | "imageId">>;
 
 export type NextPuzzleDraft = {
@@ -56,3 +56,72 @@ export type PuzzleWorkspaceProps = {
   onCellClick: (cell: PuzzleCell) => void;
   onCellInput: (cell: PuzzleCell, value: string) => void;
 };
+
+type CoreWorkspaceKeys =
+  | "selectedDefinition"
+  | "selectedPuzzleIsGeneratable"
+  | "seed"
+  | "puzzle"
+  | "statusMessage"
+  | "isGenerating"
+  | "onReset";
+
+type ProspectiveGenerationKeys =
+  | "nextPuzzleDraft"
+  | "seedLoadInput"
+  | "onNextPuzzleDraftChange"
+  | "onSeedLoadInputChange"
+  | "onNewPuzzle"
+  | "onToday"
+  | "onLoadSeed";
+
+type GridInteractionKeys =
+  | "gridCells"
+  | "selectedGridCell"
+  | "gridCheckFeedbackTone"
+  | "onCheck"
+  | "onCellClick"
+  | "onCellInput";
+
+type SolitaireInteractionKeys =
+  | "cardStacks"
+  | "selectedCard"
+  | "solitaireStats"
+  | "onAutoMoveToFoundations"
+  | "onUndoSolitaire"
+  | "onRedoSolitaire"
+  | "canUndoSolitaire"
+  | "canRedoSolitaire"
+  | "onCardClick"
+  | "onCardDoubleClick"
+  | "onStackClick";
+
+type ImmediateGenerationKeys =
+  | "width"
+  | "height"
+  | "onSeedChange"
+  | "onWidthChange"
+  | "onHeightChange"
+  | "onSettingsCommit"
+  | "onGenerate"
+  | "onRandomize";
+
+export type SudokuWorkspaceProps = Pick<
+  PuzzleWorkspaceProps,
+  CoreWorkspaceKeys | ProspectiveGenerationKeys | GridInteractionKeys
+>;
+
+export type GridPuzzleWorkspaceProps = Pick<
+  PuzzleWorkspaceProps,
+  CoreWorkspaceKeys | ProspectiveGenerationKeys | GridInteractionKeys
+>;
+
+export type SolitaireWorkspaceProps = Pick<
+  PuzzleWorkspaceProps,
+  CoreWorkspaceKeys | ProspectiveGenerationKeys | SolitaireInteractionKeys
+>;
+
+export type ImmediateImageWorkspaceProps = Pick<
+  PuzzleWorkspaceProps,
+  CoreWorkspaceKeys | ImmediateGenerationKeys
+>;
