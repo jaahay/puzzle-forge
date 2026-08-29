@@ -15,7 +15,7 @@ import { isImageBackedPuzzleId } from "./games/imageAssets";
 import { defaultSolitaireVariation, normalizeSolitaireVariation } from "./games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation } from "./games/sudoku/variation";
 import { generatedPuzzleMatchesIdentity } from "./app/generationIdentity";
-import { getInitialSelectedPuzzleId, markHomeNavigation, markPuzzleNavigation } from "./app/homeNavigation";
+import { getInitialSelectedPuzzleId, markPuzzleNavigation } from "./app/homeNavigation";
 import { defaultSudokuDifficulty, makeRandomSeed } from "./app/runtime";
 import { getCurrentAppRoute, parseAppRoute, pushAppRoute, type AppRoute } from "./app/routes";
 import { initialSolitaireStats, loadPersistedPuzzleSessions } from "./app/session";
@@ -272,7 +272,6 @@ export const App = () => {
 
   const selectHome = (behavior: NavigationBehavior = {}) => {
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
-    markHomeNavigation();
     setAppRoute({ kind: "home" }, behavior);
     setIsHomeSelected(true);
   };
@@ -346,8 +345,6 @@ export const App = () => {
 
     if (initialRoute.kind === "puzzle") {
       selectPuzzle(initialRoute.puzzleId, { pushHistory: false });
-    } else if (initialRoute.kind === "home") {
-      markHomeNavigation();
     }
 
     return () => generation.worker.removeEventListener("message", handleMessage);
