@@ -2,10 +2,14 @@ import { describe, expect, it } from "vitest";
 import type { GeneratedPuzzle, PuzzleDifficulty, SolitaireVariation, SudokuVariation } from "../catalog/types";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation } from "../games/sudoku/variation";
-import { generatedPuzzleMatchesIdentity, type GenerationIdentity } from "./generationIdentity";
+import {
+  generatedPuzzleMatchesIdentity,
+  getGeneratedPuzzleRuntimeSettings,
+  type GenerationIdentity,
+  type GenerationRuntimeSettings,
+} from "./generationIdentity";
 
-const baseIdentity = (puzzleId: GenerationIdentity["puzzleId"]): GenerationIdentity => ({
-  puzzleId,
+const baseRuntimeSettings: GenerationRuntimeSettings = {
   seed: "seed-1",
   width: 9,
   height: 9,
@@ -13,6 +17,11 @@ const baseIdentity = (puzzleId: GenerationIdentity["puzzleId"]): GenerationIdent
   requireUniqueSolution: true,
   sudokuVariation: defaultSudokuVariation,
   solitaireVariation: defaultSolitaireVariation,
+};
+
+const baseIdentity = (puzzleId: GenerationIdentity["puzzleId"]): GenerationIdentity => ({
+  puzzleId,
+  ...baseRuntimeSettings,
 });
 
 const gridPuzzle = (
@@ -55,6 +64,38 @@ const cardPuzzle = (variation: SolitaireVariation = defaultSolitaireVariation): 
   kind: "cards",
   stacks: [],
   solitaireVariation: variation,
+});
+
+describe("generated puzzle runtime identity", () => {
+  it("takes current-puzzle identity from the generated puzzle instead of mutable editor state", () => {
+    const puzzle = gridPuzzle("sudoku", {
+      seed: "actual-seed",
+      width: 9,
+      height: 9,
+      difficulty: "Hard",
+      uniqueSolution: false,
+      sudokuVariation: "diagonal",
+    });
+    const editorState: GenerationRuntimeSettings = {
+      ...baseRuntimeSettings,
+      seed: "typed-but-not-loaded",
+      width: 4,
+      height: 4,
+      difficulty: "Easy",
+      requireUniqueSolution: true,
+      sudokuVariation: "zero-killer",
+    };
+
+    expect(getGeneratedPuzzleRuntimeSettings(puzzle, editorState)).toEqual({
+      seed: "actual-seed",
+      width: 9,
+      height: 9,
+      difficulty: "Hard",
+      requireUniqueSolution: false,
+      sudokuVariation: "diagonal",
+      solitaireVariation: defaultSolitaireVariation,
+    });
+  });
 });
 
 describe("generated puzzle identity matching", () => {
