@@ -36,8 +36,8 @@ export type PersistedPuzzleIdentity = {
   seed: string;
   width: number;
   height: number;
-  difficulty: PuzzleDifficulty;
-  requireUniqueSolution: boolean;
+  difficulty?: PuzzleDifficulty;
+  requireUniqueSolution?: boolean;
   sudokuVariation?: SudokuVariation;
   solitaireVariation?: SolitaireVariation;
   imageId?: string;
@@ -141,26 +141,19 @@ const isPersistedSolitaireHistoryEntry = (value: unknown): value is PersistedSol
 
 const cloneGridCell = (cell: PuzzleCell): PuzzleCell => ({ ...cell });
 
-export const buildPersistedPuzzleIdentity = (puzzleId: PuzzleId, session: PuzzleSession): PersistedPuzzleIdentity => {
-  const sudokuVariation =
-    puzzleId === "sudoku" || session.puzzle?.puzzleId === "sudoku"
-      ? normalizeSudokuVariation(session.sudokuVariation ?? session.puzzle?.sudokuVariation)
-      : undefined;
-  const solitaireVariation =
-    puzzleId === "klondike-solitaire" || session.puzzle?.kind === "cards"
-      ? normalizeSolitaireVariation(session.solitaireVariation ?? (session.puzzle?.kind === "cards" ? session.puzzle.solitaireVariation : null))
-      : undefined;
-  const tilePuzzle = session.puzzle?.kind === "tiles" && session.puzzle.puzzleId === puzzleId ? session.puzzle : null;
-  const imageId = tilePuzzle?.asset.id;
-  const puzzleInstanceId = tilePuzzle?.id;
+const buildPersistedPuzzleIdentity = (puzzle: GeneratedPuzzle): PersistedPuzzleIdentity => {
+  const sudokuVariation = puzzle.puzzleId === "sudoku" ? normalizeSudokuVariation(puzzle.sudokuVariation) : undefined;
+  const solitaireVariation = puzzle.kind === "cards" ? normalizeSolitaireVariation(puzzle.solitaireVariation) : undefined;
+  const imageId = puzzle.kind === "tiles" ? puzzle.asset.id : undefined;
+  const puzzleInstanceId = puzzle.kind === "tiles" ? puzzle.id : undefined;
 
   return {
-    puzzleId,
-    seed: session.seed,
-    width: session.width,
-    height: session.height,
-    difficulty: session.difficulty,
-    requireUniqueSolution: session.requireUniqueSolution,
+    puzzleId: puzzle.puzzleId,
+    seed: puzzle.seed,
+    width: puzzle.width,
+    height: puzzle.height,
+    ...(puzzle.difficulty ? { difficulty: puzzle.difficulty } : {}),
+    ...(puzzle.uniqueSolution !== undefined ? { requireUniqueSolution: Boolean(puzzle.uniqueSolution) } : {}),
     ...(sudokuVariation ? { sudokuVariation } : {}),
     ...(solitaireVariation ? { solitaireVariation } : {}),
     ...(imageId ? { imageId } : {}),
@@ -181,7 +174,7 @@ const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzlePr
     };
   }
 
-  if (session.puzzle?.kind === "tiles") {
+  if (session.puzzle.kind === "tiles") {
     return {
       kind: "tiles",
       tileOrder: session.puzzle.tiles.map(({ id, currentIndex }) => ({ id, currentIndex })),
@@ -201,11 +194,12 @@ const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzlePr
 };
 
 export const buildPersistedPuzzleSession = (puzzleId: PuzzleId, session: PuzzleSession): PersistedPuzzleSession | null => {
+  if (session.puzzle.puzzleId !== puzzleId) return null;
   const progress = buildPersistedPuzzleProgress(session);
   if (!progress) return null;
 
   return {
-    ...buildPersistedPuzzleIdentity(puzzleId, session),
+    ...buildPersistedPuzzleIdentity(session.puzzle),
     progressVersion: 1,
     progress,
     statusMessage: session.statusMessage,
@@ -255,8 +249,8 @@ const isPersistedPuzzleSession = (value: unknown): value is PersistedPuzzleSessi
   typeof value.seed === "string" &&
   isPositiveInteger(value.width) &&
   isPositiveInteger(value.height) &&
-  isPuzzleDifficulty(value.difficulty) &&
-  typeof value.requireUniqueSolution === "boolean" &&
+  (value.difficulty === undefined || isPuzzleDifficulty(value.difficulty)) &&
+  (value.requireUniqueSolution === undefined || typeof value.requireUniqueSolution === "boolean") &&
   (value.sudokuVariation === undefined || isSudokuVariation(value.sudokuVariation)) &&
   (value.solitaireVariation === undefined || isSolitaireVariation(value.solitaireVariation)) &&
   (value.imageId === undefined || typeof value.imageId === "string") &&
@@ -315,16 +309,15 @@ const persistedIdentityMatchesPuzzle = (persisted: PersistedPuzzleSession, puzzl
   persisted.seed === puzzle.seed &&
   persisted.width === puzzle.width &&
   persisted.height === puzzle.height &&
-  (!puzzle.difficulty || persisted.difficulty === puzzle.difficulty) &&
+  (puzzle.difficulty === undefined || persisted.difficulty === puzzle.difficulty) &&
+  (puzzle.uniqueSolution === undefined || persisted.requireUniqueSolution === Boolean(puzzle.uniqueSolution)) &&
   (puzzle.puzzleId !== "sudoku" || normalizeSudokuVariation(persisted.sudokuVariation) === normalizeSudokuVariation(puzzle.sudokuVariation)) &&
   (puzzle.kind !== "cards" || solitaireVariationsEqual(persisted.solitaireVariation, puzzle.solitaireVariation)) &&
   (puzzle.kind !== "tiles" || persisted.puzzleInstanceId === puzzle.id) &&
   (puzzle.kind !== "tiles" || persisted.imageId === puzzle.asset.id);
 
 export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSession, puzzle: GeneratedPuzzle): PuzzleSession | null => {
-  if (!persistedIdentityMatchesPuzzle(persisted, puzzle)) {
-    return null;
-  }
+  if (!persistedIdentityMatchesPuzzle(persisted, puzzle)) return null;
 
   if (persisted.progress.kind === "cards" && puzzle.kind === "cards") {
     const stacks = restorePersistedCardStacks(persisted.progress.stacks, puzzle.stacks);
@@ -334,12 +327,6 @@ export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSess
     if (!stacks || !undoStack || !redoStack) return null;
 
     return {
-      seed: persisted.seed,
-      width: persisted.width,
-      height: persisted.height,
-      difficulty: persisted.difficulty,
-      requireUniqueSolution: persisted.requireUniqueSolution,
-      solitaireVariation: normalizeSolitaireVariation(persisted.solitaireVariation ?? puzzle.solitaireVariation),
       puzzle: { ...puzzle, stacks: stacks.map(cloneCardStack) },
       cardStacks: stacks,
       selectedCard: persisted.progress.selectedCard ? { ...persisted.progress.selectedCard } : null,
@@ -354,10 +341,7 @@ export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSess
 
   if (persisted.progress.kind === "tiles" && puzzle.kind === "tiles") {
     const tileIndexes = new Map(persisted.progress.tileOrder.map(({ id, currentIndex }) => [id, currentIndex] as const));
-
-    if (tileIndexes.size !== puzzle.tiles.length || puzzle.tiles.some((tile) => !tileIndexes.has(tile.id))) {
-      return null;
-    }
+    if (tileIndexes.size !== puzzle.tiles.length || puzzle.tiles.some((tile) => !tileIndexes.has(tile.id))) return null;
 
     const restoreTileOrder = <T extends { id: string; currentIndex: number }>(tiles: T[]) =>
       tiles.map((tile) => ({ ...tile, currentIndex: tileIndexes.get(tile.id) ?? tile.currentIndex }));
@@ -369,11 +353,6 @@ export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSess
         : { ...puzzle, tiles: restoreTileOrder(puzzle.tiles) };
 
     return {
-      seed: persisted.seed,
-      width: persisted.width,
-      height: persisted.height,
-      difficulty: persisted.difficulty,
-      requireUniqueSolution: persisted.requireUniqueSolution,
       puzzle: restoredPuzzle,
       cardStacks: null,
       selectedCard: null,
@@ -388,12 +367,6 @@ export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSess
 
   if (persisted.progress.kind === "grid" && puzzle.kind === "grid") {
     return {
-      seed: persisted.seed,
-      width: persisted.width,
-      height: persisted.height,
-      difficulty: persisted.difficulty,
-      requireUniqueSolution: persisted.requireUniqueSolution,
-      sudokuVariation: puzzle.puzzleId === "sudoku" ? normalizeSudokuVariation(persisted.sudokuVariation ?? puzzle.sudokuVariation) : undefined,
       puzzle,
       cardStacks: null,
       selectedCard: null,
@@ -448,7 +421,6 @@ export const loadPersistedPuzzleSessions = (): PersistedPuzzleSessions | null =>
   }
 
   if (!sessions[metadata.activePuzzleId]) return null;
-
   return { activePuzzleId: metadata.activePuzzleId, sessions };
 };
 
@@ -481,7 +453,5 @@ export const savePersistedPuzzleSessions = ({ activePuzzleId, sessions }: Runtim
 export const clearPersistedPuzzleSessions = () => {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(persistenceMetadataStorageKey);
-  for (const puzzleId of puzzleIds) {
-    window.localStorage.removeItem(sessionStorageKey(puzzleId));
-  }
+  for (const puzzleId of puzzleIds) window.localStorage.removeItem(sessionStorageKey(puzzleId));
 };
