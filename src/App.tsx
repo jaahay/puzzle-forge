@@ -67,6 +67,7 @@ export const App = () => {
   const [seedLoadInputs, setSeedLoadInputs] = useState<Partial<Record<PuzzleId, string>>>({});
   const pendingScrollRestore = useRef<{ x: number; y: number } | null>(null);
   const generatedPuzzleHandlerRef = useRef<(generatedPuzzle: GeneratedPuzzle) => void>(() => undefined);
+  const routeNavigationHandlerRef = useRef<(route: AppRoute) => void>(() => undefined);
   const { seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation } = generationDefaults;
 
   const updateGenerationDefaults = (settings: Partial<GenerationRuntimeSettings>) => {
@@ -319,23 +320,24 @@ export const App = () => {
     setAppRoute(nextRoute, behavior);
   };
 
+  routeNavigationHandlerRef.current = (nextRoute) => {
+    if (nextRoute.kind === "puzzle") {
+      selectPuzzle(nextRoute.puzzleId, { pushHistory: false });
+    } else if (nextRoute.kind === "home") {
+      selectHome({ pushHistory: false });
+    } else if (nextRoute.kind === "not-found") {
+      selectNotFound(nextRoute, { pushHistory: false });
+    } else {
+      selectSiteView(nextRoute.kind === "updates" ? "changelog" : "about", { pushHistory: false });
+    }
+  };
+
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const handlePopState = () => {
-      const nextRoute = parseAppRoute(window.location.pathname);
-      if (nextRoute.kind === "puzzle") {
-        selectPuzzle(nextRoute.puzzleId, { pushHistory: false });
-      } else if (nextRoute.kind === "home") {
-        selectHome({ pushHistory: false });
-      } else if (nextRoute.kind === "not-found") {
-        selectNotFound(nextRoute, { pushHistory: false });
-      } else {
-        selectSiteView(nextRoute.kind === "updates" ? "changelog" : "about", { pushHistory: false });
-      }
-    };
+    const handlePopState = () => routeNavigationHandlerRef.current(parseAppRoute(window.location.pathname));
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [selectedPuzzleId, hasSelectedPuzzle, isHomeSelected, puzzle]);
+  }, []);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => generation.handleGenerationMessage(
