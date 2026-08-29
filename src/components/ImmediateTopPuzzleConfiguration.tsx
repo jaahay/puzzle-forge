@@ -1,6 +1,7 @@
 import type { ComponentChildren } from "preact";
 import type { PuzzleDefinition } from "../catalog/types";
 import { GenerationActions } from "./GenerationActions";
+import { PuzzleDimensionControls } from "./PuzzleDimensionControls";
 
 type ImmediateTopPuzzleConfigurationProps = {
   selectedDefinition: PuzzleDefinition;
@@ -18,12 +19,6 @@ type ImmediateTopPuzzleConfigurationProps = {
   onUseSeed: () => void;
   onRandomize: () => void;
   onReset: () => void;
-};
-
-const blurOnEnter = (event: KeyboardEvent) => {
-  if (event.key === "Enter" && event.currentTarget instanceof HTMLElement) {
-    event.currentTarget.blur();
-  }
 };
 
 export const ImmediateTopPuzzleConfiguration = ({
@@ -49,32 +44,14 @@ export const ImmediateTopPuzzleConfiguration = ({
       {seedInput}
     </label>
     {isFixedSize ? null : (
-      <>
-        <label>
-          Width
-          <input
-            type="number"
-            min={selectedDefinition.minWidth}
-            max={selectedDefinition.maxWidth}
-            value={width}
-            onBlur={(event) => onSettingsCommit({ width: Number(event.currentTarget.value) })}
-            onInput={(event) => onWidthChange(Number(event.currentTarget.value))}
-            onKeyDown={blurOnEnter}
-          />
-        </label>
-        <label>
-          Height
-          <input
-            type="number"
-            min={selectedDefinition.minHeight}
-            max={selectedDefinition.maxHeight}
-            value={height}
-            onBlur={(event) => onSettingsCommit({ height: Number(event.currentTarget.value) })}
-            onInput={(event) => onHeightChange(Number(event.currentTarget.value))}
-            onKeyDown={blurOnEnter}
-          />
-        </label>
-      </>
+      <PuzzleDimensionControls
+        selectedDefinition={selectedDefinition}
+        width={width}
+        height={height}
+        onWidthChange={onWidthChange}
+        onHeightChange={onHeightChange}
+        onSettingsCommit={onSettingsCommit}
+      />
     )}
     <GenerationActions
       isGenerating={isGenerating}
