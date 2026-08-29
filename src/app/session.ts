@@ -1,4 +1,4 @@
-import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleId, SolitaireVariation, SudokuVariation } from "../catalog/types";
+import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
 export { puzzleIds, solitaireHistoryLimit, solitaireHistoryLimitNotice } from "./sessionConstants";
@@ -26,19 +26,12 @@ export const initialSolitaireStats: SolitaireStats = {
 };
 
 export type PuzzleSession = {
-  seed: string;
-  width: number;
-  height: number;
-  difficulty: PuzzleDifficulty;
-  requireUniqueSolution: boolean;
-  sudokuVariation?: SudokuVariation;
-  solitaireVariation?: SolitaireVariation;
-  puzzle: GeneratedPuzzle | null;
+  puzzle: GeneratedPuzzle;
   cardStacks: CardStack[] | null;
   selectedCard: CardSelection | null;
   solitaireStats: SolitaireStats;
-  solitaireUndoStack?: SolitaireHistoryEntry[];
-  solitaireRedoStack?: SolitaireHistoryEntry[];
+  solitaireUndoStack: SolitaireHistoryEntry[];
+  solitaireRedoStack: SolitaireHistoryEntry[];
   gridCells: PuzzleCell[] | null;
   selectedGridCell: GridCellSelection | null;
   statusMessage: string;
