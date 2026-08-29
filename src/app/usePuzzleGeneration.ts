@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { getPuzzleDefinition, isGeneratable } from "../catalog/puzzleCatalog";
 import type {
   GeneratedPuzzle,
@@ -97,6 +97,8 @@ export const usePuzzleGeneration = () => {
     () => new Worker(new URL("../workers/puzzleWorker.ts", import.meta.url), { type: "module" }),
     [],
   );
+
+  useEffect(() => () => worker.terminate(), [worker]);
 
   const beginGeneration = (
     defaults: PuzzleGenerationDefaults,
