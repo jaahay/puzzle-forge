@@ -6,7 +6,7 @@ import {
   jigsawDifficultyOrder,
   resolveJigsawDifficultyDimensions,
 } from "../games/jigsaw/difficulty";
-import { getDailyPuzzleLabel, getDailyPuzzleSeed } from "../games/shared/daily";
+import { getCanonicalDailyGenerationSettings, getCanonicalDailyPuzzleLabel } from "../games/shared/daily";
 import { ArtworkAlbum } from "./ArtworkAlbum";
 import { TopPuzzleConfiguration } from "./PuzzleConfiguration";
 import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
@@ -46,13 +46,17 @@ export const JigsawWorkspace = ({
     : jigsawCustomPreset;
   const [selectedPreset, setSelectedPreset] = useState<JigsawPresetSelection>(initialPreset);
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
-  const dailyLabel = jigsawPuzzle ? getDailyPuzzleLabel(jigsawPuzzle.puzzleId, jigsawPuzzle.seed) : null;
-  const generateDailyPuzzle = () => onSettingsCommit({
-    seed: getDailyPuzzleSeed("jigsaw"),
-    width: selectedDefinition.defaultWidth,
-    height: selectedDefinition.defaultHeight,
-    imageId: getPuzzleImageAssetsFor("jigsaw")[0]?.id,
-  });
+  const dailyLabel = jigsawPuzzle ? getCanonicalDailyPuzzleLabel(jigsawPuzzle) : null;
+  const generateDailyPuzzle = () => {
+    const dailySettings = getCanonicalDailyGenerationSettings("jigsaw");
+    const dailyAsset = getPuzzleImageAssetsFor("jigsaw").find((asset) => asset.id === dailySettings.imageId);
+    setSelectedPreset(
+      dailyAsset
+        ? getJigsawDifficultyForDimensions(dailyAsset, dailySettings.width, dailySettings.height) ?? jigsawCustomPreset
+        : jigsawCustomPreset,
+    );
+    onSettingsCommit(dailySettings);
+  };
   const resetJigsaw = () => {
     onReset();
     setResetVersion((current) => current + 1);
