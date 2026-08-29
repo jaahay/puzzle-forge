@@ -130,7 +130,7 @@ export const BoardViewport = ({ kind, columns, rows, rowClueSlots, columnClueSlo
     "--nonogram-row-clue-width": `${metrics.rowClueWidth}px`,
     "--nonogram-column-clue-height": `${metrics.columnClueHeight}px`,
   } as JSX.CSSProperties;
-  const viewportKindClass = kind === "square-grid" ? "square-grid-board-viewport sudoku-board-viewport" : "nonogram-board-viewport";
+  const viewportKindClass = kind === "square-grid" ? "square-grid-board-viewport" : "nonogram-board-viewport";
 
   useEffect(() => {
     const viewport = viewportRef.current;
