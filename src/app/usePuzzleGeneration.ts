@@ -11,15 +11,10 @@ import type {
   SudokuVariation,
 } from "../catalog/types";
 import { isImageBackedPuzzleId } from "../games/imageAssets";
-import { defaultSudokuDifficulty, makeRequestId } from "./runtime";
 import { defaultSudokuVariation, normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
+import { defaultSudokuDifficulty, makeRequestId } from "./runtime";
 
 export type BeginGenerationOptions = Partial<Omit<PuzzleGenerationRequest, "requestId">>;
-
-export type PuzzleGenerationState = {
-  isGenerating: boolean;
-  activeRequestId: string | null;
-};
 
 export type PuzzleGenerationDefaults = {
   selectedPuzzleId: PuzzleId;
@@ -144,19 +139,16 @@ export const usePuzzleGeneration = () => {
     onGenerated: (puzzle: GeneratedPuzzle) => void,
     onError: (error: string) => void,
   ) => {
-    if (event.data.requestId !== activeRequestId.current) {
-      return;
-    }
+    if (event.data.requestId !== activeRequestId.current) return;
 
     setIsGenerating(false);
+    activeRequestId.current = null;
 
     if ("error" in event.data) {
-      activeRequestId.current = null;
       onError(event.data.error);
       return;
     }
 
-    activeRequestId.current = null;
     onGenerated(event.data.puzzle);
   };
 
@@ -171,7 +163,6 @@ export const usePuzzleGeneration = () => {
 
   return {
     isGenerating,
-    activeRequestId: activeRequestId.current,
     worker,
     beginGeneration,
     handleGenerationMessage,
