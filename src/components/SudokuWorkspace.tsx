@@ -92,6 +92,7 @@ export const SudokuWorkspace = ({
 
   const generation = sudokuPuzzle ? (
     <BottomPuzzleConfiguration
+      kind="sudoku"
       selectedDefinition={selectedDefinition}
       selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
       seedInput={seedInput}
@@ -101,9 +102,6 @@ export const SudokuWorkspace = ({
       requireUniqueSolution={nextPuzzleDraft.requireUniqueSolution}
       sudokuVariation={nextPuzzleDraft.sudokuVariation}
       isFixedSize
-      isNonogram={false}
-      isWordGuess={false}
-      isSudoku
       isGenerating={isGenerating}
       showRandomize={!isPresentationCompleted}
       onWidthChange={(width) => onNextPuzzleDraftChange({ width })}
@@ -120,7 +118,7 @@ export const SudokuWorkspace = ({
   ) : null;
 
   const validation = !isSolved && gridCheckFeedbackTone ? (
-    <p class={`sudoku-validation-message ${gridCheckFeedbackTone}`} aria-live="polite">
+    <p class={`grid-validation-message ${gridCheckFeedbackTone}`} aria-live="polite">
       {statusMessage}
     </p>
   ) : null;
