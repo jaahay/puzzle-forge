@@ -11,6 +11,7 @@ import "./site/next-puzzle.css";
 import "./site/immersive.css";
 import "./site/mobile-workspace.css";
 import "./site/grid.css";
+import "./site/numeric-grid.css";
 import "./site/sudoku.css";
 import "./site/workspace-hierarchy.css";
 import "./site/futoshiki.css";
