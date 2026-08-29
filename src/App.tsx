@@ -439,6 +439,7 @@ export const App = () => {
             solitaireStats={solitaire.solitaireStats}
             gridCells={grid.gridCells}
             selectedGridCell={grid.selectedGridCell}
+            gridCheckFeedbackTone={grid.checkFeedbackTone}
             statusMessage={statusMessage}
             isGenerating={generation.isGenerating || (!puzzle && selectedPuzzleIsGeneratable && !isHomeSelected)}
             onSeedChange={setSeed}
