@@ -1,19 +1,11 @@
+import type { GenerationSettings, NextPuzzleDraft } from "../app/generationSettings";
 import type { SolitaireStats } from "../app/session";
-import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition, PuzzleDifficulty, PuzzleGenerationRequest, SolitaireVariation, SudokuVariation } from "../catalog/types";
+import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition } from "../catalog/types";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCheckFeedbackTone } from "../interactions/gridChecking";
 import type { GridCellSelection } from "../interactions/gridRules";
 
-export type GenerationSettings = Partial<Pick<PuzzleGenerationRequest, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution" | "sudokuVariation" | "solitaireVariation" | "imageId">>;
-
-export type NextPuzzleDraft = {
-  width: number;
-  height: number;
-  difficulty: PuzzleDifficulty;
-  requireUniqueSolution: boolean;
-  sudokuVariation: SudokuVariation;
-  solitaireVariation: SolitaireVariation;
-};
+export type { GenerationSettings, NextPuzzleDraft } from "../app/generationSettings";
 
 export type PuzzleWorkspaceProps = {
   selectedDefinition: PuzzleDefinition;
