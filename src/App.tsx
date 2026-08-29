@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { getPuzzleAvailability } from "./catalog/puzzleAvailability";
 import { getPuzzleDefinition, isGeneratable } from "./catalog/puzzleCatalog";
-import type { GeneratedPuzzle, PuzzleDifficulty, PuzzleGenerationRequest, PuzzleId, SolitaireVariation, SudokuVariation } from "./catalog/types";
+import type { GeneratedPuzzle, PuzzleId } from "./catalog/types";
 import { AboutView } from "./components/AboutView";
 import { AppShell } from "./components/AppShell";
 import { ChangelogView } from "./components/ChangelogView";
@@ -14,7 +14,11 @@ import { getCanonicalDailyGenerationSettings } from "./games/shared/daily";
 import { isImageBackedPuzzleId } from "./games/imageAssets";
 import { defaultSolitaireVariation, normalizeSolitaireVariation } from "./games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation } from "./games/sudoku/variation";
-import { generatedPuzzleMatchesIdentity } from "./app/generationIdentity";
+import {
+  generatedPuzzleMatchesIdentity,
+  getGeneratedPuzzleRuntimeSettings,
+  type GenerationRuntimeSettings,
+} from "./app/generationIdentity";
 import { getInitialSelectedPuzzleId, markPuzzleNavigation } from "./app/homeNavigation";
 import { defaultSudokuDifficulty, makeRandomSeed } from "./app/runtime";
 import { getCurrentAppRoute, parseAppRoute, pushAppRoute, type AppRoute } from "./app/routes";
@@ -28,17 +32,8 @@ import type { AppView } from "./site/views";
 const initialStatusMessage = "Pick a puzzle to start.";
 type GenerationBehavior = { preserveScroll?: boolean };
 type NavigationBehavior = { pushHistory?: boolean };
-type RuntimeGenerationDefaults = {
-  seed: string;
-  width: number;
-  height: number;
-  difficulty: PuzzleDifficulty;
-  requireUniqueSolution: boolean;
-  sudokuVariation: SudokuVariation;
-  solitaireVariation: SolitaireVariation;
-};
 
-const makeInitialGenerationDefaults = (): RuntimeGenerationDefaults => ({
+const makeInitialGenerationDefaults = (): GenerationRuntimeSettings => ({
   seed: makeRandomSeed(),
   width: 9,
   height: 9,
@@ -62,7 +57,7 @@ export const App = () => {
   const shouldStartOnPuzzleSurface = initialRoute.kind === "puzzle";
   const [route, setRoute] = useState<AppRoute>(initialRoute);
   const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>(initialSelectedPuzzleId);
-  const [generationDefaults, setGenerationDefaults] = useState<RuntimeGenerationDefaults>(makeInitialGenerationDefaults);
+  const [generationDefaults, setGenerationDefaults] = useState<GenerationRuntimeSettings>(makeInitialGenerationDefaults);
   const [puzzle, setPuzzle] = useState<GeneratedPuzzle | null>(null);
   const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
   const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(true);
@@ -74,7 +69,7 @@ export const App = () => {
   const generatedPuzzleHandlerRef = useRef<(generatedPuzzle: GeneratedPuzzle) => void>(() => undefined);
   const { seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation } = generationDefaults;
 
-  const updateGenerationDefaults = (settings: Partial<RuntimeGenerationDefaults>) => {
+  const updateGenerationDefaults = (settings: Partial<GenerationRuntimeSettings>) => {
     setGenerationDefaults((current) => ({ ...current, ...settings }));
   };
 
@@ -176,12 +171,30 @@ export const App = () => {
     restoreScrollPosition();
   };
 
-  const makeCurrentSession = () => buildRuntimeSession({
-    puzzleId: selectedPuzzleId, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, puzzle,
-    cardStacks: solitaire.cardStacks, selectedCard: solitaire.selectedCard, solitaireStats: solitaire.solitaireStats,
-    solitaireUndoStack: solitaire.solitaireUndoStack, solitaireRedoStack: solitaire.solitaireRedoStack,
-    gridCells: grid.gridCells, selectedGridCell: grid.selectedGridCell, statusMessage,
-  });
+  const makeCurrentSession = () => {
+    const currentSettings = puzzle
+      ? getGeneratedPuzzleRuntimeSettings(puzzle, generationDefaults)
+      : generationDefaults;
+
+    return buildRuntimeSession({
+      puzzleId: selectedPuzzleId,
+      seed: currentSettings.seed,
+      width: currentSettings.width,
+      height: currentSettings.height,
+      difficulty: currentSettings.difficulty,
+      requireUniqueSolution: currentSettings.requireUniqueSolution,
+      sudokuVariation: currentSettings.sudokuVariation,
+      puzzle,
+      cardStacks: solitaire.cardStacks,
+      selectedCard: solitaire.selectedCard,
+      solitaireStats: solitaire.solitaireStats,
+      solitaireUndoStack: solitaire.solitaireUndoStack,
+      solitaireRedoStack: solitaire.solitaireRedoStack,
+      gridCells: grid.gridCells,
+      selectedGridCell: grid.selectedGridCell,
+      statusMessage,
+    });
+  };
 
   const saveCurrentSession = () => { if (puzzle) sessions.saveSession(selectedPuzzleId, makeCurrentSession()); };
   const resetRuntimePuzzleState = () => { setPuzzle(null); solitaire.resetSolitaire(); grid.resetGrid(); };
@@ -256,11 +269,7 @@ export const App = () => {
     if (restoredSession) { restoreSession(generatedPuzzle.puzzleId, restoredSession); return; }
     const readyMessage = generation.makeReadyMessage(generatedPuzzle);
     setPuzzle(generatedPuzzle);
-    setGenerationDefaults((current) => ({
-      ...current,
-      sudokuVariation: generatedPuzzle.puzzleId === "sudoku" ? normalizeSudokuVariation(generatedPuzzle.sudokuVariation) : current.sudokuVariation,
-      solitaireVariation: generatedPuzzle.kind === "cards" ? normalizeSolitaireVariation(generatedPuzzle.solitaireVariation) : current.solitaireVariation,
-    }));
+    setGenerationDefaults((current) => getGeneratedPuzzleRuntimeSettings(generatedPuzzle, current));
     solitaire.restoreSolitaireSnapshot({ cardStacks: generatedPuzzle.kind === "cards" ? generatedPuzzle.stacks : null, selectedCard: null, solitaireStats: solitaire.solitaireStats, solitaireUndoStack: [], solitaireRedoStack: [], statusMessage: readyMessage });
     grid.prepareGeneratedGrid(generatedPuzzle);
     solitaire.resetSolitaireStats();
@@ -359,7 +368,7 @@ export const App = () => {
   useEffect(() => {
     if (!hasSelectedPuzzle || generation.isGenerating || isHomeSelected || !puzzle) return;
     saveCurrentSession();
-  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, selectedPuzzleId, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, puzzle, solitaire.cardStacks, solitaire.selectedCard, solitaire.solitaireStats, solitaire.solitaireUndoStack, solitaire.solitaireRedoStack, grid.gridCells, grid.selectedGridCell, statusMessage]);
+  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, selectedPuzzleId, puzzle, solitaire.cardStacks, solitaire.selectedCard, solitaire.solitaireStats, solitaire.solitaireUndoStack, solitaire.solitaireRedoStack, grid.gridCells, grid.selectedGridCell, statusMessage]);
 
   const generate = () => beginGeneration({}, { preserveScroll: true });
   const randomize = () => beginGeneration({ seed: makeRandomSeed() }, { preserveScroll: true });
@@ -377,7 +386,7 @@ export const App = () => {
     restoreScrollPosition();
   };
 
-  const commitGenerationSettings = ({ seed: nextSeed, width: nextWidth, height: nextHeight, difficulty: nextDifficulty, requireUniqueSolution: nextRequireUniqueSolution, sudokuVariation: nextSudokuVariation, solitaireVariation: nextSolitaireVariation, imageId: nextImageId }: Partial<Pick<PuzzleGenerationRequest, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution" | "sudokuVariation" | "solitaireVariation" | "imageId">> = {}) => {
+  const commitGenerationSettings = ({ seed: nextSeed, width: nextWidth, height: nextHeight, difficulty: nextDifficulty, requireUniqueSolution: nextRequireUniqueSolution, sudokuVariation: nextSudokuVariation, solitaireVariation: nextSolitaireVariation, imageId: nextImageId }: GenerationSettings = {}) => {
     const definition = getPuzzleDefinition(selectedPuzzleId);
     const normalizedSeed = (typeof nextSeed === "string" ? nextSeed.trim() : seed.trim()) || puzzle?.seed || makeRandomSeed();
     const generationWidth = Number.isFinite(nextWidth) ? Number(nextWidth) : width || definition.defaultWidth;
