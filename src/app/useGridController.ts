@@ -50,10 +50,16 @@ const applySolvedSudokuTone = (cells: PuzzleCell[]) =>
   );
 
 export const useGridController = () => {
-  const [gridCells, setGridCells] = useState<PuzzleCell[] | null>(null);
+  const [gridCells, setGridCellsState] = useState<PuzzleCell[] | null>(null);
+  const gridCellsRef = useRef<PuzzleCell[] | null>(null);
   const [selectedGridCell, setSelectedGridCell] = useState<GridCellSelection | null>(null);
   const [checkFeedbackTone, setCheckFeedbackTone] = useState<GridCheckFeedbackTone | null>(null);
   const sudokuValidationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const setGridCells = (nextCells: PuzzleCell[] | null) => {
+    gridCellsRef.current = nextCells;
+    setGridCellsState(nextCells);
+  };
 
   const clearSudokuValidationTimer = () => {
     if (sudokuValidationTimer.current !== null) {
@@ -65,7 +71,10 @@ export const useGridController = () => {
   const scheduleSudokuValidationReset = () => {
     clearSudokuValidationTimer();
     sudokuValidationTimer.current = setTimeout(() => {
-      setGridCells((currentCells) => currentCells?.map((cell) => clearGridValidationTone("sudoku", cell)) ?? currentCells);
+      const currentCells = gridCellsRef.current;
+      if (currentCells) {
+        setGridCells(currentCells.map((cell) => clearGridValidationTone("sudoku", cell)));
+      }
       sudokuValidationTimer.current = null;
     }, SUDOKU_CHECK_FEEDBACK_MS);
   };
@@ -103,16 +112,15 @@ export const useGridController = () => {
     updater: (cells: PuzzleCell[]) => GridUpdateResult,
     onStatusMessage: (message: string) => void,
   ) => {
-    setGridCells((currentCells) => {
-      if (!currentCells) {
-        return currentCells;
-      }
+    const currentCells = gridCellsRef.current;
+    if (!currentCells) {
+      return;
+    }
 
-      const { cells, message, feedbackTone } = updater(currentCells.map(cloneGridCell));
-      setCheckFeedbackTone(feedbackTone ?? null);
-      onStatusMessage(message);
-      return cells;
-    });
+    const { cells, message, feedbackTone } = updater(currentCells.map(cloneGridCell));
+    setGridCells(cells);
+    setCheckFeedbackTone(feedbackTone ?? null);
+    onStatusMessage(message);
   };
 
   const handleGridCellInput = (puzzle: GeneratedPuzzle | null, cell: PuzzleCell, rawValue: string, onStatusMessage: (message: string) => void) => {
@@ -120,7 +128,8 @@ export const useGridController = () => {
       return;
     }
 
-    if (puzzle.puzzleId === "sudoku" && gridCells && isGridAnswerCompleteAndCorrect(puzzle, gridCells)) {
+    const currentCells = gridCellsRef.current;
+    if (puzzle.puzzleId === "sudoku" && currentCells && isGridAnswerCompleteAndCorrect(puzzle, currentCells)) {
       onStatusMessage("Solved.");
       return;
     }
@@ -283,7 +292,8 @@ export const useGridController = () => {
       return;
     }
 
-    if (puzzle.puzzleId === "sudoku" && gridCells && isGridAnswerCompleteAndCorrect(puzzle, gridCells)) {
+    const currentCells = gridCellsRef.current;
+    if (puzzle.puzzleId === "sudoku" && currentCells && isGridAnswerCompleteAndCorrect(puzzle, currentCells)) {
       return;
     }
 
@@ -303,14 +313,15 @@ export const useGridController = () => {
   };
 
   const checkGrid = (puzzle: GeneratedPuzzle, onStatusMessage: (message: string) => void) => {
+    const currentCells = gridCellsRef.current;
     if (puzzle.puzzleId === "peg-solitaire") {
-      const pegCount = gridCells?.filter((cell) => cell.value === "●").length ?? 0;
+      const pegCount = currentCells?.filter((cell) => cell.value === "●").length ?? 0;
       setCheckFeedbackTone(pegCount === 1 ? "success" : "error");
       onStatusMessage(pegCount === 1 ? "Solved. One peg remains." : `Not solved: ${pegCount} pegs remain.`);
       return;
     }
 
-    if (!gridCells || puzzle.kind !== "grid") {
+    if (!currentCells || puzzle.kind !== "grid") {
       return;
     }
 
