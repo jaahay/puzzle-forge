@@ -33,12 +33,6 @@ const makeGridCells = (): PuzzleCell[] => [
 ];
 
 const makeSudokuSession = (): PuzzleSession => ({
-  seed: "validation-seed",
-  width: 9,
-  height: 9,
-  difficulty: "Medium",
-  requireUniqueSolution: true,
-  sudokuVariation: "classic",
   puzzle: makeSudokuPuzzle(),
   cardStacks: null,
   selectedCard: null,
