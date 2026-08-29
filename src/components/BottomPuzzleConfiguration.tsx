@@ -4,7 +4,10 @@ import { GenerationActions } from "./GenerationActions";
 import { PuzzleDifficultySelect } from "./PuzzleDifficultySelect";
 import { SudokuVariationSelect } from "./SudokuVariationSelect";
 
+export type BottomPuzzleConfigurationKind = "sudoku" | "nonogram" | "word-guess" | "futoshiki";
+
 type BottomPuzzleConfigurationProps = {
+  kind: BottomPuzzleConfigurationKind;
   selectedDefinition: PuzzleDefinition;
   selectedPuzzleIsGeneratable: boolean;
   seedInput: ComponentChildren;
@@ -14,9 +17,6 @@ type BottomPuzzleConfigurationProps = {
   requireUniqueSolution: boolean;
   sudokuVariation: SudokuVariation;
   isFixedSize: boolean;
-  isNonogram: boolean;
-  isWordGuess: boolean;
-  isSudoku: boolean;
   isGenerating: boolean;
   showRandomize?: boolean;
   onWidthChange: (width: number) => void;
@@ -56,14 +56,17 @@ const SeedTools = ({ seedInput, isGenerating, canGenerate, onUseSeed }: Pick<Bot
   </>
 );
 
-export const BottomPuzzleConfiguration = ({ selectedDefinition, selectedPuzzleIsGeneratable, seedInput, width, height, difficulty, requireUniqueSolution, sudokuVariation, isFixedSize, isNonogram, isWordGuess, isSudoku, isGenerating, showRandomize = true, onWidthChange, onHeightChange, onSettingsCommit, onDifficultyChange, onSudokuVariationChange, onUniqueSolutionChange, onToday, onUseSeed, onRandomize, onReset }: BottomPuzzleConfigurationProps) => {
+export const BottomPuzzleConfiguration = ({ kind, selectedDefinition, selectedPuzzleIsGeneratable, seedInput, width, height, difficulty, requireUniqueSolution, sudokuVariation, isFixedSize, isGenerating, showRandomize = true, onWidthChange, onHeightChange, onSettingsCommit, onDifficultyChange, onSudokuVariationChange, onUniqueSolutionChange, onToday, onUseSeed, onRandomize, onReset }: BottomPuzzleConfigurationProps) => {
+  const isSudoku = kind === "sudoku";
+  const isNonogram = kind === "nonogram";
+  const isWordGuess = kind === "word-guess";
   const newPuzzleAction = <GenerationActions isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showRandomize={showRandomize} randomLabel="New puzzle" onRandomize={onRandomize} />;
   const todayAction = <GenerationActions isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showToday showRandomize={false} onToday={onToday} onRandomize={onRandomize} />;
   const resetAction = <GenerationActions isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showReset showRandomize={false} onRandomize={onRandomize} onReset={onReset} />;
   const seedTools = <SeedTools seedInput={seedInput} isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} onUseSeed={onUseSeed} />;
 
   return (
-    <div class={`puzzle-settings-panel ${isSudoku ? "sudoku-settings-panel" : ""} ${isNonogram ? "nonogram-settings-panel" : ""} ${isWordGuess ? "word-guess-settings-panel" : ""}`} aria-label={`${selectedDefinition.title} controls`}>
+    <div class={`puzzle-settings-panel ${kind}-settings-panel`} aria-label={`${selectedDefinition.title} controls`}>
       <span class="puzzle-settings-section-label">Next puzzle</span>
       {isWordGuess ? (
         <>
