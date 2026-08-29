@@ -3,7 +3,6 @@ import { FILLED_NONOGRAM_CELL } from "../games/nonogram/solve";
 import { isGridAnswerCompleteAndCorrect } from "../interactions/gridChecking";
 import { getGridInputMode, isSelectedGridCell, type GridCellSelection } from "../interactions/gridRules";
 import { BoardViewport } from "./BoardViewport";
-import { NumericGridDigitPad, useNumericGridInput } from "./NumericGridInput";
 import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
 
 const SUDOKU_BOX_SIZE = 3;
@@ -18,6 +17,12 @@ const sameSudokuDiagonal = (left: PuzzleCell, right: PuzzleCell, size: number) =
 
 const isSudokuMainDiagonalCell = (cell: PuzzleCell, size: number) => cell.row === cell.column || cell.row + cell.column === size - 1;
 const gridCellKey = (row: number, column: number) => `${row}-${column}`;
+
+const getSudokuVariationAccessibleName = (variation: GridGeneratedPuzzle["sudokuVariation"]) => {
+  if (variation === "diagonal") return "Diagonal";
+  if (variation === "zero-killer") return "Zero Killer";
+  return "Classic";
+};
 
 export type KillerCageDecoration = {
   cageNumber: number;
@@ -81,6 +86,8 @@ type GridPuzzlePreviewProps = {
   puzzle: GridGeneratedPuzzle;
   cells: PuzzleCell[];
   selectedGridCell: GridCellSelection | null;
+  numericSelectedCell?: PuzzleCell;
+  numericActiveValue?: string;
   completionPhase?: CompletionPresentationPhase;
   onCompletionAnimationEnd?: () => void;
   onCellClick: (cell: PuzzleCell) => void;
@@ -91,6 +98,8 @@ export const GridPuzzlePreview = ({
   puzzle,
   cells,
   selectedGridCell,
+  numericSelectedCell,
+  numericActiveValue = "",
   completionPhase = "playing",
   onCompletionAnimationEnd,
   onCellClick,
@@ -103,41 +112,19 @@ export const GridPuzzlePreview = ({
   const isDiagonalSudoku = isSudoku && puzzle.sudokuVariation === "diagonal";
   const isZeroKillerSudoku = isSudoku && puzzle.sudokuVariation === "zero-killer";
   const isNonogram = puzzle.puzzleId === "nonogram";
-  const puzzleIdentity = `${puzzle.puzzleId}:${puzzle.seed}:${puzzle.sudokuVariation ?? ""}:${puzzle.width}:${puzzle.height}`;
   const showSudokuCompletionEffect = isSudokuSolved && completionPhase === "celebrating";
-  const showCompletedSudokuPresentation = isSudokuSolved && completionPhase === "completed";
-  const numericInput = useNumericGridInput({
-    enabled: isNumericGridPuzzle && !isSudokuSolved,
-    puzzleIdentity,
-    digitCount: puzzle.width,
-    cells,
-    selectedGridCell: isSudokuSolved ? null : selectedGridCell,
-    onCellClick,
-    onCellInput,
-  });
-  const selectedCell = numericInput.selectedCell;
-  const activeNumericValue = isSudokuSolved ? null : numericInput.activeValue;
+  const selectedCell = isSudokuSolved ? undefined : numericSelectedCell;
+  const activeNumericValue = isSudokuSolved ? "" : numericActiveValue;
   const killerCageDecorations = isZeroKillerSudoku ? makeKillerCageDecorations(puzzle) : new Map<string, KillerCageDecoration>();
   const hasSudokuValidation = Boolean(isSudoku && cells.some((cell) => !cell.locked && (cell.tone === "answer" || cell.tone === "hint")));
   const gridTemplateColumns = `repeat(${puzzle.width}, minmax(0, 1fr))`;
-  const sudokuVariantRuleId = isDiagonalSudoku || isZeroKillerSudoku ? "sudoku-variant-rule" : undefined;
-
-  const digitPad = isNumericGridPuzzle && !showCompletedSudokuPresentation ? (
-    <NumericGridDigitPad
-      title={puzzle.title}
-      digits={numericInput.digits}
-      activeValue={numericInput.activeValue}
-      canClearSelectedCell={numericInput.canClearSelectedCell}
-      disabled={isSudokuSolved}
-      onDigit={numericInput.setSelectedValue}
-      onClear={numericInput.clearSelectedValue}
-    />
-  ) : null;
+  const sudokuBoardLabel = isSudoku
+    ? `${puzzle.difficulty ?? "Medium"} ${getSudokuVariationAccessibleName(puzzle.sudokuVariation)} Sudoku board${isSudokuSolved ? ", solved" : ""}`
+    : undefined;
 
   const grid = (
     <div
-      aria-describedby={sudokuVariantRuleId}
-      aria-label={isSudoku ? `${puzzle.difficulty ?? "Medium"} ${puzzle.title} board${isSudokuSolved ? ", solved" : ""}` : isNonogram ? `${puzzle.width} by ${puzzle.height} Nonogram board` : undefined}
+      aria-label={sudokuBoardLabel ?? (isNonogram ? `${puzzle.width} by ${puzzle.height} Nonogram board` : undefined)}
       class={`grid ${puzzle.puzzleId} ${isDiagonalSudoku ? "diagonal-sudoku" : ""} ${isZeroKillerSudoku ? "zero-killer-sudoku" : ""} ${showSudokuCompletionEffect ? "solved-grid" : ""}`}
       data-grid-selection-scope={isNumericGridPuzzle && !isSudokuSolved ? "true" : undefined}
       onAnimationEnd={(event) => {
@@ -266,12 +253,6 @@ export const GridPuzzlePreview = ({
     return (
       <BoardViewport kind="square-grid" columns={puzzle.width} rows={puzzle.height}>
         {grid}
-        {digitPad}
-        {isDiagonalSudoku ? (
-          <p class="sudoku-variant-rule" id={sudokuVariantRuleId}>Diagonal rule: both main diagonals also contain 1-9.</p>
-        ) : isZeroKillerSudoku ? (
-          <p class="sudoku-variant-rule" id={sudokuVariantRuleId}>Zero Killer rule: digits in each cage add to its displayed sum and may not repeat within that cage. Uncaged cells follow normal Sudoku rules.</p>
-        ) : null}
       </BoardViewport>
     );
   }
