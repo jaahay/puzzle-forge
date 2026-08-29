@@ -1,13 +1,13 @@
 import { useState } from "preact/hooks";
 import type { CardStack, SolitaireVariation } from "../catalog/types";
 import { canSelectFromStack, cloneStack, type CardSelection } from "../interactions/cardRules";
-import { cloneSolitaireHistoryEntry, makeSolitaireHistoryEntry } from "./puzzleSessionRuntime";
 import {
   initialSolitaireStats,
   solitaireHistoryLimit,
   type SolitaireHistoryEntry,
   type SolitaireStats,
 } from "./session";
+import { cloneSolitaireHistoryEntry, makeSolitaireHistoryEntry } from "./solitaireHistory";
 import {
   autoMoveToFoundationsInStacks,
   moveSelectedCardToStackInStacks,
