@@ -9,6 +9,7 @@ type BoardViewportProps = {
   rows: number;
   rowClueSlots?: number;
   columnClueSlots?: number;
+  className?: string;
   children: ComponentChildren;
 };
 
@@ -100,7 +101,7 @@ const getObservedInlineSize = (entry: ResizeObserverEntry, fallback: HTMLElement
   return contentBox?.inlineSize ?? fallback.getBoundingClientRect().width;
 };
 
-export const BoardViewport = ({ kind, columns, rows, rowClueSlots, columnClueSlots, children }: BoardViewportProps) => {
+export const BoardViewport = ({ kind, columns, rows, rowClueSlots, columnClueSlots, className = "", children }: BoardViewportProps) => {
   const viewportRef = useRef<HTMLDivElement>(null);
   const [availableInlineSize, setAvailableInlineSize] = useState(0);
   const safeColumns = normalizeCount(columns);
@@ -130,7 +131,7 @@ export const BoardViewport = ({ kind, columns, rows, rowClueSlots, columnClueSlo
     "--nonogram-row-clue-width": `${metrics.rowClueWidth}px`,
     "--nonogram-column-clue-height": `${metrics.columnClueHeight}px`,
   } as JSX.CSSProperties;
-  const viewportKindClass = kind === "square-grid" ? "square-grid-board-viewport sudoku-board-viewport" : "nonogram-board-viewport";
+  const viewportKindClass = kind === "square-grid" ? "square-grid-board-viewport" : "nonogram-board-viewport";
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -173,7 +174,7 @@ export const BoardViewport = ({ kind, columns, rows, rowClueSlots, columnClueSlo
   }, []);
 
   return (
-    <div class={`board-viewport ${viewportKindClass}`} ref={viewportRef} style={viewportStyle}>
+    <div class={`board-viewport ${viewportKindClass} ${className}`.trim()} ref={viewportRef} style={viewportStyle}>
       <div class="board-viewport-inner">{children}</div>
     </div>
   );
