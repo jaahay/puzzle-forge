@@ -10,9 +10,14 @@
   justify-items: center;
 }
 
+.sudoku-workspace .square-grid-board-viewport,
 .gameplay-control-stack,
 .sudoku-rules-disclosure {
   width: min(100%, var(--play-column-max));
+}
+
+.sudoku-workspace .square-grid-board-viewport {
+  justify-self: center;
 }
 
 .gameplay-active-controls {
