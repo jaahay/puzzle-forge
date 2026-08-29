@@ -207,14 +207,14 @@ export const NumericGridDigitPad = ({
   onClear,
 }: NumericGridDigitPadProps) => (
   <div
-    class={`sudoku-digit-pad ${disabled ? "completion-inert" : ""}`}
+    class={`numeric-grid-digit-pad ${disabled ? "completion-inert" : ""}`}
     aria-disabled={disabled || undefined}
     aria-label={`${title} digit pad`}
     data-grid-selection-scope="true"
   >
     {digits.map((digit) => (
       <button
-        class={activeValue === digit ? "selected-sudoku-digit" : ""}
+        class={activeValue === digit ? "selected-numeric-grid-digit" : ""}
         disabled={disabled}
         key={digit}
         type="button"
@@ -225,7 +225,7 @@ export const NumericGridDigitPad = ({
       </button>
     ))}
     <button
-      class="sudoku-erase-button"
+      class="numeric-grid-erase-button"
       type="button"
       onClick={onClear}
       disabled={disabled || !canClearSelectedCell}
