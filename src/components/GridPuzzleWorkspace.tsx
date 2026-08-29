@@ -3,7 +3,7 @@ import { getCanonicalDailyPuzzleLabel } from "../games/shared/daily";
 import { FutoshikiBoard } from "./FutoshikiBoard";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
 import { BottomPuzzleConfiguration, TopPuzzleConfiguration } from "./PuzzleConfiguration";
-import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
+import type { GridPuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { SeedControl } from "./SeedControl";
 import { WordGuessGame } from "./WordGuessGame";
@@ -32,7 +32,7 @@ export const GridPuzzleWorkspace = ({
   onLoadSeed,
   onCellClick,
   onCellInput,
-}: PuzzleWorkspaceProps) => {
+}: GridPuzzleWorkspaceProps) => {
   const isNonogram = selectedDefinition.id === "nonogram";
   const isWordGuess = selectedDefinition.id === "word-guess";
   const isFutoshiki = selectedDefinition.id === "futoshiki";
