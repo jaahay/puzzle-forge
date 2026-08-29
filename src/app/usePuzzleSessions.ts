@@ -128,7 +128,7 @@ export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPu
   seed: generatedPuzzle.seed,
   width: generatedPuzzle.width,
   height: generatedPuzzle.height,
-  difficulty: generatedPuzzle.difficulty ?? "Medium",
+  difficulty: generatedPuzzle.difficulty ?? "Easy",
   requireUniqueSolution: Boolean(generatedPuzzle.uniqueSolution),
   sudokuVariation: generatedPuzzle.puzzleId === "sudoku" ? generatedPuzzle.sudokuVariation : undefined,
   solitaireVariation: generatedPuzzle.kind === "cards" ? { ...generatedPuzzle.solitaireVariation } : undefined,
