@@ -102,7 +102,6 @@ export const StandardPuzzleWorkspace = ({
       isFixedSize={isFixedSize}
       isGenerating={isGenerating}
       isSolitaire={isSolitaire}
-      prospective
       onWidthChange={(width) => onNextPuzzleDraftChange({ width })}
       onHeightChange={(height) => onNextPuzzleDraftChange({ height })}
       onSettingsCommit={onNextPuzzleDraftChange}
