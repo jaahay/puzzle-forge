@@ -1,5 +1,5 @@
 import type { PuzzleCell } from "../catalog/types";
-import { getDailyPuzzleLabel } from "../games/shared/daily";
+import { getCanonicalDailyPuzzleLabel } from "../games/shared/daily";
 import { isGridAnswerCompleteAndCorrect } from "../interactions/gridChecking";
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
 import { FutoshikiBoard } from "./FutoshikiBoard";
@@ -53,7 +53,7 @@ export const StandardPuzzleWorkspace = ({
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
   const filledOpenCount = getFilledOpenCount(gridCells);
   const openCount = getOpenCount(gridCells);
-  const dailyLabel = puzzle ? getDailyPuzzleLabel(puzzle.puzzleId, puzzle.seed) : null;
+  const dailyLabel = puzzle ? getCanonicalDailyPuzzleLabel(puzzle) : null;
   const workspaceClass = `${isSudoku ? "sudoku-workspace" : ""} ${isNonogram ? "nonogram-workspace" : ""} ${isWordGuess ? "word-guess-workspace" : ""} ${isFutoshiki ? "futoshiki-workspace" : ""} ${isSolitaire ? "solitaire-workspace" : ""}`;
   const showSudokuValidationMessage = isSudoku && !isSudokuSolved && (statusMessage.startsWith("No mistakes") || statusMessage.includes("need attention"));
   const showNonogramValidationMessage = isNonogram && (statusMessage.startsWith("Solved.") || statusMessage.includes("do not match"));
@@ -127,7 +127,7 @@ export const StandardPuzzleWorkspace = ({
         <strong>Puzzle solved</strong>
       </div>
       <div class="puzzle-actions">
-        <button type="button" onClick={onNewPuzzle} tabIndex={isSudokuPresentationCompleted ? 0 : -1}>New puzzle</button>
+        <button type="button" onClick={onNewPuzzle} disabled={isGenerating} tabIndex={isSudokuPresentationCompleted ? 0 : -1}>New puzzle</button>
       </div>
     </section>
   ) : null;
