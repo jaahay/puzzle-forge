@@ -1,11 +1,9 @@
 import { useRef } from "preact/hooks";
 import type { GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleId, SudokuVariation } from "../catalog/types";
 import { cloneStack } from "../interactions/cardRules";
-import { cloneGridCell, prepareGridCells } from "../interactions/gridRules";
-import { consumeHomeNavigation } from "./homeNavigation";
+import { cloneGridCell } from "../interactions/gridRules";
 import {
   initialSolitaireStats,
-  loadPersistedPuzzleSessions,
   restorePuzzleSessionFromPersisted,
   savePersistedPuzzleSessions,
   solitaireHistoryLimit,
@@ -33,11 +31,6 @@ export type RuntimeSessionDraft = {
   gridCells: PuzzleCell[] | null;
   selectedGridCell: PuzzleSession["selectedGridCell"];
   statusMessage: string;
-};
-
-export type RestoreSessionCallbacks = {
-  restoreSession: (puzzleId: PuzzleId, session: PuzzleSession) => void;
-  beginGeneration: (session: Pick<PuzzleSession, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution" | "sudokuVariation" | "solitaireVariation"> & { puzzleId: PuzzleId; imageId?: string }) => void;
 };
 
 const cloneSolitaireHistoryEntry = (entry: SolitaireHistoryEntry): SolitaireHistoryEntry => ({
@@ -137,33 +130,10 @@ export const buildRuntimeSession = ({
   statusMessage,
 });
 
-export const buildFreshSessionForGeneratedPuzzle = (
-  generatedPuzzle: GeneratedPuzzle,
-  statusMessage: string,
-): PuzzleSession => ({
-  seed: generatedPuzzle.seed,
-  width: generatedPuzzle.width,
-  height: generatedPuzzle.height,
-  difficulty: generatedPuzzle.difficulty ?? "Easy",
-  requireUniqueSolution: Boolean(generatedPuzzle.uniqueSolution),
-  sudokuVariation: generatedPuzzle.puzzleId === "sudoku" ? generatedPuzzle.sudokuVariation : undefined,
-  solitaireVariation: generatedPuzzle.kind === "cards" ? { ...generatedPuzzle.solitaireVariation } : undefined,
-  puzzle: generatedPuzzle,
-  cardStacks: generatedPuzzle.kind === "cards" ? generatedPuzzle.stacks.map(cloneStack) : null,
-  selectedCard: null,
-  solitaireStats: { ...initialSolitaireStats },
-  solitaireUndoStack: [],
-  solitaireRedoStack: [],
-  gridCells: generatedPuzzle.kind === "grid" ? prepareGridCells(generatedPuzzle) : null,
-  selectedGridCell: null,
-  statusMessage,
-});
-
 export const usePuzzleSessions = () => {
   const persistedSessionCache = useRef<PersistedPuzzleSessionCache>({});
   const sessionCache = useRef<PuzzleSessionCache>({});
   const pendingRestorePuzzleId = useRef<PuzzleId | null>(null);
-  const hasLoadedPersistedSessions = useRef(false);
 
   const saveSession = (activePuzzleId: PuzzleId, session: PuzzleSession) => {
     sessionCache.current[activePuzzleId] = clonePuzzleSession(session);
@@ -173,44 +143,6 @@ export const usePuzzleSessions = () => {
   const getCachedSession = (puzzleId: PuzzleId) => {
     const session = sessionCache.current[puzzleId];
     return session ? clonePuzzleSession(session) : null;
-  };
-
-  const loadPersistedSessionsOnce = ({ restoreSession, beginGeneration }: RestoreSessionCallbacks) => {
-    if (hasLoadedPersistedSessions.current) {
-      return;
-    }
-
-    hasLoadedPersistedSessions.current = true;
-
-    const persisted = loadPersistedPuzzleSessions();
-
-    if (!persisted) {
-      consumeHomeNavigation();
-      return;
-    }
-
-    persistedSessionCache.current = persisted.sessions;
-
-    if (consumeHomeNavigation()) {
-      return;
-    }
-
-    const activePersistedSession = persisted.sessions[persisted.activePuzzleId];
-
-    if (activePersistedSession) {
-      pendingRestorePuzzleId.current = activePersistedSession.puzzleId;
-      beginGeneration({
-        puzzleId: activePersistedSession.puzzleId,
-        seed: activePersistedSession.seed,
-        width: activePersistedSession.width,
-        height: activePersistedSession.height,
-        difficulty: activePersistedSession.difficulty,
-        requireUniqueSolution: activePersistedSession.requireUniqueSolution,
-        sudokuVariation: activePersistedSession.sudokuVariation,
-        solitaireVariation: activePersistedSession.solitaireVariation,
-        imageId: activePersistedSession.imageId,
-      });
-    }
   };
 
   const restorePendingSessionForPuzzle = (generatedPuzzle: GeneratedPuzzle) => {
@@ -234,8 +166,6 @@ export const usePuzzleSessions = () => {
     pendingRestorePuzzleId,
     saveSession,
     getCachedSession,
-    loadPersistedSessionsOnce,
     restorePendingSessionForPuzzle,
-    buildFreshSessionForGeneratedPuzzle,
   };
 };
