@@ -1,7 +1,7 @@
 import { useRef } from "preact/hooks";
 import type { GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleId, SudokuVariation } from "../catalog/types";
 import { cloneStack } from "../interactions/cardRules";
-import { cloneGridCell } from "../interactions/gridRules";
+import { cloneGridCell, prepareGridCells } from "../interactions/gridRules";
 import {
   initialSolitaireStats,
   restorePuzzleSessionFromPersisted,
@@ -127,6 +127,25 @@ export const buildRuntimeSession = ({
   solitaireRedoStack: solitaireRedoStack.map(cloneSolitaireHistoryEntry),
   gridCells: gridCells?.map((cell) => cloneSessionGridCell(puzzleId, cell)) ?? null,
   selectedGridCell: selectedGridCell ? { ...selectedGridCell } : null,
+  statusMessage,
+});
+
+export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPuzzle, statusMessage: string): PuzzleSession => ({
+  seed: generatedPuzzle.seed,
+  width: generatedPuzzle.width,
+  height: generatedPuzzle.height,
+  difficulty: generatedPuzzle.difficulty ?? "Medium",
+  requireUniqueSolution: Boolean(generatedPuzzle.uniqueSolution),
+  sudokuVariation: generatedPuzzle.puzzleId === "sudoku" ? generatedPuzzle.sudokuVariation : undefined,
+  solitaireVariation: generatedPuzzle.kind === "cards" ? { ...generatedPuzzle.solitaireVariation } : undefined,
+  puzzle: generatedPuzzle,
+  cardStacks: generatedPuzzle.kind === "cards" ? generatedPuzzle.stacks.map(cloneStack) : null,
+  selectedCard: null,
+  solitaireStats: { ...initialSolitaireStats },
+  solitaireUndoStack: [],
+  solitaireRedoStack: [],
+  gridCells: generatedPuzzle.kind === "grid" ? prepareGridCells(generatedPuzzle) : null,
+  selectedGridCell: null,
   statusMessage,
 });
 
