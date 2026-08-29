@@ -5,7 +5,7 @@ import { isGridAnswerCompleteAndCorrect } from "../interactions/gridChecking";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
 import { getNumericGridDigits, NumericGridDigitPad, useNumericGridInput } from "./NumericGridInput";
 import { BottomPuzzleConfiguration } from "./PuzzleConfiguration";
-import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
+import type { SudokuWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { SeedControl } from "./SeedControl";
 import { SudokuMeta } from "./SudokuMeta";
@@ -32,7 +32,7 @@ export const SudokuWorkspace = ({
   onLoadSeed,
   onCellClick,
   onCellInput,
-}: PuzzleWorkspaceProps) => {
+}: SudokuWorkspaceProps) => {
   const sudokuPuzzle = puzzle?.kind === "grid" && puzzle.puzzleId === "sudoku" ? puzzle : null;
   const isSolved = Boolean(sudokuPuzzle && gridCells && isGridAnswerCompleteAndCorrect(sudokuPuzzle, gridCells));
   const completion = usePuzzleCompletionPresentation({
