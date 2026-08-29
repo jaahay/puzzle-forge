@@ -10,11 +10,6 @@ import {
 } from "./session";
 
 const makeTileSession = (puzzle: GeneratedPuzzle): PuzzleSession => ({
-  seed: puzzle.seed,
-  width: puzzle.width,
-  height: puzzle.height,
-  difficulty: "Easy",
-  requireUniqueSolution: false,
   puzzle,
   cardStacks: null,
   selectedCard: null,
