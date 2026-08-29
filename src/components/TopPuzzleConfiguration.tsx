@@ -1,8 +1,7 @@
 import type { ComponentChildren } from "preact";
-import type { PuzzleDefinition, SolitaireVariation } from "../catalog/types";
+import type { PuzzleDefinition } from "../catalog/types";
 import { GenerationActions } from "./GenerationActions";
 import { PuzzleDimensionControls } from "./PuzzleDimensionControls";
-import { SolitaireSettings } from "./SolitaireSettings";
 
 type TopPuzzleConfigurationProps = {
   selectedDefinition: PuzzleDefinition;
@@ -10,15 +9,14 @@ type TopPuzzleConfigurationProps = {
   seedInput: ComponentChildren;
   width: number;
   height: number;
-  solitaireVariation: SolitaireVariation;
   isFixedSize: boolean;
   isGenerating: boolean;
-  isSolitaire: boolean;
+  settings?: ComponentChildren;
+  className?: string;
   showRandomize?: boolean;
   onWidthChange: (width: number) => void;
   onHeightChange: (height: number) => void;
   onSettingsCommit: (settings: { width?: number; height?: number }) => void;
-  onSolitaireVariationChange: (variation: SolitaireVariation) => void;
   onToday: () => void;
   onUseSeed: () => void;
   onRandomize: () => void;
@@ -31,21 +29,20 @@ export const TopPuzzleConfiguration = ({
   seedInput,
   width,
   height,
-  solitaireVariation,
   isFixedSize,
   isGenerating,
-  isSolitaire,
+  settings,
+  className,
   showRandomize = true,
   onWidthChange,
   onHeightChange,
   onSettingsCommit,
-  onSolitaireVariationChange,
   onToday,
   onUseSeed,
   onRandomize,
   onReset,
 }: TopPuzzleConfigurationProps) => (
-  <div class={`control-panel ${isSolitaire ? "solitaire-control-panel" : ""}`} aria-label="Puzzle controls">
+  <div class={`control-panel ${className ?? ""}`.trim()} aria-label="Puzzle controls">
     <span class="puzzle-settings-section-label">Next puzzle</span>
     {isFixedSize ? null : (
       <PuzzleDimensionControls
@@ -57,7 +54,7 @@ export const TopPuzzleConfiguration = ({
         onSettingsCommit={onSettingsCommit}
       />
     )}
-    {isSolitaire ? <SolitaireSettings variation={solitaireVariation} onVariationChange={onSolitaireVariationChange} /> : null}
+    {settings}
     <GenerationActions
       isGenerating={isGenerating}
       canGenerate={selectedPuzzleIsGeneratable}
