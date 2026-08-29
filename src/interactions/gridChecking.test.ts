@@ -111,6 +111,7 @@ describe("Sudoku grid checking feedback", () => {
     ]);
 
     expect(result.cells.map((cell) => cell.tone)).toEqual(["empty", "hint", "empty", "given"]);
+    expect(result.feedbackTone).toBe("error");
     expect(result.message).toContain("need attention");
   });
 
@@ -123,6 +124,7 @@ describe("Sudoku grid checking feedback", () => {
     ]);
 
     expect(result.cells.map((cell) => cell.tone)).toEqual(["empty", "empty", "empty", "empty"]);
+    expect(result.feedbackTone).toBe("progress");
     expect(result.message).toBe("No mistakes found. 1 square empty.");
   });
 
@@ -130,6 +132,7 @@ describe("Sudoku grid checking feedback", () => {
     const result = checkGridAnswer(makeSudokuPuzzle(), solvedCells());
 
     expect(result.cells.map((cell) => cell.tone)).toEqual(["answer", "answer", "answer", "given"]);
+    expect(result.feedbackTone).toBe("success");
     expect(result.message).toBe("Solved.");
   });
 });
@@ -144,6 +147,7 @@ describe("shared answer-key checking", () => {
     ]);
 
     expect(result.cells.map((cell) => cell.tone)).toEqual(["answer", "hint", "answer", "given"]);
+    expect(result.feedbackTone).toBe("error");
     expect(result.message).toBe("Not solved: 0 empty cell(s), 1 incorrect cell(s).");
   });
 });
