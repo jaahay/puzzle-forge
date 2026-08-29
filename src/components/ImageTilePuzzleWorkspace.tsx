@@ -1,6 +1,6 @@
 import { useCallback, useState } from "preact/hooks";
 import type { ImageTileGeneratedPuzzle, ImageTilePuzzleId } from "../catalog/types";
-import { getDailyPuzzleSeed } from "../games/shared/daily";
+import { getCanonicalDailyGenerationSettings } from "../games/shared/daily";
 import { ArtworkAlbum } from "./ArtworkAlbum";
 import { TopPuzzleConfiguration } from "./PuzzleConfiguration";
 import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
@@ -69,11 +69,7 @@ export const ImageTilePuzzleWorkspace = ({
     setResetVersion((current) => current + 1);
     setCompletionState({ puzzleInstanceId: imagePuzzle?.id ?? null, solved: false });
   };
-  const generateDailyPuzzle = () => onSettingsCommit({
-    seed: getDailyPuzzleSeed(puzzleId),
-    width,
-    height,
-  });
+  const generateDailyPuzzle = () => onSettingsCommit(getCanonicalDailyGenerationSettings(puzzleId));
   const seedInput = (
     <SeedControl
       seed={seed}
@@ -144,7 +140,7 @@ export const ImageTilePuzzleWorkspace = ({
         <strong>Puzzle solved</strong>
       </div>
       <div class="puzzle-actions">
-        <button type="button" onClick={onRandomize}>New puzzle</button>
+        <button type="button" onClick={onRandomize} disabled={isGenerating}>New puzzle</button>
       </div>
     </section>
   ) : null;

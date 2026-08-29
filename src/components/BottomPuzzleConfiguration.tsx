@@ -21,7 +21,7 @@ type BottomPuzzleConfigurationProps = {
   showRandomize?: boolean;
   onWidthChange: (width: number) => void;
   onHeightChange: (height: number) => void;
-  onSettingsCommit: (settings?: { width?: number; height?: number }) => void;
+  onSettingsCommit: (settings: { width?: number; height?: number }) => void;
   onDifficultyChange: (difficulty: PuzzleDifficulty) => void;
   onSudokuVariationChange: (variation: SudokuVariation) => void;
   onUniqueSolutionChange: (requireUniqueSolution: boolean) => void;
@@ -51,23 +51,24 @@ const SizeControl = ({ selectedDefinition, width, height, onWidthChange, onHeigh
 
 const SeedTools = ({ seedInput, isGenerating, canGenerate, onUseSeed }: Pick<BottomPuzzleConfigurationProps, "seedInput" | "isGenerating" | "onUseSeed"> & { canGenerate: boolean }) => (
   <>
-    <label>Seed{seedInput}</label>
-    <div class="puzzle-settings-actions seed-actions"><button type="button" onClick={onUseSeed} disabled={isGenerating || !canGenerate}>Use seed</button></div>
+    {seedInput}
+    <div class="puzzle-settings-actions seed-actions"><button type="button" onClick={onUseSeed} disabled={isGenerating || !canGenerate}>Load seed</button></div>
   </>
 );
 
 export const BottomPuzzleConfiguration = ({ selectedDefinition, selectedPuzzleIsGeneratable, seedInput, width, height, difficulty, requireUniqueSolution, sudokuVariation, isFixedSize, isNonogram, isWordGuess, isSudoku, isGenerating, showRandomize = true, onWidthChange, onHeightChange, onSettingsCommit, onDifficultyChange, onSudokuVariationChange, onUniqueSolutionChange, onToday, onUseSeed, onRandomize, onReset }: BottomPuzzleConfigurationProps) => {
-  const primaryGenerationActions = <GenerationActions isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showToday showReset showRandomize={showRandomize} randomLabel="New" onToday={onToday} onRandomize={onRandomize} onReset={onReset} />;
+  const newPuzzleAction = <GenerationActions isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showRandomize={showRandomize} randomLabel="New puzzle" onRandomize={onRandomize} />;
+  const todayAction = <GenerationActions isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showToday showRandomize={false} onToday={onToday} onRandomize={onRandomize} />;
+  const resetAction = <GenerationActions isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showReset showRandomize={false} onRandomize={onRandomize} onReset={onReset} />;
   const seedTools = <SeedTools seedInput={seedInput} isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} onUseSeed={onUseSeed} />;
 
   return (
     <div class={`puzzle-settings-panel ${isSudoku ? "sudoku-settings-panel" : ""} ${isNonogram ? "nonogram-settings-panel" : ""} ${isWordGuess ? "word-guess-settings-panel" : ""}`} aria-label={`${selectedDefinition.title} controls`}>
+      <span class="puzzle-settings-section-label">Next puzzle</span>
       {isWordGuess ? (
         <>
           <label>Letters<input type="number" min={selectedDefinition.minWidth} max={selectedDefinition.maxWidth} value={width} onBlur={(event) => onSettingsCommit({ width: Number(event.currentTarget.value) })} onInput={(event) => onWidthChange(Number(event.currentTarget.value))} onKeyDown={blurOnEnter} /></label>
           <label>Guesses<input type="number" min={selectedDefinition.minHeight} max={selectedDefinition.maxHeight} value={height} onBlur={(event) => onSettingsCommit({ height: Number(event.currentTarget.value) })} onInput={(event) => onHeightChange(Number(event.currentTarget.value))} onKeyDown={blurOnEnter} /></label>
-          {primaryGenerationActions}
-          {seedTools}
         </>
       ) : (
         <>
@@ -75,10 +76,16 @@ export const BottomPuzzleConfiguration = ({ selectedDefinition, selectedPuzzleIs
           {isSudoku ? <label>Variation<SudokuVariationSelect value={sudokuVariation} onChange={onSudokuVariationChange} /></label> : null}
           {isNonogram && !isFixedSize ? <SizeControl selectedDefinition={selectedDefinition} width={width} height={height} onWidthChange={onWidthChange} onHeightChange={onHeightChange} onSettingsCommit={onSettingsCommit} /> : null}
           {isNonogram ? <label class="puzzle-checkbox-control"><input checked={requireUniqueSolution} onChange={(event) => onUniqueSolutionChange(event.currentTarget.checked)} type="checkbox" /><span>Unique solution</span></label> : null}
-          {primaryGenerationActions}
-          {seedTools}
         </>
       )}
+      {newPuzzleAction}
+
+      <span class="puzzle-settings-section-label">Load</span>
+      {todayAction}
+      {seedTools}
+
+      <span class="puzzle-settings-section-label">Current puzzle</span>
+      {resetAction}
     </div>
   );
 };
