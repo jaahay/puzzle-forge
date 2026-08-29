@@ -7,6 +7,7 @@ type PuzzleWorkspaceLayoutProps = {
   status?: ComponentChildren;
   board?: ComponentChildren;
   gameplay?: ComponentChildren;
+  help?: ComponentChildren;
   generation?: ComponentChildren;
   enableImmersive?: boolean;
 };
@@ -17,6 +18,7 @@ export const PuzzleWorkspaceLayout = ({
   status,
   board,
   gameplay,
+  help,
   generation,
   enableImmersive = false,
 }: PuzzleWorkspaceLayoutProps) => {
@@ -105,6 +107,8 @@ export const PuzzleWorkspaceLayout = ({
       {board ? <section class="workspace-layout-board" aria-label="Puzzle board">{board}</section> : null}
 
       {gameplay ? <section class="workspace-layout-gameplay" aria-label="Gameplay controls">{gameplay}</section> : null}
+
+      {help ? <section class="workspace-layout-help" aria-label="Puzzle help">{help}</section> : null}
 
       {generation ? <section class="workspace-layout-generation" aria-label="Generation controls">{generation}</section> : null}
     </section>
