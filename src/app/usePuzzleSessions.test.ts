@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { PuzzleCell } from "../catalog/types";
+import type { GeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { generateJigsaw } from "../games/jigsaw/generate";
 import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
 import { initialSolitaireStats, type PuzzleSession } from "./session";
@@ -15,11 +15,6 @@ const makeJigsawSession = (): PuzzleSession => {
   });
 
   return {
-    seed: puzzle.seed,
-    width: puzzle.width,
-    height: puzzle.height,
-    difficulty: "Easy",
-    requireUniqueSolution: false,
     puzzle,
     cardStacks: null,
     selectedCard: null,
@@ -32,19 +27,36 @@ const makeJigsawSession = (): PuzzleSession => {
   };
 };
 
+const makeSudokuPuzzle = (): GeneratedPuzzle => ({
+  id: "sudoku-transient",
+  puzzleId: "sudoku",
+  title: "Sudoku",
+  seed: "transient-feedback",
+  width: 9,
+  height: 9,
+  checksum: "checksum",
+  createdAt: "2026-08-29T00:00:00.000Z",
+  difficulty: "Easy",
+  uniqueSolution: true,
+  sudokuVariation: "classic",
+  notes: [],
+  kind: "grid",
+  cells: [],
+});
+
 describe("clonePuzzleSession", () => {
   it("deep-clones Jigsaw edge, image, and edge-model metadata", () => {
     const session = makeJigsawSession();
     const cloned = clonePuzzleSession(session);
 
-    expect(session.puzzle?.kind).toBe("tiles");
-    expect(session.puzzle?.puzzleId).toBe("jigsaw");
-    expect(cloned.puzzle?.kind).toBe("tiles");
-    expect(cloned.puzzle?.puzzleId).toBe("jigsaw");
+    expect(session.puzzle.kind).toBe("tiles");
+    expect(session.puzzle.puzzleId).toBe("jigsaw");
+    expect(cloned.puzzle.kind).toBe("tiles");
+    expect(cloned.puzzle.puzzleId).toBe("jigsaw");
     if (
-      session.puzzle?.kind !== "tiles" ||
+      session.puzzle.kind !== "tiles" ||
       session.puzzle.puzzleId !== "jigsaw" ||
-      cloned.puzzle?.kind !== "tiles" ||
+      cloned.puzzle.kind !== "tiles" ||
       cloned.puzzle.puzzleId !== "jigsaw"
     ) return;
 
@@ -71,14 +83,7 @@ describe("buildRuntimeSession", () => {
     ];
 
     const session = buildRuntimeSession({
-      puzzleId: "sudoku",
-      seed: "transient-feedback",
-      width: 9,
-      height: 9,
-      difficulty: "Easy",
-      requireUniqueSolution: true,
-      sudokuVariation: "classic",
-      puzzle: null,
+      puzzle: makeSudokuPuzzle(),
       cardStacks: null,
       selectedCard: null,
       solitaireStats: { ...initialSolitaireStats },
