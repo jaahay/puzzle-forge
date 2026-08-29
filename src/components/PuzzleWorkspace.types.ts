@@ -1,5 +1,6 @@
 import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition, PuzzleDifficulty, PuzzleGenerationRequest, SolitaireVariation, SudokuVariation } from "../catalog/types";
 import type { CardSelection } from "../interactions/cardRules";
+import type { GridCheckFeedbackTone } from "../interactions/gridChecking";
 import type { GridCellSelection } from "../interactions/gridRules";
 
 export type SolitaireStats = { moveCount: number; drawCount: number; recycleCount: number; autoMoveCount: number };
@@ -32,6 +33,7 @@ export type PuzzleWorkspaceProps = {
   solitaireStats: SolitaireStats;
   gridCells: PuzzleCell[] | null;
   selectedGridCell: GridCellSelection | null;
+  gridCheckFeedbackTone: GridCheckFeedbackTone | null;
   statusMessage: string;
   isGenerating: boolean;
   onSeedChange: (seed: string) => void;
