@@ -1,5 +1,5 @@
 import { useRef } from "preact/hooks";
-import type { GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleId, SudokuVariation } from "../catalog/types";
+import type { GeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
 import { cloneStack } from "../interactions/cardRules";
 import { cloneGridCell, prepareGridCells } from "../interactions/gridRules";
 import {
@@ -16,14 +16,7 @@ import {
 import { cloneSolitaireHistoryEntry } from "./solitaireHistory";
 
 export type RuntimeSessionDraft = {
-  puzzleId: PuzzleId;
-  seed: string;
-  width: number;
-  height: number;
-  difficulty: PuzzleDifficulty;
-  requireUniqueSolution: boolean;
-  sudokuVariation?: SudokuVariation;
-  puzzle: PuzzleSession["puzzle"];
+  puzzle: GeneratedPuzzle;
   cardStacks: PuzzleSession["cardStacks"];
   selectedCard: PuzzleSession["selectedCard"];
   solitaireStats: SolitaireStats;
@@ -36,66 +29,47 @@ export type RuntimeSessionDraft = {
 
 const cloneSessionGridCell = (puzzleId: PuzzleId, cell: PuzzleCell): PuzzleCell => {
   const clonedCell = cloneGridCell(cell);
-
   if (puzzleId === "sudoku" && !clonedCell.locked && (clonedCell.tone === "answer" || clonedCell.tone === "hint")) {
     return { ...clonedCell, tone: "empty" };
   }
-
   return clonedCell;
 };
 
+const cloneGeneratedPuzzle = (puzzle: GeneratedPuzzle): GeneratedPuzzle => {
+  if (puzzle.kind === "cards") {
+    return { ...puzzle, stacks: puzzle.stacks.map(cloneStack), solitaireVariation: { ...puzzle.solitaireVariation } };
+  }
+  if (puzzle.kind === "grid") {
+    return { ...puzzle, cells: puzzle.cells.map(cloneGridCell), answerKey: puzzle.answerKey ? [...puzzle.answerKey] : undefined };
+  }
+  if (puzzle.puzzleId === "jigsaw") {
+    return {
+      ...puzzle,
+      tiles: puzzle.tiles.map((tile) => ({ ...tile, edges: tile.edges.map((edge) => ({ ...edge })) })),
+      asset: { ...puzzle.asset, files: { ...puzzle.asset.files }, credit: { ...puzzle.asset.credit } },
+      edgeModel: { ...puzzle.edgeModel, profileIds: [...puzzle.edgeModel.profileIds] },
+    };
+  }
+  return {
+    ...puzzle,
+    tiles: puzzle.tiles.map((tile) => ({ ...tile })),
+    asset: { ...puzzle.asset, files: { ...puzzle.asset.files }, credit: { ...puzzle.asset.credit } },
+  };
+};
+
 export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => ({
-  ...session,
-  solitaireVariation: session.solitaireVariation ? { ...session.solitaireVariation } : undefined,
-  puzzle: session.puzzle
-    ? session.puzzle.kind === "cards"
-      ? { ...session.puzzle, stacks: session.puzzle.stacks.map(cloneStack), solitaireVariation: { ...session.puzzle.solitaireVariation } }
-      : session.puzzle.kind === "grid"
-        ? { ...session.puzzle, cells: session.puzzle.cells.map(cloneGridCell), answerKey: session.puzzle.answerKey ? [...session.puzzle.answerKey] : undefined }
-        : session.puzzle.puzzleId === "jigsaw"
-          ? {
-              ...session.puzzle,
-              tiles: session.puzzle.tiles.map((tile) => ({
-                ...tile,
-                edges: tile.edges.map((edge) => ({ ...edge })),
-              })),
-              asset: {
-                ...session.puzzle.asset,
-                files: { ...session.puzzle.asset.files },
-                credit: { ...session.puzzle.asset.credit },
-              },
-              edgeModel: {
-                ...session.puzzle.edgeModel,
-                profileIds: [...session.puzzle.edgeModel.profileIds],
-              },
-            }
-          : {
-              ...session.puzzle,
-              tiles: session.puzzle.tiles.map((tile) => ({ ...tile })),
-              asset: {
-                ...session.puzzle.asset,
-                files: { ...session.puzzle.asset.files },
-                credit: { ...session.puzzle.asset.credit },
-              },
-            }
-    : null,
+  puzzle: cloneGeneratedPuzzle(session.puzzle),
   cardStacks: session.cardStacks?.map(cloneStack) ?? null,
   selectedCard: session.selectedCard ? { ...session.selectedCard } : null,
   solitaireStats: { ...session.solitaireStats },
-  solitaireUndoStack: session.solitaireUndoStack?.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit) ?? [],
-  solitaireRedoStack: session.solitaireRedoStack?.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit) ?? [],
+  solitaireUndoStack: session.solitaireUndoStack.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit),
+  solitaireRedoStack: session.solitaireRedoStack.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit),
   gridCells: session.gridCells?.map(cloneGridCell) ?? null,
   selectedGridCell: session.selectedGridCell ? { ...session.selectedGridCell } : null,
+  statusMessage: session.statusMessage,
 });
 
 export const buildRuntimeSession = ({
-  puzzleId,
-  seed,
-  width,
-  height,
-  difficulty,
-  requireUniqueSolution,
-  sudokuVariation,
   puzzle,
   cardStacks,
   selectedCard,
@@ -106,32 +80,18 @@ export const buildRuntimeSession = ({
   selectedGridCell,
   statusMessage,
 }: RuntimeSessionDraft): PuzzleSession => ({
-  seed,
-  width,
-  height,
-  difficulty,
-  requireUniqueSolution,
-  sudokuVariation: puzzleId === "sudoku" ? sudokuVariation ?? puzzle?.sudokuVariation : undefined,
-  solitaireVariation: puzzleId === "klondike-solitaire" && puzzle?.kind === "cards" ? { ...puzzle.solitaireVariation } : undefined,
   puzzle,
   cardStacks: cardStacks?.map(cloneStack) ?? null,
   selectedCard: selectedCard ? { ...selectedCard } : null,
   solitaireStats: { ...solitaireStats },
   solitaireUndoStack: solitaireUndoStack.map(cloneSolitaireHistoryEntry),
   solitaireRedoStack: solitaireRedoStack.map(cloneSolitaireHistoryEntry),
-  gridCells: gridCells?.map((cell) => cloneSessionGridCell(puzzleId, cell)) ?? null,
+  gridCells: gridCells?.map((cell) => cloneSessionGridCell(puzzle.puzzleId, cell)) ?? null,
   selectedGridCell: selectedGridCell ? { ...selectedGridCell } : null,
   statusMessage,
 });
 
 export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPuzzle, statusMessage: string): PuzzleSession => ({
-  seed: generatedPuzzle.seed,
-  width: generatedPuzzle.width,
-  height: generatedPuzzle.height,
-  difficulty: generatedPuzzle.difficulty ?? "Easy",
-  requireUniqueSolution: Boolean(generatedPuzzle.uniqueSolution),
-  sudokuVariation: generatedPuzzle.puzzleId === "sudoku" ? generatedPuzzle.sudokuVariation : undefined,
-  solitaireVariation: generatedPuzzle.kind === "cards" ? { ...generatedPuzzle.solitaireVariation } : undefined,
   puzzle: generatedPuzzle,
   cardStacks: generatedPuzzle.kind === "cards" ? generatedPuzzle.stacks.map(cloneStack) : null,
   selectedCard: null,
@@ -174,10 +134,9 @@ export const usePuzzleSessions = () => {
   };
 
   const restorePendingSessionForPuzzle = (generatedPuzzle: GeneratedPuzzle) => {
-    const pendingPersistedSession =
-      pendingRestorePuzzleId.current === generatedPuzzle.puzzleId
-        ? persistedSessionCache.current[generatedPuzzle.puzzleId]
-        : undefined;
+    const pendingPersistedSession = pendingRestorePuzzleId.current === generatedPuzzle.puzzleId
+      ? persistedSessionCache.current[generatedPuzzle.puzzleId]
+      : undefined;
     const restoredSession = pendingPersistedSession
       ? restorePuzzleSessionFromPersisted(pendingPersistedSession, generatedPuzzle)
       : null;
