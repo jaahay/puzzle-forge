@@ -71,6 +71,7 @@ export const App = () => {
   const [nextPuzzleDrafts, setNextPuzzleDrafts] = useState<Partial<Record<PuzzleId, NextPuzzleDraft>>>({});
   const [seedLoadInputs, setSeedLoadInputs] = useState<Partial<Record<PuzzleId, string>>>({});
   const pendingScrollRestore = useRef<{ x: number; y: number } | null>(null);
+  const generatedPuzzleHandlerRef = useRef<(generatedPuzzle: GeneratedPuzzle) => void>(() => undefined);
   const { seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation } = generationDefaults;
 
   const updateGenerationDefaults = (settings: Partial<RuntimeGenerationDefaults>) => {
@@ -267,6 +268,7 @@ export const App = () => {
     setStatusMessage(readyMessage);
     restoreScrollPosition();
   };
+  generatedPuzzleHandlerRef.current = handleGeneratedPuzzle;
 
   const selectHome = (behavior: NavigationBehavior = {}) => {
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
@@ -328,11 +330,15 @@ export const App = () => {
   }, [selectedPuzzleId, hasSelectedPuzzle, isHomeSelected, puzzle]);
 
   useEffect(() => {
-    const handleMessage = (event: MessageEvent) => generation.handleGenerationMessage(event, handleGeneratedPuzzle, (error) => {
-      sessions.pendingRestorePuzzleId.current = null;
-      setStatusMessage(error);
-      restoreScrollPosition();
-    });
+    const handleMessage = (event: MessageEvent) => generation.handleGenerationMessage(
+      event,
+      (generatedPuzzle) => generatedPuzzleHandlerRef.current(generatedPuzzle),
+      (error) => {
+        sessions.pendingRestorePuzzleId.current = null;
+        setStatusMessage(error);
+        restoreScrollPosition();
+      },
+    );
     generation.worker.addEventListener("message", handleMessage);
 
     const persisted = loadPersistedPuzzleSessions();
