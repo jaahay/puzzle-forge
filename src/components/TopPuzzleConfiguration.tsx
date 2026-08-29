@@ -1,6 +1,7 @@
 import type { ComponentChildren } from "preact";
 import type { PuzzleDefinition, SolitaireVariation } from "../catalog/types";
 import { GenerationActions } from "./GenerationActions";
+import { PuzzleDimensionControls } from "./PuzzleDimensionControls";
 import { SolitaireSettings } from "./SolitaireSettings";
 
 type TopPuzzleConfigurationProps = {
@@ -23,48 +24,6 @@ type TopPuzzleConfigurationProps = {
   onRandomize: () => void;
   onReset: () => void;
 };
-
-const blurOnEnter = (event: KeyboardEvent) => {
-  if (event.key === "Enter" && event.currentTarget instanceof HTMLElement) {
-    event.currentTarget.blur();
-  }
-};
-
-const DimensionControls = ({
-  selectedDefinition,
-  width,
-  height,
-  onWidthChange,
-  onHeightChange,
-  onSettingsCommit,
-}: Pick<TopPuzzleConfigurationProps, "selectedDefinition" | "width" | "height" | "onWidthChange" | "onHeightChange" | "onSettingsCommit">) => (
-  <>
-    <label>
-      Width
-      <input
-        type="number"
-        min={selectedDefinition.minWidth}
-        max={selectedDefinition.maxWidth}
-        value={width}
-        onBlur={(event) => onSettingsCommit({ width: Number(event.currentTarget.value) })}
-        onInput={(event) => onWidthChange(Number(event.currentTarget.value))}
-        onKeyDown={blurOnEnter}
-      />
-    </label>
-    <label>
-      Height
-      <input
-        type="number"
-        min={selectedDefinition.minHeight}
-        max={selectedDefinition.maxHeight}
-        value={height}
-        onBlur={(event) => onSettingsCommit({ height: Number(event.currentTarget.value) })}
-        onInput={(event) => onHeightChange(Number(event.currentTarget.value))}
-        onKeyDown={blurOnEnter}
-      />
-    </label>
-  </>
-);
 
 export const TopPuzzleConfiguration = ({
   selectedDefinition,
@@ -89,7 +48,7 @@ export const TopPuzzleConfiguration = ({
   <div class={`control-panel ${isSolitaire ? "solitaire-control-panel" : ""}`} aria-label="Puzzle controls">
     <span class="puzzle-settings-section-label">Next puzzle</span>
     {isFixedSize ? null : (
-      <DimensionControls
+      <PuzzleDimensionControls
         selectedDefinition={selectedDefinition}
         width={width}
         height={height}
