@@ -164,7 +164,7 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, onCellClick, o
         onDigit={input.setSelectedValue}
         onClear={input.clearSelectedValue}
       />
-      <p class="sudoku-variant-rule" id="futoshiki-rule">
+      <p class="grid-rule-note" id="futoshiki-rule">
         Use each digit once per row and column. The narrow side of each inequality points to the smaller number.
       </p>
     </BoardViewport>
