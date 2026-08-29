@@ -1,10 +1,12 @@
+import { useEffect, useRef } from "preact/hooks";
 import type { PuzzleCell } from "../catalog/types";
 import { getCanonicalDailyPuzzleLabel } from "../games/shared/daily";
 import { isGridAnswerCompleteAndCorrect } from "../interactions/gridChecking";
+import { getGridInputMode } from "../interactions/gridRules";
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
 import { FutoshikiBoard } from "./FutoshikiBoard";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
-import { getNumericGridDigits } from "./NumericGridInput";
+import { getNumericGridDigits, NumericGridDigitPad, useNumericGridInput } from "./NumericGridInput";
 import { BottomPuzzleConfiguration, TopPuzzleConfiguration } from "./PuzzleConfiguration";
 import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
@@ -15,6 +17,18 @@ import { WordGuessGame } from "./WordGuessGame";
 
 const getFilledOpenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => !cell.locked && cell.value).length ?? 0;
 const getOpenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => !cell.locked).length ?? 0;
+
+export const getSudokuVariantRuleCopy = (variation: "classic" | "diagonal" | "zero-killer" | undefined) => {
+  if (variation === "diagonal") {
+    return "Normal Sudoku rules apply, and both main diagonals must also contain 1–9.";
+  }
+
+  if (variation === "zero-killer") {
+    return "Normal Sudoku rules apply to every cell. Digits within each cage add to its displayed sum and may not repeat within that cage. Uncaged cells have no additional cage constraint.";
+  }
+
+  return null;
+};
 
 export const StandardPuzzleWorkspace = ({
   selectedDefinition, selectedPuzzleIsGeneratable, seed, width, height, sudokuVariation,
@@ -44,10 +58,49 @@ export const StandardPuzzleWorkspace = ({
       : [],
   });
   const isSudokuPresentationCompleted = isSudokuSolved && sudokuCompletion.phase === "completed";
+  const sudokuCompletionStageRef = useRef<HTMLDivElement>(null);
+  const sudokuActiveGameplayRef = useRef<HTMLDivElement>(null);
+  const activeGameplayHadFocusRef = useRef(false);
   const handleSudokuCellInput = (cell: PuzzleCell, value: string) => {
     sudokuCompletion.recordCausativeInput();
     onCellInput(cell, value);
   };
+  const managedNumericPuzzle = puzzle?.kind === "grid" && !isFutoshiki && getGridInputMode(puzzle.puzzleId) === "numeric"
+    ? puzzle
+    : null;
+  const numericInput = useNumericGridInput({
+    enabled: Boolean(managedNumericPuzzle && !isSudokuSolved),
+    puzzleIdentity: managedNumericPuzzle
+      ? `${managedNumericPuzzle.puzzleId}:${managedNumericPuzzle.seed}:${managedNumericPuzzle.sudokuVariation ?? ""}:${managedNumericPuzzle.width}:${managedNumericPuzzle.height}`
+      : `inactive:${selectedDefinition.id}`,
+    digitCount: managedNumericPuzzle?.width ?? 0,
+    cells: gridCells ?? [],
+    selectedGridCell: isSudokuSolved ? null : selectedGridCell,
+    onCellClick,
+    onCellInput: isSudoku ? handleSudokuCellInput : onCellInput,
+  });
+
+  useEffect(() => {
+    if (!isSudokuPresentationCompleted) {
+      activeGameplayHadFocusRef.current = false;
+      return;
+    }
+
+    if (!activeGameplayHadFocusRef.current || typeof document === "undefined") {
+      return;
+    }
+
+    const activeElement = document.activeElement;
+    if (
+      !activeElement ||
+      activeElement === document.body ||
+      sudokuActiveGameplayRef.current?.contains(activeElement)
+    ) {
+      sudokuCompletionStageRef.current?.focus({ preventScroll: true });
+    }
+    activeGameplayHadFocusRef.current = false;
+  }, [isSudokuPresentationCompleted]);
+
   const hasBottomSettingsBar = isSudoku || isNonogram || isWordGuess || isFutoshiki;
   const showStatusLine = !hasBottomSettingsBar;
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
@@ -115,6 +168,25 @@ export const StandardPuzzleWorkspace = ({
 
   const statusSlot = showStatusLine ? <p class="status-line" aria-live="polite">{statusMessage}</p> : null;
   const validationSlot = showSudokuValidationMessage ? <p class={`sudoku-validation-message ${sudokuValidationTone}`} aria-live="polite">{statusMessage}</p> : showNonogramValidationMessage ? <p class={`sudoku-validation-message ${nonogramValidationTone}`} aria-live="polite">{statusMessage}</p> : isFutoshiki ? <p class={`sudoku-validation-message ${futoshikiValidationTone}`} aria-live="polite">{statusMessage}</p> : null;
+  const activeSudokuVariation = puzzle?.kind === "grid" && puzzle.puzzleId === "sudoku" ? puzzle.sudokuVariation : undefined;
+  const sudokuRuleCopy = getSudokuVariantRuleCopy(activeSudokuVariation);
+  const helpSlot = sudokuRuleCopy ? (
+    <details class="sudoku-rules-disclosure">
+      <summary>Rules</summary>
+      <p>{sudokuRuleCopy}</p>
+    </details>
+  ) : null;
+  const numericDigitPad = managedNumericPuzzle && (!isSudoku || !isSudokuPresentationCompleted) ? (
+    <NumericGridDigitPad
+      title={managedNumericPuzzle.title}
+      digits={numericInput.digits}
+      activeValue={numericInput.activeValue}
+      canClearSelectedCell={numericInput.canClearSelectedCell}
+      disabled={isSudokuSolved}
+      onDigit={numericInput.setSelectedValue}
+      onClear={numericInput.clearSelectedValue}
+    />
+  ) : null;
   const sudokuCompletionDock = isSudokuSolved ? (
     <section
       class="completion-dock"
@@ -132,11 +204,21 @@ export const StandardPuzzleWorkspace = ({
     </section>
   ) : null;
   const sudokuGameplayControl = isSudoku ? (
-    <div class="completion-control-stage" data-phase={sudokuCompletion.phase}>
+    <div class="completion-control-stage" data-phase={sudokuCompletion.phase} ref={sudokuCompletionStageRef} tabIndex={-1}>
       <div
-        class="completion-control-layer completion-control-playing"
+        class="completion-control-layer completion-control-playing gameplay-active-controls"
         aria-hidden={isSudokuPresentationCompleted || undefined}
+        ref={sudokuActiveGameplayRef}
+        onFocusCapture={() => {
+          activeGameplayHadFocusRef.current = true;
+        }}
+        onBlurCapture={(event) => {
+          const nextTarget = event.relatedTarget;
+          if (nextTarget instanceof Node && sudokuActiveGameplayRef.current?.contains(nextTarget)) return;
+          if (nextTarget) activeGameplayHadFocusRef.current = false;
+        }}
       >
+        {numericDigitPad}
         <div class="puzzle-actions">
           <button type="button" onClick={onCheck} disabled={isSudokuSolved}>Check</button>
         </div>
@@ -154,15 +236,15 @@ export const StandardPuzzleWorkspace = ({
   const boardSlot = puzzle ? (
     <section class="puzzle-panel" aria-label="Generated puzzle preview">
       {puzzle.kind === "cards" ? null : <div class="puzzle-meta">{isSudoku && puzzle.kind === "grid" && gridCells ? <SudokuMeta puzzle={puzzle} cells={gridCells} /> : <>{isSudoku ? null : <span>{`${puzzle.width} x ${puzzle.height}`}</span>}{puzzle.difficulty ? <span>{puzzle.difficulty}</span> : null}{isNonogram || isFutoshiki ? <span>{puzzle.uniqueSolution ? "Unique" : "Open"}</span> : null}{isWordGuess ? <span>Answer-list solvable</span> : null}{isNonogram ? <span>{filledOpenCount}/{openCount} filled</span> : isFutoshiki ? <span>{filledOpenCount}/{openCount} filled</span> : dailyLabel ? <span>Daily: {dailyLabel}</span> : null}</>}</div>}
-      {puzzle.kind === "cards" && cardStacks ? <CardPuzzlePreview stacks={cardStacks} selectedCard={selectedCard} stats={solitaireStats} toolbar={solitaireActionControls} variation={puzzle.solitaireVariation} onCardClick={onCardClick} onCardDoubleClick={onCardDoubleClick} onStackClick={onStackClick} /> : puzzle.kind === "grid" && puzzle.puzzleId === "word-guess" && gridCells ? <WordGuessGame puzzle={puzzle} cells={gridCells} statusMessage={statusMessage} onCellInput={onCellInput} onSubmitGuess={onCheck} /> : puzzle.kind === "grid" && puzzle.puzzleId === "futoshiki" && gridCells ? <FutoshikiBoard puzzle={puzzle} cells={gridCells} selectedGridCell={selectedGridCell} onCellClick={onCellClick} onCellInput={onCellInput} /> : puzzle.kind === "grid" && gridCells ? <GridPuzzlePreview puzzle={puzzle} cells={gridCells} selectedGridCell={selectedGridCell} completionPhase={isSudoku ? sudokuCompletion.phase : undefined} onCompletionAnimationEnd={isSudoku ? sudokuCompletion.completePresentation : undefined} onCellClick={onCellClick} onCellInput={isSudoku ? handleSudokuCellInput : onCellInput} /> : null}
+      {puzzle.kind === "cards" && cardStacks ? <CardPuzzlePreview stacks={cardStacks} selectedCard={selectedCard} stats={solitaireStats} toolbar={solitaireActionControls} variation={puzzle.solitaireVariation} onCardClick={onCardClick} onCardDoubleClick={onCardDoubleClick} onStackClick={onStackClick} /> : puzzle.kind === "grid" && puzzle.puzzleId === "word-guess" && gridCells ? <WordGuessGame puzzle={puzzle} cells={gridCells} statusMessage={statusMessage} onCellInput={onCellInput} onSubmitGuess={onCheck} /> : puzzle.kind === "grid" && puzzle.puzzleId === "futoshiki" && gridCells ? <FutoshikiBoard puzzle={puzzle} cells={gridCells} selectedGridCell={selectedGridCell} onCellClick={onCellClick} onCellInput={onCellInput} /> : puzzle.kind === "grid" && gridCells ? <GridPuzzlePreview puzzle={puzzle} cells={gridCells} selectedGridCell={selectedGridCell} numericSelectedCell={numericInput.selectedCell} numericActiveValue={numericInput.activeValue} completionPhase={isSudoku ? sudokuCompletion.phase : undefined} onCompletionAnimationEnd={isSudoku ? sudokuCompletion.completePresentation : undefined} onCellClick={onCellClick} onCellInput={isSudoku ? handleSudokuCellInput : onCellInput} /> : null}
       {hasBottomSettingsBar || puzzle.kind === "cards" || puzzle.notes.length === 0 ? null : <ul class="notes-list">{puzzle.notes.map((note) => <li key={note}>{note}</li>)}</ul>}
     </section>
   ) : isGenerating ? loadingBoardSlot : null;
 
   const gameplaySlot = puzzle && puzzle.kind !== "cards" && !isWordGuess ? (
     <div class="gameplay-control-stack">
-      {sudokuGameplayControl ?? <><div class="puzzle-actions"><button type="button" onClick={onCheck}>Check</button></div>{validationSlot}</>}
+      {sudokuGameplayControl ?? <>{managedNumericPuzzle ? numericDigitPad : null}<div class="puzzle-actions"><button type="button" onClick={onCheck}>Check</button></div>{validationSlot}</>}
     </div>
   ) : null;
-  return <PuzzleWorkspaceLayout className={workspaceClass} status={statusSlot} board={boardSlot} gameplay={gameplaySlot} generation={configurationSlot} />;
+  return <PuzzleWorkspaceLayout className={workspaceClass} status={statusSlot} board={boardSlot} gameplay={gameplaySlot} help={helpSlot} generation={configurationSlot} />;
 };
