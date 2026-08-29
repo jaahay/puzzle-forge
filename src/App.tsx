@@ -8,7 +8,6 @@ import { ChangelogView } from "./components/ChangelogView";
 import { NotFoundView } from "./components/NotFoundView";
 import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
-import type { GenerationSettings } from "./components/PuzzleWorkspace.types";
 import { StartView } from "./components/StartView";
 import { getCanonicalDailyGenerationSettings } from "./games/shared/daily";
 import { isImageBackedPuzzleId } from "./games/imageAssets";
@@ -19,6 +18,7 @@ import {
   getGeneratedPuzzleRuntimeSettings,
   type GenerationRuntimeSettings,
 } from "./app/generationIdentity";
+import type { GenerationSettings } from "./app/generationSettings";
 import { getInitialSelectedPuzzleId, markPuzzleNavigation } from "./app/homeNavigation";
 import { defaultSudokuDifficulty, makeRandomSeed } from "./app/runtime";
 import { getCurrentAppRoute, parseAppRoute, pushAppRoute, type AppRoute } from "./app/routes";
@@ -209,9 +209,8 @@ export const App = () => {
   };
 
   const beginPersistedPuzzle = (puzzleId: PuzzleId) => {
-    const persistedSession = sessions.persistedSessionCache.current[puzzleId];
+    const persistedSession = sessions.beginPersistedRestore(puzzleId);
     if (!persistedSession) return false;
-    sessions.pendingRestorePuzzleId.current = puzzleId;
     beginGeneration({
       puzzleId,
       seed: persistedSession.seed,
@@ -305,7 +304,7 @@ export const App = () => {
       event,
       (generatedPuzzle) => generatedPuzzleHandlerRef.current(generatedPuzzle),
       (error) => {
-        sessions.pendingRestorePuzzleId.current = null;
+        sessions.cancelPersistedRestore();
         setStatusMessage(error);
         restoreScrollPosition();
       },
@@ -313,7 +312,7 @@ export const App = () => {
     generation.worker.addEventListener("message", handleMessage);
 
     const persisted = loadPersistedPuzzleSessions();
-    if (persisted) sessions.persistedSessionCache.current = persisted.sessions;
+    if (persisted) sessions.initializePersistedSessions(persisted.sessions);
 
     if (initialRoute.kind === "puzzle") {
       selectPuzzle(initialRoute.puzzleId, { pushHistory: false });
