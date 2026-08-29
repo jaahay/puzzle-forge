@@ -165,7 +165,7 @@ export const usePuzzleGeneration = () => {
         ? puzzle.uniqueSolution
           ? "Unique Nonogram ready."
           : "Open Nonogram ready. Multiple solutions may be possible."
-        : `${puzzle.title} generated from seed ${puzzle.seed}.`;
+        : `${puzzle.title} ready.`;
 
   return {
     isGenerating,
