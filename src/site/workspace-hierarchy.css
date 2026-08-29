@@ -11,6 +11,8 @@
 }
 
 .sudoku-workspace .square-grid-board-viewport,
+.sudoku-workspace .sudoku-validation-message,
+.sudoku-workspace .sudoku-settings-panel,
 .gameplay-control-stack,
 .sudoku-rules-disclosure {
   width: min(100%, var(--play-column-max));
