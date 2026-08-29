@@ -8,7 +8,7 @@ import {
 } from "../games/jigsaw/difficulty";
 import { getCanonicalDailyGenerationSettings, getCanonicalDailyPuzzleLabel } from "../games/shared/daily";
 import { ArtworkAlbum } from "./ArtworkAlbum";
-import { TopPuzzleConfiguration } from "./PuzzleConfiguration";
+import { ImmediateTopPuzzleConfiguration } from "./PuzzleConfiguration";
 import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { SeedControl } from "./SeedControl";
@@ -34,10 +34,21 @@ export const makeJigsawImageSelectionSettings = (
 };
 
 export const JigsawWorkspace = ({
-  selectedDefinition, selectedPuzzleIsGeneratable, seed, width, height, puzzle,
-  solitaireVariation, statusMessage, isGenerating, onSeedChange, onWidthChange,
-  onHeightChange, onSettingsCommit, onGenerate, onRandomize, onReset,
-  onSolitaireVariationChange,
+  selectedDefinition,
+  selectedPuzzleIsGeneratable,
+  seed,
+  width,
+  height,
+  puzzle,
+  statusMessage,
+  isGenerating,
+  onSeedChange,
+  onWidthChange,
+  onHeightChange,
+  onSettingsCommit,
+  onGenerate,
+  onRandomize,
+  onReset,
 }: PuzzleWorkspaceProps) => {
   const [resetVersion, setResetVersion] = useState(0);
   const jigsawPuzzle = puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw" ? puzzle : null;
@@ -105,20 +116,17 @@ export const JigsawWorkspace = ({
         </div>
       </div>
 
-      <TopPuzzleConfiguration
+      <ImmediateTopPuzzleConfiguration
         selectedDefinition={selectedDefinition}
         selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
         seedInput={seedInput}
         width={width}
         height={height}
-        solitaireVariation={solitaireVariation}
         isFixedSize={isFixedSize}
         isGenerating={isGenerating}
-        isSolitaire={false}
         onWidthChange={selectCustomWidth}
         onHeightChange={selectCustomHeight}
         onSettingsCommit={commitCustomDimensions}
-        onSolitaireVariationChange={onSolitaireVariationChange}
         onToday={generateDailyPuzzle}
         onUseSeed={onGenerate}
         onRandomize={onRandomize}
