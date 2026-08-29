@@ -1,11 +1,11 @@
 import { useState } from "preact/hooks";
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { GeneratedPuzzle, PuzzleId } from "../catalog/types";
-import type { GenerationSettings, NextPuzzleDraft } from "../components/PuzzleWorkspace.types";
 import { defaultSolitaireVariation, normalizeSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation } from "../games/sudoku/variation";
-import { defaultSudokuDifficulty } from "./runtime";
+import type { GenerationSettings, NextPuzzleDraft } from "./generationSettings";
 import type { GenerationRuntimeSettings } from "./generationIdentity";
+import { defaultSudokuDifficulty } from "./runtime";
 
 type BuildNextPuzzleDraftInput = {
   puzzleId: PuzzleId;
