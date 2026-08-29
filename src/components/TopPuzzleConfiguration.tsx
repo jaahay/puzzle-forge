@@ -13,7 +13,6 @@ type TopPuzzleConfigurationProps = {
   isFixedSize: boolean;
   isGenerating: boolean;
   isSolitaire: boolean;
-  prospective?: boolean;
   showRandomize?: boolean;
   onWidthChange: (width: number) => void;
   onHeightChange: (height: number) => void;
@@ -26,8 +25,8 @@ type TopPuzzleConfigurationProps = {
 };
 
 const blurOnEnter = (event: KeyboardEvent) => {
-  if (event.key === "Enter") {
-    event.currentTarget instanceof HTMLElement && event.currentTarget.blur();
+  if (event.key === "Enter" && event.currentTarget instanceof HTMLElement) {
+    event.currentTarget.blur();
   }
 };
 
@@ -77,7 +76,6 @@ export const TopPuzzleConfiguration = ({
   isFixedSize,
   isGenerating,
   isSolitaire,
-  prospective = false,
   showRandomize = true,
   onWidthChange,
   onHeightChange,
@@ -87,91 +85,55 @@ export const TopPuzzleConfiguration = ({
   onUseSeed,
   onRandomize,
   onReset,
-}: TopPuzzleConfigurationProps) => {
-  if (!prospective) {
-    return (
-      <div class={`control-panel ${isSolitaire ? "solitaire-control-panel" : ""}`} aria-label="Puzzle controls">
-        <label>
-          Seed
-          {seedInput}
-        </label>
-        {isFixedSize ? null : (
-          <DimensionControls
-            selectedDefinition={selectedDefinition}
-            width={width}
-            height={height}
-            onWidthChange={onWidthChange}
-            onHeightChange={onHeightChange}
-            onSettingsCommit={onSettingsCommit}
-          />
-        )}
-        <GenerationActions
-          isGenerating={isGenerating}
-          canGenerate={selectedPuzzleIsGeneratable}
-          showToday
-          showUseSeed
-          showReset
-          showRandomize={showRandomize}
-          randomLabel="New"
-          onToday={onToday}
-          onUseSeed={onUseSeed}
-          onRandomize={onRandomize}
-          onReset={onReset}
-        />
-      </div>
-    );
-  }
+}: TopPuzzleConfigurationProps) => (
+  <div class={`control-panel ${isSolitaire ? "solitaire-control-panel" : ""}`} aria-label="Puzzle controls">
+    <span class="puzzle-settings-section-label">Next puzzle</span>
+    {isFixedSize ? null : (
+      <DimensionControls
+        selectedDefinition={selectedDefinition}
+        width={width}
+        height={height}
+        onWidthChange={onWidthChange}
+        onHeightChange={onHeightChange}
+        onSettingsCommit={onSettingsCommit}
+      />
+    )}
+    {isSolitaire ? <SolitaireSettings variation={solitaireVariation} onVariationChange={onSolitaireVariationChange} /> : null}
+    <GenerationActions
+      isGenerating={isGenerating}
+      canGenerate={selectedPuzzleIsGeneratable}
+      showRandomize={showRandomize}
+      randomLabel="New puzzle"
+      onRandomize={onRandomize}
+    />
 
-  return (
-    <div class={`control-panel ${isSolitaire ? "solitaire-control-panel" : ""}`} aria-label="Puzzle controls">
-      <span class="puzzle-settings-section-label">Next puzzle</span>
-      {isFixedSize ? null : (
-        <DimensionControls
-          selectedDefinition={selectedDefinition}
-          width={width}
-          height={height}
-          onWidthChange={onWidthChange}
-          onHeightChange={onHeightChange}
-          onSettingsCommit={onSettingsCommit}
-        />
-      )}
-      {isSolitaire ? <SolitaireSettings variation={solitaireVariation} onVariationChange={onSolitaireVariationChange} /> : null}
-      <GenerationActions
-        isGenerating={isGenerating}
-        canGenerate={selectedPuzzleIsGeneratable}
-        showRandomize={showRandomize}
-        randomLabel="New puzzle"
-        onRandomize={onRandomize}
-      />
+    <span class="puzzle-settings-section-label">Load</span>
+    <GenerationActions
+      isGenerating={isGenerating}
+      canGenerate={selectedPuzzleIsGeneratable}
+      showToday
+      showRandomize={false}
+      onToday={onToday}
+      onRandomize={onRandomize}
+    />
+    {seedInput}
+    <GenerationActions
+      isGenerating={isGenerating}
+      canGenerate={selectedPuzzleIsGeneratable}
+      showUseSeed
+      showRandomize={false}
+      onUseSeed={onUseSeed}
+      onRandomize={onRandomize}
+    />
 
-      <span class="puzzle-settings-section-label">Load</span>
-      <GenerationActions
-        isGenerating={isGenerating}
-        canGenerate={selectedPuzzleIsGeneratable}
-        showToday
-        showRandomize={false}
-        onToday={onToday}
-        onRandomize={onRandomize}
-      />
-      {seedInput}
-      <GenerationActions
-        isGenerating={isGenerating}
-        canGenerate={selectedPuzzleIsGeneratable}
-        showUseSeed
-        showRandomize={false}
-        onUseSeed={onUseSeed}
-        onRandomize={onRandomize}
-      />
-
-      <span class="puzzle-settings-section-label">Current puzzle</span>
-      <GenerationActions
-        isGenerating={isGenerating}
-        canGenerate={selectedPuzzleIsGeneratable}
-        showReset
-        showRandomize={false}
-        onRandomize={onRandomize}
-        onReset={onReset}
-      />
-    </div>
-  );
-};
+    <span class="puzzle-settings-section-label">Current puzzle</span>
+    <GenerationActions
+      isGenerating={isGenerating}
+      canGenerate={selectedPuzzleIsGeneratable}
+      showReset
+      showRandomize={false}
+      onRandomize={onRandomize}
+      onReset={onReset}
+    />
+  </div>
+);
