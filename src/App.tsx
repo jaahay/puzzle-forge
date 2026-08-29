@@ -10,7 +10,7 @@ import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
 import type { GenerationSettings, NextPuzzleDraft } from "./components/PuzzleWorkspace.types";
 import { StartView } from "./components/StartView";
-import { getDailyPuzzleSeed } from "./games/shared/daily";
+import { getCanonicalDailyGenerationSettings } from "./games/shared/daily";
 import { isImageBackedPuzzleId } from "./games/imageAssets";
 import { defaultSolitaireVariation, normalizeSolitaireVariation, solitaireVariationsEqual } from "./games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation } from "./games/sudoku/variation";
@@ -91,7 +91,7 @@ export const App = () => {
   };
 
   const nextPuzzleDraft = nextPuzzleDrafts[selectedPuzzleId] ?? makeNextPuzzleDraft(selectedPuzzleId);
-  const seedLoadInput = seedLoadInputs[selectedPuzzleId] ?? (puzzle?.puzzleId === selectedPuzzleId ? puzzle.seed : seed);
+  const seedLoadInput = seedLoadInputs[selectedPuzzleId] ?? "";
 
   const updateNextPuzzleDraft = (settings: GenerationSettings) => {
     setNextPuzzleDrafts((current) => {
@@ -365,7 +365,7 @@ export const App = () => {
       ? puzzle.asset
       : null;
     const generationImageId = nextImageId ?? currentImageAsset?.id;
-    const settingsAreCurrent = puzzle?.puzzleId === selectedPuzzleId && puzzle.seed === normalizedSeed && (!currentGrid || (currentGrid.width === generationWidth && currentGrid.height === generationHeight)) && (selectedPuzzleId !== "sudoku" || (puzzle.difficulty === generationDifficulty && normalizeSudokuVariation(puzzle.sudokuVariation) === generationSudokuVariation)) && (selectedPuzzleId !== "nonogram" || (puzzle.difficulty === generationDifficulty && Boolean(puzzle.uniqueSolution) === generationRequireUniqueSolution)) && (selectedPuzzleId !== "klondike-solitaire" || solitaireVariationsEqual(currentSolitaireVariation, generationSolitaireVariation)) && (!imageBacked || (puzzle.kind === "tiles" && puzzle.width === generationWidth && puzzle.height === generationHeight && currentImageAsset?.id === generationImageId));
+    const settingsAreCurrent = puzzle?.puzzleId === selectedPuzzleId && puzzle.seed === normalizedSeed && (!currentGrid || (currentGrid.width === generationWidth && currentGrid.height === generationHeight)) && (selectedPuzzleId !== "sudoku" || (puzzle.difficulty === generationDifficulty && normalizeSudokuVariation(puzzle.sudokuVariation) === generationSudokuVariation)) && (selectedPuzzleId !== "nonogram" || (puzzle.difficulty === generationDifficulty && Boolean(puzzle.uniqueSolution) === generationRequireUniqueSolution)) && (selectedPuzzleId !== "futoshiki" || puzzle.difficulty === generationDifficulty) && (selectedPuzzleId !== "klondike-solitaire" || solitaireVariationsEqual(currentSolitaireVariation, generationSolitaireVariation)) && (!imageBacked || (puzzle.kind === "tiles" && puzzle.width === generationWidth && puzzle.height === generationHeight && currentImageAsset?.id === generationImageId));
 
     if (normalizedSeed !== seed) setSeed(normalizedSeed);
     if (generationWidth !== width) setWidth(generationWidth);
@@ -395,17 +395,8 @@ export const App = () => {
   };
 
   const loadToday = () => {
-    const definition = getPuzzleDefinition(selectedPuzzleId);
     rememberProspectiveDraft();
-    commitGenerationSettings({
-      seed: getDailyPuzzleSeed(selectedPuzzleId),
-      width: definition.defaultWidth,
-      height: definition.defaultHeight,
-      difficulty: defaultSudokuDifficulty,
-      requireUniqueSolution: true,
-      sudokuVariation: selectedPuzzleId === "sudoku" ? defaultSudokuVariation : undefined,
-      solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? defaultSolitaireVariation : undefined,
-    });
+    commitGenerationSettings(getCanonicalDailyGenerationSettings(selectedPuzzleId));
   };
 
   const handleDifficultyChange = (nextDifficulty: PuzzleDifficulty) => {
