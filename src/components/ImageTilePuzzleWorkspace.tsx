@@ -3,14 +3,14 @@ import type { ImageTileGeneratedPuzzle, ImageTilePuzzleId } from "../catalog/typ
 import { getCanonicalDailyGenerationSettings } from "../games/shared/daily";
 import { ArtworkAlbum } from "./ArtworkAlbum";
 import { ImmediateTopPuzzleConfiguration } from "./PuzzleConfiguration";
-import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
+import type { ImmediateImageWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { SeedControl } from "./SeedControl";
 import { ImageTilePuzzlePreview } from "./ImageTilePuzzlePreview";
 import { usePuzzleCompletionPresentation } from "./usePuzzleCompletionPresentation";
 
 const asImageTilePuzzle = (
-  puzzle: PuzzleWorkspaceProps["puzzle"],
+  puzzle: ImmediateImageWorkspaceProps["puzzle"],
   puzzleId: ImageTilePuzzleId,
 ): ImageTileGeneratedPuzzle | null =>
   puzzle?.kind === "tiles" && puzzle.puzzleId === puzzleId ? puzzle : null;
@@ -36,7 +36,7 @@ export const ImageTilePuzzleWorkspace = ({
   onGenerate,
   onRandomize,
   onReset,
-}: PuzzleWorkspaceProps) => {
+}: ImmediateImageWorkspaceProps) => {
   const puzzleId: ImageTilePuzzleId = selectedDefinition.id === "sliding-puzzle" ? "sliding-puzzle" : "tile-swap";
   const imagePuzzle = asImageTilePuzzle(puzzle, puzzleId);
   const [resetVersion, setResetVersion] = useState(0);
