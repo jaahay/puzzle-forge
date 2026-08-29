@@ -158,27 +158,43 @@ export const usePuzzleSessions = () => {
     return session ? clonePuzzleSession(session) : null;
   };
 
+  const initializePersistedSessions = (sessions: PersistedPuzzleSessionCache) => {
+    persistedSessionCache.current = { ...sessions };
+  };
+
+  const beginPersistedRestore = (puzzleId: PuzzleId) => {
+    const persistedSession = persistedSessionCache.current[puzzleId];
+    if (!persistedSession) return null;
+    pendingRestorePuzzleId.current = puzzleId;
+    return persistedSession;
+  };
+
+  const cancelPersistedRestore = () => {
+    pendingRestorePuzzleId.current = null;
+  };
+
   const restorePendingSessionForPuzzle = (generatedPuzzle: GeneratedPuzzle) => {
     const pendingPersistedSession =
-      pendingRestorePuzzleId.current === generatedPuzzle.puzzleId ? persistedSessionCache.current[generatedPuzzle.puzzleId] : undefined;
-    const restoredSession = pendingPersistedSession ? restorePuzzleSessionFromPersisted(pendingPersistedSession, generatedPuzzle) : null;
-
-    if (!restoredSession) {
-      pendingRestorePuzzleId.current = null;
-      return null;
-    }
+      pendingRestorePuzzleId.current === generatedPuzzle.puzzleId
+        ? persistedSessionCache.current[generatedPuzzle.puzzleId]
+        : undefined;
+    const restoredSession = pendingPersistedSession
+      ? restorePuzzleSessionFromPersisted(pendingPersistedSession, generatedPuzzle)
+      : null;
 
     pendingRestorePuzzleId.current = null;
+    if (!restoredSession) return null;
+
     sessionCache.current[generatedPuzzle.puzzleId] = clonePuzzleSession(restoredSession);
     return restoredSession;
   };
 
   return {
-    sessionCache,
-    persistedSessionCache,
-    pendingRestorePuzzleId,
     saveSession,
     getCachedSession,
+    initializePersistedSessions,
+    beginPersistedRestore,
+    cancelPersistedRestore,
     restorePendingSessionForPuzzle,
   };
 };
