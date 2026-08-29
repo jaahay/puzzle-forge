@@ -66,12 +66,6 @@ const makeCardPuzzle = (seed = "seed-1"): GeneratedPuzzle => ({
 });
 
 const makeSession = (overrides: Partial<PuzzleSession> = {}): PuzzleSession => ({
-  seed: "seed-1",
-  width: 7,
-  height: 4,
-  difficulty: "Easy",
-  requireUniqueSolution: false,
-  solitaireVariation: defaultSolitaireVariation,
   puzzle: makeCardPuzzle(),
   cardStacks: makeCardStacks(),
   selectedCard: { stackId: "waste", cardIndex: 0 },
@@ -134,6 +128,10 @@ describe("app session persistence", () => {
     expect(persisted.progress.undoStack[0].solitaireStats.moveCount).toBe(5);
   });
 
+  it("rejects a runtime session stored under the wrong puzzle type", () => {
+    expect(buildPersistedPuzzleSession("sudoku", makeSession())).toBeNull();
+  });
+
   it("clears transient Solitaire history and selection when completing persisted card progress", () => {
     const persisted = buildPersistedPuzzleSession(
       "klondike-solitaire",
@@ -169,6 +167,7 @@ describe("app session persistence", () => {
     const mismatched = restorePuzzleSessionFromPersisted(persisted as PersistedPuzzleSession, makeCardPuzzle("different-seed"));
 
     expect(restored?.statusMessage).toBe("Restored progress.");
+    expect(restored?.puzzle.seed).toBe("seed-1");
     expect(stackCards(restored?.cardStacks)).toEqual(stackCards(makeCardStacks()));
     expect(restored?.solitaireUndoStack).toHaveLength(1);
     expect(mismatched).toBeNull();
