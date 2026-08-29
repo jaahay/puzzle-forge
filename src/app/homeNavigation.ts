@@ -29,19 +29,6 @@ export const getInitialSelectedPuzzleId = (fallback: PuzzleId = "sudoku") => {
   return loadPersistedPuzzleSessions()?.activePuzzleId ?? getStoredSelectedPuzzleId() ?? fallback;
 };
 
-export const shouldInitializePuzzleSurface = () => {
-  if (typeof window === "undefined") {
-    return false;
-  }
-
-  const cameFromHomeAction = window.sessionStorage.getItem(homeNavigationStorageKey) === "1";
-  const selectedSurface = window.localStorage.getItem(selectedSurfaceStorageKey);
-  const legacyLastSelectionWasHome = window.localStorage.getItem(legacyLastHomeSelectionStorageKey) === "1";
-  const hasRestorablePuzzle = loadPersistedPuzzleSessions() !== null || getStoredSelectedPuzzleId() !== null;
-
-  return selectedSurface === "puzzle" && !cameFromHomeAction && !legacyLastSelectionWasHome && hasRestorablePuzzle;
-};
-
 export const markHomeNavigation = () => {
   if (typeof window === "undefined") {
     return;
@@ -62,23 +49,4 @@ export const markPuzzleNavigation = (puzzleId?: PuzzleId) => {
   if (puzzleId) {
     window.localStorage.setItem(selectedPuzzleIdStorageKey, puzzleId);
   }
-};
-
-export const consumeHomeNavigation = () => {
-  if (typeof window === "undefined") {
-    return false;
-  }
-
-  const cameFromHomeAction = window.sessionStorage.getItem(homeNavigationStorageKey) === "1";
-  const selectedSurface = window.localStorage.getItem(selectedSurfaceStorageKey);
-  const legacyLastSelectionWasHome = window.localStorage.getItem(legacyLastHomeSelectionStorageKey) === "1";
-  const shouldRestoreHome = cameFromHomeAction || selectedSurface === "home" || legacyLastSelectionWasHome;
-
-  window.sessionStorage.removeItem(homeNavigationStorageKey);
-
-  if (legacyLastSelectionWasHome) {
-    setSelectedSurface(shouldRestoreHome ? "home" : "puzzle");
-  }
-
-  return shouldRestoreHome;
 };
