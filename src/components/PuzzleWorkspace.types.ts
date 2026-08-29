@@ -21,11 +21,7 @@ export type PuzzleWorkspaceProps = {
   seed: string;
   width: number;
   height: number;
-  difficulty: PuzzleDifficulty;
-  requireUniqueSolution: boolean;
-  sudokuVariation: SudokuVariation;
   puzzle: GeneratedPuzzle | null;
-  solitaireVariation: SolitaireVariation;
   nextPuzzleDraft: NextPuzzleDraft;
   seedLoadInput: string;
   cardStacks: CardStack[] | null;
@@ -40,14 +36,10 @@ export type PuzzleWorkspaceProps = {
   onWidthChange: (width: number) => void;
   onHeightChange: (height: number) => void;
   onSettingsCommit: (settings?: GenerationSettings) => void;
-  onDifficultyChange: (difficulty: PuzzleDifficulty) => void;
-  onSudokuVariationChange: (variation: SudokuVariation) => void;
-  onUniqueSolutionChange: (requireUniqueSolution: boolean) => void;
   onGenerate: () => void;
   onRandomize: () => void;
   onReset: () => void;
   onCheck: () => void;
-  onSolitaireVariationChange: (variation: SolitaireVariation) => void;
   onNextPuzzleDraftChange: (settings: GenerationSettings) => void;
   onSeedLoadInputChange: (seed: string) => void;
   onNewPuzzle: () => void;
