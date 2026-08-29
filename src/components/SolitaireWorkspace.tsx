@@ -1,6 +1,6 @@
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
 import { TopPuzzleConfiguration } from "./PuzzleConfiguration";
-import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
+import type { SolitaireWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { SeedControl } from "./SeedControl";
 import { SolitaireSettings } from "./SolitaireSettings";
@@ -31,7 +31,7 @@ export const SolitaireWorkspace = ({
   onCardClick,
   onCardDoubleClick,
   onStackClick,
-}: PuzzleWorkspaceProps) => {
+}: SolitaireWorkspaceProps) => {
   const solitairePuzzle = puzzle?.kind === "cards" && puzzle.puzzleId === "klondike-solitaire" ? puzzle : null;
   const seedInput = (
     <SeedControl
