@@ -4,13 +4,14 @@ import { ImageTilePuzzleWorkspace } from "./ImageTilePuzzleWorkspace";
 import { JigsawWorkspace } from "./JigsawWorkspace";
 import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
 import { StandardPuzzleWorkspace } from "./StandardPuzzleWorkspace";
+import { SudokuWorkspace } from "./SudokuWorkspace";
 
 export type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
 
 type WorkspaceComponent = FunctionComponent<PuzzleWorkspaceProps>;
 
 const workspaceRegistry = {
-  sudoku: StandardPuzzleWorkspace,
+  sudoku: SudokuWorkspace,
   nonogram: StandardPuzzleWorkspace,
   "word-guess": StandardPuzzleWorkspace,
   "logic-grid": StandardPuzzleWorkspace,
