@@ -9,8 +9,7 @@ import { isImageBackedPuzzleId } from "../games/imageAssets";
 import { normalizeSolitaireVariation, solitaireVariationsEqual } from "../games/solitaire/variation";
 import { normalizeSudokuVariation } from "../games/sudoku/variation";
 
-export type GenerationIdentity = {
-  puzzleId: PuzzleId;
+export type GenerationRuntimeSettings = {
   seed: string;
   width: number;
   height: number;
@@ -18,8 +17,31 @@ export type GenerationIdentity = {
   requireUniqueSolution: boolean;
   sudokuVariation: SudokuVariation;
   solitaireVariation: SolitaireVariation;
+};
+
+export type GenerationIdentity = GenerationRuntimeSettings & {
+  puzzleId: PuzzleId;
   imageId?: string;
 };
+
+export const getGeneratedPuzzleRuntimeSettings = (
+  puzzle: GeneratedPuzzle,
+  fallback: GenerationRuntimeSettings,
+): GenerationRuntimeSettings => ({
+  seed: puzzle.seed,
+  width: puzzle.width,
+  height: puzzle.height,
+  difficulty: puzzle.difficulty ?? fallback.difficulty,
+  requireUniqueSolution: puzzle.uniqueSolution ?? fallback.requireUniqueSolution,
+  sudokuVariation:
+    puzzle.puzzleId === "sudoku"
+      ? normalizeSudokuVariation(puzzle.sudokuVariation)
+      : fallback.sudokuVariation,
+  solitaireVariation:
+    puzzle.kind === "cards"
+      ? normalizeSolitaireVariation(puzzle.solitaireVariation)
+      : fallback.solitaireVariation,
+});
 
 export const generatedPuzzleMatchesIdentity = (
   puzzle: GeneratedPuzzle | null,
