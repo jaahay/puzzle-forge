@@ -8,6 +8,6 @@ export const makeRandomSeed = () => `random-${Date.now().toString(36)}-${makeReq
 
 export const getActiveView = (): AppView => (typeof window === "undefined" ? "catalog" : viewFromHash(window.location.hash));
 
-export const defaultSudokuDifficulty: PuzzleDifficulty = "Medium";
+export const defaultPuzzleDifficulty: PuzzleDifficulty = "Medium";
 
 export const pluralize = (count: number, singular: string, plural = `${singular}s`) => `${count} ${count === 1 ? singular : plural}`;

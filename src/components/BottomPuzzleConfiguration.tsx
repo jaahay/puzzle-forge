@@ -1,90 +1,180 @@
 import type { ComponentChildren } from "preact";
 import type { PuzzleDefinition, PuzzleDifficulty, SudokuVariation } from "../catalog/types";
+import { BoundedNumberInput } from "./BoundedNumberInput";
 import { GenerationActions } from "./GenerationActions";
 import { PuzzleDifficultySelect } from "./PuzzleDifficultySelect";
 import { SudokuVariationSelect } from "./SudokuVariationSelect";
 
-type BottomPuzzleConfigurationProps = {
+type CommonConfigurationProps = {
   selectedDefinition: PuzzleDefinition;
   selectedPuzzleIsGeneratable: boolean;
   seedInput: ComponentChildren;
-  width: number;
-  height: number;
-  difficulty: PuzzleDifficulty;
-  requireUniqueSolution: boolean;
-  sudokuVariation: SudokuVariation;
-  isFixedSize: boolean;
-  isNonogram: boolean;
-  isWordGuess: boolean;
-  isSudoku: boolean;
   isGenerating: boolean;
   showRandomize?: boolean;
-  onWidthChange: (width: number) => void;
-  onHeightChange: (height: number) => void;
-  onSettingsCommit: (settings: { width?: number; height?: number }) => void;
-  onDifficultyChange: (difficulty: PuzzleDifficulty) => void;
-  onSudokuVariationChange: (variation: SudokuVariation) => void;
-  onUniqueSolutionChange: (requireUniqueSolution: boolean) => void;
   onToday: () => void;
   onUseSeed: () => void;
   onRandomize: () => void;
   onReset: () => void;
 };
 
-const blurOnEnter = (event: KeyboardEvent) => {
-  if (event.key === "Enter") event.currentTarget instanceof HTMLElement && event.currentTarget.blur();
+type DimensionConfigurationProps = {
+  width: number;
+  height: number;
+  onWidthChange: (width: number) => void;
+  onHeightChange: (height: number) => void;
+  onSettingsCommit: (settings: { width?: number; height?: number }) => void;
 };
 
-const SizeControl = ({ selectedDefinition, width, height, onWidthChange, onHeightChange, onSettingsCommit }: Pick<BottomPuzzleConfigurationProps, "selectedDefinition" | "width" | "height" | "onWidthChange" | "onHeightChange" | "onSettingsCommit">) => (
+type DifficultyConfigurationProps = {
+  difficulty: PuzzleDifficulty;
+  onDifficultyChange: (difficulty: PuzzleDifficulty) => void;
+};
+
+type SudokuConfigurationProps = CommonConfigurationProps & DifficultyConfigurationProps & {
+  kind: "sudoku";
+  sudokuVariation: SudokuVariation;
+  onSudokuVariationChange: (variation: SudokuVariation) => void;
+};
+
+type NonogramConfigurationProps = CommonConfigurationProps & DimensionConfigurationProps & DifficultyConfigurationProps & {
+  kind: "nonogram";
+  requireUniqueSolution: boolean;
+  isFixedSize: boolean;
+  onUniqueSolutionChange: (requireUniqueSolution: boolean) => void;
+};
+
+type WordGuessConfigurationProps = CommonConfigurationProps & DimensionConfigurationProps & {
+  kind: "word-guess";
+};
+
+type FutoshikiConfigurationProps = CommonConfigurationProps & DifficultyConfigurationProps & {
+  kind: "futoshiki";
+};
+
+export type BottomPuzzleConfigurationProps =
+  | SudokuConfigurationProps
+  | NonogramConfigurationProps
+  | WordGuessConfigurationProps
+  | FutoshikiConfigurationProps;
+
+const SizeControl = ({
+  selectedDefinition,
+  width,
+  height,
+  onSettingsCommit,
+}: Pick<
+  NonogramConfigurationProps,
+  "selectedDefinition" | "width" | "height" | "onSettingsCommit"
+>) => (
   <div class="puzzle-size-control" aria-label="Nonogram size">
     <span class="control-label">Size</span>
     <label class="compact-number-control">
       <span>W</span>
-      <input aria-label="Width" type="number" min={selectedDefinition.minWidth} max={selectedDefinition.maxWidth} value={width} onBlur={(event) => onSettingsCommit({ width: Number(event.currentTarget.value) })} onInput={(event) => onWidthChange(Number(event.currentTarget.value))} onKeyDown={blurOnEnter} />
+      <BoundedNumberInput
+        ariaLabel="Width"
+        value={width}
+        min={selectedDefinition.minWidth}
+        max={selectedDefinition.maxWidth}
+        onCommit={(nextWidth) => onSettingsCommit({ width: nextWidth })}
+      />
     </label>
     <label class="compact-number-control">
       <span>H</span>
-      <input aria-label="Height" type="number" min={selectedDefinition.minHeight} max={selectedDefinition.maxHeight} value={height} onBlur={(event) => onSettingsCommit({ height: Number(event.currentTarget.value) })} onInput={(event) => onHeightChange(Number(event.currentTarget.value))} onKeyDown={blurOnEnter} />
+      <BoundedNumberInput
+        ariaLabel="Height"
+        value={height}
+        min={selectedDefinition.minHeight}
+        max={selectedDefinition.maxHeight}
+        onCommit={(nextHeight) => onSettingsCommit({ height: nextHeight })}
+      />
     </label>
   </div>
 );
 
-const SeedTools = ({ seedInput, isGenerating, canGenerate, onUseSeed }: Pick<BottomPuzzleConfigurationProps, "seedInput" | "isGenerating" | "onUseSeed"> & { canGenerate: boolean }) => (
+const SeedTools = ({ seedInput, isGenerating, canGenerate, onUseSeed }: {
+  seedInput: ComponentChildren;
+  isGenerating: boolean;
+  canGenerate: boolean;
+  onUseSeed: () => void;
+}) => (
   <>
     {seedInput}
     <div class="puzzle-settings-actions seed-actions"><button type="button" onClick={onUseSeed} disabled={isGenerating || !canGenerate}>Load seed</button></div>
   </>
 );
 
-export const BottomPuzzleConfiguration = ({ selectedDefinition, selectedPuzzleIsGeneratable, seedInput, width, height, difficulty, requireUniqueSolution, sudokuVariation, isFixedSize, isNonogram, isWordGuess, isSudoku, isGenerating, showRandomize = true, onWidthChange, onHeightChange, onSettingsCommit, onDifficultyChange, onSudokuVariationChange, onUniqueSolutionChange, onToday, onUseSeed, onRandomize, onReset }: BottomPuzzleConfigurationProps) => {
+export const BottomPuzzleConfiguration = (props: BottomPuzzleConfigurationProps) => {
+  const {
+    kind,
+    selectedDefinition,
+    selectedPuzzleIsGeneratable,
+    seedInput,
+    isGenerating,
+    showRandomize = true,
+    onToday,
+    onUseSeed,
+    onRandomize,
+    onReset,
+  } = props;
   const newPuzzleAction = <GenerationActions isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showRandomize={showRandomize} randomLabel="New puzzle" onRandomize={onRandomize} />;
-  const todayAction = <GenerationActions isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showToday showRandomize={false} onToday={onToday} onRandomize={onRandomize} />;
-  const resetAction = <GenerationActions isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showReset showRandomize={false} onRandomize={onRandomize} onReset={onReset} />;
+  const todayAction = <GenerationActions className="load-puzzle-actions" isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showToday showRandomize={false} onToday={onToday} onRandomize={onRandomize} />;
+  const resetAction = <GenerationActions className="current-puzzle-actions" isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showReset showRandomize={false} onRandomize={onRandomize} onReset={onReset} />;
   const seedTools = <SeedTools seedInput={seedInput} isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} onUseSeed={onUseSeed} />;
 
-  return (
-    <div class={`puzzle-settings-panel ${isSudoku ? "sudoku-settings-panel" : ""} ${isNonogram ? "nonogram-settings-panel" : ""} ${isWordGuess ? "word-guess-settings-panel" : ""}`} aria-label={`${selectedDefinition.title} controls`}>
-      <span class="puzzle-settings-section-label">Next puzzle</span>
-      {isWordGuess ? (
+  let settings: ComponentChildren;
+  switch (props.kind) {
+    case "sudoku":
+      settings = (
         <>
-          <label>Letters<input type="number" min={selectedDefinition.minWidth} max={selectedDefinition.maxWidth} value={width} onBlur={(event) => onSettingsCommit({ width: Number(event.currentTarget.value) })} onInput={(event) => onWidthChange(Number(event.currentTarget.value))} onKeyDown={blurOnEnter} /></label>
-          <label>Guesses<input type="number" min={selectedDefinition.minHeight} max={selectedDefinition.maxHeight} value={height} onBlur={(event) => onSettingsCommit({ height: Number(event.currentTarget.value) })} onInput={(event) => onHeightChange(Number(event.currentTarget.value))} onKeyDown={blurOnEnter} /></label>
+          <label>Difficulty<PuzzleDifficultySelect value={props.difficulty} onChange={props.onDifficultyChange} /></label>
+          <label>Mode<SudokuVariationSelect value={props.sudokuVariation} onChange={props.onSudokuVariationChange} /></label>
         </>
-      ) : (
+      );
+      break;
+    case "nonogram":
+      settings = (
         <>
-          <label>Difficulty<PuzzleDifficultySelect value={difficulty} onChange={onDifficultyChange} /></label>
-          {isSudoku ? <label>Variation<SudokuVariationSelect value={sudokuVariation} onChange={onSudokuVariationChange} /></label> : null}
-          {isNonogram && !isFixedSize ? <SizeControl selectedDefinition={selectedDefinition} width={width} height={height} onWidthChange={onWidthChange} onHeightChange={onHeightChange} onSettingsCommit={onSettingsCommit} /> : null}
-          {isNonogram ? <label class="puzzle-checkbox-control"><input checked={requireUniqueSolution} onChange={(event) => onUniqueSolutionChange(event.currentTarget.checked)} type="checkbox" /><span>Unique solution</span></label> : null}
+          <label>Difficulty<PuzzleDifficultySelect value={props.difficulty} onChange={props.onDifficultyChange} /></label>
+          {props.isFixedSize ? null : <SizeControl {...props} />}
+          <label class="puzzle-checkbox-control"><input checked={props.requireUniqueSolution} onChange={(event) => props.onUniqueSolutionChange(event.currentTarget.checked)} type="checkbox" /><span>Unique solution</span></label>
         </>
-      )}
-      {newPuzzleAction}
+      );
+      break;
+    case "word-guess":
+      settings = (
+        <>
+          <label>
+            Letters
+            <BoundedNumberInput
+              value={props.width}
+              min={selectedDefinition.minWidth}
+              max={selectedDefinition.maxWidth}
+              onCommit={(width) => props.onSettingsCommit({ width })}
+            />
+          </label>
+          <label>
+            Guesses
+            <BoundedNumberInput
+              value={props.height}
+              min={selectedDefinition.minHeight}
+              max={selectedDefinition.maxHeight}
+              onCommit={(height) => props.onSettingsCommit({ height })}
+            />
+          </label>
+        </>
+      );
+      break;
+    case "futoshiki":
+      settings = <label>Difficulty<PuzzleDifficultySelect value={props.difficulty} onChange={props.onDifficultyChange} /></label>;
+      break;
+  }
 
-      <span class="puzzle-settings-section-label">Load</span>
+  return (
+    <div class={`puzzle-settings-panel ${kind}-settings-panel`} aria-label={`${selectedDefinition.title} controls`}>
+      {settings}
+      {newPuzzleAction}
       {todayAction}
       {seedTools}
-
-      <span class="puzzle-settings-section-label">Current puzzle</span>
       {resetAction}
     </div>
   );

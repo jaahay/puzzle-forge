@@ -1,13 +1,13 @@
 import { useState } from "preact/hooks";
 import type { CardStack, SolitaireVariation } from "../catalog/types";
 import { canSelectFromStack, cloneStack, type CardSelection } from "../interactions/cardRules";
-import { cloneSolitaireHistoryEntry, makeSolitaireHistoryEntry } from "./puzzleSessionRuntime";
 import {
   initialSolitaireStats,
   solitaireHistoryLimit,
   type SolitaireHistoryEntry,
   type SolitaireStats,
 } from "./session";
+import { cloneSolitaireHistoryEntry, makeSolitaireHistoryEntry } from "./solitaireHistory";
 import {
   autoMoveToFoundationsInStacks,
   moveSelectedCardToStackInStacks,
@@ -46,9 +46,7 @@ const initialSolitaireControllerState: SolitaireControllerState = {
 };
 
 const applySolitaireStatsDelta = (stats: SolitaireStats, delta?: SolitaireStatsDelta): SolitaireStats => {
-  if (!delta) {
-    return stats;
-  }
+  if (!delta) return stats;
 
   return {
     ...stats,
@@ -60,9 +58,7 @@ const applySolitaireStatsDelta = (stats: SolitaireStats, delta?: SolitaireStatsD
 };
 
 const moveResultStatsDelta = (result: SolitaireMoveResult): SolitaireStatsDelta | undefined => {
-  if (!result.moveCountDelta && !result.autoMoveCountDelta) {
-    return undefined;
-  }
+  if (!result.moveCountDelta && !result.autoMoveCountDelta) return undefined;
 
   return {
     moveCount: result.moveCountDelta ?? 0,
@@ -98,9 +94,7 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
         solitaireStats: didChange ? applySolitaireStatsDelta(current.solitaireStats, statsDelta) : current.solitaireStats,
       };
 
-      if (!didChange) {
-        return nextState;
-      }
+      if (!didChange) return nextState;
 
       if (isSolved) {
         return {
@@ -121,29 +115,12 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
     setStatusMessage(nextMessage);
   };
 
-  const setCardStacks = (nextCardStacks: CardStack[] | null) => {
-    setSolitaireState((current) => ({ ...current, cardStacks: nextCardStacks }));
-  };
-
   const setSelectedCard = (nextSelectedCard: CardSelection | null) => {
     setSolitaireState((current) => ({ ...current, selectedCard: nextSelectedCard }));
   };
 
-  const clearCardInteraction = () => {
-    setSelectedCard(null);
-  };
-
-  const resetSolitaireStats = () => {
-    setSolitaireState((current) => ({ ...current, solitaireStats: initialSolitaireStats }));
-  };
-
-  const clearSolitaireHistory = () => {
-    setSolitaireState((current) => ({ ...current, solitaireUndoStack: [], solitaireRedoStack: [] }));
-  };
-
-  const resetSolitaire = () => {
-    setSolitaireState(initialSolitaireControllerState);
-  };
+  const clearCardInteraction = () => setSelectedCard(null);
+  const resetSolitaire = () => setSolitaireState(initialSolitaireControllerState);
 
   const restoreSolitaireSnapshot = ({
     cardStacks: nextCardStacks,
@@ -202,51 +179,38 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
   };
 
   const drawFromStock = () => {
-    if (!cardStacks) {
-      return;
-    }
+    if (!cardStacks) return;
 
     const workingStacks = cardStacks.map(cloneStack);
     const result = drawFromStockStacks(workingStacks, {
       recycleCount: solitaireStats.recycleCount,
       variation: solitaireVariation,
     });
-
     commitStackUpdate(workingStacks, result, { clearSelection: true });
   };
 
   const moveSelectedCardToStack = (targetStackId: string) => {
-    if (!cardStacks || !selectedCard) {
-      return false;
-    }
+    if (!cardStacks || !selectedCard) return false;
 
     const workingStacks = cardStacks.map(cloneStack);
     const result = moveSelectedCardToStackInStacks(workingStacks, selectedCard, targetStackId, solitaireVariation);
-
     commitStackUpdate(workingStacks, { ...result, statsDelta: moveResultStatsDelta(result) }, { clearSelection: true });
-
     return Boolean(result.didMove);
   };
 
   const moveSingleCardToFoundation = (stack: CardStack, cardIndex: number) => {
-    if (!cardStacks) {
-      return;
-    }
+    if (!cardStacks) return;
 
     const workingStacks = cardStacks.map(cloneStack);
     const result = moveSingleCardToFoundationInStacks(workingStacks, stack, cardIndex, solitaireVariation);
-
     commitStackUpdate(workingStacks, { ...result, statsDelta: moveResultStatsDelta(result) }, { clearSelection: true });
   };
 
   const autoMoveToFoundations = () => {
-    if (!cardStacks) {
-      return;
-    }
+    if (!cardStacks) return;
 
     const workingStacks = cardStacks.map(cloneStack);
     const result = autoMoveToFoundationsInStacks(workingStacks);
-
     commitStackUpdate(workingStacks, { ...result, statsDelta: moveResultStatsDelta(result) }, { clearSelection: true });
   };
 
@@ -270,9 +234,7 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
       return;
     }
 
-    if (selectedCard && moveSelectedCardToStack(stack.id)) {
-      return;
-    }
+    if (selectedCard && moveSelectedCardToStack(stack.id)) return;
 
     if (selectedCard?.stackId === stack.id && selectedCard.cardIndex === cardIndex) {
       clearCardInteraction();
@@ -311,17 +273,10 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
     solitaireStats,
     solitaireUndoStack,
     solitaireRedoStack,
-    setCardStacks,
-    setSelectedCard,
-    resetSolitaireStats,
-    clearCardInteraction,
-    clearSolitaireHistory,
     resetSolitaire,
     restoreSolitaireSnapshot,
-    cloneSolitaireHistoryEntry,
     undoSolitaireMove,
     redoSolitaireMove,
-    drawFromStock,
     moveSingleCardToFoundation,
     autoMoveToFoundations,
     handleStackClick,

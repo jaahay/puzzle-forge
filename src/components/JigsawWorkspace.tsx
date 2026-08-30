@@ -1,15 +1,14 @@
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import type { JigsawImageAsset, PuzzleDifficulty } from "../catalog/types";
-import { getPuzzleImageAssetsFor } from "../games/imageAssets";
 import {
   getJigsawDifficultyForDimensions,
   jigsawDifficultyOrder,
   resolveJigsawDifficultyDimensions,
 } from "../games/jigsaw/difficulty";
-import { getCanonicalDailyGenerationSettings, getCanonicalDailyPuzzleLabel } from "../games/shared/daily";
+import { getCanonicalDailyPuzzleLabel } from "../games/shared/daily";
 import { ArtworkAlbum } from "./ArtworkAlbum";
-import { TopPuzzleConfiguration } from "./PuzzleConfiguration";
-import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
+import { ImmediateTopPuzzleConfiguration } from "./PuzzleConfiguration";
+import type { ImmediateImageWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { SeedControl } from "./SeedControl";
 import { TilePuzzlePreview } from "./TilePuzzlePreview";
@@ -34,29 +33,37 @@ export const makeJigsawImageSelectionSettings = (
 };
 
 export const JigsawWorkspace = ({
-  selectedDefinition, selectedPuzzleIsGeneratable, seed, width, height, puzzle,
-  solitaireVariation, statusMessage, isGenerating, onSeedChange, onWidthChange,
-  onHeightChange, onSettingsCommit, onGenerate, onRandomize, onReset,
-  onSolitaireVariationChange,
-}: PuzzleWorkspaceProps) => {
+  selectedDefinition,
+  selectedPuzzleIsGeneratable,
+  seed,
+  width,
+  height,
+  puzzle,
+  statusMessage,
+  isGenerating,
+  onSeedChange,
+  onWidthChange,
+  onHeightChange,
+  onSettingsCommit,
+  onGenerate,
+  onToday,
+  onRandomize,
+  onReset,
+}: ImmediateImageWorkspaceProps) => {
   const [resetVersion, setResetVersion] = useState(0);
   const jigsawPuzzle = puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw" ? puzzle : null;
   const initialPreset: JigsawPresetSelection = jigsawPuzzle
-    ? getJigsawDifficultyForDimensions(jigsawPuzzle.asset, width, height) ?? jigsawCustomPreset
+    ? getJigsawDifficultyForDimensions(jigsawPuzzle.asset, jigsawPuzzle.width, jigsawPuzzle.height) ?? jigsawCustomPreset
     : jigsawCustomPreset;
   const [selectedPreset, setSelectedPreset] = useState<JigsawPresetSelection>(initialPreset);
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
   const dailyLabel = jigsawPuzzle ? getCanonicalDailyPuzzleLabel(jigsawPuzzle) : null;
-  const generateDailyPuzzle = () => {
-    const dailySettings = getCanonicalDailyGenerationSettings("jigsaw");
-    const dailyAsset = getPuzzleImageAssetsFor("jigsaw").find((asset) => asset.id === dailySettings.imageId);
-    setSelectedPreset(
-      dailyAsset
-        ? getJigsawDifficultyForDimensions(dailyAsset, dailySettings.width, dailySettings.height) ?? jigsawCustomPreset
-        : jigsawCustomPreset,
-    );
-    onSettingsCommit(dailySettings);
-  };
+
+  useEffect(() => {
+    if (!jigsawPuzzle) return;
+    setSelectedPreset(getJigsawDifficultyForDimensions(jigsawPuzzle.asset, jigsawPuzzle.width, jigsawPuzzle.height) ?? jigsawCustomPreset);
+  }, [jigsawPuzzle?.id, jigsawPuzzle?.asset.id, jigsawPuzzle?.width, jigsawPuzzle?.height]);
+
   const resetJigsaw = () => {
     onReset();
     setResetVersion((current) => current + 1);
@@ -105,21 +112,18 @@ export const JigsawWorkspace = ({
         </div>
       </div>
 
-      <TopPuzzleConfiguration
+      <ImmediateTopPuzzleConfiguration
         selectedDefinition={selectedDefinition}
         selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
         seedInput={seedInput}
         width={width}
         height={height}
-        solitaireVariation={solitaireVariation}
         isFixedSize={isFixedSize}
         isGenerating={isGenerating}
-        isSolitaire={false}
         onWidthChange={selectCustomWidth}
         onHeightChange={selectCustomHeight}
         onSettingsCommit={commitCustomDimensions}
-        onSolitaireVariationChange={onSolitaireVariationChange}
-        onToday={generateDailyPuzzle}
+        onToday={onToday}
         onUseSeed={onGenerate}
         onRandomize={onRandomize}
         onReset={resetJigsaw}

@@ -1,15 +1,6 @@
-.puzzle-settings-section-label {
-  grid-column: 1 / -1;
-  margin-top: 0.15rem;
-  color: #94a3b8;
-  font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.puzzle-settings-section-label:first-child {
-  margin-top: 0;
+.load-puzzle-actions,
+.current-puzzle-actions {
+  margin-top: 0.2rem;
 }
 
 .seed-tools {

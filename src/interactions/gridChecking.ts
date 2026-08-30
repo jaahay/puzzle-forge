@@ -5,11 +5,24 @@ import { buildNonogramCluesFromCells, sameNonogramClue, FILLED_NONOGRAM_CELL } f
 import { getWordGuessBank, isValidWordGuess } from "../games/wordGuess/words";
 import { cloneGridCell } from "./gridRules";
 
-const checkWordGuess = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) => {
+export type GridCheckFeedbackTone = "progress" | "success" | "error";
+export type GridCheckResult = {
+  cells: PuzzleCell[];
+  message: string;
+  feedbackTone: GridCheckFeedbackTone;
+};
+
+const makeGridCheckResult = (cells: PuzzleCell[], message: string, feedbackTone: GridCheckFeedbackTone): GridCheckResult => ({
+  cells,
+  message,
+  feedbackTone,
+});
+
+const checkWordGuess = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]): GridCheckResult => {
   const solutionWord = currentPuzzle.answerKey?.join("") ?? "";
 
   if (!solutionWord) {
-    return { cells, message: "No checker is available for this word puzzle." };
+    return makeGridCheckResult(cells, "No checker is available for this word puzzle.", "error");
   }
 
   const wordBank = getWordGuessBank(currentPuzzle.width);
@@ -28,11 +41,11 @@ const checkWordGuess = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[])
     }
 
     if (!isComplete) {
-      return { cells: nextCells, message: `Row ${row + 1} is incomplete.` };
+      return makeGridCheckResult(nextCells, `Row ${row + 1} is incomplete.`, "progress");
     }
 
     if (!isValidWordGuess(guess, wordBank)) {
-      return { cells: nextCells, message: `${guess} is not in the ${wordBank.length}-letter guess list.` };
+      return makeGridCheckResult(nextCells, `${guess} is not in the ${wordBank.length}-letter guess list.`, "error");
     }
 
     const marks = scoreWordGuess(solutionWord, guess);
@@ -47,21 +60,21 @@ const checkWordGuess = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[])
   }
 
   if (completeGuessCount === 0) {
-    return { cells: nextCells, message: `Enter a complete ${currentPuzzle.width}-letter guess, then check it.` };
+    return makeGridCheckResult(nextCells, `Enter a complete ${currentPuzzle.width}-letter guess, then check it.`, "progress");
   }
 
   if (solved) {
-    return { cells: nextCells, message: `Solved in ${completeGuessCount}/${currentPuzzle.height}. The word is ${solutionWord}.` };
+    return makeGridCheckResult(nextCells, `Solved in ${completeGuessCount}/${currentPuzzle.height}. The word is ${solutionWord}.`, "success");
   }
 
   if (completeGuessCount >= currentPuzzle.height) {
-    return { cells: nextCells, message: `No match in the available attempts. The word was ${solutionWord}.` };
+    return makeGridCheckResult(nextCells, `No match in the available attempts. The word was ${solutionWord}.`, "error");
   }
 
-  return { cells: nextCells, message: `Not solved yet. ${currentPuzzle.height - completeGuessCount} attempt(s) remain.` };
+  return makeGridCheckResult(nextCells, `Not solved yet. ${currentPuzzle.height - completeGuessCount} attempt(s) remain.`, "progress");
 };
 
-const checkNonogram = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) => {
+const checkNonogram = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]): GridCheckResult => {
   const targetRows = currentPuzzle.clues?.rows ?? [];
   const targetColumns = currentPuzzle.clues?.columns ?? [];
   const actualClues = buildNonogramCluesFromCells(cells, currentPuzzle.width, currentPuzzle.height);
@@ -85,13 +98,14 @@ const checkNonogram = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) 
   });
 
   if (incorrectRowCount === 0 && incorrectColumnCount === 0) {
-    return { cells: nextCells, message: "Solved. All clues match." };
+    return makeGridCheckResult(nextCells, "Solved. All clues match.", "success");
   }
 
-  return {
-    cells: nextCells,
-    message: `${pluralize(incorrectRowCount, "row clue")} and ${pluralize(incorrectColumnCount, "column clue")} do not match.`,
-  };
+  return makeGridCheckResult(
+    nextCells,
+    `${pluralize(incorrectRowCount, "row clue")} and ${pluralize(incorrectColumnCount, "column clue")} do not match.`,
+    "error",
+  );
 };
 
 export type GridAnswerAssessment = {
@@ -157,7 +171,7 @@ export const assessGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: Puzz
 export const isGridAnswerCompleteAndCorrect = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) =>
   assessGridAnswer(currentPuzzle, cells).solved;
 
-export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) => {
+export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]): GridCheckResult => {
   if (currentPuzzle.puzzleId === "word-guess") {
     return checkWordGuess(currentPuzzle, cells);
   }
@@ -170,7 +184,7 @@ export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: Puzzl
   const assessment = assessGridAnswer(currentPuzzle, cells);
 
   if (!assessment.hasAnswerKey || !answerKey?.length) {
-    return { cells, message: `${currentPuzzle.title} does not expose a checker yet.` };
+    return makeGridCheckResult(cells, `${currentPuzzle.title} does not expose a checker yet.`, "error");
   }
 
   const nextCells = cells.map((cell, index): PuzzleCell => {
@@ -191,33 +205,37 @@ export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: Puzzl
 
   if (currentPuzzle.puzzleId === "sudoku") {
     if (assessment.solved) {
-      return {
-        cells: nextCells.map((cell): PuzzleCell =>
+      return makeGridCheckResult(
+        nextCells.map((cell): PuzzleCell =>
           cell.tone === "disabled" || cell.locked ? cell : { ...cell, tone: "answer" },
         ),
-        message: "Solved.",
-      };
+        "Solved.",
+        "success",
+      );
     }
 
     if (assessment.incorrectCount === 0) {
-      return {
-        cells: nextCells,
-        message: `No mistakes found. ${pluralize(assessment.emptyCount, "square")} empty.`,
-      };
+      return makeGridCheckResult(
+        nextCells,
+        `No mistakes found. ${pluralize(assessment.emptyCount, "square")} empty.`,
+        "progress",
+      );
     }
 
-    return {
-      cells: nextCells,
-      message: `${pluralize(assessment.incorrectCount, "entry", "entries")} need attention${assessment.emptyCount > 0 ? `; ${pluralize(assessment.emptyCount, "square")} empty` : ""}.`,
-    };
+    return makeGridCheckResult(
+      nextCells,
+      `${pluralize(assessment.incorrectCount, "entry", "entries")} need attention${assessment.emptyCount > 0 ? `; ${pluralize(assessment.emptyCount, "square")} empty` : ""}.`,
+      "error",
+    );
   }
 
   if (assessment.solved) {
-    return { cells: nextCells, message: `Solved. ${currentPuzzle.title} is correct.` };
+    return makeGridCheckResult(nextCells, `Solved. ${currentPuzzle.title} is correct.`, "success");
   }
 
-  return {
-    cells: nextCells,
-    message: `Not solved: ${assessment.emptyCount} empty cell(s), ${assessment.incorrectCount} incorrect cell(s).`,
-  };
+  return makeGridCheckResult(
+    nextCells,
+    `Not solved: ${assessment.emptyCount} empty cell(s), ${assessment.incorrectCount} incorrect cell(s).`,
+    "error",
+  );
 };

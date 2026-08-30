@@ -1,11 +1,9 @@
 import { useRef } from "preact/hooks";
-import type { GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleId, SudokuVariation } from "../catalog/types";
-import { cloneStack } from "../interactions/cardRules";
-import { cloneGridCell, prepareGridCells } from "../interactions/gridRules";
-import { consumeHomeNavigation } from "./homeNavigation";
+import type { CardGeneratedPuzzle, CardStack, GeneratedPuzzle, GridGeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
+import { cloneStack, type CardSelection } from "../interactions/cardRules";
+import { cloneGridCell, prepareGridCells, type GridCellSelection } from "../interactions/gridRules";
 import {
   initialSolitaireStats,
-  loadPersistedPuzzleSessions,
   restorePuzzleSessionFromPersisted,
   savePersistedPuzzleSessions,
   solitaireHistoryLimit,
@@ -15,100 +13,97 @@ import {
   type SolitaireHistoryEntry,
   type SolitaireStats,
 } from "./session";
+import { restoredSessionPreservesGeneratedState } from "./sessionIntegrity";
+import { cloneSolitaireHistoryEntry } from "./solitaireHistory";
 
 export type RuntimeSessionDraft = {
-  puzzleId: PuzzleId;
-  seed: string;
-  width: number;
-  height: number;
-  difficulty: PuzzleDifficulty;
-  requireUniqueSolution: boolean;
-  sudokuVariation?: SudokuVariation;
-  puzzle: PuzzleSession["puzzle"];
-  cardStacks: PuzzleSession["cardStacks"];
-  selectedCard: PuzzleSession["selectedCard"];
+  puzzle: GeneratedPuzzle;
+  cardStacks: CardStack[] | null;
+  selectedCard: CardSelection | null;
   solitaireStats: SolitaireStats;
   solitaireUndoStack: SolitaireHistoryEntry[];
   solitaireRedoStack: SolitaireHistoryEntry[];
   gridCells: PuzzleCell[] | null;
-  selectedGridCell: PuzzleSession["selectedGridCell"];
+  selectedGridCell: GridCellSelection | null;
   statusMessage: string;
 };
 
-export type RestoreSessionCallbacks = {
-  restoreSession: (puzzleId: PuzzleId, session: PuzzleSession) => void;
-  beginGeneration: (session: Pick<PuzzleSession, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution" | "sudokuVariation" | "solitaireVariation"> & { puzzleId: PuzzleId; imageId?: string }) => void;
-};
-
-const cloneSolitaireHistoryEntry = (entry: SolitaireHistoryEntry): SolitaireHistoryEntry => ({
-  cardStacks: entry.cardStacks.map(cloneStack),
-  selectedCard: entry.selectedCard ? { ...entry.selectedCard } : null,
-  solitaireStats: { ...entry.solitaireStats },
-  statusMessage: entry.statusMessage,
-});
-
 const cloneSessionGridCell = (puzzleId: PuzzleId, cell: PuzzleCell): PuzzleCell => {
   const clonedCell = cloneGridCell(cell);
-
   if (puzzleId === "sudoku" && !clonedCell.locked && (clonedCell.tone === "answer" || clonedCell.tone === "hint")) {
     return { ...clonedCell, tone: "empty" };
   }
-
   return clonedCell;
 };
 
-export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => ({
-  ...session,
-  solitaireVariation: session.solitaireVariation ? { ...session.solitaireVariation } : undefined,
-  puzzle: session.puzzle
-    ? session.puzzle.kind === "cards"
-      ? { ...session.puzzle, stacks: session.puzzle.stacks.map(cloneStack), solitaireVariation: { ...session.puzzle.solitaireVariation } }
-      : session.puzzle.kind === "grid"
-        ? { ...session.puzzle, cells: session.puzzle.cells.map(cloneGridCell), answerKey: session.puzzle.answerKey ? [...session.puzzle.answerKey] : undefined }
-        : session.puzzle.puzzleId === "jigsaw"
-          ? {
-              ...session.puzzle,
-              tiles: session.puzzle.tiles.map((tile) => ({
-                ...tile,
-                edges: tile.edges.map((edge) => ({ ...edge })),
-              })),
-              asset: {
-                ...session.puzzle.asset,
-                files: { ...session.puzzle.asset.files },
-                credit: { ...session.puzzle.asset.credit },
-              },
-              edgeModel: {
-                ...session.puzzle.edgeModel,
-                profileIds: [...session.puzzle.edgeModel.profileIds],
-              },
-            }
-          : {
-              ...session.puzzle,
-              tiles: session.puzzle.tiles.map((tile) => ({ ...tile })),
-              asset: {
-                ...session.puzzle.asset,
-                files: { ...session.puzzle.asset.files },
-                credit: { ...session.puzzle.asset.credit },
-              },
-            }
-    : null,
-  cardStacks: session.cardStacks?.map(cloneStack) ?? null,
-  selectedCard: session.selectedCard ? { ...session.selectedCard } : null,
-  solitaireStats: { ...session.solitaireStats },
-  solitaireUndoStack: session.solitaireUndoStack?.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit) ?? [],
-  solitaireRedoStack: session.solitaireRedoStack?.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit) ?? [],
-  gridCells: session.gridCells?.map(cloneGridCell) ?? null,
-  selectedGridCell: session.selectedGridCell ? { ...session.selectedGridCell } : null,
+const cloneCardPuzzle = (puzzle: CardGeneratedPuzzle): CardGeneratedPuzzle => ({
+  ...puzzle,
+  stacks: puzzle.stacks.map(cloneStack),
+  solitaireVariation: { ...puzzle.solitaireVariation },
 });
 
+const cloneGridPuzzle = (puzzle: GridGeneratedPuzzle): GridGeneratedPuzzle => ({
+  ...puzzle,
+  cells: puzzle.cells.map(cloneGridCell),
+  answerKey: puzzle.answerKey ? [...puzzle.answerKey] : undefined,
+});
+
+const cloneTilePuzzle = (puzzle: Exclude<GeneratedPuzzle, CardGeneratedPuzzle | GridGeneratedPuzzle>) => {
+  if (puzzle.puzzleId === "jigsaw") {
+    return {
+      ...puzzle,
+      tiles: puzzle.tiles.map((tile) => ({ ...tile, edges: tile.edges.map((edge) => ({ ...edge })) })),
+      asset: { ...puzzle.asset, files: { ...puzzle.asset.files }, credit: { ...puzzle.asset.credit } },
+      edgeModel: { ...puzzle.edgeModel, profileIds: [...puzzle.edgeModel.profileIds] },
+    };
+  }
+
+  return {
+    ...puzzle,
+    tiles: puzzle.tiles.map((tile) => ({ ...tile })),
+    asset: { ...puzzle.asset, files: { ...puzzle.asset.files }, credit: { ...puzzle.asset.credit } },
+  };
+};
+
+export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => {
+  if (session.kind === "cards") {
+    return {
+      kind: "cards",
+      puzzle: cloneCardPuzzle(session.puzzle),
+      progress: {
+        kind: "cards",
+        cardStacks: session.progress.cardStacks.map(cloneStack),
+        selectedCard: session.progress.selectedCard ? { ...session.progress.selectedCard } : null,
+        solitaireStats: { ...session.progress.solitaireStats },
+        undoStack: session.progress.undoStack.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit),
+        redoStack: session.progress.redoStack.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit),
+      },
+      statusMessage: session.statusMessage,
+    };
+  }
+
+  if (session.kind === "grid") {
+    return {
+      kind: "grid",
+      puzzle: cloneGridPuzzle(session.puzzle),
+      progress: {
+        kind: "grid",
+        cells: session.progress.cells.map(cloneGridCell),
+        selectedCell: session.progress.selectedCell ? { ...session.progress.selectedCell } : null,
+      },
+      statusMessage: session.statusMessage,
+    };
+  }
+
+  return {
+    kind: "tiles",
+    puzzle: cloneTilePuzzle(session.puzzle),
+    progress: { kind: "tiles" },
+    statusMessage: session.statusMessage,
+  };
+};
+
 export const buildRuntimeSession = ({
-  puzzleId,
-  seed,
-  width,
-  height,
-  difficulty,
-  requireUniqueSolution,
-  sudokuVariation,
   puzzle,
   cardStacks,
   selectedCard,
@@ -118,52 +113,81 @@ export const buildRuntimeSession = ({
   gridCells,
   selectedGridCell,
   statusMessage,
-}: RuntimeSessionDraft): PuzzleSession => ({
-  seed,
-  width,
-  height,
-  difficulty,
-  requireUniqueSolution,
-  sudokuVariation: puzzleId === "sudoku" ? sudokuVariation ?? puzzle?.sudokuVariation : undefined,
-  solitaireVariation: puzzleId === "klondike-solitaire" && puzzle?.kind === "cards" ? { ...puzzle.solitaireVariation } : undefined,
-  puzzle,
-  cardStacks: cardStacks?.map(cloneStack) ?? null,
-  selectedCard: selectedCard ? { ...selectedCard } : null,
-  solitaireStats: { ...solitaireStats },
-  solitaireUndoStack: solitaireUndoStack.map(cloneSolitaireHistoryEntry),
-  solitaireRedoStack: solitaireRedoStack.map(cloneSolitaireHistoryEntry),
-  gridCells: gridCells?.map((cell) => cloneSessionGridCell(puzzleId, cell)) ?? null,
-  selectedGridCell: selectedGridCell ? { ...selectedGridCell } : null,
-  statusMessage,
-});
+}: RuntimeSessionDraft): PuzzleSession => {
+  if (puzzle.kind === "cards") {
+    return {
+      kind: "cards",
+      puzzle,
+      progress: {
+        kind: "cards",
+        cardStacks: (cardStacks ?? puzzle.stacks).map(cloneStack),
+        selectedCard: selectedCard ? { ...selectedCard } : null,
+        solitaireStats: { ...solitaireStats },
+        undoStack: solitaireUndoStack.map(cloneSolitaireHistoryEntry),
+        redoStack: solitaireRedoStack.map(cloneSolitaireHistoryEntry),
+      },
+      statusMessage,
+    };
+  }
 
-export const buildFreshSessionForGeneratedPuzzle = (
-  generatedPuzzle: GeneratedPuzzle,
-  statusMessage: string,
-): PuzzleSession => ({
-  seed: generatedPuzzle.seed,
-  width: generatedPuzzle.width,
-  height: generatedPuzzle.height,
-  difficulty: generatedPuzzle.difficulty ?? "Easy",
-  requireUniqueSolution: Boolean(generatedPuzzle.uniqueSolution),
-  sudokuVariation: generatedPuzzle.puzzleId === "sudoku" ? generatedPuzzle.sudokuVariation : undefined,
-  solitaireVariation: generatedPuzzle.kind === "cards" ? { ...generatedPuzzle.solitaireVariation } : undefined,
-  puzzle: generatedPuzzle,
-  cardStacks: generatedPuzzle.kind === "cards" ? generatedPuzzle.stacks.map(cloneStack) : null,
-  selectedCard: null,
-  solitaireStats: { ...initialSolitaireStats },
-  solitaireUndoStack: [],
-  solitaireRedoStack: [],
-  gridCells: generatedPuzzle.kind === "grid" ? prepareGridCells(generatedPuzzle) : null,
-  selectedGridCell: null,
-  statusMessage,
-});
+  if (puzzle.kind === "grid") {
+    return {
+      kind: "grid",
+      puzzle,
+      progress: {
+        kind: "grid",
+        cells: (gridCells ?? prepareGridCells(puzzle)).map((cell) => cloneSessionGridCell(puzzle.puzzleId, cell)),
+        selectedCell: selectedGridCell ? { ...selectedGridCell } : null,
+      },
+      statusMessage,
+    };
+  }
+
+  return {
+    kind: "tiles",
+    puzzle,
+    progress: { kind: "tiles" },
+    statusMessage,
+  };
+};
+
+export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPuzzle, statusMessage: string): PuzzleSession => {
+  if (generatedPuzzle.kind === "cards") {
+    return {
+      kind: "cards",
+      puzzle: generatedPuzzle,
+      progress: {
+        kind: "cards",
+        cardStacks: generatedPuzzle.stacks.map(cloneStack),
+        selectedCard: null,
+        solitaireStats: { ...initialSolitaireStats },
+        undoStack: [],
+        redoStack: [],
+      },
+      statusMessage,
+    };
+  }
+
+  if (generatedPuzzle.kind === "grid") {
+    return {
+      kind: "grid",
+      puzzle: generatedPuzzle,
+      progress: {
+        kind: "grid",
+        cells: prepareGridCells(generatedPuzzle),
+        selectedCell: null,
+      },
+      statusMessage,
+    };
+  }
+
+  return { kind: "tiles", puzzle: generatedPuzzle, progress: { kind: "tiles" }, statusMessage };
+};
 
 export const usePuzzleSessions = () => {
   const persistedSessionCache = useRef<PersistedPuzzleSessionCache>({});
   const sessionCache = useRef<PuzzleSessionCache>({});
   const pendingRestorePuzzleId = useRef<PuzzleId | null>(null);
-  const hasLoadedPersistedSessions = useRef(false);
 
   const saveSession = (activePuzzleId: PuzzleId, session: PuzzleSession) => {
     sessionCache.current[activePuzzleId] = clonePuzzleSession(session);
@@ -175,67 +199,42 @@ export const usePuzzleSessions = () => {
     return session ? clonePuzzleSession(session) : null;
   };
 
-  const loadPersistedSessionsOnce = ({ restoreSession, beginGeneration }: RestoreSessionCallbacks) => {
-    if (hasLoadedPersistedSessions.current) {
-      return;
-    }
+  const initializePersistedSessions = (sessions: PersistedPuzzleSessionCache) => {
+    persistedSessionCache.current = { ...sessions };
+  };
 
-    hasLoadedPersistedSessions.current = true;
+  const beginPersistedRestore = (puzzleId: PuzzleId) => {
+    const persistedSession = persistedSessionCache.current[puzzleId];
+    if (!persistedSession) return null;
+    pendingRestorePuzzleId.current = puzzleId;
+    return persistedSession;
+  };
 
-    const persisted = loadPersistedPuzzleSessions();
-
-    if (!persisted) {
-      consumeHomeNavigation();
-      return;
-    }
-
-    persistedSessionCache.current = persisted.sessions;
-
-    if (consumeHomeNavigation()) {
-      return;
-    }
-
-    const activePersistedSession = persisted.sessions[persisted.activePuzzleId];
-
-    if (activePersistedSession) {
-      pendingRestorePuzzleId.current = activePersistedSession.puzzleId;
-      beginGeneration({
-        puzzleId: activePersistedSession.puzzleId,
-        seed: activePersistedSession.seed,
-        width: activePersistedSession.width,
-        height: activePersistedSession.height,
-        difficulty: activePersistedSession.difficulty,
-        requireUniqueSolution: activePersistedSession.requireUniqueSolution,
-        sudokuVariation: activePersistedSession.sudokuVariation,
-        solitaireVariation: activePersistedSession.solitaireVariation,
-        imageId: activePersistedSession.imageId,
-      });
-    }
+  const cancelPersistedRestore = () => {
+    pendingRestorePuzzleId.current = null;
   };
 
   const restorePendingSessionForPuzzle = (generatedPuzzle: GeneratedPuzzle) => {
-    const pendingPersistedSession =
-      pendingRestorePuzzleId.current === generatedPuzzle.puzzleId ? persistedSessionCache.current[generatedPuzzle.puzzleId] : undefined;
-    const restoredSession = pendingPersistedSession ? restorePuzzleSessionFromPersisted(pendingPersistedSession, generatedPuzzle) : null;
-
-    if (!restoredSession) {
-      pendingRestorePuzzleId.current = null;
-      return null;
-    }
+    const pendingPersistedSession = pendingRestorePuzzleId.current === generatedPuzzle.puzzleId
+      ? persistedSessionCache.current[generatedPuzzle.puzzleId]
+      : undefined;
+    const restoredSession = pendingPersistedSession
+      ? restorePuzzleSessionFromPersisted(pendingPersistedSession, generatedPuzzle)
+      : null;
 
     pendingRestorePuzzleId.current = null;
+    if (!restoredSession || !restoredSessionPreservesGeneratedState(restoredSession)) return null;
+
     sessionCache.current[generatedPuzzle.puzzleId] = clonePuzzleSession(restoredSession);
     return restoredSession;
   };
 
   return {
-    sessionCache,
-    persistedSessionCache,
-    pendingRestorePuzzleId,
     saveSession,
     getCachedSession,
-    loadPersistedSessionsOnce,
+    initializePersistedSessions,
+    beginPersistedRestore,
+    cancelPersistedRestore,
     restorePendingSessionForPuzzle,
-    buildFreshSessionForGeneratedPuzzle,
   };
 };

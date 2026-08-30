@@ -1,6 +1,11 @@
-import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleId, SolitaireVariation, SudokuVariation } from "../catalog/types";
+import type { CardGeneratedPuzzle, CardStack, GeneratedPuzzle, GridGeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
+import {
+  loadPersistedPuzzleSessions as loadPersistedPuzzleSessionsUnsafe,
+  savePersistedPuzzleSessions as savePersistedPuzzleSessionsUnsafe,
+  type RuntimePuzzleSessions,
+} from "./sessionPersistence";
 export { puzzleIds, solitaireHistoryLimit, solitaireHistoryLimitNotice } from "./sessionConstants";
 export * from "./sessionPersistence";
 
@@ -25,23 +30,61 @@ export const initialSolitaireStats: SolitaireStats = {
   autoMoveCount: 0,
 };
 
-export type PuzzleSession = {
-  seed: string;
-  width: number;
-  height: number;
-  difficulty: PuzzleDifficulty;
-  requireUniqueSolution: boolean;
-  sudokuVariation?: SudokuVariation;
-  solitaireVariation?: SolitaireVariation;
-  puzzle: GeneratedPuzzle | null;
-  cardStacks: CardStack[] | null;
+export type CardSessionProgress = {
+  kind: "cards";
+  cardStacks: CardStack[];
   selectedCard: CardSelection | null;
   solitaireStats: SolitaireStats;
-  solitaireUndoStack?: SolitaireHistoryEntry[];
-  solitaireRedoStack?: SolitaireHistoryEntry[];
-  gridCells: PuzzleCell[] | null;
-  selectedGridCell: GridCellSelection | null;
-  statusMessage: string;
+  undoStack: SolitaireHistoryEntry[];
+  redoStack: SolitaireHistoryEntry[];
 };
 
+export type GridSessionProgress = {
+  kind: "grid";
+  cells: PuzzleCell[];
+  selectedCell: GridCellSelection | null;
+};
+
+export type TileSessionProgress = {
+  kind: "tiles";
+};
+
+type TileGeneratedPuzzle = Exclude<GeneratedPuzzle, CardGeneratedPuzzle | GridGeneratedPuzzle>;
+
+export type PuzzleSession =
+  | {
+      kind: "cards";
+      puzzle: CardGeneratedPuzzle;
+      progress: CardSessionProgress;
+      statusMessage: string;
+    }
+  | {
+      kind: "grid";
+      puzzle: GridGeneratedPuzzle;
+      progress: GridSessionProgress;
+      statusMessage: string;
+    }
+  | {
+      kind: "tiles";
+      puzzle: TileGeneratedPuzzle;
+      progress: TileSessionProgress;
+      statusMessage: string;
+    };
+
 export type PuzzleSessionCache = Partial<Record<PuzzleId, PuzzleSession>>;
+
+export const loadPersistedPuzzleSessions = () => {
+  try {
+    return loadPersistedPuzzleSessionsUnsafe();
+  } catch {
+    return null;
+  }
+};
+
+export const savePersistedPuzzleSessions = (sessions: RuntimePuzzleSessions) => {
+  try {
+    savePersistedPuzzleSessionsUnsafe(sessions);
+  } catch {
+    // Persistence is optional. Keep the in-memory game usable when storage is unavailable.
+  }
+};

@@ -1,56 +1,45 @@
-import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition, PuzzleDifficulty, PuzzleGenerationRequest, SolitaireVariation, SudokuVariation } from "../catalog/types";
+import type { GenerationSettings, NextPuzzleDraft } from "../app/generationSettings";
+import type { SolitaireStats } from "../app/session";
+import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition } from "../catalog/types";
 import type { CardSelection } from "../interactions/cardRules";
+import type { GridCheckFeedbackTone } from "../interactions/gridChecking";
 import type { GridCellSelection } from "../interactions/gridRules";
 
-export type SolitaireStats = { moveCount: number; drawCount: number; recycleCount: number; autoMoveCount: number };
-export type GenerationSettings = Partial<Pick<PuzzleGenerationRequest, "seed" | "width" | "height" | "difficulty" | "requireUniqueSolution" | "sudokuVariation" | "solitaireVariation" | "imageId">>;
+export type { GenerationSettings, NextPuzzleDraft } from "../app/generationSettings";
 
-export type NextPuzzleDraft = {
-  width: number;
-  height: number;
-  difficulty: PuzzleDifficulty;
-  requireUniqueSolution: boolean;
-  sudokuVariation: SudokuVariation;
-  solitaireVariation: SolitaireVariation;
-};
-
-export type PuzzleWorkspaceProps = {
+export type CoreWorkspaceProps = {
   selectedDefinition: PuzzleDefinition;
   selectedPuzzleIsGeneratable: boolean;
   seed: string;
-  width: number;
-  height: number;
-  difficulty: PuzzleDifficulty;
-  requireUniqueSolution: boolean;
-  sudokuVariation: SudokuVariation;
   puzzle: GeneratedPuzzle | null;
-  solitaireVariation: SolitaireVariation;
-  nextPuzzleDraft: NextPuzzleDraft;
-  seedLoadInput: string;
-  cardStacks: CardStack[] | null;
-  selectedCard: CardSelection | null;
-  solitaireStats: SolitaireStats;
-  gridCells: PuzzleCell[] | null;
-  selectedGridCell: GridCellSelection | null;
   statusMessage: string;
   isGenerating: boolean;
-  onSeedChange: (seed: string) => void;
-  onWidthChange: (width: number) => void;
-  onHeightChange: (height: number) => void;
-  onSettingsCommit: (settings?: GenerationSettings) => void;
-  onDifficultyChange: (difficulty: PuzzleDifficulty) => void;
-  onSudokuVariationChange: (variation: SudokuVariation) => void;
-  onUniqueSolutionChange: (requireUniqueSolution: boolean) => void;
-  onGenerate: () => void;
-  onRandomize: () => void;
   onReset: () => void;
-  onCheck: () => void;
-  onSolitaireVariationChange: (variation: SolitaireVariation) => void;
+};
+
+export type ProspectiveGenerationProps = {
+  nextPuzzleDraft: NextPuzzleDraft;
+  seedLoadInput: string;
   onNextPuzzleDraftChange: (settings: GenerationSettings) => void;
   onSeedLoadInputChange: (seed: string) => void;
   onNewPuzzle: () => void;
   onToday: () => void;
   onLoadSeed: () => void;
+};
+
+export type GridInteractionProps = {
+  gridCells: PuzzleCell[] | null;
+  selectedGridCell: GridCellSelection | null;
+  gridCheckFeedbackTone: GridCheckFeedbackTone | null;
+  onCheck: () => void;
+  onCellClick: (cell: PuzzleCell) => void;
+  onCellInput: (cell: PuzzleCell, value: string) => void;
+};
+
+export type SolitaireInteractionProps = {
+  cardStacks: CardStack[] | null;
+  selectedCard: CardSelection | null;
+  solitaireStats: SolitaireStats;
   onAutoMoveToFoundations: () => void;
   onUndoSolitaire: () => void;
   onRedoSolitaire: () => void;
@@ -59,6 +48,29 @@ export type PuzzleWorkspaceProps = {
   onCardClick: (stack: CardStack, cardIndex: number) => void;
   onCardDoubleClick: (stack: CardStack, cardIndex: number) => void;
   onStackClick: (stack: CardStack) => void;
-  onCellClick: (cell: PuzzleCell) => void;
-  onCellInput: (cell: PuzzleCell, value: string) => void;
+};
+
+export type ImmediateGenerationProps = {
+  width: number;
+  height: number;
+  onSeedChange: (seed: string) => void;
+  onWidthChange: (width: number) => void;
+  onHeightChange: (height: number) => void;
+  onSettingsCommit: (settings?: GenerationSettings) => void;
+  onGenerate: () => void;
+  onToday: () => void;
+  onRandomize: () => void;
+};
+
+export type SudokuWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps & GridInteractionProps;
+export type GridPuzzleWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps & GridInteractionProps;
+export type SolitaireWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps & SolitaireInteractionProps;
+export type ImmediateImageWorkspaceProps = CoreWorkspaceProps & ImmediateGenerationProps;
+
+export type PuzzleWorkspaceProps = {
+  core: CoreWorkspaceProps;
+  prospective: ProspectiveGenerationProps;
+  grid: GridInteractionProps;
+  solitaire: SolitaireInteractionProps;
+  immediate: ImmediateGenerationProps;
 };

@@ -3,7 +3,6 @@ import { generateJigsaw } from "../games/jigsaw/generate";
 import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
 import {
   buildPersistedPuzzleSession,
-  initialSolitaireStats,
   restorePuzzleSessionFromPersisted,
   type PuzzleSession,
 } from "./session";
@@ -18,19 +17,9 @@ const makeJigsawSession = (): PuzzleSession => {
   });
 
   return {
-    seed: puzzle.seed,
-    width: puzzle.width,
-    height: puzzle.height,
-    difficulty: "Easy",
-    requireUniqueSolution: false,
+    kind: "tiles",
     puzzle,
-    cardStacks: null,
-    selectedCard: null,
-    solitaireStats: { ...initialSolitaireStats },
-    solitaireUndoStack: [],
-    solitaireRedoStack: [],
-    gridCells: null,
-    selectedGridCell: null,
+    progress: { kind: "tiles" },
     statusMessage: "Jigsaw in progress.",
   };
 };
@@ -39,8 +28,8 @@ describe("Jigsaw session image identity", () => {
   it("persists exact image and generated identity for restore", () => {
     const session = makeJigsawSession();
     const puzzle = session.puzzle;
-    expect(puzzle?.kind).toBe("tiles");
-    if (!puzzle || puzzle.kind !== "tiles") return;
+    expect(puzzle.kind).toBe("tiles");
+    if (puzzle.kind !== "tiles") return;
 
     const persisted = buildPersistedPuzzleSession("jigsaw", session);
     expect(persisted?.imageId).toBe(defaultJigsawImageAsset.id);

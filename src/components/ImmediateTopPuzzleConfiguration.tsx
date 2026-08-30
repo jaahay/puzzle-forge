@@ -3,7 +3,7 @@ import type { PuzzleDefinition } from "../catalog/types";
 import { GenerationActions } from "./GenerationActions";
 import { PuzzleDimensionControls } from "./PuzzleDimensionControls";
 
-type TopPuzzleConfigurationProps = {
+type ImmediateTopPuzzleConfigurationProps = {
   selectedDefinition: PuzzleDefinition;
   selectedPuzzleIsGeneratable: boolean;
   seedInput: ComponentChildren;
@@ -11,8 +11,6 @@ type TopPuzzleConfigurationProps = {
   height: number;
   isFixedSize: boolean;
   isGenerating: boolean;
-  settings?: ComponentChildren;
-  className?: string;
   showRandomize?: boolean;
   onWidthChange: (width: number) => void;
   onHeightChange: (height: number) => void;
@@ -23,7 +21,7 @@ type TopPuzzleConfigurationProps = {
   onReset: () => void;
 };
 
-export const TopPuzzleConfiguration = ({
+export const ImmediateTopPuzzleConfiguration = ({
   selectedDefinition,
   selectedPuzzleIsGeneratable,
   seedInput,
@@ -31,8 +29,6 @@ export const TopPuzzleConfiguration = ({
   height,
   isFixedSize,
   isGenerating,
-  settings,
-  className,
   showRandomize = true,
   onWidthChange,
   onHeightChange,
@@ -41,8 +37,12 @@ export const TopPuzzleConfiguration = ({
   onUseSeed,
   onRandomize,
   onReset,
-}: TopPuzzleConfigurationProps) => (
-  <div class={`control-panel ${className ?? ""}`.trim()} aria-label="Puzzle controls">
+}: ImmediateTopPuzzleConfigurationProps) => (
+  <div class="control-panel" aria-label="Puzzle controls">
+    <label>
+      Seed
+      {seedInput}
+    </label>
     {isFixedSize ? null : (
       <PuzzleDimensionControls
         selectedDefinition={selectedDefinition}
@@ -53,38 +53,16 @@ export const TopPuzzleConfiguration = ({
         onSettingsCommit={onSettingsCommit}
       />
     )}
-    {settings}
     <GenerationActions
-      isGenerating={isGenerating}
-      canGenerate={selectedPuzzleIsGeneratable}
-      showRandomize={showRandomize}
-      randomLabel="New puzzle"
-      onRandomize={onRandomize}
-    />
-    <GenerationActions
-      className="load-puzzle-actions"
       isGenerating={isGenerating}
       canGenerate={selectedPuzzleIsGeneratable}
       showToday
-      showRandomize={false}
-      onToday={onToday}
-      onRandomize={onRandomize}
-    />
-    {seedInput}
-    <GenerationActions
-      isGenerating={isGenerating}
-      canGenerate={selectedPuzzleIsGeneratable}
       showUseSeed
-      showRandomize={false}
-      onUseSeed={onUseSeed}
-      onRandomize={onRandomize}
-    />
-    <GenerationActions
-      className="current-puzzle-actions"
-      isGenerating={isGenerating}
-      canGenerate={selectedPuzzleIsGeneratable}
       showReset
-      showRandomize={false}
+      showRandomize={showRandomize}
+      randomLabel="New"
+      onToday={onToday}
+      onUseSeed={onUseSeed}
       onRandomize={onRandomize}
       onReset={onReset}
     />

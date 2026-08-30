@@ -1,31 +1,40 @@
-import type { FunctionComponent } from "preact";
 import type { PuzzleId } from "../catalog/types";
+import { GridPuzzleWorkspace } from "./GridPuzzleWorkspace";
 import { ImageTilePuzzleWorkspace } from "./ImageTilePuzzleWorkspace";
 import { JigsawWorkspace } from "./JigsawWorkspace";
 import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
-import { StandardPuzzleWorkspace } from "./StandardPuzzleWorkspace";
+import { SolitaireWorkspace } from "./SolitaireWorkspace";
+import { SudokuWorkspace } from "./SudokuWorkspace";
 
 export type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
 
-type WorkspaceComponent = FunctionComponent<PuzzleWorkspaceProps>;
+const unreachablePuzzleId = (puzzleId: never): never => {
+  throw new Error(`No workspace registered for puzzle type: ${String(puzzleId)}`);
+};
 
-const workspaceRegistry = {
-  sudoku: StandardPuzzleWorkspace,
-  nonogram: StandardPuzzleWorkspace,
-  "word-guess": StandardPuzzleWorkspace,
-  "logic-grid": StandardPuzzleWorkspace,
-  "klondike-solitaire": StandardPuzzleWorkspace,
-  "peg-solitaire": StandardPuzzleWorkspace,
-  futoshiki: StandardPuzzleWorkspace,
-  kenken: StandardPuzzleWorkspace,
-  minesweeper: StandardPuzzleWorkspace,
-  jigsaw: JigsawWorkspace,
-  "tile-swap": ImageTilePuzzleWorkspace,
-  "sliding-puzzle": ImageTilePuzzleWorkspace,
-  slitherlink: StandardPuzzleWorkspace,
-} satisfies Record<PuzzleId, WorkspaceComponent>;
+export const PuzzleWorkspace = ({ core, prospective, grid, solitaire, immediate }: PuzzleWorkspaceProps) => {
+  const puzzleId: PuzzleId = core.selectedDefinition.id;
 
-export const PuzzleWorkspace = (props: PuzzleWorkspaceProps) => {
-  const Workspace = workspaceRegistry[props.selectedDefinition.id];
-  return <Workspace {...props} />;
+  switch (puzzleId) {
+    case "sudoku":
+      return <SudokuWorkspace {...core} {...prospective} {...grid} />;
+    case "klondike-solitaire":
+      return <SolitaireWorkspace {...core} {...prospective} {...solitaire} />;
+    case "jigsaw":
+      return <JigsawWorkspace {...core} {...immediate} />;
+    case "tile-swap":
+    case "sliding-puzzle":
+      return <ImageTilePuzzleWorkspace {...core} {...immediate} />;
+    case "nonogram":
+    case "word-guess":
+    case "logic-grid":
+    case "peg-solitaire":
+    case "futoshiki":
+    case "kenken":
+    case "minesweeper":
+    case "slitherlink":
+      return <GridPuzzleWorkspace {...core} {...prospective} {...grid} />;
+    default:
+      return unreachablePuzzleId(puzzleId);
+  }
 };

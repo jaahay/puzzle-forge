@@ -115,7 +115,7 @@ describe("waste mode", () => {
 });
 
 describe("Solitaire variation session integration", () => {
-  it("preserves variation metadata when building fresh and runtime sessions", () => {
+  it("keeps variation metadata authoritative on the generated puzzle", () => {
     const solitaireVariation = variation({ drawMode: "draw-3", redeals: 1, wasteMode: "relaxed" });
     const puzzle = {
       kind: "cards" as const,
@@ -133,25 +133,24 @@ describe("Solitaire variation session integration", () => {
     };
 
     const freshSession = buildFreshSessionForGeneratedPuzzle(puzzle, "Ready.");
+    expect(freshSession.kind).toBe("cards");
+    if (freshSession.kind !== "cards") return;
+
     const runtimeSession = buildRuntimeSession({
-      puzzleId: "klondike-solitaire",
-      seed: freshSession.seed,
-      width: freshSession.width,
-      height: freshSession.height,
-      difficulty: freshSession.difficulty,
-      requireUniqueSolution: freshSession.requireUniqueSolution,
       puzzle: freshSession.puzzle,
-      cardStacks: freshSession.cardStacks,
-      selectedCard: freshSession.selectedCard,
-      solitaireStats: freshSession.solitaireStats,
-      solitaireUndoStack: freshSession.solitaireUndoStack ?? [],
-      solitaireRedoStack: freshSession.solitaireRedoStack ?? [],
-      gridCells: freshSession.gridCells,
-      selectedGridCell: freshSession.selectedGridCell,
+      cardStacks: freshSession.progress.cardStacks,
+      selectedCard: freshSession.progress.selectedCard,
+      solitaireStats: freshSession.progress.solitaireStats,
+      solitaireUndoStack: freshSession.progress.undoStack,
+      solitaireRedoStack: freshSession.progress.redoStack,
+      gridCells: null,
+      selectedGridCell: null,
       statusMessage: freshSession.statusMessage,
     });
 
-    expect(freshSession.solitaireVariation).toEqual(solitaireVariation);
-    expect(runtimeSession.solitaireVariation).toEqual(solitaireVariation);
+    expect(runtimeSession.kind).toBe("cards");
+    expect(freshSession.puzzle.solitaireVariation).toEqual(solitaireVariation);
+    if (runtimeSession.kind !== "cards") return;
+    expect(runtimeSession.puzzle.solitaireVariation).toEqual(solitaireVariation);
   });
 });

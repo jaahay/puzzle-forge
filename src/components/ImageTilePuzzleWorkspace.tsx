@@ -1,16 +1,15 @@
 import { useCallback, useState } from "preact/hooks";
 import type { ImageTileGeneratedPuzzle, ImageTilePuzzleId } from "../catalog/types";
-import { getCanonicalDailyGenerationSettings } from "../games/shared/daily";
 import { ArtworkAlbum } from "./ArtworkAlbum";
-import { TopPuzzleConfiguration } from "./PuzzleConfiguration";
-import type { PuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
+import { ImmediateTopPuzzleConfiguration } from "./PuzzleConfiguration";
+import type { ImmediateImageWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { SeedControl } from "./SeedControl";
 import { ImageTilePuzzlePreview } from "./ImageTilePuzzlePreview";
 import { usePuzzleCompletionPresentation } from "./usePuzzleCompletionPresentation";
 
 const asImageTilePuzzle = (
-  puzzle: PuzzleWorkspaceProps["puzzle"],
+  puzzle: ImmediateImageWorkspaceProps["puzzle"],
   puzzleId: ImageTilePuzzleId,
 ): ImageTileGeneratedPuzzle | null =>
   puzzle?.kind === "tiles" && puzzle.puzzleId === puzzleId ? puzzle : null;
@@ -27,7 +26,6 @@ export const ImageTilePuzzleWorkspace = ({
   width,
   height,
   puzzle,
-  solitaireVariation,
   statusMessage,
   isGenerating,
   onSeedChange,
@@ -35,10 +33,10 @@ export const ImageTilePuzzleWorkspace = ({
   onHeightChange,
   onSettingsCommit,
   onGenerate,
+  onToday,
   onRandomize,
   onReset,
-  onSolitaireVariationChange,
-}: PuzzleWorkspaceProps) => {
+}: ImmediateImageWorkspaceProps) => {
   const puzzleId: ImageTilePuzzleId = selectedDefinition.id === "sliding-puzzle" ? "sliding-puzzle" : "tile-swap";
   const imagePuzzle = asImageTilePuzzle(puzzle, puzzleId);
   const [resetVersion, setResetVersion] = useState(0);
@@ -69,7 +67,6 @@ export const ImageTilePuzzleWorkspace = ({
     setResetVersion((current) => current + 1);
     setCompletionState({ puzzleInstanceId: imagePuzzle?.id ?? null, solved: false });
   };
-  const generateDailyPuzzle = () => onSettingsCommit(getCanonicalDailyGenerationSettings(puzzleId));
   const seedInput = (
     <SeedControl
       seed={seed}
@@ -89,22 +86,19 @@ export const ImageTilePuzzleWorkspace = ({
   ) : null;
 
   const generation = (
-    <TopPuzzleConfiguration
+    <ImmediateTopPuzzleConfiguration
       selectedDefinition={selectedDefinition}
       selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
       seedInput={seedInput}
       width={width}
       height={height}
-      solitaireVariation={solitaireVariation}
       isFixedSize={isFixedSize}
       isGenerating={isGenerating}
-      isSolitaire={false}
       showRandomize={!isCompletionPresented}
       onWidthChange={onWidthChange}
       onHeightChange={onHeightChange}
       onSettingsCommit={onSettingsCommit}
-      onSolitaireVariationChange={onSolitaireVariationChange}
-      onToday={generateDailyPuzzle}
+      onToday={onToday}
       onUseSeed={onGenerate}
       onRandomize={onRandomize}
       onReset={resetPuzzle}

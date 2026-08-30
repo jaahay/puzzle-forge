@@ -11,6 +11,7 @@ import {
   restorePuzzleSessionFromPersisted,
   savePersistedPuzzleSessions,
   solitaireHistoryLimit,
+  type CardSessionProgress,
   type PersistedPuzzleSession,
   type PuzzleSession,
   type SolitaireHistoryEntry,
@@ -49,7 +50,7 @@ const makeHistoryEntry = (moveCount: number): SolitaireHistoryEntry => ({
   statusMessage: `Move ${moveCount}`,
 });
 
-const makeCardPuzzle = (seed = "seed-1"): GeneratedPuzzle => ({
+const makeCardPuzzle = (seed = "seed-1"): Extract<GeneratedPuzzle, { kind: "cards" }> => ({
   id: `klondike-${seed}`,
   puzzleId: "klondike-solitaire",
   title: "Klondike Solitaire",
@@ -65,24 +66,25 @@ const makeCardPuzzle = (seed = "seed-1"): GeneratedPuzzle => ({
   solitaireVariation: defaultSolitaireVariation,
 });
 
-const makeSession = (overrides: Partial<PuzzleSession> = {}): PuzzleSession => ({
-  seed: "seed-1",
-  width: 7,
-  height: 4,
-  difficulty: "Easy",
-  requireUniqueSolution: false,
-  solitaireVariation: defaultSolitaireVariation,
-  puzzle: makeCardPuzzle(),
-  cardStacks: makeCardStacks(),
-  selectedCard: { stackId: "waste", cardIndex: 0 },
-  solitaireStats: makeStats(3),
-  solitaireUndoStack: [],
-  solitaireRedoStack: [],
-  gridCells: null,
-  selectedGridCell: null,
-  statusMessage: "In progress.",
-  ...overrides,
-});
+type CardProgressOverrides = Partial<Omit<CardSessionProgress, "kind">> & { statusMessage?: string };
+
+const makeSession = (overrides: CardProgressOverrides = {}): PuzzleSession => {
+  const { statusMessage = "In progress.", ...progressOverrides } = overrides;
+  return {
+    kind: "cards",
+    puzzle: makeCardPuzzle(),
+    progress: {
+      kind: "cards",
+      cardStacks: makeCardStacks(),
+      selectedCard: { stackId: "waste", cardIndex: 0 },
+      solitaireStats: makeStats(3),
+      undoStack: [],
+      redoStack: [],
+      ...progressOverrides,
+    },
+    statusMessage,
+  };
+};
 
 const stackCards = (stacks: CardStack[] | null | undefined) =>
   stacks?.map((stack) => ({
@@ -118,7 +120,7 @@ const withMockWindowStorage = (run: (storage: Map<string, string>) => void) => {
 describe("app session persistence", () => {
   it("stores compact card refs and generated identity without durable generated puzzle internals", () => {
     const session = makeSession({
-      solitaireUndoStack: Array.from({ length: solitaireHistoryLimit + 5 }, (_, index) => makeHistoryEntry(index)),
+      undoStack: Array.from({ length: solitaireHistoryLimit + 5 }, (_, index) => makeHistoryEntry(index)),
     });
 
     const persisted = buildPersistedPuzzleSession("klondike-solitaire", session);
@@ -134,12 +136,16 @@ describe("app session persistence", () => {
     expect(persisted.progress.undoStack[0].solitaireStats.moveCount).toBe(5);
   });
 
+  it("rejects a runtime session stored under the wrong puzzle type", () => {
+    expect(buildPersistedPuzzleSession("sudoku", makeSession())).toBeNull();
+  });
+
   it("clears transient Solitaire history and selection when completing persisted card progress", () => {
     const persisted = buildPersistedPuzzleSession(
       "klondike-solitaire",
       makeSession({
-        solitaireUndoStack: [makeHistoryEntry(1)],
-        solitaireRedoStack: [makeHistoryEntry(2)],
+        undoStack: [makeHistoryEntry(1)],
+        redoStack: [makeHistoryEntry(2)],
       }),
     );
 
@@ -160,7 +166,7 @@ describe("app session persistence", () => {
       "klondike-solitaire",
       makeSession({
         statusMessage: "Restored progress.",
-        solitaireUndoStack: [makeHistoryEntry(1)],
+        undoStack: [makeHistoryEntry(1)],
       }),
     );
 
@@ -169,8 +175,11 @@ describe("app session persistence", () => {
     const mismatched = restorePuzzleSessionFromPersisted(persisted as PersistedPuzzleSession, makeCardPuzzle("different-seed"));
 
     expect(restored?.statusMessage).toBe("Restored progress.");
-    expect(stackCards(restored?.cardStacks)).toEqual(stackCards(makeCardStacks()));
-    expect(restored?.solitaireUndoStack).toHaveLength(1);
+    expect(restored?.puzzle.seed).toBe("seed-1");
+    expect(restored?.progress.kind).toBe("cards");
+    if (!restored || restored.progress.kind !== "cards") return;
+    expect(stackCards(restored.progress.cardStacks)).toEqual(stackCards(makeCardStacks()));
+    expect(restored.progress.undoStack).toHaveLength(1);
     expect(mismatched).toBeNull();
   });
 

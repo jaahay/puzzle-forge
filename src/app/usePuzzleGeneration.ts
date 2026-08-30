@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { getPuzzleDefinition, isGeneratable } from "../catalog/puzzleCatalog";
 import type {
   GeneratedPuzzle,
@@ -11,15 +11,12 @@ import type {
   SudokuVariation,
 } from "../catalog/types";
 import { isImageBackedPuzzleId } from "../games/imageAssets";
-import { defaultSudokuDifficulty, makeRequestId } from "./runtime";
+import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
+import type { NextPuzzleDraft } from "./generationSettings";
+import { defaultPuzzleDifficulty, makeRequestId } from "./runtime";
 
 export type BeginGenerationOptions = Partial<Omit<PuzzleGenerationRequest, "requestId">>;
-
-export type PuzzleGenerationState = {
-  isGenerating: boolean;
-  activeRequestId: string | null;
-};
 
 export type PuzzleGenerationDefaults = {
   selectedPuzzleId: PuzzleId;
@@ -43,11 +40,19 @@ type MissingPuzzleGenerationInput = {
   selectedPuzzleId: PuzzleId;
   selectedDefinition: PuzzleDefinition;
   seed: string;
+  width?: number;
+  height?: number;
   difficulty: PuzzleDifficulty;
   requireUniqueSolution: boolean;
   sudokuVariation: SudokuVariation;
   solitaireVariation: SolitaireVariation;
   makeSeed: () => string;
+};
+
+type InitialPuzzleGenerationInput = {
+  puzzleId: PuzzleId;
+  makeSeed: () => string;
+  rememberedDraft?: NextPuzzleDraft | null;
 };
 
 export type BeginGenerationResult =
@@ -62,6 +67,11 @@ export type BeginGenerationResult =
       title: string;
     };
 
+const normalizeDimension = (value: number | undefined, minimum: number, maximum: number, fallback: number) => {
+  const numericValue = Number.isFinite(value) ? Math.round(Number(value)) : fallback;
+  return Math.min(maximum, Math.max(minimum, numericValue));
+};
+
 export const shouldRecoverMissingPuzzleSurface = ({
   hasSelectedPuzzle,
   isHomeSelected,
@@ -70,10 +80,39 @@ export const shouldRecoverMissingPuzzleSurface = ({
   selectedPuzzleIsGeneratable,
 }: MissingPuzzleSurfaceState) => hasSelectedPuzzle && !isHomeSelected && !isGenerating && !hasPuzzle && selectedPuzzleIsGeneratable;
 
+export const shouldAcceptGenerationResponse = (activeRequestId: string | null, responseRequestId: string) =>
+  activeRequestId !== null && responseRequestId === activeRequestId;
+
+export const makeInitialPuzzleGenerationOptions = ({
+  puzzleId,
+  makeSeed,
+  rememberedDraft,
+}: InitialPuzzleGenerationInput): BeginGenerationOptions => {
+  const definition = getPuzzleDefinition(puzzleId);
+
+  return {
+    puzzleId,
+    seed: makeSeed(),
+    width: normalizeDimension(rememberedDraft?.width, definition.minWidth, definition.maxWidth, definition.defaultWidth),
+    height: normalizeDimension(rememberedDraft?.height, definition.minHeight, definition.maxHeight, definition.defaultHeight),
+    difficulty: rememberedDraft?.difficulty ?? defaultPuzzleDifficulty,
+    requireUniqueSolution: rememberedDraft?.requireUniqueSolution ?? true,
+    sudokuVariation: puzzleId === "sudoku"
+      ? rememberedDraft?.sudokuVariation ?? defaultSudokuVariation
+      : undefined,
+    solitaireVariation: puzzleId === "klondike-solitaire"
+      ? rememberedDraft?.solitaireVariation ?? defaultSolitaireVariation
+      : undefined,
+    imageId: isImageBackedPuzzleId(puzzleId) ? rememberedDraft?.imageId : undefined,
+  };
+};
+
 export const makeMissingPuzzleGenerationOptions = ({
   selectedPuzzleId,
   selectedDefinition,
   seed,
+  width,
+  height,
   difficulty,
   requireUniqueSolution,
   sudokuVariation,
@@ -82,8 +121,8 @@ export const makeMissingPuzzleGenerationOptions = ({
 }: MissingPuzzleGenerationInput): BeginGenerationOptions => ({
   puzzleId: selectedPuzzleId,
   seed: seed.trim() || makeSeed(),
-  width: selectedDefinition.defaultWidth,
-  height: selectedDefinition.defaultHeight,
+  width: normalizeDimension(width, selectedDefinition.minWidth, selectedDefinition.maxWidth, selectedDefinition.defaultWidth),
+  height: normalizeDimension(height, selectedDefinition.minHeight, selectedDefinition.maxHeight, selectedDefinition.defaultHeight),
   difficulty,
   requireUniqueSolution,
   sudokuVariation: selectedPuzzleId === "sudoku" ? sudokuVariation : undefined,
@@ -98,22 +137,28 @@ export const usePuzzleGeneration = () => {
     [],
   );
 
+  useEffect(() => () => worker.terminate(), [worker]);
+
+  const cancelGeneration = () => {
+    activeRequestId.current = null;
+    setIsGenerating(false);
+  };
+
   const beginGeneration = (
     defaults: PuzzleGenerationDefaults,
     options: BeginGenerationOptions = {},
   ): BeginGenerationResult => {
     const puzzleId = options.puzzleId ?? defaults.selectedPuzzleId;
+    const definition = getPuzzleDefinition(puzzleId);
     const seed = options.seed ?? defaults.seed;
-    const width = options.width ?? defaults.width;
-    const height = options.height ?? defaults.height;
+    const width = normalizeDimension(options.width ?? defaults.width, definition.minWidth, definition.maxWidth, definition.defaultWidth);
+    const height = normalizeDimension(options.height ?? defaults.height, definition.minHeight, definition.maxHeight, definition.defaultHeight);
     const difficulty = options.difficulty ?? defaults.difficulty;
     const requireUniqueSolution = options.requireUniqueSolution ?? defaults.requireUniqueSolution;
     const sudokuVariation = puzzleId === "sudoku" ? normalizeSudokuVariation(options.sudokuVariation ?? defaults.sudokuVariation ?? defaultSudokuVariation) : undefined;
-    const definition = getPuzzleDefinition(puzzleId);
 
     if (!isGeneratable(definition)) {
-      activeRequestId.current = null;
-      setIsGenerating(false);
+      cancelGeneration();
       return { kind: "planned", puzzleId, title: definition.title };
     }
 
@@ -142,38 +187,33 @@ export const usePuzzleGeneration = () => {
     onGenerated: (puzzle: GeneratedPuzzle) => void,
     onError: (error: string) => void,
   ) => {
-    if (event.data.requestId !== activeRequestId.current) {
-      return;
-    }
+    if (!shouldAcceptGenerationResponse(activeRequestId.current, event.data.requestId)) return;
 
-    setIsGenerating(false);
+    cancelGeneration();
 
     if ("error" in event.data) {
-      activeRequestId.current = null;
       onError(event.data.error);
       return;
     }
 
-    activeRequestId.current = null;
     onGenerated(event.data.puzzle);
   };
 
   const makeReadyMessage = (puzzle: GeneratedPuzzle) =>
     puzzle.puzzleId === "sudoku"
-      ? `${puzzle.difficulty ?? defaultSudokuDifficulty} ${sudokuVariationLabels[normalizeSudokuVariation(puzzle.sudokuVariation)]} Sudoku ready.`
+      ? `${puzzle.difficulty ?? defaultPuzzleDifficulty} ${sudokuVariationLabels[normalizeSudokuVariation(puzzle.sudokuVariation)]} Sudoku ready.`
       : puzzle.puzzleId === "nonogram"
         ? puzzle.uniqueSolution
           ? "Unique Nonogram ready."
           : "Open Nonogram ready. Multiple solutions may be possible."
-        : `${puzzle.title} generated from seed ${puzzle.seed}.`;
+        : `${puzzle.title} ready.`;
 
   return {
     isGenerating,
-    activeRequestId: activeRequestId.current,
     worker,
     beginGeneration,
+    cancelGeneration,
     handleGenerationMessage,
     makeReadyMessage,
-    setIsGenerating,
   };
 };

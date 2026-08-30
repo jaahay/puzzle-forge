@@ -8,6 +8,7 @@ export type PersistedCardRef = string | { code: string; faceDown: true };
 export type PersistedCardStack = {
   id: string;
   cards: PersistedCardRef[];
+  // Accepted for backward compatibility. Face orientation is authoritative on card refs.
   faceDownCount?: number;
 };
 
@@ -19,6 +20,7 @@ export type PersistedSolitaireHistoryEntry = {
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
+const isNonNegativeInteger = (value: unknown): value is number => typeof value === "number" && Number.isInteger(value) && value >= 0;
 
 export const cloneCardStack = (stack: CardStack): CardStack => ({ ...stack, cards: stack.cards.map((card) => ({ ...card })) });
 
@@ -39,13 +41,13 @@ export const isPersistedCardStack = (value: unknown): value is PersistedCardStac
   typeof value.id === "string" &&
   Array.isArray(value.cards) &&
   value.cards.every(isPersistedCardRef) &&
-  (value.faceDownCount === undefined || typeof value.faceDownCount === "number");
+  (value.faceDownCount === undefined || isNonNegativeInteger(value.faceDownCount));
 
 export const isPersistedSolitaireHistoryEntry = (value: unknown, isSolitaireStats: (candidate: unknown) => candidate is SolitaireStats): value is PersistedSolitaireHistoryEntry =>
   isRecord(value) &&
   Array.isArray(value.cardStacks) &&
   value.cardStacks.every(isPersistedCardStack) &&
-  (value.selectedCard === null || (isRecord(value.selectedCard) && typeof value.selectedCard.stackId === "string" && typeof value.selectedCard.cardIndex === "number")) &&
+  (value.selectedCard === null || (isRecord(value.selectedCard) && typeof value.selectedCard.stackId === "string" && isNonNegativeInteger(value.selectedCard.cardIndex))) &&
   isSolitaireStats(value.solitaireStats) &&
   typeof value.statusMessage === "string";
 
@@ -56,7 +58,6 @@ export const clonePersistedCardRef = (card: PersistedCardRef): PersistedCardRef 
 export const buildPersistedCardStack = (stack: CardStack): PersistedCardStack => ({
   id: stack.id,
   cards: stack.cards.map(buildPersistedCardRef),
-  ...(typeof stack.faceDownCount === "number" ? { faceDownCount: stack.faceDownCount } : {}),
 });
 
 export const clonePersistedCardStack = (stack: PersistedCardStack): PersistedCardStack => ({
@@ -103,19 +104,23 @@ const restorePersistedCardStack = (stack: PersistedCardStack, originalStack: Car
   return {
     ...originalStack,
     cards,
-    faceDownCount: stack.faceDownCount ?? cards.filter((card) => !card.faceUp).length,
+    faceDownCount: cards.filter((card) => !card.faceUp).length,
   };
 };
 
 export const restorePersistedCardStacks = (stacks: PersistedCardStack[], puzzleStacks: CardStack[]): CardStack[] | null => {
   const stacksById = buildStackCatalog(puzzleStacks);
   const cardsByCode = buildCardCatalog(puzzleStacks);
+  const usedStackIds = new Set<string>();
   const usedCardCodes = new Set<string>();
 
   if (stacks.length !== puzzleStacks.length) return null;
 
   const restoredStacks: CardStack[] = [];
   for (const stack of stacks) {
+    if (usedStackIds.has(stack.id)) return null;
+    usedStackIds.add(stack.id);
+
     const originalStack = stacksById.get(stack.id);
     if (!originalStack) return null;
 
@@ -130,12 +135,18 @@ export const restorePersistedCardStacks = (stacks: PersistedCardStack[], puzzleS
     restoredStacks.push(restoredStack);
   }
 
-  return usedCardCodes.size === cardsByCode.size ? restoredStacks : null;
+  return usedStackIds.size === stacksById.size && usedCardCodes.size === cardsByCode.size ? restoredStacks : null;
+};
+
+export const isValidCardSelectionForStacks = (selection: CardSelection | null, stacks: CardStack[]) => {
+  if (!selection) return true;
+  const stack = stacks.find((candidate) => candidate.id === selection.stackId);
+  return Boolean(stack && selection.cardIndex < stack.cards.length);
 };
 
 export const restorePersistedSolitaireHistoryEntry = (entry: PersistedSolitaireHistoryEntry, puzzleStacks: CardStack[]): SolitaireHistoryEntry | null => {
   const restoredStacks = restorePersistedCardStacks(entry.cardStacks, puzzleStacks);
-  if (!restoredStacks) return null;
+  if (!restoredStacks || !isValidCardSelectionForStacks(entry.selectedCard, restoredStacks)) return null;
 
   return {
     cardStacks: restoredStacks,
