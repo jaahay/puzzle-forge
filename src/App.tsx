@@ -67,6 +67,7 @@ export const App = () => {
   const pendingScrollRestore = useRef<{ x: number; y: number } | null>(null);
   const generatedPuzzleHandlerRef = useRef<(generatedPuzzle: GeneratedPuzzle) => void>(() => undefined);
   const routeNavigationHandlerRef = useRef<(route: AppRoute) => void>(() => undefined);
+  const saveCurrentSessionRef = useRef<() => void>(() => undefined);
   const { seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation } = generationDefaults;
   const activeSolitaireVariation = puzzle?.kind === "cards" ? puzzle.solitaireVariation : solitaireVariation;
 
@@ -163,6 +164,10 @@ export const App = () => {
     const session = makeCurrentSession();
     if (session) sessions.saveSession(session.puzzle.puzzleId, session);
   };
+  saveCurrentSessionRef.current = () => {
+    if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
+  };
+
   const resetRuntimePuzzleState = () => { setPuzzle(null); solitaire.resetSolitaire(); grid.resetGrid(); };
 
   const beginGeneration = (options: BeginGenerationOptions = {}, behavior: GenerationBehavior = {}) => {
@@ -310,6 +315,13 @@ export const App = () => {
   }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handlePageHide = () => saveCurrentSessionRef.current();
+    window.addEventListener("pagehide", handlePageHide);
+    return () => window.removeEventListener("pagehide", handlePageHide);
+  }, []);
+
+  useEffect(() => {
     const handleMessage = (event: MessageEvent) => generation.handleGenerationMessage(
       event,
       (generatedPuzzle) => generatedPuzzleHandlerRef.current(generatedPuzzle),
@@ -332,7 +344,14 @@ export const App = () => {
   }, [generation.worker]);
 
   useEffect(() => {
-    const shouldRecover = shouldRecoverMissingPuzzleSurface({ hasSelectedPuzzle, isHomeSelected, isGenerating: generation.isGenerating, hasPuzzle: Boolean(puzzle), selectedPuzzleIsGeneratable });
+    const shouldRecover = shouldRecoverMissingPuzzleSurface({
+      hasSelectedPuzzle,
+      isHomeSelected,
+      isGenerating: generation.isGenerating,
+      hasActiveGenerationRequest: generation.hasActiveRequest(),
+      hasPuzzle: Boolean(puzzle),
+      selectedPuzzleIsGeneratable,
+    });
     if (!shouldRecover) return;
     beginGeneration(makeMissingPuzzleGenerationOptions({
       selectedPuzzleId,
