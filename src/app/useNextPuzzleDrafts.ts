@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useRef, useState } from "preact/hooks";
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { GeneratedPuzzle, PuzzleId } from "../catalog/types";
 import { defaultSolitaireVariation, normalizeSolitaireVariation } from "../games/solitaire/variation";
@@ -78,7 +78,9 @@ export const useNextPuzzleDrafts = ({
   runtimeSettings,
 }: UseNextPuzzleDraftsInput) => {
   const [drafts, setDrafts] = useState<NextPuzzleDraftCache>(loadNextPuzzleDraftCache);
+  const draftsRef = useRef(drafts);
   const [seedLoadInputs, setSeedLoadInputs] = useState<Partial<Record<PuzzleId, string>>>({});
+  draftsRef.current = drafts;
 
   const makeDraft = (puzzleId: PuzzleId) =>
     buildNextPuzzleDraft({
@@ -89,17 +91,16 @@ export const useNextPuzzleDrafts = ({
     });
 
   const updateDrafts = (updater: (current: NextPuzzleDraftCache) => NextPuzzleDraftCache) => {
-    setDrafts((current) => {
-      const next = updater(current);
-      saveNextPuzzleDraftCache(next);
-      return next;
-    });
+    const next = updater(draftsRef.current);
+    draftsRef.current = next;
+    setDrafts(next);
+    saveNextPuzzleDraftCache(next);
   };
 
   const nextPuzzleDraft = drafts[selectedPuzzleId] ?? makeDraft(selectedPuzzleId);
   const seedLoadInput = seedLoadInputs[selectedPuzzleId] ?? "";
 
-  const getRememberedNextPuzzleDraft = (puzzleId: PuzzleId) => drafts[puzzleId] ?? null;
+  const getRememberedNextPuzzleDraft = (puzzleId: PuzzleId) => draftsRef.current[puzzleId] ?? null;
 
   const updateNextPuzzleDraft = (settings: GenerationSettings) => {
     updateDrafts((current) => {
