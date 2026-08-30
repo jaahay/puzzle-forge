@@ -121,20 +121,26 @@ export const App = () => {
     setSelectedPuzzleId(puzzleId);
     setGenerationDefaults((current) => getGeneratedPuzzleRuntimeSettings(restoredPuzzle, current));
     setPuzzle(restoredPuzzle);
-    if (restoredPuzzle.kind === "cards") {
+
+    if (session.progress.kind === "cards") {
       solitaire.restoreSolitaireSnapshot({
-        cardStacks: session.cardStacks,
-        selectedCard: session.selectedCard,
-        solitaireStats: session.solitaireStats,
-        solitaireUndoStack: session.solitaireUndoStack,
-        solitaireRedoStack: session.solitaireRedoStack,
+        cardStacks: session.progress.cardStacks,
+        selectedCard: session.progress.selectedCard,
+        solitaireStats: session.progress.solitaireStats,
+        solitaireUndoStack: session.progress.undoStack,
+        solitaireRedoStack: session.progress.redoStack,
         statusMessage: session.statusMessage,
       });
     } else {
       solitaire.resetSolitaire();
       setStatusMessage(session.statusMessage);
     }
-    grid.restoreGridSnapshot({ gridCells: session.gridCells, selectedGridCell: session.selectedGridCell });
+
+    grid.restoreGridSnapshot(
+      session.progress.kind === "grid"
+        ? { gridCells: session.progress.cells, selectedGridCell: session.progress.selectedCell }
+        : { gridCells: null, selectedGridCell: null },
+    );
     restoreScrollPosition();
   };
 
