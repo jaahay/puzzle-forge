@@ -40,8 +40,8 @@ type MissingPuzzleGenerationInput = {
   selectedPuzzleId: PuzzleId;
   selectedDefinition: PuzzleDefinition;
   seed: string;
-  width: number;
-  height: number;
+  width?: number;
+  height?: number;
   difficulty: PuzzleDifficulty;
   requireUniqueSolution: boolean;
   sudokuVariation: SudokuVariation;
