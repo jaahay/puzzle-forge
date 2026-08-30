@@ -17,3 +17,6 @@ export const getDailyPuzzleLabel = (puzzleId: PuzzleId, seed: string) => {
 
 export const getDailyPuzzleProvenanceLabel = (puzzle: GeneratedPuzzle) =>
   getDailyPuzzleLabel(puzzle.puzzleId, puzzle.seed);
+
+/** @deprecated Prefer getDailyPuzzleProvenanceLabel; daily identity is seed provenance, not one fixed configuration. */
+export const getCanonicalDailyPuzzleLabel = getDailyPuzzleProvenanceLabel;
