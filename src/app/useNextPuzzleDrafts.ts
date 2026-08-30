@@ -28,6 +28,7 @@ export const buildNextPuzzleDraft = ({
   const definition = getPuzzleDefinition(puzzleId);
   const puzzle = currentPuzzle?.puzzleId === puzzleId ? currentPuzzle : null;
   const cards = puzzle?.kind === "cards" ? puzzle : null;
+  const imageId = puzzle?.kind === "tiles" && puzzle.asset.kind === "image" ? puzzle.asset.id : undefined;
   const useRuntimeFallback = puzzleId === selectedPuzzleId;
 
   return {
@@ -47,6 +48,7 @@ export const buildNextPuzzleDraft = ({
         : useRuntimeFallback
           ? normalizeSolitaireVariation(runtimeSettings.solitaireVariation)
           : defaultSolitaireVariation,
+    ...(imageId ? { imageId } : {}),
   };
 };
 
@@ -64,6 +66,7 @@ const updateDraft = (base: NextPuzzleDraft, settings: GenerationSettings): NextP
   solitaireVariation: settings.solitaireVariation
     ? normalizeSolitaireVariation(settings.solitaireVariation)
     : base.solitaireVariation,
+  imageId: settings.imageId ?? base.imageId,
 });
 
 type UseNextPuzzleDraftsInput = {
