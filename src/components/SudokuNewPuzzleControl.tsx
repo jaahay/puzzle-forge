@@ -64,11 +64,13 @@ export const SudokuNewPuzzleControl = ({
   }, []);
 
   const startNewPuzzle = () => {
+    if (disabled) return;
     closeOptions();
     onNewPuzzle();
   };
 
   const startToday = () => {
+    if (disabled) return;
     closeOptions();
     onToday();
   };
@@ -132,6 +134,16 @@ export const SudokuNewPuzzleControl = ({
                 Load seed
               </button>
             </div>
+
+            <button
+              class="new-puzzle-start-action"
+              type="button"
+              onClick={startNewPuzzle}
+              disabled={disabled}
+              aria-label={`Start a new Sudoku, ${configurationSummary}`}
+            >
+              Start puzzle
+            </button>
           </div>
         </details>
       </div>
