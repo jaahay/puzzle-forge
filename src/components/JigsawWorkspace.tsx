@@ -1,12 +1,11 @@
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import type { JigsawImageAsset, PuzzleDifficulty } from "../catalog/types";
-import { getPuzzleImageAssetsFor } from "../games/imageAssets";
 import {
   getJigsawDifficultyForDimensions,
   jigsawDifficultyOrder,
   resolveJigsawDifficultyDimensions,
 } from "../games/jigsaw/difficulty";
-import { getCanonicalDailyGenerationSettings, getCanonicalDailyPuzzleLabel } from "../games/shared/daily";
+import { getCanonicalDailyPuzzleLabel } from "../games/shared/daily";
 import { ArtworkAlbum } from "./ArtworkAlbum";
 import { ImmediateTopPuzzleConfiguration } from "./PuzzleConfiguration";
 import type { ImmediateImageWorkspaceProps } from "./PuzzleWorkspace.types";
@@ -47,27 +46,24 @@ export const JigsawWorkspace = ({
   onHeightChange,
   onSettingsCommit,
   onGenerate,
+  onToday,
   onRandomize,
   onReset,
 }: ImmediateImageWorkspaceProps) => {
   const [resetVersion, setResetVersion] = useState(0);
   const jigsawPuzzle = puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw" ? puzzle : null;
   const initialPreset: JigsawPresetSelection = jigsawPuzzle
-    ? getJigsawDifficultyForDimensions(jigsawPuzzle.asset, width, height) ?? jigsawCustomPreset
+    ? getJigsawDifficultyForDimensions(jigsawPuzzle.asset, jigsawPuzzle.width, jigsawPuzzle.height) ?? jigsawCustomPreset
     : jigsawCustomPreset;
   const [selectedPreset, setSelectedPreset] = useState<JigsawPresetSelection>(initialPreset);
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
   const dailyLabel = jigsawPuzzle ? getCanonicalDailyPuzzleLabel(jigsawPuzzle) : null;
-  const generateDailyPuzzle = () => {
-    const dailySettings = getCanonicalDailyGenerationSettings("jigsaw");
-    const dailyAsset = getPuzzleImageAssetsFor("jigsaw").find((asset) => asset.id === dailySettings.imageId);
-    setSelectedPreset(
-      dailyAsset
-        ? getJigsawDifficultyForDimensions(dailyAsset, dailySettings.width, dailySettings.height) ?? jigsawCustomPreset
-        : jigsawCustomPreset,
-    );
-    onSettingsCommit(dailySettings);
-  };
+
+  useEffect(() => {
+    if (!jigsawPuzzle) return;
+    setSelectedPreset(getJigsawDifficultyForDimensions(jigsawPuzzle.asset, jigsawPuzzle.width, jigsawPuzzle.height) ?? jigsawCustomPreset);
+  }, [jigsawPuzzle?.id, jigsawPuzzle?.asset.id, jigsawPuzzle?.width, jigsawPuzzle?.height]);
+
   const resetJigsaw = () => {
     onReset();
     setResetVersion((current) => current + 1);
@@ -127,7 +123,7 @@ export const JigsawWorkspace = ({
         onWidthChange={selectCustomWidth}
         onHeightChange={selectCustomHeight}
         onSettingsCommit={commitCustomDimensions}
-        onToday={generateDailyPuzzle}
+        onToday={onToday}
         onUseSeed={onGenerate}
         onRandomize={onRandomize}
         onReset={resetJigsaw}
