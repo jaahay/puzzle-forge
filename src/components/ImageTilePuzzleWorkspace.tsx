@@ -1,6 +1,5 @@
 import { useCallback, useState } from "preact/hooks";
 import type { ImageTileGeneratedPuzzle, ImageTilePuzzleId } from "../catalog/types";
-import { getCanonicalDailyGenerationSettings } from "../games/shared/daily";
 import { ArtworkAlbum } from "./ArtworkAlbum";
 import { ImmediateTopPuzzleConfiguration } from "./PuzzleConfiguration";
 import type { ImmediateImageWorkspaceProps } from "./PuzzleWorkspace.types";
@@ -34,6 +33,7 @@ export const ImageTilePuzzleWorkspace = ({
   onHeightChange,
   onSettingsCommit,
   onGenerate,
+  onToday,
   onRandomize,
   onReset,
 }: ImmediateImageWorkspaceProps) => {
@@ -67,7 +67,6 @@ export const ImageTilePuzzleWorkspace = ({
     setResetVersion((current) => current + 1);
     setCompletionState({ puzzleInstanceId: imagePuzzle?.id ?? null, solved: false });
   };
-  const generateDailyPuzzle = () => onSettingsCommit(getCanonicalDailyGenerationSettings(puzzleId));
   const seedInput = (
     <SeedControl
       seed={seed}
@@ -99,7 +98,7 @@ export const ImageTilePuzzleWorkspace = ({
       onWidthChange={onWidthChange}
       onHeightChange={onHeightChange}
       onSettingsCommit={onSettingsCommit}
-      onToday={generateDailyPuzzle}
+      onToday={onToday}
       onUseSeed={onGenerate}
       onRandomize={onRandomize}
       onReset={resetPuzzle}
