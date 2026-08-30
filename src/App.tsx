@@ -334,8 +334,19 @@ export const App = () => {
   useEffect(() => {
     const shouldRecover = shouldRecoverMissingPuzzleSurface({ hasSelectedPuzzle, isHomeSelected, isGenerating: generation.isGenerating, hasPuzzle: Boolean(puzzle), selectedPuzzleIsGeneratable });
     if (!shouldRecover) return;
-    beginGeneration(makeMissingPuzzleGenerationOptions({ selectedPuzzleId, selectedDefinition, seed, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation, makeSeed: makeRandomSeed }));
-  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, puzzle, selectedPuzzleId, selectedPuzzleIsGeneratable, selectedDefinition, seed, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation]);
+    beginGeneration(makeMissingPuzzleGenerationOptions({
+      selectedPuzzleId,
+      selectedDefinition,
+      seed,
+      width,
+      height,
+      difficulty,
+      requireUniqueSolution,
+      sudokuVariation,
+      solitaireVariation,
+      makeSeed: makeRandomSeed,
+    }));
+  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, puzzle, selectedPuzzleId, selectedPuzzleIsGeneratable, selectedDefinition, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation]);
 
   useEffect(() => {
     if (!hasSelectedPuzzle || generation.isGenerating || isHomeSelected || !puzzle) return;
@@ -343,7 +354,6 @@ export const App = () => {
   }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, selectedPuzzleId, puzzle, solitaire.cardStacks, solitaire.selectedCard, solitaire.solitaireStats, solitaire.solitaireUndoStack, solitaire.solitaireRedoStack, grid.gridCells, grid.selectedGridCell, statusMessage]);
 
   const generate = () => beginGeneration({}, { preserveScroll: true });
-  const randomize = () => beginGeneration({ seed: makeRandomSeed() }, { preserveScroll: true });
 
   const resetCurrentPuzzle = () => {
     if (!puzzle) return;
@@ -408,6 +418,11 @@ export const App = () => {
     commitGenerationSettings(getCanonicalDailyGenerationSettings(selectedPuzzleId));
   };
 
+  const commitRememberedGenerationSettings = (settings: GenerationSettings = {}) => {
+    updateNextPuzzleDraft(settings);
+    commitGenerationSettings(settings);
+  };
+
   const handleCheck = () => { if (!puzzle) return; puzzle.kind === "cards" ? solitaire.checkSolitaire() : grid.checkGrid(puzzle, setStatusMessage); };
   const workspaceIsGenerating = generation.isGenerating || (!puzzle && selectedPuzzleIsGeneratable && !isHomeSelected);
   const workspaceCore = {
@@ -455,9 +470,10 @@ export const App = () => {
     onSeedChange: (nextSeed: string) => updateGenerationDefaults({ seed: nextSeed }),
     onWidthChange: (nextWidth: number) => updateGenerationDefaults({ width: nextWidth }),
     onHeightChange: (nextHeight: number) => updateGenerationDefaults({ height: nextHeight }),
-    onSettingsCommit: commitGenerationSettings,
+    onSettingsCommit: commitRememberedGenerationSettings,
     onGenerate: generate,
-    onRandomize: randomize,
+    onToday: loadToday,
+    onRandomize: generateNextPuzzle,
   };
 
   const puzzleNavigation = activeView === "catalog" ? <PuzzleCatalog isCollapsed={isCatalogCollapsed} isHomeSelected={isHomeSelected || !hasSelectedPuzzle} selectedPuzzleId={selectedPuzzleId} onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)} onHomeSelect={() => selectHome()} onSelectPuzzle={(puzzleId) => selectPuzzle(puzzleId)} /> : null;
