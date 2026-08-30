@@ -13,6 +13,7 @@ import {
   type SolitaireHistoryEntry,
   type SolitaireStats,
 } from "./session";
+import { restoredSessionPreservesGeneratedState } from "./sessionIntegrity";
 import { cloneSolitaireHistoryEntry } from "./solitaireHistory";
 
 export type RuntimeSessionDraft = {
@@ -222,7 +223,7 @@ export const usePuzzleSessions = () => {
       : null;
 
     pendingRestorePuzzleId.current = null;
-    if (!restoredSession) return null;
+    if (!restoredSession || !restoredSessionPreservesGeneratedState(restoredSession)) return null;
 
     sessionCache.current[generatedPuzzle.puzzleId] = clonePuzzleSession(restoredSession);
     return restoredSession;
