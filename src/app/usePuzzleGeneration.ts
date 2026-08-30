@@ -40,6 +40,8 @@ type MissingPuzzleGenerationInput = {
   selectedPuzzleId: PuzzleId;
   selectedDefinition: PuzzleDefinition;
   seed: string;
+  width: number;
+  height: number;
   difficulty: PuzzleDifficulty;
   requireUniqueSolution: boolean;
   sudokuVariation: SudokuVariation;
@@ -65,6 +67,11 @@ export type BeginGenerationResult =
       title: string;
     };
 
+const normalizeDimension = (value: number | undefined, minimum: number, maximum: number, fallback: number) => {
+  const numericValue = Number.isFinite(value) ? Math.round(Number(value)) : fallback;
+  return Math.min(maximum, Math.max(minimum, numericValue));
+};
+
 export const shouldRecoverMissingPuzzleSurface = ({
   hasSelectedPuzzle,
   isHomeSelected,
@@ -86,8 +93,8 @@ export const makeInitialPuzzleGenerationOptions = ({
   return {
     puzzleId,
     seed: makeSeed(),
-    width: rememberedDraft?.width ?? definition.defaultWidth,
-    height: rememberedDraft?.height ?? definition.defaultHeight,
+    width: normalizeDimension(rememberedDraft?.width, definition.minWidth, definition.maxWidth, definition.defaultWidth),
+    height: normalizeDimension(rememberedDraft?.height, definition.minHeight, definition.maxHeight, definition.defaultHeight),
     difficulty: rememberedDraft?.difficulty ?? defaultPuzzleDifficulty,
     requireUniqueSolution: rememberedDraft?.requireUniqueSolution ?? true,
     sudokuVariation: puzzleId === "sudoku"
@@ -96,6 +103,7 @@ export const makeInitialPuzzleGenerationOptions = ({
     solitaireVariation: puzzleId === "klondike-solitaire"
       ? rememberedDraft?.solitaireVariation ?? defaultSolitaireVariation
       : undefined,
+    imageId: isImageBackedPuzzleId(puzzleId) ? rememberedDraft?.imageId : undefined,
   };
 };
 
@@ -103,6 +111,8 @@ export const makeMissingPuzzleGenerationOptions = ({
   selectedPuzzleId,
   selectedDefinition,
   seed,
+  width,
+  height,
   difficulty,
   requireUniqueSolution,
   sudokuVariation,
@@ -111,8 +121,8 @@ export const makeMissingPuzzleGenerationOptions = ({
 }: MissingPuzzleGenerationInput): BeginGenerationOptions => ({
   puzzleId: selectedPuzzleId,
   seed: seed.trim() || makeSeed(),
-  width: selectedDefinition.defaultWidth,
-  height: selectedDefinition.defaultHeight,
+  width: normalizeDimension(width, selectedDefinition.minWidth, selectedDefinition.maxWidth, selectedDefinition.defaultWidth),
+  height: normalizeDimension(height, selectedDefinition.minHeight, selectedDefinition.maxHeight, selectedDefinition.defaultHeight),
   difficulty,
   requireUniqueSolution,
   sudokuVariation: selectedPuzzleId === "sudoku" ? sudokuVariation : undefined,
@@ -139,13 +149,13 @@ export const usePuzzleGeneration = () => {
     options: BeginGenerationOptions = {},
   ): BeginGenerationResult => {
     const puzzleId = options.puzzleId ?? defaults.selectedPuzzleId;
+    const definition = getPuzzleDefinition(puzzleId);
     const seed = options.seed ?? defaults.seed;
-    const width = options.width ?? defaults.width;
-    const height = options.height ?? defaults.height;
+    const width = normalizeDimension(options.width ?? defaults.width, definition.minWidth, definition.maxWidth, definition.defaultWidth);
+    const height = normalizeDimension(options.height ?? defaults.height, definition.minHeight, definition.maxHeight, definition.defaultHeight);
     const difficulty = options.difficulty ?? defaults.difficulty;
     const requireUniqueSolution = options.requireUniqueSolution ?? defaults.requireUniqueSolution;
     const sudokuVariation = puzzleId === "sudoku" ? normalizeSudokuVariation(options.sudokuVariation ?? defaults.sudokuVariation ?? defaultSudokuVariation) : undefined;
-    const definition = getPuzzleDefinition(puzzleId);
 
     if (!isGeneratable(definition)) {
       cancelGeneration();
