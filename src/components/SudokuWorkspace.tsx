@@ -6,6 +6,7 @@ import { GridPuzzlePreview } from "./GridPuzzlePreview";
 import { getNumericGridDigits, NumericGridDigitPad, useNumericGridInput } from "./NumericGridInput";
 import type { SudokuWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
+import { CurrentSeedDisplay } from "./SeedControl";
 import { SudokuMeta } from "./SudokuMeta";
 import { SudokuNewPuzzleControl } from "./SudokuNewPuzzleControl";
 import { usePuzzleCompletionPresentation } from "./usePuzzleCompletionPresentation";
@@ -165,11 +166,16 @@ export const SudokuWorkspace = ({
   ) : null;
 
   const rules = sudokuPuzzle ? sudokuVariationRules[sudokuPuzzle.sudokuVariation ?? "classic"] : undefined;
-  const help = rules ? (
-    <details class="sudoku-rules-disclosure">
-      <summary>Rules</summary>
-      <p>{rules}</p>
-    </details>
+  const help = sudokuPuzzle ? (
+    <div class="sudoku-puzzle-details">
+      <CurrentSeedDisplay seed={sudokuPuzzle.seed} label="Seed" showCopyText />
+      {rules ? (
+        <details class="sudoku-rules-disclosure">
+          <summary>Rules</summary>
+          <p>{rules}</p>
+        </details>
+      ) : null}
+    </div>
   ) : null;
 
   const loadingBoard = (
