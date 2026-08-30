@@ -11,8 +11,9 @@ import type {
   SudokuVariation,
 } from "../catalog/types";
 import { isImageBackedPuzzleId } from "../games/imageAssets";
+import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
-import { defaultSudokuDifficulty, makeRequestId } from "./runtime";
+import { defaultPuzzleDifficulty, makeRequestId } from "./runtime";
 
 export type BeginGenerationOptions = Partial<Omit<PuzzleGenerationRequest, "requestId">>;
 
@@ -45,6 +46,11 @@ type MissingPuzzleGenerationInput = {
   makeSeed: () => string;
 };
 
+type InitialPuzzleGenerationInput = {
+  puzzleId: PuzzleId;
+  makeSeed: () => string;
+};
+
 export type BeginGenerationResult =
   | {
       kind: "planned";
@@ -67,6 +73,24 @@ export const shouldRecoverMissingPuzzleSurface = ({
 
 export const shouldAcceptGenerationResponse = (activeRequestId: string | null, responseRequestId: string) =>
   activeRequestId !== null && responseRequestId === activeRequestId;
+
+export const makeInitialPuzzleGenerationOptions = ({
+  puzzleId,
+  makeSeed,
+}: InitialPuzzleGenerationInput): BeginGenerationOptions => {
+  const definition = getPuzzleDefinition(puzzleId);
+
+  return {
+    puzzleId,
+    seed: makeSeed(),
+    width: definition.defaultWidth,
+    height: definition.defaultHeight,
+    difficulty: defaultPuzzleDifficulty,
+    requireUniqueSolution: true,
+    sudokuVariation: puzzleId === "sudoku" ? defaultSudokuVariation : undefined,
+    solitaireVariation: puzzleId === "klondike-solitaire" ? defaultSolitaireVariation : undefined,
+  };
+};
 
 export const makeMissingPuzzleGenerationOptions = ({
   selectedPuzzleId,
@@ -160,7 +184,7 @@ export const usePuzzleGeneration = () => {
 
   const makeReadyMessage = (puzzle: GeneratedPuzzle) =>
     puzzle.puzzleId === "sudoku"
-      ? `${puzzle.difficulty ?? defaultSudokuDifficulty} ${sudokuVariationLabels[normalizeSudokuVariation(puzzle.sudokuVariation)]} Sudoku ready.`
+      ? `${puzzle.difficulty ?? defaultPuzzleDifficulty} ${sudokuVariationLabels[normalizeSudokuVariation(puzzle.sudokuVariation)]} Sudoku ready.`
       : puzzle.puzzleId === "nonogram"
         ? puzzle.uniqueSolution
           ? "Unique Nonogram ready."
