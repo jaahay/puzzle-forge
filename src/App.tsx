@@ -18,7 +18,7 @@ import {
   getGeneratedPuzzleRuntimeSettings,
   type GenerationRuntimeSettings,
 } from "./app/generationIdentity";
-import type { GenerationSettings } from "./app/generationSettings";
+import { resolveGenerationIdentity, type GenerationSettings } from "./app/generationSettings";
 import { getInitialSelectedPuzzleId, markPuzzleNavigation } from "./app/homeNavigation";
 import { defaultPuzzleDifficulty, makeRandomSeed } from "./app/runtime";
 import { getCurrentAppRoute, parseAppRoute, pushAppRoute, type AppRoute } from "./app/routes";
@@ -347,44 +347,37 @@ export const App = () => {
     restoreScrollPosition();
   };
 
-  const commitGenerationSettings = ({ seed: nextSeed, width: nextWidth, height: nextHeight, difficulty: nextDifficulty, requireUniqueSolution: nextRequireUniqueSolution, sudokuVariation: nextSudokuVariation, solitaireVariation: nextSolitaireVariation, imageId: nextImageId }: GenerationSettings = {}) => {
-    const definition = getPuzzleDefinition(selectedPuzzleId);
-    const normalizedSeed = (typeof nextSeed === "string" ? nextSeed.trim() : seed.trim()) || puzzle?.seed || makeRandomSeed();
-    const generationWidth = Number.isFinite(nextWidth) ? Number(nextWidth) : width || definition.defaultWidth;
-    const generationHeight = Number.isFinite(nextHeight) ? Number(nextHeight) : height || definition.defaultHeight;
-    const generationDifficulty = nextDifficulty ?? difficulty;
-    const generationRequireUniqueSolution = typeof nextRequireUniqueSolution === "boolean" ? nextRequireUniqueSolution : requireUniqueSolution;
-    const generationSudokuVariation = normalizeSudokuVariation(nextSudokuVariation ?? puzzle?.sudokuVariation ?? sudokuVariation);
-    const currentSolitaireVariation = puzzle?.kind === "cards" ? puzzle.solitaireVariation : undefined;
-    const generationSolitaireVariation = normalizeSolitaireVariation(nextSolitaireVariation ?? currentSolitaireVariation ?? solitaireVariation);
-    const imageBacked = isImageBackedPuzzleId(selectedPuzzleId);
-    const currentImageAsset = puzzle?.kind === "tiles" && puzzle.puzzleId === selectedPuzzleId && puzzle.asset.kind === "image"
-      ? puzzle.asset
-      : null;
-    const generationImageId = nextImageId ?? currentImageAsset?.id;
-    const settingsAreCurrent = generatedPuzzleMatchesIdentity(puzzle, {
+  const commitGenerationSettings = (settings: GenerationSettings = {}) => {
+    const identity = resolveGenerationIdentity({
       puzzleId: selectedPuzzleId,
-      seed: normalizedSeed,
-      width: generationWidth,
-      height: generationHeight,
-      difficulty: generationDifficulty,
-      requireUniqueSolution: generationRequireUniqueSolution,
-      sudokuVariation: generationSudokuVariation,
-      solitaireVariation: generationSolitaireVariation,
-      imageId: generationImageId,
+      currentPuzzle: puzzle,
+      runtimeSettings: generationDefaults,
+      settings,
+      makeSeed: makeRandomSeed,
     });
+    const settingsAreCurrent = generatedPuzzleMatchesIdentity(puzzle, identity);
 
-    setGenerationDefaults((current) => ({
-      seed: normalizedSeed,
-      width: generationWidth,
-      height: generationHeight,
-      difficulty: generationDifficulty,
-      requireUniqueSolution: generationRequireUniqueSolution,
-      sudokuVariation: selectedPuzzleId === "sudoku" ? generationSudokuVariation : current.sudokuVariation,
-      solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? generationSolitaireVariation : current.solitaireVariation,
-    }));
+    setGenerationDefaults({
+      seed: identity.seed,
+      width: identity.width,
+      height: identity.height,
+      difficulty: identity.difficulty,
+      requireUniqueSolution: identity.requireUniqueSolution,
+      sudokuVariation: identity.sudokuVariation,
+      solitaireVariation: identity.solitaireVariation,
+    });
     if (settingsAreCurrent) return;
-    beginGeneration({ seed: normalizedSeed, width: generationWidth, height: generationHeight, difficulty: generationDifficulty, requireUniqueSolution: generationRequireUniqueSolution, sudokuVariation: selectedPuzzleId === "sudoku" ? generationSudokuVariation : undefined, solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? generationSolitaireVariation : undefined, imageId: imageBacked ? generationImageId : undefined }, { preserveScroll: true });
+
+    beginGeneration({
+      seed: identity.seed,
+      width: identity.width,
+      height: identity.height,
+      difficulty: identity.difficulty,
+      requireUniqueSolution: identity.requireUniqueSolution,
+      sudokuVariation: selectedPuzzleId === "sudoku" ? identity.sudokuVariation : undefined,
+      solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? identity.solitaireVariation : undefined,
+      imageId: isImageBackedPuzzleId(selectedPuzzleId) ? identity.imageId : undefined,
+    }, { preserveScroll: true });
   };
 
   const generateNextPuzzle = () => {
