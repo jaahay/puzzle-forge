@@ -96,20 +96,12 @@ export const SudokuWorkspace = ({
       selectedDefinition={selectedDefinition}
       selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
       seedInput={seedInput}
-      width={nextPuzzleDraft.width}
-      height={nextPuzzleDraft.height}
       difficulty={nextPuzzleDraft.difficulty}
-      requireUniqueSolution={nextPuzzleDraft.requireUniqueSolution}
       sudokuVariation={nextPuzzleDraft.sudokuVariation}
-      isFixedSize
       isGenerating={isGenerating}
       showRandomize={!isPresentationCompleted}
-      onWidthChange={(width) => onNextPuzzleDraftChange({ width })}
-      onHeightChange={(height) => onNextPuzzleDraftChange({ height })}
-      onSettingsCommit={onNextPuzzleDraftChange}
       onDifficultyChange={(difficulty) => onNextPuzzleDraftChange({ difficulty })}
       onSudokuVariationChange={(sudokuVariation) => onNextPuzzleDraftChange({ sudokuVariation })}
-      onUniqueSolutionChange={(requireUniqueSolution) => onNextPuzzleDraftChange({ requireUniqueSolution })}
       onToday={onToday}
       onUseSeed={onLoadSeed}
       onRandomize={onNewPuzzle}
