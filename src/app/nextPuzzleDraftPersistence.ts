@@ -34,7 +34,7 @@ const isSolitaireVariation = (value: unknown): value is SolitaireVariation =>
   (value.wasteMode === "standard" || value.wasteMode === "relaxed") &&
   typeof value.knownSolvable === "boolean";
 
-const isDimensionForPuzzle = (puzzleId: PuzzleId, axis: "width" | "height", value: unknown) => {
+const isDimensionForPuzzle = (puzzleId: PuzzleId, axis: "width" | "height", value: unknown): value is number => {
   if (typeof value !== "number" || !Number.isInteger(value)) return false;
   const definition = getPuzzleDefinition(puzzleId);
   const minimum = axis === "width" ? definition.minWidth : definition.minHeight;
