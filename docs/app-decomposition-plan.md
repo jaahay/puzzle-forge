@@ -1,98 +1,88 @@
-# App decomposition plan
+# App runtime boundaries
 
-`src/App.tsx` has become the orchestration point for too many runtime concerns. Before adding more Solitaire variation behavior, split these concerns into narrower modules.
+`src/App.tsx` is the composition root for puzzle navigation and runtime coordination. Gameplay mutation, generation lifecycle, persistence, and puzzle-specific workspace behavior belong behind narrower boundaries.
 
-## Current problem
-
-`App.tsx` owns all of the following:
-
-- view and catalog state;
-- puzzle generation request lifecycle;
-- persisted session cache and restoration;
-- grid cell mutation and checking;
-- Solitaire stack mutation;
-- Solitaire stock/waste draw behavior;
-- Solitaire undo/redo history;
-- Solitaire completion state;
-- rendering glue for `PuzzleWorkspace`.
-
-That makes feature work, especially Solitaire variation selection, too expensive and too risky.
-
-## Target shape
-
-Prefer decomposing by runtime concern instead of by arbitrary helper size.
+## Current shape
 
 ```text
 src/app/usePuzzleGeneration.ts
 src/app/usePuzzleSessions.ts
+src/app/useNextPuzzleDrafts.ts
 src/app/useGridController.ts
 src/app/useSolitaireController.ts
-src/components/SolitaireSettings.tsx
+src/components/PuzzleWorkspace.tsx
+src/components/SudokuWorkspace.tsx
+src/components/GridPuzzleWorkspace.tsx
+src/components/SolitaireWorkspace.tsx
 ```
+
+### `App.tsx`
+
+Owns coordination rather than puzzle mechanics:
+
+- route and puzzle selection;
+- current generated puzzle identity;
+- orchestration between generation, sessions, and controllers;
+- prospective-generation actions such as New puzzle, Today, and Load seed;
+- capability groups passed to the workspace dispatcher.
+
+It should not own grid mutation rules, card-move rules, persistence representation, or puzzle-specific workspace presentation.
 
 ### `usePuzzleGeneration`
 
 Owns:
 
-- worker setup;
-- active request ID;
-- generation request construction;
-- worker response handling;
-- `isGenerating` and generation status messages.
+- worker lifetime;
+- active request identity;
+- request construction;
+- cancellation and rejection of stale worker responses;
+- generation-in-progress state.
+
+A worker response is valid only while its request remains the active request.
 
 ### `usePuzzleSessions`
 
 Owns:
 
 - runtime session cache;
-- persisted session loading;
-- session restore;
-- save-current-session behavior;
+- pending persisted-session restoration;
+- cloning at the session boundary;
 - persistence schema calls.
+
+The generated puzzle is authoritative for current puzzle identity. Runtime sessions store progress and controller state rather than duplicate seed, dimensions, difficulty, or variation.
+
+### `useNextPuzzleDrafts`
+
+Owns prospective settings separately from the current puzzle. Editing a draft does not mutate or replace the puzzle being played.
 
 ### `useGridController`
 
-Owns:
-
-- selected grid cell;
-- cell input normalization;
-- Sudoku cell selection;
-- Nonogram cell toggling;
-- Peg Solitaire jump handling;
-- grid answer checking.
+Owns grid interaction state and mutation, including numeric selection/input, Nonogram toggling, Peg Solitaire moves, and answer checking. Its public API exposes operations rather than raw state setters.
 
 ### `useSolitaireController`
 
-Owns:
+Owns card stacks, selection, stats, history, stock/waste behavior, moves, and completion checks. Its public API exposes gameplay/session operations rather than internal mutation helpers.
 
-- card stacks;
-- selected card;
-- Solitaire stats;
-- undo/redo stacks;
-- stock draw behavior;
-- waste redeal behavior;
-- stack/card click handling;
-- auto-foundation behavior;
-- completion detection.
+### Workspace dispatcher
 
-### `SolitaireSettings`
+`PuzzleWorkspace` dispatches by puzzle type and forwards explicit capability groups. Concrete workspaces receive only the capabilities they consume:
 
-Owns UI for:
+- Sudoku: core + prospective generation + grid interaction;
+- grid puzzles: core + prospective generation + grid interaction;
+- Klondike: core + prospective generation + Solitaire interaction;
+- image-backed immediate workspaces: core + immediate generation.
 
-- draw mode: Draw 1 / Draw 3;
-- redeals: Unlimited / 3 / 1 / None;
-- `knownSolvable` display/copy.
+This avoids a universal workspace prop bag becoming an implicit dependency surface.
 
-## Sequencing
+## Invariants
 
-1. Extract Solitaire controller from `App.tsx` without changing gameplay.
-2. Extract grid controller from `App.tsx` without changing gameplay.
-3. Extract generation/session orchestration.
-4. Add #60 Solitaire variation selection into the extracted Solitaire boundary.
+- Current puzzle identity comes from the generated puzzle.
+- Prospective settings never masquerade as current-puzzle metadata.
+- Presentation strings are not machine-readable state.
+- Late or cancelled worker responses cannot replace the active puzzle.
+- Persisted data is validated at the storage boundary before restore code consumes it.
+- New puzzle types should extend explicit capability boundaries rather than adding puzzle-specific conditionals throughout `App.tsx`.
 
-## Non-goals for the decomposition PR
+## Remaining restraint
 
-- No solver-backed Solitaire generation.
-- No gameplay rule changes.
-- No persistence schema migration unless strictly required by the extracted code.
-- No UI redesign beyond moving code to clearer boundaries.
+Some image-backed workspaces still use immediate-generation semantics. Do not collapse that distinction merely to make types or components look uniform; change it only as an intentional product decision.
