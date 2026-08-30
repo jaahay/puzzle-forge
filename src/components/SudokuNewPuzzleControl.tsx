@@ -2,11 +2,9 @@ import { useRef } from "preact/hooks";
 import type { PuzzleDifficulty, SudokuVariation } from "../catalog/types";
 import { sudokuVariationLabels } from "../games/sudoku/variation";
 import { PuzzleDifficultySelect } from "./PuzzleDifficultySelect";
-import { SeedControl } from "./SeedControl";
 import { SudokuVariationSelect } from "./SudokuVariationSelect";
 
 type SudokuNewPuzzleControlProps = {
-  currentSeed: string;
   difficulty: PuzzleDifficulty;
   sudokuVariation: SudokuVariation;
   seedLoadInput: string;
@@ -20,7 +18,6 @@ type SudokuNewPuzzleControlProps = {
 };
 
 export const SudokuNewPuzzleControl = ({
-  currentSeed,
   difficulty,
   sudokuVariation,
   seedLoadInput,
@@ -45,6 +42,7 @@ export const SudokuNewPuzzleControl = ({
   };
 
   const loadSeed = () => {
+    if (!seedLoadInput.trim()) return;
     closeOptions();
     onLoadSeed();
   };
@@ -83,11 +81,17 @@ export const SudokuNewPuzzleControl = ({
             </div>
 
             <div class="new-puzzle-seed-tools">
-              <SeedControl
-                currentSeed={currentSeed}
-                seed={seedLoadInput}
-                onSeedChange={onSeedLoadInputChange}
-              />
+              <label>
+                Seed
+                <input
+                  aria-label="Seed to load"
+                  value={seedLoadInput}
+                  onInput={(event) => onSeedLoadInputChange(event.currentTarget.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") loadSeed();
+                  }}
+                />
+              </label>
               <button
                 type="button"
                 onClick={loadSeed}
