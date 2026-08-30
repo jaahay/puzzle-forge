@@ -58,6 +58,7 @@ export type ImmediateGenerationProps = {
   onHeightChange: (height: number) => void;
   onSettingsCommit: (settings?: GenerationSettings) => void;
   onGenerate: () => void;
+  onToday: () => void;
   onRandomize: () => void;
 };
 
