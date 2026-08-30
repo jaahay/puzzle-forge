@@ -7,36 +7,39 @@ import type { GridCellSelection } from "../interactions/gridRules";
 
 export type { GenerationSettings, NextPuzzleDraft } from "../app/generationSettings";
 
-export type PuzzleWorkspaceProps = {
+export type CoreWorkspaceProps = {
   selectedDefinition: PuzzleDefinition;
   selectedPuzzleIsGeneratable: boolean;
   seed: string;
-  width: number;
-  height: number;
   puzzle: GeneratedPuzzle | null;
-  nextPuzzleDraft: NextPuzzleDraft;
-  seedLoadInput: string;
-  cardStacks: CardStack[] | null;
-  selectedCard: CardSelection | null;
-  solitaireStats: SolitaireStats;
-  gridCells: PuzzleCell[] | null;
-  selectedGridCell: GridCellSelection | null;
-  gridCheckFeedbackTone: GridCheckFeedbackTone | null;
   statusMessage: string;
   isGenerating: boolean;
-  onSeedChange: (seed: string) => void;
-  onWidthChange: (width: number) => void;
-  onHeightChange: (height: number) => void;
-  onSettingsCommit: (settings?: GenerationSettings) => void;
-  onGenerate: () => void;
-  onRandomize: () => void;
   onReset: () => void;
-  onCheck: () => void;
+};
+
+export type ProspectiveGenerationProps = {
+  nextPuzzleDraft: NextPuzzleDraft;
+  seedLoadInput: string;
   onNextPuzzleDraftChange: (settings: GenerationSettings) => void;
   onSeedLoadInputChange: (seed: string) => void;
   onNewPuzzle: () => void;
   onToday: () => void;
   onLoadSeed: () => void;
+};
+
+export type GridInteractionProps = {
+  gridCells: PuzzleCell[] | null;
+  selectedGridCell: GridCellSelection | null;
+  gridCheckFeedbackTone: GridCheckFeedbackTone | null;
+  onCheck: () => void;
+  onCellClick: (cell: PuzzleCell) => void;
+  onCellInput: (cell: PuzzleCell, value: string) => void;
+};
+
+export type SolitaireInteractionProps = {
+  cardStacks: CardStack[] | null;
+  selectedCard: CardSelection | null;
+  solitaireStats: SolitaireStats;
   onAutoMoveToFoundations: () => void;
   onUndoSolitaire: () => void;
   onRedoSolitaire: () => void;
@@ -45,75 +48,28 @@ export type PuzzleWorkspaceProps = {
   onCardClick: (stack: CardStack, cardIndex: number) => void;
   onCardDoubleClick: (stack: CardStack, cardIndex: number) => void;
   onStackClick: (stack: CardStack) => void;
-  onCellClick: (cell: PuzzleCell) => void;
-  onCellInput: (cell: PuzzleCell, value: string) => void;
 };
 
-type CoreWorkspaceKeys =
-  | "selectedDefinition"
-  | "selectedPuzzleIsGeneratable"
-  | "seed"
-  | "puzzle"
-  | "statusMessage"
-  | "isGenerating"
-  | "onReset";
+export type ImmediateGenerationProps = {
+  width: number;
+  height: number;
+  onSeedChange: (seed: string) => void;
+  onWidthChange: (width: number) => void;
+  onHeightChange: (height: number) => void;
+  onSettingsCommit: (settings?: GenerationSettings) => void;
+  onGenerate: () => void;
+  onRandomize: () => void;
+};
 
-type ProspectiveGenerationKeys =
-  | "nextPuzzleDraft"
-  | "seedLoadInput"
-  | "onNextPuzzleDraftChange"
-  | "onSeedLoadInputChange"
-  | "onNewPuzzle"
-  | "onToday"
-  | "onLoadSeed";
+export type SudokuWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps & GridInteractionProps;
+export type GridPuzzleWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps & GridInteractionProps;
+export type SolitaireWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps & SolitaireInteractionProps;
+export type ImmediateImageWorkspaceProps = CoreWorkspaceProps & ImmediateGenerationProps;
 
-type GridInteractionKeys =
-  | "gridCells"
-  | "selectedGridCell"
-  | "gridCheckFeedbackTone"
-  | "onCheck"
-  | "onCellClick"
-  | "onCellInput";
-
-type SolitaireInteractionKeys =
-  | "cardStacks"
-  | "selectedCard"
-  | "solitaireStats"
-  | "onAutoMoveToFoundations"
-  | "onUndoSolitaire"
-  | "onRedoSolitaire"
-  | "canUndoSolitaire"
-  | "canRedoSolitaire"
-  | "onCardClick"
-  | "onCardDoubleClick"
-  | "onStackClick";
-
-type ImmediateGenerationKeys =
-  | "width"
-  | "height"
-  | "onSeedChange"
-  | "onWidthChange"
-  | "onHeightChange"
-  | "onSettingsCommit"
-  | "onGenerate"
-  | "onRandomize";
-
-export type SudokuWorkspaceProps = Pick<
-  PuzzleWorkspaceProps,
-  CoreWorkspaceKeys | ProspectiveGenerationKeys | GridInteractionKeys
->;
-
-export type GridPuzzleWorkspaceProps = Pick<
-  PuzzleWorkspaceProps,
-  CoreWorkspaceKeys | ProspectiveGenerationKeys | GridInteractionKeys
->;
-
-export type SolitaireWorkspaceProps = Pick<
-  PuzzleWorkspaceProps,
-  CoreWorkspaceKeys | ProspectiveGenerationKeys | SolitaireInteractionKeys
->;
-
-export type ImmediateImageWorkspaceProps = Pick<
-  PuzzleWorkspaceProps,
-  CoreWorkspaceKeys | ImmediateGenerationKeys
->;
+export type PuzzleWorkspaceProps = {
+  core: CoreWorkspaceProps;
+  prospective: ProspectiveGenerationProps;
+  grid: GridInteractionProps;
+  solitaire: SolitaireInteractionProps;
+  immediate: ImmediateGenerationProps;
+};
