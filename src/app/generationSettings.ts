@@ -43,6 +43,11 @@ type ResolveGenerationIdentityInput = {
   makeSeed: () => string;
 };
 
+const normalizeDimension = (value: number | undefined, minimum: number, maximum: number, fallback: number) => {
+  const numericValue = Number.isFinite(value) ? Math.round(Number(value)) : fallback;
+  return Math.min(maximum, Math.max(minimum, numericValue));
+};
+
 export const resolveGenerationIdentity = ({
   puzzleId,
   currentPuzzle,
@@ -53,8 +58,18 @@ export const resolveGenerationIdentity = ({
   const definition = getPuzzleDefinition(puzzleId);
   const explicitSeed = typeof settings.seed === "string" ? settings.seed.trim() : null;
   const seed = (explicitSeed ?? runtimeSettings.seed.trim()) || currentPuzzle?.seed || makeSeed();
-  const width = Number.isFinite(settings.width) ? Number(settings.width) : runtimeSettings.width || definition.defaultWidth;
-  const height = Number.isFinite(settings.height) ? Number(settings.height) : runtimeSettings.height || definition.defaultHeight;
+  const width = normalizeDimension(
+    settings.width ?? runtimeSettings.width,
+    definition.minWidth,
+    definition.maxWidth,
+    definition.defaultWidth,
+  );
+  const height = normalizeDimension(
+    settings.height ?? runtimeSettings.height,
+    definition.minHeight,
+    definition.maxHeight,
+    definition.defaultHeight,
+  );
   const difficulty = settings.difficulty ?? runtimeSettings.difficulty;
   const requireUniqueSolution = typeof settings.requireUniqueSolution === "boolean"
     ? settings.requireUniqueSolution
