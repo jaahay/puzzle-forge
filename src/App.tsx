@@ -20,12 +20,12 @@ import {
 } from "./app/generationIdentity";
 import type { GenerationSettings } from "./app/generationSettings";
 import { getInitialSelectedPuzzleId, markPuzzleNavigation } from "./app/homeNavigation";
-import { defaultSudokuDifficulty, makeRandomSeed } from "./app/runtime";
+import { defaultPuzzleDifficulty, makeRandomSeed } from "./app/runtime";
 import { getCurrentAppRoute, parseAppRoute, pushAppRoute, type AppRoute } from "./app/routes";
 import { initialSolitaireStats, loadPersistedPuzzleSessions } from "./app/session";
 import { useGridController } from "./app/useGridController";
 import { useNextPuzzleDrafts } from "./app/useNextPuzzleDrafts";
-import { makeMissingPuzzleGenerationOptions, shouldRecoverMissingPuzzleSurface, usePuzzleGeneration, type BeginGenerationOptions } from "./app/usePuzzleGeneration";
+import { makeInitialPuzzleGenerationOptions, makeMissingPuzzleGenerationOptions, shouldRecoverMissingPuzzleSurface, usePuzzleGeneration, type BeginGenerationOptions } from "./app/usePuzzleGeneration";
 import { buildRuntimeSession, usePuzzleSessions } from "./app/usePuzzleSessions";
 import { useSolitaireController } from "./app/useSolitaireController";
 import type { AppView } from "./site/views";
@@ -38,7 +38,7 @@ const makeInitialGenerationDefaults = (): GenerationRuntimeSettings => ({
   seed: makeRandomSeed(),
   width: 9,
   height: 9,
-  difficulty: defaultSudokuDifficulty,
+  difficulty: defaultPuzzleDifficulty,
   requireUniqueSolution: true,
   sudokuVariation: defaultSudokuVariation,
   solitaireVariation: defaultSolitaireVariation,
@@ -242,17 +242,7 @@ export const App = () => {
     const cachedSession = sessions.getCachedSession(puzzleId);
     if (cachedSession) { restoreSession(cachedSession); return; }
     if (beginPersistedPuzzle(puzzleId)) return;
-    const definition = getPuzzleDefinition(puzzleId);
-    beginGeneration({
-      puzzleId,
-      seed: makeRandomSeed(),
-      width: definition.defaultWidth,
-      height: definition.defaultHeight,
-      difficulty: puzzleId === "sudoku" ? defaultSudokuDifficulty : difficulty,
-      requireUniqueSolution,
-      sudokuVariation: puzzleId === "sudoku" ? defaultSudokuVariation : undefined,
-      solitaireVariation: puzzleId === "klondike-solitaire" ? solitaireVariation : undefined,
-    });
+    beginGeneration(makeInitialPuzzleGenerationOptions({ puzzleId, makeSeed: makeRandomSeed }));
   };
 
   const selectSiteView = (view: Exclude<AppView, "catalog">, behavior: NavigationBehavior = {}) => {
