@@ -16,13 +16,7 @@ const makeJigsawSession = (): PuzzleSession => {
 
   return {
     puzzle,
-    cardStacks: null,
-    selectedCard: null,
-    solitaireStats: { ...initialSolitaireStats },
-    solitaireUndoStack: [],
-    solitaireRedoStack: [],
-    gridCells: null,
-    selectedGridCell: null,
+    progress: { kind: "tiles" },
     statusMessage: "Jigsaw in progress.",
   };
 };
@@ -94,7 +88,9 @@ describe("buildRuntimeSession", () => {
       statusMessage: "1 entry needs attention.",
     });
 
-    expect(session.gridCells?.map((cell) => cell.tone)).toEqual(["empty", "empty", "given"]);
+    expect(session.progress.kind).toBe("grid");
+    if (session.progress.kind !== "grid") return;
+    expect(session.progress.cells.map((cell) => cell.tone)).toEqual(["empty", "empty", "given"]);
     expect(gridCells.map((cell) => cell.tone)).toEqual(["answer", "hint", "given"]);
   });
 });
