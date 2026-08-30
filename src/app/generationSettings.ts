@@ -7,7 +7,6 @@ import type {
   SolitaireVariation,
   SudokuVariation,
 } from "../catalog/types";
-import { getDailyPuzzleSeed } from "../games/shared/daily";
 import { normalizeSolitaireVariation } from "../games/solitaire/variation";
 import { normalizeSudokuVariation } from "../games/sudoku/variation";
 import type { GenerationIdentity, GenerationRuntimeSettings } from "./generationIdentity";
@@ -43,15 +42,6 @@ type ResolveGenerationIdentityInput = {
   settings?: GenerationSettings;
   makeSeed: () => string;
 };
-
-export const makeTodayGenerationSettings = (
-  puzzleId: PuzzleId,
-  draft: NextPuzzleDraft,
-  date = new Date(),
-): GenerationSettings => ({
-  ...draft,
-  seed: getDailyPuzzleSeed(puzzleId, date),
-});
 
 const normalizeDimension = (value: number | undefined, minimum: number, maximum: number, fallback: number) => {
   const numericValue = Number.isFinite(value) ? Math.round(Number(value)) : fallback;
