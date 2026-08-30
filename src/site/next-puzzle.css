@@ -1,3 +1,20 @@
+.new-puzzle-actions button,
+.new-puzzle-primary {
+  border: 1px solid #86efac;
+  color: #052e16;
+  background: #a7f3d0;
+  font-weight: 900;
+}
+
+.new-puzzle-actions button:hover:not(:disabled),
+.new-puzzle-actions button:focus-visible,
+.new-puzzle-primary:hover:not(:disabled),
+.new-puzzle-primary:focus-visible {
+  background: #bbf7d0;
+  box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.22);
+  outline: none;
+}
+
 .load-puzzle-actions,
 .current-puzzle-actions {
   margin-top: 0.2rem;
