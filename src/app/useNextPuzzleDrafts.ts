@@ -5,7 +5,7 @@ import { defaultSolitaireVariation, normalizeSolitaireVariation } from "../games
 import { defaultSudokuVariation, normalizeSudokuVariation } from "../games/sudoku/variation";
 import type { GenerationSettings, NextPuzzleDraft } from "./generationSettings";
 import type { GenerationRuntimeSettings } from "./generationIdentity";
-import { defaultSudokuDifficulty } from "./runtime";
+import { defaultPuzzleDifficulty } from "./runtime";
 
 type BuildNextPuzzleDraftInput = {
   puzzleId: PuzzleId;
@@ -28,7 +28,7 @@ export const buildNextPuzzleDraft = ({
   return {
     width: puzzle?.width ?? (useRuntimeFallback ? runtimeSettings.width : definition.defaultWidth),
     height: puzzle?.height ?? (useRuntimeFallback ? runtimeSettings.height : definition.defaultHeight),
-    difficulty: puzzle?.difficulty ?? (useRuntimeFallback ? runtimeSettings.difficulty : defaultSudokuDifficulty),
+    difficulty: puzzle?.difficulty ?? (useRuntimeFallback ? runtimeSettings.difficulty : defaultPuzzleDifficulty),
     requireUniqueSolution: puzzle?.uniqueSolution ?? (useRuntimeFallback ? runtimeSettings.requireUniqueSolution : true),
     sudokuVariation:
       puzzle?.puzzleId === "sudoku"
