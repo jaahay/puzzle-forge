@@ -1,6 +1,11 @@
 import type { CardGeneratedPuzzle, CardStack, GeneratedPuzzle, GridGeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
+import {
+  loadPersistedPuzzleSessions as loadPersistedPuzzleSessionsUnsafe,
+  savePersistedPuzzleSessions as savePersistedPuzzleSessionsUnsafe,
+  type RuntimePuzzleSessions,
+} from "./sessionPersistence";
 export { puzzleIds, solitaireHistoryLimit, solitaireHistoryLimitNotice } from "./sessionConstants";
 export * from "./sessionPersistence";
 
@@ -67,3 +72,19 @@ export type PuzzleSession =
     };
 
 export type PuzzleSessionCache = Partial<Record<PuzzleId, PuzzleSession>>;
+
+export const loadPersistedPuzzleSessions = () => {
+  try {
+    return loadPersistedPuzzleSessionsUnsafe();
+  } catch {
+    return null;
+  }
+};
+
+export const savePersistedPuzzleSessions = (sessions: RuntimePuzzleSessions) => {
+  try {
+    savePersistedPuzzleSessionsUnsafe(sessions);
+  } catch {
+    // Persistence is optional. Keep the in-memory game usable when storage is unavailable.
+  }
+};
