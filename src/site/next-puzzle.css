@@ -156,11 +156,30 @@
   font-weight: 900;
 }
 
+.new-puzzle-start-action {
+  min-height: 2.75rem;
+  border: 1px solid #86efac;
+  border-radius: 0.8rem;
+  padding: 0.65rem 0.9rem;
+  color: #052e16;
+  background: linear-gradient(180deg, #bbf7d0, #86efac);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  cursor: pointer;
+  font-weight: 900;
+}
+
 .new-puzzle-options-panel > .new-puzzle-options-actions button:hover:not(:disabled),
 .new-puzzle-options-panel > .new-puzzle-options-actions button:focus-visible,
 .new-puzzle-seed-tools > button:hover:not(:disabled),
 .new-puzzle-seed-tools > button:focus-visible {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 0 0 3px rgba(125, 211, 252, 0.2);
+  outline: none;
+}
+
+.new-puzzle-start-action:hover:not(:disabled),
+.new-puzzle-start-action:focus-visible {
+  background: #bbf7d0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 0 0 3px rgba(167, 243, 208, 0.2);
   outline: none;
 }
 
@@ -245,6 +264,16 @@
   font-size: 0.82rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.current-seed-field-text-copy .seed-control {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.current-seed-field-text-copy .seed-control button {
+  width: auto;
+  min-width: 4.25rem;
+  padding-inline: 0.75rem;
 }
 
 .control-panel > .generation-actions,
