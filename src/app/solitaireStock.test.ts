@@ -133,22 +133,25 @@ describe("Solitaire variation session integration", () => {
     };
 
     const freshSession = buildFreshSessionForGeneratedPuzzle(puzzle, "Ready.");
+    expect(freshSession.progress.kind).toBe("cards");
+    if (freshSession.progress.kind !== "cards") return;
+
     const runtimeSession = buildRuntimeSession({
       puzzle: freshSession.puzzle,
-      cardStacks: freshSession.cardStacks,
-      selectedCard: freshSession.selectedCard,
-      solitaireStats: freshSession.solitaireStats,
-      solitaireUndoStack: freshSession.solitaireUndoStack,
-      solitaireRedoStack: freshSession.solitaireRedoStack,
-      gridCells: freshSession.gridCells,
-      selectedGridCell: freshSession.selectedGridCell,
+      cardStacks: freshSession.progress.cardStacks,
+      selectedCard: freshSession.progress.selectedCard,
+      solitaireStats: freshSession.progress.solitaireStats,
+      solitaireUndoStack: freshSession.progress.undoStack,
+      solitaireRedoStack: freshSession.progress.redoStack,
+      gridCells: null,
+      selectedGridCell: null,
       statusMessage: freshSession.statusMessage,
     });
 
-    expect(freshSession.puzzle.kind).toBe("cards");
-    expect(runtimeSession.puzzle.kind).toBe("cards");
-    if (freshSession.puzzle.kind !== "cards" || runtimeSession.puzzle.kind !== "cards") return;
+    expect(runtimeSession.progress.kind).toBe("cards");
     expect(freshSession.puzzle.solitaireVariation).toEqual(solitaireVariation);
+    expect(runtimeSession.puzzle.kind).toBe("cards");
+    if (runtimeSession.puzzle.kind !== "cards") return;
     expect(runtimeSession.puzzle.solitaireVariation).toEqual(solitaireVariation);
   });
 });
