@@ -65,6 +65,9 @@ export const shouldRecoverMissingPuzzleSurface = ({
   selectedPuzzleIsGeneratable,
 }: MissingPuzzleSurfaceState) => hasSelectedPuzzle && !isHomeSelected && !isGenerating && !hasPuzzle && selectedPuzzleIsGeneratable;
 
+export const shouldAcceptGenerationResponse = (activeRequestId: string | null, responseRequestId: string) =>
+  activeRequestId !== null && responseRequestId === activeRequestId;
+
 export const makeMissingPuzzleGenerationOptions = ({
   selectedPuzzleId,
   selectedDefinition,
@@ -95,6 +98,11 @@ export const usePuzzleGeneration = () => {
 
   useEffect(() => () => worker.terminate(), [worker]);
 
+  const cancelGeneration = () => {
+    activeRequestId.current = null;
+    setIsGenerating(false);
+  };
+
   const beginGeneration = (
     defaults: PuzzleGenerationDefaults,
     options: BeginGenerationOptions = {},
@@ -109,8 +117,7 @@ export const usePuzzleGeneration = () => {
     const definition = getPuzzleDefinition(puzzleId);
 
     if (!isGeneratable(definition)) {
-      activeRequestId.current = null;
-      setIsGenerating(false);
+      cancelGeneration();
       return { kind: "planned", puzzleId, title: definition.title };
     }
 
@@ -139,10 +146,9 @@ export const usePuzzleGeneration = () => {
     onGenerated: (puzzle: GeneratedPuzzle) => void,
     onError: (error: string) => void,
   ) => {
-    if (event.data.requestId !== activeRequestId.current) return;
+    if (!shouldAcceptGenerationResponse(activeRequestId.current, event.data.requestId)) return;
 
-    setIsGenerating(false);
-    activeRequestId.current = null;
+    cancelGeneration();
 
     if ("error" in event.data) {
       onError(event.data.error);
@@ -165,8 +171,8 @@ export const usePuzzleGeneration = () => {
     isGenerating,
     worker,
     beginGeneration,
+    cancelGeneration,
     handleGenerationMessage,
     makeReadyMessage,
-    setIsGenerating,
   };
 };
