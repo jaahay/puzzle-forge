@@ -138,7 +138,7 @@ export const restorePersistedCardStacks = (stacks: PersistedCardStack[], puzzleS
   return usedStackIds.size === stacksById.size && usedCardCodes.size === cardsByCode.size ? restoredStacks : null;
 };
 
-const isValidRestoredSelection = (selection: CardSelection | null, stacks: CardStack[]) => {
+export const isValidCardSelectionForStacks = (selection: CardSelection | null, stacks: CardStack[]) => {
   if (!selection) return true;
   const stack = stacks.find((candidate) => candidate.id === selection.stackId);
   return Boolean(stack && selection.cardIndex < stack.cards.length);
@@ -146,7 +146,7 @@ const isValidRestoredSelection = (selection: CardSelection | null, stacks: CardS
 
 export const restorePersistedSolitaireHistoryEntry = (entry: PersistedSolitaireHistoryEntry, puzzleStacks: CardStack[]): SolitaireHistoryEntry | null => {
   const restoredStacks = restorePersistedCardStacks(entry.cardStacks, puzzleStacks);
-  if (!restoredStacks || !isValidRestoredSelection(entry.selectedCard, restoredStacks)) return null;
+  if (!restoredStacks || !isValidCardSelectionForStacks(entry.selectedCard, restoredStacks)) return null;
 
   return {
     cardStacks: restoredStacks,
