@@ -17,6 +17,7 @@ const makeJigsawSession = (): PuzzleSession => {
   });
 
   return {
+    kind: "tiles",
     puzzle,
     progress: { kind: "tiles" },
     statusMessage: "Jigsaw in progress.",
