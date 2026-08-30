@@ -5,6 +5,11 @@ import { defaultSolitaireVariation, normalizeSolitaireVariation } from "../games
 import { defaultSudokuVariation, normalizeSudokuVariation } from "../games/sudoku/variation";
 import type { GenerationSettings, NextPuzzleDraft } from "./generationSettings";
 import type { GenerationRuntimeSettings } from "./generationIdentity";
+import {
+  loadNextPuzzleDraftCache,
+  saveNextPuzzleDraftCache,
+  type NextPuzzleDraftCache,
+} from "./nextPuzzleDraftPersistence";
 import { defaultPuzzleDifficulty } from "./runtime";
 
 type BuildNextPuzzleDraftInput = {
@@ -72,7 +77,7 @@ export const useNextPuzzleDrafts = ({
   puzzle,
   runtimeSettings,
 }: UseNextPuzzleDraftsInput) => {
-  const [drafts, setDrafts] = useState<Partial<Record<PuzzleId, NextPuzzleDraft>>>({});
+  const [drafts, setDrafts] = useState<NextPuzzleDraftCache>(loadNextPuzzleDraftCache);
   const [seedLoadInputs, setSeedLoadInputs] = useState<Partial<Record<PuzzleId, string>>>({});
 
   const makeDraft = (puzzleId: PuzzleId) =>
@@ -83,11 +88,21 @@ export const useNextPuzzleDrafts = ({
       runtimeSettings,
     });
 
+  const updateDrafts = (updater: (current: NextPuzzleDraftCache) => NextPuzzleDraftCache) => {
+    setDrafts((current) => {
+      const next = updater(current);
+      saveNextPuzzleDraftCache(next);
+      return next;
+    });
+  };
+
   const nextPuzzleDraft = drafts[selectedPuzzleId] ?? makeDraft(selectedPuzzleId);
   const seedLoadInput = seedLoadInputs[selectedPuzzleId] ?? "";
 
+  const getRememberedNextPuzzleDraft = (puzzleId: PuzzleId) => drafts[puzzleId] ?? null;
+
   const updateNextPuzzleDraft = (settings: GenerationSettings) => {
-    setDrafts((current) => {
+    updateDrafts((current) => {
       const base = current[selectedPuzzleId] ?? makeDraft(selectedPuzzleId);
       return { ...current, [selectedPuzzleId]: updateDraft(base, settings) };
     });
@@ -98,7 +113,7 @@ export const useNextPuzzleDrafts = ({
   };
 
   const rememberNextPuzzleDraft = () => {
-    setDrafts((current) =>
+    updateDrafts((current) =>
       current[selectedPuzzleId]
         ? current
         : { ...current, [selectedPuzzleId]: nextPuzzleDraft },
@@ -108,6 +123,7 @@ export const useNextPuzzleDrafts = ({
   return {
     nextPuzzleDraft,
     seedLoadInput,
+    getRememberedNextPuzzleDraft,
     updateNextPuzzleDraft,
     updateSeedLoadInput,
     rememberNextPuzzleDraft,
