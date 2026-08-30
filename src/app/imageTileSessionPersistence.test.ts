@@ -51,12 +51,16 @@ describe("image tile session identity", () => {
     expect(persisted?.progress.kind).toBe("tiles");
     if (!persisted || persisted.progress.kind !== "tiles") return;
 
+    const tileOrder = persisted.progress.tileOrder;
+    const firstCurrentIndex = tileOrder[0]?.currentIndex;
+    if (firstCurrentIndex === undefined) throw new Error("Expected persisted tile progress to contain tiles.");
+
     const duplicatePosition: PersistedPuzzleSession = {
       ...persisted,
       progress: {
         ...persisted.progress,
-        tileOrder: persisted.progress.tileOrder.map((entry, index) =>
-          index === 1 ? { ...entry, currentIndex: persisted.progress.tileOrder[0].currentIndex } : entry,
+        tileOrder: tileOrder.map((entry, index) =>
+          index === 1 ? { ...entry, currentIndex: firstCurrentIndex } : entry,
         ),
       },
     };
@@ -64,8 +68,8 @@ describe("image tile session identity", () => {
       ...persisted,
       progress: {
         ...persisted.progress,
-        tileOrder: persisted.progress.tileOrder.map((entry, index) =>
-          index === 0 ? { ...entry, currentIndex: puzzle.tiles.length } : entry,
+        tileOrder: tileOrder.map((entry, index) =>
+          index === 0 ? { ...entry, currentIndex: puzzle.width * puzzle.height } : entry,
         ),
       },
     };
