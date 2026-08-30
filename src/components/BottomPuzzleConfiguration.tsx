@@ -61,13 +61,12 @@ export const BottomPuzzleConfiguration = ({ kind, selectedDefinition, selectedPu
   const isNonogram = kind === "nonogram";
   const isWordGuess = kind === "word-guess";
   const newPuzzleAction = <GenerationActions isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showRandomize={showRandomize} randomLabel="New puzzle" onRandomize={onRandomize} />;
-  const todayAction = <GenerationActions isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showToday showRandomize={false} onToday={onToday} onRandomize={onRandomize} />;
-  const resetAction = <GenerationActions isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showReset showRandomize={false} onRandomize={onRandomize} onReset={onReset} />;
+  const todayAction = <GenerationActions className="load-puzzle-actions" isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showToday showRandomize={false} onToday={onToday} onRandomize={onRandomize} />;
+  const resetAction = <GenerationActions className="current-puzzle-actions" isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showReset showRandomize={false} onRandomize={onRandomize} onReset={onReset} />;
   const seedTools = <SeedTools seedInput={seedInput} isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} onUseSeed={onUseSeed} />;
 
   return (
     <div class={`puzzle-settings-panel ${kind}-settings-panel`} aria-label={`${selectedDefinition.title} controls`}>
-      <span class="puzzle-settings-section-label">Next puzzle</span>
       {isWordGuess ? (
         <>
           <label>Letters<input type="number" min={selectedDefinition.minWidth} max={selectedDefinition.maxWidth} value={width} onBlur={(event) => onSettingsCommit({ width: Number(event.currentTarget.value) })} onInput={(event) => onWidthChange(Number(event.currentTarget.value))} onKeyDown={blurOnEnter} /></label>
@@ -82,12 +81,8 @@ export const BottomPuzzleConfiguration = ({ kind, selectedDefinition, selectedPu
         </>
       )}
       {newPuzzleAction}
-
-      <span class="puzzle-settings-section-label">Load</span>
       {todayAction}
       {seedTools}
-
-      <span class="puzzle-settings-section-label">Current puzzle</span>
       {resetAction}
     </div>
   );
