@@ -133,8 +133,8 @@ describe("Solitaire variation session integration", () => {
     };
 
     const freshSession = buildFreshSessionForGeneratedPuzzle(puzzle, "Ready.");
-    expect(freshSession.progress.kind).toBe("cards");
-    if (freshSession.progress.kind !== "cards") return;
+    expect(freshSession.kind).toBe("cards");
+    if (freshSession.kind !== "cards") return;
 
     const runtimeSession = buildRuntimeSession({
       puzzle: freshSession.puzzle,
@@ -148,10 +148,9 @@ describe("Solitaire variation session integration", () => {
       statusMessage: freshSession.statusMessage,
     });
 
-    expect(runtimeSession.progress.kind).toBe("cards");
+    expect(runtimeSession.kind).toBe("cards");
     expect(freshSession.puzzle.solitaireVariation).toEqual(solitaireVariation);
-    expect(runtimeSession.puzzle.kind).toBe("cards");
-    if (runtimeSession.puzzle.kind !== "cards") return;
+    if (runtimeSession.kind !== "cards") return;
     expect(runtimeSession.puzzle.solitaireVariation).toEqual(solitaireVariation);
   });
 });
