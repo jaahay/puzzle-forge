@@ -99,7 +99,7 @@ export const SudokuWorkspace = ({
       difficulty={nextPuzzleDraft.difficulty}
       sudokuVariation={nextPuzzleDraft.sudokuVariation}
       isGenerating={isGenerating}
-      showRandomize={!isPresentationCompleted}
+      showRandomize={false}
       onDifficultyChange={(difficulty) => onNextPuzzleDraftChange({ difficulty })}
       onSudokuVariationChange={(sudokuVariation) => onNextPuzzleDraftChange({ sudokuVariation })}
       onToday={onToday}
@@ -172,6 +172,17 @@ export const SudokuWorkspace = ({
           {digitPad}
           <div class="puzzle-actions">
             <button type="button" onClick={onCheck} disabled={isSolved}>Check</button>
+            {!isSolved ? (
+              <button
+                class="new-puzzle-primary"
+                type="button"
+                onClick={onNewPuzzle}
+                disabled={isGenerating}
+                aria-label="Generate a new Sudoku with the selected settings"
+              >
+                New puzzle
+              </button>
+            ) : null}
           </div>
           {validation}
         </div>
@@ -189,8 +200,8 @@ export const SudokuWorkspace = ({
   ) : null;
 
   const loadingBoard = (
-    <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label="Sudoku is generating">
-      <div class="puzzle-loading-copy"><strong>Generating Sudoku</strong><span>{statusMessage}</span></div>
+    <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label="Sudoku is being prepared">
+      <div class="puzzle-loading-copy"><strong>Preparing Sudoku</strong><span>Your puzzle will be ready shortly.</span></div>
       <div class="puzzle-loading-grid" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <span key={index} />)}</div>
     </section>
   );
