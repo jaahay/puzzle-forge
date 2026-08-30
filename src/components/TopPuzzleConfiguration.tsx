@@ -59,7 +59,7 @@ export const TopPuzzleConfiguration = ({
       isGenerating={isGenerating}
       canGenerate={selectedPuzzleIsGeneratable}
       showRandomize={showRandomize}
-      randomLabel="Start new puzzle"
+      randomLabel="New puzzle"
       onRandomize={onRandomize}
     />
     <GenerationActions
