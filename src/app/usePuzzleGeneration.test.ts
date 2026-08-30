@@ -41,4 +41,25 @@ describe("initial puzzle generation", () => {
       solitaireVariation: defaultSolitaireVariation,
     });
   });
+
+  it("uses remembered per-puzzle preferences without reusing the old seed", () => {
+    const rememberedDraft = {
+      width: 9,
+      height: 9,
+      difficulty: "Hard" as const,
+      requireUniqueSolution: true,
+      sudokuVariation: "zero-killer" as const,
+      solitaireVariation: defaultSolitaireVariation,
+    };
+
+    expect(makeInitialPuzzleGenerationOptions({
+      puzzleId: "sudoku",
+      makeSeed: () => "fresh-zero-killer",
+      rememberedDraft,
+    })).toMatchObject({
+      seed: "fresh-zero-killer",
+      difficulty: "Hard",
+      sudokuVariation: "zero-killer",
+    });
+  });
 });
