@@ -32,7 +32,7 @@ type MissingPuzzleSurfaceState = {
   hasSelectedPuzzle: boolean;
   isHomeSelected: boolean;
   isGenerating: boolean;
-  hasActiveGenerationRequest: boolean;
+  hasActiveGenerationRequest?: boolean;
   hasPuzzle: boolean;
   selectedPuzzleIsGeneratable: boolean;
 };
@@ -77,7 +77,7 @@ export const shouldRecoverMissingPuzzleSurface = ({
   hasSelectedPuzzle,
   isHomeSelected,
   isGenerating,
-  hasActiveGenerationRequest,
+  hasActiveGenerationRequest = false,
   hasPuzzle,
   selectedPuzzleIsGeneratable,
 }: MissingPuzzleSurfaceState) =>
