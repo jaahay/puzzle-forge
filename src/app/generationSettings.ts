@@ -32,6 +32,7 @@ export type NextPuzzleDraft = {
   requireUniqueSolution: boolean;
   sudokuVariation: SudokuVariation;
   solitaireVariation: SolitaireVariation;
+  imageId?: string;
 };
 
 type ResolveGenerationIdentityInput = {
