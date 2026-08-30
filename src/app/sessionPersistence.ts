@@ -349,17 +349,20 @@ const restorePersistedGridProgress = (progress: PersistedGridProgress, puzzle: G
 };
 
 const restorePersistedTilePuzzle = (progress: PersistedTileProgress, puzzle: TileGeneratedPuzzle): TileGeneratedPuzzle | null => {
-  if (progress.tileOrder.length !== puzzle.tiles.length) return null;
+  const boardCellCount = puzzle.width * puzzle.height;
+  const expectedTileCount = puzzle.puzzleId === "sliding-puzzle" ? boardCellCount - 1 : boardCellCount;
+  if (puzzle.tiles.length !== expectedTileCount || progress.tileOrder.length !== expectedTileCount) return null;
 
   const tileIndexes = new Map<string, number>();
   const usedIndexes = new Set<number>();
   for (const { id, currentIndex } of progress.tileOrder) {
-    if (tileIndexes.has(id) || currentIndex >= puzzle.tiles.length || usedIndexes.has(currentIndex)) return null;
+    if (tileIndexes.has(id) || currentIndex >= boardCellCount || usedIndexes.has(currentIndex)) return null;
     tileIndexes.set(id, currentIndex);
     usedIndexes.add(currentIndex);
   }
 
   if (puzzle.tiles.some((tile) => !tileIndexes.has(tile.id))) return null;
+  if (puzzle.puzzleId === "sliding-puzzle" && usedIndexes.has(puzzle.emptyIndex)) return null;
 
   if (puzzle.puzzleId === "jigsaw") {
     return {
