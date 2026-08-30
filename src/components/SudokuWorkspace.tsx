@@ -4,11 +4,12 @@ import { sudokuVariationRules } from "../games/sudoku/variation";
 import { isGridAnswerCompleteAndCorrect } from "../interactions/gridChecking";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
 import { getNumericGridDigits, NumericGridDigitPad, useNumericGridInput } from "./NumericGridInput";
-import { BottomPuzzleConfiguration } from "./PuzzleConfiguration";
+import { PuzzleDifficultySelect } from "./PuzzleDifficultySelect";
 import type { SudokuWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { SeedControl } from "./SeedControl";
 import { SudokuMeta } from "./SudokuMeta";
+import { SudokuVariationSelect } from "./SudokuVariationSelect";
 import { usePuzzleCompletionPresentation } from "./usePuzzleCompletionPresentation";
 
 export const SudokuWorkspace = ({
@@ -82,31 +83,44 @@ export const SudokuWorkspace = ({
     activeGameplayHadFocusRef.current = false;
   }, [isPresentationCompleted]);
 
-  const seedInput = (
-    <SeedControl
-      currentSeed={sudokuPuzzle?.seed ?? seed}
-      seed={seedLoadInput}
-      onSeedChange={onSeedLoadInputChange}
-    />
-  );
-
-  const generation = sudokuPuzzle ? (
-    <BottomPuzzleConfiguration
-      kind="sudoku"
-      selectedDefinition={selectedDefinition}
-      selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
-      seedInput={seedInput}
-      difficulty={nextPuzzleDraft.difficulty}
-      sudokuVariation={nextPuzzleDraft.sudokuVariation}
-      isGenerating={isGenerating}
-      showRandomize={false}
-      onDifficultyChange={(difficulty) => onNextPuzzleDraftChange({ difficulty })}
-      onSudokuVariationChange={(sudokuVariation) => onNextPuzzleDraftChange({ sudokuVariation })}
-      onToday={onToday}
-      onUseSeed={onLoadSeed}
-      onRandomize={onNewPuzzle}
-      onReset={onReset}
-    />
+  const launchControls = sudokuPuzzle ? (
+    <div class="sudoku-launch-controls" aria-label="Choose a Sudoku">
+      <label>
+        Difficulty
+        <PuzzleDifficultySelect
+          value={nextPuzzleDraft.difficulty}
+          onChange={(difficulty) => onNextPuzzleDraftChange({ difficulty })}
+        />
+      </label>
+      <label>
+        Mode
+        <SudokuVariationSelect
+          value={nextPuzzleDraft.sudokuVariation}
+          onChange={(sudokuVariation) => onNextPuzzleDraftChange({ sudokuVariation })}
+        />
+      </label>
+      {!isPresentationCompleted ? (
+        <div class="sudoku-launch-actions">
+          <button
+            class="new-puzzle-primary"
+            type="button"
+            onClick={onNewPuzzle}
+            disabled={isGenerating || !selectedPuzzleIsGeneratable}
+            aria-label="Generate a new Sudoku with the selected settings"
+          >
+            New puzzle
+          </button>
+          <button
+            type="button"
+            onClick={onToday}
+            disabled={isGenerating || !selectedPuzzleIsGeneratable}
+            aria-label="Open today's Sudoku with the selected settings"
+          >
+            Today
+          </button>
+        </div>
+      ) : null}
+    </div>
   ) : null;
 
   const validation = !isSolved && gridCheckFeedbackTone ? (
@@ -149,6 +163,15 @@ export const SudokuWorkspace = ({
         >
           New puzzle
         </button>
+        <button
+          type="button"
+          onClick={onToday}
+          disabled={isGenerating}
+          tabIndex={isPresentationCompleted ? 0 : -1}
+          aria-label="Open today's Sudoku with the selected settings"
+        >
+          Today
+        </button>
       </div>
     </section>
   ) : null;
@@ -170,19 +193,9 @@ export const SudokuWorkspace = ({
           }}
         >
           {digitPad}
-          <div class="puzzle-actions">
+          <div class="sudoku-current-actions" aria-label="Current Sudoku actions">
             <button type="button" onClick={onCheck} disabled={isSolved}>Check</button>
-            {!isSolved ? (
-              <button
-                class="new-puzzle-primary"
-                type="button"
-                onClick={onNewPuzzle}
-                disabled={isGenerating}
-                aria-label="Generate a new Sudoku with the selected settings"
-              >
-                New puzzle
-              </button>
-            ) : null}
+            <button type="button" onClick={onReset} disabled={isGenerating}>Reset</button>
           </div>
           {validation}
         </div>
@@ -196,6 +209,28 @@ export const SudokuWorkspace = ({
     <details class="sudoku-rules-disclosure">
       <summary>Rules</summary>
       <p>{rules}</p>
+    </details>
+  ) : null;
+
+  const seedControls = sudokuPuzzle ? (
+    <details class="sudoku-seed-disclosure">
+      <summary>Seed</summary>
+      <div class="sudoku-seed-controls">
+        <SeedControl
+          currentSeed={sudokuPuzzle.seed ?? seed}
+          seed={seedLoadInput}
+          onSeedChange={onSeedLoadInputChange}
+        />
+        <div class="puzzle-settings-actions seed-actions">
+          <button
+            type="button"
+            onClick={onLoadSeed}
+            disabled={isGenerating || !selectedPuzzleIsGeneratable || !seedLoadInput.trim()}
+          >
+            Load seed
+          </button>
+        </div>
+      </div>
     </details>
   ) : null;
 
@@ -226,10 +261,11 @@ export const SudokuWorkspace = ({
   return (
     <PuzzleWorkspaceLayout
       className="sudoku-workspace"
+      header={launchControls}
       board={board}
       gameplay={gameplay}
       help={help}
-      generation={generation}
+      generation={seedControls}
     />
   );
 };
