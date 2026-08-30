@@ -54,14 +54,15 @@ export const TopPuzzleConfiguration = ({
       />
     )}
     {settings}
-    <GenerationActions
-      className="new-puzzle-actions"
-      isGenerating={isGenerating}
-      canGenerate={selectedPuzzleIsGeneratable}
-      showRandomize={showRandomize}
-      randomLabel="New puzzle"
-      onRandomize={onRandomize}
-    />
+    {showRandomize ? (
+      <GenerationActions
+        className="new-puzzle-actions"
+        isGenerating={isGenerating}
+        canGenerate={selectedPuzzleIsGeneratable}
+        randomLabel="New puzzle"
+        onRandomize={onRandomize}
+      />
+    ) : null}
     <GenerationActions
       className="load-puzzle-actions"
       isGenerating={isGenerating}
