@@ -24,6 +24,7 @@ describe("initial puzzle generation", () => {
       requireUniqueSolution: true,
       sudokuVariation: undefined,
       solitaireVariation: undefined,
+      imageId: undefined,
     });
   });
 
@@ -61,5 +62,45 @@ describe("initial puzzle generation", () => {
       difficulty: "Hard",
       sudokuVariation: "zero-killer",
     });
+  });
+
+  it("restores image-backed dimensions and artwork preferences with a fresh seed", () => {
+    const rememberedDraft = {
+      width: 6,
+      height: 5,
+      difficulty: "Medium" as const,
+      requireUniqueSolution: true,
+      sudokuVariation: "classic" as const,
+      solitaireVariation: defaultSolitaireVariation,
+      imageId: "great-wave",
+    };
+
+    expect(makeInitialPuzzleGenerationOptions({
+      puzzleId: "jigsaw",
+      makeSeed: () => "fresh-jigsaw",
+      rememberedDraft,
+    })).toMatchObject({
+      seed: "fresh-jigsaw",
+      width: 6,
+      height: 5,
+      imageId: "great-wave",
+    });
+  });
+
+  it("clamps malformed remembered dimensions to supported puzzle bounds", () => {
+    const rememberedDraft = {
+      width: 100,
+      height: -4,
+      difficulty: "Medium" as const,
+      requireUniqueSolution: true,
+      sudokuVariation: "classic" as const,
+      solitaireVariation: defaultSolitaireVariation,
+    };
+
+    expect(makeInitialPuzzleGenerationOptions({
+      puzzleId: "nonogram",
+      makeSeed: () => "bounded",
+      rememberedDraft,
+    })).toMatchObject({ width: 12, height: 5 });
   });
 });
