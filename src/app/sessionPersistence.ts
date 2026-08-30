@@ -1,14 +1,15 @@
-import type { GeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleId, SolitaireRedealLimit, SolitaireVariation, SudokuVariation } from "../catalog/types";
+import type { GeneratedPuzzle, GridGeneratedPuzzle, PuzzleCell, PuzzleDifficulty, PuzzleId, SolitaireRedealLimit, SolitaireVariation, SudokuVariation } from "../catalog/types";
 import { normalizeSolitaireVariation, solitaireRedealLimits, solitaireVariationsEqual } from "../games/solitaire/variation";
 import { normalizeSudokuVariation } from "../games/sudoku/variation";
 import type { CardSelection } from "../interactions/cardRules";
-import type { GridCellSelection } from "../interactions/gridRules";
+import { prepareGridCells, type GridCellSelection } from "../interactions/gridRules";
 import {
   buildPersistedCardStack,
   buildPersistedSolitaireHistory,
   cloneCardStack,
   clonePersistedCardStack,
   isPersistedCardStack,
+  isValidCardSelectionForStacks,
   restorePersistedCardStacks,
   restorePersistedSolitaireHistory,
   trimPersistedSolitaireHistory,
@@ -23,13 +24,6 @@ const persistenceMetadataStorageKey = "puzzle-forge.sessions.v1";
 const persistenceSessionStorageKeyPrefix = "puzzle-forge.session.v1.";
 const puzzleDifficulties = ["Easy", "Medium", "Hard", "Expert"] as const satisfies readonly PuzzleDifficulty[];
 const puzzleCellTones = ["given", "empty", "accent", "answer", "hint", "disabled"] as const satisfies readonly PuzzleCell["tone"][];
-
-const emptySolitaireStats: SolitaireStats = {
-  moveCount: 0,
-  drawCount: 0,
-  recycleCount: 0,
-  autoMoveCount: 0,
-};
 
 export type PersistedPuzzleIdentity = {
   puzzleId: PuzzleId;
@@ -162,19 +156,19 @@ const buildPersistedPuzzleIdentity = (puzzle: GeneratedPuzzle): PersistedPuzzleI
   };
 };
 
-const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzleProgress | null => {
-  if (session.cardStacks) {
+const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzleProgress => {
+  if (session.progress.kind === "cards") {
     return {
       kind: "cards",
-      stacks: session.cardStacks.map(buildPersistedCardStack),
-      selectedCard: session.selectedCard ? { ...session.selectedCard } : null,
-      stats: { ...session.solitaireStats },
-      undoStack: buildPersistedSolitaireHistory(session.solitaireUndoStack),
-      redoStack: buildPersistedSolitaireHistory(session.solitaireRedoStack),
+      stacks: session.progress.cardStacks.map(buildPersistedCardStack),
+      selectedCard: session.progress.selectedCard ? { ...session.progress.selectedCard } : null,
+      stats: { ...session.progress.solitaireStats },
+      undoStack: buildPersistedSolitaireHistory(session.progress.undoStack),
+      redoStack: buildPersistedSolitaireHistory(session.progress.redoStack),
     };
   }
 
-  if (session.puzzle.kind === "tiles") {
+  if (session.progress.kind === "tiles") {
     return {
       kind: "tiles",
       tileOrder: session.puzzle.tiles.map(({ id, currentIndex }) => ({ id, currentIndex })),
@@ -182,26 +176,20 @@ const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzlePr
     };
   }
 
-  if (session.gridCells) {
-    return {
-      kind: "grid",
-      cells: session.gridCells.map(cloneGridCell),
-      selectedCell: session.selectedGridCell ? { ...session.selectedGridCell } : null,
-    };
-  }
-
-  return null;
+  return {
+    kind: "grid",
+    cells: session.progress.cells.map(cloneGridCell),
+    selectedCell: session.progress.selectedCell ? { ...session.progress.selectedCell } : null,
+  };
 };
 
 export const buildPersistedPuzzleSession = (puzzleId: PuzzleId, session: PuzzleSession): PersistedPuzzleSession | null => {
   if (session.puzzle.puzzleId !== puzzleId) return null;
-  const progress = buildPersistedPuzzleProgress(session);
-  if (!progress) return null;
 
   return {
     ...buildPersistedPuzzleIdentity(session.puzzle),
     progressVersion: 1,
-    progress,
+    progress: buildPersistedPuzzleProgress(session),
     statusMessage: session.statusMessage,
     updatedAt: new Date().toISOString(),
   };
@@ -242,25 +230,38 @@ const isPersistedPuzzleProgress = (value: unknown): value is PersistedPuzzleProg
   return value.kind === "grid" && isPersistedGridProgress(value);
 };
 
-const isPersistedPuzzleSession = (value: unknown): value is PersistedPuzzleSession =>
-  isRecord(value) &&
-  !("puzzle" in value) &&
-  isPuzzleId(value.puzzleId) &&
-  typeof value.seed === "string" &&
-  isPositiveInteger(value.width) &&
-  isPositiveInteger(value.height) &&
-  (value.difficulty === undefined || isPuzzleDifficulty(value.difficulty)) &&
-  (value.requireUniqueSolution === undefined || typeof value.requireUniqueSolution === "boolean") &&
-  (value.sudokuVariation === undefined || isSudokuVariation(value.sudokuVariation)) &&
-  (value.solitaireVariation === undefined || isSolitaireVariation(value.solitaireVariation)) &&
-  (value.imageId === undefined || typeof value.imageId === "string") &&
-  (value.puzzleInstanceId === undefined || typeof value.puzzleInstanceId === "string") &&
-  value.generatorVersion === 1 &&
-  value.progressVersion === 1 &&
-  typeof value.statusMessage === "string" &&
-  typeof value.updatedAt === "string" &&
-  (value.completedAt === undefined || typeof value.completedAt === "string") &&
-  isPersistedPuzzleProgress(value.progress);
+const expectedProgressKind = (puzzleId: PuzzleId): PersistedPuzzleProgress["kind"] => {
+  if (puzzleId === "klondike-solitaire") return "cards";
+  if (puzzleId === "jigsaw" || puzzleId === "tile-swap" || puzzleId === "sliding-puzzle") return "tiles";
+  return "grid";
+};
+
+const isPersistedPuzzleSession = (value: unknown): value is PersistedPuzzleSession => {
+  if (
+    !isRecord(value) ||
+    "puzzle" in value ||
+    !isPuzzleId(value.puzzleId) ||
+    typeof value.seed !== "string" ||
+    !isPositiveInteger(value.width) ||
+    !isPositiveInteger(value.height) ||
+    (value.difficulty !== undefined && !isPuzzleDifficulty(value.difficulty)) ||
+    (value.requireUniqueSolution !== undefined && typeof value.requireUniqueSolution !== "boolean") ||
+    (value.sudokuVariation !== undefined && !isSudokuVariation(value.sudokuVariation)) ||
+    (value.solitaireVariation !== undefined && !isSolitaireVariation(value.solitaireVariation)) ||
+    (value.imageId !== undefined && typeof value.imageId !== "string") ||
+    (value.puzzleInstanceId !== undefined && typeof value.puzzleInstanceId !== "string") ||
+    value.generatorVersion !== 1 ||
+    value.progressVersion !== 1 ||
+    typeof value.statusMessage !== "string" ||
+    typeof value.updatedAt !== "string" ||
+    (value.completedAt !== undefined && typeof value.completedAt !== "string") ||
+    !isPersistedPuzzleProgress(value.progress)
+  ) {
+    return false;
+  }
+
+  return value.progress.kind === expectedProgressKind(value.puzzleId);
+};
 
 const isPersistedPuzzleSessionMetadata = (value: unknown): value is PersistedPuzzleSessionMetadata =>
   isRecord(value) &&
@@ -316,6 +317,35 @@ const persistedIdentityMatchesPuzzle = (persisted: PersistedPuzzleSession, puzzl
   (puzzle.kind !== "tiles" || persisted.puzzleInstanceId === puzzle.id) &&
   (puzzle.kind !== "tiles" || persisted.imageId === puzzle.asset.id);
 
+const gridCellKey = ({ row, column }: GridCellSelection) => `${row}:${column}`;
+
+const restorePersistedGridProgress = (progress: PersistedGridProgress, puzzle: GridGeneratedPuzzle) => {
+  const baselineCells = prepareGridCells(puzzle);
+  if (progress.cells.length !== baselineCells.length) return null;
+
+  const persistedCells = new Map<string, PuzzleCell>();
+  for (const cell of progress.cells) {
+    const key = gridCellKey(cell);
+    if (persistedCells.has(key)) return null;
+    persistedCells.set(key, cell);
+  }
+
+  const cells: PuzzleCell[] = [];
+  for (const baseline of baselineCells) {
+    const persisted = persistedCells.get(gridCellKey(baseline));
+    if (!persisted) return null;
+    cells.push(cloneGridCell(persisted));
+  }
+
+  if (persistedCells.size !== baselineCells.length) return null;
+  if (progress.selectedCell && !persistedCells.has(gridCellKey(progress.selectedCell))) return null;
+
+  return {
+    cells,
+    selectedCell: progress.selectedCell ? { ...progress.selectedCell } : null,
+  };
+};
+
 export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSession, puzzle: GeneratedPuzzle): PuzzleSession | null => {
   if (!persistedIdentityMatchesPuzzle(persisted, puzzle)) return null;
 
@@ -324,17 +354,18 @@ export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSess
     const undoStack = restorePersistedSolitaireHistory(persisted.progress.undoStack, puzzle.stacks);
     const redoStack = restorePersistedSolitaireHistory(persisted.progress.redoStack, puzzle.stacks);
 
-    if (!stacks || !undoStack || !redoStack) return null;
+    if (!stacks || !undoStack || !redoStack || !isValidCardSelectionForStacks(persisted.progress.selectedCard, stacks)) return null;
 
     return {
       puzzle: { ...puzzle, stacks: stacks.map(cloneCardStack) },
-      cardStacks: stacks,
-      selectedCard: persisted.progress.selectedCard ? { ...persisted.progress.selectedCard } : null,
-      solitaireStats: { ...persisted.progress.stats },
-      solitaireUndoStack: undoStack,
-      solitaireRedoStack: redoStack,
-      gridCells: null,
-      selectedGridCell: null,
+      progress: {
+        kind: "cards",
+        cardStacks: stacks,
+        selectedCard: persisted.progress.selectedCard ? { ...persisted.progress.selectedCard } : null,
+        solitaireStats: { ...persisted.progress.stats },
+        undoStack,
+        redoStack,
+      },
       statusMessage: persisted.statusMessage,
     };
   }
@@ -352,29 +383,21 @@ export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSess
         ? { ...puzzle, tiles: restoreTileOrder(puzzle.tiles) }
         : { ...puzzle, tiles: restoreTileOrder(puzzle.tiles) };
 
+    if (restoredPuzzle.kind !== "tiles") return null;
     return {
       puzzle: restoredPuzzle,
-      cardStacks: null,
-      selectedCard: null,
-      solitaireStats: emptySolitaireStats,
-      solitaireUndoStack: [],
-      solitaireRedoStack: [],
-      gridCells: null,
-      selectedGridCell: null,
+      progress: { kind: "tiles" },
       statusMessage: persisted.statusMessage,
     };
   }
 
   if (persisted.progress.kind === "grid" && puzzle.kind === "grid") {
+    const restoredProgress = restorePersistedGridProgress(persisted.progress, puzzle);
+    if (!restoredProgress) return null;
+
     return {
       puzzle,
-      cardStacks: null,
-      selectedCard: null,
-      solitaireStats: emptySolitaireStats,
-      solitaireUndoStack: [],
-      solitaireRedoStack: [],
-      gridCells: persisted.progress.cells.map(cloneGridCell),
-      selectedGridCell: persisted.progress.selectedCell ? { ...persisted.progress.selectedCell } : null,
+      progress: { kind: "grid", ...restoredProgress },
       statusMessage: persisted.statusMessage,
     };
   }
