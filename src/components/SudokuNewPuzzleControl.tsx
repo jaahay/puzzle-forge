@@ -74,7 +74,7 @@ export const SudokuNewPuzzleControl = ({
   };
 
   const loadSeed = () => {
-    if (!seedLoadInput.trim()) return;
+    if (disabled || !seedLoadInput.trim()) return;
     closeOptions();
     onLoadSeed();
   };
