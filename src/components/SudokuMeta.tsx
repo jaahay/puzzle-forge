@@ -1,5 +1,4 @@
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
-import { sudokuVariationLabels } from "../games/sudoku/variation";
 import {
   formatSudokuMetaCount,
   getStandardSudokuMetadata,
@@ -14,12 +13,10 @@ type SudokuMetaProps = {
 
 const StandardSudokuMeta = ({ puzzle, cells }: SudokuMetaProps) => {
   const metadata = getStandardSudokuMetadata(cells);
-  const variation = puzzle.sudokuVariation ?? "classic";
 
   return (
     <>
       {puzzle.difficulty ? <span>{puzzle.difficulty}</span> : null}
-      <span>{sudokuVariationLabels[variation]}</span>
       <span>{formatSudokuMetaCount(metadata.givens, "given")}</span>
       <span>Progress: {metadata.filledOpenCells} of {metadata.openCells}</span>
     </>
@@ -32,7 +29,6 @@ const ZeroKillerMeta = ({ puzzle, cells }: SudokuMetaProps) => {
   return (
     <>
       {puzzle.difficulty ? <span>{puzzle.difficulty}</span> : null}
-      <span>{sudokuVariationLabels["zero-killer"]}</span>
       <span>{formatSudokuMetaCount(metadata.cageCount, "cage")}</span>
       <span>{formatSudokuMetaCount(metadata.uncagedCellCount, "uncaged cell")}</span>
       <span>Progress: {metadata.filledCells} of {metadata.totalCells}</span>
