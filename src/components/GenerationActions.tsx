@@ -5,7 +5,7 @@ type GenerationActionsProps = {
   showUseSeed?: boolean;
   showReset?: boolean;
   showRandomize?: boolean;
-  randomLabel?: "New" | "New puzzle" | "Randomize";
+  randomLabel?: "New" | "New puzzle" | "Start new puzzle" | "Randomize";
   className?: string;
   onToday?: () => void;
   onUseSeed?: () => void;
@@ -35,7 +35,12 @@ export const GenerationActions = ({
     ) : null}
 
     {showRandomize ? (
-      <button type="button" onClick={onRandomize} disabled={isGenerating || !canGenerate} aria-label="Generate a new random puzzle">
+      <button
+        type="button"
+        onClick={onRandomize}
+        disabled={isGenerating || !canGenerate}
+        aria-label={randomLabel === "Start new puzzle" ? "Start a new random puzzle with the selected settings" : "Generate a new random puzzle"}
+      >
         {randomLabel}
       </button>
     ) : null}
