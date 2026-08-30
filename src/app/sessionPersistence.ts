@@ -25,6 +25,8 @@ const persistenceSessionStorageKeyPrefix = "puzzle-forge.session.v1.";
 const puzzleDifficulties = ["Easy", "Medium", "Hard", "Expert"] as const satisfies readonly PuzzleDifficulty[];
 const puzzleCellTones = ["given", "empty", "accent", "answer", "hint", "disabled"] as const satisfies readonly PuzzleCell["tone"][];
 
+type TileGeneratedPuzzle = Extract<GeneratedPuzzle, { kind: "tiles" }>;
+
 export type PersistedPuzzleIdentity = {
   puzzleId: PuzzleId;
   seed: string;
@@ -346,6 +348,32 @@ const restorePersistedGridProgress = (progress: PersistedGridProgress, puzzle: G
   };
 };
 
+const restorePersistedTilePuzzle = (progress: PersistedTileProgress, puzzle: TileGeneratedPuzzle): TileGeneratedPuzzle | null => {
+  if (progress.tileOrder.length !== puzzle.tiles.length) return null;
+
+  const tileIndexes = new Map<string, number>();
+  const usedIndexes = new Set<number>();
+  for (const { id, currentIndex } of progress.tileOrder) {
+    if (tileIndexes.has(id) || currentIndex >= puzzle.tiles.length || usedIndexes.has(currentIndex)) return null;
+    tileIndexes.set(id, currentIndex);
+    usedIndexes.add(currentIndex);
+  }
+
+  if (puzzle.tiles.some((tile) => !tileIndexes.has(tile.id))) return null;
+
+  if (puzzle.puzzleId === "jigsaw") {
+    return {
+      ...puzzle,
+      tiles: puzzle.tiles.map((tile) => ({ ...tile, currentIndex: tileIndexes.get(tile.id) ?? tile.currentIndex })),
+    };
+  }
+
+  return {
+    ...puzzle,
+    tiles: puzzle.tiles.map((tile) => ({ ...tile, currentIndex: tileIndexes.get(tile.id) ?? tile.currentIndex })),
+  };
+};
+
 export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSession, puzzle: GeneratedPuzzle): PuzzleSession | null => {
   if (!persistedIdentityMatchesPuzzle(persisted, puzzle)) return null;
 
@@ -372,12 +400,8 @@ export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSess
   }
 
   if (persisted.progress.kind === "tiles" && puzzle.kind === "tiles") {
-    const tileIndexes = new Map(persisted.progress.tileOrder.map(({ id, currentIndex }) => [id, currentIndex] as const));
-    if (tileIndexes.size !== puzzle.tiles.length || puzzle.tiles.some((tile) => !tileIndexes.has(tile.id))) return null;
-
-    const restoreTileOrder = <T extends { id: string; currentIndex: number }>(tiles: T[]) =>
-      tiles.map((tile) => ({ ...tile, currentIndex: tileIndexes.get(tile.id) ?? tile.currentIndex }));
-    const restoredPuzzle = { ...puzzle, tiles: restoreTileOrder(puzzle.tiles) };
+    const restoredPuzzle = restorePersistedTilePuzzle(persisted.progress, puzzle);
+    if (!restoredPuzzle) return null;
 
     return {
       kind: "tiles",
