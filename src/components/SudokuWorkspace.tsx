@@ -139,7 +139,14 @@ export const SudokuWorkspace = ({
         <strong>Puzzle solved</strong>
       </div>
       <div class="puzzle-actions">
-        <button type="button" onClick={onNewPuzzle} disabled={isGenerating} tabIndex={isPresentationCompleted ? 0 : -1}>
+        <button
+          class="new-puzzle-primary"
+          type="button"
+          onClick={onNewPuzzle}
+          disabled={isGenerating}
+          tabIndex={isPresentationCompleted ? 0 : -1}
+          aria-label="Start a new Sudoku with the selected settings"
+        >
           New puzzle
         </button>
       </div>
