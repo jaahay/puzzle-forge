@@ -81,6 +81,7 @@ export const App = () => {
   const {
     nextPuzzleDraft,
     seedLoadInput,
+    getRememberedNextPuzzleDraft,
     updateNextPuzzleDraft,
     updateSeedLoadInput,
     rememberNextPuzzleDraft,
@@ -268,7 +269,11 @@ export const App = () => {
     const cachedSession = sessions.getCachedSession(puzzleId);
     if (cachedSession) { restoreSession(cachedSession); return; }
     if (beginPersistedPuzzle(puzzleId)) return;
-    beginGeneration(makeInitialPuzzleGenerationOptions({ puzzleId, makeSeed: makeRandomSeed }));
+    beginGeneration(makeInitialPuzzleGenerationOptions({
+      puzzleId,
+      makeSeed: makeRandomSeed,
+      rememberedDraft: getRememberedNextPuzzleDraft(puzzleId),
+    }));
   };
 
   const selectSiteView = (view: Exclude<AppView, "catalog">, behavior: NavigationBehavior = {}) => {
