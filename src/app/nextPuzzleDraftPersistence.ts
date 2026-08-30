@@ -1,5 +1,6 @@
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { PuzzleDifficulty, PuzzleId, SolitaireRedealLimit, SolitaireVariation, SudokuVariation } from "../catalog/types";
+import { getPuzzleImageAssetsFor, isImageBackedPuzzleId } from "../games/imageAssets";
 import { solitaireRedealLimits } from "../games/solitaire/variation";
 import { puzzleIds } from "./sessionConstants";
 import type { NextPuzzleDraft } from "./generationSettings";
@@ -42,6 +43,12 @@ const isDimensionForPuzzle = (puzzleId: PuzzleId, axis: "width" | "height", valu
   return value >= minimum && value <= maximum;
 };
 
+const isImageIdForPuzzle = (puzzleId: PuzzleId, value: unknown) => {
+  if (value === undefined) return true;
+  if (!isImageBackedPuzzleId(puzzleId) || typeof value !== "string") return false;
+  return getPuzzleImageAssetsFor(puzzleId).some((asset) => asset.id === value);
+};
+
 const parseDraft = (puzzleId: PuzzleId, value: unknown): NextPuzzleDraft | null => {
   if (
     !isRecord(value) ||
@@ -50,7 +57,8 @@ const parseDraft = (puzzleId: PuzzleId, value: unknown): NextPuzzleDraft | null 
     !isPuzzleDifficulty(value.difficulty) ||
     typeof value.requireUniqueSolution !== "boolean" ||
     !isSudokuVariation(value.sudokuVariation) ||
-    !isSolitaireVariation(value.solitaireVariation)
+    !isSolitaireVariation(value.solitaireVariation) ||
+    !isImageIdForPuzzle(puzzleId, value.imageId)
   ) {
     return null;
   }
@@ -62,6 +70,7 @@ const parseDraft = (puzzleId: PuzzleId, value: unknown): NextPuzzleDraft | null 
     requireUniqueSolution: value.requireUniqueSolution,
     sudokuVariation: value.sudokuVariation,
     solitaireVariation: { ...value.solitaireVariation },
+    ...(typeof value.imageId === "string" ? { imageId: value.imageId } : {}),
   };
 };
 
