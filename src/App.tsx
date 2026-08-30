@@ -68,6 +68,7 @@ export const App = () => {
   const generatedPuzzleHandlerRef = useRef<(generatedPuzzle: GeneratedPuzzle) => void>(() => undefined);
   const routeNavigationHandlerRef = useRef<(route: AppRoute) => void>(() => undefined);
   const { seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation } = generationDefaults;
+  const activeSolitaireVariation = puzzle?.kind === "cards" ? puzzle.solitaireVariation : solitaireVariation;
 
   const updateGenerationDefaults = (settings: Partial<GenerationRuntimeSettings>) => {
     setGenerationDefaults((current) => ({ ...current, ...settings }));
@@ -76,7 +77,7 @@ export const App = () => {
   const generation = usePuzzleGeneration();
   const sessions = usePuzzleSessions();
   const grid = useGridController();
-  const solitaire = useSolitaireController({ statusMessage, onStatusMessage: setStatusMessage, solitaireVariation });
+  const solitaire = useSolitaireController({ statusMessage, onStatusMessage: setStatusMessage, solitaireVariation: activeSolitaireVariation });
   const {
     nextPuzzleDraft,
     seedLoadInput,
@@ -88,6 +89,11 @@ export const App = () => {
   const selectedDefinition = getPuzzleDefinition(selectedPuzzleId);
   const selectedPuzzleIsGeneratable = isGeneratable(selectedDefinition);
   const activeView = viewForRoute(route);
+
+  const cancelPendingGeneration = () => {
+    generation.cancelGeneration();
+    sessions.cancelPersistedRestore();
+  };
 
   const rememberScrollPosition = () => {
     if (typeof window !== "undefined") pendingScrollRestore.current = { x: window.scrollX, y: window.scrollY };
@@ -108,21 +114,26 @@ export const App = () => {
   const restoreSession = (session: ReturnType<typeof buildRuntimeSession>) => {
     const restoredPuzzle = session.puzzle;
     const puzzleId = restoredPuzzle.puzzleId;
-    generation.cancelGeneration();
+    cancelPendingGeneration();
     markPuzzleNavigation(puzzleId);
     setHasSelectedPuzzle(true);
     setIsHomeSelected(false);
     setSelectedPuzzleId(puzzleId);
     setGenerationDefaults((current) => getGeneratedPuzzleRuntimeSettings(restoredPuzzle, current));
     setPuzzle(restoredPuzzle);
-    solitaire.restoreSolitaireSnapshot({
-      cardStacks: session.cardStacks,
-      selectedCard: session.selectedCard,
-      solitaireStats: session.solitaireStats,
-      solitaireUndoStack: session.solitaireUndoStack,
-      solitaireRedoStack: session.solitaireRedoStack,
-      statusMessage: session.statusMessage,
-    });
+    if (restoredPuzzle.kind === "cards") {
+      solitaire.restoreSolitaireSnapshot({
+        cardStacks: session.cardStacks,
+        selectedCard: session.selectedCard,
+        solitaireStats: session.solitaireStats,
+        solitaireUndoStack: session.solitaireUndoStack,
+        solitaireRedoStack: session.solitaireRedoStack,
+        statusMessage: session.statusMessage,
+      });
+    } else {
+      solitaire.resetSolitaire();
+      setStatusMessage(session.statusMessage);
+    }
     grid.restoreGridSnapshot({ gridCells: session.gridCells, selectedGridCell: session.selectedGridCell });
     restoreScrollPosition();
   };
@@ -217,18 +228,27 @@ export const App = () => {
     const readyMessage = generation.makeReadyMessage(generatedPuzzle);
     setPuzzle(generatedPuzzle);
     setGenerationDefaults((current) => getGeneratedPuzzleRuntimeSettings(generatedPuzzle, current));
-    solitaire.restoreSolitaireSnapshot({ cardStacks: generatedPuzzle.kind === "cards" ? generatedPuzzle.stacks : null, selectedCard: null, solitaireStats: solitaire.solitaireStats, solitaireUndoStack: [], solitaireRedoStack: [], statusMessage: readyMessage });
+    if (generatedPuzzle.kind === "cards") {
+      solitaire.restoreSolitaireSnapshot({
+        cardStacks: generatedPuzzle.stacks,
+        selectedCard: null,
+        solitaireStats: initialSolitaireStats,
+        solitaireUndoStack: [],
+        solitaireRedoStack: [],
+        statusMessage: readyMessage,
+      });
+    } else {
+      solitaire.resetSolitaire();
+      setStatusMessage(readyMessage);
+    }
     grid.prepareGeneratedGrid(generatedPuzzle);
-    solitaire.resetSolitaireStats();
-    solitaire.clearSolitaireHistory();
-    setStatusMessage(readyMessage);
     restoreScrollPosition();
   };
   generatedPuzzleHandlerRef.current = handleGeneratedPuzzle;
 
   const selectHome = (behavior: NavigationBehavior = {}) => {
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
-    generation.cancelGeneration();
+    cancelPendingGeneration();
     setAppRoute({ kind: "home" }, behavior);
     setIsHomeSelected(true);
   };
@@ -247,14 +267,14 @@ export const App = () => {
 
   const selectSiteView = (view: Exclude<AppView, "catalog">, behavior: NavigationBehavior = {}) => {
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
-    generation.cancelGeneration();
+    cancelPendingGeneration();
     setIsHomeSelected(true);
     setAppRoute(view === "changelog" ? { kind: "updates" } : { kind: "about" }, behavior);
   };
 
   const selectNotFound = (nextRoute: Extract<AppRoute, { kind: "not-found" }>, behavior: NavigationBehavior = {}) => {
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
-    generation.cancelGeneration();
+    cancelPendingGeneration();
     setIsHomeSelected(true);
     setAppRoute(nextRoute, behavior);
   };
