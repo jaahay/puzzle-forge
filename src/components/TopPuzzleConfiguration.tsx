@@ -43,7 +43,6 @@ export const TopPuzzleConfiguration = ({
   onReset,
 }: TopPuzzleConfigurationProps) => (
   <div class={`control-panel ${className ?? ""}`.trim()} aria-label="Puzzle controls">
-    <span class="puzzle-settings-section-label">Next puzzle</span>
     {isFixedSize ? null : (
       <PuzzleDimensionControls
         selectedDefinition={selectedDefinition}
@@ -62,9 +61,8 @@ export const TopPuzzleConfiguration = ({
       randomLabel="New puzzle"
       onRandomize={onRandomize}
     />
-
-    <span class="puzzle-settings-section-label">Load</span>
     <GenerationActions
+      className="load-puzzle-actions"
       isGenerating={isGenerating}
       canGenerate={selectedPuzzleIsGeneratable}
       showToday
@@ -81,9 +79,8 @@ export const TopPuzzleConfiguration = ({
       onUseSeed={onUseSeed}
       onRandomize={onRandomize}
     />
-
-    <span class="puzzle-settings-section-label">Current puzzle</span>
     <GenerationActions
+      className="current-puzzle-actions"
       isGenerating={isGenerating}
       canGenerate={selectedPuzzleIsGeneratable}
       showReset
