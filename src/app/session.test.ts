@@ -71,6 +71,7 @@ type CardProgressOverrides = Partial<Omit<CardSessionProgress, "kind">> & { stat
 const makeSession = (overrides: CardProgressOverrides = {}): PuzzleSession => {
   const { statusMessage = "In progress.", ...progressOverrides } = overrides;
   return {
+    kind: "cards",
     puzzle: makeCardPuzzle(),
     progress: {
       kind: "cards",
