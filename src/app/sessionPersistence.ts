@@ -157,7 +157,7 @@ const buildPersistedPuzzleIdentity = (puzzle: GeneratedPuzzle): PersistedPuzzleI
 };
 
 const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzleProgress => {
-  if (session.progress.kind === "cards") {
+  if (session.kind === "cards") {
     return {
       kind: "cards",
       stacks: session.progress.cardStacks.map(buildPersistedCardStack),
@@ -168,7 +168,7 @@ const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzlePr
     };
   }
 
-  if (session.progress.kind === "tiles") {
+  if (session.kind === "tiles") {
     return {
       kind: "tiles",
       tileOrder: session.puzzle.tiles.map(({ id, currentIndex }) => ({ id, currentIndex })),
@@ -357,6 +357,7 @@ export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSess
     if (!stacks || !undoStack || !redoStack || !isValidCardSelectionForStacks(persisted.progress.selectedCard, stacks)) return null;
 
     return {
+      kind: "cards",
       puzzle: { ...puzzle, stacks: stacks.map(cloneCardStack) },
       progress: {
         kind: "cards",
@@ -376,15 +377,10 @@ export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSess
 
     const restoreTileOrder = <T extends { id: string; currentIndex: number }>(tiles: T[]) =>
       tiles.map((tile) => ({ ...tile, currentIndex: tileIndexes.get(tile.id) ?? tile.currentIndex }));
+    const restoredPuzzle = { ...puzzle, tiles: restoreTileOrder(puzzle.tiles) };
 
-    const restoredPuzzle: GeneratedPuzzle = puzzle.puzzleId === "jigsaw"
-      ? { ...puzzle, tiles: restoreTileOrder(puzzle.tiles) }
-      : puzzle.puzzleId === "sliding-puzzle"
-        ? { ...puzzle, tiles: restoreTileOrder(puzzle.tiles) }
-        : { ...puzzle, tiles: restoreTileOrder(puzzle.tiles) };
-
-    if (restoredPuzzle.kind !== "tiles") return null;
     return {
+      kind: "tiles",
       puzzle: restoredPuzzle,
       progress: { kind: "tiles" },
       statusMessage: persisted.statusMessage,
@@ -396,6 +392,7 @@ export const restorePuzzleSessionFromPersisted = (persisted: PersistedPuzzleSess
     if (!restoredProgress) return null;
 
     return {
+      kind: "grid",
       puzzle,
       progress: { kind: "grid", ...restoredProgress },
       statusMessage: persisted.statusMessage,
