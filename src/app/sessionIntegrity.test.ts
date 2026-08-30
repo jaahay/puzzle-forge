@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { GridGeneratedPuzzle, PuzzleSession } from "./session";
+import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
+import type { PuzzleSession } from "./session";
 import { restoredSessionPreservesGeneratedState } from "./sessionIntegrity";
 
 const puzzle: GridGeneratedPuzzle = {
@@ -22,7 +23,7 @@ const puzzle: GridGeneratedPuzzle = {
   ],
 };
 
-const session = (cells: PuzzleSession extends never ? never : typeof puzzle.cells): PuzzleSession => ({
+const session = (cells: PuzzleCell[]): PuzzleSession => ({
   kind: "grid",
   puzzle,
   progress: { kind: "grid", cells, selectedCell: null },
