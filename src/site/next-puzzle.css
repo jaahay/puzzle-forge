@@ -113,7 +113,8 @@
   gap: 0.65rem;
 }
 
-.new-puzzle-settings-grid label {
+.new-puzzle-settings-grid label,
+.new-puzzle-seed-tools label {
   min-width: 0;
   gap: 0.32rem;
   font-size: 0.82rem;
@@ -160,15 +161,6 @@
 .new-puzzle-options-panel button:disabled {
   cursor: not-allowed;
   opacity: 0.62;
-}
-
-.new-puzzle-seed-tools .seed-tools {
-  grid-template-columns: 1fr;
-  gap: 0.55rem;
-}
-
-.new-puzzle-seed-tools .current-seed-field .seed-control code {
-  min-height: 2.7rem;
 }
 
 .sudoku-current-actions .sudoku-check-action,
