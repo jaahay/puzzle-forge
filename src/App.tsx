@@ -108,6 +108,7 @@ export const App = () => {
   const restoreSession = (session: ReturnType<typeof buildRuntimeSession>) => {
     const restoredPuzzle = session.puzzle;
     const puzzleId = restoredPuzzle.puzzleId;
+    generation.cancelGeneration();
     markPuzzleNavigation(puzzleId);
     setHasSelectedPuzzle(true);
     setIsHomeSelected(false);
@@ -123,7 +124,6 @@ export const App = () => {
       statusMessage: session.statusMessage,
     });
     grid.restoreGridSnapshot({ gridCells: session.gridCells, selectedGridCell: session.selectedGridCell });
-    generation.setIsGenerating(false);
     restoreScrollPosition();
   };
 
@@ -228,6 +228,7 @@ export const App = () => {
 
   const selectHome = (behavior: NavigationBehavior = {}) => {
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
+    generation.cancelGeneration();
     setAppRoute({ kind: "home" }, behavior);
     setIsHomeSelected(true);
   };
@@ -256,12 +257,14 @@ export const App = () => {
 
   const selectSiteView = (view: Exclude<AppView, "catalog">, behavior: NavigationBehavior = {}) => {
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
+    generation.cancelGeneration();
     setIsHomeSelected(true);
     setAppRoute(view === "changelog" ? { kind: "updates" } : { kind: "about" }, behavior);
   };
 
   const selectNotFound = (nextRoute: Extract<AppRoute, { kind: "not-found" }>, behavior: NavigationBehavior = {}) => {
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
+    generation.cancelGeneration();
     setIsHomeSelected(true);
     setAppRoute(nextRoute, behavior);
   };
@@ -311,7 +314,7 @@ export const App = () => {
     const shouldRecover = shouldRecoverMissingPuzzleSurface({ hasSelectedPuzzle, isHomeSelected, isGenerating: generation.isGenerating, hasPuzzle: Boolean(puzzle), selectedPuzzleIsGeneratable });
     if (!shouldRecover) return;
     beginGeneration(makeMissingPuzzleGenerationOptions({ selectedPuzzleId, selectedDefinition, seed, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation, makeSeed: makeRandomSeed }));
-  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, puzzle, selectedPuzzleId, selectedPuzzleIsGeneratable, sudokuVariation]);
+  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, puzzle, selectedPuzzleId, selectedPuzzleIsGeneratable, selectedDefinition, seed, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation]);
 
   useEffect(() => {
     if (!hasSelectedPuzzle || generation.isGenerating || isHomeSelected || !puzzle) return;
