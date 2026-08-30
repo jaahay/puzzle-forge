@@ -32,6 +32,7 @@ type MissingPuzzleSurfaceState = {
   hasSelectedPuzzle: boolean;
   isHomeSelected: boolean;
   isGenerating: boolean;
+  hasActiveGenerationRequest: boolean;
   hasPuzzle: boolean;
   selectedPuzzleIsGeneratable: boolean;
 };
@@ -76,9 +77,16 @@ export const shouldRecoverMissingPuzzleSurface = ({
   hasSelectedPuzzle,
   isHomeSelected,
   isGenerating,
+  hasActiveGenerationRequest,
   hasPuzzle,
   selectedPuzzleIsGeneratable,
-}: MissingPuzzleSurfaceState) => hasSelectedPuzzle && !isHomeSelected && !isGenerating && !hasPuzzle && selectedPuzzleIsGeneratable;
+}: MissingPuzzleSurfaceState) =>
+  hasSelectedPuzzle &&
+  !isHomeSelected &&
+  !isGenerating &&
+  !hasActiveGenerationRequest &&
+  !hasPuzzle &&
+  selectedPuzzleIsGeneratable;
 
 export const shouldAcceptGenerationResponse = (activeRequestId: string | null, responseRequestId: string) =>
   activeRequestId !== null && responseRequestId === activeRequestId;
@@ -138,6 +146,8 @@ export const usePuzzleGeneration = () => {
   );
 
   useEffect(() => () => worker.terminate(), [worker]);
+
+  const hasActiveRequest = () => activeRequestId.current !== null;
 
   const cancelGeneration = () => {
     activeRequestId.current = null;
@@ -212,6 +222,7 @@ export const usePuzzleGeneration = () => {
     isGenerating,
     worker,
     beginGeneration,
+    hasActiveRequest,
     cancelGeneration,
     handleGenerationMessage,
     makeReadyMessage,
