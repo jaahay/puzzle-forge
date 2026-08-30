@@ -12,7 +12,6 @@ import { usePuzzleCompletionPresentation } from "./usePuzzleCompletionPresentati
 
 export const SudokuWorkspace = ({
   selectedPuzzleIsGeneratable,
-  seed,
   puzzle,
   nextPuzzleDraft,
   seedLoadInput,
@@ -80,7 +79,6 @@ export const SudokuWorkspace = ({
 
   const newPuzzleControl = sudokuPuzzle ? (
     <SudokuNewPuzzleControl
-      currentSeed={sudokuPuzzle.seed ?? seed}
       difficulty={nextPuzzleDraft.difficulty}
       sudokuVariation={nextPuzzleDraft.sudokuVariation}
       seedLoadInput={seedLoadInput}
