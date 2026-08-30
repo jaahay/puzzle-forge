@@ -62,27 +62,43 @@ const imagePuzzle: GeneratedPuzzle = {
 describe("resolveGenerationIdentity", () => {
   it("gives explicit prospective settings precedence over current and runtime values", () => {
     expect(resolveGenerationIdentity({
-      puzzleId: "sudoku",
+      puzzleId: "nonogram",
       currentPuzzle: null,
       runtimeSettings,
       settings: {
         seed: "next-seed",
-        width: 8,
-        height: 8,
+        width: 10,
+        height: 11,
         difficulty: "Hard",
         requireUniqueSolution: false,
-        sudokuVariation: "diagonal",
       },
       makeSeed: () => "fallback",
     })).toMatchObject({
-      puzzleId: "sudoku",
+      puzzleId: "nonogram",
       seed: "next-seed",
-      width: 8,
-      height: 8,
+      width: 10,
+      height: 11,
       difficulty: "Hard",
       requireUniqueSolution: false,
-      sudokuVariation: "diagonal",
     });
+  });
+
+  it("normalizes dimensions into the selected puzzle's supported range", () => {
+    expect(resolveGenerationIdentity({
+      puzzleId: "nonogram",
+      currentPuzzle: null,
+      runtimeSettings,
+      settings: { width: 99, height: 1 },
+      makeSeed: () => "fallback",
+    })).toMatchObject({ width: 12, height: 5 });
+
+    expect(resolveGenerationIdentity({
+      puzzleId: "sudoku",
+      currentPuzzle: null,
+      runtimeSettings,
+      settings: { width: 8, height: 12 },
+      makeSeed: () => "fallback",
+    })).toMatchObject({ width: 9, height: 9 });
   });
 
   it("uses the current Solitaire variation when no prospective variation is supplied", () => {
