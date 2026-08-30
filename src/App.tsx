@@ -385,6 +385,56 @@ export const App = () => {
   };
 
   const handleCheck = () => { if (!puzzle) return; puzzle.kind === "cards" ? solitaire.checkSolitaire() : grid.checkGrid(puzzle, setStatusMessage); };
+  const workspaceIsGenerating = generation.isGenerating || (!puzzle && selectedPuzzleIsGeneratable && !isHomeSelected);
+  const workspaceCore = {
+    selectedDefinition,
+    selectedPuzzleIsGeneratable,
+    seed,
+    puzzle,
+    statusMessage,
+    isGenerating: workspaceIsGenerating,
+    onReset: resetCurrentPuzzle,
+  };
+  const workspaceProspective = {
+    nextPuzzleDraft,
+    seedLoadInput,
+    onNextPuzzleDraftChange: updateNextPuzzleDraft,
+    onSeedLoadInputChange: updateSeedLoadInput,
+    onNewPuzzle: generateNextPuzzle,
+    onToday: loadToday,
+    onLoadSeed: loadSeededPuzzle,
+  };
+  const workspaceGrid = {
+    gridCells: grid.gridCells,
+    selectedGridCell: grid.selectedGridCell,
+    gridCheckFeedbackTone: grid.checkFeedbackTone,
+    onCheck: handleCheck,
+    onCellClick: (cell: Parameters<typeof grid.handleGridCellClick>[1]) => grid.handleGridCellClick(puzzle, cell, setStatusMessage),
+    onCellInput: (cell: Parameters<typeof grid.handleGridCellInput>[1], value: string) => grid.handleGridCellInput(puzzle, cell, value, setStatusMessage),
+  };
+  const workspaceSolitaire = {
+    cardStacks: solitaire.cardStacks,
+    selectedCard: solitaire.selectedCard,
+    solitaireStats: solitaire.solitaireStats,
+    onAutoMoveToFoundations: solitaire.autoMoveToFoundations,
+    onUndoSolitaire: solitaire.undoSolitaireMove,
+    onRedoSolitaire: solitaire.redoSolitaireMove,
+    canUndoSolitaire: solitaire.solitaireUndoStack.length > 0,
+    canRedoSolitaire: solitaire.solitaireRedoStack.length > 0,
+    onCardClick: solitaire.handleCardClick,
+    onCardDoubleClick: solitaire.moveSingleCardToFoundation,
+    onStackClick: solitaire.handleStackClick,
+  };
+  const workspaceImmediate = {
+    width,
+    height,
+    onSeedChange: (nextSeed: string) => updateGenerationDefaults({ seed: nextSeed }),
+    onWidthChange: (nextWidth: number) => updateGenerationDefaults({ width: nextWidth }),
+    onHeightChange: (nextHeight: number) => updateGenerationDefaults({ height: nextHeight }),
+    onSettingsCommit: commitGenerationSettings,
+    onGenerate: generate,
+    onRandomize: randomize,
+  };
 
   const puzzleNavigation = activeView === "catalog" ? <PuzzleCatalog isCollapsed={isCatalogCollapsed} isHomeSelected={isHomeSelected || !hasSelectedPuzzle} selectedPuzzleId={selectedPuzzleId} onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)} onHomeSelect={() => selectHome()} onSelectPuzzle={(puzzleId) => selectPuzzle(puzzleId)} /> : null;
 
@@ -400,45 +450,11 @@ export const App = () => {
       <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
         {isHomeSelected || !hasSelectedPuzzle ? <StartView readyPuzzles={readyPuzzles} previewPuzzles={previewPuzzles} onSelectPuzzle={(puzzleId) => selectPuzzle(puzzleId)} /> : (
           <PuzzleWorkspace
-            selectedDefinition={selectedDefinition}
-            selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
-            seed={seed}
-            width={width}
-            height={height}
-            puzzle={puzzle}
-            nextPuzzleDraft={nextPuzzleDraft}
-            seedLoadInput={seedLoadInput}
-            cardStacks={solitaire.cardStacks}
-            selectedCard={solitaire.selectedCard}
-            solitaireStats={solitaire.solitaireStats}
-            gridCells={grid.gridCells}
-            selectedGridCell={grid.selectedGridCell}
-            gridCheckFeedbackTone={grid.checkFeedbackTone}
-            statusMessage={statusMessage}
-            isGenerating={generation.isGenerating || (!puzzle && selectedPuzzleIsGeneratable && !isHomeSelected)}
-            onSeedChange={(seed) => updateGenerationDefaults({ seed })}
-            onWidthChange={(width) => updateGenerationDefaults({ width })}
-            onHeightChange={(height) => updateGenerationDefaults({ height })}
-            onSettingsCommit={commitGenerationSettings}
-            onGenerate={generate}
-            onRandomize={randomize}
-            onReset={resetCurrentPuzzle}
-            onCheck={handleCheck}
-            onNextPuzzleDraftChange={updateNextPuzzleDraft}
-            onSeedLoadInputChange={updateSeedLoadInput}
-            onNewPuzzle={generateNextPuzzle}
-            onToday={loadToday}
-            onLoadSeed={loadSeededPuzzle}
-            onAutoMoveToFoundations={solitaire.autoMoveToFoundations}
-            onUndoSolitaire={solitaire.undoSolitaireMove}
-            onRedoSolitaire={solitaire.redoSolitaireMove}
-            canUndoSolitaire={solitaire.solitaireUndoStack.length > 0}
-            canRedoSolitaire={solitaire.solitaireRedoStack.length > 0}
-            onCardClick={solitaire.handleCardClick}
-            onCardDoubleClick={solitaire.moveSingleCardToFoundation}
-            onStackClick={solitaire.handleStackClick}
-            onCellClick={(cell) => grid.handleGridCellClick(puzzle, cell, setStatusMessage)}
-            onCellInput={(cell, value) => grid.handleGridCellInput(puzzle, cell, value, setStatusMessage)}
+            core={workspaceCore}
+            prospective={workspaceProspective}
+            grid={workspaceGrid}
+            solitaire={workspaceSolitaire}
+            immediate={workspaceImmediate}
           />
         )}
       </section>
