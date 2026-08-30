@@ -49,16 +49,6 @@
   min-width: 0;
 }
 
-.sudoku-settings-panel {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.sudoku-settings-panel > .generation-actions,
-.sudoku-settings-panel > .seed-actions,
-.sudoku-settings-panel > .seed-tools {
-  grid-column: 1 / -1;
-}
-
 .solitaire-control-panel > label,
 .solitaire-settings {
   order: initial;
@@ -71,12 +61,6 @@
 @media (max-width: 700px) {
   .solitaire-settings {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 520px) {
-  .sudoku-settings-panel {
-    grid-template-columns: 1fr;
   }
 }
 
