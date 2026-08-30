@@ -13,6 +13,7 @@ import type {
 import { isImageBackedPuzzleId } from "../games/imageAssets";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
+import type { NextPuzzleDraft } from "./generationSettings";
 import { defaultPuzzleDifficulty, makeRequestId } from "./runtime";
 
 export type BeginGenerationOptions = Partial<Omit<PuzzleGenerationRequest, "requestId">>;
@@ -49,6 +50,7 @@ type MissingPuzzleGenerationInput = {
 type InitialPuzzleGenerationInput = {
   puzzleId: PuzzleId;
   makeSeed: () => string;
+  rememberedDraft?: NextPuzzleDraft | null;
 };
 
 export type BeginGenerationResult =
@@ -77,18 +79,23 @@ export const shouldAcceptGenerationResponse = (activeRequestId: string | null, r
 export const makeInitialPuzzleGenerationOptions = ({
   puzzleId,
   makeSeed,
+  rememberedDraft,
 }: InitialPuzzleGenerationInput): BeginGenerationOptions => {
   const definition = getPuzzleDefinition(puzzleId);
 
   return {
     puzzleId,
     seed: makeSeed(),
-    width: definition.defaultWidth,
-    height: definition.defaultHeight,
-    difficulty: defaultPuzzleDifficulty,
-    requireUniqueSolution: true,
-    sudokuVariation: puzzleId === "sudoku" ? defaultSudokuVariation : undefined,
-    solitaireVariation: puzzleId === "klondike-solitaire" ? defaultSolitaireVariation : undefined,
+    width: rememberedDraft?.width ?? definition.defaultWidth,
+    height: rememberedDraft?.height ?? definition.defaultHeight,
+    difficulty: rememberedDraft?.difficulty ?? defaultPuzzleDifficulty,
+    requireUniqueSolution: rememberedDraft?.requireUniqueSolution ?? true,
+    sudokuVariation: puzzleId === "sudoku"
+      ? rememberedDraft?.sudokuVariation ?? defaultSudokuVariation
+      : undefined,
+    solitaireVariation: puzzleId === "klondike-solitaire"
+      ? rememberedDraft?.solitaireVariation ?? defaultSolitaireVariation
+      : undefined,
   };
 };
 
