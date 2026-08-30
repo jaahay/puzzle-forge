@@ -1,14 +1,18 @@
 import type { PuzzleId } from "../catalog/types";
+import { loadPersistedPuzzleSessions } from "./session";
 import { puzzleIds } from "./sessionConstants";
-import { loadPersistedPuzzleSessions } from "./sessionPersistence";
 
 const selectedPuzzleIdStorageKey = "puzzle-forge.selected-puzzle-id";
 
 const isPuzzleId = (value: string | null): value is PuzzleId => value !== null && puzzleIds.includes(value as PuzzleId);
 
 const getStoredSelectedPuzzleId = () => {
-  const storedPuzzleId = window.localStorage.getItem(selectedPuzzleIdStorageKey);
-  return isPuzzleId(storedPuzzleId) ? storedPuzzleId : null;
+  try {
+    const storedPuzzleId = window.localStorage.getItem(selectedPuzzleIdStorageKey);
+    return isPuzzleId(storedPuzzleId) ? storedPuzzleId : null;
+  } catch {
+    return null;
+  }
 };
 
 export const getInitialSelectedPuzzleId = (fallback: PuzzleId = "sudoku") => {
@@ -24,5 +28,9 @@ export const markPuzzleNavigation = (puzzleId?: PuzzleId) => {
     return;
   }
 
-  window.localStorage.setItem(selectedPuzzleIdStorageKey, puzzleId);
+  try {
+    window.localStorage.setItem(selectedPuzzleIdStorageKey, puzzleId);
+  } catch {
+    // Navigation remains usable without browser storage.
+  }
 };
