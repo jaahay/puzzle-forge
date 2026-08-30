@@ -164,11 +164,13 @@
   }
 
   .control-panel input,
+  .control-panel select,
   .puzzle-settings-panel input,
   .puzzle-settings-panel select {
     min-height: 2.85rem;
     padding: 0.58rem 0.7rem;
     border-radius: 0.72rem;
+    font-size: 1rem;
   }
 
   .control-actions,
@@ -187,7 +189,7 @@
   .puzzle-actions button,
   .puzzle-settings-actions button {
     width: 100%;
-    min-height: 2.55rem;
+    min-height: 2.75rem;
     padding: 0.68rem 0.55rem;
     font-size: 0.9rem;
   }
