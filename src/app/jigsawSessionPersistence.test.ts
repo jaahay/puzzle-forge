@@ -3,7 +3,6 @@ import { generateJigsaw } from "../games/jigsaw/generate";
 import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
 import {
   buildPersistedPuzzleSession,
-  initialSolitaireStats,
   restorePuzzleSessionFromPersisted,
   type PuzzleSession,
 } from "./session";
@@ -19,13 +18,7 @@ const makeJigsawSession = (): PuzzleSession => {
 
   return {
     puzzle,
-    cardStacks: null,
-    selectedCard: null,
-    solitaireStats: { ...initialSolitaireStats },
-    solitaireUndoStack: [],
-    solitaireRedoStack: [],
-    gridCells: null,
-    selectedGridCell: null,
+    progress: { kind: "tiles" },
     statusMessage: "Jigsaw in progress.",
   };
 };
