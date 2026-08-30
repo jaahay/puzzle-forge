@@ -116,7 +116,7 @@ export const BottomPuzzleConfiguration = (props: BottomPuzzleConfigurationProps)
     onRandomize,
     onReset,
   } = props;
-  const newPuzzleAction = <GenerationActions isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showRandomize={showRandomize} randomLabel="New puzzle" onRandomize={onRandomize} />;
+  const newPuzzleAction = <GenerationActions className="new-puzzle-actions" isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showRandomize={showRandomize} randomLabel="Start new puzzle" onRandomize={onRandomize} />;
   const todayAction = <GenerationActions className="load-puzzle-actions" isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showToday showRandomize={false} onToday={onToday} onRandomize={onRandomize} />;
   const resetAction = <GenerationActions className="current-puzzle-actions" isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showReset showRandomize={false} onRandomize={onRandomize} onReset={onReset} />;
   const seedTools = <SeedTools seedInput={seedInput} isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} onUseSeed={onUseSeed} />;
