@@ -26,6 +26,7 @@ export const initialSolitaireStats: SolitaireStats = {
 };
 
 export type CardSessionProgress = {
+  kind: "cards";
   cardStacks: CardStack[];
   selectedCard: CardSelection | null;
   solitaireStats: SolitaireStats;
@@ -34,11 +35,14 @@ export type CardSessionProgress = {
 };
 
 export type GridSessionProgress = {
+  kind: "grid";
   cells: PuzzleCell[];
   selectedCell: GridCellSelection | null;
 };
 
-export type TileSessionProgress = Record<never, never>;
+export type TileSessionProgress = {
+  kind: "tiles";
+};
 
 type TileGeneratedPuzzle = Exclude<GeneratedPuzzle, CardGeneratedPuzzle | GridGeneratedPuzzle>;
 
