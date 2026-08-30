@@ -1,16 +1,22 @@
 import { describe, expect, it } from "vitest";
-import type { GeneratedPuzzle, PuzzleCell } from "../catalog/types";
+import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import {
   buildPersistedPuzzleSession,
-  initialSolitaireStats,
   loadPersistedPuzzleSessions,
+  restorePuzzleSessionFromPersisted,
+  type PersistedPuzzleSession,
   type PuzzleSession,
 } from "./session";
 
 const metadataStorageKey = "puzzle-forge.sessions.v1";
 const sudokuStorageKey = "puzzle-forge.session.v1.sudoku";
 
-const makeSudokuPuzzle = (): GeneratedPuzzle => ({
+const makeGridCells = (): PuzzleCell[] => [
+  { row: 0, column: 0, value: "1", locked: true, tone: "given", ariaLabel: "1 cell" },
+  { row: 0, column: 1, value: "", locked: false, tone: "empty", ariaLabel: "Empty cell" },
+];
+
+const makeSudokuPuzzle = (): GridGeneratedPuzzle => ({
   id: "sudoku-validation",
   puzzleId: "sudoku",
   title: "Sudoku",
@@ -24,23 +30,16 @@ const makeSudokuPuzzle = (): GeneratedPuzzle => ({
   sudokuVariation: "classic",
   notes: [],
   kind: "grid",
-  cells: [],
+  cells: makeGridCells(),
 });
-
-const makeGridCells = (): PuzzleCell[] => [
-  { row: 0, column: 0, value: "1", locked: true, tone: "given", ariaLabel: "1 cell" },
-  { row: 0, column: 1, value: "", locked: false, tone: "empty", ariaLabel: "Empty cell" },
-];
 
 const makeSudokuSession = (): PuzzleSession => ({
   puzzle: makeSudokuPuzzle(),
-  cardStacks: null,
-  selectedCard: null,
-  solitaireStats: { ...initialSolitaireStats },
-  solitaireUndoStack: [],
-  solitaireRedoStack: [],
-  gridCells: makeGridCells(),
-  selectedGridCell: { row: 0, column: 1 },
+  progress: {
+    kind: "grid",
+    cells: makeGridCells(),
+    selectedCell: { row: 0, column: 1 },
+  },
   statusMessage: "In progress.",
 });
 
@@ -132,7 +131,7 @@ describe("persisted session boundary validation", () => {
     });
   });
 
-  it("rejects malformed tile-order records before restore code can consume them", () => {
+  it("rejects structurally valid progress of the wrong kind for the puzzle type", () => {
     withMockWindowStorage((storage) => {
       const persisted = buildPersistedPuzzleSession("sudoku", makeSudokuSession());
       expect(persisted).not.toBeNull();
@@ -141,11 +140,52 @@ describe("persisted session boundary validation", () => {
         ...persisted,
         progress: {
           kind: "tiles",
-          tileOrder: [{ id: "tile-1", currentIndex: -1 }],
+          tileOrder: [],
           selectedTileId: null,
         },
       });
+
       expect(loadPersistedPuzzleSessions()).toBeNull();
     });
+  });
+
+  it("rejects duplicate or incomplete grid coordinates when restoring regenerated identity", () => {
+    const puzzle = makeSudokuPuzzle();
+    const persisted = buildPersistedPuzzleSession("sudoku", makeSudokuSession());
+    expect(persisted?.progress.kind).toBe("grid");
+    if (!persisted || persisted.progress.kind !== "grid") return;
+
+    const duplicateCoordinates: PersistedPuzzleSession = {
+      ...persisted,
+      progress: {
+        ...persisted.progress,
+        cells: [persisted.progress.cells[0], { ...persisted.progress.cells[1], row: 0, column: 0 }],
+      },
+    };
+    const incompleteCoordinates: PersistedPuzzleSession = {
+      ...persisted,
+      progress: {
+        ...persisted.progress,
+        cells: [persisted.progress.cells[0]],
+      },
+    };
+
+    expect(restorePuzzleSessionFromPersisted(duplicateCoordinates, puzzle)).toBeNull();
+    expect(restorePuzzleSessionFromPersisted(incompleteCoordinates, puzzle)).toBeNull();
+  });
+
+  it("rejects a selected grid coordinate that does not exist on the regenerated board", () => {
+    const puzzle = makeSudokuPuzzle();
+    const persisted = buildPersistedPuzzleSession("sudoku", makeSudokuSession());
+    expect(persisted?.progress.kind).toBe("grid");
+    if (!persisted || persisted.progress.kind !== "grid") return;
+
+    expect(restorePuzzleSessionFromPersisted({
+      ...persisted,
+      progress: {
+        ...persisted.progress,
+        selectedCell: { row: 8, column: 8 },
+      },
+    }, puzzle)).toBeNull();
   });
 });
