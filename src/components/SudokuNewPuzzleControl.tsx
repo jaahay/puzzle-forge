@@ -61,10 +61,10 @@ export const SudokuNewPuzzleControl = ({
           <small>{configurationSummary}</small>
         </button>
         <details class="new-puzzle-options" ref={optionsRef}>
-          <summary aria-label="New puzzle options" title="New puzzle options">
+          <summary aria-label={`Change new puzzle options. Current selection: ${configurationSummary}`} title="New puzzle options">
             <span aria-hidden="true">▾</span>
           </summary>
-          <div class="new-puzzle-options-panel">
+          <div class="new-puzzle-options-panel" aria-label="New puzzle options">
             <div class="new-puzzle-settings-grid">
               <label>
                 Difficulty
