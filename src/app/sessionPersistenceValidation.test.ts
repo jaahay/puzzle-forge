@@ -34,6 +34,7 @@ const makeSudokuPuzzle = (): GridGeneratedPuzzle => ({
 });
 
 const makeSudokuSession = (): PuzzleSession => ({
+  kind: "grid",
   puzzle: makeSudokuPuzzle(),
   progress: {
     kind: "grid",
