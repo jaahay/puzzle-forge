@@ -9,7 +9,7 @@ import { NotFoundView } from "./components/NotFoundView";
 import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
 import { StartView } from "./components/StartView";
-import { getCanonicalDailyGenerationSettings } from "./games/shared/daily";
+import { getDailyPuzzleSeed } from "./games/shared/daily";
 import { isImageBackedPuzzleId } from "./games/imageAssets";
 import { defaultSolitaireVariation, normalizeSolitaireVariation } from "./games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation } from "./games/sudoku/variation";
@@ -434,7 +434,7 @@ export const App = () => {
 
   const loadToday = () => {
     rememberNextPuzzleDraft();
-    commitGenerationSettings(getCanonicalDailyGenerationSettings(selectedPuzzleId));
+    commitGenerationSettings({ ...nextPuzzleDraft, seed: getDailyPuzzleSeed(selectedPuzzleId) });
   };
 
   const commitRememberedGenerationSettings = (settings: GenerationSettings = {}) => {
