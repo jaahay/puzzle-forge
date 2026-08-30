@@ -1,29 +1,22 @@
 import { describe, expect, it } from "vitest";
-import type { GeneratedPuzzle, PuzzleId } from "../catalog/types";
+import type { ImageTileGeneratedPuzzle, ImageTilePuzzleId } from "../catalog/types";
 import { generateSlidingPuzzle } from "../games/slidingPuzzle/generate";
 import { generateTileSwap } from "../games/tileSwap/generate";
 import {
   buildPersistedPuzzleSession,
-  initialSolitaireStats,
   restorePuzzleSessionFromPersisted,
   type PuzzleSession,
 } from "./session";
 
-const makeTileSession = (puzzle: GeneratedPuzzle): PuzzleSession => ({
+const makeTileSession = (puzzle: ImageTileGeneratedPuzzle): PuzzleSession => ({
   puzzle,
-  cardStacks: null,
-  selectedCard: null,
-  solitaireStats: { ...initialSolitaireStats },
-  solitaireUndoStack: [],
-  solitaireRedoStack: [],
-  gridCells: null,
-  selectedGridCell: null,
+  progress: { kind: "tiles" },
   statusMessage: `${puzzle.title} in progress.`,
 });
 
 const cases: Array<{
-  puzzleId: PuzzleId;
-  make: (imageId: string) => GeneratedPuzzle;
+  puzzleId: ImageTilePuzzleId;
+  make: (imageId: string) => ImageTileGeneratedPuzzle;
 }> = [
   {
     puzzleId: "tile-swap",
