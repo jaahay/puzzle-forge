@@ -36,14 +36,7 @@ export const GridPuzzleWorkspace = ({
   const isNonogram = selectedDefinition.id === "nonogram";
   const isWordGuess = selectedDefinition.id === "word-guess";
   const isFutoshiki = selectedDefinition.id === "futoshiki";
-  const compactConfigurationKind = isNonogram
-    ? "nonogram"
-    : isWordGuess
-      ? "word-guess"
-      : isFutoshiki
-        ? "futoshiki"
-        : null;
-  const hasBottomSettingsBar = compactConfigurationKind !== null;
+  const hasBottomSettingsBar = isNonogram || isWordGuess || isFutoshiki;
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
   const filledOpenCount = getFilledOpenCount(gridCells);
   const openCount = getOpenCount(gridCells);
@@ -55,9 +48,9 @@ export const GridPuzzleWorkspace = ({
   ].filter(Boolean).join(" ");
   const seedInput = <SeedControl currentSeed={puzzle?.seed ?? seed} seed={seedLoadInput} onSeedChange={onSeedLoadInputChange} />;
 
-  const generation = !puzzle ? null : compactConfigurationKind ? (
+  const generation = !puzzle ? null : isNonogram ? (
     <BottomPuzzleConfiguration
-      kind={compactConfigurationKind}
+      kind="nonogram"
       selectedDefinition={selectedDefinition}
       selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
       seedInput={seedInput}
@@ -65,15 +58,44 @@ export const GridPuzzleWorkspace = ({
       height={nextPuzzleDraft.height}
       difficulty={nextPuzzleDraft.difficulty}
       requireUniqueSolution={nextPuzzleDraft.requireUniqueSolution}
-      sudokuVariation={nextPuzzleDraft.sudokuVariation}
       isFixedSize={isFixedSize}
       isGenerating={isGenerating}
       onWidthChange={(width) => onNextPuzzleDraftChange({ width })}
       onHeightChange={(height) => onNextPuzzleDraftChange({ height })}
       onSettingsCommit={onNextPuzzleDraftChange}
       onDifficultyChange={(difficulty) => onNextPuzzleDraftChange({ difficulty })}
-      onSudokuVariationChange={(sudokuVariation) => onNextPuzzleDraftChange({ sudokuVariation })}
       onUniqueSolutionChange={(requireUniqueSolution) => onNextPuzzleDraftChange({ requireUniqueSolution })}
+      onToday={onToday}
+      onUseSeed={onLoadSeed}
+      onRandomize={onNewPuzzle}
+      onReset={onReset}
+    />
+  ) : isWordGuess ? (
+    <BottomPuzzleConfiguration
+      kind="word-guess"
+      selectedDefinition={selectedDefinition}
+      selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
+      seedInput={seedInput}
+      width={nextPuzzleDraft.width}
+      height={nextPuzzleDraft.height}
+      isGenerating={isGenerating}
+      onWidthChange={(width) => onNextPuzzleDraftChange({ width })}
+      onHeightChange={(height) => onNextPuzzleDraftChange({ height })}
+      onSettingsCommit={onNextPuzzleDraftChange}
+      onToday={onToday}
+      onUseSeed={onLoadSeed}
+      onRandomize={onNewPuzzle}
+      onReset={onReset}
+    />
+  ) : isFutoshiki ? (
+    <BottomPuzzleConfiguration
+      kind="futoshiki"
+      selectedDefinition={selectedDefinition}
+      selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
+      seedInput={seedInput}
+      difficulty={nextPuzzleDraft.difficulty}
+      isGenerating={isGenerating}
+      onDifficultyChange={(difficulty) => onNextPuzzleDraftChange({ difficulty })}
       onToday={onToday}
       onUseSeed={onLoadSeed}
       onRandomize={onNewPuzzle}
