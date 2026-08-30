@@ -5,6 +5,7 @@ import { generateTileSwap } from "../games/tileSwap/generate";
 import {
   buildPersistedPuzzleSession,
   restorePuzzleSessionFromPersisted,
+  type PersistedPuzzleSession,
   type PuzzleSession,
 } from "./session";
 
@@ -42,5 +43,34 @@ describe("image tile session identity", () => {
     expect(restorePuzzleSessionFromPersisted(persisted, puzzle)).not.toBeNull();
     expect(restorePuzzleSessionFromPersisted(persisted, make("roses"))).toBeNull();
     expect(restorePuzzleSessionFromPersisted({ ...persisted, puzzleInstanceId: `${puzzle.id}-other` }, puzzle)).toBeNull();
+  });
+
+  it("rejects duplicate and out-of-range persisted tile positions", () => {
+    const puzzle = generateTileSwap({ puzzleId: "tile-swap", seed: "persist-image", width: 4, height: 4, imageId: "great-wave" });
+    const persisted = buildPersistedPuzzleSession("tile-swap", makeTileSession(puzzle));
+    expect(persisted?.progress.kind).toBe("tiles");
+    if (!persisted || persisted.progress.kind !== "tiles") return;
+
+    const duplicatePosition: PersistedPuzzleSession = {
+      ...persisted,
+      progress: {
+        ...persisted.progress,
+        tileOrder: persisted.progress.tileOrder.map((entry, index) =>
+          index === 1 ? { ...entry, currentIndex: persisted.progress.tileOrder[0].currentIndex } : entry,
+        ),
+      },
+    };
+    const outOfRangePosition: PersistedPuzzleSession = {
+      ...persisted,
+      progress: {
+        ...persisted.progress,
+        tileOrder: persisted.progress.tileOrder.map((entry, index) =>
+          index === 0 ? { ...entry, currentIndex: puzzle.tiles.length } : entry,
+        ),
+      },
+    };
+
+    expect(restorePuzzleSessionFromPersisted(duplicatePosition, puzzle)).toBeNull();
+    expect(restorePuzzleSessionFromPersisted(outOfRangePosition, puzzle)).toBeNull();
   });
 });
