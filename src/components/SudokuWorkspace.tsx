@@ -201,7 +201,7 @@ export const SudokuWorkspace = ({
 
   const loadingBoard = (
     <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label="Sudoku is being prepared">
-      <div class="puzzle-loading-copy"><strong>Preparing Sudoku</strong><span>Your puzzle will be ready shortly.</span></div>
+      <div class="puzzle-loading-copy"><strong>Preparing Sudoku</strong><span>Restoring or preparing your puzzle.</span></div>
       <div class="puzzle-loading-grid" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <span key={index} />)}</div>
     </section>
   );
