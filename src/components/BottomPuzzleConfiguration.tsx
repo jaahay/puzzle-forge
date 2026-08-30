@@ -1,5 +1,6 @@
 import type { ComponentChildren } from "preact";
 import type { PuzzleDefinition, PuzzleDifficulty, SudokuVariation } from "../catalog/types";
+import { BoundedNumberInput } from "./BoundedNumberInput";
 import { GenerationActions } from "./GenerationActions";
 import { PuzzleDifficultySelect } from "./PuzzleDifficultySelect";
 import { SudokuVariationSelect } from "./SudokuVariationSelect";
@@ -56,30 +57,36 @@ export type BottomPuzzleConfigurationProps =
   | WordGuessConfigurationProps
   | FutoshikiConfigurationProps;
 
-const blurOnEnter = (event: KeyboardEvent) => {
-  if (event.key === "Enter") event.currentTarget instanceof HTMLElement && event.currentTarget.blur();
-};
-
 const SizeControl = ({
   selectedDefinition,
   width,
   height,
-  onWidthChange,
-  onHeightChange,
   onSettingsCommit,
 }: Pick<
   NonogramConfigurationProps,
-  "selectedDefinition" | "width" | "height" | "onWidthChange" | "onHeightChange" | "onSettingsCommit"
+  "selectedDefinition" | "width" | "height" | "onSettingsCommit"
 >) => (
   <div class="puzzle-size-control" aria-label="Nonogram size">
     <span class="control-label">Size</span>
     <label class="compact-number-control">
       <span>W</span>
-      <input aria-label="Width" type="number" min={selectedDefinition.minWidth} max={selectedDefinition.maxWidth} value={width} onBlur={(event) => onSettingsCommit({ width: Number(event.currentTarget.value) })} onInput={(event) => onWidthChange(Number(event.currentTarget.value))} onKeyDown={blurOnEnter} />
+      <BoundedNumberInput
+        ariaLabel="Width"
+        value={width}
+        min={selectedDefinition.minWidth}
+        max={selectedDefinition.maxWidth}
+        onCommit={(nextWidth) => onSettingsCommit({ width: nextWidth })}
+      />
     </label>
     <label class="compact-number-control">
       <span>H</span>
-      <input aria-label="Height" type="number" min={selectedDefinition.minHeight} max={selectedDefinition.maxHeight} value={height} onBlur={(event) => onSettingsCommit({ height: Number(event.currentTarget.value) })} onInput={(event) => onHeightChange(Number(event.currentTarget.value))} onKeyDown={blurOnEnter} />
+      <BoundedNumberInput
+        ariaLabel="Height"
+        value={height}
+        min={selectedDefinition.minHeight}
+        max={selectedDefinition.maxHeight}
+        onCommit={(nextHeight) => onSettingsCommit({ height: nextHeight })}
+      />
     </label>
   </div>
 );
@@ -136,8 +143,24 @@ export const BottomPuzzleConfiguration = (props: BottomPuzzleConfigurationProps)
     case "word-guess":
       settings = (
         <>
-          <label>Letters<input type="number" min={selectedDefinition.minWidth} max={selectedDefinition.maxWidth} value={props.width} onBlur={(event) => props.onSettingsCommit({ width: Number(event.currentTarget.value) })} onInput={(event) => props.onWidthChange(Number(event.currentTarget.value))} onKeyDown={blurOnEnter} /></label>
-          <label>Guesses<input type="number" min={selectedDefinition.minHeight} max={selectedDefinition.maxHeight} value={props.height} onBlur={(event) => props.onSettingsCommit({ height: Number(event.currentTarget.value) })} onInput={(event) => props.onHeightChange(Number(event.currentTarget.value))} onKeyDown={blurOnEnter} /></label>
+          <label>
+            Letters
+            <BoundedNumberInput
+              value={props.width}
+              min={selectedDefinition.minWidth}
+              max={selectedDefinition.maxWidth}
+              onCommit={(width) => props.onSettingsCommit({ width })}
+            />
+          </label>
+          <label>
+            Guesses
+            <BoundedNumberInput
+              value={props.height}
+              min={selectedDefinition.minHeight}
+              max={selectedDefinition.maxHeight}
+              onCommit={(height) => props.onSettingsCommit({ height })}
+            />
+          </label>
         </>
       );
       break;
