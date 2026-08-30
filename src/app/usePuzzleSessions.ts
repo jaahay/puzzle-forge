@@ -65,11 +65,11 @@ const cloneTilePuzzle = (puzzle: Exclude<GeneratedPuzzle, CardGeneratedPuzzle | 
 };
 
 export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => {
-  if (session.progress.kind === "cards") {
+  if (session.kind === "cards") {
     return {
+      kind: "cards",
       puzzle: cloneCardPuzzle(session.puzzle),
       progress: {
-        kind: "cards",
         cardStacks: session.progress.cardStacks.map(cloneStack),
         selectedCard: session.progress.selectedCard ? { ...session.progress.selectedCard } : null,
         solitaireStats: { ...session.progress.solitaireStats },
@@ -80,11 +80,11 @@ export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => {
     };
   }
 
-  if (session.progress.kind === "grid") {
+  if (session.kind === "grid") {
     return {
+      kind: "grid",
       puzzle: cloneGridPuzzle(session.puzzle),
       progress: {
-        kind: "grid",
         cells: session.progress.cells.map(cloneGridCell),
         selectedCell: session.progress.selectedCell ? { ...session.progress.selectedCell } : null,
       },
@@ -93,8 +93,9 @@ export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => {
   }
 
   return {
+    kind: "tiles",
     puzzle: cloneTilePuzzle(session.puzzle),
-    progress: { kind: "tiles" },
+    progress: {},
     statusMessage: session.statusMessage,
   };
 };
@@ -112,9 +113,9 @@ export const buildRuntimeSession = ({
 }: RuntimeSessionDraft): PuzzleSession => {
   if (puzzle.kind === "cards") {
     return {
+      kind: "cards",
       puzzle,
       progress: {
-        kind: "cards",
         cardStacks: (cardStacks ?? puzzle.stacks).map(cloneStack),
         selectedCard: selectedCard ? { ...selectedCard } : null,
         solitaireStats: { ...solitaireStats },
@@ -127,9 +128,9 @@ export const buildRuntimeSession = ({
 
   if (puzzle.kind === "grid") {
     return {
+      kind: "grid",
       puzzle,
       progress: {
-        kind: "grid",
         cells: (gridCells ?? prepareGridCells(puzzle)).map((cell) => cloneSessionGridCell(puzzle.puzzleId, cell)),
         selectedCell: selectedGridCell ? { ...selectedGridCell } : null,
       },
@@ -138,8 +139,9 @@ export const buildRuntimeSession = ({
   }
 
   return {
+    kind: "tiles",
     puzzle,
-    progress: { kind: "tiles" },
+    progress: {},
     statusMessage,
   };
 };
@@ -147,9 +149,9 @@ export const buildRuntimeSession = ({
 export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPuzzle, statusMessage: string): PuzzleSession => {
   if (generatedPuzzle.kind === "cards") {
     return {
+      kind: "cards",
       puzzle: generatedPuzzle,
       progress: {
-        kind: "cards",
         cardStacks: generatedPuzzle.stacks.map(cloneStack),
         selectedCard: null,
         solitaireStats: { ...initialSolitaireStats },
@@ -162,9 +164,9 @@ export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPu
 
   if (generatedPuzzle.kind === "grid") {
     return {
+      kind: "grid",
       puzzle: generatedPuzzle,
       progress: {
-        kind: "grid",
         cells: prepareGridCells(generatedPuzzle),
         selectedCell: null,
       },
@@ -172,7 +174,7 @@ export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPu
     };
   }
 
-  return { puzzle: generatedPuzzle, progress: { kind: "tiles" }, statusMessage };
+  return { kind: "tiles", puzzle: generatedPuzzle, progress: {}, statusMessage };
 };
 
 export const usePuzzleSessions = () => {
