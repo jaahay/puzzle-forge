@@ -9,6 +9,7 @@ import {
 } from "./session";
 
 const makeTileSession = (puzzle: ImageTileGeneratedPuzzle): PuzzleSession => ({
+  kind: "tiles",
   puzzle,
   progress: { kind: "tiles" },
   statusMessage: `${puzzle.title} in progress.`,
