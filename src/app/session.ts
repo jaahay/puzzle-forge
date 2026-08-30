@@ -1,4 +1,4 @@
-import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
+import type { CardGeneratedPuzzle, CardStack, GeneratedPuzzle, GridGeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
 export { puzzleIds, solitaireHistoryLimit, solitaireHistoryLimitNotice } from "./sessionConstants";
@@ -25,16 +25,42 @@ export const initialSolitaireStats: SolitaireStats = {
   autoMoveCount: 0,
 };
 
-export type PuzzleSession = {
-  puzzle: GeneratedPuzzle;
-  cardStacks: CardStack[] | null;
+export type CardSessionProgress = {
+  kind: "cards";
+  cardStacks: CardStack[];
   selectedCard: CardSelection | null;
   solitaireStats: SolitaireStats;
-  solitaireUndoStack: SolitaireHistoryEntry[];
-  solitaireRedoStack: SolitaireHistoryEntry[];
-  gridCells: PuzzleCell[] | null;
-  selectedGridCell: GridCellSelection | null;
-  statusMessage: string;
+  undoStack: SolitaireHistoryEntry[];
+  redoStack: SolitaireHistoryEntry[];
 };
+
+export type GridSessionProgress = {
+  kind: "grid";
+  cells: PuzzleCell[];
+  selectedCell: GridCellSelection | null;
+};
+
+export type TileSessionProgress = {
+  kind: "tiles";
+};
+
+type TileGeneratedPuzzle = Exclude<GeneratedPuzzle, CardGeneratedPuzzle | GridGeneratedPuzzle>;
+
+export type PuzzleSession =
+  | {
+      puzzle: CardGeneratedPuzzle;
+      progress: CardSessionProgress;
+      statusMessage: string;
+    }
+  | {
+      puzzle: GridGeneratedPuzzle;
+      progress: GridSessionProgress;
+      statusMessage: string;
+    }
+  | {
+      puzzle: TileGeneratedPuzzle;
+      progress: TileSessionProgress;
+      statusMessage: string;
+    };
 
 export type PuzzleSessionCache = Partial<Record<PuzzleId, PuzzleSession>>;
