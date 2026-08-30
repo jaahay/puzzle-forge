@@ -1,4 +1,4 @@
-import { useRef } from "preact/hooks";
+import { useEffect, useRef } from "preact/hooks";
 import type { PuzzleDifficulty, SudokuVariation } from "../catalog/types";
 import { sudokuVariationLabels } from "../games/sudoku/variation";
 import { PuzzleDifficultySelect } from "./PuzzleDifficultySelect";
@@ -29,11 +29,43 @@ export const SudokuNewPuzzleControl = ({
   onToday,
   onLoadSeed,
 }: SudokuNewPuzzleControlProps) => {
+  const commandRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDetailsElement>(null);
   const configurationSummary = `${difficulty} · ${sudokuVariationLabels[sudokuVariation]}`;
 
-  const closeOptions = () => {
-    if (optionsRef.current) optionsRef.current.open = false;
+  const closeOptions = (restoreFocus = false) => {
+    const options = optionsRef.current;
+    if (!options) return;
+    options.open = false;
+    if (restoreFocus) options.querySelector("summary")?.focus();
+  };
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!optionsRef.current?.open) return;
+      const target = event.target;
+      if (target instanceof Node && !commandRef.current?.contains(target)) closeOptions();
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && optionsRef.current?.open) {
+        event.preventDefault();
+        closeOptions(true);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  const startNewPuzzle = () => {
+    closeOptions();
+    onNewPuzzle();
   };
 
   const startToday = () => {
@@ -48,12 +80,12 @@ export const SudokuNewPuzzleControl = ({
   };
 
   return (
-    <div class="new-puzzle-command" aria-label={`New Sudoku: ${configurationSummary}`}>
+    <div class="new-puzzle-command" aria-label={`New Sudoku: ${configurationSummary}`} ref={commandRef}>
       <div class="new-puzzle-split-control">
         <button
           class="new-puzzle-command-primary"
           type="button"
-          onClick={onNewPuzzle}
+          onClick={startNewPuzzle}
           disabled={disabled}
           aria-label={`New Sudoku, ${configurationSummary}`}
         >
