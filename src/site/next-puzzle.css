@@ -15,6 +15,12 @@
   outline: none;
 }
 
+.sudoku-workspace .workspace-layout-header {
+  position: relative;
+  z-index: 20;
+  overflow: visible;
+}
+
 .new-puzzle-command {
   position: relative;
   display: flex;
@@ -26,7 +32,7 @@
   position: relative;
   display: flex;
   align-items: stretch;
-  filter: drop-shadow(0 10px 24px rgba(2, 6, 23, 0.22));
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.22);
 }
 
 .new-puzzle-command-primary,
