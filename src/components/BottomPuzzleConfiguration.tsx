@@ -120,7 +120,7 @@ export const BottomPuzzleConfiguration = (props: BottomPuzzleConfigurationProps)
       settings = (
         <>
           <label>Difficulty<PuzzleDifficultySelect value={props.difficulty} onChange={props.onDifficultyChange} /></label>
-          <label>Variation<SudokuVariationSelect value={props.sudokuVariation} onChange={props.onSudokuVariationChange} /></label>
+          <label>Mode<SudokuVariationSelect value={props.sudokuVariation} onChange={props.onSudokuVariationChange} /></label>
         </>
       );
       break;
