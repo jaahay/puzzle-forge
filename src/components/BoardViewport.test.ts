@@ -31,7 +31,21 @@ describe("board viewport sizing", () => {
     expect(metrics.cellSize).toBeGreaterThan(24);
   });
 
-  it("fits the maximum supported 12 by 12 Nonogram on a narrow phone", () => {
+  it("fits a maximum-size 12 by 12 Nonogram when the phone viewport can preserve useful cell density", () => {
+    const metrics = makeBoardViewportMetrics({
+      kind: "nonogram",
+      availableInlineSize: 360,
+      columns: 12,
+      rows: 12,
+      rowClueSlots: 5,
+      columnClueSlots: 5,
+    });
+
+    expect(metrics.boardWidth).toBeLessThanOrEqual(360);
+    expect(metrics.cellSize).toBeGreaterThanOrEqual(20);
+  });
+
+  it("uses contained horizontal scrolling instead of shrinking a large Nonogram below the interaction floor", () => {
     const metrics = makeBoardViewportMetrics({
       kind: "nonogram",
       availableInlineSize: 312,
@@ -41,8 +55,8 @@ describe("board viewport sizing", () => {
       columnClueSlots: 5,
     });
 
-    expect(metrics.boardWidth).toBeLessThanOrEqual(312);
-    expect(metrics.cellSize).toBeGreaterThanOrEqual(16);
+    expect(metrics.cellSize).toBe(20);
+    expect(metrics.boardWidth).toBeGreaterThan(312);
   });
 
   it("keeps horizontal scrolling as the fallback for boards beyond supported mobile density", () => {
@@ -55,7 +69,7 @@ describe("board viewport sizing", () => {
       columnClueSlots: 5,
     });
 
-    expect(metrics.cellSize).toBe(16);
+    expect(metrics.cellSize).toBe(20);
     expect(metrics.boardWidth).toBeGreaterThan(328);
   });
 });
