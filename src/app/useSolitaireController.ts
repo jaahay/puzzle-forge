@@ -120,15 +120,6 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
   };
 
   const clearCardInteraction = () => setSelectedCard(null);
-
-  const resetSolitaireStats = () => {
-    setSolitaireState((current) => ({ ...current, solitaireStats: initialSolitaireStats }));
-  };
-
-  const clearSolitaireHistory = () => {
-    setSolitaireState((current) => ({ ...current, solitaireUndoStack: [], solitaireRedoStack: [] }));
-  };
-
   const resetSolitaire = () => setSolitaireState(initialSolitaireControllerState);
 
   const restoreSolitaireSnapshot = ({
@@ -282,8 +273,6 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
     solitaireStats,
     solitaireUndoStack,
     solitaireRedoStack,
-    resetSolitaireStats,
-    clearSolitaireHistory,
     resetSolitaire,
     restoreSolitaireSnapshot,
     undoSolitaireMove,
