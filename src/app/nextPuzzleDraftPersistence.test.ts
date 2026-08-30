@@ -21,6 +21,33 @@ describe("persisted next-puzzle preferences", () => {
     expect(drafts.sudoku).toEqual(zeroKillerDraft);
   });
 
+  it("restores eligible artwork and dimensions for image-backed puzzles", () => {
+    const jigsawDraft = {
+      ...zeroKillerDraft,
+      width: 6,
+      height: 5,
+      imageId: "great-wave",
+    };
+    const drafts = parseNextPuzzleDraftCache({
+      schemaVersion: 1,
+      drafts: { jigsaw: jigsawDraft },
+    });
+
+    expect(drafts.jigsaw).toEqual(jigsawDraft);
+  });
+
+  it("rejects artwork that is unknown or attached to a non-image puzzle", () => {
+    const drafts = parseNextPuzzleDraftCache({
+      schemaVersion: 1,
+      drafts: {
+        jigsaw: { ...zeroKillerDraft, width: 6, height: 5, imageId: "not-an-asset" },
+        sudoku: { ...zeroKillerDraft, imageId: "great-wave" },
+      },
+    });
+
+    expect(drafts).toEqual({});
+  });
+
   it("drops malformed or out-of-range preferences instead of trusting browser storage", () => {
     const drafts = parseNextPuzzleDraftCache({
       schemaVersion: 1,
