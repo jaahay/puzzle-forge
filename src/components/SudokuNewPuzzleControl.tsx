@@ -1,10 +1,12 @@
 import { useEffect, useRef } from "preact/hooks";
 import type { PuzzleDifficulty, SudokuVariation } from "../catalog/types";
-import { sudokuVariationLabels } from "../games/sudoku/variation";
+import { sudokuVariationDescriptions, sudokuVariationLabels } from "../games/sudoku/variation";
 import { PuzzleDifficultySelect } from "./PuzzleDifficultySelect";
+import { CurrentSeedDisplay } from "./SeedControl";
 import { SudokuVariationSelect } from "./SudokuVariationSelect";
 
 type SudokuNewPuzzleControlProps = {
+  currentSeed: string;
   difficulty: PuzzleDifficulty;
   sudokuVariation: SudokuVariation;
   seedLoadInput: string;
@@ -18,6 +20,7 @@ type SudokuNewPuzzleControlProps = {
 };
 
 export const SudokuNewPuzzleControl = ({
+  currentSeed,
   difficulty,
   sudokuVariation,
   seedLoadInput,
@@ -90,9 +93,9 @@ export const SudokuNewPuzzleControl = ({
           onClick={startNewPuzzle}
           disabled={disabled}
           aria-label={`New Sudoku, ${configurationSummary}`}
+          title={`New puzzle — ${configurationSummary}`}
         >
-          <span>New puzzle</span>
-          <small>{configurationSummary}</small>
+          New
         </button>
         <details class="new-puzzle-options" ref={optionsRef}>
           <summary aria-label={`Change new puzzle options. Current selection: ${configurationSummary}`} title="New puzzle options">
@@ -109,12 +112,14 @@ export const SudokuNewPuzzleControl = ({
                 <SudokuVariationSelect value={sudokuVariation} onChange={onSudokuVariationChange} />
               </label>
             </div>
+            <p class="new-puzzle-mode-description">{sudokuVariationDescriptions[sudokuVariation]}</p>
 
             <div class="new-puzzle-options-actions">
               <button type="button" onClick={startToday} disabled={disabled}>Today</button>
             </div>
 
             <div class="new-puzzle-seed-tools">
+              <CurrentSeedDisplay seed={currentSeed} showCopyText />
               <label>
                 Seed
                 <input
