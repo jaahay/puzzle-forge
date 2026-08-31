@@ -1,12 +1,10 @@
 import { useEffect, useRef } from "preact/hooks";
 import type { PuzzleCell } from "../catalog/types";
-import { sudokuVariationRules } from "../games/sudoku/variation";
 import { isGridAnswerCompleteAndCorrect } from "../interactions/gridChecking";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
 import { getNumericGridDigits, NumericGridDigitPad, useNumericGridInput } from "./NumericGridInput";
 import type { SudokuWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
-import { CurrentSeedDisplay } from "./SeedControl";
 import { SudokuMeta } from "./SudokuMeta";
 import { SudokuNewPuzzleControl } from "./SudokuNewPuzzleControl";
 import { usePuzzleCompletionPresentation } from "./usePuzzleCompletionPresentation";
@@ -80,6 +78,7 @@ export const SudokuWorkspace = ({
 
   const newPuzzleControl = sudokuPuzzle ? (
     <SudokuNewPuzzleControl
+      currentSeed={sudokuPuzzle.seed}
       difficulty={nextPuzzleDraft.difficulty}
       sudokuVariation={nextPuzzleDraft.sudokuVariation}
       seedLoadInput={seedLoadInput}
@@ -165,19 +164,6 @@ export const SudokuWorkspace = ({
     </div>
   ) : null;
 
-  const rules = sudokuPuzzle ? sudokuVariationRules[sudokuPuzzle.sudokuVariation ?? "classic"] : undefined;
-  const help = sudokuPuzzle ? (
-    <div class="sudoku-puzzle-details">
-      <CurrentSeedDisplay seed={sudokuPuzzle.seed} label="Seed" showCopyText />
-      {rules ? (
-        <details class="sudoku-rules-disclosure">
-          <summary>Rules</summary>
-          <p>{rules}</p>
-        </details>
-      ) : null}
-    </div>
-  ) : null;
-
   const loadingBoard = (
     <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label="Sudoku is being prepared">
       <div class="puzzle-loading-copy"><strong>Preparing Sudoku</strong><span>Restoring or preparing your puzzle.</span></div>
@@ -208,7 +194,6 @@ export const SudokuWorkspace = ({
       header={newPuzzleControl}
       board={board}
       gameplay={gameplay}
-      help={help}
     />
   );
 };
