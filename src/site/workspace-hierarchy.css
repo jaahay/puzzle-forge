@@ -14,9 +14,7 @@
 .sudoku-workspace .square-grid-board-viewport,
 .sudoku-workspace .sudoku-validation-message,
 .gameplay-control-stack,
-.new-puzzle-command,
-.sudoku-puzzle-details,
-.sudoku-rules-disclosure {
+.new-puzzle-command {
   width: min(100%, var(--play-column-max));
 }
 
@@ -62,67 +60,6 @@
   display: none;
 }
 
-.sudoku-puzzle-details {
-  box-sizing: border-box;
-  display: grid;
-  gap: 0.35rem;
-  border-top: 1px solid rgba(148, 163, 184, 0.18);
-  padding-top: 0.5rem;
-}
-
-.sudoku-puzzle-details > .current-seed-field {
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 0.55rem;
-}
-
-.sudoku-puzzle-details > .current-seed-field .control-label {
-  color: #94a3b8;
-  font-size: 0.8rem;
-}
-
-.sudoku-puzzle-details > .current-seed-field .seed-control code {
-  min-height: 2.35rem;
-  padding-block: 0.45rem;
-}
-
-.sudoku-puzzle-details > .current-seed-field .seed-control button {
-  min-height: 2.35rem;
-  height: 2.35rem;
-}
-
-.sudoku-rules-disclosure {
-  box-sizing: border-box;
-  color: #cbd5e1;
-}
-
-.sudoku-rules-disclosure summary {
-  display: flex;
-  min-height: 2.4rem;
-  width: fit-content;
-  align-items: center;
-  cursor: pointer;
-  color: #94a3b8;
-  font-size: 0.84rem;
-  font-weight: 800;
-}
-
-.sudoku-rules-disclosure summary:hover,
-.sudoku-rules-disclosure summary:focus-visible {
-  color: #e2e8f0;
-  outline: none;
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-
-.sudoku-rules-disclosure p {
-  margin: 0;
-  padding: 0 0.1rem 0.35rem;
-  color: #cbd5e1;
-  font-size: 0.88rem;
-  line-height: 1.5;
-}
-
 @media (orientation: landscape) and (max-height: 520px) {
   .puzzle-workspace-layout {
     --play-column-max: clamp(15.75rem, calc(100dvh - 5rem), 42rem);
@@ -139,16 +76,5 @@
   .sudoku-current-actions button {
     flex: 1 1 0;
     min-width: 0;
-  }
-}
-
-@media (max-width: 430px) {
-  .sudoku-puzzle-details > .current-seed-field {
-    grid-template-columns: 1fr;
-    gap: 0.3rem;
-  }
-
-  .sudoku-rules-disclosure p {
-    font-size: 0.86rem;
   }
 }
