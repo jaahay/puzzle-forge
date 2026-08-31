@@ -32,7 +32,7 @@
   position: relative;
   display: flex;
   align-items: stretch;
-  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.22);
+  box-shadow: 0 8px 20px rgba(2, 6, 23, 0.18);
 }
 
 .new-puzzle-command-primary,
@@ -45,21 +45,13 @@
 }
 
 .new-puzzle-command-primary {
-  display: grid;
-  min-width: 10.75rem;
-  min-height: 3rem;
-  align-content: center;
-  gap: 0.05rem;
-  border-radius: 0.9rem 0 0 0.9rem;
-  padding: 0.48rem 0.85rem 0.52rem;
-  text-align: left;
-}
-
-.new-puzzle-command-primary small {
-  color: rgba(5, 46, 22, 0.72);
-  font-size: 0.72rem;
-  font-weight: 800;
-  line-height: 1.15;
+  display: flex;
+  min-width: 5rem;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.85rem 0 0 0.85rem;
+  padding: 0.5rem 0.8rem;
 }
 
 .new-puzzle-options {
@@ -68,12 +60,12 @@
 
 .new-puzzle-options > summary {
   display: grid;
-  width: 2.85rem;
-  min-height: 3rem;
+  width: 2.75rem;
+  min-height: 2.75rem;
   height: 100%;
   place-items: center;
   border-left: 0;
-  border-radius: 0 0.9rem 0.9rem 0;
+  border-radius: 0 0.85rem 0.85rem 0;
   list-style: none;
   user-select: none;
 }
@@ -126,6 +118,13 @@
   font-size: 0.82rem;
 }
 
+.new-puzzle-mode-description {
+  margin: -0.15rem 0 0;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
 .new-puzzle-options-panel select,
 .new-puzzle-options-panel input {
   min-height: 2.7rem;
@@ -141,6 +140,10 @@
 .new-puzzle-options-actions {
   border-bottom: 1px solid rgba(148, 163, 184, 0.16);
   padding-bottom: 0.75rem;
+}
+
+.new-puzzle-seed-tools .current-seed-field {
+  padding-bottom: 0.1rem;
 }
 
 .new-puzzle-options-panel > .new-puzzle-options-actions button,
@@ -292,23 +295,6 @@
 }
 
 @media (max-width: 700px) {
-  .new-puzzle-command {
-    justify-content: stretch;
-  }
-
-  .new-puzzle-split-control {
-    width: 100%;
-  }
-
-  .new-puzzle-command-primary {
-    min-width: 0;
-    flex: 1 1 auto;
-  }
-
-  .new-puzzle-options {
-    flex: 0 0 auto;
-  }
-
   .new-puzzle-options-panel {
     width: min(23rem, calc(100vw - 1.5rem));
   }
