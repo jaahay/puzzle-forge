@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
-import { makeInitialPuzzleGenerationOptions, shouldAcceptGenerationResponse } from "./usePuzzleGeneration";
+import {
+  makeInitialPuzzleGenerationOptions,
+  shouldAcceptGenerationResponse,
+  shouldRecoverMissingPuzzleSurface,
+} from "./usePuzzleGeneration";
 
 describe("generation response ownership", () => {
   it("accepts only the response for the active request", () => {
@@ -10,6 +14,22 @@ describe("generation response ownership", () => {
 
   it("rejects every late response after the active request is cancelled", () => {
     expect(shouldAcceptGenerationResponse(null, "request-2")).toBe(false);
+  });
+
+  it("does not start fallback recovery while a restore generation request is already active", () => {
+    const startupSurface = {
+      hasSelectedPuzzle: true,
+      isHomeSelected: false,
+      isGenerating: false,
+      hasPuzzle: false,
+      selectedPuzzleIsGeneratable: true,
+    };
+
+    expect(shouldRecoverMissingPuzzleSurface(startupSurface)).toBe(true);
+    expect(shouldRecoverMissingPuzzleSurface({
+      ...startupSurface,
+      hasActiveGenerationRequest: true,
+    })).toBe(false);
   });
 });
 

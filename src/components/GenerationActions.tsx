@@ -35,7 +35,12 @@ export const GenerationActions = ({
     ) : null}
 
     {showRandomize ? (
-      <button type="button" onClick={onRandomize} disabled={isGenerating || !canGenerate} aria-label="Generate a new random puzzle">
+      <button
+        type="button"
+        onClick={onRandomize}
+        disabled={isGenerating || !canGenerate}
+        aria-label={randomLabel === "New puzzle" ? "Generate a new random puzzle with the selected settings" : "Generate a new random puzzle"}
+      >
         {randomLabel}
       </button>
     ) : null}

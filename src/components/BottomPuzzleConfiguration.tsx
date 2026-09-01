@@ -1,9 +1,8 @@
 import type { ComponentChildren } from "preact";
-import type { PuzzleDefinition, PuzzleDifficulty, SudokuVariation } from "../catalog/types";
+import type { PuzzleDefinition, PuzzleDifficulty } from "../catalog/types";
 import { BoundedNumberInput } from "./BoundedNumberInput";
 import { GenerationActions } from "./GenerationActions";
 import { PuzzleDifficultySelect } from "./PuzzleDifficultySelect";
-import { SudokuVariationSelect } from "./SudokuVariationSelect";
 
 type CommonConfigurationProps = {
   selectedDefinition: PuzzleDefinition;
@@ -30,12 +29,6 @@ type DifficultyConfigurationProps = {
   onDifficultyChange: (difficulty: PuzzleDifficulty) => void;
 };
 
-type SudokuConfigurationProps = CommonConfigurationProps & DifficultyConfigurationProps & {
-  kind: "sudoku";
-  sudokuVariation: SudokuVariation;
-  onSudokuVariationChange: (variation: SudokuVariation) => void;
-};
-
 type NonogramConfigurationProps = CommonConfigurationProps & DimensionConfigurationProps & DifficultyConfigurationProps & {
   kind: "nonogram";
   requireUniqueSolution: boolean;
@@ -52,7 +45,6 @@ type FutoshikiConfigurationProps = CommonConfigurationProps & DifficultyConfigur
 };
 
 export type BottomPuzzleConfigurationProps =
-  | SudokuConfigurationProps
   | NonogramConfigurationProps
   | WordGuessConfigurationProps
   | FutoshikiConfigurationProps;
@@ -116,21 +108,13 @@ export const BottomPuzzleConfiguration = (props: BottomPuzzleConfigurationProps)
     onRandomize,
     onReset,
   } = props;
-  const newPuzzleAction = <GenerationActions isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showRandomize={showRandomize} randomLabel="New puzzle" onRandomize={onRandomize} />;
+  const newPuzzleAction = showRandomize ? <GenerationActions className="new-puzzle-actions" isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} randomLabel="New puzzle" onRandomize={onRandomize} /> : null;
   const todayAction = <GenerationActions className="load-puzzle-actions" isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showToday showRandomize={false} onToday={onToday} onRandomize={onRandomize} />;
   const resetAction = <GenerationActions className="current-puzzle-actions" isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} showReset showRandomize={false} onRandomize={onRandomize} onReset={onReset} />;
   const seedTools = <SeedTools seedInput={seedInput} isGenerating={isGenerating} canGenerate={selectedPuzzleIsGeneratable} onUseSeed={onUseSeed} />;
 
   let settings: ComponentChildren;
   switch (props.kind) {
-    case "sudoku":
-      settings = (
-        <>
-          <label>Difficulty<PuzzleDifficultySelect value={props.difficulty} onChange={props.onDifficultyChange} /></label>
-          <label>Mode<SudokuVariationSelect value={props.sudokuVariation} onChange={props.onSudokuVariationChange} /></label>
-        </>
-      );
-      break;
     case "nonogram":
       settings = (
         <>

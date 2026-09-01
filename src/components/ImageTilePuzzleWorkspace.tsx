@@ -134,7 +134,15 @@ export const ImageTilePuzzleWorkspace = ({
         <strong>Puzzle solved</strong>
       </div>
       <div class="puzzle-actions">
-        <button type="button" onClick={onRandomize} disabled={isGenerating}>New puzzle</button>
+        <button
+          class="new-puzzle-primary"
+          type="button"
+          onClick={onRandomize}
+          disabled={isGenerating}
+          aria-label={`Start a new ${selectedDefinition.title} with the current settings`}
+        >
+          New puzzle
+        </button>
       </div>
     </section>
   ) : null;
