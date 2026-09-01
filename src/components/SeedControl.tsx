@@ -4,6 +4,7 @@ type CurrentSeedDisplayProps = {
   seed: string;
   label?: string;
   showCopyText?: boolean;
+  disabledInput?: boolean;
 };
 
 type SeedControlProps = {
@@ -19,7 +20,12 @@ const blurOnEnter = (event: KeyboardEvent) => {
   }
 };
 
-export const CurrentSeedDisplay = ({ seed, label = "Current seed", showCopyText = false }: CurrentSeedDisplayProps) => {
+export const CurrentSeedDisplay = ({
+  seed,
+  label = "Current seed",
+  showCopyText = false,
+  disabledInput = false,
+}: CurrentSeedDisplayProps) => {
   const [seedCopied, setSeedCopied] = useState(false);
 
   const copySeed = async () => {
@@ -39,10 +45,14 @@ export const CurrentSeedDisplay = ({ seed, label = "Current seed", showCopyText 
   const buttonText = showCopyText ? (seedCopied ? "Copied" : "Copy") : (seedCopied ? "✓" : "⧉");
 
   return (
-    <div class={`current-seed-field${showCopyText ? " current-seed-field-text-copy" : ""}`}>
+    <div class={`current-seed-field${showCopyText ? " current-seed-field-text-copy" : ""}${disabledInput ? " current-seed-field-disabled-input" : ""}`}>
       <span class="control-label">{label}</span>
       <div class="seed-control">
-        <code title={seed}>{seed}</code>
+        {disabledInput ? (
+          <input aria-label={label} value={seed} disabled title={seed} />
+        ) : (
+          <code title={seed}>{seed}</code>
+        )}
         <button type="button" onClick={() => void copySeed()} aria-label={seedCopied ? `${label} copied` : `Copy ${label.toLowerCase()}`} title={seedCopied ? "Copied" : `Copy ${label.toLowerCase()}`}>
           {buttonText}
         </button>
