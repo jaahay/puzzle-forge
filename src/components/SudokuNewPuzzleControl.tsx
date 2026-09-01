@@ -1,9 +1,8 @@
 import { useEffect, useRef } from "preact/hooks";
 import type { PuzzleDifficulty, SudokuVariation } from "../catalog/types";
+import { makeRandomSeed } from "../app/runtime";
 import { sudokuVariationDescriptions, sudokuVariationLabels } from "../games/sudoku/variation";
-import { PuzzleDifficultySelect } from "./PuzzleDifficultySelect";
 import { CurrentSeedDisplay } from "./SeedControl";
-import { SudokuVariationSelect } from "./SudokuVariationSelect";
 
 type SudokuNewPuzzleControlProps = {
   currentSeed: string;
@@ -18,6 +17,44 @@ type SudokuNewPuzzleControlProps = {
   onToday: () => void;
   onLoadSeed: () => void;
 };
+
+const difficulties: PuzzleDifficulty[] = ["Easy", "Medium", "Hard", "Expert"];
+const variations: Array<{ value: SudokuVariation; label: string }> = [
+  { value: "classic", label: "Standard" },
+  { value: "diagonal", label: "Diagonal" },
+  { value: "zero-killer", label: "Zero Killer" },
+];
+
+const RandomIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="4" y="4" width="16" height="16" rx="3" />
+    <circle cx="9" cy="9" r="1" />
+    <circle cx="15" cy="15" r="1" />
+    <circle cx="15" cy="9" r="1" />
+    <circle cx="9" cy="15" r="1" />
+  </svg>
+);
+
+const TodayIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="4" y="6" width="16" height="14" rx="2" />
+    <path d="M8 4v4M16 4v4M4 10h16" />
+    <path d="M8 14h2M12 14h2M16 14h1M8 17h2M12 17h2" />
+  </svg>
+);
+
+const PlayIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M8 5l11 7-11 7z" />
+  </svg>
+);
+
+const InfoIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 10v6M12 7.2v.1" />
+  </svg>
+);
 
 export const SudokuNewPuzzleControl = ({
   currentSeed,
@@ -43,6 +80,8 @@ export const SudokuNewPuzzleControl = ({
     if (restoreFocus) options.querySelector("summary")?.focus();
   };
 
+  const renewSeedCandidate = () => onSeedLoadInputChange(makeRandomSeed());
+
   useEffect(() => {
     if (typeof document === "undefined") return;
 
@@ -66,22 +105,25 @@ export const SudokuNewPuzzleControl = ({
     };
   }, []);
 
-  const startNewPuzzle = () => {
+  const startRandomPuzzle = () => {
     if (disabled) return;
     closeOptions();
     onNewPuzzle();
+    renewSeedCandidate();
   };
 
   const startToday = () => {
     if (disabled) return;
     closeOptions();
     onToday();
+    renewSeedCandidate();
   };
 
   const loadSeed = () => {
     if (disabled || !seedLoadInput.trim()) return;
     closeOptions();
     onLoadSeed();
+    renewSeedCandidate();
   };
 
   return (
@@ -90,38 +132,78 @@ export const SudokuNewPuzzleControl = ({
         <button
           class="new-puzzle-command-primary"
           type="button"
-          onClick={startNewPuzzle}
+          onClick={startRandomPuzzle}
           disabled={disabled}
-          aria-label={`New Sudoku, ${configurationSummary}`}
-          title={`New puzzle — ${configurationSummary}`}
+          aria-label={`New random Sudoku, ${configurationSummary}`}
+          title={`New random puzzle — ${configurationSummary}`}
         >
           New
         </button>
-        <details class="new-puzzle-options" ref={optionsRef}>
+        <details
+          class="new-puzzle-options"
+          ref={optionsRef}
+          onToggle={(event) => {
+            if (event.currentTarget.open && !seedLoadInput.trim()) renewSeedCandidate();
+          }}
+        >
           <summary aria-label={`Change new puzzle options. Current selection: ${configurationSummary}`} title="New puzzle options">
             <span aria-hidden="true">▾</span>
           </summary>
           <div class="new-puzzle-options-panel" aria-label="New puzzle options">
-            <div class="new-puzzle-settings-grid">
-              <label>
-                Difficulty
-                <PuzzleDifficultySelect value={difficulty} onChange={onDifficultyChange} />
-              </label>
-              <label>
-                Mode
-                <SudokuVariationSelect value={sudokuVariation} onChange={onSudokuVariationChange} />
-              </label>
-            </div>
-            <p class="new-puzzle-mode-description">{sudokuVariationDescriptions[sudokuVariation]}</p>
+            <details class="new-puzzle-info">
+              <summary aria-label="About new puzzle options" title="About these options">
+                <InfoIcon />
+              </summary>
+              <div class="new-puzzle-info-panel">
+                <p>{sudokuVariationDescriptions[sudokuVariation]}</p>
+                <p>Difficulty and mode apply to every action here. Dice starts a random puzzle; the calendar starts today's puzzle. The locked seed is the puzzle you're playing. Edit the lower seed and press play to load it.</p>
+              </div>
+            </details>
 
-            <div class="new-puzzle-options-actions">
-              <button type="button" onClick={startToday} disabled={disabled}>Today</button>
+            <div class="new-puzzle-segmented new-puzzle-difficulty-options" role="group" aria-label="Difficulty">
+              {difficulties.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  class={difficulty === option ? "selected" : undefined}
+                  aria-pressed={difficulty === option}
+                  onClick={() => onDifficultyChange(option)}
+                  disabled={disabled}
+                >
+                  {option}
+                </button>
+              ))}
             </div>
 
-            <div class="new-puzzle-seed-tools">
-              <CurrentSeedDisplay seed={currentSeed} showCopyText />
-              <label>
-                Seed
+            <div class="new-puzzle-segmented new-puzzle-mode-options" role="group" aria-label="Sudoku mode">
+              {variations.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  class={sudokuVariation === option.value ? "selected" : undefined}
+                  aria-pressed={sudokuVariation === option.value}
+                  onClick={() => onSudokuVariationChange(option.value)}
+                  disabled={disabled}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+
+            <div class="new-puzzle-quick-actions" aria-label="Quick puzzle actions">
+              <button type="button" onClick={startRandomPuzzle} disabled={disabled} aria-label="Start a random puzzle" title="Random puzzle">
+                <RandomIcon />
+              </button>
+              <button type="button" onClick={startToday} disabled={disabled} aria-label="Start today's puzzle" title="Today's puzzle">
+                <TodayIcon />
+              </button>
+            </div>
+
+            <div class="new-puzzle-seed-stack">
+              <div class="new-puzzle-seed-row new-puzzle-current-seed">
+                <CurrentSeedDisplay seed={currentSeed} disabledInput />
+              </div>
+              <div class="new-puzzle-seed-row new-puzzle-seed-entry">
                 <input
                   aria-label="Seed to load"
                   value={seedLoadInput}
@@ -130,25 +212,17 @@ export const SudokuNewPuzzleControl = ({
                     if (event.key === "Enter") loadSeed();
                   }}
                 />
-              </label>
-              <button
-                type="button"
-                onClick={loadSeed}
-                disabled={disabled || !seedLoadInput.trim()}
-              >
-                Load seed
-              </button>
+                <button
+                  type="button"
+                  onClick={loadSeed}
+                  disabled={disabled || !seedLoadInput.trim()}
+                  aria-label="Load seed"
+                  title="Load seed"
+                >
+                  <PlayIcon />
+                </button>
+              </div>
             </div>
-
-            <button
-              class="new-puzzle-start-action"
-              type="button"
-              onClick={startNewPuzzle}
-              disabled={disabled}
-              aria-label={`Start a new Sudoku, ${configurationSummary}`}
-            >
-              Start puzzle
-            </button>
           </div>
         </details>
       </div>
