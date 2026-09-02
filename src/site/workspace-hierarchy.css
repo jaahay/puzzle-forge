@@ -93,6 +93,10 @@
   outline: none;
 }
 
+.sudoku-workspace .completion-control-stage[data-phase="completed"] .completion-control-playing {
+  visibility: hidden;
+}
+
 .sudoku-workspace .completion-control-solved {
   align-self: end;
 }
