@@ -205,19 +205,13 @@ export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: Puzzl
 
   if (currentPuzzle.puzzleId === "sudoku") {
     if (assessment.solved) {
-      return makeGridCheckResult(
-        nextCells.map((cell): PuzzleCell =>
-          cell.tone === "disabled" || cell.locked ? cell : { ...cell, tone: "answer" },
-        ),
-        "Solved.",
-        "success",
-      );
+      return makeGridCheckResult(nextCells, "Solved.", "success");
     }
 
     if (assessment.incorrectCount === 0) {
       return makeGridCheckResult(
         nextCells,
-        `No mistakes found. ${pluralize(assessment.emptyCount, "square")} empty.`,
+        `Looks good so far. ${pluralize(assessment.emptyCount, "square")} remaining.`,
         "progress",
       );
     }
