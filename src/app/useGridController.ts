@@ -20,6 +20,7 @@ type GridUpdateResult = {
   cells: PuzzleCell[];
   message: string;
   feedbackTone?: GridCheckFeedbackTone;
+  clearSelection?: boolean;
 };
 
 const SUDOKU_CHECK_FEEDBACK_MS = 750;
@@ -41,11 +42,6 @@ export const clearGridValidationTone = (puzzleId: PuzzleId, cell: PuzzleCell): P
 
 export const getGridEntryTone = (puzzleId: PuzzleId, value: string): PuzzleCell["tone"] =>
   usesNeutralNumericEntryTone(puzzleId) ? "empty" : value ? "answer" : "empty";
-
-const applySolvedSudokuTone = (cells: PuzzleCell[]) =>
-  cells.map((candidate): PuzzleCell =>
-    candidate.tone === "disabled" || candidate.locked ? candidate : { ...candidate, tone: "answer" },
-  );
 
 export const useGridController = () => {
   const [gridCells, setGridCellsState] = useState<PuzzleCell[] | null>(null);
@@ -102,14 +98,16 @@ export const useGridController = () => {
   const updateGridCells = (
     updater: (cells: PuzzleCell[]) => GridUpdateResult,
     onStatusMessage: (message: string) => void,
-  ) => {
+  ): GridUpdateResult | null => {
     const currentCells = gridCellsRef.current;
-    if (!currentCells) return;
+    if (!currentCells) return null;
 
-    const { cells, message, feedbackTone } = updater(currentCells.map(cloneGridCell));
-    setGridCells(cells);
-    setCheckFeedbackTone(feedbackTone ?? null);
-    onStatusMessage(message);
+    const result = updater(currentCells.map(cloneGridCell));
+    setGridCells(result.cells);
+    setCheckFeedbackTone(result.feedbackTone ?? null);
+    if (result.clearSelection) clearGridInteraction();
+    onStatusMessage(result.message);
+    return result;
   };
 
   const handleGridCellInput = (puzzle: GeneratedPuzzle | null, cell: PuzzleCell, rawValue: string, onStatusMessage: (message: string) => void) => {
@@ -117,6 +115,7 @@ export const useGridController = () => {
 
     const currentCells = gridCellsRef.current;
     if (puzzle.puzzleId === "sudoku" && currentCells && isGridAnswerCompleteAndCorrect(puzzle, currentCells)) {
+      clearGridInteraction();
       onStatusMessage("Solved.");
       return;
     }
@@ -127,7 +126,7 @@ export const useGridController = () => {
     const nextValue = normalizeCellInput(inputMode, rawValue);
 
     setSelectedGridCell({ row: cell.row, column: cell.column });
-    updateGridCells((cells) => {
+    const result = updateGridCells((cells) => {
       const editableCells = cells.map((candidate) => clearGridValidationTone(puzzle.puzzleId, candidate));
       const index = getCellIndex(editableCells, cell);
       const current = editableCells[index];
@@ -142,7 +141,12 @@ export const useGridController = () => {
       };
 
       if (puzzle.puzzleId === "sudoku" && isGridAnswerCompleteAndCorrect(puzzle, editableCells)) {
-        return { cells: applySolvedSudokuTone(editableCells), message: "Solved.", feedbackTone: "success" };
+        return {
+          cells: editableCells,
+          message: "Solved.",
+          feedbackTone: "success",
+          clearSelection: true,
+        };
       }
 
       const puzzleName = puzzle.puzzleId === "sudoku" ? "Sudoku" : puzzle.puzzleId === "futoshiki" ? "Futoshiki" : null;
@@ -152,7 +156,7 @@ export const useGridController = () => {
       };
     }, onStatusMessage);
 
-    if (puzzle.puzzleId === "sudoku") scheduleSudokuValidationReset();
+    if (puzzle.puzzleId === "sudoku" && result?.feedbackTone !== "success") scheduleSudokuValidationReset();
   };
 
   const toggleNonogramCell = (cell: PuzzleCell, onStatusMessage: (message: string) => void) => {
@@ -249,7 +253,10 @@ export const useGridController = () => {
     if (!puzzle || puzzle.kind !== "grid") return;
 
     const currentCells = gridCellsRef.current;
-    if (puzzle.puzzleId === "sudoku" && currentCells && isGridAnswerCompleteAndCorrect(puzzle, currentCells)) return;
+    if (puzzle.puzzleId === "sudoku" && currentCells && isGridAnswerCompleteAndCorrect(puzzle, currentCells)) {
+      clearGridInteraction();
+      return;
+    }
 
     if (getGridInputMode(puzzle.puzzleId) === "numeric") {
       selectNumericGridCell(cell);
@@ -272,8 +279,15 @@ export const useGridController = () => {
     }
     if (!currentCells || puzzle.kind !== "grid") return;
 
-    updateGridCells((cells) => checkGridAnswer(puzzle, cells), onStatusMessage);
-    if (puzzle.puzzleId === "sudoku") scheduleSudokuValidationReset();
+    const result = updateGridCells((cells) => {
+      const checked = checkGridAnswer(puzzle, cells);
+      return {
+        ...checked,
+        clearSelection: puzzle.puzzleId === "sudoku" && checked.feedbackTone === "success",
+      };
+    }, onStatusMessage);
+
+    if (puzzle.puzzleId === "sudoku" && result?.feedbackTone !== "success") scheduleSudokuValidationReset();
   };
 
   return {

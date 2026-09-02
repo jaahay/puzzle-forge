@@ -125,13 +125,13 @@ describe("Sudoku grid checking feedback", () => {
 
     expect(result.cells.map((cell) => cell.tone)).toEqual(["empty", "empty", "empty", "empty"]);
     expect(result.feedbackTone).toBe("progress");
-    expect(result.message).toBe("No mistakes found. 1 square empty.");
+    expect(result.message).toBe("Looks good so far. 1 square remaining.");
   });
 
-  it("uses a temporary success tone only when the puzzle is solved", () => {
+  it("keeps solved cell tones calm and delegates celebration to the board presentation", () => {
     const result = checkGridAnswer(makeSudokuPuzzle(), solvedCells());
 
-    expect(result.cells.map((cell) => cell.tone)).toEqual(["answer", "answer", "answer", "given"]);
+    expect(result.cells.map((cell) => cell.tone)).toEqual(["empty", "empty", "empty", "given"]);
     expect(result.feedbackTone).toBe("success");
     expect(result.message).toBe("Solved.");
   });

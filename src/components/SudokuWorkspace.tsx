@@ -92,13 +92,18 @@ export const SudokuWorkspace = ({
     />
   ) : null;
 
-  const validation = !isSolved && gridCheckFeedbackTone ? (
-    <p class={`grid-validation-message ${gridCheckFeedbackTone}`} aria-live="polite">
-      {statusMessage}
+  const validationMessage = !isSolved && gridCheckFeedbackTone ? statusMessage : "";
+  const validation = (
+    <p
+      class={`grid-validation-message sudoku-validation-message ${validationMessage ? gridCheckFeedbackTone : "is-idle"}`}
+      aria-hidden={validationMessage ? undefined : true}
+      aria-live="polite"
+    >
+      {validationMessage || "\u00a0"}
     </p>
-  ) : null;
+  );
 
-  const digitPad = sudokuPuzzle && !isPresentationCompleted ? (
+  const digitPad = sudokuPuzzle ? (
     <NumericGridDigitPad
       title={sudokuPuzzle.title}
       digits={numericInput.digits}

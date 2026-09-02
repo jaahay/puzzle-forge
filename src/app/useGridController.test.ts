@@ -11,6 +11,19 @@ const makeCell = (tone: PuzzleCell["tone"], locked = false): PuzzleCell => ({
   ariaLabel: "3 cell at row 1, column 1",
 });
 
+describe("Sudoku grid entry tones", () => {
+  it("keeps ordinary player entries visually neutral", () => {
+    expect(getGridEntryTone("sudoku", "3")).toBe("empty");
+    expect(getGridEntryTone("sudoku", "")).toBe("empty");
+  });
+
+  it("clears transient validation tones without changing givens", () => {
+    expect(clearGridValidationTone("sudoku", makeCell("answer")).tone).toBe("empty");
+    expect(clearGridValidationTone("sudoku", makeCell("hint")).tone).toBe("empty");
+    expect(clearGridValidationTone("sudoku", makeCell("given", true)).tone).toBe("given");
+  });
+});
+
 describe("Futoshiki grid entry tones", () => {
   it("keeps ordinary player entries visually neutral", () => {
     expect(getGridEntryTone("futoshiki", "3")).toBe("empty");
