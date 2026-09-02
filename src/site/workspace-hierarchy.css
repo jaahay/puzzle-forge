@@ -52,12 +52,49 @@
   min-height: 2.75rem;
 }
 
+.sudoku-workspace .sudoku-validation-message {
+  display: flex;
+  block-size: 1.6rem;
+  min-height: 1.6rem;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  color: #cbd5e1;
+  background: transparent;
+  box-shadow: none;
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.sudoku-workspace .sudoku-validation-message.progress {
+  border: 0;
+  color: #bfdbfe;
+  background: transparent;
+  box-shadow: none;
+}
+
+.sudoku-workspace .sudoku-validation-message.error {
+  border: 0;
+  color: #fecaca;
+  background: transparent;
+  box-shadow: none;
+}
+
+.sudoku-workspace .sudoku-validation-message.is-idle {
+  visibility: hidden;
+}
+
 .completion-control-stage:focus {
   outline: none;
 }
 
-.completion-control-stage[data-phase="completed"] .completion-control-playing {
-  display: none;
+.sudoku-workspace .completion-control-solved {
+  align-self: end;
 }
 
 @media (orientation: landscape) and (max-height: 520px) {
