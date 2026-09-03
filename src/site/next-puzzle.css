@@ -15,7 +15,8 @@
   outline: none;
 }
 
-.sudoku-workspace .workspace-layout-header {
+.sudoku-workspace .workspace-layout-header,
+.nonogram-workspace .workspace-layout-header {
   position: relative;
   z-index: 20;
   overflow: visible;
@@ -179,6 +180,10 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.new-puzzle-uniqueness-options {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .new-puzzle-segmented button {
   min-width: 0;
   min-height: 2.25rem;
@@ -208,6 +213,44 @@
   color: #f8fafc;
   background: rgba(96, 165, 250, 0.14);
   outline: none;
+}
+
+.new-puzzle-size-options {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.new-puzzle-size-options label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.4rem;
+  align-items: center;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.new-puzzle-size-options input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 2.4rem;
+  border: 1px solid #334155;
+  border-radius: 0.65rem;
+  padding: 0.45rem 0.55rem;
+  color: #e5e7eb;
+  background: #0f172a;
+  font: inherit;
+  font-weight: 800;
+  text-align: center;
+}
+
+.new-puzzle-size-separator {
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 900;
 }
 
 .new-puzzle-quick-actions {
@@ -246,6 +289,34 @@
 .new-puzzle-seed-entry > button svg {
   fill: currentColor;
   stroke: none;
+}
+
+.new-puzzle-today-tile {
+  display: grid;
+  width: 2.05rem;
+  min-height: 2rem;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+  border: 1px solid currentColor;
+  border-radius: 0.38rem;
+  background: rgba(15, 23, 42, 0.45);
+  line-height: 1;
+}
+
+.new-puzzle-today-month {
+  padding: 0.16rem 0.1rem 0.12rem;
+  border-bottom: 1px solid currentColor;
+  font-size: 0.48rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.new-puzzle-today-day {
+  display: grid;
+  place-items: center;
+  padding: 0.1rem;
+  font-size: 0.95rem;
+  font-weight: 900;
 }
 
 .new-puzzle-quick-actions button:hover:not(:disabled),
@@ -358,6 +429,13 @@
 .sudoku-current-actions button:disabled {
   cursor: not-allowed;
   opacity: 0.62;
+}
+
+.nonogram-current-actions {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
 }
 
 .load-puzzle-actions,
