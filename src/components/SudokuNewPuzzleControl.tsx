@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import type { PuzzleDifficulty, SudokuVariation } from "../catalog/types";
 import { makeRandomSeed } from "../app/runtime";
 import { getDailyPuzzleProfile } from "../games/shared/daily";
@@ -20,12 +20,15 @@ type SudokuNewPuzzleControlProps = {
   onLoadSeed: () => void;
 };
 
+type EnactmentSource = "random" | "today" | "seed";
+
 const difficulties: PuzzleDifficulty[] = ["Easy", "Medium", "Hard", "Expert"];
 const variations: Array<{ value: SudokuVariation; label: string }> = [
   { value: "classic", label: "Standard" },
   { value: "diagonal", label: "Diagonal" },
   { value: "zero-killer", label: "Zero Killer" },
 ];
+const enactmentDurationMs = 180;
 
 export const SudokuNewPuzzleControl = ({
   currentSeed,
@@ -42,6 +45,8 @@ export const SudokuNewPuzzleControl = ({
 }: SudokuNewPuzzleControlProps) => {
   const commandRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDetailsElement>(null);
+  const enactmentTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [enactingSource, setEnactingSource] = useState<EnactmentSource | null>(null);
   const configurationSummary = `${difficulty} · ${sudokuVariationLabels[sudokuVariation]}`;
   const dailyProfile = getDailyPuzzleProfile("sudoku", sudokuVariation);
   const dailyVariation = dailyProfile?.sudokuVariation ?? sudokuVariation;
@@ -57,6 +62,32 @@ export const SudokuNewPuzzleControl = ({
   };
 
   const renewSeedCandidate = () => onSeedLoadInputChange(makeRandomSeed());
+  const selectedEnactmentClass = (selected: boolean) =>
+    [selected ? "selected" : "", selected && enactingSource ? "new-puzzle-enacting" : ""]
+      .filter(Boolean)
+      .join(" ") || undefined;
+
+  const enactPuzzle = (source: EnactmentSource, enact: () => void) => {
+    setEnactingSource(source);
+    enact();
+    renewSeedCandidate();
+
+    const reduceMotion = typeof window !== "undefined"
+      && typeof window.matchMedia === "function"
+      && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) {
+      closeOptions();
+      setEnactingSource(null);
+      return;
+    }
+
+    if (enactmentTimerRef.current) clearTimeout(enactmentTimerRef.current);
+    enactmentTimerRef.current = setTimeout(() => {
+      closeOptions();
+      setEnactingSource(null);
+      enactmentTimerRef.current = null;
+    }, enactmentDurationMs);
+  };
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -78,36 +109,33 @@ export const SudokuNewPuzzleControl = ({
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
+      if (enactmentTimerRef.current) clearTimeout(enactmentTimerRef.current);
     };
   }, []);
 
   const startRandomPuzzle = () => {
     if (disabled) return;
-    closeOptions();
-    onNewPuzzle();
-    renewSeedCandidate();
+    enactPuzzle("random", onNewPuzzle);
   };
 
   const startToday = () => {
     if (disabled) return;
-    if (dailyProfile) onDifficultyChange(dailyProfile.difficulty);
-    closeOptions();
-    onToday();
-    renewSeedCandidate();
+    enactPuzzle("today", () => {
+      if (dailyProfile) onDifficultyChange(dailyProfile.difficulty);
+      onToday();
+    });
   };
 
   const loadSeed = () => {
     if (disabled || !seedLoadInput.trim()) return;
-    closeOptions();
-    onLoadSeed();
-    renewSeedCandidate();
+    enactPuzzle("seed", onLoadSeed);
   };
 
   return (
     <div class="new-puzzle-command" aria-label={`New Sudoku: ${configurationSummary}`} ref={commandRef}>
       <div class="new-puzzle-split-control">
         <button
-          class="new-puzzle-command-primary"
+          class={`new-puzzle-command-primary${enactingSource === "random" ? " new-puzzle-enacting" : ""}`}
           type="button"
           onClick={startRandomPuzzle}
           disabled={disabled}
@@ -139,11 +167,25 @@ export const SudokuNewPuzzleControl = ({
             </details>
 
             <div class="new-puzzle-quick-actions" aria-label="Puzzle source">
-              <button type="button" onClick={startRandomPuzzle} disabled={disabled} aria-label={`Start a random puzzle, ${configurationSummary}`} title={`Random puzzle — ${configurationSummary}`}>
+              <button
+                class={enactingSource === "random" ? "new-puzzle-enacting" : undefined}
+                type="button"
+                onClick={startRandomPuzzle}
+                disabled={disabled}
+                aria-label={`Start a random puzzle, ${configurationSummary}`}
+                title={`Random puzzle — ${configurationSummary}`}
+              >
                 <RandomIcon />
                 <span class="new-puzzle-quick-action-copy"><strong>Random</strong></span>
               </button>
-              <button type="button" onClick={startToday} disabled={disabled} aria-label={`Start today's puzzle, ${dailySummary}`} title={`Today's puzzle — ${dailySummary}`}>
+              <button
+                class={enactingSource === "today" ? "new-puzzle-enacting" : undefined}
+                type="button"
+                onClick={startToday}
+                disabled={disabled}
+                aria-label={`Start today's puzzle, ${dailySummary}`}
+                title={`Today's puzzle — ${dailySummary}`}
+              >
                 <TodayDateTile />
                 <span class="new-puzzle-quick-action-copy"><strong>Today</strong></span>
               </button>
@@ -154,7 +196,7 @@ export const SudokuNewPuzzleControl = ({
                 <button
                   key={option}
                   type="button"
-                  class={difficulty === option ? "selected" : undefined}
+                  class={selectedEnactmentClass(difficulty === option)}
                   aria-pressed={difficulty === option}
                   onClick={() => onDifficultyChange(option)}
                   disabled={disabled}
@@ -169,7 +211,7 @@ export const SudokuNewPuzzleControl = ({
                 <button
                   key={option.value}
                   type="button"
-                  class={sudokuVariation === option.value ? "selected" : undefined}
+                  class={selectedEnactmentClass(sudokuVariation === option.value)}
                   aria-pressed={sudokuVariation === option.value}
                   onClick={() => onSudokuVariationChange(option.value)}
                   disabled={disabled}
@@ -183,7 +225,7 @@ export const SudokuNewPuzzleControl = ({
               <div class="new-puzzle-seed-row new-puzzle-current-seed">
                 <CurrentSeedDisplay seed={currentSeed} disabledInput />
               </div>
-              <div class="new-puzzle-seed-row new-puzzle-seed-entry">
+              <div class={`new-puzzle-seed-row new-puzzle-seed-entry${enactingSource === "seed" ? " new-puzzle-enacting" : ""}`}>
                 <input
                   aria-label="Seed to load"
                   value={seedLoadInput}
