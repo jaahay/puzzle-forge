@@ -1,6 +1,14 @@
-import type { GeneratedPuzzle, PuzzleId } from "../../catalog/types";
+import type { GeneratedPuzzle, PuzzleDifficulty, PuzzleId, SudokuVariation } from "../../catalog/types";
 
 const dailySeedPrefix = "daily";
+
+export type DailyPuzzleProfile = {
+  width: number;
+  height: number;
+  difficulty: PuzzleDifficulty;
+  requireUniqueSolution: boolean;
+  sudokuVariation?: SudokuVariation;
+};
 
 const padDatePart = (value: number) => value.toString().padStart(2, "0");
 
@@ -15,8 +23,33 @@ export const getDailyPuzzleLabel = (puzzleId: PuzzleId, seed: string) => {
   return /^\d{4}-\d{2}-\d{2}$/.test(dateStamp) ? dateStamp : null;
 };
 
+export const getDailyPuzzleProfile = (
+  puzzleId: PuzzleId,
+  selectedSudokuVariation: SudokuVariation = "classic",
+): DailyPuzzleProfile | null => {
+  if (puzzleId === "nonogram") {
+    return {
+      width: 8,
+      height: 8,
+      difficulty: "Medium",
+      requireUniqueSolution: true,
+    };
+  }
+
+  if (puzzleId === "sudoku") {
+    return {
+      width: 9,
+      height: 9,
+      difficulty: "Medium",
+      requireUniqueSolution: true,
+      sudokuVariation: selectedSudokuVariation,
+    };
+  }
+
+  return null;
+};
+
 export const getDailyPuzzleProvenanceLabel = (puzzle: GeneratedPuzzle) =>
   getDailyPuzzleLabel(puzzle.puzzleId, puzzle.seed);
 
-/** @deprecated Prefer getDailyPuzzleProvenanceLabel; daily identity is seed provenance, not one fixed configuration. */
 export const getCanonicalDailyPuzzleLabel = getDailyPuzzleProvenanceLabel;
