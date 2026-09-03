@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { generateSudoku } from "../sudoku/generate";
 import {
   getDailyPuzzleLabel,
-  getDailyPuzzleProvenanceLabel,
+  getDailyPuzzleProfile,
   getDailyPuzzleSeed,
 } from "./daily";
 
@@ -14,29 +13,27 @@ describe("daily puzzle identity", () => {
     expect(getDailyPuzzleSeed("nonogram", sampleDate)).toBe("daily-nonogram-2026-08-29");
   });
 
-  it("treats selected generation settings as independent from daily seed provenance", () => {
-    const seed = getDailyPuzzleSeed("sudoku", sampleDate);
-    const classic = generateSudoku({
-      puzzleId: "sudoku",
-      seed,
+  it("defines one canonical Nonogram daily profile", () => {
+    expect(getDailyPuzzleProfile("nonogram")).toEqual({
+      width: 8,
+      height: 8,
+      difficulty: "Medium",
+      requireUniqueSolution: true,
+    });
+  });
+
+  it("defines one Medium Sudoku daily track per ruleset", () => {
+    expect(getDailyPuzzleProfile("sudoku", "zero-killer")).toEqual({
       width: 9,
       height: 9,
       difficulty: "Medium",
       requireUniqueSolution: true,
-      sudokuVariation: "classic",
-    });
-    const zeroKiller = generateSudoku({
-      puzzleId: "sudoku",
-      seed,
-      width: 9,
-      height: 9,
-      difficulty: "Hard",
-      requireUniqueSolution: true,
       sudokuVariation: "zero-killer",
     });
+  });
 
-    expect(getDailyPuzzleProvenanceLabel(classic)).toBe("2026-08-29");
-    expect(getDailyPuzzleProvenanceLabel(zeroKiller)).toBe("2026-08-29");
+  it("leaves puzzles without a canonical daily profile settings-relative", () => {
+    expect(getDailyPuzzleProfile("word-guess")).toBeNull();
   });
 
   it("parses daily seed provenance only for the matching puzzle type", () => {
