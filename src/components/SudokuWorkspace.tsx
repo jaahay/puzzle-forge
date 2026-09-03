@@ -9,6 +9,8 @@ import { SudokuMeta } from "./SudokuMeta";
 import { SudokuNewPuzzleControl } from "./SudokuNewPuzzleControl";
 import { usePuzzleCompletionPresentation } from "./usePuzzleCompletionPresentation";
 
+const SUDOKU_CHECK_RENEWAL_MS = 150;
+
 export const SudokuWorkspace = ({
   selectedPuzzleIsGeneratable,
   puzzle,
@@ -43,17 +45,44 @@ export const SudokuWorkspace = ({
   const completionStageRef = useRef<HTMLDivElement>(null);
   const activeGameplayRef = useRef<HTMLDivElement>(null);
   const activeGameplayHadFocusRef = useRef(false);
-  // A new key deliberately remounts transient Check copy so a repeated Check
-  // snaps a partially faded message back to full opacity before a fresh fade.
+  const validationRenewalTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [validationPresentationKey, setValidationPresentationKey] = useState(0);
+  const [validationIsRenewing, setValidationIsRenewing] = useState(false);
+
+  const clearValidationRenewal = () => {
+    if (validationRenewalTimerRef.current !== null) {
+      clearTimeout(validationRenewalTimerRef.current);
+      validationRenewalTimerRef.current = null;
+    }
+    setValidationIsRenewing(false);
+  };
 
   const handleCellInput = (cell: PuzzleCell, value: string) => {
+    clearValidationRenewal();
     completion.recordCausativeInput();
     onCellInput(cell, value);
   };
 
   const handleCheck = () => {
-    setValidationPresentationKey((current) => current + 1);
+    if (validationRenewalTimerRef.current !== null) {
+      clearTimeout(validationRenewalTimerRef.current);
+      validationRenewalTimerRef.current = null;
+    }
+
+    if (gridCheckFeedbackTone) {
+      // Renew a partially faded message gently before restarting its normal
+      // presentation. Repeated presses extend the controller's expiry timer.
+      setValidationIsRenewing(true);
+      validationRenewalTimerRef.current = setTimeout(() => {
+        setValidationIsRenewing(false);
+        setValidationPresentationKey((current) => current + 1);
+        validationRenewalTimerRef.current = null;
+      }, SUDOKU_CHECK_RENEWAL_MS);
+    } else {
+      setValidationIsRenewing(false);
+      setValidationPresentationKey((current) => current + 1);
+    }
+
     onCheck();
   };
 
@@ -68,6 +97,12 @@ export const SudokuWorkspace = ({
     onCellClick,
     onCellInput: handleCellInput,
   });
+
+  useEffect(() => () => {
+    if (validationRenewalTimerRef.current !== null) {
+      clearTimeout(validationRenewalTimerRef.current);
+    }
+  }, []);
 
   useEffect(() => {
     if (!isPresentationCompleted) {
@@ -104,7 +139,7 @@ export const SudokuWorkspace = ({
   const validation = (
     <p
       key={validationPresentationKey}
-      class={`grid-validation-message sudoku-validation-message ${validationMessage ? gridCheckFeedbackTone : "is-idle"}`}
+      class={`grid-validation-message sudoku-validation-message ${validationMessage ? gridCheckFeedbackTone : "is-idle"}${validationMessage && validationIsRenewing ? " is-renewing" : ""}`}
       aria-hidden={validationMessage ? undefined : true}
       aria-live="polite"
     >
