@@ -1,5 +1,6 @@
 import type { PuzzleCell } from "../catalog/types";
 import { getCanonicalDailyPuzzleLabel } from "../games/shared/daily";
+import { getBoardViewportNaturalWidth } from "./BoardViewport";
 import { FutoshikiBoard } from "./FutoshikiBoard";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
 import { NonogramNewPuzzleControl } from "./NonogramNewPuzzleControl";
@@ -48,6 +49,12 @@ export const GridPuzzleWorkspace = ({
     isFutoshiki ? "futoshiki-workspace" : "",
   ].filter(Boolean).join(" ");
   const seedInput = <SeedControl currentSeed={puzzle?.seed ?? seed} seed={seedLoadInput} onSeedChange={onSeedLoadInputChange} />;
+  const nonogramRowClueSlots = puzzle?.kind === "grid" && isNonogram
+    ? Math.max(1, ...(puzzle.clues?.rows ?? []).map((clue) => clue.length))
+    : 1;
+  const playColumnMax = puzzle?.kind === "grid" && isNonogram
+    ? getBoardViewportNaturalWidth({ kind: "nonogram", columns: puzzle.width, rowClueSlots: nonogramRowClueSlots })
+    : undefined;
 
   const newPuzzleControl = puzzle && isNonogram ? (
     <NonogramNewPuzzleControl
@@ -179,6 +186,7 @@ export const GridPuzzleWorkspace = ({
       board={board}
       gameplay={gameplay}
       generation={generation}
+      playColumnMax={playColumnMax}
     />
   );
 };
