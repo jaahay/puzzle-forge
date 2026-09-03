@@ -141,11 +141,11 @@ export const SudokuNewPuzzleControl = ({
             <div class="new-puzzle-quick-actions" aria-label="Puzzle source">
               <button type="button" onClick={startRandomPuzzle} disabled={disabled} aria-label={`Start a random puzzle, ${configurationSummary}`} title={`Random puzzle — ${configurationSummary}`}>
                 <RandomIcon />
-                <span class="new-puzzle-quick-action-label">Random</span>
+                <span class="new-puzzle-quick-action-copy"><strong>Random</strong></span>
               </button>
               <button type="button" onClick={startToday} disabled={disabled} aria-label={`Start today's puzzle, ${dailySummary}`} title={`Today's puzzle — ${dailySummary}`}>
                 <TodayDateTile />
-                <span class="new-puzzle-quick-action-label">Today</span>
+                <span class="new-puzzle-quick-action-copy"><strong>Today</strong></span>
               </button>
             </div>
 
