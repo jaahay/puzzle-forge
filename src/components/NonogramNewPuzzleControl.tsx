@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "preact/hooks";
 import { makeRandomSeed } from "../app/runtime";
 import type { PuzzleDifficulty } from "../catalog/types";
+import { getDailyPuzzleProfile } from "../games/shared/daily";
 import { BoundedNumberInput } from "./BoundedNumberInput";
 import { InfoIcon, PlayIcon, RandomIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
 import { CurrentSeedDisplay } from "./SeedControl";
@@ -28,6 +29,7 @@ type NonogramNewPuzzleControlProps = {
 };
 
 const difficulties: PuzzleDifficulty[] = ["Easy", "Medium", "Hard", "Expert"];
+const dailyProfile = getDailyPuzzleProfile("nonogram");
 
 export const NonogramNewPuzzleControl = ({
   currentSeed,
@@ -52,7 +54,10 @@ export const NonogramNewPuzzleControl = ({
 }: NonogramNewPuzzleControlProps) => {
   const commandRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDetailsElement>(null);
-  const configurationSummary = `${difficulty} · ${width}×${height} · ${requireUniqueSolution ? "Unique" : "Any solution"}`;
+  const configurationSummary = `${difficulty} · ${width}×${height} · ${requireUniqueSolution ? "Exactly one solution" : "May be multiple solutions"}`;
+  const dailySummary = dailyProfile
+    ? `${dailyProfile.width}×${dailyProfile.height} · ${dailyProfile.difficulty} · one solution`
+    : "Today's profile";
 
   const closeOptions = (restoreFocus = false) => {
     const options = optionsRef.current;
@@ -136,7 +141,9 @@ export const NonogramNewPuzzleControl = ({
                 <InfoIcon />
               </summary>
               <div class="new-puzzle-info-panel">
-                <p>Difficulty, size, and uniqueness apply to every action here. Dice starts a random puzzle; the dated tile starts today's puzzle. The locked seed is the puzzle you're playing. Edit the lower seed and press play to load it.</p>
+                <p>A Nonogram's clues can sometimes describe more than one completed grid. Requiring exactly one solution makes the generator test the clues and retry until only one grid satisfies them. When that requirement is off, the test is skipped; the puzzle may still happen to be unique, but it is not guaranteed.</p>
+                <p>Random and ordinary seed loads use the settings above. Today is always 8×8, Medium, with exactly one solution, regardless of those prospective settings.</p>
+                <p>The locked seed is the puzzle you're playing. Edit the lower seed and press play to load it.</p>
               </div>
             </details>
 
@@ -183,33 +190,33 @@ export const NonogramNewPuzzleControl = ({
               </label>
             </div>
 
-            <div class="new-puzzle-segmented new-puzzle-uniqueness-options" role="group" aria-label="Solution uniqueness">
-              <button
-                type="button"
-                class={!requireUniqueSolution ? "selected" : undefined}
-                aria-pressed={!requireUniqueSolution}
-                onClick={() => onUniqueSolutionChange(false)}
+            <label class="new-puzzle-uniqueness-control">
+              <input
+                type="checkbox"
+                checked={requireUniqueSolution}
+                onChange={(event) => onUniqueSolutionChange(event.currentTarget.checked)}
                 disabled={disabled}
-              >
-                Any
-              </button>
-              <button
-                type="button"
-                class={requireUniqueSolution ? "selected" : undefined}
-                aria-pressed={requireUniqueSolution}
-                onClick={() => onUniqueSolutionChange(true)}
-                disabled={disabled}
-              >
-                Unique
-              </button>
-            </div>
+              />
+              <span class="new-puzzle-uniqueness-copy">
+                <strong>Require exactly one solution</strong>
+                <span>{requireUniqueSolution ? "Clues are checked before play." : "Off — more than one solution may fit the clues."}</span>
+              </span>
+            </label>
 
             <div class="new-puzzle-quick-actions" aria-label="Quick puzzle actions">
-              <button type="button" onClick={startRandomPuzzle} disabled={disabled} aria-label="Start a random puzzle" title="Random puzzle">
+              <button type="button" onClick={startRandomPuzzle} disabled={disabled} aria-label={`Start a random puzzle, ${configurationSummary}`} title={`Random puzzle — ${configurationSummary}`}>
                 <RandomIcon />
+                <span class="new-puzzle-quick-action-copy">
+                  <strong>Random</strong>
+                  <small>Use settings above</small>
+                </span>
               </button>
-              <button type="button" onClick={startToday} disabled={disabled} aria-label="Start today's puzzle" title="Today's puzzle">
+              <button type="button" onClick={startToday} disabled={disabled} aria-label={`Start today's puzzle, ${dailySummary}`} title={`Today's puzzle — ${dailySummary}`}>
                 <TodayDateTile />
+                <span class="new-puzzle-quick-action-copy">
+                  <strong>Today</strong>
+                  <small>{dailySummary}</small>
+                </span>
               </button>
             </div>
 
