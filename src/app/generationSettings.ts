@@ -7,6 +7,7 @@ import type {
   SolitaireVariation,
   SudokuVariation,
 } from "../catalog/types";
+import { getDailyPuzzleLabel, getDailyPuzzleProfile } from "../games/shared/daily";
 import { normalizeSolitaireVariation } from "../games/solitaire/variation";
 import { normalizeSudokuVariation } from "../games/sudoku/variation";
 import type { GenerationIdentity, GenerationRuntimeSettings } from "./generationIdentity";
@@ -58,27 +59,32 @@ export const resolveGenerationIdentity = ({
   const definition = getPuzzleDefinition(puzzleId);
   const explicitSeed = typeof settings.seed === "string" ? settings.seed.trim() : null;
   const seed = (explicitSeed ?? runtimeSettings.seed.trim()) || currentPuzzle?.seed || makeSeed();
-  const width = normalizeDimension(
-    settings.width ?? runtimeSettings.width,
-    definition.minWidth,
-    definition.maxWidth,
-    definition.defaultWidth,
-  );
-  const height = normalizeDimension(
-    settings.height ?? runtimeSettings.height,
-    definition.minHeight,
-    definition.maxHeight,
-    definition.defaultHeight,
-  );
-  const difficulty = settings.difficulty ?? runtimeSettings.difficulty;
-  const requireUniqueSolution = typeof settings.requireUniqueSolution === "boolean"
-    ? settings.requireUniqueSolution
-    : runtimeSettings.requireUniqueSolution;
   const sudokuVariation = normalizeSudokuVariation(
     settings.sudokuVariation ??
       (currentPuzzle?.puzzleId === "sudoku" ? currentPuzzle.sudokuVariation : undefined) ??
       runtimeSettings.sudokuVariation,
   );
+  const dailyProfile = getDailyPuzzleLabel(puzzleId, seed)
+    ? getDailyPuzzleProfile(puzzleId, sudokuVariation)
+    : null;
+  const width = normalizeDimension(
+    dailyProfile?.width ?? settings.width ?? runtimeSettings.width,
+    definition.minWidth,
+    definition.maxWidth,
+    definition.defaultWidth,
+  );
+  const height = normalizeDimension(
+    dailyProfile?.height ?? settings.height ?? runtimeSettings.height,
+    definition.minHeight,
+    definition.maxHeight,
+    definition.defaultHeight,
+  );
+  const difficulty = dailyProfile?.difficulty ?? settings.difficulty ?? runtimeSettings.difficulty;
+  const requireUniqueSolution = typeof dailyProfile?.requireUniqueSolution === "boolean"
+    ? dailyProfile.requireUniqueSolution
+    : typeof settings.requireUniqueSolution === "boolean"
+      ? settings.requireUniqueSolution
+      : runtimeSettings.requireUniqueSolution;
   const solitaireVariation = normalizeSolitaireVariation(
     settings.solitaireVariation ??
       (currentPuzzle?.kind === "cards" ? currentPuzzle.solitaireVariation : undefined) ??
@@ -96,7 +102,7 @@ export const resolveGenerationIdentity = ({
     height,
     difficulty,
     requireUniqueSolution,
-    sudokuVariation,
+    sudokuVariation: dailyProfile?.sudokuVariation ?? sudokuVariation,
     solitaireVariation,
     imageId: settings.imageId ?? currentImageId,
   };
