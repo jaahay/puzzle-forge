@@ -13,25 +13,36 @@
 }
 
 .sudoku-workspace .square-grid-board-viewport,
+.nonogram-workspace .nonogram-board-viewport,
 .sudoku-workspace .sudoku-validation-message,
 .gameplay-control-stack,
 .new-puzzle-command {
   width: min(100%, var(--play-column-max));
 }
 
-.sudoku-workspace .square-grid-board-viewport {
+.sudoku-workspace .square-grid-board-viewport,
+.nonogram-workspace .nonogram-board-viewport {
   justify-self: center;
 }
 
-.sudoku-current-actions {
+.sudoku-current-actions,
+.nonogram-current-actions {
   display: flex;
-  width: 100%;
   gap: 0.5rem;
   align-items: center;
   justify-content: center;
 }
 
-.sudoku-current-actions button {
+.sudoku-current-actions {
+  width: 100%;
+}
+
+.nonogram-current-actions {
+  width: auto;
+}
+
+.sudoku-current-actions button,
+.nonogram-current-actions button {
   min-width: 6.5rem;
   min-height: 2.55rem;
 }
@@ -145,7 +156,13 @@
     overflow: visible;
   }
 
-  .sudoku-current-actions button {
+  .sudoku-current-actions,
+  .nonogram-current-actions {
+    width: 100%;
+  }
+
+  .sudoku-current-actions button,
+  .nonogram-current-actions button {
     flex: 1 1 0;
     min-width: 0;
   }
