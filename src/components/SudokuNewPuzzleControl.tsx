@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "preact/hooks";
 import type { PuzzleDifficulty, SudokuVariation } from "../catalog/types";
 import { makeRandomSeed } from "../app/runtime";
+import { getDailyPuzzleProfile } from "../games/shared/daily";
 import { sudokuVariationDescriptions, sudokuVariationLabels } from "../games/sudoku/variation";
 import { InfoIcon, PlayIcon, RandomIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
 import { CurrentSeedDisplay } from "./SeedControl";
@@ -42,6 +43,11 @@ export const SudokuNewPuzzleControl = ({
   const commandRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDetailsElement>(null);
   const configurationSummary = `${difficulty} · ${sudokuVariationLabels[sudokuVariation]}`;
+  const dailyProfile = getDailyPuzzleProfile("sudoku", sudokuVariation);
+  const dailyVariation = dailyProfile?.sudokuVariation ?? sudokuVariation;
+  const dailySummary = dailyProfile
+    ? `${dailyProfile.difficulty} · ${sudokuVariationLabels[dailyVariation]}`
+    : `Today · ${sudokuVariationLabels[sudokuVariation]}`;
 
   const closeOptions = (restoreFocus = false) => {
     const options = optionsRef.current;
@@ -126,7 +132,8 @@ export const SudokuNewPuzzleControl = ({
               </summary>
               <div class="new-puzzle-info-panel">
                 <p>{sudokuVariationDescriptions[sudokuVariation]}</p>
-                <p>Difficulty and mode apply to every action here. Dice starts a random puzzle; the dated tile starts today's puzzle. The locked seed is the puzzle you're playing. Edit the lower seed and press play to load it.</p>
+                <p>Random and ordinary seed loads use the difficulty and ruleset above. Today always uses Medium difficulty; the selected ruleset chooses the Standard, Diagonal, or Zero Killer daily track.</p>
+                <p>The locked seed is the puzzle you're playing. Edit the lower seed and press play to load it.</p>
               </div>
             </details>
 
@@ -145,7 +152,7 @@ export const SudokuNewPuzzleControl = ({
               ))}
             </div>
 
-            <div class="new-puzzle-segmented new-puzzle-mode-options" role="group" aria-label="Sudoku mode">
+            <div class="new-puzzle-segmented new-puzzle-mode-options" role="group" aria-label="Sudoku ruleset">
               {variations.map((option) => (
                 <button
                   key={option.value}
@@ -161,11 +168,19 @@ export const SudokuNewPuzzleControl = ({
             </div>
 
             <div class="new-puzzle-quick-actions" aria-label="Quick puzzle actions">
-              <button type="button" onClick={startRandomPuzzle} disabled={disabled} aria-label="Start a random puzzle" title="Random puzzle">
+              <button type="button" onClick={startRandomPuzzle} disabled={disabled} aria-label={`Start a random puzzle, ${configurationSummary}`} title={`Random puzzle — ${configurationSummary}`}>
                 <RandomIcon />
+                <span class="new-puzzle-quick-action-copy">
+                  <strong>Random</strong>
+                  <small>Use settings above</small>
+                </span>
               </button>
-              <button type="button" onClick={startToday} disabled={disabled} aria-label="Start today's puzzle" title="Today's puzzle">
+              <button type="button" onClick={startToday} disabled={disabled} aria-label={`Start today's puzzle, ${dailySummary}`} title={`Today's puzzle — ${dailySummary}`}>
                 <TodayDateTile />
+                <span class="new-puzzle-quick-action-copy">
+                  <strong>Today</strong>
+                  <small>{dailySummary}</small>
+                </span>
               </button>
             </div>
 
