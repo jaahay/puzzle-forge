@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { GeneratedPuzzle } from "../catalog/types";
+import { getDailyPuzzleSeed } from "../games/shared/daily";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation } from "../games/sudoku/variation";
 import type { GenerationRuntimeSettings } from "./generationIdentity";
@@ -99,6 +100,47 @@ describe("resolveGenerationIdentity", () => {
       settings: { width: 8, height: 12 },
       makeSeed: () => "fallback",
     })).toMatchObject({ width: 9, height: 9 });
+  });
+
+  it("resolves a Nonogram daily seed to its canonical profile", () => {
+    expect(resolveGenerationIdentity({
+      puzzleId: "nonogram",
+      currentPuzzle: null,
+      runtimeSettings,
+      settings: {
+        seed: getDailyPuzzleSeed("nonogram", new Date(2026, 8, 3)),
+        width: 12,
+        height: 5,
+        difficulty: "Expert",
+        requireUniqueSolution: false,
+      },
+      makeSeed: () => "fallback",
+    })).toMatchObject({
+      width: 8,
+      height: 8,
+      difficulty: "Medium",
+      requireUniqueSolution: true,
+    });
+  });
+
+  it("keeps the selected Sudoku ruleset as the daily track while fixing daily difficulty", () => {
+    expect(resolveGenerationIdentity({
+      puzzleId: "sudoku",
+      currentPuzzle: null,
+      runtimeSettings,
+      settings: {
+        seed: getDailyPuzzleSeed("sudoku", new Date(2026, 8, 3)),
+        difficulty: "Expert",
+        sudokuVariation: "diagonal",
+      },
+      makeSeed: () => "fallback",
+    })).toMatchObject({
+      width: 9,
+      height: 9,
+      difficulty: "Medium",
+      requireUniqueSolution: true,
+      sudokuVariation: "diagonal",
+    });
   });
 
   it("uses the current Solitaire variation when no prospective variation is supplied", () => {
