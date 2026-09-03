@@ -68,6 +68,7 @@
   font-size: 0.84rem;
   font-weight: 700;
   line-height: 1.2;
+  opacity: 0;
   text-align: center;
 }
 
@@ -76,6 +77,7 @@
   color: #bfdbfe;
   background: transparent;
   box-shadow: none;
+  animation: sudoku-validation-feedback 1.6s ease-out both;
 }
 
 .sudoku-workspace .sudoku-validation-message.error {
@@ -83,10 +85,21 @@
   color: #fecaca;
   background: transparent;
   box-shadow: none;
+  animation: sudoku-validation-feedback 1.6s ease-out both;
 }
 
 .sudoku-workspace .sudoku-validation-message.is-idle {
-  visibility: hidden;
+  opacity: 0;
+}
+
+@keyframes sudoku-validation-feedback {
+  0%,
+  65% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .completion-control-stage:focus {
@@ -99,6 +112,14 @@
 
 .sudoku-workspace .completion-control-solved {
   align-self: end;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sudoku-workspace .sudoku-validation-message.progress,
+  .sudoku-workspace .sudoku-validation-message.error {
+    animation: none;
+    opacity: 1;
+  }
 }
 
 @media (orientation: landscape) and (max-height: 520px) {
