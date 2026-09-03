@@ -37,6 +37,8 @@
   width: 100%;
 }
 
+/* Variable-size Nonograms keep their current-puzzle actions compact on wide
+   screens; the surrounding play column still tracks the natural board width. */
 .nonogram-current-actions {
   width: auto;
 }
