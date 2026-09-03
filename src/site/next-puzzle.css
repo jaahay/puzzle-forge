@@ -180,10 +180,6 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.new-puzzle-uniqueness-options {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
 .new-puzzle-segmented button {
   min-width: 0;
   min-height: 2.25rem;
@@ -253,6 +249,53 @@
   font-weight: 900;
 }
 
+.new-puzzle-uniqueness-control {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.55rem;
+  align-items: start;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 0.7rem;
+  padding: 0.58rem 0.65rem;
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, 0.72);
+  cursor: pointer;
+}
+
+.new-puzzle-uniqueness-control input {
+  width: 1rem;
+  height: 1rem;
+  margin: 0.16rem 0 0;
+  accent-color: #60a5fa;
+}
+
+.new-puzzle-uniqueness-control input:focus-visible {
+  outline: 2px solid #7dd3fc;
+  outline-offset: 2px;
+}
+
+.new-puzzle-uniqueness-control input:disabled {
+  cursor: not-allowed;
+}
+
+.new-puzzle-uniqueness-copy {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.new-puzzle-uniqueness-copy strong {
+  color: #e2e8f0;
+  font-size: 0.78rem;
+}
+
+.new-puzzle-uniqueness-copy span {
+  color: #94a3b8;
+  font-size: 0.7rem;
+  font-weight: 650;
+}
+
 .new-puzzle-quick-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -266,13 +309,25 @@
   display: grid;
   min-width: 0;
   min-height: 2.8rem;
-  place-items: center;
   border: 1px solid rgba(96, 165, 250, 0.3);
   border-radius: 0.7rem;
-  padding: 0;
   color: #bfdbfe;
   background: rgba(37, 69, 105, 0.68);
   cursor: pointer;
+}
+
+.new-puzzle-quick-actions button {
+  grid-template-columns: 2.05rem minmax(0, 1fr);
+  gap: 0.48rem;
+  align-items: center;
+  min-height: 3.7rem;
+  padding: 0.42rem 0.5rem;
+  text-align: left;
+}
+
+.new-puzzle-seed-entry > button {
+  place-items: center;
+  padding: 0;
 }
 
 .new-puzzle-quick-actions button svg,
@@ -284,6 +339,30 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.8;
+}
+
+.new-puzzle-quick-actions button > svg {
+  justify-self: center;
+}
+
+.new-puzzle-quick-action-copy {
+  display: grid;
+  gap: 0.08rem;
+  min-width: 0;
+  line-height: 1.15;
+}
+
+.new-puzzle-quick-action-copy strong {
+  color: #dbeafe;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.new-puzzle-quick-action-copy small {
+  color: #93c5fd;
+  font-size: 0.64rem;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
 .new-puzzle-seed-entry > button svg {
