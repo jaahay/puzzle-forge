@@ -111,7 +111,7 @@
 }
 
 .sudoku-workspace .completion-control-solved {
-  align-self: end;
+  align-self: start;
 }
 
 @media (prefers-reduced-motion: reduce) {
