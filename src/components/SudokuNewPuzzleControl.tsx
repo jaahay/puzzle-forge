@@ -90,6 +90,7 @@ export const SudokuNewPuzzleControl = ({
 
   const startToday = () => {
     if (disabled) return;
+    if (dailyProfile) onDifficultyChange(dailyProfile.difficulty);
     closeOptions();
     onToday();
     renewSeedCandidate();
@@ -132,10 +133,21 @@ export const SudokuNewPuzzleControl = ({
               </summary>
               <div class="new-puzzle-info-panel">
                 <p>{sudokuVariationDescriptions[sudokuVariation]}</p>
-                <p>Random and ordinary seed loads use the difficulty and ruleset above. Today always uses Medium difficulty; the selected ruleset chooses the Standard, Diagonal, or Zero Killer daily track.</p>
+                <p>Random and ordinary seed loads use the difficulty and ruleset below. Today always uses Medium difficulty; the selected ruleset chooses the Standard, Diagonal, or Zero Killer daily track. Choosing Today reconciles the difficulty control to Medium.</p>
                 <p>The locked seed is the puzzle you're playing. Edit the lower seed and press play to load it.</p>
               </div>
             </details>
+
+            <div class="new-puzzle-quick-actions" aria-label="Puzzle source">
+              <button type="button" onClick={startRandomPuzzle} disabled={disabled} aria-label={`Start a random puzzle, ${configurationSummary}`} title={`Random puzzle — ${configurationSummary}`}>
+                <RandomIcon />
+                <span class="new-puzzle-quick-action-label">Random</span>
+              </button>
+              <button type="button" onClick={startToday} disabled={disabled} aria-label={`Start today's puzzle, ${dailySummary}`} title={`Today's puzzle — ${dailySummary}`}>
+                <TodayDateTile />
+                <span class="new-puzzle-quick-action-label">Today</span>
+              </button>
+            </div>
 
             <div class="new-puzzle-segmented new-puzzle-difficulty-options" role="group" aria-label="Difficulty">
               {difficulties.map((option) => (
@@ -165,23 +177,6 @@ export const SudokuNewPuzzleControl = ({
                   {option.label}
                 </button>
               ))}
-            </div>
-
-            <div class="new-puzzle-quick-actions" aria-label="Quick puzzle actions">
-              <button type="button" onClick={startRandomPuzzle} disabled={disabled} aria-label={`Start a random puzzle, ${configurationSummary}`} title={`Random puzzle — ${configurationSummary}`}>
-                <RandomIcon />
-                <span class="new-puzzle-quick-action-copy">
-                  <strong>Random</strong>
-                  <small>Use settings above</small>
-                </span>
-              </button>
-              <button type="button" onClick={startToday} disabled={disabled} aria-label={`Start today's puzzle, ${dailySummary}`} title={`Today's puzzle — ${dailySummary}`}>
-                <TodayDateTile />
-                <span class="new-puzzle-quick-action-copy">
-                  <strong>Today</strong>
-                  <small>{dailySummary}</small>
-                </span>
-              </button>
             </div>
 
             <div class="new-puzzle-seed-stack">
