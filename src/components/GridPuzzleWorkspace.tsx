@@ -151,7 +151,8 @@ export const GridPuzzleWorkspace = ({
       <div class="puzzle-meta">
         <span>{`${puzzle.width} x ${puzzle.height}`}</span>
         {puzzle.difficulty ? <span>{puzzle.difficulty}</span> : null}
-        {isNonogram || isFutoshiki ? <span>{puzzle.uniqueSolution ? "Unique" : "Open"}</span> : null}
+        {isNonogram ? <span>{puzzle.uniqueSolution ? "One solution" : "Uniqueness not required"}</span> : null}
+        {isFutoshiki ? <span>{puzzle.uniqueSolution ? "Unique" : "Open"}</span> : null}
         {isWordGuess ? <span>Answer-list solvable</span> : null}
         {isNonogram || isFutoshiki ? <span>{filledOpenCount}/{openCount} filled</span> : dailyLabel ? <span>Daily: {dailyLabel}</span> : null}
       </div>
