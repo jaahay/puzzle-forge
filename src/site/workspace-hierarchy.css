@@ -5,7 +5,8 @@
 }
 
 .workspace-layout-help,
-.sudoku-workspace .workspace-layout-header {
+.sudoku-workspace .workspace-layout-header,
+.nonogram-workspace .workspace-layout-header {
   display: grid;
   min-width: 0;
   justify-items: center;
