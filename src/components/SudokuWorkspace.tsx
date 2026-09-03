@@ -71,8 +71,7 @@ export const SudokuWorkspace = ({
 
     if (gridCheckFeedbackTone) {
       // Renew a partially faded message with a short, quiet return to full
-      // opacity before restarting its normal presentation. The controller's
-      // expiry timer is also restarted by this Check.
+      // opacity before restarting its normal presentation.
       setValidationIsRenewing(true);
       validationRenewalTimerRef.current = setTimeout(() => {
         setValidationIsRenewing(false);
