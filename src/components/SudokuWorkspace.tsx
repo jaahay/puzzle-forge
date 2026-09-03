@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import type { PuzzleCell } from "../catalog/types";
 import { isGridAnswerCompleteAndCorrect } from "../interactions/gridChecking";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
@@ -8,6 +8,8 @@ import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { SudokuMeta } from "./SudokuMeta";
 import { SudokuNewPuzzleControl } from "./SudokuNewPuzzleControl";
 import { usePuzzleCompletionPresentation } from "./usePuzzleCompletionPresentation";
+
+const SUDOKU_CHECK_RENEWAL_MS = 150;
 
 export const SudokuWorkspace = ({
   selectedPuzzleIsGeneratable,
@@ -43,10 +45,45 @@ export const SudokuWorkspace = ({
   const completionStageRef = useRef<HTMLDivElement>(null);
   const activeGameplayRef = useRef<HTMLDivElement>(null);
   const activeGameplayHadFocusRef = useRef(false);
+  const validationRenewalTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [validationPresentationKey, setValidationPresentationKey] = useState(0);
+  const [validationIsRenewing, setValidationIsRenewing] = useState(false);
+
+  const clearValidationRenewal = () => {
+    if (validationRenewalTimerRef.current !== null) {
+      clearTimeout(validationRenewalTimerRef.current);
+      validationRenewalTimerRef.current = null;
+    }
+    setValidationIsRenewing(false);
+  };
 
   const handleCellInput = (cell: PuzzleCell, value: string) => {
+    clearValidationRenewal();
     completion.recordCausativeInput();
     onCellInput(cell, value);
+  };
+
+  const handleCheck = () => {
+    if (validationRenewalTimerRef.current !== null) {
+      clearTimeout(validationRenewalTimerRef.current);
+      validationRenewalTimerRef.current = null;
+    }
+
+    if (gridCheckFeedbackTone) {
+      // Renew a partially faded message with a short, quiet return to full
+      // opacity before restarting its normal presentation.
+      setValidationIsRenewing(true);
+      validationRenewalTimerRef.current = setTimeout(() => {
+        setValidationIsRenewing(false);
+        setValidationPresentationKey((current) => current + 1);
+        validationRenewalTimerRef.current = null;
+      }, SUDOKU_CHECK_RENEWAL_MS);
+    } else {
+      setValidationIsRenewing(false);
+      setValidationPresentationKey((current) => current + 1);
+    }
+
+    onCheck();
   };
 
   const numericInput = useNumericGridInput({
@@ -60,6 +97,12 @@ export const SudokuWorkspace = ({
     onCellClick,
     onCellInput: handleCellInput,
   });
+
+  useEffect(() => () => {
+    if (validationRenewalTimerRef.current !== null) {
+      clearTimeout(validationRenewalTimerRef.current);
+    }
+  }, []);
 
   useEffect(() => {
     if (!isPresentationCompleted) {
@@ -95,7 +138,8 @@ export const SudokuWorkspace = ({
   const validationMessage = !isSolved && gridCheckFeedbackTone ? statusMessage : "";
   const validation = (
     <p
-      class={`grid-validation-message sudoku-validation-message ${validationMessage ? gridCheckFeedbackTone : "is-idle"}`}
+      key={validationPresentationKey}
+      class={`grid-validation-message sudoku-validation-message ${validationMessage ? gridCheckFeedbackTone : "is-idle"}${validationMessage && validationIsRenewing ? " is-renewing" : ""}`}
       aria-hidden={validationMessage ? undefined : true}
       aria-live="polite"
     >
@@ -159,7 +203,7 @@ export const SudokuWorkspace = ({
         >
           {digitPad}
           <div class="sudoku-current-actions" aria-label="Current Sudoku actions">
-            <button class="sudoku-check-action" type="button" onClick={onCheck} disabled={isSolved}>Check</button>
+            <button class="sudoku-check-action" type="button" onClick={handleCheck} disabled={isSolved}>Check</button>
             <button class="sudoku-reset-action" type="button" onClick={onReset} disabled={isGenerating}>Reset</button>
           </div>
           {validation}
