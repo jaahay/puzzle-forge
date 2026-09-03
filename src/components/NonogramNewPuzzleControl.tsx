@@ -158,12 +158,28 @@ export const NonogramNewPuzzleControl = ({
             <div class="new-puzzle-size-options" role="group" aria-label="Nonogram size">
               <label>
                 <span aria-hidden="true">W</span>
-                <BoundedNumberInput ariaLabel="Width" value={width} min={minWidth} max={maxWidth} onCommit={onWidthChange} />
+                <BoundedNumberInput
+                  ariaLabel="Width"
+                  value={width}
+                  min={minWidth}
+                  max={maxWidth}
+                  disabled={disabled}
+                  commitOnValidInput
+                  onCommit={onWidthChange}
+                />
               </label>
               <span class="new-puzzle-size-separator" aria-hidden="true">×</span>
               <label>
                 <span aria-hidden="true">H</span>
-                <BoundedNumberInput ariaLabel="Height" value={height} min={minHeight} max={maxHeight} onCommit={onHeightChange} />
+                <BoundedNumberInput
+                  ariaLabel="Height"
+                  value={height}
+                  min={minHeight}
+                  max={maxHeight}
+                  disabled={disabled}
+                  commitOnValidInput
+                  onCommit={onHeightChange}
+                />
               </label>
             </div>
 
