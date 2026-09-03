@@ -214,8 +214,8 @@ export const usePuzzleGeneration = () => {
       ? `${puzzle.difficulty ?? defaultPuzzleDifficulty} ${sudokuVariationLabels[normalizeSudokuVariation(puzzle.sudokuVariation)]} Sudoku ready.`
       : puzzle.puzzleId === "nonogram"
         ? puzzle.uniqueSolution
-          ? "Unique Nonogram ready."
-          : "Open Nonogram ready. Multiple solutions may be possible."
+          ? "Nonogram ready. Exactly one solution fits the clues."
+          : "Nonogram ready. Uniqueness was not required; more than one solution may fit the clues."
         : `${puzzle.title} ready.`;
 
   return {
