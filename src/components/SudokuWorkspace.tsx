@@ -43,6 +43,8 @@ export const SudokuWorkspace = ({
   const completionStageRef = useRef<HTMLDivElement>(null);
   const activeGameplayRef = useRef<HTMLDivElement>(null);
   const activeGameplayHadFocusRef = useRef(false);
+  // A new key deliberately remounts transient Check copy so a repeated Check
+  // snaps a partially faded message back to full opacity before a fresh fade.
   const [validationPresentationKey, setValidationPresentationKey] = useState(0);
 
   const handleCellInput = (cell: PuzzleCell, value: string) => {
