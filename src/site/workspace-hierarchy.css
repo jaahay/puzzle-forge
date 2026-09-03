@@ -89,6 +89,8 @@
   animation: sudoku-validation-feedback 1.6s ease-out both;
 }
 
+/* A repeated Check should quietly restore legibility before the normal fade
+   restarts; it should not flash back to full opacity. */
 .sudoku-workspace .sudoku-validation-message.is-renewing {
   animation: none;
   opacity: 1;
