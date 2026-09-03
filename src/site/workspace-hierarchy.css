@@ -70,6 +70,7 @@
   line-height: 1.2;
   opacity: 0;
   text-align: center;
+  transition: opacity 150ms ease-out;
 }
 
 .sudoku-workspace .sudoku-validation-message.progress {
@@ -86,6 +87,11 @@
   background: transparent;
   box-shadow: none;
   animation: sudoku-validation-feedback 1.6s ease-out both;
+}
+
+.sudoku-workspace .sudoku-validation-message.is-renewing {
+  animation: none;
+  opacity: 1;
 }
 
 .sudoku-workspace .sudoku-validation-message.is-idle {
@@ -119,6 +125,7 @@
   .sudoku-workspace .sudoku-validation-message.error {
     animation: none;
     opacity: 1;
+    transition: none;
   }
 }
 
