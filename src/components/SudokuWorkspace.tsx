@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import type { PuzzleCell } from "../catalog/types";
 import { isGridAnswerCompleteAndCorrect } from "../interactions/gridChecking";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
@@ -43,10 +43,16 @@ export const SudokuWorkspace = ({
   const completionStageRef = useRef<HTMLDivElement>(null);
   const activeGameplayRef = useRef<HTMLDivElement>(null);
   const activeGameplayHadFocusRef = useRef(false);
+  const [validationPresentationKey, setValidationPresentationKey] = useState(0);
 
   const handleCellInput = (cell: PuzzleCell, value: string) => {
     completion.recordCausativeInput();
     onCellInput(cell, value);
+  };
+
+  const handleCheck = () => {
+    setValidationPresentationKey((current) => current + 1);
+    onCheck();
   };
 
   const numericInput = useNumericGridInput({
@@ -95,6 +101,7 @@ export const SudokuWorkspace = ({
   const validationMessage = !isSolved && gridCheckFeedbackTone ? statusMessage : "";
   const validation = (
     <p
+      key={validationPresentationKey}
       class={`grid-validation-message sudoku-validation-message ${validationMessage ? gridCheckFeedbackTone : "is-idle"}`}
       aria-hidden={validationMessage ? undefined : true}
       aria-live="polite"
@@ -159,7 +166,7 @@ export const SudokuWorkspace = ({
         >
           {digitPad}
           <div class="sudoku-current-actions" aria-label="Current Sudoku actions">
-            <button class="sudoku-check-action" type="button" onClick={onCheck} disabled={isSolved}>Check</button>
+            <button class="sudoku-check-action" type="button" onClick={handleCheck} disabled={isSolved}>Check</button>
             <button class="sudoku-reset-action" type="button" onClick={onReset} disabled={isGenerating}>Reset</button>
           </div>
           {validation}
