@@ -46,6 +46,18 @@ const roundMetric = (value: number) => Math.round(value * 100) / 100;
 const getClueTrackSize = (slots: number, min: number, max: number) =>
   clamp(normalizeCount(slots) * nonogramClueSlotSize + nonogramCluePadding, min, max);
 
+export const getBoardViewportNaturalWidth = ({
+  kind,
+  columns,
+  rowClueSlots = 1,
+}: Pick<BoardViewportMetricsInput, "kind" | "columns" | "rowClueSlots">) => {
+  if (kind === "square-grid") return squareGridMaxBoardSize;
+
+  const safeColumns = normalizeCount(columns);
+  const rowClueWidth = getClueTrackSize(rowClueSlots, 42, 88);
+  return roundMetric(rowClueWidth + nonogramMaxCellSize * safeColumns + nonogramFrameWidth);
+};
+
 export const makeBoardViewportMetrics = ({
   kind,
   availableInlineSize,
