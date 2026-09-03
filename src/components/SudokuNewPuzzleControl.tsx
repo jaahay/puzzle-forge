@@ -2,6 +2,7 @@ import { useEffect, useRef } from "preact/hooks";
 import type { PuzzleDifficulty, SudokuVariation } from "../catalog/types";
 import { makeRandomSeed } from "../app/runtime";
 import { sudokuVariationDescriptions, sudokuVariationLabels } from "../games/sudoku/variation";
+import { InfoIcon, PlayIcon, RandomIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
 import { CurrentSeedDisplay } from "./SeedControl";
 
 type SudokuNewPuzzleControlProps = {
@@ -24,37 +25,6 @@ const variations: Array<{ value: SudokuVariation; label: string }> = [
   { value: "diagonal", label: "Diagonal" },
   { value: "zero-killer", label: "Zero Killer" },
 ];
-
-const RandomIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <rect x="4" y="4" width="16" height="16" rx="3" />
-    <circle cx="9" cy="9" r="1" />
-    <circle cx="15" cy="15" r="1" />
-    <circle cx="15" cy="9" r="1" />
-    <circle cx="9" cy="15" r="1" />
-  </svg>
-);
-
-const TodayIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <rect x="4" y="6" width="16" height="14" rx="2" />
-    <path d="M8 4v4M16 4v4M4 10h16" />
-    <path d="M8 14h2M12 14h2M16 14h1M8 17h2M12 17h2" />
-  </svg>
-);
-
-const PlayIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M8 5l11 7-11 7z" />
-  </svg>
-);
-
-const InfoIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <circle cx="12" cy="12" r="9" />
-    <path d="M12 10v6M12 7.2v.1" />
-  </svg>
-);
 
 export const SudokuNewPuzzleControl = ({
   currentSeed,
@@ -156,7 +126,7 @@ export const SudokuNewPuzzleControl = ({
               </summary>
               <div class="new-puzzle-info-panel">
                 <p>{sudokuVariationDescriptions[sudokuVariation]}</p>
-                <p>Difficulty and mode apply to every action here. Dice starts a random puzzle; the calendar starts today's puzzle. The locked seed is the puzzle you're playing. Edit the lower seed and press play to load it.</p>
+                <p>Difficulty and mode apply to every action here. Dice starts a random puzzle; the dated tile starts today's puzzle. The locked seed is the puzzle you're playing. Edit the lower seed and press play to load it.</p>
               </div>
             </details>
 
@@ -195,7 +165,7 @@ export const SudokuNewPuzzleControl = ({
                 <RandomIcon />
               </button>
               <button type="button" onClick={startToday} disabled={disabled} aria-label="Start today's puzzle" title="Today's puzzle">
-                <TodayIcon />
+                <TodayDateTile />
               </button>
             </div>
 
