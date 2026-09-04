@@ -3,9 +3,12 @@ import { useEffect, useRef } from "preact/hooks";
 import type { GeneratedPuzzle } from "../catalog/types";
 import { getCanonicalDailyPuzzleLabel } from "../games/shared/daily";
 import { normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
+import { useLiveLocalDateStamp } from "./NewPuzzleActionVisuals";
+
+const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
 
 type CurrentPuzzleIdentityModel = {
-  isToday: boolean;
+  sourceLabel: string | null;
   details: string[];
 };
 
@@ -15,12 +18,28 @@ type CurrentPuzzleHeaderProps = {
   isArriving?: boolean;
 };
 
-export const getCurrentPuzzleIdentity = (puzzle: GeneratedPuzzle): CurrentPuzzleIdentityModel => {
-  const isToday = Boolean(getCanonicalDailyPuzzleLabel(puzzle));
+const formatDailyDateLabel = (dateStamp: string, currentDateStamp: string) => {
+  const [year = "", month = "1", day = "1"] = dateStamp.split("-");
+  const [currentYear = ""] = currentDateStamp.split("-");
+  const monthIndex = Math.max(0, Math.min(11, Number(month) - 1));
+  const yearSuffix = year && year !== currentYear ? `, ${year}` : "";
+  return `${monthLabels[monthIndex]} ${Number(day)}${yearSuffix}`;
+};
+
+export const getCurrentPuzzleIdentity = (
+  puzzle: GeneratedPuzzle,
+  currentDateStamp: string,
+): CurrentPuzzleIdentityModel => {
+  const dailyDateStamp = getCanonicalDailyPuzzleLabel(puzzle);
+  const sourceLabel = dailyDateStamp
+    ? dailyDateStamp === currentDateStamp
+      ? "Today"
+      : `Daily ${formatDailyDateLabel(dailyDateStamp, currentDateStamp)}`
+    : null;
 
   if (puzzle.puzzleId === "sudoku") {
     return {
-      isToday,
+      sourceLabel,
       details: [
         puzzle.difficulty,
         sudokuVariationLabels[normalizeSudokuVariation(puzzle.sudokuVariation)],
@@ -30,7 +49,7 @@ export const getCurrentPuzzleIdentity = (puzzle: GeneratedPuzzle): CurrentPuzzle
 
   if (puzzle.puzzleId === "nonogram") {
     return {
-      isToday,
+      sourceLabel,
       details: [
         puzzle.difficulty,
         `${puzzle.width}×${puzzle.height}`,
@@ -40,7 +59,7 @@ export const getCurrentPuzzleIdentity = (puzzle: GeneratedPuzzle): CurrentPuzzle
   }
 
   return {
-    isToday,
+    sourceLabel,
     details: [
       puzzle.difficulty,
       `${puzzle.width}×${puzzle.height}`,
@@ -76,8 +95,9 @@ export const CurrentPuzzleHeader = ({
   newPuzzleControl,
   isArriving = false,
 }: CurrentPuzzleHeaderProps) => {
-  const identity = getCurrentPuzzleIdentity(puzzle);
-  const fullIdentity = [identity.isToday ? "Today" : null, ...identity.details]
+  const currentDateStamp = useLiveLocalDateStamp();
+  const identity = getCurrentPuzzleIdentity(puzzle, currentDateStamp);
+  const fullIdentity = [identity.sourceLabel, ...identity.details]
     .filter((part): part is string => Boolean(part));
 
   return (
@@ -86,7 +106,7 @@ export const CurrentPuzzleHeader = ({
         class={`current-puzzle-identity${isArriving ? " is-arriving" : ""}`}
         aria-label={`Current puzzle: ${fullIdentity.join(", ")}`}
       >
-        {identity.isToday ? <strong>Today</strong> : null}
+        {identity.sourceLabel ? <strong>{identity.sourceLabel}</strong> : null}
         {identity.details.map((detail) => (
           <span key={detail}>{detail}</span>
         ))}
