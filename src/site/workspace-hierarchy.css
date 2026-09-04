@@ -35,9 +35,16 @@
   align-items: center;
 }
 
-.current-puzzle-header .new-puzzle-command {
-  width: auto;
+.current-puzzle-header-actions {
+  display: flex;
+  min-width: 0;
+  align-items: center;
   justify-self: end;
+  gap: 0.45rem;
+}
+
+.current-puzzle-header-actions .new-puzzle-command {
+  width: auto;
 }
 
 .current-puzzle-identity {
@@ -70,6 +77,58 @@
   margin-inline: 0.46rem;
   color: #64748b;
   font-weight: 800;
+}
+
+.puzzle-history-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.puzzle-history-actions button {
+  display: grid;
+  width: 2.35rem;
+  min-width: 2.35rem;
+  height: 2.35rem;
+  min-height: 2.35rem;
+  place-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 0.7rem;
+  padding: 0;
+  color: #b8c5d6;
+  background: rgba(15, 23, 42, 0.28);
+  cursor: pointer;
+}
+
+.puzzle-history-actions button:hover:not(:disabled),
+.puzzle-history-actions button:focus-visible {
+  border-color: rgba(125, 211, 252, 0.42);
+  color: #e0f2fe;
+  background: rgba(30, 41, 59, 0.62);
+  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.12);
+  outline: none;
+}
+
+.puzzle-history-actions button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.puzzle-history-actions button:disabled {
+  color: #64748b;
+  background: rgba(15, 23, 42, 0.16);
+  cursor: default;
+  opacity: 0.48;
+}
+
+.puzzle-history-actions svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.9;
 }
 
 .puzzle-panel.puzzle-arrival {

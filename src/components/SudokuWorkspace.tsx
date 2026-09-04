@@ -4,6 +4,7 @@ import { isGridAnswerCompleteAndCorrect } from "../interactions/gridChecking";
 import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
 import { getNumericGridDigits, NumericGridDigitPad, useNumericGridInput } from "./NumericGridInput";
+import { PuzzleHistoryActions } from "./PuzzleHistoryActions";
 import type { SudokuWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { SudokuMeta } from "./SudokuMeta";
@@ -22,6 +23,10 @@ export const SudokuWorkspace = ({
   gridCheckFeedbackTone,
   statusMessage,
   isGenerating,
+  canUndoGrid,
+  canRedoGrid,
+  onUndoGrid,
+  onRedoGrid,
   onReset,
   onCheck,
   onNextPuzzleDraftChange,
@@ -137,11 +142,25 @@ export const SudokuWorkspace = ({
       onLoadSeed={onLoadSeed}
     />
   ) : null;
+  const historyActions = sudokuPuzzle ? (
+    <PuzzleHistoryActions
+      canUndo={canUndoGrid}
+      canRedo={canRedoGrid}
+      disabled={isGenerating}
+      onUndo={onUndoGrid}
+      onRedo={onRedoGrid}
+    />
+  ) : null;
   const currentPuzzleHeader = sudokuPuzzle ? (
     <CurrentPuzzleHeader
       key={puzzleArrivalIdentity ?? undefined}
       puzzle={sudokuPuzzle}
-      newPuzzleControl={isPresentationCompleted ? null : newPuzzleControl}
+      newPuzzleControl={(
+        <div class="current-puzzle-header-actions">
+          {isPresentationCompleted ? null : newPuzzleControl}
+          {historyActions}
+        </div>
+      )}
       isArriving={isPuzzleArriving}
     />
   ) : null;

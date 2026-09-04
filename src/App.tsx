@@ -380,6 +380,8 @@ export const App = () => {
     const readyMessage = generation.makeReadyMessage(puzzle);
     if (puzzle.kind === "cards") {
       solitaire.restoreSolitaireSnapshot({ cardStacks: puzzle.stacks, selectedCard: null, solitaireStats: initialSolitaireStats, solitaireUndoStack: [], solitaireRedoStack: [], statusMessage: readyMessage });
+    } else if (puzzle.kind === "grid") {
+      grid.resetCurrentGrid(puzzle, readyMessage, setStatusMessage);
     } else {
       grid.prepareGeneratedGrid(puzzle);
       setStatusMessage(readyMessage);
@@ -466,6 +468,10 @@ export const App = () => {
     gridCells: grid.gridCells,
     selectedGridCell: grid.selectedGridCell,
     gridCheckFeedbackTone: grid.checkFeedbackTone,
+    canUndoGrid: grid.canUndoGrid,
+    canRedoGrid: grid.canRedoGrid,
+    onUndoGrid: () => grid.undoGridAction(puzzle, setStatusMessage),
+    onRedoGrid: () => grid.redoGridAction(puzzle, setStatusMessage),
     onCheck: handleCheck,
     onCellClick: (cell: Parameters<typeof grid.handleGridCellClick>[1]) => grid.handleGridCellClick(puzzle, cell, setStatusMessage),
     onCellInput: (cell: Parameters<typeof grid.handleGridCellInput>[1], value: string) => grid.handleGridCellInput(puzzle, cell, value, setStatusMessage),
