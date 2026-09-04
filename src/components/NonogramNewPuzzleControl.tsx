@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useRef } from "preact/hooks";
 import { makeRandomSeed } from "../app/runtime";
 import type { PuzzleDifficulty } from "../catalog/types";
 import { getDailyPuzzleProfile } from "../games/shared/daily";
@@ -28,11 +28,8 @@ type NonogramNewPuzzleControlProps = {
   onLoadSeed: () => void;
 };
 
-type EnactmentSource = "random" | "today" | "seed";
-
 const difficulties: PuzzleDifficulty[] = ["Easy", "Medium", "Hard", "Expert"];
 const dailyProfile = getDailyPuzzleProfile("nonogram");
-const enactmentDurationMs = 180;
 
 export const NonogramNewPuzzleControl = ({
   currentSeed,
@@ -57,8 +54,6 @@ export const NonogramNewPuzzleControl = ({
 }: NonogramNewPuzzleControlProps) => {
   const commandRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDetailsElement>(null);
-  const enactmentTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [enactingSource, setEnactingSource] = useState<EnactmentSource | null>(null);
   const configurationSummary = `${difficulty} · ${width}×${height} · ${requireUniqueSolution ? "Exactly one solution" : "May be multiple solutions"}`;
   const dailySummary = dailyProfile
     ? `${dailyProfile.width}×${dailyProfile.height} · ${dailyProfile.difficulty} · one solution`
@@ -72,32 +67,6 @@ export const NonogramNewPuzzleControl = ({
   };
 
   const renewSeedCandidate = () => onSeedLoadInputChange(makeRandomSeed());
-  const selectedEnactmentClass = (selected: boolean) =>
-    [selected ? "selected" : "", selected && enactingSource ? "new-puzzle-enacting" : ""]
-      .filter(Boolean)
-      .join(" ") || undefined;
-
-  const enactPuzzle = (source: EnactmentSource, enact: () => void) => {
-    setEnactingSource(source);
-    enact();
-    renewSeedCandidate();
-
-    const reduceMotion = typeof window !== "undefined"
-      && typeof window.matchMedia === "function"
-      && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduceMotion) {
-      closeOptions();
-      setEnactingSource(null);
-      return;
-    }
-
-    if (enactmentTimerRef.current) clearTimeout(enactmentTimerRef.current);
-    enactmentTimerRef.current = setTimeout(() => {
-      closeOptions();
-      setEnactingSource(null);
-      enactmentTimerRef.current = null;
-    }, enactmentDurationMs);
-  };
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -119,38 +88,41 @@ export const NonogramNewPuzzleControl = ({
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
-      if (enactmentTimerRef.current) clearTimeout(enactmentTimerRef.current);
     };
   }, []);
 
   const startRandomPuzzle = () => {
     if (disabled) return;
-    enactPuzzle("random", onNewPuzzle);
+    closeOptions();
+    onNewPuzzle();
+    renewSeedCandidate();
   };
 
   const startToday = () => {
     if (disabled) return;
-    enactPuzzle("today", () => {
-      if (dailyProfile) {
-        onDifficultyChange(dailyProfile.difficulty);
-        onWidthChange(dailyProfile.width);
-        onHeightChange(dailyProfile.height);
-        onUniqueSolutionChange(dailyProfile.requireUniqueSolution);
-      }
-      onToday();
-    });
+    if (dailyProfile) {
+      onDifficultyChange(dailyProfile.difficulty);
+      onWidthChange(dailyProfile.width);
+      onHeightChange(dailyProfile.height);
+      onUniqueSolutionChange(dailyProfile.requireUniqueSolution);
+    }
+    closeOptions();
+    onToday();
+    renewSeedCandidate();
   };
 
   const loadSeed = () => {
     if (disabled || !seedLoadInput.trim()) return;
-    enactPuzzle("seed", onLoadSeed);
+    closeOptions();
+    onLoadSeed();
+    renewSeedCandidate();
   };
 
   return (
     <div class="new-puzzle-command" aria-label={`New Nonogram: ${configurationSummary}`} ref={commandRef}>
       <div class="new-puzzle-split-control">
         <button
-          class={`new-puzzle-command-primary${enactingSource === "random" ? " new-puzzle-enacting" : ""}`}
+          class="new-puzzle-command-primary"
           type="button"
           onClick={startRandomPuzzle}
           disabled={disabled}
@@ -182,25 +154,11 @@ export const NonogramNewPuzzleControl = ({
             </details>
 
             <div class="new-puzzle-quick-actions" aria-label="Puzzle source">
-              <button
-                class={enactingSource === "random" ? "new-puzzle-enacting" : undefined}
-                type="button"
-                onClick={startRandomPuzzle}
-                disabled={disabled}
-                aria-label={`Start a random puzzle, ${configurationSummary}`}
-                title={`Random puzzle — ${configurationSummary}`}
-              >
+              <button type="button" onClick={startRandomPuzzle} disabled={disabled} aria-label={`Start a random puzzle, ${configurationSummary}`} title={`Random puzzle — ${configurationSummary}`}>
                 <RandomIcon />
                 <span class="new-puzzle-quick-action-copy"><strong>Random</strong></span>
               </button>
-              <button
-                class={enactingSource === "today" ? "new-puzzle-enacting" : undefined}
-                type="button"
-                onClick={startToday}
-                disabled={disabled}
-                aria-label={`Start today's puzzle, ${dailySummary}`}
-                title={`Today's puzzle — ${dailySummary}`}
-              >
+              <button type="button" onClick={startToday} disabled={disabled} aria-label={`Start today's puzzle, ${dailySummary}`} title={`Today's puzzle — ${dailySummary}`}>
                 <TodayDateTile />
                 <span class="new-puzzle-quick-action-copy"><strong>Today</strong></span>
               </button>
@@ -211,7 +169,7 @@ export const NonogramNewPuzzleControl = ({
                 <button
                   key={option}
                   type="button"
-                  class={selectedEnactmentClass(difficulty === option)}
+                  class={difficulty === option ? "selected" : undefined}
                   aria-pressed={difficulty === option}
                   onClick={() => onDifficultyChange(option)}
                   disabled={disabled}
@@ -222,7 +180,7 @@ export const NonogramNewPuzzleControl = ({
             </div>
 
             <div class="new-puzzle-size-options" role="group" aria-label="Nonogram size">
-              <label class={enactingSource ? "new-puzzle-enacting" : undefined}>
+              <label>
                 <span aria-hidden="true">W</span>
                 <BoundedNumberInput
                   ariaLabel="Width"
@@ -235,7 +193,7 @@ export const NonogramNewPuzzleControl = ({
                 />
               </label>
               <span class="new-puzzle-size-separator" aria-hidden="true">×</span>
-              <label class={enactingSource ? "new-puzzle-enacting" : undefined}>
+              <label>
                 <span aria-hidden="true">H</span>
                 <BoundedNumberInput
                   ariaLabel="Height"
@@ -249,7 +207,7 @@ export const NonogramNewPuzzleControl = ({
               </label>
             </div>
 
-            <label class={`new-puzzle-uniqueness-control${enactingSource ? " new-puzzle-enacting" : ""}`}>
+            <label class="new-puzzle-uniqueness-control">
               <input
                 type="checkbox"
                 checked={requireUniqueSolution}
@@ -266,7 +224,7 @@ export const NonogramNewPuzzleControl = ({
               <div class="new-puzzle-seed-row new-puzzle-current-seed">
                 <CurrentSeedDisplay seed={currentSeed} disabledInput />
               </div>
-              <div class={`new-puzzle-seed-row new-puzzle-seed-entry${enactingSource === "seed" ? " new-puzzle-enacting" : ""}`}>
+              <div class="new-puzzle-seed-row new-puzzle-seed-entry">
                 <input
                   aria-label="Seed to load"
                   value={seedLoadInput}
