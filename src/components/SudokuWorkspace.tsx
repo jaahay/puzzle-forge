@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import type { PuzzleCell } from "../catalog/types";
 import { isGridAnswerCompleteAndCorrect } from "../interactions/gridChecking";
+import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
 import { getNumericGridDigits, NumericGridDigitPad, useNumericGridInput } from "./NumericGridInput";
 import type { SudokuWorkspaceProps } from "./PuzzleWorkspace.types";
@@ -42,6 +43,8 @@ export const SudokuWorkspace = ({
     trackedKeys: sudokuPuzzle ? [...getNumericGridDigits(sudokuPuzzle.width), "Enter", " "] : [],
   });
   const isPresentationCompleted = isSolved && completion.phase === "completed";
+  const puzzleArrivalIdentity = sudokuPuzzle ? getPuzzleArrivalIdentity(sudokuPuzzle) : null;
+  const isPuzzleArriving = usePuzzleArrival(puzzleArrivalIdentity);
   const completionStageRef = useRef<HTMLDivElement>(null);
   const activeGameplayRef = useRef<HTMLDivElement>(null);
   const activeGameplayHadFocusRef = useRef(false);
@@ -134,6 +137,14 @@ export const SudokuWorkspace = ({
       onLoadSeed={onLoadSeed}
     />
   ) : null;
+  const currentPuzzleHeader = sudokuPuzzle ? (
+    <CurrentPuzzleHeader
+      key={puzzleArrivalIdentity ?? undefined}
+      puzzle={sudokuPuzzle}
+      newPuzzleControl={isPresentationCompleted ? null : newPuzzleControl}
+      isArriving={isPuzzleArriving}
+    />
+  ) : null;
 
   const validationMessage = !isSolved && gridCheckFeedbackTone ? statusMessage : "";
   const validation = (
@@ -221,7 +232,11 @@ export const SudokuWorkspace = ({
   );
 
   const board = sudokuPuzzle && gridCells ? (
-    <section class="puzzle-panel" aria-label="Generated puzzle preview">
+    <section
+      key={puzzleArrivalIdentity ?? undefined}
+      class={`puzzle-panel${isPuzzleArriving ? " puzzle-arrival" : ""}`}
+      aria-label="Generated puzzle preview"
+    >
       <div class="puzzle-meta"><SudokuMeta puzzle={sudokuPuzzle} cells={gridCells} /></div>
       <GridPuzzlePreview
         puzzle={sudokuPuzzle}
@@ -240,7 +255,7 @@ export const SudokuWorkspace = ({
   return (
     <PuzzleWorkspaceLayout
       className="sudoku-workspace"
-      header={newPuzzleControl}
+      header={currentPuzzleHeader}
       board={board}
       gameplay={gameplay}
     />
