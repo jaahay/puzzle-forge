@@ -1,19 +1,27 @@
 import { useEffect, useRef } from "preact/hooks";
-import type { PuzzleDifficulty, SudokuVariation } from "../catalog/types";
 import { makeRandomSeed } from "../app/runtime";
+import type { PuzzleDifficulty } from "../catalog/types";
 import { getDailyPuzzleProfile } from "../games/shared/daily";
-import { sudokuVariationDescriptions, sudokuVariationLabels } from "../games/sudoku/variation";
+import { BoundedNumberInput } from "./BoundedNumberInput";
 import { InfoIcon, PlayIcon, RandomIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
 import { CurrentSeedDisplay } from "./SeedControl";
 
-type SudokuNewPuzzleControlProps = {
+type NonogramNewPuzzleControlProps = {
   currentSeed: string;
   difficulty: PuzzleDifficulty;
-  sudokuVariation: SudokuVariation;
+  width: number;
+  height: number;
+  minWidth: number;
+  maxWidth: number;
+  minHeight: number;
+  maxHeight: number;
+  requireUniqueSolution: boolean;
   seedLoadInput: string;
   disabled: boolean;
   onDifficultyChange: (difficulty: PuzzleDifficulty) => void;
-  onSudokuVariationChange: (variation: SudokuVariation) => void;
+  onWidthChange: (width: number) => void;
+  onHeightChange: (height: number) => void;
+  onUniqueSolutionChange: (requireUniqueSolution: boolean) => void;
   onSeedLoadInputChange: (seed: string) => void;
   onNewPuzzle: () => void;
   onToday: () => void;
@@ -21,33 +29,35 @@ type SudokuNewPuzzleControlProps = {
 };
 
 const difficulties: PuzzleDifficulty[] = ["Easy", "Medium", "Hard", "Expert"];
-const variations: Array<{ value: SudokuVariation; label: string }> = [
-  { value: "classic", label: "Standard" },
-  { value: "diagonal", label: "Diagonal" },
-  { value: "zero-killer", label: "Zero Killer" },
-];
+const dailyProfile = getDailyPuzzleProfile("nonogram");
 
-export const SudokuNewPuzzleControl = ({
+export const NonogramNewPuzzleControl = ({
   currentSeed,
   difficulty,
-  sudokuVariation,
+  width,
+  height,
+  minWidth,
+  maxWidth,
+  minHeight,
+  maxHeight,
+  requireUniqueSolution,
   seedLoadInput,
   disabled,
   onDifficultyChange,
-  onSudokuVariationChange,
+  onWidthChange,
+  onHeightChange,
+  onUniqueSolutionChange,
   onSeedLoadInputChange,
   onNewPuzzle,
   onToday,
   onLoadSeed,
-}: SudokuNewPuzzleControlProps) => {
+}: NonogramNewPuzzleControlProps) => {
   const commandRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDetailsElement>(null);
-  const configurationSummary = `${difficulty} · ${sudokuVariationLabels[sudokuVariation]}`;
-  const dailyProfile = getDailyPuzzleProfile("sudoku", sudokuVariation);
-  const dailyVariation = dailyProfile?.sudokuVariation ?? sudokuVariation;
+  const configurationSummary = `${difficulty} · ${width}×${height} · ${requireUniqueSolution ? "Exactly one solution" : "May be multiple solutions"}`;
   const dailySummary = dailyProfile
-    ? `${dailyProfile.difficulty} · ${sudokuVariationLabels[dailyVariation]}`
-    : `Today · ${sudokuVariationLabels[sudokuVariation]}`;
+    ? `${dailyProfile.width}×${dailyProfile.height} · ${dailyProfile.difficulty} · one solution`
+    : "Today's profile";
 
   const closeOptions = (restoreFocus = false) => {
     const options = optionsRef.current;
@@ -90,7 +100,12 @@ export const SudokuNewPuzzleControl = ({
 
   const startToday = () => {
     if (disabled) return;
-    if (dailyProfile) onDifficultyChange(dailyProfile.difficulty);
+    if (dailyProfile) {
+      onDifficultyChange(dailyProfile.difficulty);
+      onWidthChange(dailyProfile.width);
+      onHeightChange(dailyProfile.height);
+      onUniqueSolutionChange(dailyProfile.requireUniqueSolution);
+    }
     closeOptions(true);
     onToday();
     renewSeedCandidate();
@@ -104,14 +119,14 @@ export const SudokuNewPuzzleControl = ({
   };
 
   return (
-    <div class="new-puzzle-command" aria-label={`New Sudoku: ${configurationSummary}`} ref={commandRef}>
+    <div class="new-puzzle-command" aria-label={`New Nonogram: ${configurationSummary}`} ref={commandRef}>
       <div class="new-puzzle-split-control">
         <button
           class="new-puzzle-command-primary"
           type="button"
           onClick={startRandomPuzzle}
           disabled={disabled}
-          aria-label={`New random Sudoku, ${configurationSummary}`}
+          aria-label={`New random Nonogram, ${configurationSummary}`}
           title={`New random puzzle — ${configurationSummary}`}
         >
           New
@@ -126,14 +141,14 @@ export const SudokuNewPuzzleControl = ({
           <summary aria-label={`Change new puzzle options. Current selection: ${configurationSummary}`} title="New puzzle options">
             <span aria-hidden="true">▾</span>
           </summary>
-          <div class="new-puzzle-options-panel" aria-label="New puzzle options">
+          <div class="new-puzzle-options-panel nonogram-new-puzzle-options-panel" aria-label="New puzzle options">
             <details class="new-puzzle-info">
               <summary aria-label="About new puzzle options" title="About these options">
                 <InfoIcon />
               </summary>
               <div class="new-puzzle-info-panel">
-                <p>{sudokuVariationDescriptions[sudokuVariation]}</p>
-                <p>Random and ordinary seed loads use the difficulty and ruleset below. Today always uses Medium difficulty; the selected ruleset chooses the Standard, Diagonal, or Zero Killer daily track. Choosing Today reconciles the difficulty control to Medium.</p>
+                <p>A Nonogram's clues can sometimes describe more than one completed grid. Requiring exactly one solution makes the generator test the clues and retry until only one grid satisfies them. When that requirement is off, the test is skipped; the puzzle may still happen to be unique, but it is not guaranteed.</p>
+                <p>Random and ordinary seed loads use the settings below. Today is always 8×8, Medium, with exactly one solution, and choosing it reconciles those settings to the daily profile.</p>
                 <p>The locked field is the current puzzle's seed. Edit the lower seed and press play to load another seed.</p>
               </div>
             </details>
@@ -164,20 +179,46 @@ export const SudokuNewPuzzleControl = ({
               ))}
             </div>
 
-            <div class="new-puzzle-segmented new-puzzle-mode-options" role="group" aria-label="Sudoku ruleset">
-              {variations.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  class={sudokuVariation === option.value ? "selected" : undefined}
-                  aria-pressed={sudokuVariation === option.value}
-                  onClick={() => onSudokuVariationChange(option.value)}
+            <div class="new-puzzle-size-options" role="group" aria-label="Nonogram size">
+              <label>
+                <span aria-hidden="true">W</span>
+                <BoundedNumberInput
+                  ariaLabel="Width"
+                  value={width}
+                  min={minWidth}
+                  max={maxWidth}
                   disabled={disabled}
-                >
-                  {option.label}
-                </button>
-              ))}
+                  commitOnValidInput
+                  onCommit={onWidthChange}
+                />
+              </label>
+              <span class="new-puzzle-size-separator" aria-hidden="true">×</span>
+              <label>
+                <span aria-hidden="true">H</span>
+                <BoundedNumberInput
+                  ariaLabel="Height"
+                  value={height}
+                  min={minHeight}
+                  max={maxHeight}
+                  disabled={disabled}
+                  commitOnValidInput
+                  onCommit={onHeightChange}
+                />
+              </label>
             </div>
+
+            <label class="new-puzzle-uniqueness-control">
+              <input
+                type="checkbox"
+                checked={requireUniqueSolution}
+                onChange={(event) => onUniqueSolutionChange(event.currentTarget.checked)}
+                disabled={disabled}
+              />
+              <span class="new-puzzle-uniqueness-copy">
+                <strong>Require exactly one solution</strong>
+                <span>{requireUniqueSolution ? "Clues are checked before play." : "Off — more than one solution may fit the clues."}</span>
+              </span>
+            </label>
 
             <div class="new-puzzle-seed-stack">
               <div class="new-puzzle-seed-row new-puzzle-current-seed">

@@ -1,4 +1,4 @@
-import type { ComponentChildren } from "preact";
+import type { ComponentChildren, JSX } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 type PuzzleWorkspaceLayoutProps = {
@@ -10,6 +10,7 @@ type PuzzleWorkspaceLayoutProps = {
   help?: ComponentChildren;
   generation?: ComponentChildren;
   enableImmersive?: boolean;
+  playColumnMax?: number;
 };
 
 export const PuzzleWorkspaceLayout = ({
@@ -21,11 +22,15 @@ export const PuzzleWorkspaceLayout = ({
   help,
   generation,
   enableImmersive = false,
+  playColumnMax,
 }: PuzzleWorkspaceLayoutProps) => {
   const workspaceRef = useRef<HTMLElement>(null);
   const [isImmersive, setIsImmersive] = useState(false);
   const [isBrowserFullscreen, setIsBrowserFullscreen] = useState(false);
   const fullscreenAvailable = typeof document !== "undefined" && document.fullscreenEnabled;
+  const workspaceStyle = playColumnMax
+    ? ({ "--play-column-max": `${playColumnMax}px` } as JSX.CSSProperties)
+    : undefined;
 
   useEffect(() => {
     if (!enableImmersive || typeof document === "undefined") return;
@@ -82,6 +87,7 @@ export const PuzzleWorkspaceLayout = ({
       class={`workspace-panel puzzle-workspace-layout ${className} ${modeClass}`.trim()}
       aria-label="Selected puzzle workspace"
       ref={workspaceRef}
+      style={workspaceStyle}
     >
       {enableImmersive ? (
         <div class="puzzle-workspace-display-tools" aria-label="Puzzle display controls">

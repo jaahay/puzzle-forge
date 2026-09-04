@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { makeBoardViewportMetrics } from "./BoardViewport";
+import { getBoardViewportNaturalWidth, makeBoardViewportMetrics } from "./BoardViewport";
 
 describe("board viewport sizing", () => {
   it("sizes Sudoku from available inline width", () => {
@@ -13,6 +13,14 @@ describe("board viewport sizing", () => {
     expect(metrics.boardWidth).toBeLessThanOrEqual(328);
     expect(metrics.boardHeight).toBe(metrics.boardWidth);
     expect(metrics.cellSize).toBeCloseTo(36.44, 2);
+  });
+
+  it("reports the natural desktop width for a default Nonogram", () => {
+    expect(getBoardViewportNaturalWidth({ kind: "nonogram", columns: 8, rowClueSlots: 3 })).toBe(550);
+  });
+
+  it("lets wider Nonograms expand their play column instead of capping controls at Sudoku width", () => {
+    expect(getBoardViewportNaturalWidth({ kind: "nonogram", columns: 12, rowClueSlots: 5 })).toBe(804);
   });
 
   it("fits a default 8 by 8 Nonogram within a mobile board viewport", () => {
