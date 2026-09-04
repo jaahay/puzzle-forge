@@ -53,7 +53,7 @@ export const getCurrentPuzzleIdentity = (
       details: [
         puzzle.difficulty,
         `${puzzle.width}×${puzzle.height}`,
-        puzzle.uniqueSolution ? "Exactly one solution" : "Uniqueness not required",
+        puzzle.uniqueSolution ? "One solution" : "Uniqueness not required",
       ].filter((detail): detail is string => Boolean(detail)),
     };
   }

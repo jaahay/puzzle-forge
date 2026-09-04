@@ -10,6 +10,16 @@ import {
   prepareGridCells,
   type GridCellSelection,
 } from "../interactions/gridRules";
+import {
+  makeEmptyGridHistoryState,
+  makeGridHistoryEntry,
+  pushGridHistoryEntry,
+  redoGridHistory,
+  sameGridPlayerState,
+  undoGridHistory,
+  type GridHistoryEntry,
+  type GridHistoryState,
+} from "./gridHistory";
 
 export type GridControllerSnapshot = {
   gridCells: PuzzleCell[] | null;
@@ -26,6 +36,7 @@ type GridUpdateResult = {
 const SUDOKU_CHECK_CELL_FEEDBACK_MS = 750;
 const SUDOKU_CHECK_MESSAGE_FEEDBACK_MS = 1600;
 const usesNeutralNumericEntryTone = (puzzleId: PuzzleId) => puzzleId === "sudoku" || puzzleId === "futoshiki";
+const supportsGridActionHistory = (puzzleId: PuzzleId) => puzzleId === "sudoku" || puzzleId === "nonogram";
 
 export const clearGridValidationTone = (puzzleId: PuzzleId, cell: PuzzleCell): PuzzleCell => {
   if (cell.locked || cell.tone === "disabled") return cell;
@@ -49,12 +60,22 @@ export const useGridController = () => {
   const gridCellsRef = useRef<PuzzleCell[] | null>(null);
   const [selectedGridCell, setSelectedGridCell] = useState<GridCellSelection | null>(null);
   const [checkFeedbackTone, setCheckFeedbackTone] = useState<GridCheckFeedbackTone | null>(null);
+  const initialHistory = makeEmptyGridHistoryState();
+  const [gridHistory, setGridHistoryState] = useState<GridHistoryState>(initialHistory);
+  const gridHistoryRef = useRef<GridHistoryState>(initialHistory);
   const sudokuTransientFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const setGridCells = (nextCells: PuzzleCell[] | null) => {
     gridCellsRef.current = nextCells;
     setGridCellsState(nextCells);
   };
+
+  const setGridHistory = (nextHistory: GridHistoryState) => {
+    gridHistoryRef.current = nextHistory;
+    setGridHistoryState(nextHistory);
+  };
+
+  const clearGridHistory = () => setGridHistory(makeEmptyGridHistoryState());
 
   const clearSudokuTransientFeedbackTimer = () => {
     if (sudokuTransientFeedbackTimer.current !== null) {
@@ -79,11 +100,34 @@ export const useGridController = () => {
   const clearGridInteraction = () => setSelectedGridCell(null);
   const clearCheckFeedback = () => setCheckFeedbackTone(null);
 
+  const captureGridHistoryEntry = (puzzleId: PuzzleId): GridHistoryEntry | null => {
+    const currentCells = gridCellsRef.current;
+    if (!currentCells || !supportsGridActionHistory(puzzleId)) return null;
+
+    return makeGridHistoryEntry(
+      currentCells.map((cell) => clearGridValidationTone(puzzleId, cell)),
+      selectedGridCell,
+    );
+  };
+
+  const recordGridHistoryEntry = (entry: GridHistoryEntry | null) => {
+    if (!entry) return;
+    setGridHistory(pushGridHistoryEntry(gridHistoryRef.current, entry));
+  };
+
+  const restoreGridHistoryEntry = (entry: GridHistoryEntry) => {
+    clearSudokuTransientFeedbackTimer();
+    setGridCells(entry.cells.map(cloneGridCell));
+    setSelectedGridCell(entry.selectedGridCell ? { ...entry.selectedGridCell } : null);
+    clearCheckFeedback();
+  };
+
   const resetGrid = () => {
     clearSudokuTransientFeedbackTimer();
     setGridCells(null);
     clearGridInteraction();
     clearCheckFeedback();
+    clearGridHistory();
   };
 
   const restoreGridSnapshot = ({ gridCells: nextGridCells, selectedGridCell: nextSelectedGridCell }: GridControllerSnapshot) => {
@@ -91,6 +135,7 @@ export const useGridController = () => {
     setGridCells(nextGridCells?.map(cloneGridCell) ?? null);
     setSelectedGridCell(nextSelectedGridCell ? { ...nextSelectedGridCell } : null);
     clearCheckFeedback();
+    clearGridHistory();
   };
 
   const prepareGeneratedGrid = (puzzle: GeneratedPuzzle) => {
@@ -98,6 +143,54 @@ export const useGridController = () => {
     setGridCells(puzzle.kind === "grid" ? prepareGridCells(puzzle) : null);
     clearGridInteraction();
     clearCheckFeedback();
+    clearGridHistory();
+  };
+
+  const resetCurrentGrid = (
+    puzzle: GeneratedPuzzle,
+    message: string,
+    onStatusMessage: (message: string) => void,
+  ) => {
+    if (puzzle.kind !== "grid") return;
+
+    const currentCells = gridCellsRef.current;
+    const nextCells = prepareGridCells(puzzle);
+    const historyEntry = currentCells && !sameGridPlayerState(currentCells, nextCells)
+      ? captureGridHistoryEntry(puzzle.puzzleId)
+      : null;
+
+    clearSudokuTransientFeedbackTimer();
+    setGridCells(nextCells);
+    clearGridInteraction();
+    clearCheckFeedback();
+    recordGridHistoryEntry(historyEntry);
+    onStatusMessage(message);
+  };
+
+  const undoGridAction = (puzzle: GeneratedPuzzle | null, onStatusMessage: (message: string) => void) => {
+    if (!puzzle || puzzle.kind !== "grid" || !supportsGridActionHistory(puzzle.puzzleId)) return;
+
+    const current = captureGridHistoryEntry(puzzle.puzzleId);
+    if (!current) return;
+    const transition = undoGridHistory(gridHistoryRef.current, current);
+    if (!transition) return;
+
+    setGridHistory(transition.history);
+    restoreGridHistoryEntry(transition.entry);
+    onStatusMessage("Undid last puzzle action.");
+  };
+
+  const redoGridAction = (puzzle: GeneratedPuzzle | null, onStatusMessage: (message: string) => void) => {
+    if (!puzzle || puzzle.kind !== "grid" || !supportsGridActionHistory(puzzle.puzzleId)) return;
+
+    const current = captureGridHistoryEntry(puzzle.puzzleId);
+    if (!current) return;
+    const transition = redoGridHistory(gridHistoryRef.current, current);
+    if (!transition) return;
+
+    setGridHistory(transition.history);
+    restoreGridHistoryEntry(transition.entry);
+    onStatusMessage("Redid last puzzle action.");
   };
 
   const updateGridCells = (
@@ -129,9 +222,13 @@ export const useGridController = () => {
 
     const inputMode = getGridInputMode(puzzle.puzzleId);
     const nextValue = normalizeCellInput(inputMode, rawValue);
+    const currentCell = currentCells ? getGridCell(currentCells, cell) : undefined;
+    const historyEntry = currentCell?.value !== nextValue
+      ? captureGridHistoryEntry(puzzle.puzzleId)
+      : null;
 
     setSelectedGridCell({ row: cell.row, column: cell.column });
-    updateGridCells((cells) => {
+    const result = updateGridCells((cells) => {
       const editableCells = cells.map((candidate) => clearGridValidationTone(puzzle.puzzleId, candidate));
       const index = getCellIndex(editableCells, cell);
       const current = editableCells[index];
@@ -160,11 +257,17 @@ export const useGridController = () => {
         message: puzzleName ? `${puzzleName} entry updated.` : nextValue ? `Set cell to ${nextValue}.` : "Cleared cell.",
       };
     }, onStatusMessage);
+
+    if (result) recordGridHistoryEntry(historyEntry);
   };
 
   const toggleNonogramCell = (cell: PuzzleCell, onStatusMessage: (message: string) => void) => {
+    const currentCells = gridCellsRef.current;
+    if (!currentCells || !getGridCell(currentCells, cell)) return;
+    const historyEntry = captureGridHistoryEntry("nonogram");
+
     clearGridInteraction();
-    updateGridCells((cells) => {
+    const result = updateGridCells((cells) => {
       const editableCells = cells.map((candidate) => clearGridValidationTone("nonogram", candidate));
       const index = getCellIndex(editableCells, cell);
       const current = editableCells[index];
@@ -179,6 +282,8 @@ export const useGridController = () => {
       };
       return { cells: editableCells, message: nextValue ? "Marked filled square." : "Cleared square." };
     }, onStatusMessage);
+
+    if (result) recordGridHistoryEntry(historyEntry);
   };
 
   const handlePegSolitaireCellClick = (cell: PuzzleCell, onStatusMessage: (message: string) => void) => {
@@ -299,9 +404,14 @@ export const useGridController = () => {
     gridCells,
     selectedGridCell,
     checkFeedbackTone,
+    canUndoGrid: gridHistory.undoStack.length > 0,
+    canRedoGrid: gridHistory.redoStack.length > 0,
     resetGrid,
     restoreGridSnapshot,
     prepareGeneratedGrid,
+    resetCurrentGrid,
+    undoGridAction,
+    redoGridAction,
     handleGridCellInput,
     handleGridCellClick,
     checkGrid,

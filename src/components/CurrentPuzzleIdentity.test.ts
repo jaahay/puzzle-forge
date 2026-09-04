@@ -29,7 +29,7 @@ describe("current puzzle identity", () => {
       difficulty: "Hard",
     }), currentDateStamp)).toEqual({
       sourceLabel: null,
-      details: ["Hard", "10×6", "Exactly one solution"],
+      details: ["Hard", "10×6", "One solution"],
     });
   });
 
@@ -42,7 +42,7 @@ describe("current puzzle identity", () => {
       uniqueSolution: true,
     }), currentDateStamp)).toEqual({
       sourceLabel: "Today",
-      details: ["Medium", "8×8", "Exactly one solution"],
+      details: ["Medium", "8×8", "One solution"],
     });
   });
 
@@ -51,7 +51,7 @@ describe("current puzzle identity", () => {
       seed: "daily-nonogram-2026-09-02",
     }), currentDateStamp)).toEqual({
       sourceLabel: "Daily Sep 2",
-      details: ["Medium", "8×8", "Exactly one solution"],
+      details: ["Medium", "8×8", "One solution"],
     });
   });
 
@@ -60,7 +60,7 @@ describe("current puzzle identity", () => {
       seed: "daily-nonogram-2025-09-03",
     }), currentDateStamp)).toEqual({
       sourceLabel: "Daily Sep 3, 2025",
-      details: ["Medium", "8×8", "Exactly one solution"],
+      details: ["Medium", "8×8", "One solution"],
     });
   });
 

@@ -5,6 +5,7 @@ import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from 
 import { FutoshikiBoard } from "./FutoshikiBoard";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
 import { NonogramNewPuzzleControl } from "./NonogramNewPuzzleControl";
+import { PuzzleHistoryActions } from "./PuzzleHistoryActions";
 import { BottomPuzzleConfiguration, TopPuzzleConfiguration } from "./PuzzleConfiguration";
 import type { GridPuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
@@ -26,6 +27,10 @@ export const GridPuzzleWorkspace = ({
   gridCheckFeedbackTone,
   statusMessage,
   isGenerating,
+  canUndoGrid,
+  canRedoGrid,
+  onUndoGrid,
+  onRedoGrid,
   onReset,
   onCheck,
   onNextPuzzleDraftChange,
@@ -82,11 +87,25 @@ export const GridPuzzleWorkspace = ({
       onLoadSeed={onLoadSeed}
     />
   ) : null;
+  const historyActions = puzzle && isNonogram ? (
+    <PuzzleHistoryActions
+      canUndo={canUndoGrid}
+      canRedo={canRedoGrid}
+      disabled={isGenerating}
+      onUndo={onUndoGrid}
+      onRedo={onRedoGrid}
+    />
+  ) : null;
   const currentPuzzleHeader = puzzle && isNonogram ? (
     <CurrentPuzzleHeader
       key={puzzleArrivalIdentity ?? undefined}
       puzzle={puzzle}
-      newPuzzleControl={newPuzzleControl}
+      newPuzzleControl={(
+        <div class="current-puzzle-header-actions">
+          {newPuzzleControl}
+          {historyActions}
+        </div>
+      )}
       isArriving={isPuzzleArriving}
     />
   ) : newPuzzleControl;
