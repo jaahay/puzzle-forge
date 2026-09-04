@@ -1,6 +1,7 @@
 import type { PuzzleCell } from "../catalog/types";
 import { getCanonicalDailyPuzzleLabel } from "../games/shared/daily";
 import { getBoardViewportNaturalWidth } from "./BoardViewport";
+import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
 import { FutoshikiBoard } from "./FutoshikiBoard";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
 import { NonogramNewPuzzleControl } from "./NonogramNewPuzzleControl";
@@ -55,6 +56,8 @@ export const GridPuzzleWorkspace = ({
   const playColumnMax = puzzle?.kind === "grid" && isNonogram
     ? getBoardViewportNaturalWidth({ kind: "nonogram", columns: puzzle.width, rowClueSlots: nonogramRowClueSlots })
     : undefined;
+  const puzzleArrivalIdentity = puzzle && isNonogram ? getPuzzleArrivalIdentity(puzzle) : null;
+  const isPuzzleArriving = usePuzzleArrival(puzzleArrivalIdentity);
 
   const newPuzzleControl = puzzle && isNonogram ? (
     <NonogramNewPuzzleControl
@@ -79,6 +82,14 @@ export const GridPuzzleWorkspace = ({
       onLoadSeed={onLoadSeed}
     />
   ) : null;
+  const currentPuzzleHeader = puzzle && isNonogram ? (
+    <CurrentPuzzleHeader
+      key={puzzleArrivalIdentity ?? undefined}
+      puzzle={puzzle}
+      newPuzzleControl={newPuzzleControl}
+      isArriving={isPuzzleArriving}
+    />
+  ) : newPuzzleControl;
 
   const generation = !puzzle || isNonogram ? null : isWordGuess ? (
     <BottomPuzzleConfiguration
@@ -147,7 +158,11 @@ export const GridPuzzleWorkspace = ({
   );
 
   const board = puzzle?.kind === "grid" ? (
-    <section class="puzzle-panel" aria-label="Generated puzzle preview">
+    <section
+      key={isNonogram ? puzzleArrivalIdentity ?? undefined : undefined}
+      class={`puzzle-panel${isNonogram && isPuzzleArriving ? " puzzle-arrival" : ""}`}
+      aria-label="Generated puzzle preview"
+    >
       <div class="puzzle-meta">
         <span>{`${puzzle.width} x ${puzzle.height}`}</span>
         {puzzle.difficulty ? <span>{puzzle.difficulty}</span> : null}
@@ -182,7 +197,7 @@ export const GridPuzzleWorkspace = ({
   return (
     <PuzzleWorkspaceLayout
       className={workspaceClass}
-      header={newPuzzleControl}
+      header={currentPuzzleHeader}
       status={status}
       board={board}
       gameplay={gameplay}
