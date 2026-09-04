@@ -32,7 +32,7 @@ const millisecondsUntilNextLocalDay = () => {
   return Math.max(1_000, nextMidnight.getTime() - now.getTime() + 250);
 };
 
-export const TodayDateTile = () => {
+export const useLiveLocalDateStamp = () => {
   const [dateStamp, setDateStamp] = useState(() => getLocalDateStamp());
 
   useEffect(() => {
@@ -54,6 +54,11 @@ export const TodayDateTile = () => {
     };
   }, []);
 
+  return dateStamp;
+};
+
+export const TodayDateTile = () => {
+  const dateStamp = useLiveLocalDateStamp();
   const [, monthPart = "1", dayPart = "1"] = dateStamp.split("-");
   const monthIndex = Math.max(0, Math.min(11, Number(monthPart) - 1));
   const day = Number(dayPart);
