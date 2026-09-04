@@ -93,7 +93,7 @@ export const NonogramNewPuzzleControl = ({
 
   const startRandomPuzzle = () => {
     if (disabled) return;
-    closeOptions();
+    closeOptions(true);
     onNewPuzzle();
     renewSeedCandidate();
   };
@@ -106,14 +106,14 @@ export const NonogramNewPuzzleControl = ({
       onHeightChange(dailyProfile.height);
       onUniqueSolutionChange(dailyProfile.requireUniqueSolution);
     }
-    closeOptions();
+    closeOptions(true);
     onToday();
     renewSeedCandidate();
   };
 
   const loadSeed = () => {
     if (disabled || !seedLoadInput.trim()) return;
-    closeOptions();
+    closeOptions(true);
     onLoadSeed();
     renewSeedCandidate();
   };
@@ -149,7 +149,7 @@ export const NonogramNewPuzzleControl = ({
               <div class="new-puzzle-info-panel">
                 <p>A Nonogram's clues can sometimes describe more than one completed grid. Requiring exactly one solution makes the generator test the clues and retry until only one grid satisfies them. When that requirement is off, the test is skipped; the puzzle may still happen to be unique, but it is not guaranteed.</p>
                 <p>Random and ordinary seed loads use the settings below. Today is always 8×8, Medium, with exactly one solution, and choosing it reconciles those settings to the daily profile.</p>
-                <p>The locked seed is the puzzle you're playing. Edit the lower seed and press play to load it.</p>
+                <p>The locked field is the current puzzle's seed. Edit the lower seed and press play to load another seed.</p>
               </div>
             </details>
 

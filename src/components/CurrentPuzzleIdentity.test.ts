@@ -19,34 +19,54 @@ const makeGridPuzzle = (overrides: Partial<GridGeneratedPuzzle> = {}): GridGener
   ...overrides,
 });
 
+const currentDateStamp = "2026-09-03";
+
 describe("current puzzle identity", () => {
   it("describes a regular Nonogram from the generated puzzle", () => {
     expect(getCurrentPuzzleIdentity(makeGridPuzzle({
       width: 10,
       height: 6,
       difficulty: "Hard",
-    }))).toEqual({
-      isToday: false,
+    }), currentDateStamp)).toEqual({
+      sourceLabel: null,
       details: ["Hard", "10×6", "Exactly one solution"],
     });
   });
 
-  it("identifies a canonical daily Nonogram and preserves its enacted profile", () => {
+  it("identifies today's canonical Nonogram and preserves its enacted profile", () => {
     expect(getCurrentPuzzleIdentity(makeGridPuzzle({
       seed: "daily-nonogram-2026-09-03",
       width: 8,
       height: 8,
       difficulty: "Medium",
       uniqueSolution: true,
-    }))).toEqual({
-      isToday: true,
+    }), currentDateStamp)).toEqual({
+      sourceLabel: "Today",
+      details: ["Medium", "8×8", "Exactly one solution"],
+    });
+  });
+
+  it("keeps daily provenance without calling a prior daily puzzle Today", () => {
+    expect(getCurrentPuzzleIdentity(makeGridPuzzle({
+      seed: "daily-nonogram-2026-09-02",
+    }), currentDateStamp)).toEqual({
+      sourceLabel: "Daily Sep 2",
+      details: ["Medium", "8×8", "Exactly one solution"],
+    });
+  });
+
+  it("includes the year for a daily puzzle from a different year", () => {
+    expect(getCurrentPuzzleIdentity(makeGridPuzzle({
+      seed: "daily-nonogram-2025-09-03",
+    }), currentDateStamp)).toEqual({
+      sourceLabel: "Daily Sep 3, 2025",
       details: ["Medium", "8×8", "Exactly one solution"],
     });
   });
 
   it("distinguishes unchecked Nonogram uniqueness without claiming multiple solutions", () => {
-    expect(getCurrentPuzzleIdentity(makeGridPuzzle({ uniqueSolution: false }))).toEqual({
-      isToday: false,
+    expect(getCurrentPuzzleIdentity(makeGridPuzzle({ uniqueSolution: false }), currentDateStamp)).toEqual({
+      sourceLabel: null,
       details: ["Medium", "8×8", "Uniqueness not required"],
     });
   });
@@ -60,8 +80,8 @@ describe("current puzzle identity", () => {
       height: 9,
       difficulty: "Medium",
       sudokuVariation: "diagonal",
-    }))).toEqual({
-      isToday: true,
+    }), currentDateStamp)).toEqual({
+      sourceLabel: "Today",
       details: ["Medium", "Diagonal"],
     });
   });

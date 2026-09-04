@@ -83,7 +83,7 @@ export const SudokuNewPuzzleControl = ({
 
   const startRandomPuzzle = () => {
     if (disabled) return;
-    closeOptions();
+    closeOptions(true);
     onNewPuzzle();
     renewSeedCandidate();
   };
@@ -91,14 +91,14 @@ export const SudokuNewPuzzleControl = ({
   const startToday = () => {
     if (disabled) return;
     if (dailyProfile) onDifficultyChange(dailyProfile.difficulty);
-    closeOptions();
+    closeOptions(true);
     onToday();
     renewSeedCandidate();
   };
 
   const loadSeed = () => {
     if (disabled || !seedLoadInput.trim()) return;
-    closeOptions();
+    closeOptions(true);
     onLoadSeed();
     renewSeedCandidate();
   };
@@ -134,7 +134,7 @@ export const SudokuNewPuzzleControl = ({
               <div class="new-puzzle-info-panel">
                 <p>{sudokuVariationDescriptions[sudokuVariation]}</p>
                 <p>Random and ordinary seed loads use the difficulty and ruleset below. Today always uses Medium difficulty; the selected ruleset chooses the Standard, Diagonal, or Zero Killer daily track. Choosing Today reconciles the difficulty control to Medium.</p>
-                <p>The locked seed is the puzzle you're playing. Edit the lower seed and press play to load it.</p>
+                <p>The locked field is the current puzzle's seed. Edit the lower seed and press play to load another seed.</p>
               </div>
             </details>
 
