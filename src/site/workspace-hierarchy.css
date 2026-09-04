@@ -16,13 +16,77 @@
 .nonogram-workspace .nonogram-board-viewport,
 .sudoku-workspace .sudoku-validation-message,
 .gameplay-control-stack,
-.new-puzzle-command {
+.new-puzzle-command,
+.current-puzzle-header {
   width: min(100%, var(--play-column-max));
 }
 
 .sudoku-workspace .square-grid-board-viewport,
 .nonogram-workspace .nonogram-board-viewport {
   justify-self: center;
+}
+
+.current-puzzle-header {
+  display: grid;
+  box-sizing: border-box;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.current-puzzle-header .new-puzzle-command {
+  width: auto;
+  justify-self: end;
+}
+
+.current-puzzle-identity {
+  min-width: 0;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.current-puzzle-identity strong {
+  color: #e2e8f0;
+  font-weight: 900;
+}
+
+.current-puzzle-identity > * + *::before {
+  content: "·";
+  margin-inline: 0.42rem;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.puzzle-panel.puzzle-arrival {
+  animation: puzzle-arrival-settle 150ms ease-out both;
+}
+
+.current-puzzle-identity.is-arriving {
+  animation: current-puzzle-identity-arrival 170ms ease-out both;
+}
+
+@keyframes puzzle-arrival-settle {
+  from {
+    opacity: 0.92;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes current-puzzle-identity-arrival {
+  from {
+    opacity: 0.58;
+    transform: translateY(3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .sudoku-current-actions,
@@ -137,9 +201,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .puzzle-panel.puzzle-arrival,
+  .current-puzzle-identity.is-arriving,
   .sudoku-workspace .sudoku-validation-message.progress,
   .sudoku-workspace .sudoku-validation-message.error {
     animation: none;
+  }
+
+  .sudoku-workspace .sudoku-validation-message.progress,
+  .sudoku-workspace .sudoku-validation-message.error {
     opacity: 1;
     transition: none;
   }
