@@ -22,14 +22,20 @@ const makeGridPuzzle = (overrides: Partial<GridGeneratedPuzzle> = {}): GridGener
 const currentDateStamp = "2026-09-03";
 
 describe("current puzzle identity", () => {
-  it("describes a regular Nonogram from the generated puzzle", () => {
+  it("describes a regular Nonogram while omitting the default difficulty", () => {
     expect(getCurrentPuzzleIdentity(makeGridPuzzle({
       width: 10,
       height: 6,
-      difficulty: "Hard",
     }), currentDateStamp)).toEqual({
       sourceLabel: null,
-      details: ["Hard", "10×6", "One solution"],
+      details: ["10×6", "One solution"],
+    });
+  });
+
+  it("includes a non-default Nonogram difficulty independently", () => {
+    expect(getCurrentPuzzleIdentity(makeGridPuzzle({ difficulty: "Hard" }), currentDateStamp)).toEqual({
+      sourceLabel: null,
+      details: ["Hard", "8×8", "One solution"],
     });
   });
 
@@ -42,7 +48,7 @@ describe("current puzzle identity", () => {
       uniqueSolution: true,
     }), currentDateStamp)).toEqual({
       sourceLabel: "Today",
-      details: ["Medium", "8×8", "One solution"],
+      details: ["8×8", "One solution"],
     });
   });
 
@@ -51,7 +57,7 @@ describe("current puzzle identity", () => {
       seed: "daily-nonogram-2026-09-02",
     }), currentDateStamp)).toEqual({
       sourceLabel: "Daily Sep 2",
-      details: ["Medium", "8×8", "One solution"],
+      details: ["8×8", "One solution"],
     });
   });
 
@@ -60,18 +66,46 @@ describe("current puzzle identity", () => {
       seed: "daily-nonogram-2025-09-03",
     }), currentDateStamp)).toEqual({
       sourceLabel: "Daily Sep 3, 2025",
-      details: ["Medium", "8×8", "One solution"],
+      details: ["8×8", "One solution"],
     });
   });
 
   it("distinguishes unchecked Nonogram uniqueness without claiming multiple solutions", () => {
     expect(getCurrentPuzzleIdentity(makeGridPuzzle({ uniqueSolution: false }), currentDateStamp)).toEqual({
       sourceLabel: null,
-      details: ["Medium", "8×8", "Uniqueness not required"],
+      details: ["8×8", "Uniqueness not required"],
     });
   });
 
-  it("describes the active Sudoku ruleset rather than prospective settings", () => {
+  it("omits both default Sudoku configuration values", () => {
+    expect(getCurrentPuzzleIdentity(makeGridPuzzle({
+      puzzleId: "sudoku",
+      title: "Sudoku",
+      width: 9,
+      height: 9,
+      difficulty: "Medium",
+      sudokuVariation: "classic",
+    }), currentDateStamp)).toEqual({
+      sourceLabel: null,
+      details: [],
+    });
+  });
+
+  it("includes a non-default Sudoku difficulty without requiring a variation", () => {
+    expect(getCurrentPuzzleIdentity(makeGridPuzzle({
+      puzzleId: "sudoku",
+      title: "Sudoku",
+      width: 9,
+      height: 9,
+      difficulty: "Hard",
+      sudokuVariation: "classic",
+    }), currentDateStamp)).toEqual({
+      sourceLabel: null,
+      details: ["Hard"],
+    });
+  });
+
+  it("includes a non-default Sudoku variation without requiring a difficulty", () => {
     expect(getCurrentPuzzleIdentity(makeGridPuzzle({
       puzzleId: "sudoku",
       title: "Diagonal Sudoku",
@@ -82,7 +116,21 @@ describe("current puzzle identity", () => {
       sudokuVariation: "diagonal",
     }), currentDateStamp)).toEqual({
       sourceLabel: "Today",
-      details: ["Medium", "Diagonal"],
+      details: ["Diagonal"],
+    });
+  });
+
+  it("includes non-default Sudoku difficulty and variation independently", () => {
+    expect(getCurrentPuzzleIdentity(makeGridPuzzle({
+      puzzleId: "sudoku",
+      title: "Diagonal Sudoku",
+      width: 9,
+      height: 9,
+      difficulty: "Hard",
+      sudokuVariation: "diagonal",
+    }), currentDateStamp)).toEqual({
+      sourceLabel: null,
+      details: ["Hard", "Diagonal"],
     });
   });
 
