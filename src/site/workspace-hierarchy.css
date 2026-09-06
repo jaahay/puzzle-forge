@@ -26,62 +26,59 @@
   justify-self: center;
 }
 
-/* The current-puzzle toolbar belongs to the board rather than the site-level
-   selector above it. Collapse the normal workspace gap so the toolbar reads as
-   the board's top rail. */
+/* Keep the current-puzzle crown close enough to read as part of the board while
+   preserving the board itself as the dominant visual object. */
 .sudoku-workspace .workspace-layout-header,
 .nonogram-workspace .workspace-layout-header {
-  margin-bottom: -0.75rem;
+  margin-bottom: -0.4rem;
 }
 
 .current-puzzle-header {
-  display: grid;
+  display: flex;
   box-sizing: border-box;
-  min-height: 2.75rem;
-  grid-template-columns: minmax(0, max-content) auto minmax(0, 1fr) auto;
-  gap: 0.38rem;
+  min-height: 2.45rem;
+  min-width: 0;
   align-items: center;
-  border: 2px solid #e5e7eb;
-  border-radius: 1rem 1rem 0 0;
-  padding: 0.3rem 0.4rem;
-  background: linear-gradient(180deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.98));
+  gap: 0.28rem;
 }
 
-/* The wrapper is semantic only. Its children participate directly in the rail:
-   current identity + history stay together on the left, while New is separated
-   at the far edge because it changes puzzle identity. */
 .current-puzzle-header-actions {
-  display: contents;
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+  gap: 0.2rem;
 }
 
+/* History operates on the current puzzle, so it stays immediately beside the
+   identity. New changes puzzle identity and remains independently anchored at
+   the far edge. */
 .current-puzzle-header-actions .puzzle-history-actions {
-  grid-column: 2;
+  order: 1;
 }
 
 .current-puzzle-header-actions .new-puzzle-command {
-  grid-column: 4;
+  order: 2;
   width: auto;
-  border-left: 1px solid rgba(148, 163, 184, 0.2);
-  padding-left: 0.55rem;
+  margin-left: auto;
 }
 
 .current-puzzle-identity {
-  display: flex;
   box-sizing: border-box;
-  width: auto;
-  max-width: 100%;
+  flex: 0 1 auto;
   min-width: 0;
-  min-height: 0;
-  flex-wrap: wrap;
-  gap: 0.12rem 0;
-  align-items: center;
   overflow: hidden;
-  padding: 0 0.2rem;
-  color: #a8b5c7;
-  background: transparent;
+  padding-inline: 0.08rem;
+  color: #9aa9be;
   font-size: 0.8rem;
   font-weight: 700;
   line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.current-puzzle-identity > * {
+  display: inline;
 }
 
 .current-puzzle-identity strong {
@@ -99,31 +96,31 @@
 .puzzle-history-actions {
   display: flex;
   flex: 0 0 auto;
-  gap: 0.12rem;
+  gap: 0.08rem;
   align-items: center;
 }
 
 .puzzle-history-actions button {
   display: grid;
-  width: 2.1rem;
-  min-width: 2.1rem;
-  height: 2.1rem;
-  min-height: 2.1rem;
+  width: 2rem;
+  min-width: 2rem;
+  height: 2rem;
+  min-height: 2rem;
   place-items: center;
   border: 1px solid transparent;
-  border-radius: 0.58rem;
+  border-radius: 0.55rem;
   padding: 0;
-  color: #8fa0b6;
+  color: #8798ad;
   background: transparent;
   cursor: pointer;
 }
 
 .puzzle-history-actions button:hover:not(:disabled),
 .puzzle-history-actions button:focus-visible {
-  border-color: rgba(125, 211, 252, 0.22);
+  border-color: rgba(125, 211, 252, 0.2);
   color: #dbeafe;
-  background: rgba(148, 163, 184, 0.1);
-  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.1);
+  background: rgba(148, 163, 184, 0.09);
+  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.09);
   outline: none;
 }
 
@@ -135,7 +132,7 @@
   color: #64748b;
   background: transparent;
   cursor: default;
-  opacity: 0.34;
+  opacity: 0.3;
 }
 
 .puzzle-history-actions svg {
@@ -148,48 +145,23 @@
   stroke-width: 1.9;
 }
 
-/* Inside the rail, New remains the strongest action without becoming the visual
-   center of the entire puzzle surface. */
+/* Keep the established mint New affordance. The crown only trims its physical
+   footprint and shadow so it remains primary without overpowering the board. */
 .current-puzzle-header .new-puzzle-split-control {
-  box-shadow: none;
-}
-
-.current-puzzle-header .new-puzzle-command-primary,
-.current-puzzle-header .new-puzzle-options > summary {
-  border-color: rgba(110, 231, 183, 0.46);
-  color: #d1fae5;
-  background: linear-gradient(180deg, rgba(6, 95, 70, 0.88), rgba(6, 78, 59, 0.94));
+  box-shadow: 0 4px 12px rgba(2, 6, 23, 0.16);
 }
 
 .current-puzzle-header .new-puzzle-command-primary {
-  min-width: 4.35rem;
-  min-height: 2.3rem;
-  border-radius: 0.66rem 0 0 0.66rem;
-  padding: 0.4rem 0.68rem;
+  min-width: 4.45rem;
+  min-height: 2.4rem;
+  border-radius: 0.72rem 0 0 0.72rem;
+  padding: 0.42rem 0.72rem;
 }
 
 .current-puzzle-header .new-puzzle-options > summary {
-  width: 2.3rem;
-  min-height: 2.3rem;
-  border-radius: 0 0.66rem 0.66rem 0;
-}
-
-.current-puzzle-header .new-puzzle-command-primary:hover:not(:disabled),
-.current-puzzle-header .new-puzzle-command-primary:focus-visible,
-.current-puzzle-header .new-puzzle-options > summary:hover,
-.current-puzzle-header .new-puzzle-options > summary:focus-visible,
-.current-puzzle-header .new-puzzle-options[open] > summary {
-  color: #ecfdf5;
-  background: linear-gradient(180deg, rgba(5, 120, 87, 0.94), rgba(6, 95, 70, 0.98));
-  box-shadow: inset 0 0 0 1px rgba(167, 243, 208, 0.08), 0 0 0 3px rgba(52, 211, 153, 0.12);
-}
-
-/* The rail supplies the top of the frame, so the puzzle itself completes the
-   same frame rather than presenting a second rounded top edge. */
-.sudoku-workspace .grid.sudoku,
-.nonogram-workspace .nonogram-board {
-  border-top-width: 0;
-  border-radius: 0 0 1rem 1rem;
+  width: 2.4rem;
+  min-height: 2.4rem;
+  border-radius: 0 0.72rem 0.72rem 0;
 }
 
 .puzzle-panel.puzzle-arrival {
@@ -362,12 +334,14 @@
   }
 
   .current-puzzle-header {
-    gap: 0.25rem;
-    padding: 0.26rem 0.3rem;
+    gap: 0.2rem;
+  }
+
+  .current-puzzle-header-actions {
+    gap: 0.12rem;
   }
 
   .current-puzzle-identity {
-    padding-inline: 0.12rem;
     font-size: 0.76rem;
   }
 
@@ -375,26 +349,22 @@
     margin-inline: 0.34rem;
   }
 
-  .current-puzzle-header-actions .new-puzzle-command {
-    padding-left: 0.38rem;
-  }
-
   .puzzle-history-actions button {
-    width: 1.95rem;
-    min-width: 1.95rem;
-    height: 1.95rem;
-    min-height: 1.95rem;
+    width: 1.9rem;
+    min-width: 1.9rem;
+    height: 1.9rem;
+    min-height: 1.9rem;
   }
 
   .current-puzzle-header .new-puzzle-command-primary {
-    min-width: 3.8rem;
-    min-height: 2.2rem;
-    padding-inline: 0.55rem;
+    min-width: 3.9rem;
+    min-height: 2.3rem;
+    padding-inline: 0.58rem;
   }
 
   .current-puzzle-header .new-puzzle-options > summary {
-    width: 2.2rem;
-    min-height: 2.2rem;
+    width: 2.3rem;
+    min-height: 2.3rem;
   }
 
   .sudoku-current-actions,
