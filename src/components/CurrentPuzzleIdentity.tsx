@@ -2,7 +2,7 @@ import type { ComponentChildren } from "preact";
 import { useEffect, useRef } from "preact/hooks";
 import type { GeneratedPuzzle } from "../catalog/types";
 import { getCanonicalDailyPuzzleLabel } from "../games/shared/daily";
-import { normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
+import { defaultSudokuVariation, normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
 import { useLiveLocalDateStamp } from "./NewPuzzleActionVisuals";
 
 const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
@@ -36,13 +36,17 @@ export const getCurrentPuzzleIdentity = (
       ? "Today"
       : `Daily ${formatDailyDateLabel(dailyDateStamp, currentDateStamp)}`
     : null;
+  const difficultyDetail = puzzle.difficulty && puzzle.difficulty !== "Medium"
+    ? puzzle.difficulty
+    : null;
 
   if (puzzle.puzzleId === "sudoku") {
+    const variation = normalizeSudokuVariation(puzzle.sudokuVariation);
     return {
       sourceLabel,
       details: [
-        puzzle.difficulty,
-        sudokuVariationLabels[normalizeSudokuVariation(puzzle.sudokuVariation)],
+        difficultyDetail,
+        variation === defaultSudokuVariation ? null : sudokuVariationLabels[variation],
       ].filter((detail): detail is string => Boolean(detail)),
     };
   }
@@ -51,7 +55,7 @@ export const getCurrentPuzzleIdentity = (
     return {
       sourceLabel,
       details: [
-        puzzle.difficulty,
+        difficultyDetail,
         `${puzzle.width}×${puzzle.height}`,
         puzzle.uniqueSolution ? "One solution" : "Uniqueness not required",
       ].filter((detail): detail is string => Boolean(detail)),
@@ -61,7 +65,7 @@ export const getCurrentPuzzleIdentity = (
   return {
     sourceLabel,
     details: [
-      puzzle.difficulty,
+      difficultyDetail,
       `${puzzle.width}×${puzzle.height}`,
     ].filter((detail): detail is string => Boolean(detail)),
   };
@@ -104,7 +108,7 @@ export const CurrentPuzzleHeader = ({
     <div class="current-puzzle-header">
       <div
         class={`current-puzzle-identity${isArriving ? " is-arriving" : ""}`}
-        aria-label={`Current puzzle: ${fullIdentity.join(", ")}`}
+        aria-label={fullIdentity.length ? `Current puzzle: ${fullIdentity.join(", ")}` : "Current puzzle"}
       >
         {identity.sourceLabel ? <strong>{identity.sourceLabel}</strong> : null}
         {identity.details.map((detail) => (
