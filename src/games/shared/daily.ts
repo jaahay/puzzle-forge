@@ -12,6 +12,18 @@ export type DailyPuzzleGenerationProfile = {
 
 const padDatePart = (value: number) => value.toString().padStart(2, "0");
 const dailyDateStampPattern = /^\d{4}-\d{2}-\d{2}$/;
+const difficultySeedPart = "(?:easy|medium|hard|expert)";
+
+const isValidDailyProfileSuffix = (puzzleId: PuzzleId, suffix: string) => {
+  if (!suffix) return true;
+  if (puzzleId === "sudoku") {
+    return new RegExp(`^-${difficultySeedPart}-(?:classic|diagonal|zero-killer)$`).test(suffix);
+  }
+  if (puzzleId === "nonogram") {
+    return new RegExp(`^-${difficultySeedPart}-\\d+x\\d+-(?:unique|unchecked)$`).test(suffix);
+  }
+  return false;
+};
 
 export const getLocalDateStamp = (date = new Date()) =>
   `${date.getFullYear()}-${padDatePart(date.getMonth() + 1)}-${padDatePart(date.getDate())}`;
@@ -26,8 +38,9 @@ export const getDailyPuzzleLabel = (puzzleId: PuzzleId, seed: string) => {
   const remainder = seed.slice(prefix.length);
   const dateStamp = remainder.slice(0, 10);
   const profileSuffix = remainder.slice(10);
-  const suffixIsValid = !profileSuffix || /^-[a-z0-9][a-z0-9-]*$/.test(profileSuffix);
-  return dailyDateStampPattern.test(dateStamp) && suffixIsValid ? dateStamp : null;
+  return dailyDateStampPattern.test(dateStamp) && isValidDailyProfileSuffix(puzzleId, profileSuffix)
+    ? dateStamp
+    : null;
 };
 
 export const getDailyPuzzleSeedForProfile = (
