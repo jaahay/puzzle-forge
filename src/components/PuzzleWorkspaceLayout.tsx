@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 type PuzzleWorkspaceLayoutProps = {
   className?: string;
   header?: ComponentChildren;
+  crown?: ComponentChildren;
   status?: ComponentChildren;
   board?: ComponentChildren;
   gameplay?: ComponentChildren;
@@ -16,6 +17,7 @@ type PuzzleWorkspaceLayoutProps = {
 export const PuzzleWorkspaceLayout = ({
   className = "",
   header,
+  crown,
   status,
   board,
   gameplay,
@@ -110,7 +112,12 @@ export const PuzzleWorkspaceLayout = ({
 
       {status ? <section class="workspace-layout-status" aria-label="Puzzle status">{status}</section> : null}
 
-      {board ? <section class="workspace-layout-board" aria-label="Puzzle board">{board}</section> : null}
+      {crown || board ? (
+        <div class={`workspace-layout-play-surface${crown ? " has-crown" : ""}`}>
+          {crown ? <header class="workspace-layout-header workspace-layout-crown">{crown}</header> : null}
+          {board ? <section class="workspace-layout-board" aria-label="Puzzle board">{board}</section> : null}
+        </div>
+      ) : null}
 
       {gameplay ? <section class="workspace-layout-gameplay" aria-label="Gameplay controls">{gameplay}</section> : null}
 

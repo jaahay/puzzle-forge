@@ -22,24 +22,47 @@ const makeGridPuzzle = (overrides: Partial<GridGeneratedPuzzle> = {}): GridGener
 const currentDateStamp = "2026-09-03";
 
 describe("current puzzle identity", () => {
-  it("describes a regular Nonogram while omitting the default difficulty", () => {
-    expect(getCurrentPuzzleIdentity(makeGridPuzzle({
-      width: 10,
-      height: 6,
-    }), currentDateStamp)).toEqual({
+  it("omits ordinary Nonogram defaults", () => {
+    expect(getCurrentPuzzleIdentity(makeGridPuzzle(), currentDateStamp)).toEqual({
       sourceLabel: null,
-      details: ["10×6", "One solution"],
+      details: [],
     });
   });
 
   it("includes a non-default Nonogram difficulty independently", () => {
     expect(getCurrentPuzzleIdentity(makeGridPuzzle({ difficulty: "Hard" }), currentDateStamp)).toEqual({
       sourceLabel: null,
-      details: ["Hard", "8×8", "One solution"],
+      details: ["Hard"],
     });
   });
 
-  it("identifies today's canonical Nonogram and preserves its enacted profile", () => {
+  it("includes non-default Nonogram dimensions independently", () => {
+    expect(getCurrentPuzzleIdentity(makeGridPuzzle({ width: 10, height: 6 }), currentDateStamp)).toEqual({
+      sourceLabel: null,
+      details: ["10×6"],
+    });
+  });
+
+  it("distinguishes unchecked Nonogram uniqueness without claiming multiple solutions", () => {
+    expect(getCurrentPuzzleIdentity(makeGridPuzzle({ uniqueSolution: false }), currentDateStamp)).toEqual({
+      sourceLabel: null,
+      details: ["Uniqueness not required"],
+    });
+  });
+
+  it("combines independent non-default Nonogram traits", () => {
+    expect(getCurrentPuzzleIdentity(makeGridPuzzle({
+      width: 10,
+      height: 6,
+      difficulty: "Hard",
+      uniqueSolution: false,
+    }), currentDateStamp)).toEqual({
+      sourceLabel: null,
+      details: ["Hard", "10×6", "Uniqueness not required"],
+    });
+  });
+
+  it("identifies today's canonical Nonogram without repeating its default profile", () => {
     expect(getCurrentPuzzleIdentity(makeGridPuzzle({
       seed: "daily-nonogram-2026-09-03",
       width: 8,
@@ -48,7 +71,7 @@ describe("current puzzle identity", () => {
       uniqueSolution: true,
     }), currentDateStamp)).toEqual({
       sourceLabel: "Today",
-      details: ["8×8", "One solution"],
+      details: [],
     });
   });
 
@@ -57,7 +80,7 @@ describe("current puzzle identity", () => {
       seed: "daily-nonogram-2026-09-02",
     }), currentDateStamp)).toEqual({
       sourceLabel: "Daily Sep 2",
-      details: ["8×8", "One solution"],
+      details: [],
     });
   });
 
@@ -66,14 +89,7 @@ describe("current puzzle identity", () => {
       seed: "daily-nonogram-2025-09-03",
     }), currentDateStamp)).toEqual({
       sourceLabel: "Daily Sep 3, 2025",
-      details: ["8×8", "One solution"],
-    });
-  });
-
-  it("distinguishes unchecked Nonogram uniqueness without claiming multiple solutions", () => {
-    expect(getCurrentPuzzleIdentity(makeGridPuzzle({ uniqueSolution: false }), currentDateStamp)).toEqual({
-      sourceLabel: null,
-      details: ["8×8", "Uniqueness not required"],
+      details: [],
     });
   });
 

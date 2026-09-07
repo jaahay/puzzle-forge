@@ -1,5 +1,6 @@
 import type { ComponentChildren } from "preact";
 import { useEffect, useRef } from "preact/hooks";
+import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { GeneratedPuzzle } from "../catalog/types";
 import { getCanonicalDailyPuzzleLabel } from "../games/shared/daily";
 import { defaultSudokuVariation, normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
@@ -14,6 +15,7 @@ type CurrentPuzzleIdentityModel = {
 
 type CurrentPuzzleHeaderProps = {
   puzzle: GeneratedPuzzle;
+  historyControl?: ComponentChildren;
   newPuzzleControl?: ComponentChildren;
   isArriving?: boolean;
 };
@@ -36,9 +38,13 @@ export const getCurrentPuzzleIdentity = (
       ? "Today"
       : `Daily ${formatDailyDateLabel(dailyDateStamp, currentDateStamp)}`
     : null;
+  const definition = getPuzzleDefinition(puzzle.puzzleId);
   const difficultyDetail = puzzle.difficulty && puzzle.difficulty !== "Medium"
     ? puzzle.difficulty
     : null;
+  const sizeDetail = puzzle.width === definition.defaultWidth && puzzle.height === definition.defaultHeight
+    ? null
+    : `${puzzle.width}×${puzzle.height}`;
 
   if (puzzle.puzzleId === "sudoku") {
     const variation = normalizeSudokuVariation(puzzle.sudokuVariation);
@@ -56,8 +62,8 @@ export const getCurrentPuzzleIdentity = (
       sourceLabel,
       details: [
         difficultyDetail,
-        `${puzzle.width}×${puzzle.height}`,
-        puzzle.uniqueSolution ? "One solution" : "Uniqueness not required",
+        sizeDetail,
+        puzzle.uniqueSolution === false ? "Uniqueness not required" : null,
       ].filter((detail): detail is string => Boolean(detail)),
     };
   }
@@ -66,7 +72,7 @@ export const getCurrentPuzzleIdentity = (
     sourceLabel,
     details: [
       difficultyDetail,
-      `${puzzle.width}×${puzzle.height}`,
+      sizeDetail,
     ].filter((detail): detail is string => Boolean(detail)),
   };
 };
@@ -96,6 +102,7 @@ export const usePuzzleArrival = (identity: string | null) => {
 
 export const CurrentPuzzleHeader = ({
   puzzle,
+  historyControl,
   newPuzzleControl,
   isArriving = false,
 }: CurrentPuzzleHeaderProps) => {
@@ -106,16 +113,21 @@ export const CurrentPuzzleHeader = ({
 
   return (
     <div class="current-puzzle-header">
-      <div
-        class={`current-puzzle-identity${isArriving ? " is-arriving" : ""}`}
-        aria-label={fullIdentity.length ? `Current puzzle: ${fullIdentity.join(", ")}` : "Current puzzle"}
-      >
-        {identity.sourceLabel ? <strong>{identity.sourceLabel}</strong> : null}
-        {identity.details.map((detail) => (
-          <span key={detail}>{detail}</span>
-        ))}
+      <div class="current-puzzle-context">
+        {fullIdentity.length ? (
+          <div
+            class={`current-puzzle-identity${isArriving ? " is-arriving" : ""}`}
+            aria-label={`Current puzzle: ${fullIdentity.join(", ")}`}
+          >
+            {identity.sourceLabel ? <strong>{identity.sourceLabel}</strong> : null}
+            {identity.details.map((detail) => (
+              <span key={detail}>{detail}</span>
+            ))}
+          </div>
+        ) : null}
+        {historyControl}
       </div>
-      {newPuzzleControl}
+      {newPuzzleControl ? <div class="current-puzzle-new-action">{newPuzzleControl}</div> : null}
     </div>
   );
 };

@@ -151,16 +151,12 @@ export const SudokuWorkspace = ({
       onRedo={onRedoGrid}
     />
   ) : null;
-  const currentPuzzleHeader = sudokuPuzzle ? (
+  const currentPuzzleCrown = sudokuPuzzle ? (
     <CurrentPuzzleHeader
       key={puzzleArrivalIdentity ?? undefined}
       puzzle={sudokuPuzzle}
-      newPuzzleControl={(
-        <div class="current-puzzle-header-actions">
-          {isPresentationCompleted ? null : newPuzzleControl}
-          {historyActions}
-        </div>
-      )}
+      historyControl={historyActions}
+      newPuzzleControl={isPresentationCompleted ? null : newPuzzleControl}
       isArriving={isPuzzleArriving}
     />
   ) : null;
@@ -274,7 +270,7 @@ export const SudokuWorkspace = ({
   return (
     <PuzzleWorkspaceLayout
       className="sudoku-workspace"
-      header={currentPuzzleHeader}
+      crown={currentPuzzleCrown}
       board={board}
       gameplay={gameplay}
     />

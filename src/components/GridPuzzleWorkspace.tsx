@@ -96,16 +96,12 @@ export const GridPuzzleWorkspace = ({
       onRedo={onRedoGrid}
     />
   ) : null;
-  const currentPuzzleHeader = puzzle && isNonogram ? (
+  const currentPuzzleCrown = puzzle && isNonogram ? (
     <CurrentPuzzleHeader
       key={puzzleArrivalIdentity ?? undefined}
       puzzle={puzzle}
-      newPuzzleControl={(
-        <div class="current-puzzle-header-actions">
-          {newPuzzleControl}
-          {historyActions}
-        </div>
-      )}
+      historyControl={historyActions}
+      newPuzzleControl={newPuzzleControl}
       isArriving={isPuzzleArriving}
     />
   ) : newPuzzleControl;
@@ -216,7 +212,7 @@ export const GridPuzzleWorkspace = ({
   return (
     <PuzzleWorkspaceLayout
       className={workspaceClass}
-      header={currentPuzzleHeader}
+      crown={currentPuzzleCrown}
       status={status}
       board={board}
       gameplay={gameplay}
