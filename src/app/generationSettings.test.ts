@@ -102,7 +102,7 @@ describe("resolveGenerationIdentity", () => {
     })).toMatchObject({ width: 9, height: 9 });
   });
 
-  it("resolves a Nonogram daily seed to its canonical profile", () => {
+  it("keeps Nonogram daily generation relative to the selected settings", () => {
     expect(resolveGenerationIdentity({
       puzzleId: "nonogram",
       currentPuzzle: null,
@@ -116,14 +116,15 @@ describe("resolveGenerationIdentity", () => {
       },
       makeSeed: () => "fallback",
     })).toMatchObject({
-      width: 8,
-      height: 8,
-      difficulty: "Medium",
-      requireUniqueSolution: true,
+      seed: "daily-nonogram-2026-09-03-expert-12x5-unchecked",
+      width: 12,
+      height: 5,
+      difficulty: "Expert",
+      requireUniqueSolution: false,
     });
   });
 
-  it("keeps the selected Sudoku ruleset as the daily track while fixing daily difficulty", () => {
+  it("keeps Sudoku daily generation relative to both difficulty and ruleset", () => {
     expect(resolveGenerationIdentity({
       puzzleId: "sudoku",
       currentPuzzle: null,
@@ -135,12 +136,27 @@ describe("resolveGenerationIdentity", () => {
       },
       makeSeed: () => "fallback",
     })).toMatchObject({
+      seed: "daily-sudoku-2026-09-03-expert-diagonal",
       width: 9,
       height: 9,
-      difficulty: "Medium",
+      difficulty: "Expert",
       requireUniqueSolution: true,
       sudokuVariation: "diagonal",
     });
+  });
+
+  it("reconciles a profile-scoped daily seed to the selected settings", () => {
+    expect(resolveGenerationIdentity({
+      puzzleId: "sudoku",
+      currentPuzzle: null,
+      runtimeSettings,
+      settings: {
+        seed: "daily-sudoku-2026-09-03-hard-diagonal",
+        difficulty: "Medium",
+        sudokuVariation: "zero-killer",
+      },
+      makeSeed: () => "fallback",
+    }).seed).toBe("daily-sudoku-2026-09-03-medium-zero-killer");
   });
 
   it("uses the current Solitaire variation when no prospective variation is supplied", () => {

@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "preact/hooks";
 import { makeRandomSeed } from "../app/runtime";
 import type { PuzzleDifficulty } from "../catalog/types";
-import { getDailyPuzzleProfile } from "../games/shared/daily";
 import { BoundedNumberInput } from "./BoundedNumberInput";
 import { InfoIcon, PlayIcon, RandomIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
 import { CurrentSeedDisplay } from "./SeedControl";
@@ -29,7 +28,6 @@ type NonogramNewPuzzleControlProps = {
 };
 
 const difficulties: PuzzleDifficulty[] = ["Easy", "Medium", "Hard", "Expert"];
-const dailyProfile = getDailyPuzzleProfile("nonogram");
 
 export const NonogramNewPuzzleControl = ({
   currentSeed,
@@ -55,9 +53,7 @@ export const NonogramNewPuzzleControl = ({
   const commandRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDetailsElement>(null);
   const configurationSummary = `${difficulty} · ${width}×${height} · ${requireUniqueSolution ? "Exactly one solution" : "May be multiple solutions"}`;
-  const dailySummary = dailyProfile
-    ? `${dailyProfile.width}×${dailyProfile.height} · ${dailyProfile.difficulty} · one solution`
-    : "Today's profile";
+  const dailySummary = configurationSummary;
 
   const closeOptions = (restoreFocus = false) => {
     const options = optionsRef.current;
@@ -100,12 +96,6 @@ export const NonogramNewPuzzleControl = ({
 
   const startToday = () => {
     if (disabled) return;
-    if (dailyProfile) {
-      onDifficultyChange(dailyProfile.difficulty);
-      onWidthChange(dailyProfile.width);
-      onHeightChange(dailyProfile.height);
-      onUniqueSolutionChange(dailyProfile.requireUniqueSolution);
-    }
     closeOptions(true);
     onToday();
     renewSeedCandidate();
@@ -148,7 +138,7 @@ export const NonogramNewPuzzleControl = ({
               </summary>
               <div class="new-puzzle-info-panel">
                 <p>A Nonogram's clues can sometimes describe more than one completed grid. Requiring exactly one solution makes the generator test the clues and retry until only one grid satisfies them. When that requirement is off, the test is skipped; the puzzle may still happen to be unique, but it is not guaranteed.</p>
-                <p>Random and ordinary seed loads use the settings below. Today is always 8×8, Medium, with exactly one solution, and choosing it reconciles those settings to the daily profile.</p>
+                <p>Random, Today, and ordinary seed loads use the settings below. Today is deterministic for the local date and selected difficulty, size, and uniqueness requirement, so each meaningful configuration has its own daily track.</p>
                 <p>The locked field is the current puzzle's seed. Edit the lower seed and press play to load another seed.</p>
               </div>
             </details>

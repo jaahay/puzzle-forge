@@ -2,7 +2,7 @@ import type { ComponentChildren } from "preact";
 import { useEffect, useRef } from "preact/hooks";
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { GeneratedPuzzle } from "../catalog/types";
-import { getCanonicalDailyPuzzleLabel } from "../games/shared/daily";
+import { getDailyPuzzleProvenanceLabel } from "../games/shared/daily";
 import { defaultSudokuVariation, normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
 import { useLiveLocalDateStamp } from "./NewPuzzleActionVisuals";
 
@@ -32,16 +32,14 @@ export const getCurrentPuzzleIdentity = (
   puzzle: GeneratedPuzzle,
   currentDateStamp: string,
 ): CurrentPuzzleIdentityModel => {
-  const dailyDateStamp = getCanonicalDailyPuzzleLabel(puzzle);
+  const dailyDateStamp = getDailyPuzzleProvenanceLabel(puzzle);
   const sourceLabel = dailyDateStamp
     ? dailyDateStamp === currentDateStamp
       ? "Today"
       : `Daily ${formatDailyDateLabel(dailyDateStamp, currentDateStamp)}`
     : null;
   const definition = getPuzzleDefinition(puzzle.puzzleId);
-  const difficultyDetail = puzzle.difficulty && puzzle.difficulty !== "Medium"
-    ? puzzle.difficulty
-    : null;
+  const difficultyDetail = puzzle.difficulty ?? null;
   const sizeDetail = puzzle.width === definition.defaultWidth && puzzle.height === definition.defaultHeight
     ? null
     : `${puzzle.width}×${puzzle.height}`;
