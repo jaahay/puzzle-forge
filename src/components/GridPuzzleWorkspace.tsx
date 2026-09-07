@@ -1,5 +1,5 @@
 import type { PuzzleCell } from "../catalog/types";
-import { getCanonicalDailyPuzzleLabel } from "../games/shared/daily";
+import { getPuzzleProvenance } from "../app/puzzleProvenance";
 import { getBoardViewportNaturalWidth } from "./BoardViewport";
 import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
 import { FutoshikiBoard } from "./FutoshikiBoard";
@@ -48,7 +48,7 @@ export const GridPuzzleWorkspace = ({
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
   const filledOpenCount = getFilledOpenCount(gridCells);
   const openCount = getOpenCount(gridCells);
-  const dailyLabel = puzzle ? getCanonicalDailyPuzzleLabel(puzzle) : null;
+  const dailyLabel = puzzle ? getPuzzleProvenance(puzzle)?.dateStamp ?? null : null;
   const workspaceClass = [
     isNonogram ? "nonogram-workspace" : "",
     isWordGuess ? "word-guess-workspace" : "",

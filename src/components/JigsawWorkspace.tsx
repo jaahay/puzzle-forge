@@ -1,11 +1,11 @@
 import { useEffect, useState } from "preact/hooks";
 import type { JigsawImageAsset, PuzzleDifficulty } from "../catalog/types";
+import { getPuzzleProvenance } from "../app/puzzleProvenance";
 import {
   getJigsawDifficultyForDimensions,
   jigsawDifficultyOrder,
   resolveJigsawDifficultyDimensions,
 } from "../games/jigsaw/difficulty";
-import { getCanonicalDailyPuzzleLabel } from "../games/shared/daily";
 import { ArtworkAlbum } from "./ArtworkAlbum";
 import { ImmediateTopPuzzleConfiguration } from "./PuzzleConfiguration";
 import type { ImmediateImageWorkspaceProps } from "./PuzzleWorkspace.types";
@@ -57,7 +57,7 @@ export const JigsawWorkspace = ({
     : jigsawCustomPreset;
   const [selectedPreset, setSelectedPreset] = useState<JigsawPresetSelection>(initialPreset);
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
-  const dailyLabel = jigsawPuzzle ? getCanonicalDailyPuzzleLabel(jigsawPuzzle) : null;
+  const dailyLabel = jigsawPuzzle ? getPuzzleProvenance(jigsawPuzzle)?.dateStamp ?? null : null;
 
   useEffect(() => {
     if (!jigsawPuzzle) return;
