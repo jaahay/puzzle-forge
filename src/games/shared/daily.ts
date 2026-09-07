@@ -1,6 +1,7 @@
-import type { GeneratedPuzzle, PuzzleDifficulty, PuzzleId, SudokuVariation } from "../../catalog/types";
+import type { PuzzleDifficulty, PuzzleId, SudokuVariation } from "../../catalog/types";
 
 const dailySeedPrefix = "daily";
+const dailySeedDerivationVersion = "v1";
 
 export type DailyPuzzleGenerationProfile = {
   width: number;
@@ -12,22 +13,26 @@ export type DailyPuzzleGenerationProfile = {
 
 const padDatePart = (value: number) => value.toString().padStart(2, "0");
 const dailyDateStampPattern = /^\d{4}-\d{2}-\d{2}$/;
-const difficultySeedPart = "(?:easy|medium|hard|expert)";
 
-const isValidDailyProfileSuffix = (puzzleId: PuzzleId, suffix: string) => {
-  if (!suffix) return true;
-  if (puzzleId === "sudoku") {
-    return new RegExp(`^-${difficultySeedPart}-(?:classic|diagonal|zero-killer)$`).test(suffix);
+const hashDailySeedMaterial = (material: string) => {
+  let first = 0x811c9dc5;
+  let second = 0x9e3779b9;
+
+  for (const character of material) {
+    const codePoint = character.codePointAt(0) ?? 0;
+    first = Math.imul(first ^ codePoint, 0x01000193);
+    second = Math.imul(second ^ codePoint, 0x85ebca6b);
   }
-  if (puzzleId === "nonogram") {
-    return new RegExp(`^-${difficultySeedPart}-\\d+x\\d+-(?:unique|unchecked)$`).test(suffix);
-  }
-  return false;
+
+  return `${(first >>> 0).toString(36).padStart(7, "0")}${(second >>> 0).toString(36).padStart(7, "0")}`;
 };
 
 export const getLocalDateStamp = (date = new Date()) =>
   `${date.getFullYear()}-${padDatePart(date.getMonth() + 1)}-${padDatePart(date.getDate())}`;
 
+// Legacy date-scoped daily seeds remain useful to puzzle families such as Word Guess.
+// Sudoku and Nonogram daily tracks use getDailyPuzzleSeedForProfile instead; their
+// provenance is carried explicitly by the app rather than reconstructed from a seed.
 export const getDailyPuzzleSeed = (puzzleId: PuzzleId, date = new Date()) =>
   `${dailySeedPrefix}-${puzzleId}-${getLocalDateStamp(date)}`;
 
@@ -35,12 +40,8 @@ export const getDailyPuzzleLabel = (puzzleId: PuzzleId, seed: string) => {
   const prefix = `${dailySeedPrefix}-${puzzleId}-`;
   if (!seed.startsWith(prefix)) return null;
 
-  const remainder = seed.slice(prefix.length);
-  const dateStamp = remainder.slice(0, 10);
-  const profileSuffix = remainder.slice(10);
-  return dailyDateStampPattern.test(dateStamp) && isValidDailyProfileSuffix(puzzleId, profileSuffix)
-    ? dateStamp
-    : null;
+  const dateStamp = seed.slice(prefix.length);
+  return dailyDateStampPattern.test(dateStamp) ? dateStamp : null;
 };
 
 export const getDailyPuzzleSeedForProfile = (
@@ -48,22 +49,17 @@ export const getDailyPuzzleSeedForProfile = (
   dateStamp: string,
   profile: DailyPuzzleGenerationProfile,
 ) => {
-  const baseSeed = `${dailySeedPrefix}-${puzzleId}-${dateStamp}`;
   const difficulty = profile.difficulty.toLowerCase();
+  const parts = [dailySeedDerivationVersion, puzzleId, dateStamp, difficulty];
 
   if (puzzleId === "sudoku") {
-    return `${baseSeed}-${difficulty}-${profile.sudokuVariation ?? "classic"}`;
+    parts.push(profile.sudokuVariation ?? "classic");
+  } else if (puzzleId === "nonogram") {
+    parts.push(`${profile.width}x${profile.height}`);
+    parts.push(profile.requireUniqueSolution ? "unique" : "unchecked");
+  } else {
+    return getDailyPuzzleSeed(puzzleId, new Date(`${dateStamp}T12:00:00`));
   }
 
-  if (puzzleId === "nonogram") {
-    const uniqueness = profile.requireUniqueSolution ? "unique" : "unchecked";
-    return `${baseSeed}-${difficulty}-${profile.width}x${profile.height}-${uniqueness}`;
-  }
-
-  return baseSeed;
+  return hashDailySeedMaterial(parts.join("|"));
 };
-
-export const getDailyPuzzleProvenanceLabel = (puzzle: GeneratedPuzzle) =>
-  getDailyPuzzleLabel(puzzle.puzzleId, puzzle.seed);
-
-export const getCanonicalDailyPuzzleLabel = getDailyPuzzleProvenanceLabel;

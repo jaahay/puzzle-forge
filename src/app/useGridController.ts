@@ -11,6 +11,7 @@ import {
   type GridCellSelection,
 } from "../interactions/gridRules";
 import {
+  cloneGridHistoryState,
   makeEmptyGridHistoryState,
   makeGridHistoryEntry,
   pushGridHistoryEntry,
@@ -24,6 +25,7 @@ import {
 export type GridControllerSnapshot = {
   gridCells: PuzzleCell[] | null;
   selectedGridCell: GridCellSelection | null;
+  gridHistory?: GridHistoryState;
 };
 
 type GridUpdateResult = {
@@ -130,12 +132,16 @@ export const useGridController = () => {
     clearGridHistory();
   };
 
-  const restoreGridSnapshot = ({ gridCells: nextGridCells, selectedGridCell: nextSelectedGridCell }: GridControllerSnapshot) => {
+  const restoreGridSnapshot = ({
+    gridCells: nextGridCells,
+    selectedGridCell: nextSelectedGridCell,
+    gridHistory: nextGridHistory,
+  }: GridControllerSnapshot) => {
     clearSudokuTransientFeedbackTimer();
     setGridCells(nextGridCells?.map(cloneGridCell) ?? null);
     setSelectedGridCell(nextSelectedGridCell ? { ...nextSelectedGridCell } : null);
     clearCheckFeedback();
-    clearGridHistory();
+    setGridHistory(nextGridHistory ? cloneGridHistoryState(nextGridHistory) : makeEmptyGridHistoryState());
   };
 
   const prepareGeneratedGrid = (puzzle: GeneratedPuzzle) => {
@@ -403,6 +409,7 @@ export const useGridController = () => {
   return {
     gridCells,
     selectedGridCell,
+    gridHistory,
     checkFeedbackTone,
     canUndoGrid: gridHistory.undoStack.length > 0,
     canRedoGrid: gridHistory.redoStack.length > 0,

@@ -28,6 +28,11 @@ export const cloneGridHistoryEntry = (entry: GridHistoryEntry): GridHistoryEntry
   selectedGridCell: entry.selectedGridCell ? { ...entry.selectedGridCell } : null,
 });
 
+export const cloneGridHistoryState = (history: GridHistoryState): GridHistoryState => ({
+  undoStack: history.undoStack.map(cloneGridHistoryEntry).slice(-gridHistoryLimit),
+  redoStack: history.redoStack.map(cloneGridHistoryEntry).slice(-gridHistoryLimit),
+});
+
 export const makeGridHistoryEntry = (
   cells: PuzzleCell[],
   selectedGridCell: GridCellSelection | null,

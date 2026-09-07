@@ -8,64 +8,55 @@ import {
 const sampleDate = new Date(2026, 7, 29, 12, 0, 0);
 
 describe("daily puzzle identity", () => {
-  it("builds one deterministic base seed per puzzle type and local date", () => {
+  it("keeps the legacy date-scoped seed contract for puzzle families that use it directly", () => {
     expect(getDailyPuzzleSeed("sudoku", sampleDate)).toBe("daily-sudoku-2026-08-29");
-    expect(getDailyPuzzleSeed("nonogram", sampleDate)).toBe("daily-nonogram-2026-08-29");
+    expect(getDailyPuzzleSeed("word-guess", sampleDate)).toBe("daily-word-guess-2026-08-29");
   });
 
-  it("scopes Sudoku daily identity to meaningful generation settings", () => {
-    expect(getDailyPuzzleSeedForProfile("sudoku", "2026-08-29", {
+  it("derives an opaque deterministic Sudoku seed from the daily generation profile", () => {
+    const profile = {
       width: 9,
       height: 9,
-      difficulty: "Hard",
+      difficulty: "Hard" as const,
       requireUniqueSolution: true,
-      sudokuVariation: "diagonal",
-    })).toBe("daily-sudoku-2026-08-29-hard-diagonal");
+      sudokuVariation: "diagonal" as const,
+    };
+
+    expect(getDailyPuzzleSeedForProfile("sudoku", "2026-08-29", profile)).toBe("15az0ce1ktqlga");
+    expect(getDailyPuzzleSeedForProfile("sudoku", "2026-08-29", profile)).not.toContain("daily");
+    expect(getDailyPuzzleSeedForProfile("sudoku", "2026-08-29", profile)).not.toContain("diagonal");
   });
 
-  it("scopes Nonogram daily identity to meaningful generation settings", () => {
+  it("derives an opaque deterministic Nonogram seed from the daily generation profile", () => {
     expect(getDailyPuzzleSeedForProfile("nonogram", "2026-08-29", {
       width: 10,
       height: 6,
       difficulty: "Expert",
       requireUniqueSolution: false,
-    })).toBe("daily-nonogram-2026-08-29-expert-10x6-unchecked");
+    })).toBe("027my8z0qt7x3b");
   });
 
-  it("keeps unsupported puzzle types on their date-scoped daily seed", () => {
-    expect(getDailyPuzzleSeedForProfile("word-guess", "2026-08-29", {
-      width: 5,
-      height: 6,
-      difficulty: "Medium",
-      requireUniqueSolution: true,
-    })).toBe("daily-word-guess-2026-08-29");
-  });
-
-  it("parses daily provenance from both base and valid profile-scoped seeds", () => {
-    const baseSeed = getDailyPuzzleSeed("sudoku", sampleDate);
-    const sudokuProfileSeed = getDailyPuzzleSeedForProfile("sudoku", "2026-08-29", {
+  it("changes the daily seed when a meaningful generation setting changes", () => {
+    const baseProfile = {
       width: 9,
       height: 9,
-      difficulty: "Medium",
+      difficulty: "Medium" as const,
       requireUniqueSolution: true,
-      sudokuVariation: "zero-killer",
-    });
-    const nonogramProfileSeed = getDailyPuzzleSeedForProfile("nonogram", "2026-08-29", {
-      width: 10,
-      height: 6,
-      difficulty: "Hard",
-      requireUniqueSolution: true,
-    });
+      sudokuVariation: "classic" as const,
+    };
 
-    expect(getDailyPuzzleLabel("sudoku", baseSeed)).toBe("2026-08-29");
-    expect(getDailyPuzzleLabel("sudoku", sudokuProfileSeed)).toBe("2026-08-29");
-    expect(getDailyPuzzleLabel("nonogram", nonogramProfileSeed)).toBe("2026-08-29");
-    expect(getDailyPuzzleLabel("nonogram", sudokuProfileSeed)).toBeNull();
+    expect(getDailyPuzzleSeedForProfile("sudoku", "2026-08-29", baseProfile)).not.toBe(
+      getDailyPuzzleSeedForProfile("sudoku", "2026-08-29", { ...baseProfile, difficulty: "Hard" }),
+    );
+    expect(getDailyPuzzleSeedForProfile("sudoku", "2026-08-29", baseProfile)).not.toBe(
+      getDailyPuzzleSeedForProfile("sudoku", "2026-08-29", { ...baseProfile, sudokuVariation: "diagonal" }),
+    );
   });
 
-  it("does not treat arbitrary daily-prefixed custom seeds as daily provenance", () => {
+  it("parses only the legacy date-scoped seed format", () => {
+    expect(getDailyPuzzleLabel("word-guess", getDailyPuzzleSeed("word-guess", sampleDate))).toBe("2026-08-29");
+    expect(getDailyPuzzleLabel("sudoku", "daily-sudoku-2026-08-29-hard-diagonal")).toBeNull();
     expect(getDailyPuzzleLabel("sudoku", "daily-sudoku-2026-08-29-user-seed")).toBeNull();
-    expect(getDailyPuzzleLabel("nonogram", "daily-nonogram-2026-08-29-medium-large-unique")).toBeNull();
     expect(getDailyPuzzleLabel("word-guess", "daily-word-guess-2026-08-29-custom")).toBeNull();
   });
 });

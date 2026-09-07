@@ -7,10 +7,11 @@ import type {
   SolitaireVariation,
   SudokuVariation,
 } from "../catalog/types";
-import { getDailyPuzzleLabel, getDailyPuzzleSeedForProfile } from "../games/shared/daily";
+import { getDailyPuzzleSeedForProfile } from "../games/shared/daily";
 import { normalizeSolitaireVariation } from "../games/solitaire/variation";
 import { normalizeSudokuVariation } from "../games/sudoku/variation";
 import type { GenerationIdentity, GenerationRuntimeSettings } from "./generationIdentity";
+import type { PuzzleProvenance } from "./puzzleProvenance";
 
 export type GenerationSettings = Partial<
   Pick<
@@ -24,7 +25,9 @@ export type GenerationSettings = Partial<
     | "solitaireVariation"
     | "imageId"
   >
->;
+> & {
+  provenance?: PuzzleProvenance | null;
+};
 
 export type NextPuzzleDraft = {
   width: number;
@@ -89,9 +92,9 @@ export const resolveGenerationIdentity = ({
     currentPuzzle?.kind === "tiles" && currentPuzzle.puzzleId === puzzleId && currentPuzzle.asset.kind === "image"
       ? currentPuzzle.asset.id
       : undefined;
-  const dailyDateStamp = getDailyPuzzleLabel(puzzleId, requestedSeed);
-  const seed = dailyDateStamp
-    ? getDailyPuzzleSeedForProfile(puzzleId, dailyDateStamp, {
+  const provenance = settings.provenance === null ? undefined : settings.provenance;
+  const seed = provenance?.source === "daily"
+    ? getDailyPuzzleSeedForProfile(puzzleId, provenance.dateStamp, {
         width,
         height,
         difficulty,
@@ -110,5 +113,6 @@ export const resolveGenerationIdentity = ({
     sudokuVariation,
     solitaireVariation,
     imageId: settings.imageId ?? currentImageId,
+    provenance,
   };
 };
