@@ -14,9 +14,12 @@ import { isImageBackedPuzzleId } from "../games/imageAssets";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
 import type { NextPuzzleDraft } from "./generationSettings";
+import { withPuzzleProvenance, type PuzzleProvenance } from "./puzzleProvenance";
 import { defaultPuzzleDifficulty, makeRequestId } from "./runtime";
 
-export type BeginGenerationOptions = Partial<Omit<PuzzleGenerationRequest, "requestId">>;
+export type BeginGenerationOptions = Partial<Omit<PuzzleGenerationRequest, "requestId">> & {
+  provenance?: PuzzleProvenance;
+};
 
 export type PuzzleGenerationDefaults = {
   selectedPuzzleId: PuzzleId;
@@ -140,6 +143,7 @@ export const makeMissingPuzzleGenerationOptions = ({
 export const usePuzzleGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const activeRequestId = useRef<string | null>(null);
+  const activeProvenance = useRef<PuzzleProvenance | undefined>(undefined);
   const worker = useMemo(
     () => new Worker(new URL("../workers/puzzleWorker.ts", import.meta.url), { type: "module" }),
     [],
@@ -151,6 +155,7 @@ export const usePuzzleGeneration = () => {
 
   const cancelGeneration = () => {
     activeRequestId.current = null;
+    activeProvenance.current = undefined;
     setIsGenerating(false);
   };
 
@@ -186,6 +191,7 @@ export const usePuzzleGeneration = () => {
     };
 
     activeRequestId.current = request.requestId;
+    activeProvenance.current = options.provenance ? { ...options.provenance } : undefined;
     setIsGenerating(true);
     worker.postMessage(request);
 
@@ -199,6 +205,7 @@ export const usePuzzleGeneration = () => {
   ) => {
     if (!shouldAcceptGenerationResponse(activeRequestId.current, event.data.requestId)) return;
 
+    const provenance = activeProvenance.current ? { ...activeProvenance.current } : undefined;
     cancelGeneration();
 
     if ("error" in event.data) {
@@ -206,7 +213,7 @@ export const usePuzzleGeneration = () => {
       return;
     }
 
-    onGenerated(event.data.puzzle);
+    onGenerated(withPuzzleProvenance(event.data.puzzle, provenance));
   };
 
   const makeReadyMessage = (puzzle: GeneratedPuzzle) =>

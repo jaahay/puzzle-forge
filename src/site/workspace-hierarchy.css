@@ -5,10 +5,18 @@
 }
 
 .workspace-layout-help,
-.sudoku-workspace .workspace-layout-header,
-.nonogram-workspace .workspace-layout-header {
+.sudoku-workspace .workspace-layout-crown,
+.nonogram-workspace .workspace-layout-crown {
   display: grid;
   min-width: 0;
+  justify-items: center;
+}
+
+.workspace-layout-play-surface {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  gap: 0.5rem;
   justify-items: center;
 }
 
@@ -26,50 +34,144 @@
   justify-self: center;
 }
 
+/* The crown is a stable, transparent current-puzzle band. Association with the
+   board comes from shared width and proximity rather than enclosing chrome. */
 .current-puzzle-header {
-  display: grid;
+  display: flex;
   box-sizing: border-box;
+  min-width: 0;
   min-height: 2.75rem;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.75rem;
   align-items: center;
+  gap: 0.5rem;
+  padding-inline: 0.05rem;
 }
 
-.current-puzzle-header .new-puzzle-command {
+.current-puzzle-context {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.current-puzzle-new-action {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.current-puzzle-new-action .new-puzzle-command {
   width: auto;
-  justify-self: end;
 }
 
 .current-puzzle-identity {
-  display: flex;
   box-sizing: border-box;
-  width: fit-content;
-  max-width: 100%;
+  flex: 0 1 auto;
   min-width: 0;
-  min-height: 2rem;
-  flex-wrap: wrap;
-  gap: 0.16rem 0;
-  align-items: center;
+  max-width: 100%;
   overflow: hidden;
-  border-radius: 0.55rem;
-  padding: 0.35rem 0.5rem;
-  color: #9aa9be;
-  background: rgba(15, 23, 42, 0.22);
+  padding-inline: 0.08rem;
+  color: #a3b1c4;
   font-size: 0.84rem;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.current-puzzle-identity strong {
-  color: #e0f2fe;
+.current-puzzle-identity > * {
+  display: inline;
+}
+
+.current-puzzle-identity .current-puzzle-type {
+  color: #e2e8f0;
   font-weight: 900;
+}
+
+.current-puzzle-identity .current-puzzle-source {
+  color: #dbeafe;
+  font-weight: 800;
+}
+
+.current-puzzle-identity .current-puzzle-difficulty {
+  color: #cbd5e1;
 }
 
 .current-puzzle-identity > * + *::before {
   content: "·";
-  margin-inline: 0.46rem;
+  margin-inline: 0.42rem;
   color: #64748b;
   font-weight: 800;
+}
+
+.current-puzzle-identity > .current-puzzle-type + *::before {
+  margin-inline: 0.58rem 0.46rem;
+}
+
+.puzzle-history-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.08rem;
+  align-items: center;
+}
+
+.puzzle-history-actions button {
+  display: grid;
+  width: 2.15rem;
+  min-width: 2.15rem;
+  height: 2.15rem;
+  min-height: 2.15rem;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 0.58rem;
+  padding: 0;
+  color: #8fa0b6;
+  background: transparent;
+  cursor: pointer;
+}
+
+.puzzle-history-actions button:hover:not(:disabled),
+.puzzle-history-actions button:focus-visible {
+  border-color: rgba(125, 211, 252, 0.22);
+  color: #dbeafe;
+  background: rgba(148, 163, 184, 0.1);
+  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.1);
+  outline: none;
+}
+
+.puzzle-history-actions button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.puzzle-history-actions button:disabled {
+  color: #64748b;
+  background: transparent;
+  cursor: default;
+  opacity: 0.28;
+}
+
+.puzzle-history-actions svg {
+  width: 1.08rem;
+  height: 1.08rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.9;
+}
+
+/* On precise pointer devices, current-puzzle context recedes when idle while the
+   mint New command remains fully discoverable. Hover/focus raises context only;
+   geometry never changes. Touch/coarse-pointer devices keep full contrast. */
+@media (hover: hover) and (pointer: fine) {
+  .current-puzzle-context {
+    opacity: 0.68;
+    transition: opacity 140ms ease-out;
+  }
+
+  .current-puzzle-header:hover .current-puzzle-context,
+  .current-puzzle-header:focus-within .current-puzzle-context {
+    opacity: 1;
+  }
 }
 
 .puzzle-panel.puzzle-arrival {
@@ -77,7 +179,7 @@
 }
 
 .current-puzzle-identity.is-arriving {
-  animation: current-puzzle-identity-arrival 170ms ease-out both;
+  animation: current-puzzle-identity-arrival 120ms ease-out both;
 }
 
 @keyframes puzzle-arrival-settle {
@@ -92,13 +194,11 @@
 
 @keyframes current-puzzle-identity-arrival {
   from {
-    opacity: 0.58;
-    transform: translateY(3px);
+    opacity: 0.82;
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -221,6 +321,10 @@
     animation: none;
   }
 
+  .current-puzzle-context {
+    transition: none;
+  }
+
   .sudoku-workspace .sudoku-validation-message.progress,
   .sudoku-workspace .sudoku-validation-message.error {
     opacity: 1;
@@ -239,6 +343,37 @@
     margin-top: 0;
     padding: 0;
     overflow: visible;
+  }
+
+  .workspace-layout-play-surface {
+    gap: 0.45rem;
+  }
+
+  .current-puzzle-header {
+    gap: 0.35rem;
+  }
+
+  .current-puzzle-context {
+    gap: 0.65rem;
+  }
+
+  .current-puzzle-identity {
+    font-size: 0.79rem;
+  }
+
+  .current-puzzle-identity > * + *::before {
+    margin-inline: 0.32rem;
+  }
+
+  .current-puzzle-identity > .current-puzzle-type + *::before {
+    margin-inline: 0.44rem 0.36rem;
+  }
+
+  .puzzle-history-actions button {
+    width: 2.05rem;
+    min-width: 2.05rem;
+    height: 2.05rem;
+    min-height: 2.05rem;
   }
 
   .sudoku-current-actions,

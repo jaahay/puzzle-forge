@@ -1,6 +1,7 @@
 import type { CardGeneratedPuzzle, CardStack, GeneratedPuzzle, GridGeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
+import type { GridHistoryEntry } from "./gridHistory";
 import {
   loadPersistedPuzzleSessions as loadPersistedPuzzleSessionsUnsafe,
   savePersistedPuzzleSessions as savePersistedPuzzleSessionsUnsafe,
@@ -43,6 +44,8 @@ export type GridSessionProgress = {
   kind: "grid";
   cells: PuzzleCell[];
   selectedCell: GridCellSelection | null;
+  undoStack?: GridHistoryEntry[];
+  redoStack?: GridHistoryEntry[];
 };
 
 export type TileSessionProgress = {

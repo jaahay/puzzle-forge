@@ -8,6 +8,7 @@ import type {
 import { isImageBackedPuzzleId } from "../games/imageAssets";
 import { normalizeSolitaireVariation, solitaireVariationsEqual } from "../games/solitaire/variation";
 import { normalizeSudokuVariation } from "../games/sudoku/variation";
+import { puzzleProvenanceMatches, type PuzzleProvenance } from "./puzzleProvenance";
 
 export type GenerationRuntimeSettings = {
   seed: string;
@@ -22,6 +23,7 @@ export type GenerationRuntimeSettings = {
 export type GenerationIdentity = GenerationRuntimeSettings & {
   puzzleId: PuzzleId;
   imageId?: string;
+  provenance?: PuzzleProvenance;
 };
 
 export const getGeneratedPuzzleRuntimeSettings = (
@@ -47,7 +49,12 @@ export const generatedPuzzleMatchesIdentity = (
   puzzle: GeneratedPuzzle | null,
   identity: GenerationIdentity,
 ) => {
-  if (!puzzle || puzzle.puzzleId !== identity.puzzleId || puzzle.seed !== identity.seed) {
+  if (
+    !puzzle ||
+    puzzle.puzzleId !== identity.puzzleId ||
+    puzzle.seed !== identity.seed ||
+    !puzzleProvenanceMatches(puzzle, identity.provenance)
+  ) {
     return false;
   }
 

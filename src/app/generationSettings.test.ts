@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { GeneratedPuzzle } from "../catalog/types";
-import { getDailyPuzzleSeed } from "../games/shared/daily";
+import { getDailyPuzzleSeedForProfile } from "../games/shared/daily";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation } from "../games/sudoku/variation";
 import type { GenerationRuntimeSettings } from "./generationIdentity";
@@ -81,6 +81,7 @@ describe("resolveGenerationIdentity", () => {
       height: 11,
       difficulty: "Hard",
       requireUniqueSolution: false,
+      provenance: undefined,
     });
   });
 
@@ -102,45 +103,85 @@ describe("resolveGenerationIdentity", () => {
     })).toMatchObject({ width: 9, height: 9 });
   });
 
-  it("resolves a Nonogram daily seed to its canonical profile", () => {
-    expect(resolveGenerationIdentity({
+  it("keeps Nonogram Today generation relative to the selected settings", () => {
+    const provenance = { source: "daily" as const, dateStamp: "2026-09-03" };
+    const identity = resolveGenerationIdentity({
       puzzleId: "nonogram",
       currentPuzzle: null,
       runtimeSettings,
       settings: {
-        seed: getDailyPuzzleSeed("nonogram", new Date(2026, 8, 3)),
+        provenance,
         width: 12,
         height: 5,
         difficulty: "Expert",
         requireUniqueSolution: false,
       },
       makeSeed: () => "fallback",
-    })).toMatchObject({
-      width: 8,
-      height: 8,
-      difficulty: "Medium",
-      requireUniqueSolution: true,
+    });
+
+    expect(identity).toMatchObject({
+      seed: getDailyPuzzleSeedForProfile("nonogram", provenance.dateStamp, {
+        width: 12,
+        height: 5,
+        difficulty: "Expert",
+        requireUniqueSolution: false,
+        sudokuVariation: defaultSudokuVariation,
+      }),
+      width: 12,
+      height: 5,
+      difficulty: "Expert",
+      requireUniqueSolution: false,
+      provenance,
     });
   });
 
-  it("keeps the selected Sudoku ruleset as the daily track while fixing daily difficulty", () => {
-    expect(resolveGenerationIdentity({
+  it("keeps Sudoku Today generation relative to both difficulty and ruleset", () => {
+    const provenance = { source: "daily" as const, dateStamp: "2026-09-03" };
+    const identity = resolveGenerationIdentity({
       puzzleId: "sudoku",
       currentPuzzle: null,
       runtimeSettings,
       settings: {
-        seed: getDailyPuzzleSeed("sudoku", new Date(2026, 8, 3)),
+        provenance,
         difficulty: "Expert",
         sudokuVariation: "diagonal",
       },
       makeSeed: () => "fallback",
-    })).toMatchObject({
+    });
+
+    expect(identity).toMatchObject({
+      seed: getDailyPuzzleSeedForProfile("sudoku", provenance.dateStamp, {
+        width: 9,
+        height: 9,
+        difficulty: "Expert",
+        requireUniqueSolution: true,
+        sudokuVariation: "diagonal",
+      }),
       width: 9,
       height: 9,
-      difficulty: "Medium",
+      difficulty: "Expert",
       requireUniqueSolution: true,
       sudokuVariation: "diagonal",
+      provenance,
     });
+  });
+
+  it("does not infer daily provenance from a seed that merely looks daily", () => {
+    const seed = "daily-sudoku-2026-09-03-hard-diagonal";
+    const identity = resolveGenerationIdentity({
+      puzzleId: "sudoku",
+      currentPuzzle: null,
+      runtimeSettings,
+      settings: {
+        seed,
+        difficulty: "Medium",
+        sudokuVariation: "zero-killer",
+      },
+      makeSeed: () => "fallback",
+    });
+
+    expect(identity.seed).toBe(seed);
+    expect(identity.provenance).toBeUndefined();
   });
 
   it("uses the current Solitaire variation when no prospective variation is supplied", () => {

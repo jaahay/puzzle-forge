@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "preact/hooks";
 import type { PuzzleDifficulty, SudokuVariation } from "../catalog/types";
 import { makeRandomSeed } from "../app/runtime";
-import { getDailyPuzzleProfile } from "../games/shared/daily";
 import { sudokuVariationDescriptions, sudokuVariationLabels } from "../games/sudoku/variation";
 import { InfoIcon, PlayIcon, RandomIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
 import { CurrentSeedDisplay } from "./SeedControl";
@@ -43,11 +42,7 @@ export const SudokuNewPuzzleControl = ({
   const commandRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDetailsElement>(null);
   const configurationSummary = `${difficulty} · ${sudokuVariationLabels[sudokuVariation]}`;
-  const dailyProfile = getDailyPuzzleProfile("sudoku", sudokuVariation);
-  const dailyVariation = dailyProfile?.sudokuVariation ?? sudokuVariation;
-  const dailySummary = dailyProfile
-    ? `${dailyProfile.difficulty} · ${sudokuVariationLabels[dailyVariation]}`
-    : `Today · ${sudokuVariationLabels[sudokuVariation]}`;
+  const dailySummary = configurationSummary;
 
   const closeOptions = (restoreFocus = false) => {
     const options = optionsRef.current;
@@ -90,7 +85,6 @@ export const SudokuNewPuzzleControl = ({
 
   const startToday = () => {
     if (disabled) return;
-    if (dailyProfile) onDifficultyChange(dailyProfile.difficulty);
     closeOptions(true);
     onToday();
     renewSeedCandidate();
@@ -133,7 +127,7 @@ export const SudokuNewPuzzleControl = ({
               </summary>
               <div class="new-puzzle-info-panel">
                 <p>{sudokuVariationDescriptions[sudokuVariation]}</p>
-                <p>Random and ordinary seed loads use the difficulty and ruleset below. Today always uses Medium difficulty; the selected ruleset chooses the Standard, Diagonal, or Zero Killer daily track. Choosing Today reconciles the difficulty control to Medium.</p>
+                <p>Random, Today, and ordinary seed loads use the difficulty and ruleset below. Today is deterministic for the local date and selected configuration, so changing either difficulty or ruleset selects a different daily track.</p>
                 <p>The locked field is the current puzzle's seed. Edit the lower seed and press play to load another seed.</p>
               </div>
             </details>

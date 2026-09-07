@@ -13,6 +13,7 @@ import {
   type SolitaireHistoryEntry,
   type SolitaireStats,
 } from "./session";
+import { cloneGridHistoryState, makeEmptyGridHistoryState, type GridHistoryState } from "./gridHistory";
 import { restoredSessionPreservesGeneratedState } from "./sessionIntegrity";
 import { cloneSolitaireHistoryEntry } from "./solitaireHistory";
 
@@ -25,6 +26,7 @@ export type RuntimeSessionDraft = {
   solitaireRedoStack: SolitaireHistoryEntry[];
   gridCells: PuzzleCell[] | null;
   selectedGridCell: GridCellSelection | null;
+  gridHistory?: GridHistoryState;
   statusMessage: string;
 };
 
@@ -83,6 +85,10 @@ export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => {
   }
 
   if (session.kind === "grid") {
+    const history = cloneGridHistoryState({
+      undoStack: session.progress.undoStack ?? [],
+      redoStack: session.progress.redoStack ?? [],
+    });
     return {
       kind: "grid",
       puzzle: cloneGridPuzzle(session.puzzle),
@@ -90,6 +96,8 @@ export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => {
         kind: "grid",
         cells: session.progress.cells.map(cloneGridCell),
         selectedCell: session.progress.selectedCell ? { ...session.progress.selectedCell } : null,
+        undoStack: history.undoStack,
+        redoStack: history.redoStack,
       },
       statusMessage: session.statusMessage,
     };
@@ -112,6 +120,7 @@ export const buildRuntimeSession = ({
   solitaireRedoStack,
   gridCells,
   selectedGridCell,
+  gridHistory,
   statusMessage,
 }: RuntimeSessionDraft): PuzzleSession => {
   if (puzzle.kind === "cards") {
@@ -131,6 +140,7 @@ export const buildRuntimeSession = ({
   }
 
   if (puzzle.kind === "grid") {
+    const history = cloneGridHistoryState(gridHistory ?? makeEmptyGridHistoryState());
     return {
       kind: "grid",
       puzzle,
@@ -138,6 +148,8 @@ export const buildRuntimeSession = ({
         kind: "grid",
         cells: (gridCells ?? prepareGridCells(puzzle)).map((cell) => cloneSessionGridCell(puzzle.puzzleId, cell)),
         selectedCell: selectedGridCell ? { ...selectedGridCell } : null,
+        undoStack: history.undoStack,
+        redoStack: history.redoStack,
       },
       statusMessage,
     };
@@ -176,6 +188,8 @@ export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPu
         kind: "grid",
         cells: prepareGridCells(generatedPuzzle),
         selectedCell: null,
+        undoStack: [],
+        redoStack: [],
       },
       statusMessage,
     };

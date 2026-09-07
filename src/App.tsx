@@ -9,7 +9,7 @@ import { NotFoundView } from "./components/NotFoundView";
 import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
 import { StartView } from "./components/StartView";
-import { getDailyPuzzleSeed } from "./games/shared/daily";
+import { getLocalDateStamp } from "./games/shared/daily";
 import { isImageBackedPuzzleId } from "./games/imageAssets";
 import { defaultSolitaireVariation, normalizeSolitaireVariation } from "./games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation } from "./games/sudoku/variation";
@@ -140,7 +140,14 @@ export const App = () => {
 
     grid.restoreGridSnapshot(
       session.progress.kind === "grid"
-        ? { gridCells: session.progress.cells, selectedGridCell: session.progress.selectedCell }
+        ? {
+            gridCells: session.progress.cells,
+            selectedGridCell: session.progress.selectedCell,
+            gridHistory: {
+              undoStack: session.progress.undoStack ?? [],
+              redoStack: session.progress.redoStack ?? [],
+            },
+          }
         : { gridCells: null, selectedGridCell: null },
     );
     restoreScrollPosition();
@@ -156,6 +163,7 @@ export const App = () => {
         solitaireRedoStack: solitaire.solitaireRedoStack,
         gridCells: grid.gridCells,
         selectedGridCell: grid.selectedGridCell,
+        gridHistory: grid.gridHistory,
         statusMessage,
       })
     : null;
@@ -370,7 +378,7 @@ export const App = () => {
   useEffect(() => {
     if (!hasSelectedPuzzle || generation.isGenerating || isHomeSelected || !puzzle) return;
     saveCurrentSession();
-  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, selectedPuzzleId, puzzle, solitaire.cardStacks, solitaire.selectedCard, solitaire.solitaireStats, solitaire.solitaireUndoStack, solitaire.solitaireRedoStack, grid.gridCells, grid.selectedGridCell, statusMessage]);
+  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, selectedPuzzleId, puzzle, solitaire.cardStacks, solitaire.selectedCard, solitaire.solitaireStats, solitaire.solitaireUndoStack, solitaire.solitaireRedoStack, grid.gridCells, grid.selectedGridCell, grid.gridHistory, statusMessage]);
 
   const generate = () => beginGeneration({}, { preserveScroll: true });
 
@@ -380,6 +388,8 @@ export const App = () => {
     const readyMessage = generation.makeReadyMessage(puzzle);
     if (puzzle.kind === "cards") {
       solitaire.restoreSolitaireSnapshot({ cardStacks: puzzle.stacks, selectedCard: null, solitaireStats: initialSolitaireStats, solitaireUndoStack: [], solitaireRedoStack: [], statusMessage: readyMessage });
+    } else if (puzzle.kind === "grid") {
+      grid.resetCurrentGrid(puzzle, readyMessage, setStatusMessage);
     } else {
       grid.prepareGeneratedGrid(puzzle);
       setStatusMessage(readyMessage);
@@ -417,6 +427,7 @@ export const App = () => {
       sudokuVariation: selectedPuzzleId === "sudoku" ? identity.sudokuVariation : undefined,
       solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? identity.solitaireVariation : undefined,
       imageId: isImageBackedPuzzleId(selectedPuzzleId) ? identity.imageId : undefined,
+      provenance: identity.provenance,
     }, { preserveScroll: true });
   };
 
@@ -434,7 +445,10 @@ export const App = () => {
 
   const loadToday = () => {
     rememberNextPuzzleDraft();
-    commitGenerationSettings({ ...nextPuzzleDraft, seed: getDailyPuzzleSeed(selectedPuzzleId) });
+    commitGenerationSettings({
+      ...nextPuzzleDraft,
+      provenance: { source: "daily", dateStamp: getLocalDateStamp() },
+    });
   };
 
   const commitRememberedGenerationSettings = (settings: GenerationSettings = {}) => {
@@ -466,6 +480,10 @@ export const App = () => {
     gridCells: grid.gridCells,
     selectedGridCell: grid.selectedGridCell,
     gridCheckFeedbackTone: grid.checkFeedbackTone,
+    canUndoGrid: grid.canUndoGrid,
+    canRedoGrid: grid.canRedoGrid,
+    onUndoGrid: () => grid.undoGridAction(puzzle, setStatusMessage),
+    onRedoGrid: () => grid.redoGridAction(puzzle, setStatusMessage),
     onCheck: handleCheck,
     onCellClick: (cell: Parameters<typeof grid.handleGridCellClick>[1]) => grid.handleGridCellClick(puzzle, cell, setStatusMessage),
     onCellInput: (cell: Parameters<typeof grid.handleGridCellInput>[1], value: string) => grid.handleGridCellInput(puzzle, cell, value, setStatusMessage),

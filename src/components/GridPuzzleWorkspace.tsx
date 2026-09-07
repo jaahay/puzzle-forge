@@ -1,10 +1,11 @@
 import type { PuzzleCell } from "../catalog/types";
-import { getCanonicalDailyPuzzleLabel } from "../games/shared/daily";
+import { getPuzzleProvenance } from "../app/puzzleProvenance";
 import { getBoardViewportNaturalWidth } from "./BoardViewport";
 import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
 import { FutoshikiBoard } from "./FutoshikiBoard";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
 import { NonogramNewPuzzleControl } from "./NonogramNewPuzzleControl";
+import { PuzzleHistoryActions } from "./PuzzleHistoryActions";
 import { BottomPuzzleConfiguration, TopPuzzleConfiguration } from "./PuzzleConfiguration";
 import type { GridPuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
@@ -26,6 +27,10 @@ export const GridPuzzleWorkspace = ({
   gridCheckFeedbackTone,
   statusMessage,
   isGenerating,
+  canUndoGrid,
+  canRedoGrid,
+  onUndoGrid,
+  onRedoGrid,
   onReset,
   onCheck,
   onNextPuzzleDraftChange,
@@ -43,7 +48,7 @@ export const GridPuzzleWorkspace = ({
   const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
   const filledOpenCount = getFilledOpenCount(gridCells);
   const openCount = getOpenCount(gridCells);
-  const dailyLabel = puzzle ? getCanonicalDailyPuzzleLabel(puzzle) : null;
+  const dailyLabel = puzzle ? getPuzzleProvenance(puzzle)?.dateStamp ?? null : null;
   const workspaceClass = [
     isNonogram ? "nonogram-workspace" : "",
     isWordGuess ? "word-guess-workspace" : "",
@@ -82,10 +87,20 @@ export const GridPuzzleWorkspace = ({
       onLoadSeed={onLoadSeed}
     />
   ) : null;
-  const currentPuzzleHeader = puzzle && isNonogram ? (
+  const historyActions = puzzle && isNonogram ? (
+    <PuzzleHistoryActions
+      canUndo={canUndoGrid}
+      canRedo={canRedoGrid}
+      disabled={isGenerating}
+      onUndo={onUndoGrid}
+      onRedo={onRedoGrid}
+    />
+  ) : null;
+  const currentPuzzleCrown = puzzle && isNonogram ? (
     <CurrentPuzzleHeader
       key={puzzleArrivalIdentity ?? undefined}
       puzzle={puzzle}
+      historyControl={historyActions}
       newPuzzleControl={newPuzzleControl}
       isArriving={isPuzzleArriving}
     />
@@ -197,7 +212,7 @@ export const GridPuzzleWorkspace = ({
   return (
     <PuzzleWorkspaceLayout
       className={workspaceClass}
-      header={currentPuzzleHeader}
+      crown={currentPuzzleCrown}
       status={status}
       board={board}
       gameplay={gameplay}

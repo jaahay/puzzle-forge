@@ -8,6 +8,7 @@ import {
   type GenerationIdentity,
   type GenerationRuntimeSettings,
 } from "./generationIdentity";
+import { withPuzzleProvenance } from "./puzzleProvenance";
 
 const baseRuntimeSettings: GenerationRuntimeSettings = {
   seed: "seed-1",
@@ -106,6 +107,16 @@ describe("generated puzzle identity matching", () => {
     expect(generatedPuzzleMatchesIdentity(puzzle, identity)).toBe(true);
     expect(generatedPuzzleMatchesIdentity(puzzle, { ...identity, difficulty: "Hard" })).toBe(false);
     expect(generatedPuzzleMatchesIdentity(puzzle, { ...identity, sudokuVariation: "zero-killer" })).toBe(false);
+  });
+
+  it("treats provenance as identity without deriving it from the seed", () => {
+    const provenance = { source: "daily" as const, dateStamp: "2026-08-29" };
+    const puzzle = withPuzzleProvenance(gridPuzzle("sudoku"), provenance);
+    const identity = { ...baseIdentity("sudoku"), provenance };
+
+    expect(generatedPuzzleMatchesIdentity(puzzle, identity)).toBe(true);
+    expect(generatedPuzzleMatchesIdentity(puzzle, baseIdentity("sudoku"))).toBe(false);
+    expect(generatedPuzzleMatchesIdentity(gridPuzzle("sudoku"), identity)).toBe(false);
   });
 
   it("includes Nonogram uniqueness and Futoshiki difficulty in identity", () => {
