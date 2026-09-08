@@ -3,14 +3,14 @@ import { puzzleIds } from "./sessionConstants";
 
 export type AppRoute =
   | { kind: "home" }
-  | { kind: "puzzle"; puzzleId: PuzzleId }
+  | { kind: "puzzle"; puzzleId: PuzzleId; puzzleReference?: string }
   | { kind: "updates" }
   | { kind: "about" }
   | { kind: "not-found"; pathname: string };
 
 const puzzleIdSet = new Set<string>(puzzleIds);
 
-export const parseAppRoute = (pathname: string): AppRoute => {
+export const parseAppRoute = (pathname: string, search = ""): AppRoute => {
   const normalizedPath = pathname.replace(/\/+$/, "") || "/";
 
   if (normalizedPath === "/") return { kind: "home" };
@@ -19,7 +19,12 @@ export const parseAppRoute = (pathname: string): AppRoute => {
 
   const segment = normalizedPath.slice(1);
   if (!segment.includes("/") && puzzleIdSet.has(segment)) {
-    return { kind: "puzzle", puzzleId: segment as PuzzleId };
+    const puzzleReference = new URLSearchParams(search).get("ref")?.trim();
+    return {
+      kind: "puzzle",
+      puzzleId: segment as PuzzleId,
+      ...(puzzleReference ? { puzzleReference } : {}),
+    };
   }
 
   return { kind: "not-found", pathname: normalizedPath };
@@ -29,8 +34,10 @@ export const appRoutePath = (route: AppRoute): string => {
   switch (route.kind) {
     case "home":
       return "/";
-    case "puzzle":
-      return `/${route.puzzleId}`;
+    case "puzzle": {
+      const path = `/${route.puzzleId}`;
+      return route.puzzleReference ? `${path}?ref=${encodeURIComponent(route.puzzleReference)}` : path;
+    }
     case "updates":
       return "/updates";
     case "about":
@@ -41,11 +48,22 @@ export const appRoutePath = (route: AppRoute): string => {
 };
 
 export const getCurrentAppRoute = (): AppRoute =>
-  typeof window === "undefined" ? { kind: "home" } : parseAppRoute(window.location.pathname);
+  typeof window === "undefined"
+    ? { kind: "home" }
+    : parseAppRoute(window.location.pathname, window.location.search);
+
+const currentBrowserPath = () => `${window.location.pathname}${window.location.search}`;
 
 export const pushAppRoute = (route: AppRoute) => {
   if (typeof window === "undefined") return;
   const nextPath = appRoutePath(route);
-  if (window.location.pathname === nextPath && !window.location.hash) return;
+  if (currentBrowserPath() === nextPath && !window.location.hash) return;
   window.history.pushState(null, "", nextPath);
+};
+
+export const replaceAppRoute = (route: AppRoute) => {
+  if (typeof window === "undefined") return;
+  const nextPath = appRoutePath(route);
+  if (currentBrowserPath() === nextPath && !window.location.hash) return;
+  window.history.replaceState(null, "", nextPath);
 };
