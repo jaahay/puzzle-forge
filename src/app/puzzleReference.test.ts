@@ -8,6 +8,7 @@ import {
   puzzleReferencePrefix,
   puzzleReferenceToGenerationOptions,
   serializeGeneratedPuzzleReference,
+  serializePersistedPuzzleReference,
   serializePuzzleReference,
 } from "./puzzleReference";
 
@@ -131,6 +132,36 @@ describe("durable puzzle references", () => {
       height: 5,
       imageId: asset.id,
     });
+  });
+
+  it("serializes persisted identity to the same reference so reload can resume matching progress", () => {
+    const puzzle = withPuzzleProvenance(baseGridPuzzle("sudoku"), {
+      source: "daily",
+      dateStamp: "2026-09-08",
+    });
+    const generatedReference = serializeGeneratedPuzzleReference(puzzle);
+    const persistedReference = serializePersistedPuzzleReference({
+      puzzleId: "sudoku",
+      seed: "seed-α-42",
+      width: 9,
+      height: 9,
+      difficulty: "Hard",
+      sudokuVariation: "diagonal",
+      provenance: { source: "daily", dateStamp: "2026-09-08" },
+      generatorVersion: 1,
+    });
+
+    expect(persistedReference).toBe(generatedReference);
+    expect(serializePersistedPuzzleReference({
+      puzzleId: "sudoku",
+      seed: "seed-α-42",
+      width: 9,
+      height: 9,
+      difficulty: "Easy",
+      sudokuVariation: "diagonal",
+      provenance: { source: "daily", dateStamp: "2026-09-08" },
+      generatorVersion: 1,
+    })).not.toBe(generatedReference);
   });
 
   it("does not infer daily provenance from seed syntax", () => {

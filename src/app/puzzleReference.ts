@@ -9,6 +9,7 @@ import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import { getPuzzleImageAssetsFor, isImageBackedPuzzleId } from "../games/imageAssets";
 import { sudokuVariations } from "../games/sudoku/variation";
 import { getPuzzleProvenance, isPuzzleProvenance, type PuzzleProvenance } from "./puzzleProvenance";
+import type { PersistedPuzzleIdentity } from "./sessionPersistence";
 
 export const puzzleReferencePrefix = "pf1.";
 export const puzzleReferenceSchemaVersion = 1 as const;
@@ -160,11 +161,79 @@ export const getPuzzleReference = (puzzle: GeneratedPuzzle): PuzzleReferenceV1 |
   return null;
 };
 
+export const getPersistedPuzzleReference = (
+  identity: PersistedPuzzleIdentity,
+): PuzzleReferenceV1 | null => {
+  const provenance = cloneProvenance(identity.provenance);
+
+  if (
+    identity.puzzleId === "sudoku" &&
+    identity.generatorVersion === puzzleGeneratorRevisions.sudoku &&
+    identity.difficulty &&
+    identity.sudokuVariation
+  ) {
+    return {
+      schemaVersion: puzzleReferenceSchemaVersion,
+      puzzleId: "sudoku",
+      generatorVersion: puzzleGeneratorRevisions.sudoku,
+      seed: identity.seed,
+      width: identity.width,
+      height: identity.height,
+      difficulty: identity.difficulty,
+      sudokuVariation: identity.sudokuVariation,
+      ...(provenance ? { provenance } : {}),
+    };
+  }
+
+  if (
+    identity.puzzleId === "nonogram" &&
+    identity.generatorVersion === puzzleGeneratorRevisions.nonogram &&
+    identity.difficulty &&
+    typeof identity.requireUniqueSolution === "boolean"
+  ) {
+    return {
+      schemaVersion: puzzleReferenceSchemaVersion,
+      puzzleId: "nonogram",
+      generatorVersion: puzzleGeneratorRevisions.nonogram,
+      seed: identity.seed,
+      width: identity.width,
+      height: identity.height,
+      difficulty: identity.difficulty,
+      requireUniqueSolution: identity.requireUniqueSolution,
+      ...(provenance ? { provenance } : {}),
+    };
+  }
+
+  if (
+    isImageBackedPuzzleId(identity.puzzleId) &&
+    identity.generatorVersion === puzzleGeneratorRevisions[identity.puzzleId] &&
+    identity.imageId
+  ) {
+    return {
+      schemaVersion: puzzleReferenceSchemaVersion,
+      puzzleId: identity.puzzleId,
+      generatorVersion: puzzleGeneratorRevisions[identity.puzzleId],
+      seed: identity.seed,
+      width: identity.width,
+      height: identity.height,
+      imageId: identity.imageId,
+      ...(provenance ? { provenance } : {}),
+    };
+  }
+
+  return null;
+};
+
 export const serializePuzzleReference = (reference: PuzzleReferenceV1) =>
   `${puzzleReferencePrefix}${encodeBase64Url(JSON.stringify(reference))}`;
 
 export const serializeGeneratedPuzzleReference = (puzzle: GeneratedPuzzle) => {
   const reference = getPuzzleReference(puzzle);
+  return reference ? serializePuzzleReference(reference) : null;
+};
+
+export const serializePersistedPuzzleReference = (identity: PersistedPuzzleIdentity) => {
+  const reference = getPersistedPuzzleReference(identity);
   return reference ? serializePuzzleReference(reference) : null;
 };
 
