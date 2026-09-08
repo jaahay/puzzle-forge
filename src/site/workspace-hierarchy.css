@@ -70,7 +70,7 @@
   max-width: 100%;
   overflow: hidden;
   padding-inline: 0.08rem;
-  color: #a3b1c4;
+  color: #cbd5e1;
   font-size: 0.84rem;
   font-weight: 700;
   line-height: 1.2;
@@ -83,17 +83,17 @@
 }
 
 .current-puzzle-identity .current-puzzle-type {
-  color: #e2e8f0;
+  color: inherit;
   font-weight: 900;
 }
 
 .current-puzzle-identity .current-puzzle-source {
-  color: #dbeafe;
+  color: inherit;
   font-weight: 800;
 }
 
 .current-puzzle-identity .current-puzzle-difficulty {
-  color: #cbd5e1;
+  color: inherit;
 }
 
 .current-puzzle-identity > * + *::before {
@@ -311,6 +311,10 @@
 
 .sudoku-workspace .completion-control-solved {
   align-self: start;
+}
+
+.sudoku-workspace .completion-dock {
+  justify-content: center;
 }
 
 @media (prefers-reduced-motion: reduce) {
