@@ -51,7 +51,7 @@ Every candidate should be evaluated by:
 32. Minesweeper variants
 33. Nonogram variants
 34. Color Nonogram
-35. Mini Crossword
+35. Crossword / Mini Crossword
 36. Cryptogram
 37. Word Ladder
 38. Word Grid
@@ -137,6 +137,29 @@ Every candidate should be evaluated by:
 118. Operator placement puzzles
 119. Map coloring puzzles
 120. Daily mixed puzzle set
+
+## Word-puzzle direction
+
+Word Guess is already part of Puzzle Forge. The strongest prospective additions should broaden the interaction model rather than merely re-skinning the same guessing mechanic.
+
+Current leading candidates:
+
+1. **Crossword / Mini Crossword**: clue-driven interlocking words; a strong fit for daily/provenance semantics, keyboard navigation, checking, and eventually curated or generated clue sets.
+2. **Word Search**: find supplied or themed words in a letter grid; mechanically distinct, highly touch-friendly, and suitable for generated board sizes and difficulty bands.
+3. **Word Ladder**: transform one word into another by changing one letter at a time; compact board model with clear semantic move history.
+4. **Cryptogram**: solve a substitution cipher over a quotation or phrase; text-forward and naturally compatible with persistent progress and undo/redo.
+
+Secondary candidates worth preserving for later exploration:
+
+- Acrostic;
+- Fill-In / Criss Cross;
+- Anagram / Word Scramble;
+- Word Grid / Word Hunt;
+- Word Grouping;
+- Rebus;
+- letter-loop / word-chain puzzles.
+
+These should not all be treated as one generic "word puzzle" renderer. Crossword, Word Search, Word Ladder, and Cryptogram exercise materially different board, input, generation, and validation contracts and are useful architecture probes in their own right.
 
 ## Near-term candidates
 
