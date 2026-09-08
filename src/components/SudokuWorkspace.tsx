@@ -156,7 +156,7 @@ export const SudokuWorkspace = ({
       key={puzzleArrivalIdentity ?? undefined}
       puzzle={sudokuPuzzle}
       historyControl={historyActions}
-      newPuzzleControl={isPresentationCompleted ? null : newPuzzleControl}
+      newPuzzleControl={newPuzzleControl}
       isArriving={isPuzzleArriving}
     />
   ) : null;
@@ -195,18 +195,6 @@ export const SudokuWorkspace = ({
       <div class="completion-dock-copy">
         <span class="completion-dock-mark" aria-hidden="true">✓</span>
         <strong>Puzzle solved</strong>
-      </div>
-      <div class="puzzle-actions">
-        <button
-          class="new-puzzle-primary"
-          type="button"
-          onClick={onNewPuzzle}
-          disabled={isGenerating}
-          tabIndex={isPresentationCompleted ? 0 : -1}
-          aria-label="Start a new Sudoku with the remembered settings"
-        >
-          New puzzle
-        </button>
       </div>
     </section>
   ) : null;
