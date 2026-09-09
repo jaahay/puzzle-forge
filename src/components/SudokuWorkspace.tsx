@@ -7,7 +7,6 @@ import { getNumericGridDigits, NumericGridDigitPad, useNumericGridInput } from "
 import { PuzzleHistoryActions } from "./PuzzleHistoryActions";
 import type { SudokuWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
-import { SudokuMeta } from "./SudokuMeta";
 import { SudokuNewPuzzleControl } from "./SudokuNewPuzzleControl";
 import { usePuzzleCompletionPresentation } from "./usePuzzleCompletionPresentation";
 
@@ -196,6 +195,18 @@ export const SudokuWorkspace = ({
         <span class="completion-dock-mark" aria-hidden="true">✓</span>
         <strong>Puzzle solved</strong>
       </div>
+      <div class="puzzle-actions">
+        <button
+          class="new-puzzle-primary"
+          type="button"
+          onClick={onNewPuzzle}
+          disabled={isGenerating}
+          tabIndex={isPresentationCompleted ? 0 : -1}
+          aria-label="Start a new Sudoku with the remembered settings"
+        >
+          New puzzle
+        </button>
+      </div>
     </section>
   ) : null;
 
@@ -240,7 +251,6 @@ export const SudokuWorkspace = ({
       class={`puzzle-panel${isPuzzleArriving ? " puzzle-arrival" : ""}`}
       aria-label="Generated puzzle preview"
     >
-      <div class="puzzle-meta"><SudokuMeta puzzle={sudokuPuzzle} cells={gridCells} /></div>
       <GridPuzzlePreview
         puzzle={sudokuPuzzle}
         cells={gridCells}

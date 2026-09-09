@@ -178,14 +178,15 @@ export const GridPuzzleWorkspace = ({
       class={`puzzle-panel${isNonogram && isPuzzleArriving ? " puzzle-arrival" : ""}`}
       aria-label="Generated puzzle preview"
     >
-      <div class="puzzle-meta">
-        <span>{`${puzzle.width} x ${puzzle.height}`}</span>
-        {puzzle.difficulty ? <span>{puzzle.difficulty}</span> : null}
-        {isNonogram ? <span>{puzzle.uniqueSolution ? "One solution" : "Uniqueness not required"}</span> : null}
-        {isFutoshiki ? <span>{puzzle.uniqueSolution ? "Unique" : "Open"}</span> : null}
-        {isWordGuess ? <span>Answer-list solvable</span> : null}
-        {isNonogram || isFutoshiki ? <span>{filledOpenCount}/{openCount} filled</span> : dailyLabel ? <span>Daily: {dailyLabel}</span> : null}
-      </div>
+      {isNonogram ? null : (
+        <div class="puzzle-meta">
+          <span>{`${puzzle.width} x ${puzzle.height}`}</span>
+          {puzzle.difficulty ? <span>{puzzle.difficulty}</span> : null}
+          {isFutoshiki ? <span>{puzzle.uniqueSolution ? "Unique" : "Open"}</span> : null}
+          {isWordGuess ? <span>Answer-list solvable</span> : null}
+          {isFutoshiki ? <span>{filledOpenCount}/{openCount} filled</span> : dailyLabel ? <span>Daily: {dailyLabel}</span> : null}
+        </div>
+      )}
       {puzzle.puzzleId === "word-guess" && gridCells ? (
         <WordGuessGame puzzle={puzzle} cells={gridCells} statusMessage={statusMessage} onCellInput={onCellInput} onSubmitGuess={onCheck} />
       ) : puzzle.puzzleId === "futoshiki" && gridCells ? (
