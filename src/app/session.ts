@@ -76,11 +76,6 @@ export type PuzzleSession =
 
 export type PuzzleSessionCache = Partial<Record<PuzzleId, PuzzleSession>>;
 
-// Live Undo/Redo can remain deep, but each durable entry is a full puzzle
-// snapshot. Keeping only the recent tail prevents localStorage growth from
-// turning history into a multi-megabyte prerequisite for saving board progress.
-export const persistedPuzzleHistoryLimit = 20;
-
 const isStorageQuotaError = (error: unknown) => {
   if (typeof error !== "object" || error === null) return false;
   const candidate = error as { name?: unknown; code?: unknown };
@@ -90,15 +85,7 @@ const isStorageQuotaError = (error: unknown) => {
     candidate.code === 1014;
 };
 
-const trimHistory = <T>(history: T[] | undefined, limit: number): T[] => {
-  if (!history || limit <= 0) return [];
-  return history.slice(-limit);
-};
-
-const limitActiveSessionHistory = (
-  sessions: RuntimePuzzleSessions,
-  limit: number,
-): RuntimePuzzleSessions => {
+const withoutActiveSessionHistory = (sessions: RuntimePuzzleSessions): RuntimePuzzleSessions => {
   const activeSession = sessions.sessions[sessions.activePuzzleId];
   if (!activeSession || activeSession.kind === "tiles") return sessions;
 
@@ -111,8 +98,8 @@ const limitActiveSessionHistory = (
           ...activeSession,
           progress: {
             ...activeSession.progress,
-            undoStack: trimHistory(activeSession.progress.undoStack, limit),
-            redoStack: trimHistory(activeSession.progress.redoStack, limit),
+            undoStack: [],
+            redoStack: [],
           },
         },
       },
@@ -127,8 +114,8 @@ const limitActiveSessionHistory = (
         ...activeSession,
         progress: {
           ...activeSession.progress,
-          undoStack: trimHistory(activeSession.progress.undoStack, limit),
-          redoStack: trimHistory(activeSession.progress.redoStack, limit),
+          undoStack: [],
+          redoStack: [],
         },
       },
     },
@@ -144,21 +131,18 @@ export const loadPersistedPuzzleSessions = () => {
 };
 
 export const savePersistedPuzzleSessions = (sessions: RuntimePuzzleSessions) => {
-  const boundedSessions = limitActiveSessionHistory(sessions, persistedPuzzleHistoryLimit);
-
   try {
-    savePersistedPuzzleSessionsUnsafe(boundedSessions);
+    savePersistedPuzzleSessionsUnsafe(sessions);
   } catch (error) {
     if (!isStorageQuotaError(error)) return;
 
-    // If even the bounded history cannot fit, current progress still matters
-    // more than durable Undo/Redo. Retry once without persisted history;
-    // in-memory history remains intact for the live session.
-    const compactSessions = limitActiveSessionHistory(sessions, 0);
-    if (compactSessions === sessions) return;
+    // Current puzzle progress matters more than durable Undo/Redo. Retry once
+    // without persisted history; in-memory history remains intact for the live session.
+    const sessionsWithoutHistory = withoutActiveSessionHistory(sessions);
+    if (sessionsWithoutHistory === sessions) return;
 
     try {
-      savePersistedPuzzleSessionsUnsafe(compactSessions);
+      savePersistedPuzzleSessionsUnsafe(sessionsWithoutHistory);
     } catch {
       // Persistence is optional. Keep the in-memory game usable when storage is unavailable.
     }
