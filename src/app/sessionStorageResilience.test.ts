@@ -176,7 +176,7 @@ describe("active puzzle persistence resilience", () => {
     });
   });
 
-  it("keeps current grid progress saveable when durable history exceeds browser storage quota", () => {
+  it("keeps current grid progress saveable when even bounded history hits browser quota", () => {
     withQuotaLimitedStorage((storage, getQuotaRejections) => {
       const session = makeZeroKillerSession();
 
