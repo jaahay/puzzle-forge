@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
+import { gridHistoryLimit, type GridHistoryEntry } from "./gridHistory";
 import {
   serializeGeneratedPuzzleReference,
   serializePersistedPuzzleReference,
@@ -7,7 +8,6 @@ import {
 import {
   buildPersistedPuzzleSession,
   loadPersistedPuzzleSessions,
-  persistedPuzzleHistoryLimit,
   restorePuzzleSessionFromPersisted,
   savePersistedPuzzleSessions,
   type PuzzleSession,
@@ -47,6 +47,30 @@ const makeZeroKillerPuzzle = (): GridGeneratedPuzzle => ({
   cells: makeEmptyZeroKillerCells(),
 });
 
+const makeHistoryEntry = (step: number): GridHistoryEntry => {
+  const targetIndex = step % 81;
+  const value = String((step % 9) + 1);
+  const row = Math.floor(targetIndex / 9);
+  const column = targetIndex % 9;
+  return {
+    cells: makeEmptyZeroKillerCells().map((cell, index) => index === targetIndex
+      ? { ...cell, value, ariaLabel: `${value} cell at row ${row + 1}, column ${column + 1}` }
+      : cell),
+    selectedGridCell: { row, column },
+  };
+};
+
+const expectHistoryEntry = (entry: GridHistoryEntry | undefined, step: number) => {
+  expect(entry).toBeDefined();
+  if (!entry) return;
+  const targetIndex = step % 81;
+  const value = String((step % 9) + 1);
+  const row = Math.floor(targetIndex / 9);
+  const column = targetIndex % 9;
+  expect(entry.cells[targetIndex]?.value).toBe(value);
+  expect(entry.selectedGridCell).toEqual({ row, column });
+};
+
 const makeZeroKillerSession = (): PuzzleSession => {
   const puzzle = makeZeroKillerPuzzle();
   const emptyCells = makeEmptyZeroKillerCells();
@@ -67,10 +91,7 @@ const makeZeroKillerSession = (): PuzzleSession => {
       kind: "grid",
       cells,
       selectedCell: { row: 2, column: 4 },
-      undoStack: [{
-        cells: emptyCells,
-        selectedGridCell: { row: 2, column: 1 },
-      }],
+      undoStack: [makeHistoryEntry(0)],
       redoStack: [],
     },
     statusMessage: "Sudoku entry updated.",
@@ -113,11 +134,16 @@ const withQuotaLimitedStorage = (run: (storage: Map<string, string>, getQuotaRej
       localStorage: {
         getItem: (key: string) => storage.get(key) ?? null,
         setItem: (key: string, value: string) => {
-          if (key === sudokuStorageKey && value.includes('"undoStack":[{')) {
-            quotaRejections += 1;
-            const error = new Error("Storage quota exceeded");
-            error.name = "QuotaExceededError";
-            throw error;
+          if (key === sudokuStorageKey) {
+            const candidate = JSON.parse(value) as { progress?: { kind?: string; history?: { undo?: unknown[]; redo?: unknown[] } } };
+            const hasGridHistory = candidate.progress?.kind === "grid" &&
+              ((candidate.progress.history?.undo?.length ?? 0) > 0 || (candidate.progress.history?.redo?.length ?? 0) > 0);
+            if (hasGridHistory) {
+              quotaRejections += 1;
+              const error = new Error("Storage quota exceeded");
+              error.name = "QuotaExceededError";
+              throw error;
+            }
           }
           storage.set(key, value);
         },
@@ -152,31 +178,59 @@ describe("active puzzle persistence resilience", () => {
     expect(restored.progress.cells.find((cell) => cell.row === 2 && cell.column === 4)?.value).toBe("3");
   });
 
-  it("keeps durable history bounded without shrinking the live session history", () => {
-    withMemoryStorage(() => {
+  it("persists and restores the full grid history limit using compact durable snapshots", () => {
+    withMemoryStorage((storage) => {
       const session = makeZeroKillerSession();
       if (session.progress.kind !== "grid") return;
-      const historyEntry = session.progress.undoStack?.[0];
-      expect(historyEntry).toBeDefined();
-      if (!historyEntry) return;
-
-      const liveHistoryLength = persistedPuzzleHistoryLimit + 5;
-      session.progress.undoStack = Array.from({ length: liveHistoryLength }, () => historyEntry);
-      session.progress.redoStack = Array.from({ length: liveHistoryLength }, () => historyEntry);
+      const undoStack = Array.from({ length: gridHistoryLimit }, (_, index) => makeHistoryEntry(index));
+      const redoStack = Array.from({ length: gridHistoryLimit }, (_, index) => makeHistoryEntry(index + gridHistoryLimit));
+      session.progress.undoStack = undoStack;
+      session.progress.redoStack = redoStack;
 
       savePersistedPuzzleSessions({ activePuzzleId: "sudoku", sessions: { sudoku: session } });
 
-      expect(session.progress.undoStack).toHaveLength(liveHistoryLength);
-      expect(session.progress.redoStack).toHaveLength(liveHistoryLength);
-      const restored = loadPersistedPuzzleSessions()?.sessions.sudoku;
+      expect(session.progress.undoStack).toHaveLength(gridHistoryLimit);
+      expect(session.progress.redoStack).toHaveLength(gridHistoryLimit);
+
+      const raw = storage.get(sudokuStorageKey);
+      expect(raw).toBeDefined();
+      if (!raw) return;
+      const durable = JSON.parse(raw) as {
+        progress: {
+          kind: "grid";
+          history?: { version: number; undo: unknown[]; redo: unknown[] };
+          undoStack?: unknown;
+          redoStack?: unknown;
+        };
+      };
+      expect(durable.progress.history?.version).toBe(1);
+      expect(durable.progress.history?.undo).toHaveLength(gridHistoryLimit);
+      expect(durable.progress.history?.redo).toHaveLength(gridHistoryLimit);
+      expect(durable.progress.undoStack).toBeUndefined();
+      expect(durable.progress.redoStack).toBeUndefined();
+
+      const compactHistoryJson = JSON.stringify(durable.progress.history);
+      const legacyHistoryJson = JSON.stringify({ undoStack, redoStack });
+      expect(compactHistoryJson).not.toContain("ariaLabel");
+      expect(compactHistoryJson).not.toContain('"row"');
+      expect(compactHistoryJson.length).toBeLessThan(legacyHistoryJson.length / 5);
+
+      const persisted = loadPersistedPuzzleSessions()?.sessions.sudoku;
+      expect(persisted?.progress.kind).toBe("grid");
+      if (!persisted || persisted.progress.kind !== "grid") return;
+      const restored = restorePuzzleSessionFromPersisted(persisted, makeZeroKillerPuzzle());
       expect(restored?.progress.kind).toBe("grid");
       if (!restored || restored.progress.kind !== "grid") return;
-      expect(restored.progress.undoStack).toHaveLength(persistedPuzzleHistoryLimit);
-      expect(restored.progress.redoStack).toHaveLength(persistedPuzzleHistoryLimit);
+      expect(restored.progress.undoStack).toHaveLength(gridHistoryLimit);
+      expect(restored.progress.redoStack).toHaveLength(gridHistoryLimit);
+      expectHistoryEntry(restored.progress.undoStack?.[0], 0);
+      expectHistoryEntry(restored.progress.undoStack?.[gridHistoryLimit - 1], gridHistoryLimit - 1);
+      expectHistoryEntry(restored.progress.redoStack?.[0], gridHistoryLimit);
+      expectHistoryEntry(restored.progress.redoStack?.[gridHistoryLimit - 1], (gridHistoryLimit * 2) - 1);
     });
   });
 
-  it("keeps current grid progress saveable when even bounded history hits browser quota", () => {
+  it("keeps current grid progress saveable when compact history still hits browser quota", () => {
     withQuotaLimitedStorage((storage, getQuotaRejections) => {
       const session = makeZeroKillerSession();
 
@@ -184,7 +238,11 @@ describe("active puzzle persistence resilience", () => {
 
       expect(getQuotaRejections()).toBe(1);
       expect(storage.has(metadataStorageKey)).toBe(true);
-      const restored = loadPersistedPuzzleSessions()?.sessions.sudoku;
+      const persisted = loadPersistedPuzzleSessions()?.sessions.sudoku;
+      expect(persisted?.progress.kind).toBe("grid");
+      if (!persisted || persisted.progress.kind !== "grid") return;
+      expect(persisted.progress.history).toBeUndefined();
+      const restored = restorePuzzleSessionFromPersisted(persisted, makeZeroKillerPuzzle());
       expect(restored?.progress.kind).toBe("grid");
       if (!restored || restored.progress.kind !== "grid") return;
       expect(restored.progress.cells.find((cell) => cell.row === 2 && cell.column === 1)?.value).toBe("2");
