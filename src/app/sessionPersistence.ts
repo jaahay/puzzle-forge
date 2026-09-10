@@ -59,10 +59,22 @@ export type PersistedTileProgress = {
   selectedTileId: string | null;
 };
 
+export type PersistedCompactGridHistoryEntry = {
+  values: string[];
+  selectedCellIndex: number | null;
+};
+
+export type PersistedCompactGridHistory = {
+  version: 1;
+  undo: PersistedCompactGridHistoryEntry[];
+  redo: PersistedCompactGridHistoryEntry[];
+};
+
 export type PersistedGridProgress = {
   kind: "grid";
   cells: PuzzleCell[];
   selectedCell: GridCellSelection | null;
+  history?: PersistedCompactGridHistory;
   undoStack?: GridHistoryEntry[];
   redoStack?: GridHistoryEntry[];
 };
@@ -147,8 +159,63 @@ const isGridHistoryEntry = (value: unknown): value is GridHistoryEntry =>
 const isGridHistoryStack = (value: unknown) =>
   value === undefined ||
   (Array.isArray(value) && value.length <= gridHistoryLimit && value.every(isGridHistoryEntry));
+const isPersistedCompactGridHistoryEntry = (value: unknown): value is PersistedCompactGridHistoryEntry =>
+  isRecord(value) &&
+  Array.isArray(value.values) &&
+  value.values.every((cellValue) => typeof cellValue === "string") &&
+  (value.selectedCellIndex === null || isNonNegativeInteger(value.selectedCellIndex));
+const isPersistedCompactGridHistory = (value: unknown): value is PersistedCompactGridHistory =>
+  isRecord(value) &&
+  value.version === 1 &&
+  Array.isArray(value.undo) &&
+  value.undo.length <= gridHistoryLimit &&
+  value.undo.every(isPersistedCompactGridHistoryEntry) &&
+  Array.isArray(value.redo) &&
+  value.redo.length <= gridHistoryLimit &&
+  value.redo.every(isPersistedCompactGridHistoryEntry);
 
 const cloneGridCell = (cell: PuzzleCell): PuzzleCell => ({ ...cell });
+const gridCellKey = ({ row, column }: GridCellSelection) => `${row}:${column}`;
+
+const getMutableGridCellIndexes = (baselineCells: PuzzleCell[]) =>
+  baselineCells.reduce<number[]>((indexes, cell, index) => {
+    if (!cell.locked) indexes.push(index);
+    return indexes;
+  }, []);
+
+const getGridCellIndex = (cells: PuzzleCell[], selection: GridCellSelection | null) => {
+  if (!selection) return null;
+  const index = cells.findIndex((cell) => cell.row === selection.row && cell.column === selection.column);
+  return index >= 0 ? index : null;
+};
+
+const buildPersistedCompactGridHistoryEntry = (
+  entry: GridHistoryEntry,
+  baselineCells: PuzzleCell[],
+  mutableCellIndexes: number[],
+): PersistedCompactGridHistoryEntry => ({
+  values: mutableCellIndexes.map((index) => entry.cells[index]?.value ?? ""),
+  selectedCellIndex: getGridCellIndex(baselineCells, entry.selectedGridCell),
+});
+
+const buildPersistedCompactGridHistory = (
+  history: { undoStack: GridHistoryEntry[]; redoStack: GridHistoryEntry[] },
+  baselineCells: PuzzleCell[],
+): PersistedCompactGridHistory => {
+  const normalized = cloneGridHistoryState(history);
+  const mutableCellIndexes = getMutableGridCellIndexes(baselineCells);
+  return {
+    version: 1,
+    undo: normalized.undoStack.map((entry) => buildPersistedCompactGridHistoryEntry(entry, baselineCells, mutableCellIndexes)),
+    redo: normalized.redoStack.map((entry) => buildPersistedCompactGridHistoryEntry(entry, baselineCells, mutableCellIndexes)),
+  };
+};
+
+const clonePersistedCompactGridHistory = (history: PersistedCompactGridHistory): PersistedCompactGridHistory => ({
+  version: 1,
+  undo: history.undo.map((entry) => ({ values: [...entry.values], selectedCellIndex: entry.selectedCellIndex })),
+  redo: history.redo.map((entry) => ({ values: [...entry.values], selectedCellIndex: entry.selectedCellIndex })),
+});
 
 const buildPersistedPuzzleIdentity = (puzzle: GeneratedPuzzle): PersistedPuzzleIdentity => {
   const sudokuVariation = puzzle.puzzleId === "sudoku" ? normalizeSudokuVariation(puzzle.sudokuVariation) : undefined;
@@ -193,16 +260,16 @@ const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzlePr
     };
   }
 
-  const history = cloneGridHistoryState({
+  const baselineCells = prepareGridCells(session.puzzle);
+  const history = buildPersistedCompactGridHistory({
     undoStack: session.progress.undoStack ?? [],
     redoStack: session.progress.redoStack ?? [],
-  });
+  }, baselineCells);
   return {
     kind: "grid",
     cells: session.progress.cells.map(cloneGridCell),
     selectedCell: session.progress.selectedCell ? { ...session.progress.selectedCell } : null,
-    undoStack: history.undoStack,
-    redoStack: history.redoStack,
+    ...(history.undo.length > 0 || history.redo.length > 0 ? { history } : {}),
   };
 };
 
@@ -247,6 +314,7 @@ const isPersistedGridProgress = (value: Record<string, unknown>): value is Persi
   Array.isArray(value.cells) &&
   value.cells.every(isPuzzleCell) &&
   isGridCellSelection(value.selectedCell) &&
+  (value.history === undefined || isPersistedCompactGridHistory(value.history)) &&
   isGridHistoryStack(value.undoStack) &&
   isGridHistoryStack(value.redoStack);
 
@@ -319,7 +387,7 @@ const clonePersistedPuzzleProgress = (progress: PersistedPuzzleProgress): Persis
     };
   }
 
-  const history = cloneGridHistoryState({
+  const legacyHistory = cloneGridHistoryState({
     undoStack: progress.undoStack ?? [],
     redoStack: progress.redoStack ?? [],
   });
@@ -327,8 +395,9 @@ const clonePersistedPuzzleProgress = (progress: PersistedPuzzleProgress): Persis
     kind: "grid",
     cells: progress.cells.map(cloneGridCell),
     selectedCell: progress.selectedCell ? { ...progress.selectedCell } : null,
-    undoStack: history.undoStack,
-    redoStack: history.redoStack,
+    ...(progress.history ? { history: clonePersistedCompactGridHistory(progress.history) } : {}),
+    ...(progress.undoStack !== undefined ? { undoStack: legacyHistory.undoStack } : {}),
+    ...(progress.redoStack !== undefined ? { redoStack: legacyHistory.redoStack } : {}),
   };
 };
 
@@ -351,8 +420,6 @@ const persistedIdentityMatchesPuzzle = (persisted: PersistedPuzzleSession, puzzl
   (puzzle.kind !== "cards" || solitaireVariationsEqual(persisted.solitaireVariation, puzzle.solitaireVariation)) &&
   (puzzle.kind !== "tiles" || persisted.puzzleInstanceId === puzzle.id) &&
   (puzzle.kind !== "tiles" || persisted.imageId === puzzle.asset.id);
-
-const gridCellKey = ({ row, column }: GridCellSelection) => `${row}:${column}`;
 
 const restorePersistedGridSnapshot = (
   cellsToRestore: PuzzleCell[],
@@ -384,12 +451,81 @@ const restorePersistedGridSnapshot = (
   };
 };
 
+const restoreCompactGridCell = (puzzle: GridGeneratedPuzzle, baseline: PuzzleCell, value: string): PuzzleCell => {
+  if (baseline.locked) return cloneGridCell(baseline);
+
+  if (puzzle.puzzleId === "nonogram") {
+    return {
+      ...baseline,
+      value,
+      tone: value === "■" ? "accent" : "empty",
+      ariaLabel: `${value === "■" ? "Filled" : "Empty"} nonogram cell at row ${baseline.row + 1}, column ${baseline.column + 1}`,
+    };
+  }
+
+  return {
+    ...baseline,
+    value,
+    tone: "empty",
+    ariaLabel: `${value || "Empty"} cell at row ${baseline.row + 1}, column ${baseline.column + 1}`,
+  };
+};
+
+const restorePersistedCompactGridHistoryEntry = (
+  entry: PersistedCompactGridHistoryEntry,
+  puzzle: GridGeneratedPuzzle,
+  baselineCells: PuzzleCell[],
+  mutableCellIndexes: number[],
+): GridHistoryEntry | null => {
+  if (entry.values.length !== mutableCellIndexes.length) return null;
+  if (entry.selectedCellIndex !== null && entry.selectedCellIndex >= baselineCells.length) return null;
+
+  const cells = baselineCells.map(cloneGridCell);
+  for (let valueIndex = 0; valueIndex < mutableCellIndexes.length; valueIndex += 1) {
+    const cellIndex = mutableCellIndexes[valueIndex];
+    const baseline = baselineCells[cellIndex];
+    const value = entry.values[valueIndex];
+    if (!baseline || value === undefined) return null;
+    cells[cellIndex] = restoreCompactGridCell(puzzle, baseline, value);
+  }
+
+  const selected = entry.selectedCellIndex === null ? null : baselineCells[entry.selectedCellIndex];
+  return {
+    cells,
+    selectedGridCell: selected ? { row: selected.row, column: selected.column } : null,
+  };
+};
+
 const restorePersistedGridProgress = (progress: PersistedGridProgress, puzzle: GridGeneratedPuzzle) => {
   const baselineCells = prepareGridCells(puzzle);
   const current = restorePersistedGridSnapshot(progress.cells, progress.selectedCell, baselineCells);
   if (!current) return null;
 
-  const restoreHistoryStack = (entries: GridHistoryEntry[] | undefined) => {
+  if (progress.history) {
+    const mutableCellIndexes = getMutableGridCellIndexes(baselineCells);
+    const restoreCompactHistoryStack = (entries: PersistedCompactGridHistoryEntry[]) => {
+      const restored: GridHistoryEntry[] = [];
+      for (const entry of entries) {
+        const snapshot = restorePersistedCompactGridHistoryEntry(entry, puzzle, baselineCells, mutableCellIndexes);
+        if (!snapshot) return null;
+        restored.push(snapshot);
+      }
+      return restored;
+    };
+
+    const undoStack = restoreCompactHistoryStack(progress.history.undo);
+    const redoStack = restoreCompactHistoryStack(progress.history.redo);
+    if (!undoStack || !redoStack) return null;
+
+    return {
+      cells: current.cells,
+      selectedCell: current.selectedGridCell,
+      undoStack,
+      redoStack,
+    };
+  }
+
+  const restoreLegacyHistoryStack = (entries: GridHistoryEntry[] | undefined) => {
     const restored: GridHistoryEntry[] = [];
     for (const entry of entries ?? []) {
       const snapshot = restorePersistedGridSnapshot(entry.cells, entry.selectedGridCell, baselineCells);
@@ -399,8 +535,8 @@ const restorePersistedGridProgress = (progress: PersistedGridProgress, puzzle: G
     return restored;
   };
 
-  const undoStack = restoreHistoryStack(progress.undoStack);
-  const redoStack = restoreHistoryStack(progress.redoStack);
+  const undoStack = restoreLegacyHistoryStack(progress.undoStack);
+  const redoStack = restoreLegacyHistoryStack(progress.redoStack);
   if (!undoStack || !redoStack) return null;
 
   return {
