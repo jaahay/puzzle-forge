@@ -63,31 +63,40 @@
   width: auto;
 }
 
-/* In the crown, New is a workspace utility rather than a destructive primary
-   action. It opens the chooser; Random/Today/Seed inside the chooser perform
-   replacement. The completion dock owns the stronger one-click continuation. */
-.current-puzzle-new-action .new-puzzle-command-menu > summary {
-  display: flex;
-  width: auto;
-  min-width: 5rem;
+/* In the crown, New is a quiet split workspace utility: the primary hit area
+   starts a random puzzle immediately, while the caret discloses options. The
+   completion dock remains the stronger one-click continuation after a solve. */
+.current-puzzle-new-action .new-puzzle-split-control {
+  box-shadow: none;
+}
+
+.current-puzzle-new-action .new-puzzle-command-primary,
+.current-puzzle-new-action .new-puzzle-options > summary {
   min-height: 2.75rem;
-  height: auto;
-  align-items: center;
-  justify-content: center;
-  gap: 0.34rem;
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  border-left: 1px solid rgba(148, 163, 184, 0.24);
-  border-radius: 0.78rem;
-  padding: 0.45rem 0.68rem;
+  border-color: rgba(148, 163, 184, 0.24);
   color: #cbd5e1;
   background: rgba(15, 23, 42, 0.34);
   box-shadow: none;
   font-weight: 800;
 }
 
-.current-puzzle-new-action .new-puzzle-command-menu > summary:hover,
-.current-puzzle-new-action .new-puzzle-command-menu > summary:focus-visible,
-.current-puzzle-new-action .new-puzzle-command-menu[open] > summary {
+.current-puzzle-new-action .new-puzzle-command-primary {
+  min-width: 4.35rem;
+  border-radius: 0.78rem 0 0 0.78rem;
+  padding: 0.45rem 0.62rem;
+}
+
+.current-puzzle-new-action .new-puzzle-options > summary {
+  width: 2.1rem;
+  border-left: 0;
+  border-radius: 0 0.78rem 0.78rem 0;
+}
+
+.current-puzzle-new-action .new-puzzle-command-primary:hover:not(:disabled),
+.current-puzzle-new-action .new-puzzle-command-primary:focus-visible,
+.current-puzzle-new-action .new-puzzle-options > summary:hover,
+.current-puzzle-new-action .new-puzzle-options > summary:focus-visible,
+.current-puzzle-new-action .new-puzzle-options[open] > summary {
   border-color: rgba(125, 211, 252, 0.3);
   color: #e2e8f0;
   background: rgba(51, 65, 85, 0.48);
@@ -95,9 +104,10 @@
   outline: none;
 }
 
-.current-puzzle-new-action .new-puzzle-command-menu > summary[aria-disabled="true"],
-.current-puzzle-new-action .new-puzzle-command-menu > summary[aria-disabled="true"]:hover,
-.current-puzzle-new-action .new-puzzle-command-menu > summary[aria-disabled="true"]:focus-visible {
+.current-puzzle-new-action .new-puzzle-command-primary:disabled,
+.current-puzzle-new-action .new-puzzle-options > summary[aria-disabled="true"],
+.current-puzzle-new-action .new-puzzle-options > summary[aria-disabled="true"]:hover,
+.current-puzzle-new-action .new-puzzle-options > summary[aria-disabled="true"]:focus-visible {
   border-color: rgba(148, 163, 184, 0.18);
   color: #94a3b8;
   background: rgba(15, 23, 42, 0.28);
@@ -114,7 +124,7 @@
   transition: transform 140ms ease-out;
 }
 
-.current-puzzle-new-action .new-puzzle-command-menu[open] > summary .new-puzzle-command-caret {
+.current-puzzle-new-action .new-puzzle-options[open] > summary .new-puzzle-command-caret {
   transform: rotate(180deg);
 }
 
