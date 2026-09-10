@@ -91,7 +91,7 @@ describe("persisted session boundary validation", () => {
     });
   });
 
-  it("persists and restores grid undo/redo history across sessions", () => {
+  it("writes compact grid undo/redo history and restores rich runtime snapshots", () => {
     const session = makeSudokuSession();
     if (session.progress.kind !== "grid") return;
     session.progress.undoStack = [{
@@ -106,8 +106,10 @@ describe("persisted session boundary validation", () => {
     const persisted = buildPersistedPuzzleSession("sudoku", session);
     expect(persisted?.progress.kind).toBe("grid");
     if (!persisted || persisted.progress.kind !== "grid") return;
-    expect(persisted.progress.undoStack?.[0].cells[1].value).toBe("4");
-    expect(persisted.progress.redoStack?.[0].cells[1].value).toBe("7");
+    expect(persisted.progress.history?.undo[0]).toEqual({ values: ["4"], selectedCellIndex: 1 });
+    expect(persisted.progress.history?.redo[0]).toEqual({ values: ["7"], selectedCellIndex: null });
+    expect(persisted.progress.undoStack).toBeUndefined();
+    expect(persisted.progress.redoStack).toBeUndefined();
 
     const restored = restorePuzzleSessionFromPersisted(persisted, makeSudokuPuzzle());
     expect(restored?.progress.kind).toBe("grid");
@@ -115,6 +117,45 @@ describe("persisted session boundary validation", () => {
     expect(restored.progress.undoStack?.[0].cells[1].value).toBe("4");
     expect(restored.progress.undoStack?.[0].selectedGridCell).toEqual({ row: 0, column: 1 });
     expect(restored.progress.redoStack?.[0].cells[1].value).toBe("7");
+  });
+
+  it("loads and restores legacy rich grid history", () => {
+    withMockWindowStorage((storage) => {
+      const current = buildPersistedPuzzleSession("sudoku", makeSudokuSession());
+      expect(current?.progress.kind).toBe("grid");
+      if (!current || current.progress.kind !== "grid") return;
+
+      const legacy: PersistedPuzzleSession = {
+        ...current,
+        progress: {
+          kind: "grid",
+          cells: current.progress.cells,
+          selectedCell: current.progress.selectedCell,
+          undoStack: [{
+            cells: makeGridCells().map((cell) => cell.column === 1 ? { ...cell, value: "4" } : cell),
+            selectedGridCell: { row: 0, column: 1 },
+          }],
+          redoStack: [{
+            cells: makeGridCells().map((cell) => cell.column === 1 ? { ...cell, value: "7" } : cell),
+            selectedGridCell: null,
+          }],
+        },
+      };
+      writeSession(storage, legacy);
+
+      const loaded = loadPersistedPuzzleSessions()?.sessions.sudoku;
+      expect(loaded?.progress.kind).toBe("grid");
+      if (!loaded || loaded.progress.kind !== "grid") return;
+      expect(loaded.progress.history).toBeUndefined();
+      expect(loaded.progress.undoStack?.[0].cells[1].value).toBe("4");
+
+      const restored = restorePuzzleSessionFromPersisted(loaded, makeSudokuPuzzle());
+      expect(restored?.progress.kind).toBe("grid");
+      if (!restored || restored.progress.kind !== "grid") return;
+      expect(restored.progress.undoStack?.[0].cells[1].value).toBe("4");
+      expect(restored.progress.undoStack?.[0].selectedGridCell).toEqual({ row: 0, column: 1 });
+      expect(restored.progress.redoStack?.[0].cells[1].value).toBe("7");
+    });
   });
 
   it("persists explicit daily provenance independently of the seed string", () => {
@@ -181,11 +222,20 @@ describe("persisted session boundary validation", () => {
     });
   });
 
-  it("rejects malformed grid history entries", () => {
+  it("rejects malformed compact and legacy grid history entries", () => {
     withMockWindowStorage((storage) => {
       const persisted = buildPersistedPuzzleSession("sudoku", makeSudokuSession());
       expect(persisted?.progress.kind).toBe("grid");
       if (!persisted || persisted.progress.kind !== "grid") return;
+
+      writeSession(storage, {
+        ...persisted,
+        progress: {
+          ...persisted.progress,
+          history: { version: 1, undo: [{ values: ["4"], selectedCellIndex: -1 }], redo: [] },
+        },
+      });
+      expect(loadPersistedPuzzleSessions()).toBeNull();
 
       writeSession(storage, {
         ...persisted,
