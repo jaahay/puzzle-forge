@@ -7,6 +7,7 @@ import {
 import {
   buildPersistedPuzzleSession,
   loadPersistedPuzzleSessions,
+  persistedPuzzleHistoryLimit,
   restorePuzzleSessionFromPersisted,
   savePersistedPuzzleSessions,
   type PuzzleSession,
@@ -76,6 +77,31 @@ const makeZeroKillerSession = (): PuzzleSession => {
   };
 };
 
+const withMemoryStorage = (run: (storage: Map<string, string>) => void) => {
+  const storage = new Map<string, string>();
+  const originalWindow = globalThis.window;
+
+  Object.defineProperty(globalThis, "window", {
+    configurable: true,
+    value: {
+      localStorage: {
+        getItem: (key: string) => storage.get(key) ?? null,
+        setItem: (key: string, value: string) => storage.set(key, value),
+        removeItem: (key: string) => storage.delete(key),
+      },
+    },
+  });
+
+  try {
+    run(storage);
+  } finally {
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: originalWindow,
+    });
+  }
+};
+
 const withQuotaLimitedStorage = (run: (storage: Map<string, string>, getQuotaRejections: () => number) => void) => {
   const storage = new Map<string, string>();
   let quotaRejections = 0;
@@ -124,6 +150,30 @@ describe("active puzzle persistence resilience", () => {
     if (!restored || restored.progress.kind !== "grid") return;
     expect(restored.progress.cells.find((cell) => cell.row === 2 && cell.column === 1)?.value).toBe("2");
     expect(restored.progress.cells.find((cell) => cell.row === 2 && cell.column === 4)?.value).toBe("3");
+  });
+
+  it("keeps durable history bounded without shrinking the live session history", () => {
+    withMemoryStorage(() => {
+      const session = makeZeroKillerSession();
+      if (session.progress.kind !== "grid") return;
+      const historyEntry = session.progress.undoStack?.[0];
+      expect(historyEntry).toBeDefined();
+      if (!historyEntry) return;
+
+      const liveHistoryLength = persistedPuzzleHistoryLimit + 5;
+      session.progress.undoStack = Array.from({ length: liveHistoryLength }, () => historyEntry);
+      session.progress.redoStack = Array.from({ length: liveHistoryLength }, () => historyEntry);
+
+      savePersistedPuzzleSessions({ activePuzzleId: "sudoku", sessions: { sudoku: session } });
+
+      expect(session.progress.undoStack).toHaveLength(liveHistoryLength);
+      expect(session.progress.redoStack).toHaveLength(liveHistoryLength);
+      const restored = loadPersistedPuzzleSessions()?.sessions.sudoku;
+      expect(restored?.progress.kind).toBe("grid");
+      if (!restored || restored.progress.kind !== "grid") return;
+      expect(restored.progress.undoStack).toHaveLength(persistedPuzzleHistoryLimit);
+      expect(restored.progress.redoStack).toHaveLength(persistedPuzzleHistoryLimit);
+    });
   });
 
   it("keeps current grid progress saveable when durable history exceeds browser storage quota", () => {
