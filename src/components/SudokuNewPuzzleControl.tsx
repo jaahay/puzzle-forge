@@ -47,8 +47,9 @@ export const SudokuNewPuzzleControl = ({
   const closeOptions = (restoreFocus = false) => {
     const options = optionsRef.current;
     if (!options) return;
+    const wasOpen = options.open;
     options.open = false;
-    if (restoreFocus) options.querySelector("summary")?.focus();
+    if (restoreFocus && wasOpen) options.querySelector("summary")?.focus();
   };
 
   const renewSeedCandidate = () => onSeedLoadInputChange(makeRandomSeed());
@@ -76,9 +77,9 @@ export const SudokuNewPuzzleControl = ({
     };
   }, []);
 
-  const startRandomPuzzle = () => {
+  const startRandomPuzzle = (restoreMenuFocus = false) => {
     if (disabled) return;
-    closeOptions(true);
+    closeOptions(restoreMenuFocus);
     onNewPuzzle();
     renewSeedCandidate();
   };
@@ -103,7 +104,7 @@ export const SudokuNewPuzzleControl = ({
         <button
           class="new-puzzle-command-primary"
           type="button"
-          onClick={startRandomPuzzle}
+          onClick={() => startRandomPuzzle(false)}
           disabled={disabled}
           aria-label={`New random Sudoku, ${configurationSummary}`}
           title={`New random puzzle — ${configurationSummary}`}
@@ -114,11 +115,23 @@ export const SudokuNewPuzzleControl = ({
           class="new-puzzle-options"
           ref={optionsRef}
           onToggle={(event) => {
+            if (event.currentTarget.open && disabled) {
+              event.currentTarget.open = false;
+              return;
+            }
             if (event.currentTarget.open && !seedLoadInput.trim()) renewSeedCandidate();
           }}
         >
-          <summary aria-label={`Change new puzzle options. Current selection: ${configurationSummary}`} title="New puzzle options">
-            <span aria-hidden="true">▾</span>
+          <summary
+            aria-label={`Change new puzzle options. Current selection: ${configurationSummary}`}
+            aria-disabled={disabled || undefined}
+            tabIndex={disabled ? -1 : 0}
+            title="New puzzle options"
+            onClick={(event) => {
+              if (disabled) event.preventDefault();
+            }}
+          >
+            <span class="new-puzzle-command-caret" aria-hidden="true">▾</span>
           </summary>
           <div class="new-puzzle-options-panel" aria-label="New puzzle options">
             <details class="new-puzzle-info">
@@ -133,7 +146,7 @@ export const SudokuNewPuzzleControl = ({
             </details>
 
             <div class="new-puzzle-quick-actions" aria-label="Puzzle source">
-              <button type="button" onClick={startRandomPuzzle} disabled={disabled} aria-label={`Start a random puzzle, ${configurationSummary}`} title={`Random puzzle — ${configurationSummary}`}>
+              <button type="button" onClick={() => startRandomPuzzle(true)} disabled={disabled} aria-label={`Start a random puzzle, ${configurationSummary}`} title={`Random puzzle — ${configurationSummary}`}>
                 <RandomIcon />
                 <span class="new-puzzle-quick-action-copy"><strong>Random</strong></span>
               </button>
