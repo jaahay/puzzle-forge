@@ -224,8 +224,47 @@ export const getPersistedPuzzleReference = (
   return null;
 };
 
+const canonicalizePuzzleReference = (reference: PuzzleReferenceV1): PuzzleReferenceV1 => {
+  const common = {
+    schemaVersion: puzzleReferenceSchemaVersion,
+    puzzleId: reference.puzzleId,
+    generatorVersion: reference.generatorVersion,
+    seed: reference.seed,
+    width: reference.width,
+    height: reference.height,
+  };
+  const provenance = cloneProvenance(reference.provenance);
+
+  if (reference.puzzleId === "sudoku") {
+    return {
+      ...common,
+      puzzleId: "sudoku",
+      difficulty: reference.difficulty,
+      sudokuVariation: reference.sudokuVariation,
+      ...(provenance ? { provenance } : {}),
+    };
+  }
+
+  if (reference.puzzleId === "nonogram") {
+    return {
+      ...common,
+      puzzleId: "nonogram",
+      difficulty: reference.difficulty,
+      requireUniqueSolution: reference.requireUniqueSolution,
+      ...(provenance ? { provenance } : {}),
+    };
+  }
+
+  return {
+    ...common,
+    puzzleId: reference.puzzleId,
+    imageId: reference.imageId,
+    ...(provenance ? { provenance } : {}),
+  };
+};
+
 export const serializePuzzleReference = (reference: PuzzleReferenceV1) =>
-  `${puzzleReferencePrefix}${encodeBase64Url(JSON.stringify(reference))}`;
+  `${puzzleReferencePrefix}${encodeBase64Url(JSON.stringify(canonicalizePuzzleReference(reference)))}`;
 
 export const serializeGeneratedPuzzleReference = (puzzle: GeneratedPuzzle) => {
   const reference = getPuzzleReference(puzzle);
