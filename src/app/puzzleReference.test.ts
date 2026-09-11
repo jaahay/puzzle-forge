@@ -69,6 +69,7 @@ describe("durable puzzle references", () => {
       },
     });
     if (!decoded.ok) throw new Error("Expected valid Sudoku reference");
+    expect(serializePuzzleReference(decoded.reference)).toBe(serialized);
     expect(puzzleReferenceToGenerationOptions(decoded.reference)).toEqual({
       puzzleId: "sudoku",
       seed: "seed-α-42",
