@@ -5,7 +5,6 @@ import type { GridHistoryEntry } from "./gridHistory";
 import {
   loadPersistedPuzzleSessions as loadPersistedPuzzleSessionsUnsafe,
   savePersistedPuzzleSessions as savePersistedPuzzleSessionsUnsafe,
-  type RuntimePuzzleSessions,
 } from "./sessionPersistence";
 export { puzzleIds, solitaireHistoryLimit, solitaireHistoryLimitNotice } from "./sessionConstants";
 export * from "./sessionPersistence";
@@ -76,52 +75,6 @@ export type PuzzleSession =
 
 export type PuzzleSessionCache = Partial<Record<PuzzleId, PuzzleSession>>;
 
-const isStorageQuotaError = (error: unknown) => {
-  if (typeof error !== "object" || error === null) return false;
-  const candidate = error as { name?: unknown; code?: unknown };
-  return candidate.name === "QuotaExceededError" ||
-    candidate.name === "NS_ERROR_DOM_QUOTA_REACHED" ||
-    candidate.code === 22 ||
-    candidate.code === 1014;
-};
-
-const withoutActiveSessionHistory = (sessions: RuntimePuzzleSessions): RuntimePuzzleSessions => {
-  const activeSession = sessions.sessions[sessions.activePuzzleId];
-  if (!activeSession || activeSession.kind === "tiles") return sessions;
-
-  if (activeSession.kind === "cards") {
-    return {
-      activePuzzleId: sessions.activePuzzleId,
-      sessions: {
-        ...sessions.sessions,
-        [sessions.activePuzzleId]: {
-          ...activeSession,
-          progress: {
-            ...activeSession.progress,
-            undoStack: [],
-            redoStack: [],
-          },
-        },
-      },
-    };
-  }
-
-  return {
-    activePuzzleId: sessions.activePuzzleId,
-    sessions: {
-      ...sessions.sessions,
-      [sessions.activePuzzleId]: {
-        ...activeSession,
-        progress: {
-          ...activeSession.progress,
-          undoStack: [],
-          redoStack: [],
-        },
-      },
-    },
-  };
-};
-
 export const loadPersistedPuzzleSessions = () => {
   try {
     return loadPersistedPuzzleSessionsUnsafe();
@@ -130,21 +83,4 @@ export const loadPersistedPuzzleSessions = () => {
   }
 };
 
-export const savePersistedPuzzleSessions = (sessions: RuntimePuzzleSessions) => {
-  try {
-    savePersistedPuzzleSessionsUnsafe(sessions);
-  } catch (error) {
-    if (!isStorageQuotaError(error)) return;
-
-    // Current puzzle progress matters more than durable Undo/Redo. Retry once
-    // without persisted history; in-memory history remains intact for the live session.
-    const sessionsWithoutHistory = withoutActiveSessionHistory(sessions);
-    if (sessionsWithoutHistory === sessions) return;
-
-    try {
-      savePersistedPuzzleSessionsUnsafe(sessionsWithoutHistory);
-    } catch {
-      // Persistence is optional. Keep the in-memory game usable when storage is unavailable.
-    }
-  }
-};
+export const savePersistedPuzzleSessions = savePersistedPuzzleSessionsUnsafe;
