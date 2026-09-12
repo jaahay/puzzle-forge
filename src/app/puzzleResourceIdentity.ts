@@ -6,10 +6,21 @@ import type {
   SolitaireVariation,
   SudokuVariation,
 } from "../catalog/types";
-import { solitaireRedealLimits } from "../games/solitaire/variation";
-import { sudokuVariations } from "../games/sudoku/variation";
+import { getPuzzleImageAsset } from "../games/imageAssets";
+import { normalizeSeed } from "../games/shared";
+import {
+  defaultSolitaireVariation,
+  normalizeSolitaireVariation,
+  solitaireRedealLimits,
+} from "../games/solitaire/variation";
+import {
+  defaultSudokuVariation,
+  normalizeSudokuVariation,
+  sudokuVariations,
+} from "../games/sudoku/variation";
 import type { GenerationIdentity } from "./generationIdentity";
 import { isPuzzleProvenance, type PuzzleProvenance } from "./puzzleProvenance";
+import { defaultPuzzleDifficulty } from "./runtime";
 
 type WireSolitaireVariation = [
   drawMode: SolitaireVariation["drawMode"],
@@ -20,12 +31,12 @@ type WireSolitaireVariation = [
 
 type WireGenerationIdentity = {
   s: string;
-  w: number;
-  h: number;
-  d: PuzzleDifficulty;
-  u: 0 | 1;
-  x: SudokuVariation;
-  l: WireSolitaireVariation;
+  w?: number;
+  h?: number;
+  d?: PuzzleDifficulty;
+  u?: 0 | 1;
+  x?: SudokuVariation;
+  l?: WireSolitaireVariation;
   i?: string;
   o?: PuzzleProvenance;
 };
@@ -90,17 +101,69 @@ const solitaireVariationFromWire = (wire: WireSolitaireVariation): SolitaireVari
   knownSolvable: wire[3] === 1,
 });
 
-const identityToWire = (identity: GenerationIdentity): WireGenerationIdentity => ({
-  s: identity.seed,
-  w: identity.width,
-  h: identity.height,
-  d: identity.difficulty,
-  u: identity.requireUniqueSolution ? 1 : 0,
-  x: identity.sudokuVariation,
-  l: solitaireVariationToWire(identity.solitaireVariation),
-  ...(identity.imageId ? { i: identity.imageId } : {}),
-  ...(identity.provenance ? { o: identity.provenance } : {}),
-});
+const withProvenance = (
+  wire: Omit<WireGenerationIdentity, "o">,
+  provenance: PuzzleProvenance | undefined,
+): WireGenerationIdentity => provenance ? { ...wire, o: provenance } : wire;
+
+const identityToWire = (identity: GenerationIdentity): WireGenerationIdentity => {
+  const seed = normalizeSeed(identity.seed);
+
+  switch (identity.puzzleId) {
+    case "sudoku":
+      return withProvenance({
+        s: seed,
+        d: identity.difficulty,
+        x: normalizeSudokuVariation(identity.sudokuVariation),
+      }, identity.provenance);
+    case "nonogram":
+      return withProvenance({
+        s: seed,
+        w: identity.width,
+        h: identity.height,
+        d: identity.difficulty,
+        u: identity.requireUniqueSolution ? 1 : 0,
+      }, identity.provenance);
+    case "word-guess":
+    case "logic-grid":
+      return withProvenance({
+        s: seed,
+        w: identity.width,
+        h: identity.height,
+      }, identity.provenance);
+    case "jigsaw":
+    case "tile-swap":
+    case "sliding-puzzle":
+      return withProvenance({
+        s: seed,
+        w: identity.width,
+        h: identity.height,
+        i: getPuzzleImageAsset(identity.imageId, identity.puzzleId).id,
+      }, identity.provenance);
+    case "klondike-solitaire":
+      return withProvenance({
+        s: seed,
+        l: solitaireVariationToWire(normalizeSolitaireVariation(identity.solitaireVariation)),
+      }, identity.provenance);
+    case "peg-solitaire":
+      return withProvenance({ s: seed }, identity.provenance);
+    case "futoshiki":
+      return withProvenance({
+        s: seed,
+        d: identity.difficulty,
+      }, identity.provenance);
+    case "kenken":
+    case "minesweeper":
+    case "slitherlink":
+      return withProvenance({
+        s: seed,
+        w: identity.width,
+        h: identity.height,
+        d: identity.difficulty,
+        u: identity.requireUniqueSolution ? 1 : 0,
+      }, identity.provenance);
+  }
+};
 
 export const encodeGenerationId = (identity: GenerationIdentity) =>
   encodeBase64Url(JSON.stringify(identityToWire(identity)));
@@ -123,14 +186,12 @@ export const decodeGenerationId = (puzzleId: PuzzleId, generationId: string): Ge
   if (
     typeof decoded.s !== "string" ||
     decoded.s.length === 0 ||
-    !isPositiveInteger(decoded.w) ||
-    !isPositiveInteger(decoded.h) ||
-    typeof decoded.d !== "string" ||
-    !puzzleDifficulties.has(decoded.d as PuzzleDifficulty) ||
-    (decoded.u !== 0 && decoded.u !== 1) ||
-    typeof decoded.x !== "string" ||
-    !sudokuVariationSet.has(decoded.x as SudokuVariation) ||
-    !isWireSolitaireVariation(decoded.l) ||
+    (decoded.w !== undefined && !isPositiveInteger(decoded.w)) ||
+    (decoded.h !== undefined && !isPositiveInteger(decoded.h)) ||
+    (decoded.d !== undefined && (typeof decoded.d !== "string" || !puzzleDifficulties.has(decoded.d as PuzzleDifficulty))) ||
+    (decoded.u !== undefined && decoded.u !== 0 && decoded.u !== 1) ||
+    (decoded.x !== undefined && (typeof decoded.x !== "string" || !sudokuVariationSet.has(decoded.x as SudokuVariation))) ||
+    (decoded.l !== undefined && !isWireSolitaireVariation(decoded.l)) ||
     (decoded.i !== undefined && (typeof decoded.i !== "string" || decoded.i.length === 0)) ||
     (decoded.o !== undefined && !isPuzzleProvenance(decoded.o))
   ) {
@@ -139,27 +200,36 @@ export const decodeGenerationId = (puzzleId: PuzzleId, generationId: string): Ge
 
   const definition = getPuzzleDefinition(puzzleId);
   if (
-    decoded.w < definition.minWidth ||
-    decoded.w > definition.maxWidth ||
-    decoded.h < definition.minHeight ||
-    decoded.h > definition.maxHeight
+    (decoded.w !== undefined && (decoded.w < definition.minWidth || decoded.w > definition.maxWidth)) ||
+    (decoded.h !== undefined && (decoded.h < definition.minHeight || decoded.h > definition.maxHeight))
   ) {
     return { ok: false, reason: "invalid-identity" };
   }
 
-  return {
-    ok: true,
-    identity: {
-      puzzleId,
-      seed: decoded.s,
-      width: decoded.w,
-      height: decoded.h,
-      difficulty: decoded.d as PuzzleDifficulty,
-      requireUniqueSolution: decoded.u === 1,
-      sudokuVariation: decoded.x as SudokuVariation,
-      solitaireVariation: solitaireVariationFromWire(decoded.l),
-      ...(decoded.i !== undefined ? { imageId: decoded.i as string } : {}),
-      ...(decoded.o !== undefined ? { provenance: decoded.o as PuzzleProvenance } : {}),
-    },
+  const identity: GenerationIdentity = {
+    puzzleId,
+    seed: normalizeSeed(decoded.s),
+    width: (decoded.w as number | undefined) ?? definition.defaultWidth,
+    height: (decoded.h as number | undefined) ?? definition.defaultHeight,
+    difficulty: (decoded.d as PuzzleDifficulty | undefined) ?? defaultPuzzleDifficulty,
+    requireUniqueSolution: decoded.u === undefined ? true : decoded.u === 1,
+    sudokuVariation: decoded.x === undefined
+      ? defaultSudokuVariation
+      : normalizeSudokuVariation(decoded.x as SudokuVariation),
+    solitaireVariation: decoded.l === undefined
+      ? defaultSolitaireVariation
+      : solitaireVariationFromWire(decoded.l as WireSolitaireVariation),
+    ...(decoded.i !== undefined ? { imageId: decoded.i as string } : {}),
+    ...(decoded.o !== undefined ? { provenance: decoded.o as PuzzleProvenance } : {}),
   };
+
+  try {
+    if (encodeGenerationId(identity) !== generationId) {
+      return { ok: false, reason: "invalid-identity" };
+    }
+  } catch {
+    return { ok: false, reason: "invalid-identity" };
+  }
+
+  return { ok: true, identity };
 };
