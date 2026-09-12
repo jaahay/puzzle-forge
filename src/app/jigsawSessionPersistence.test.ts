@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { generateJigsaw } from "../games/jigsaw/generate";
 import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
-import { deserializePuzzle, serializePuzzle } from "./puzzleSerialization";
+import { encodeGenerationId } from "./puzzleResourceIdentity";
 import {
   buildPersistedPuzzleSession,
   restorePuzzleSessionFromPersisted,
@@ -26,31 +27,45 @@ const makeJigsawSession = (): PuzzleSession => {
 };
 
 describe("Jigsaw session image identity", () => {
-  it("persists the exact materialized puzzle for restore", () => {
+  it("restores progress only over the matching regenerated Jigsaw baseline", () => {
     const session = makeJigsawSession();
     const puzzle = session.puzzle;
     expect(puzzle.kind).toBe("tiles");
-    if (puzzle.kind !== "tiles") return;
+    if (puzzle.kind !== "tiles" || puzzle.puzzleId !== "jigsaw") return;
 
-    const persisted = buildPersistedPuzzleSession("jigsaw", session);
+    const generationId = encodeGenerationId({
+      puzzleId: "jigsaw",
+      seed: puzzle.seed,
+      width: puzzle.width,
+      height: puzzle.height,
+      difficulty: puzzle.difficulty ?? "Medium",
+      requireUniqueSolution: true,
+      sudokuVariation: "classic",
+      solitaireVariation: defaultSolitaireVariation,
+      imageId: puzzle.asset.id,
+    });
+    const persisted = buildPersistedPuzzleSession({ puzzleId: "jigsaw", generationId }, session);
     expect(persisted).not.toBeNull();
     if (!persisted) return;
-    expect(persisted.puzzle).toBe(serializePuzzle(puzzle));
+    expect(persisted.generationId).toBe(generationId);
+    expect(persisted.baselineChecksum).toBe(puzzle.checksum);
+    expect(persisted).not.toHaveProperty("puzzle");
 
-    const decoded = deserializePuzzle(persisted.puzzle);
-    expect(decoded.ok).toBe(true);
-    if (!decoded.ok || decoded.puzzle.kind !== "tiles" || decoded.puzzle.puzzleId !== "jigsaw") return;
-    expect(decoded.puzzle.asset.id).toBe(defaultJigsawImageAsset.id);
-    expect(decoded.puzzle.id).toBe(puzzle.id);
-    expect(decoded.puzzle.tiles).toEqual(puzzle.tiles);
+    const regenerated = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "persist-image-selection",
+      width: 4,
+      height: 3,
+      imageId: defaultJigsawImageAsset.id,
+    });
+    const restored = restorePuzzleSessionFromPersisted(persisted, regenerated);
+    expect(restored).not.toBeNull();
+    expect(restored?.puzzle.kind).toBe("tiles");
+    if (!restored || restored.puzzle.kind !== "tiles" || restored.puzzle.puzzleId !== "jigsaw") return;
+    expect(restored.puzzle.asset.id).toBe(defaultJigsawImageAsset.id);
+    expect(restored.puzzle.id).toBe(puzzle.id);
+    expect(restored.puzzle.tiles).toEqual(puzzle.tiles);
 
-    expect(restorePuzzleSessionFromPersisted(persisted)).not.toBeNull();
-    expect(restorePuzzleSessionFromPersisted(persisted, puzzle)).not.toBeNull();
-
-    const otherImagePuzzle = {
-      ...puzzle,
-      asset: { ...puzzle.asset, id: "other-image" },
-    };
-    expect(restorePuzzleSessionFromPersisted(persisted, otherImagePuzzle)).toBeNull();
+    expect(restorePuzzleSessionFromPersisted(persisted, { ...regenerated, checksum: "different-baseline" })).toBeNull();
   });
 });
