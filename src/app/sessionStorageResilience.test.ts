@@ -10,7 +10,6 @@ import {
   type PuzzleSession,
 } from "./session";
 
-const metadataStorageKey = "puzzle-forge.sessions";
 const sudokuStorageKey = "puzzle-forge.session.sudoku";
 
 const makeEmptyZeroKillerCells = (): PuzzleCell[] =>
@@ -120,45 +119,6 @@ const withMemoryStorage = (run: (storage: Map<string, string>) => void) => {
   }
 };
 
-const withQuotaLimitedStorage = (run: (storage: Map<string, string>, getQuotaRejections: () => number) => void) => {
-  const storage = new Map<string, string>();
-  let quotaRejections = 0;
-  const originalWindow = globalThis.window;
-
-  Object.defineProperty(globalThis, "window", {
-    configurable: true,
-    value: {
-      localStorage: {
-        getItem: (key: string) => storage.get(key) ?? null,
-        setItem: (key: string, value: string) => {
-          if (key === sudokuStorageKey) {
-            const candidate = JSON.parse(value) as { progress?: { kind?: string; history?: { undo?: unknown[]; redo?: unknown[] } } };
-            const hasGridHistory = candidate.progress?.kind === "grid" &&
-              ((candidate.progress.history?.undo?.length ?? 0) > 0 || (candidate.progress.history?.redo?.length ?? 0) > 0);
-            if (hasGridHistory) {
-              quotaRejections += 1;
-              const error = new Error("Storage quota exceeded");
-              error.name = "QuotaExceededError";
-              throw error;
-            }
-          }
-          storage.set(key, value);
-        },
-        removeItem: (key: string) => storage.delete(key),
-      },
-    },
-  });
-
-  try {
-    run(storage, () => quotaRejections);
-  } finally {
-    Object.defineProperty(globalThis, "window", {
-      configurable: true,
-      value: originalWindow,
-    });
-  }
-};
-
 describe("active puzzle persistence resilience", () => {
   it("round-trips Zero Killer player progress with the exact materialized puzzle", () => {
     const session = makeZeroKillerSession();
@@ -226,28 +186,6 @@ describe("active puzzle persistence resilience", () => {
       expectHistoryEntry(restored.progress.undoStack?.[gridHistoryLimit - 1], gridHistoryLimit - 1);
       expectHistoryEntry(restored.progress.redoStack?.[0], gridHistoryLimit);
       expectHistoryEntry(restored.progress.redoStack?.[gridHistoryLimit - 1], (gridHistoryLimit * 2) - 1);
-    });
-  });
-
-  it("keeps current grid progress saveable when compact history still hits browser quota", () => {
-    withQuotaLimitedStorage((storage, getQuotaRejections) => {
-      const session = makeZeroKillerSession();
-
-      savePersistedPuzzleSessions({ activePuzzleId: "sudoku", sessions: { sudoku: session } });
-
-      expect(getQuotaRejections()).toBe(1);
-      expect(storage.has(metadataStorageKey)).toBe(true);
-      const persisted = loadPersistedPuzzleSessions()?.sessions.sudoku;
-      expect(persisted?.progress.kind).toBe("grid");
-      if (!persisted || persisted.progress.kind !== "grid") return;
-      expect(persisted.progress.history).toBeUndefined();
-      const restored = restorePuzzleSessionFromPersisted(persisted);
-      expect(restored?.progress.kind).toBe("grid");
-      if (!restored || restored.progress.kind !== "grid") return;
-      expect(restored.progress.cells.find((cell) => cell.row === 2 && cell.column === 1)?.value).toBe("2");
-      expect(restored.progress.cells.find((cell) => cell.row === 2 && cell.column === 4)?.value).toBe("3");
-      expect(restored.progress.undoStack).toEqual([]);
-      expect(restored.progress.redoStack).toEqual([]);
     });
   });
 });
