@@ -30,6 +30,13 @@ type WireGenerationIdentity = {
   o?: PuzzleProvenance;
 };
 
+export type PuzzleResourceKey = `${PuzzleId}/${string}`;
+
+export type PuzzleResourceIdentity = {
+  puzzleId: PuzzleId;
+  generationId: string;
+};
+
 export type GenerationIdDecodeResult =
   | { ok: true; identity: GenerationIdentity }
   | { ok: false; reason: "malformed" | "invalid-identity" };
@@ -97,6 +104,11 @@ const identityToWire = (identity: GenerationIdentity): WireGenerationIdentity =>
 
 export const encodeGenerationId = (identity: GenerationIdentity) =>
   encodeBase64Url(JSON.stringify(identityToWire(identity)));
+
+export const makePuzzleResourceKey = (
+  puzzleId: PuzzleId,
+  generationId: string,
+): PuzzleResourceKey => `${puzzleId}/${generationId}`;
 
 export const decodeGenerationId = (puzzleId: PuzzleId, generationId: string): GenerationIdDecodeResult => {
   let decoded: unknown;
