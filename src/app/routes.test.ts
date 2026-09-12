@@ -15,11 +15,7 @@ describe("pathname routing", () => {
     expect(parseAppRoute("/word-guess")).toEqual({ kind: "puzzle", puzzleId: "word-guess" });
   });
 
-  it("parses generic and typed materialized puzzle permalinks", () => {
-    expect(parseAppRoute("/p/example-token")).toEqual({
-      kind: "permalink",
-      serializedPuzzle: "example-token",
-    });
+  it("parses only puzzle-type-scoped materialized permalinks", () => {
     expect(parseAppRoute("/sudoku/example-token")).toEqual({
       kind: "permalink",
       puzzleId: "sudoku",
@@ -29,6 +25,10 @@ describe("pathname routing", () => {
       kind: "permalink",
       puzzleId: "jigsaw",
       serializedPuzzle: "example-token",
+    });
+    expect(parseAppRoute("/p/example-token")).toEqual({
+      kind: "not-found",
+      pathname: "/p/example-token",
     });
   });
 
@@ -41,8 +41,6 @@ describe("pathname routing", () => {
   it("serializes every route", () => {
     expect(appRoutePath({ kind: "home" })).toBe("/");
     expect(appRoutePath({ kind: "puzzle", puzzleId: "sudoku" })).toBe("/sudoku");
-    expect(appRoutePath({ kind: "permalink", serializedPuzzle: "seed/value" }))
-      .toBe("/p/seed%2Fvalue");
     expect(appRoutePath({ kind: "permalink", puzzleId: "sudoku", serializedPuzzle: "seed/value" }))
       .toBe("/sudoku/seed%2Fvalue");
     expect(appRoutePath({ kind: "puzzle", puzzleId: "tile-swap" })).toBe("/tile-swap");
