@@ -215,7 +215,8 @@ export const App = () => {
 
   const saveCurrentSession = () => {
     const session = makeCurrentSession();
-    if (session) sessions.saveSession(session.puzzle.puzzleId, session);
+    if (!session || route.kind !== "resource") return;
+    sessions.saveSession({ puzzleId: route.puzzleId, generationId: route.generationId }, session);
   };
   saveCurrentSessionRef.current = () => {
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
@@ -306,14 +307,17 @@ export const App = () => {
       return;
     }
 
-    const puzzleId = generatedPuzzle.puzzleId;
-    const cachedSession = sessions.getCachedSession(puzzleId);
+    const resource = {
+      puzzleId: pendingResource.route.puzzleId,
+      generationId: pendingResource.route.generationId,
+    };
+    const cachedSession = sessions.getCachedSession(resource);
     if (cachedSession && generatedBaselinesMatch(cachedSession.puzzle, generatedPuzzle)) {
       restoreSession(cachedSession, pendingResource.route, pendingResource.history);
       return;
     }
 
-    const persistedSession = sessions.restorePersistedSession(puzzleId, generatedPuzzle);
+    const persistedSession = sessions.restorePersistedSession(resource, generatedPuzzle);
     if (persistedSession) {
       restoreSession(persistedSession, pendingResource.route, pendingResource.history);
       return;
