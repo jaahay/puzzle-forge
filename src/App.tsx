@@ -20,25 +20,19 @@ import {
 } from "./app/generationIdentity";
 import { resolveGenerationIdentity, type GenerationSettings } from "./app/generationSettings";
 import { getInitialSelectedPuzzleId, markPuzzleNavigation } from "./app/homeNavigation";
-import {
-  decodePuzzleReference,
-  puzzleReferenceToGenerationOptions,
-  serializeGeneratedPuzzleReference,
-  serializePersistedPuzzleReference,
-  serializePuzzleReference,
-} from "./app/puzzleReference";
+import { deserializePuzzle, materializedPuzzlesEqual, serializePuzzle } from "./app/puzzleSerialization";
 import { defaultPuzzleDifficulty, makeRandomSeed } from "./app/runtime";
 import { getCurrentAppRoute, parseAppRoute, pushAppRoute, replaceAppRoute, type AppRoute } from "./app/routes";
 import { initialSolitaireStats, loadPersistedPuzzleSessions } from "./app/session";
 import { useGridController } from "./app/useGridController";
 import { useNextPuzzleDrafts } from "./app/useNextPuzzleDrafts";
 import { makeInitialPuzzleGenerationOptions, makeMissingPuzzleGenerationOptions, shouldRecoverMissingPuzzleSurface, usePuzzleGeneration, type BeginGenerationOptions } from "./app/usePuzzleGeneration";
-import { buildRuntimeSession, usePuzzleSessions } from "./app/usePuzzleSessions";
+import { buildFreshSessionForGeneratedPuzzle, buildRuntimeSession, usePuzzleSessions } from "./app/usePuzzleSessions";
 import { useSolitaireController } from "./app/useSolitaireController";
 import type { AppView } from "./site/views";
 
 const initialStatusMessage = "Pick a puzzle to start.";
-type GenerationBehavior = { preserveScroll?: boolean; fromPuzzleReference?: boolean };
+type GenerationBehavior = { preserveScroll?: boolean };
 type NavigationBehavior = { pushHistory?: boolean };
 
 const makeInitialGenerationDefaults = (): GenerationRuntimeSettings => ({
@@ -58,24 +52,21 @@ const viewForRoute = (route: AppRoute): AppView | null => {
   return "catalog";
 };
 
-const getPuzzleReferenceErrorMessage = (reason: string) => {
-  if (reason === "unsupported-version") return "This puzzle link uses a reference version this build does not support.";
-  if (reason === "unsupported-generator") return "This puzzle link requires a generator revision that is not available in this build.";
-  if (reason === "unsupported-puzzle") return "This puzzle link refers to a puzzle type that this build cannot reproduce.";
-  return "This puzzle link is invalid or no longer available.";
-};
-
 export const App = () => {
   const initialRoute = useMemo(getCurrentAppRoute, []);
   const storedPuzzleId = useMemo(() => getInitialSelectedPuzzleId(), []);
-  const initialSelectedPuzzleId = initialRoute.kind === "puzzle" ? initialRoute.puzzleId : storedPuzzleId;
-  const shouldStartOnPuzzleSurface = initialRoute.kind === "puzzle";
+  const initialSelectedPuzzleId = initialRoute.kind === "puzzle"
+    ? initialRoute.puzzleId
+    : initialRoute.kind === "permalink" && initialRoute.puzzleId
+      ? initialRoute.puzzleId
+      : storedPuzzleId;
+  const shouldStartOnPuzzleSurface = initialRoute.kind === "puzzle" || initialRoute.kind === "permalink";
   const [route, setRoute] = useState<AppRoute>(initialRoute);
   const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>(initialSelectedPuzzleId);
   const [generationDefaults, setGenerationDefaults] = useState<GenerationRuntimeSettings>(makeInitialGenerationDefaults);
   const [puzzle, setPuzzle] = useState<GeneratedPuzzle | null>(null);
   const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
-  const [puzzleReferenceError, setPuzzleReferenceError] = useState<string | null>(null);
+  const [puzzleLinkError, setPuzzleLinkError] = useState<string | null>(null);
   const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(true);
   const [hasSelectedPuzzle, setHasSelectedPuzzle] = useState(shouldStartOnPuzzleSurface);
   const [isHomeSelected, setIsHomeSelected] = useState(!shouldStartOnPuzzleSurface);
@@ -83,7 +74,6 @@ export const App = () => {
   const generatedPuzzleHandlerRef = useRef<(generatedPuzzle: GeneratedPuzzle) => void>(() => undefined);
   const routeNavigationHandlerRef = useRef<(route: AppRoute) => void>(() => undefined);
   const saveCurrentSessionRef = useRef<() => void>(() => undefined);
-  const activePuzzleReferenceLoadRef = useRef(false);
   const { seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation } = generationDefaults;
   const activeSolitaireVariation = puzzle?.kind === "cards" ? puzzle.solitaireVariation : solitaireVariation;
 
@@ -110,8 +100,6 @@ export const App = () => {
 
   const cancelPendingGeneration = () => {
     generation.cancelGeneration();
-    sessions.cancelPersistedRestore();
-    activePuzzleReferenceLoadRef.current = false;
   };
 
   const rememberScrollPosition = () => {
@@ -130,29 +118,26 @@ export const App = () => {
     setRoute(nextRoute);
   };
 
-  const replaceCurrentPuzzleRoute = (currentPuzzle: GeneratedPuzzle) => {
-    const puzzleReference = serializeGeneratedPuzzleReference(currentPuzzle);
-    const nextRoute: AppRoute = {
-      kind: "puzzle",
-      puzzleId: currentPuzzle.puzzleId,
-      ...(puzzleReference ? { puzzleReference } : {}),
-    };
+  const replaceCurrentRoute = (nextRoute: AppRoute) => {
     replaceAppRoute(nextRoute);
     setRoute(nextRoute);
   };
 
-  const restoreSession = (session: ReturnType<typeof buildRuntimeSession>) => {
+  const restoreSession = (
+    session: ReturnType<typeof buildRuntimeSession>,
+    nextRoute: AppRoute = { kind: "puzzle", puzzleId: session.puzzle.puzzleId },
+  ) => {
     const restoredPuzzle = session.puzzle;
     const puzzleId = restoredPuzzle.puzzleId;
     cancelPendingGeneration();
-    setPuzzleReferenceError(null);
+    setPuzzleLinkError(null);
     markPuzzleNavigation(puzzleId);
     setHasSelectedPuzzle(true);
     setIsHomeSelected(false);
     setSelectedPuzzleId(puzzleId);
     setGenerationDefaults((current) => getGeneratedPuzzleRuntimeSettings(restoredPuzzle, current));
     setPuzzle(restoredPuzzle);
-    replaceCurrentPuzzleRoute(restoredPuzzle);
+    replaceCurrentRoute(nextRoute);
 
     if (session.progress.kind === "cards") {
       solitaire.restoreSolitaireSnapshot({
@@ -210,8 +195,7 @@ export const App = () => {
 
   const beginGeneration = (options: BeginGenerationOptions = {}, behavior: GenerationBehavior = {}) => {
     if (behavior.preserveScroll) rememberScrollPosition();
-    activePuzzleReferenceLoadRef.current = behavior.fromPuzzleReference === true;
-    setPuzzleReferenceError(null);
+    setPuzzleLinkError(null);
     const requestedPuzzleId = options.puzzleId ?? selectedPuzzleId;
     let requestOptions = options;
     if (requestedPuzzleId === "klondike-solitaire") {
@@ -233,7 +217,6 @@ export const App = () => {
     setIsHomeSelected(false);
     markPuzzleNavigation(requestedPuzzleId);
     if (result.kind === "planned") {
-      activePuzzleReferenceLoadRef.current = false;
       const definition = getPuzzleDefinition(result.puzzleId);
       setSelectedPuzzleId(result.puzzleId);
       updateGenerationDefaults({ width: definition.defaultWidth, height: definition.defaultHeight });
@@ -258,36 +241,18 @@ export const App = () => {
     setStatusMessage(`Generating ${title}...`);
   };
 
-  const beginPersistedPuzzle = (puzzleId: PuzzleId, expectedReference?: string) => {
-    const persistedSession = sessions.beginPersistedRestore(puzzleId);
-    if (!persistedSession) return false;
-    if (expectedReference && serializePersistedPuzzleReference(persistedSession) !== expectedReference) {
-      sessions.cancelPersistedRestore();
-      return false;
-    }
-    beginGeneration({
-      puzzleId,
-      seed: persistedSession.seed,
-      width: persistedSession.width,
-      height: persistedSession.height,
-      difficulty: persistedSession.difficulty,
-      requireUniqueSolution: persistedSession.requireUniqueSolution,
-      sudokuVariation: persistedSession.sudokuVariation,
-      solitaireVariation: persistedSession.solitaireVariation,
-      imageId: persistedSession.imageId,
-      provenance: persistedSession.provenance,
-    }, expectedReference ? { fromPuzzleReference: true } : {});
+  const beginPersistedPuzzle = (puzzleId: PuzzleId) => {
+    const restoredSession = sessions.restorePersistedSession(puzzleId);
+    if (!restoredSession) return false;
+    restoreSession(restoredSession);
     return true;
   };
 
   const handleGeneratedPuzzle = (generatedPuzzle: GeneratedPuzzle) => {
-    activePuzzleReferenceLoadRef.current = false;
-    setPuzzleReferenceError(null);
-    const restoredSession = sessions.restorePendingSessionForPuzzle(generatedPuzzle);
-    if (restoredSession) { restoreSession(restoredSession); return; }
+    setPuzzleLinkError(null);
     const readyMessage = generation.makeReadyMessage(generatedPuzzle);
     setPuzzle(generatedPuzzle);
-    replaceCurrentPuzzleRoute(generatedPuzzle);
+    replaceCurrentRoute({ kind: "puzzle", puzzleId: generatedPuzzle.puzzleId });
     setGenerationDefaults((current) => getGeneratedPuzzleRuntimeSettings(generatedPuzzle, current));
     if (generatedPuzzle.kind === "cards") {
       solitaire.restoreSolitaireSnapshot({
@@ -310,7 +275,7 @@ export const App = () => {
   const selectHome = (behavior: NavigationBehavior = {}) => {
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
     cancelPendingGeneration();
-    setPuzzleReferenceError(null);
+    setPuzzleLinkError(null);
     setAppRoute({ kind: "home" }, behavior);
     setIsHomeSelected(true);
   };
@@ -318,61 +283,23 @@ export const App = () => {
   const selectPuzzle = (
     puzzleId: PuzzleId,
     behavior: NavigationBehavior = {},
-    puzzleReference?: string,
   ) => {
-    if (!puzzleReference && puzzleId === selectedPuzzleId && hasSelectedPuzzle && !isHomeSelected && puzzle) {
-      setPuzzleReferenceError(null);
+    if (puzzleId === selectedPuzzleId && hasSelectedPuzzle && !isHomeSelected && puzzle) {
+      setPuzzleLinkError(null);
       return;
     }
 
-    const nextRoute: AppRoute = {
-      kind: "puzzle",
-      puzzleId,
-      ...(puzzleReference ? { puzzleReference } : {}),
-    };
+    const nextRoute: AppRoute = { kind: "puzzle", puzzleId };
     setAppRoute(nextRoute, behavior);
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
     markPuzzleNavigation(puzzleId);
     setHasSelectedPuzzle(true);
     setIsHomeSelected(false);
     setSelectedPuzzleId(puzzleId);
+    setPuzzleLinkError(null);
 
-    if (puzzleReference) {
-      cancelPendingGeneration();
-      const decoded = decodePuzzleReference(puzzleReference);
-      if (!decoded.ok) {
-        const message = getPuzzleReferenceErrorMessage(decoded.reason);
-        resetRuntimePuzzleState();
-        setPuzzleReferenceError(message);
-        setStatusMessage(message);
-        return;
-      }
-      if (decoded.reference.puzzleId !== puzzleId) {
-        const message = "This puzzle link does not match the puzzle type in its URL.";
-        resetRuntimePuzzleState();
-        setPuzzleReferenceError(message);
-        setStatusMessage(message);
-        return;
-      }
-
-      const canonicalReference = serializePuzzleReference(decoded.reference);
-      const cachedSession = sessions.getCachedSession(puzzleId);
-      if (cachedSession && serializeGeneratedPuzzleReference(cachedSession.puzzle) === canonicalReference) {
-        restoreSession(cachedSession);
-        return;
-      }
-      if (beginPersistedPuzzle(puzzleId, canonicalReference)) return;
-
-      beginGeneration(
-        puzzleReferenceToGenerationOptions(decoded.reference),
-        { fromPuzzleReference: true },
-      );
-      return;
-    }
-
-    setPuzzleReferenceError(null);
     const cachedSession = sessions.getCachedSession(puzzleId);
-    if (cachedSession) { restoreSession(cachedSession); return; }
+    if (cachedSession) { restoreSession(cachedSession, nextRoute); return; }
     if (beginPersistedPuzzle(puzzleId)) return;
     beginGeneration(makeInitialPuzzleGenerationOptions({
       puzzleId,
@@ -381,10 +308,62 @@ export const App = () => {
     }));
   };
 
+  const selectPermalink = (
+    permalinkRoute: Extract<AppRoute, { kind: "permalink" }>,
+    behavior: NavigationBehavior = {},
+  ) => {
+    if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
+    cancelPendingGeneration();
+    setAppRoute(permalinkRoute, behavior);
+    setHasSelectedPuzzle(true);
+    setIsHomeSelected(false);
+
+    const decoded = deserializePuzzle(permalinkRoute.serializedPuzzle);
+    if (!decoded.ok) {
+      const message = "This puzzle link is invalid or unavailable.";
+      resetRuntimePuzzleState();
+      setPuzzleLinkError(message);
+      setStatusMessage(message);
+      return;
+    }
+
+    const linkedPuzzle = decoded.puzzle;
+    if (permalinkRoute.puzzleId && permalinkRoute.puzzleId !== linkedPuzzle.puzzleId) {
+      const message = "This puzzle link does not match the puzzle type in its URL.";
+      resetRuntimePuzzleState();
+      setPuzzleLinkError(message);
+      setStatusMessage(message);
+      return;
+    }
+
+    const puzzleId = linkedPuzzle.puzzleId;
+    const canonicalRoute: AppRoute = {
+      kind: "permalink",
+      serializedPuzzle: serializePuzzle(linkedPuzzle),
+    };
+    markPuzzleNavigation(puzzleId);
+    setSelectedPuzzleId(puzzleId);
+
+    const cachedSession = sessions.getCachedSession(puzzleId);
+    if (cachedSession && materializedPuzzlesEqual(cachedSession.puzzle, linkedPuzzle)) {
+      restoreSession(cachedSession, canonicalRoute);
+      return;
+    }
+
+    const persistedSession = sessions.restorePersistedSession(puzzleId, linkedPuzzle);
+    if (persistedSession) {
+      restoreSession(persistedSession, canonicalRoute);
+      return;
+    }
+
+    const readyMessage = generation.makeReadyMessage(linkedPuzzle);
+    restoreSession(buildFreshSessionForGeneratedPuzzle(linkedPuzzle, readyMessage), canonicalRoute);
+  };
+
   const selectSiteView = (view: Exclude<AppView, "catalog">, behavior: NavigationBehavior = {}) => {
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
     cancelPendingGeneration();
-    setPuzzleReferenceError(null);
+    setPuzzleLinkError(null);
     setIsHomeSelected(true);
     setAppRoute(view === "changelog" ? { kind: "updates" } : { kind: "about" }, behavior);
   };
@@ -392,14 +371,16 @@ export const App = () => {
   const selectNotFound = (nextRoute: Extract<AppRoute, { kind: "not-found" }>, behavior: NavigationBehavior = {}) => {
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
     cancelPendingGeneration();
-    setPuzzleReferenceError(null);
+    setPuzzleLinkError(null);
     setIsHomeSelected(true);
     setAppRoute(nextRoute, behavior);
   };
 
   routeNavigationHandlerRef.current = (nextRoute) => {
     if (nextRoute.kind === "puzzle") {
-      selectPuzzle(nextRoute.puzzleId, { pushHistory: false }, nextRoute.puzzleReference);
+      selectPuzzle(nextRoute.puzzleId, { pushHistory: false });
+    } else if (nextRoute.kind === "permalink") {
+      selectPermalink(nextRoute, { pushHistory: false });
     } else if (nextRoute.kind === "home") {
       selectHome({ pushHistory: false });
     } else if (nextRoute.kind === "not-found") {
@@ -411,7 +392,7 @@ export const App = () => {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const handlePopState = () => routeNavigationHandlerRef.current(parseAppRoute(window.location.pathname, window.location.search));
+    const handlePopState = () => routeNavigationHandlerRef.current(parseAppRoute(window.location.pathname));
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
@@ -428,16 +409,7 @@ export const App = () => {
       event,
       (generatedPuzzle) => generatedPuzzleHandlerRef.current(generatedPuzzle),
       (error) => {
-        const wasReferenceLoad = activePuzzleReferenceLoadRef.current;
-        activePuzzleReferenceLoadRef.current = false;
-        sessions.cancelPersistedRestore();
-        if (wasReferenceLoad) {
-          const message = "This puzzle link could not be reproduced by this build.";
-          setPuzzleReferenceError(message);
-          setStatusMessage(message);
-        } else {
-          setStatusMessage(error);
-        }
+        setStatusMessage(error);
         restoreScrollPosition();
       },
     );
@@ -447,14 +419,16 @@ export const App = () => {
     if (persisted) sessions.initializePersistedSessions(persisted.sessions);
 
     if (initialRoute.kind === "puzzle") {
-      selectPuzzle(initialRoute.puzzleId, { pushHistory: false }, initialRoute.puzzleReference);
+      selectPuzzle(initialRoute.puzzleId, { pushHistory: false });
+    } else if (initialRoute.kind === "permalink") {
+      selectPermalink(initialRoute, { pushHistory: false });
     }
 
     return () => generation.worker.removeEventListener("message", handleMessage);
   }, [generation.worker]);
 
   useEffect(() => {
-    if (puzzleReferenceError) return;
+    if (puzzleLinkError) return;
     const shouldRecover = shouldRecoverMissingPuzzleSurface({
       hasSelectedPuzzle,
       isHomeSelected,
@@ -476,7 +450,7 @@ export const App = () => {
       solitaireVariation,
       makeSeed: makeRandomSeed,
     }));
-  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, puzzle, puzzleReferenceError, selectedPuzzleId, selectedPuzzleIsGeneratable, selectedDefinition, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation]);
+  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, puzzle, puzzleLinkError, selectedPuzzleId, selectedPuzzleIsGeneratable, selectedDefinition, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation]);
 
   useEffect(() => {
     if (!hasSelectedPuzzle || generation.isGenerating || isHomeSelected || !puzzle) return;
@@ -560,7 +534,7 @@ export const App = () => {
   };
 
   const handleCheck = () => { if (!puzzle) return; puzzle.kind === "cards" ? solitaire.checkSolitaire() : grid.checkGrid(puzzle, setStatusMessage); };
-  const workspaceIsGenerating = generation.isGenerating || (!puzzle && selectedPuzzleIsGeneratable && !isHomeSelected && !puzzleReferenceError);
+  const workspaceIsGenerating = generation.isGenerating || (!puzzle && selectedPuzzleIsGeneratable && !isHomeSelected && !puzzleLinkError);
   const workspaceCore = {
     selectedDefinition,
     selectedPuzzleIsGeneratable,
@@ -628,9 +602,9 @@ export const App = () => {
   } else {
     content = (
       <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
-        {isHomeSelected || !hasSelectedPuzzle ? <StartView readyPuzzles={readyPuzzles} previewPuzzles={previewPuzzles} onSelectPuzzle={(puzzleId) => selectPuzzle(puzzleId)} /> : puzzleReferenceError ? (
+        {isHomeSelected || !hasSelectedPuzzle ? <StartView readyPuzzles={readyPuzzles} previewPuzzles={previewPuzzles} onSelectPuzzle={(puzzleId) => selectPuzzle(puzzleId)} /> : puzzleLinkError ? (
           <section class="workspace-panel" aria-label="Puzzle link unavailable">
-            <p class="status-line" aria-live="polite">{puzzleReferenceError}</p>
+            <p class="status-line" aria-live="polite">{puzzleLinkError}</p>
           </section>
         ) : (
           <PuzzleWorkspace
