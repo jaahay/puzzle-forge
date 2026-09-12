@@ -9,12 +9,12 @@ import {
   solitaireHistoryLimit,
   type PersistedPuzzleSessionCache,
   type PuzzleSession,
-  type PuzzleSessionCache,
+  type RuntimePuzzleSessionCache,
   type SolitaireHistoryEntry,
   type SolitaireStats,
 } from "./session";
 import { cloneGridHistoryState, makeEmptyGridHistoryState, type GridHistoryState } from "./gridHistory";
-import { restoredSessionPreservesGeneratedState } from "./sessionIntegrity";
+import { makePuzzleResourceKey, type PuzzleResourceIdentity } from "./puzzleResourceIdentity";
 import { cloneSolitaireHistoryEntry } from "./solitaireHistory";
 
 export type RuntimeSessionDraft = {
@@ -48,6 +48,18 @@ const cloneGridPuzzle = (puzzle: GridGeneratedPuzzle): GridGeneratedPuzzle => ({
   ...puzzle,
   cells: puzzle.cells.map(cloneGridCell),
   answerKey: puzzle.answerKey ? [...puzzle.answerKey] : undefined,
+  clues: puzzle.clues ? {
+    rows: puzzle.clues.rows?.map((run) => [...run]),
+    columns: puzzle.clues.columns?.map((run) => [...run]),
+  } : undefined,
+  cages: puzzle.cages?.map((cage) => ({
+    ...cage,
+    cells: cage.cells.map((cell) => ({ ...cell })),
+  })),
+  inequalities: puzzle.inequalities?.map((inequality) => ({
+    lesser: { ...inequality.lesser },
+    greater: { ...inequality.greater },
+  })),
 });
 
 const cloneTilePuzzle = (puzzle: Exclude<GeneratedPuzzle, CardGeneratedPuzzle | GridGeneratedPuzzle>) => {
@@ -200,16 +212,17 @@ export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPu
 
 export const usePuzzleSessions = () => {
   const persistedSessionCache = useRef<PersistedPuzzleSessionCache>({});
-  const sessionCache = useRef<PuzzleSessionCache>({});
-  const pendingRestorePuzzleId = useRef<PuzzleId | null>(null);
+  const sessionCache = useRef<RuntimePuzzleSessionCache>({});
 
-  const saveSession = (activePuzzleId: PuzzleId, session: PuzzleSession) => {
-    sessionCache.current[activePuzzleId] = clonePuzzleSession(session);
-    savePersistedPuzzleSessions({ activePuzzleId, sessions: sessionCache.current });
+  const saveSession = (resource: PuzzleResourceIdentity, session: PuzzleSession) => {
+    const resourceKey = makePuzzleResourceKey(resource.puzzleId, resource.generationId);
+    sessionCache.current[resourceKey] = clonePuzzleSession(session);
+    savePersistedPuzzleSessions({ activeResourceKey: resourceKey, sessions: sessionCache.current });
   };
 
-  const getCachedSession = (puzzleId: PuzzleId) => {
-    const session = sessionCache.current[puzzleId];
+  const getCachedSession = (resource: PuzzleResourceIdentity) => {
+    const resourceKey = makePuzzleResourceKey(resource.puzzleId, resource.generationId);
+    const session = sessionCache.current[resourceKey];
     return session ? clonePuzzleSession(session) : null;
   };
 
@@ -217,38 +230,20 @@ export const usePuzzleSessions = () => {
     persistedSessionCache.current = { ...sessions };
   };
 
-  const beginPersistedRestore = (puzzleId: PuzzleId) => {
-    const persistedSession = persistedSessionCache.current[puzzleId];
+  const restorePersistedSession = (resource: PuzzleResourceIdentity, generatedPuzzle: GeneratedPuzzle) => {
+    const resourceKey = makePuzzleResourceKey(resource.puzzleId, resource.generationId);
+    const persistedSession = persistedSessionCache.current[resourceKey];
     if (!persistedSession) return null;
-    pendingRestorePuzzleId.current = puzzleId;
-    return persistedSession;
-  };
-
-  const cancelPersistedRestore = () => {
-    pendingRestorePuzzleId.current = null;
-  };
-
-  const restorePendingSessionForPuzzle = (generatedPuzzle: GeneratedPuzzle) => {
-    const pendingPersistedSession = pendingRestorePuzzleId.current === generatedPuzzle.puzzleId
-      ? persistedSessionCache.current[generatedPuzzle.puzzleId]
-      : undefined;
-    const restoredSession = pendingPersistedSession
-      ? restorePuzzleSessionFromPersisted(pendingPersistedSession, generatedPuzzle)
-      : null;
-
-    pendingRestorePuzzleId.current = null;
-    if (!restoredSession || !restoredSessionPreservesGeneratedState(restoredSession)) return null;
-
-    sessionCache.current[generatedPuzzle.puzzleId] = clonePuzzleSession(restoredSession);
-    return restoredSession;
+    const restoredSession = restorePuzzleSessionFromPersisted(persistedSession, generatedPuzzle);
+    if (!restoredSession) return null;
+    sessionCache.current[resourceKey] = clonePuzzleSession(restoredSession);
+    return clonePuzzleSession(restoredSession);
   };
 
   return {
     saveSession,
     getCachedSession,
     initializePersistedSessions,
-    beginPersistedRestore,
-    cancelPersistedRestore,
-    restorePendingSessionForPuzzle,
+    restorePersistedSession,
   };
 };

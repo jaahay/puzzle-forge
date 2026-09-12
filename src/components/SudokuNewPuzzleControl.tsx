@@ -47,8 +47,9 @@ export const SudokuNewPuzzleControl = ({
   const closeOptions = (restoreFocus = false) => {
     const options = optionsRef.current;
     if (!options) return;
+    const wasOpen = options.open;
     options.open = false;
-    if (restoreFocus) options.querySelector("summary")?.focus();
+    if (restoreFocus && wasOpen) options.querySelector("summary")?.focus();
   };
 
   const renewSeedCandidate = () => onSeedLoadInputChange(makeRandomSeed());
@@ -76,9 +77,9 @@ export const SudokuNewPuzzleControl = ({
     };
   }, []);
 
-  const startRandomPuzzle = () => {
+  const startRandomPuzzle = (restoreMenuFocus = false) => {
     if (disabled) return;
-    closeOptions(true);
+    closeOptions(restoreMenuFocus);
     onNewPuzzle();
     renewSeedCandidate();
   };
@@ -99,107 +100,119 @@ export const SudokuNewPuzzleControl = ({
 
   return (
     <div class="new-puzzle-command" aria-label={`New Sudoku: ${configurationSummary}`} ref={commandRef}>
-      <details
-        class="new-puzzle-options new-puzzle-command-menu"
-        ref={optionsRef}
-        onToggle={(event) => {
-          if (event.currentTarget.open && disabled) {
-            event.currentTarget.open = false;
-            return;
-          }
-          if (event.currentTarget.open && !seedLoadInput.trim()) renewSeedCandidate();
-        }}
-      >
-        <summary
-          aria-label={`New Sudoku options. Current selection: ${configurationSummary}`}
-          aria-disabled={disabled || undefined}
-          title={`New puzzle — ${configurationSummary}`}
-          onClick={(event) => {
-            if (disabled) event.preventDefault();
+      <div class="new-puzzle-split-control">
+        <button
+          class="new-puzzle-command-primary"
+          type="button"
+          onClick={() => startRandomPuzzle(false)}
+          disabled={disabled}
+          aria-label={`New random Sudoku, ${configurationSummary}`}
+          title={`New random puzzle — ${configurationSummary}`}
+        >
+          New
+        </button>
+        <details
+          class="new-puzzle-options"
+          ref={optionsRef}
+          onToggle={(event) => {
+            if (event.currentTarget.open && disabled) {
+              event.currentTarget.open = false;
+              return;
+            }
+            if (event.currentTarget.open && !seedLoadInput.trim()) renewSeedCandidate();
           }}
         >
-          <span>New</span>
-          <span class="new-puzzle-command-caret" aria-hidden="true">▾</span>
-        </summary>
-        <div class="new-puzzle-options-panel" aria-label="New puzzle options">
-          <details class="new-puzzle-info">
-            <summary aria-label="About new puzzle options" title="About these options">
-              <InfoIcon />
-            </summary>
-            <div class="new-puzzle-info-panel">
-              <p>{sudokuVariationDescriptions[sudokuVariation]}</p>
-              <p>Random, Today, and ordinary seed loads use the difficulty and ruleset below. Today is deterministic for the local date and selected configuration, so changing either difficulty or ruleset selects a different daily track.</p>
-              <p>The locked field is the current puzzle's seed. Edit the lower seed and press play to load another seed.</p>
-            </div>
-          </details>
+          <summary
+            aria-label={`Change new puzzle options. Current selection: ${configurationSummary}`}
+            aria-disabled={disabled || undefined}
+            tabIndex={disabled ? -1 : 0}
+            title="New puzzle options"
+            onClick={(event) => {
+              if (disabled) event.preventDefault();
+            }}
+          >
+            <span class="new-puzzle-command-caret" aria-hidden="true">▾</span>
+          </summary>
+          <div class="new-puzzle-options-panel" aria-label="New puzzle options">
+            <details class="new-puzzle-info">
+              <summary aria-label="About new puzzle options" title="About these options">
+                <InfoIcon />
+              </summary>
+              <div class="new-puzzle-info-panel">
+                <p>{sudokuVariationDescriptions[sudokuVariation]}</p>
+                <p>Random, Today, and ordinary seed loads use the difficulty and ruleset below. Today is deterministic for the local date and selected configuration, so changing either difficulty or ruleset selects a different daily track.</p>
+                <p>The locked field is the current puzzle's seed. Edit the lower seed and press play to load another seed.</p>
+              </div>
+            </details>
 
-          <div class="new-puzzle-quick-actions" aria-label="Puzzle source">
-            <button type="button" onClick={startRandomPuzzle} disabled={disabled} aria-label={`Start a random puzzle, ${configurationSummary}`} title={`Random puzzle — ${configurationSummary}`}>
-              <RandomIcon />
-              <span class="new-puzzle-quick-action-copy"><strong>Random</strong></span>
-            </button>
-            <button type="button" onClick={startToday} disabled={disabled} aria-label={`Start today's puzzle, ${dailySummary}`} title={`Today's puzzle — ${dailySummary}`}>
-              <TodayDateTile />
-              <span class="new-puzzle-quick-action-copy"><strong>Today</strong></span>
-            </button>
-          </div>
-
-          <div class="new-puzzle-segmented new-puzzle-difficulty-options" role="group" aria-label="Difficulty">
-            {difficulties.map((option) => (
-              <button
-                key={option}
-                type="button"
-                class={difficulty === option ? "selected" : undefined}
-                aria-pressed={difficulty === option}
-                onClick={() => onDifficultyChange(option)}
-                disabled={disabled}
-              >
-                {option}
+            <div class="new-puzzle-quick-actions" aria-label="Puzzle source">
+              <button type="button" onClick={() => startRandomPuzzle(true)} disabled={disabled} aria-label={`Start a random puzzle, ${configurationSummary}`} title={`Random puzzle — ${configurationSummary}`}>
+                <RandomIcon />
+                <span class="new-puzzle-quick-action-copy"><strong>Random</strong></span>
               </button>
-            ))}
-          </div>
-
-          <div class="new-puzzle-segmented new-puzzle-mode-options" role="group" aria-label="Sudoku ruleset">
-            {variations.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                class={sudokuVariation === option.value ? "selected" : undefined}
-                aria-pressed={sudokuVariation === option.value}
-                onClick={() => onSudokuVariationChange(option.value)}
-                disabled={disabled}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-
-          <div class="new-puzzle-seed-stack">
-            <div class="new-puzzle-seed-row new-puzzle-current-seed">
-              <CurrentSeedDisplay seed={currentSeed} disabledInput />
-            </div>
-            <div class="new-puzzle-seed-row new-puzzle-seed-entry">
-              <input
-                aria-label="Seed to load"
-                value={seedLoadInput}
-                onInput={(event) => onSeedLoadInputChange(event.currentTarget.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") loadSeed();
-                }}
-              />
-              <button
-                type="button"
-                onClick={loadSeed}
-                disabled={disabled || !seedLoadInput.trim()}
-                aria-label="Load seed"
-                title="Load seed"
-              >
-                <PlayIcon />
+              <button type="button" onClick={startToday} disabled={disabled} aria-label={`Start today's puzzle, ${dailySummary}`} title={`Today's puzzle — ${dailySummary}`}>
+                <TodayDateTile />
+                <span class="new-puzzle-quick-action-copy"><strong>Today</strong></span>
               </button>
             </div>
+
+            <div class="new-puzzle-segmented new-puzzle-difficulty-options" role="group" aria-label="Difficulty">
+              {difficulties.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  class={difficulty === option ? "selected" : undefined}
+                  aria-pressed={difficulty === option}
+                  onClick={() => onDifficultyChange(option)}
+                  disabled={disabled}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+
+            <div class="new-puzzle-segmented new-puzzle-mode-options" role="group" aria-label="Sudoku ruleset">
+              {variations.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  class={sudokuVariation === option.value ? "selected" : undefined}
+                  aria-pressed={sudokuVariation === option.value}
+                  onClick={() => onSudokuVariationChange(option.value)}
+                  disabled={disabled}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+
+            <div class="new-puzzle-seed-stack">
+              <div class="new-puzzle-seed-row new-puzzle-current-seed">
+                <CurrentSeedDisplay seed={currentSeed} disabledInput />
+              </div>
+              <div class="new-puzzle-seed-row new-puzzle-seed-entry">
+                <input
+                  aria-label="Seed to load"
+                  value={seedLoadInput}
+                  onInput={(event) => onSeedLoadInputChange(event.currentTarget.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") loadSeed();
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={loadSeed}
+                  disabled={disabled || !seedLoadInput.trim()}
+                  aria-label="Load seed"
+                  title="Load seed"
+                >
+                  <PlayIcon />
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-      </details>
+        </details>
+      </div>
     </div>
   );
 };

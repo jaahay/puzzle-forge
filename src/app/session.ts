@@ -5,7 +5,6 @@ import type { GridHistoryEntry } from "./gridHistory";
 import {
   loadPersistedPuzzleSessions as loadPersistedPuzzleSessionsUnsafe,
   savePersistedPuzzleSessions as savePersistedPuzzleSessionsUnsafe,
-  type RuntimePuzzleSessions,
 } from "./sessionPersistence";
 export { puzzleIds, solitaireHistoryLimit, solitaireHistoryLimitNotice } from "./sessionConstants";
 export * from "./sessionPersistence";
@@ -84,10 +83,4 @@ export const loadPersistedPuzzleSessions = () => {
   }
 };
 
-export const savePersistedPuzzleSessions = (sessions: RuntimePuzzleSessions) => {
-  try {
-    savePersistedPuzzleSessionsUnsafe(sessions);
-  } catch {
-    // Persistence is optional. Keep the in-memory game usable when storage is unavailable.
-  }
-};
+export const savePersistedPuzzleSessions = savePersistedPuzzleSessionsUnsafe;

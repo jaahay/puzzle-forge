@@ -166,6 +166,25 @@ describe("resolveGenerationIdentity", () => {
     });
   });
 
+  it("preserves an explicit seed when restoring a daily resource identity", () => {
+    const provenance = { source: "daily" as const, dateStamp: "2026-09-03" };
+    const identity = resolveGenerationIdentity({
+      puzzleId: "sudoku",
+      currentPuzzle: null,
+      runtimeSettings,
+      settings: {
+        seed: "encoded-daily-seed",
+        provenance,
+        difficulty: "Expert",
+        sudokuVariation: "diagonal",
+      },
+      makeSeed: () => "fallback",
+    });
+
+    expect(identity.seed).toBe("encoded-daily-seed");
+    expect(identity.provenance).toEqual(provenance);
+  });
+
   it("does not infer daily provenance from a seed that merely looks daily", () => {
     const seed = "daily-sudoku-2026-09-03-hard-diagonal";
     const identity = resolveGenerationIdentity({

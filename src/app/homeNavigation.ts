@@ -20,7 +20,9 @@ export const getInitialSelectedPuzzleId = (fallback: PuzzleId = "sudoku") => {
     return fallback;
   }
 
-  return loadPersistedPuzzleSessions()?.activePuzzleId ?? getStoredSelectedPuzzleId() ?? fallback;
+  const persisted = loadPersistedPuzzleSessions();
+  const activePersistedSession = persisted?.sessions[persisted.activeResourceKey];
+  return activePersistedSession?.puzzleId ?? getStoredSelectedPuzzleId() ?? fallback;
 };
 
 export const markPuzzleNavigation = (puzzleId?: PuzzleId) => {
