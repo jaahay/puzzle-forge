@@ -25,14 +25,14 @@ const makeEmptyZeroKillerCells = (): PuzzleCell[] =>
     };
   });
 
-const makeZeroKillerPuzzle = (): GridGeneratedPuzzle => ({
-  id: "sudoku-zero-killer-refresh-seed-medium",
+const makeZeroKillerPuzzle = (seed = "refresh-seed", checksum = "checksum"): GridGeneratedPuzzle => ({
+  id: `sudoku-zero-killer-${seed}-medium`,
   puzzleId: "sudoku",
   title: "Zero Killer Sudoku",
-  seed: "refresh-seed",
+  seed,
   width: 9,
   height: 9,
-  checksum: "checksum",
+  checksum,
   createdAt: "2026-09-10T00:00:00.000Z",
   difficulty: "Medium",
   uniqueSolution: true,
@@ -42,10 +42,10 @@ const makeZeroKillerPuzzle = (): GridGeneratedPuzzle => ({
   cells: makeEmptyZeroKillerCells(),
 });
 
-const makeZeroKillerResource = () => {
+const makeZeroKillerResource = (seed = "refresh-seed") => {
   const generationId = encodeGenerationId({
     puzzleId: "sudoku",
-    seed: "refresh-seed",
+    seed,
     width: 9,
     height: 9,
     difficulty: "Medium",
@@ -84,8 +84,8 @@ const expectHistoryEntry = (entry: GridHistoryEntry | undefined, step: number) =
   expect(entry.selectedGridCell).toEqual({ row, column });
 };
 
-const makeZeroKillerSession = (): PuzzleSession => {
-  const puzzle = makeZeroKillerPuzzle();
+const makeZeroKillerSession = (seed = "refresh-seed", checksum = "checksum"): PuzzleSession => {
+  const puzzle = makeZeroKillerPuzzle(seed, checksum);
   const emptyCells = makeEmptyZeroKillerCells();
   const cells = emptyCells.map((cell) => {
     if (cell.row === 2 && cell.column === 1) {
@@ -215,6 +215,34 @@ describe("active puzzle persistence resilience", () => {
       expectHistoryEntry(restored.progress.undoStack?.[gridHistoryLimit - 1], gridHistoryLimit - 1);
       expectHistoryEntry(restored.progress.redoStack?.[0], gridHistoryLimit);
       expectHistoryEntry(restored.progress.redoStack?.[gridHistoryLimit - 1], (gridHistoryLimit * 2) - 1);
+    });
+  });
+
+  it("keeps multiple Sudoku resources as independent persisted sessions", () => {
+    withMemoryStorage(() => {
+      const firstResource = makeZeroKillerResource("same-type-one");
+      const secondResource = makeZeroKillerResource("same-type-two");
+      const firstSession = makeZeroKillerSession("same-type-one", "checksum-one");
+      const secondSession = makeZeroKillerSession("same-type-two", "checksum-two");
+
+      savePersistedPuzzleSessions({
+        activeResourceKey: firstResource.resourceKey,
+        sessions: { [firstResource.resourceKey]: firstSession },
+      });
+      savePersistedPuzzleSessions({
+        activeResourceKey: secondResource.resourceKey,
+        sessions: {
+          [firstResource.resourceKey]: firstSession,
+          [secondResource.resourceKey]: secondSession,
+        },
+      });
+
+      const persisted = loadPersistedPuzzleSessions();
+      expect(persisted?.activeResourceKey).toBe(secondResource.resourceKey);
+      expect(persisted?.sessions[firstResource.resourceKey]?.generationId).toBe(firstResource.generationId);
+      expect(persisted?.sessions[firstResource.resourceKey]?.baselineChecksum).toBe("checksum-one");
+      expect(persisted?.sessions[secondResource.resourceKey]?.generationId).toBe(secondResource.generationId);
+      expect(persisted?.sessions[secondResource.resourceKey]?.baselineChecksum).toBe("checksum-two");
     });
   });
 });
