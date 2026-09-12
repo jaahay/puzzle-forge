@@ -3,27 +3,35 @@ import { puzzleIds } from "./sessionConstants";
 
 export type AppRoute =
   | { kind: "home" }
-  | { kind: "puzzle"; puzzleId: PuzzleId; puzzleReference?: string }
+  | { kind: "puzzle"; puzzleId: PuzzleId }
+  | { kind: "permalink"; serializedPuzzle: string; puzzleId?: PuzzleId }
   | { kind: "updates" }
   | { kind: "about" }
   | { kind: "not-found"; pathname: string };
 
 const puzzleIdSet = new Set<string>(puzzleIds);
 
-export const parseAppRoute = (pathname: string, search = ""): AppRoute => {
+export const parseAppRoute = (pathname: string): AppRoute => {
   const normalizedPath = pathname.replace(/\/+$/, "") || "/";
 
   if (normalizedPath === "/") return { kind: "home" };
   if (normalizedPath === "/updates") return { kind: "updates" };
   if (normalizedPath === "/about") return { kind: "about" };
 
-  const segment = normalizedPath.slice(1);
-  if (!segment.includes("/") && puzzleIdSet.has(segment)) {
-    const puzzleReference = new URLSearchParams(search).get("ref")?.trim();
+  const segments = normalizedPath.slice(1).split("/").filter(Boolean);
+  if (segments.length === 1 && puzzleIdSet.has(segments[0])) {
+    return { kind: "puzzle", puzzleId: segments[0] as PuzzleId };
+  }
+
+  if (segments.length === 2 && segments[0] === "p" && segments[1]) {
+    return { kind: "permalink", serializedPuzzle: segments[1] };
+  }
+
+  if (segments.length === 2 && puzzleIdSet.has(segments[0]) && segments[1]) {
     return {
-      kind: "puzzle",
-      puzzleId: segment as PuzzleId,
-      ...(puzzleReference ? { puzzleReference } : {}),
+      kind: "permalink",
+      puzzleId: segments[0] as PuzzleId,
+      serializedPuzzle: segments[1],
     };
   }
 
@@ -34,10 +42,12 @@ export const appRoutePath = (route: AppRoute): string => {
   switch (route.kind) {
     case "home":
       return "/";
-    case "puzzle": {
-      const path = `/${route.puzzleId}`;
-      return route.puzzleReference ? `${path}?ref=${encodeURIComponent(route.puzzleReference)}` : path;
-    }
+    case "puzzle":
+      return `/${route.puzzleId}`;
+    case "permalink":
+      return route.puzzleId
+        ? `/${route.puzzleId}/${encodeURIComponent(route.serializedPuzzle)}`
+        : `/p/${encodeURIComponent(route.serializedPuzzle)}`;
     case "updates":
       return "/updates";
     case "about":
@@ -50,9 +60,9 @@ export const appRoutePath = (route: AppRoute): string => {
 export const getCurrentAppRoute = (): AppRoute =>
   typeof window === "undefined"
     ? { kind: "home" }
-    : parseAppRoute(window.location.pathname, window.location.search);
+    : parseAppRoute(window.location.pathname);
 
-const currentBrowserPath = () => `${window.location.pathname}${window.location.search}`;
+const currentBrowserPath = () => window.location.pathname;
 
 export const pushAppRoute = (route: AppRoute) => {
   if (typeof window === "undefined") return;
