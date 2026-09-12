@@ -3,7 +3,7 @@ import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { CardStack, GeneratedPuzzle, PlayingCard } from "../catalog/types";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { getInitialSelectedPuzzleId } from "./homeNavigation";
-import { deserializePuzzle, serializePuzzle } from "./puzzleSerialization";
+import { encodeGenerationId, makePuzzleResourceKey } from "./puzzleResourceIdentity";
 import {
   buildPersistedPuzzleSession,
   completePersistedPuzzleSession,
@@ -21,7 +21,6 @@ import {
 import { makeMissingPuzzleGenerationOptions, shouldRecoverMissingPuzzleSurface } from "./usePuzzleGeneration";
 
 const metadataStorageKey = "puzzle-forge.sessions";
-const solitaireStorageKey = "puzzle-forge.session.klondike-solitaire";
 
 const makeCard = (code: string, faceUp = true): PlayingCard => ({
   suit: "spades",
@@ -51,20 +50,34 @@ const makeHistoryEntry = (moveCount: number): SolitaireHistoryEntry => ({
   statusMessage: `Move ${moveCount}`,
 });
 
-const makeCardPuzzle = (seed = "seed-1"): Extract<GeneratedPuzzle, { kind: "cards" }> => ({
+const makeCardPuzzle = (seed = "seed-1", checksum = "checksum"): Extract<GeneratedPuzzle, { kind: "cards" }> => ({
   id: `klondike-${seed}`,
   puzzleId: "klondike-solitaire",
   title: "Klondike Solitaire",
   seed,
   width: 7,
   height: 7,
-  checksum: "checksum",
+  checksum,
   createdAt: "2026-06-22T00:00:00.000Z",
   difficulty: "Easy",
   notes: [],
   kind: "cards",
   stacks: makeCardStacks(),
   solitaireVariation: defaultSolitaireVariation,
+});
+
+const makeCardResource = (puzzle = makeCardPuzzle()) => ({
+  puzzleId: "klondike-solitaire" as const,
+  generationId: encodeGenerationId({
+    puzzleId: "klondike-solitaire",
+    seed: puzzle.seed,
+    width: puzzle.width,
+    height: puzzle.height,
+    difficulty: puzzle.difficulty ?? "Easy",
+    requireUniqueSolution: true,
+    sudokuVariation: "classic",
+    solitaireVariation: puzzle.solitaireVariation,
+  }),
 });
 
 type CardProgressOverrides = Partial<Omit<CardSessionProgress, "kind">> & { statusMessage?: string };
@@ -119,21 +132,19 @@ const withMockWindowStorage = (run: (storage: Map<string, string>) => void) => {
 };
 
 describe("app session persistence", () => {
-  it("stores the materialized deal once while keeping mutable card history compact", () => {
+  it("stores only resource identity and mutable card progress", () => {
     const session = makeSession({
       undoStack: Array.from({ length: solitaireHistoryLimit + 5 }, (_, index) => makeHistoryEntry(index)),
     });
+    const resource = makeCardResource();
 
-    const persisted = buildPersistedPuzzleSession("klondike-solitaire", session);
+    const persisted = buildPersistedPuzzleSession(resource, session);
 
     expect(persisted).not.toBeNull();
     if (!persisted) return;
-    expect(persisted.puzzle).toBe(serializePuzzle(session.puzzle));
-    const decoded = deserializePuzzle(persisted.puzzle);
-    expect(decoded.ok).toBe(true);
-    if (decoded.ok && decoded.puzzle.kind === "cards") {
-      expect(decoded.puzzle.solitaireVariation).toEqual(defaultSolitaireVariation);
-    }
+    expect(persisted.generationId).toBe(resource.generationId);
+    expect(persisted.baselineChecksum).toBe(session.puzzle.checksum);
+    expect(persisted).not.toHaveProperty("puzzle");
     expect(persisted.progress.kind).toBe("cards");
     if (persisted.progress.kind !== "cards") return;
     expect(persisted.progress.stacks[0].cards).toEqual([{ code: "A♠", faceDown: true }]);
@@ -143,12 +154,12 @@ describe("app session persistence", () => {
   });
 
   it("rejects a runtime session stored under the wrong puzzle type", () => {
-    expect(buildPersistedPuzzleSession("sudoku", makeSession())).toBeNull();
+    expect(buildPersistedPuzzleSession({ puzzleId: "sudoku", generationId: "wrong-type" }, makeSession())).toBeNull();
   });
 
   it("clears transient Solitaire history and selection when completing persisted card progress", () => {
     const persisted = buildPersistedPuzzleSession(
-      "klondike-solitaire",
+      makeCardResource(),
       makeSession({
         undoStack: [makeHistoryEntry(1)],
         redoStack: [makeHistoryEntry(2)],
@@ -167,9 +178,9 @@ describe("app session persistence", () => {
     expect(completed.progress.redoStack).toEqual([]);
   });
 
-  it("restores compact card progress directly from the materialized deal", () => {
+  it("restores compact card progress over a matching regenerated deal", () => {
     const persisted = buildPersistedPuzzleSession(
-      "klondike-solitaire",
+      makeCardResource(),
       makeSession({
         statusMessage: "Restored progress.",
         undoStack: [makeHistoryEntry(1)],
@@ -177,13 +188,13 @@ describe("app session persistence", () => {
     );
 
     expect(persisted).not.toBeNull();
-    const restored = restorePuzzleSessionFromPersisted(persisted as PersistedPuzzleSession);
-    const sameExpected = restorePuzzleSessionFromPersisted(persisted as PersistedPuzzleSession, makeCardPuzzle("seed-1"));
-    const mismatched = restorePuzzleSessionFromPersisted(persisted as PersistedPuzzleSession, makeCardPuzzle("different-seed"));
+    if (!persisted) return;
+    const regenerated = makeCardPuzzle("seed-1");
+    const restored = restorePuzzleSessionFromPersisted(persisted, regenerated);
+    const mismatched = restorePuzzleSessionFromPersisted(persisted, makeCardPuzzle("seed-1", "different-checksum"));
 
     expect(restored?.statusMessage).toBe("Restored progress.");
-    expect(restored?.puzzle.seed).toBe("seed-1");
-    expect(sameExpected).not.toBeNull();
+    expect(restored?.puzzle).toEqual(regenerated);
     expect(restored?.progress.kind).toBe("cards");
     if (!restored || restored.progress.kind !== "cards") return;
     expect(stackCards(restored.progress.cardStacks)).toEqual(stackCards(makeCardStacks()));
@@ -192,7 +203,7 @@ describe("app session persistence", () => {
   });
 
   it("rejects compact card progress with invalid card code reuse", () => {
-    const persisted = buildPersistedPuzzleSession("klondike-solitaire", makeSession());
+    const persisted = buildPersistedPuzzleSession(makeCardResource(), makeSession());
     expect(persisted?.progress.kind).toBe("cards");
     if (!persisted || persisted.progress.kind !== "cards") return;
 
@@ -206,25 +217,29 @@ describe("app session persistence", () => {
       },
     };
 
-    expect(restorePuzzleSessionFromPersisted(invalidCardSession)).toBeNull();
+    expect(restorePuzzleSessionFromPersisted(invalidCardSession, makeCardPuzzle())).toBeNull();
   });
 
-  it("round-trips valid per-puzzle storage and rejects an invalid materialized puzzle", () => {
+  it("round-trips valid resource storage and rejects an invalid generation identity", () => {
     withMockWindowStorage((storage) => {
       const session = makeSession();
-      savePersistedPuzzleSessions({ activePuzzleId: "klondike-solitaire", sessions: { "klondike-solitaire": session } });
+      const resource = makeCardResource();
+      const resourceKey = makePuzzleResourceKey(resource.puzzleId, resource.generationId);
+      savePersistedPuzzleSessions({ activeResourceKey: resourceKey, sessions: { [resourceKey]: session } });
 
       const metadata = JSON.parse(storage.get(metadataStorageKey) ?? "{}");
-      const persistedSession = JSON.parse(storage.get(solitaireStorageKey) ?? "{}");
+      const storageKey = `puzzle-forge.session.${resourceKey}`;
+      const persistedSession = JSON.parse(storage.get(storageKey) ?? "{}");
 
-      expect(metadata.activePuzzleId).toBe("klondike-solitaire");
-      expect(metadata.savedPuzzleIds).toEqual(["klondike-solitaire"]);
-      expect(typeof persistedSession.puzzle).toBe("string");
+      expect(metadata.activeResourceKey).toBe(resourceKey);
+      expect(metadata.savedResourceKeys).toEqual([resourceKey]);
+      expect(persistedSession.puzzle).toBeUndefined();
+      expect(persistedSession.generationId).toBe(resource.generationId);
       expect(persistedSession.progress.kind).toBe("cards");
-      expect(loadPersistedPuzzleSessions()?.activePuzzleId).toBe("klondike-solitaire");
+      expect(loadPersistedPuzzleSessions()?.activeResourceKey).toBe(resourceKey);
       expect(getInitialSelectedPuzzleId()).toBe("klondike-solitaire");
 
-      storage.set(solitaireStorageKey, JSON.stringify({ ...persistedSession, puzzle: "not-a-puzzle" }));
+      storage.set(storageKey, JSON.stringify({ ...persistedSession, generationId: "not-a-generation-id" }));
 
       expect(loadPersistedPuzzleSessions()).toBeNull();
       expect(getInitialSelectedPuzzleId()).toBe("sudoku");
