@@ -15,9 +15,9 @@ import {
   type PersistedSolitaireHistoryEntry,
 } from "./cardPersistence";
 import { cloneGridHistoryState, gridHistoryLimit, type GridHistoryEntry } from "./gridHistory";
-import { deserializePuzzle, materializedPuzzlesEqual, serializePuzzle } from "./puzzleSerialization";
+import { decodeGenerationId, makePuzzleResourceKey, type PuzzleResourceIdentity, type PuzzleResourceKey } from "./puzzleResourceIdentity";
 import { puzzleIds } from "./sessionConstants";
-import type { PuzzleSession, PuzzleSessionCache, SolitaireStats } from "./session";
+import type { PuzzleSession, SolitaireStats } from "./session";
 
 const persistenceMetadataStorageKey = "puzzle-forge.sessions";
 const persistenceSessionStorageKeyPrefix = "puzzle-forge.session.";
@@ -61,28 +61,30 @@ export type PersistedPuzzleProgress = PersistedCardProgress | PersistedTileProgr
 
 export type PersistedPuzzleSession = {
   puzzleId: PuzzleId;
-  puzzle: string;
+  generationId: string;
+  baselineChecksum: string;
   progress: PersistedPuzzleProgress;
   statusMessage: string;
   updatedAt: string;
   completedAt?: string;
 };
 
-export type PersistedPuzzleSessionCache = Partial<Record<PuzzleId, PersistedPuzzleSession>>;
+export type PersistedPuzzleSessionCache = Partial<Record<PuzzleResourceKey, PersistedPuzzleSession>>;
+export type RuntimePuzzleSessionCache = Partial<Record<PuzzleResourceKey, PuzzleSession>>;
 
 export type RuntimePuzzleSessions = {
-  activePuzzleId: PuzzleId;
-  sessions: PuzzleSessionCache;
+  activeResourceKey: PuzzleResourceKey;
+  sessions: RuntimePuzzleSessionCache;
 };
 
 export type PersistedPuzzleSessions = {
-  activePuzzleId: PuzzleId;
+  activeResourceKey: PuzzleResourceKey;
   sessions: PersistedPuzzleSessionCache;
 };
 
 type PersistedPuzzleSessionMetadata = {
-  activePuzzleId: PuzzleId;
-  savedPuzzleIds: PuzzleId[];
+  activeResourceKey: PuzzleResourceKey;
+  savedResourceKeys: PuzzleResourceKey[];
   updatedAt: string;
 };
 
@@ -206,12 +208,16 @@ const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzlePr
   };
 };
 
-export const buildPersistedPuzzleSession = (puzzleId: PuzzleId, session: PuzzleSession): PersistedPuzzleSession | null => {
-  if (session.puzzle.puzzleId !== puzzleId) return null;
+export const buildPersistedPuzzleSession = (
+  resource: PuzzleResourceIdentity,
+  session: PuzzleSession,
+): PersistedPuzzleSession | null => {
+  if (session.puzzle.puzzleId !== resource.puzzleId || !resource.generationId) return null;
 
   return {
-    puzzleId,
-    puzzle: serializePuzzle(session.puzzle),
+    puzzleId: resource.puzzleId,
+    generationId: resource.generationId,
+    baselineChecksum: session.puzzle.checksum,
     progress: buildPersistedPuzzleProgress(session),
     statusMessage: session.statusMessage,
     updatedAt: new Date().toISOString(),
@@ -256,38 +262,37 @@ const isPersistedPuzzleProgress = (value: unknown): value is PersistedPuzzleProg
   return value.kind === "grid" && isPersistedGridProgress(value);
 };
 
-const expectedProgressKind = (puzzle: GeneratedPuzzle): PersistedPuzzleProgress["kind"] => puzzle.kind;
-
-const decodePersistedPuzzle = (value: unknown) => {
-  if (typeof value !== "string") return null;
-  const decoded = deserializePuzzle(value);
-  return decoded.ok ? decoded.puzzle : null;
-};
-
 const isPersistedPuzzleSession = (value: unknown): value is PersistedPuzzleSession => {
   if (
     !isRecord(value) ||
     !isPuzzleId(value.puzzleId) ||
-    typeof value.puzzle !== "string" ||
+    typeof value.generationId !== "string" ||
+    value.generationId.length === 0 ||
+    typeof value.baselineChecksum !== "string" ||
+    value.baselineChecksum.length === 0 ||
     typeof value.statusMessage !== "string" ||
     typeof value.updatedAt !== "string" ||
     (value.completedAt !== undefined && typeof value.completedAt !== "string") ||
     !isPersistedPuzzleProgress(value.progress)
   ) return false;
 
-  const puzzle = decodePersistedPuzzle(value.puzzle);
-  return Boolean(
-    puzzle &&
-    puzzle.puzzleId === value.puzzleId &&
-    value.progress.kind === expectedProgressKind(puzzle),
-  );
+  return decodeGenerationId(value.puzzleId, value.generationId).ok;
+};
+
+const isPuzzleResourceKey = (value: unknown): value is PuzzleResourceKey => {
+  if (typeof value !== "string") return false;
+  const separator = value.indexOf("/");
+  if (separator <= 0 || separator === value.length - 1) return false;
+  const puzzleId = value.slice(0, separator);
+  const generationId = value.slice(separator + 1);
+  return isPuzzleId(puzzleId) && decodeGenerationId(puzzleId, generationId).ok;
 };
 
 const isPersistedPuzzleSessionMetadata = (value: unknown): value is PersistedPuzzleSessionMetadata =>
   isRecord(value) &&
-  isPuzzleId(value.activePuzzleId) &&
-  Array.isArray(value.savedPuzzleIds) &&
-  value.savedPuzzleIds.every(isPuzzleId) &&
+  isPuzzleResourceKey(value.activeResourceKey) &&
+  Array.isArray(value.savedResourceKeys) &&
+  value.savedResourceKeys.every(isPuzzleResourceKey) &&
   typeof value.updatedAt === "string";
 
 const clonePersistedPuzzleProgress = (progress: PersistedPuzzleProgress): PersistedPuzzleProgress => {
@@ -463,21 +468,22 @@ const restorePersistedTilePuzzle = (progress: PersistedTileProgress, puzzle: Til
 
 export const restorePuzzleSessionFromPersisted = (
   persisted: PersistedPuzzleSession,
-  expectedPuzzle?: GeneratedPuzzle,
+  generatedPuzzle: GeneratedPuzzle,
 ): PuzzleSession | null => {
-  const puzzle = decodePersistedPuzzle(persisted.puzzle);
-  if (!puzzle || puzzle.puzzleId !== persisted.puzzleId) return null;
-  if (expectedPuzzle && !materializedPuzzlesEqual(puzzle, expectedPuzzle)) return null;
+  if (
+    generatedPuzzle.puzzleId !== persisted.puzzleId ||
+    generatedPuzzle.checksum !== persisted.baselineChecksum
+  ) return null;
 
-  if (persisted.progress.kind === "cards" && puzzle.kind === "cards") {
-    const stacks = restorePersistedCardStacks(persisted.progress.stacks, puzzle.stacks);
-    const undoStack = restorePersistedSolitaireHistory(persisted.progress.undoStack, puzzle.stacks);
-    const redoStack = restorePersistedSolitaireHistory(persisted.progress.redoStack, puzzle.stacks);
+  if (persisted.progress.kind === "cards" && generatedPuzzle.kind === "cards") {
+    const stacks = restorePersistedCardStacks(persisted.progress.stacks, generatedPuzzle.stacks);
+    const undoStack = restorePersistedSolitaireHistory(persisted.progress.undoStack, generatedPuzzle.stacks);
+    const redoStack = restorePersistedSolitaireHistory(persisted.progress.redoStack, generatedPuzzle.stacks);
     if (!stacks || !undoStack || !redoStack || !isValidCardSelectionForStacks(persisted.progress.selectedCard, stacks)) return null;
 
     return {
       kind: "cards",
-      puzzle: { ...puzzle, stacks: puzzle.stacks.map(cloneCardStack) },
+      puzzle: { ...generatedPuzzle, stacks: generatedPuzzle.stacks.map(cloneCardStack) },
       progress: {
         kind: "cards",
         cardStacks: stacks,
@@ -490,8 +496,8 @@ export const restorePuzzleSessionFromPersisted = (
     };
   }
 
-  if (persisted.progress.kind === "tiles" && puzzle.kind === "tiles") {
-    const restoredPuzzle = restorePersistedTilePuzzle(persisted.progress, puzzle);
+  if (persisted.progress.kind === "tiles" && generatedPuzzle.kind === "tiles") {
+    const restoredPuzzle = restorePersistedTilePuzzle(persisted.progress, generatedPuzzle);
     if (!restoredPuzzle) return null;
     return {
       kind: "tiles",
@@ -501,12 +507,12 @@ export const restorePuzzleSessionFromPersisted = (
     };
   }
 
-  if (persisted.progress.kind === "grid" && puzzle.kind === "grid") {
-    const restoredProgress = restorePersistedGridProgress(persisted.progress, puzzle);
+  if (persisted.progress.kind === "grid" && generatedPuzzle.kind === "grid") {
+    const restoredProgress = restorePersistedGridProgress(persisted.progress, generatedPuzzle);
     if (!restoredProgress) return null;
     return {
       kind: "grid",
-      puzzle,
+      puzzle: generatedPuzzle,
       progress: { kind: "grid", ...restoredProgress },
       statusMessage: persisted.statusMessage,
     };
@@ -515,7 +521,8 @@ export const restorePuzzleSessionFromPersisted = (
   return null;
 };
 
-const sessionStorageKey = (puzzleId: PuzzleId) => `${persistenceSessionStorageKeyPrefix}${puzzleId}`;
+const sessionStorageKey = (resourceKey: PuzzleResourceKey) =>
+  `${persistenceSessionStorageKeyPrefix}${resourceKey}`;
 
 const readPersistedMetadata = (): PersistedPuzzleSessionMetadata | null => {
   const rawMetadata = window.localStorage.getItem(persistenceMetadataStorageKey);
@@ -529,13 +536,16 @@ const readPersistedMetadata = (): PersistedPuzzleSessionMetadata | null => {
   }
 };
 
-const readPersistedSession = (puzzleId: PuzzleId): PersistedPuzzleSession | null => {
-  const rawSession = window.localStorage.getItem(sessionStorageKey(puzzleId));
+const readPersistedSession = (resourceKey: PuzzleResourceKey): PersistedPuzzleSession | null => {
+  const rawSession = window.localStorage.getItem(sessionStorageKey(resourceKey));
   if (!rawSession) return null;
 
   try {
     const session: unknown = JSON.parse(rawSession);
-    return isPersistedPuzzleSession(session) && session.puzzleId === puzzleId ? clonePersistedPuzzleSession(session) : null;
+    if (!isPersistedPuzzleSession(session)) return null;
+    return makePuzzleResourceKey(session.puzzleId, session.generationId) === resourceKey
+      ? clonePersistedPuzzleSession(session)
+      : null;
   } catch {
     return null;
   }
@@ -548,34 +558,40 @@ export const loadPersistedPuzzleSessions = (): PersistedPuzzleSessions | null =>
   if (!metadata) return null;
 
   const sessions: PersistedPuzzleSessionCache = {};
-  for (const puzzleId of metadata.savedPuzzleIds) {
-    const session = readPersistedSession(puzzleId);
-    if (session) sessions[puzzleId] = session;
+  for (const resourceKey of metadata.savedResourceKeys) {
+    const session = readPersistedSession(resourceKey);
+    if (session) sessions[resourceKey] = session;
   }
 
-  if (!sessions[metadata.activePuzzleId]) return null;
-  return { activePuzzleId: metadata.activePuzzleId, sessions };
+  if (!sessions[metadata.activeResourceKey]) return null;
+  return { activeResourceKey: metadata.activeResourceKey, sessions };
 };
 
-export const savePersistedPuzzleSessions = ({ activePuzzleId, sessions }: RuntimePuzzleSessions) => {
+export const savePersistedPuzzleSessions = ({ activeResourceKey, sessions }: RuntimePuzzleSessions) => {
   if (typeof window === "undefined") return;
 
-  const previousSavedPuzzleIds = readPersistedMetadata()?.savedPuzzleIds ?? [];
-  const savedPuzzleIds = new Set(previousSavedPuzzleIds);
-  const activeSession = sessions[activePuzzleId];
-  const persistedActiveSession = activeSession ? buildPersistedPuzzleSession(activePuzzleId, activeSession) : null;
+  const previousSavedResourceKeys = readPersistedMetadata()?.savedResourceKeys ?? [];
+  const savedResourceKeys = new Set(previousSavedResourceKeys);
+  const activeSession = sessions[activeResourceKey];
+  if (!activeSession) return;
+
+  const separator = activeResourceKey.indexOf("/");
+  if (separator <= 0 || separator === activeResourceKey.length - 1) return;
+  const puzzleId = activeResourceKey.slice(0, separator) as PuzzleId;
+  const generationId = activeResourceKey.slice(separator + 1);
+  const persistedActiveSession = buildPersistedPuzzleSession({ puzzleId, generationId }, activeSession);
 
   if (persistedActiveSession) {
-    savedPuzzleIds.add(activePuzzleId);
-    window.localStorage.setItem(sessionStorageKey(activePuzzleId), JSON.stringify(persistedActiveSession));
+    savedResourceKeys.add(activeResourceKey);
+    window.localStorage.setItem(sessionStorageKey(activeResourceKey), JSON.stringify(persistedActiveSession));
   } else {
-    savedPuzzleIds.delete(activePuzzleId);
-    window.localStorage.removeItem(sessionStorageKey(activePuzzleId));
+    savedResourceKeys.delete(activeResourceKey);
+    window.localStorage.removeItem(sessionStorageKey(activeResourceKey));
   }
 
   const metadata: PersistedPuzzleSessionMetadata = {
-    activePuzzleId,
-    savedPuzzleIds: [...savedPuzzleIds],
+    activeResourceKey,
+    savedResourceKeys: [...savedResourceKeys],
     updatedAt: new Date().toISOString(),
   };
 
@@ -584,6 +600,11 @@ export const savePersistedPuzzleSessions = ({ activePuzzleId, sessions }: Runtim
 
 export const clearPersistedPuzzleSessions = () => {
   if (typeof window === "undefined") return;
+  const metadata = readPersistedMetadata();
+  if (metadata) {
+    for (const resourceKey of metadata.savedResourceKeys) {
+      window.localStorage.removeItem(sessionStorageKey(resourceKey));
+    }
+  }
   window.localStorage.removeItem(persistenceMetadataStorageKey);
-  for (const puzzleId of puzzleIds) window.localStorage.removeItem(sessionStorageKey(puzzleId));
 };
