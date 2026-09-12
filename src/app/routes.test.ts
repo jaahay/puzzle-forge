@@ -8,33 +8,43 @@ describe("pathname routing", () => {
     expect(parseAppRoute("/about")).toEqual({ kind: "about" });
   });
 
-  it("parses puzzle paths", () => {
+  it("parses clean puzzle paths", () => {
     expect(parseAppRoute("/jigsaw")).toEqual({ kind: "puzzle", puzzleId: "jigsaw" });
     expect(parseAppRoute("/tile-swap")).toEqual({ kind: "puzzle", puzzleId: "tile-swap" });
     expect(parseAppRoute("/sliding-puzzle")).toEqual({ kind: "puzzle", puzzleId: "sliding-puzzle" });
     expect(parseAppRoute("/word-guess")).toEqual({ kind: "puzzle", puzzleId: "word-guess" });
   });
 
-  it("attaches one opaque durable puzzle reference to puzzle routes", () => {
-    expect(parseAppRoute("/sudoku", "?ref=pf1.example")).toEqual({
-      kind: "puzzle",
-      puzzleId: "sudoku",
-      puzzleReference: "pf1.example",
+  it("parses generic and typed materialized puzzle permalinks", () => {
+    expect(parseAppRoute("/p/example-token")).toEqual({
+      kind: "permalink",
+      serializedPuzzle: "example-token",
     });
-    expect(parseAppRoute("/sudoku", "?ref=%20%20")).toEqual({ kind: "puzzle", puzzleId: "sudoku" });
-    expect(parseAppRoute("/about", "?ref=pf1.ignored")).toEqual({ kind: "about" });
+    expect(parseAppRoute("/sudoku/example-token")).toEqual({
+      kind: "permalink",
+      puzzleId: "sudoku",
+      serializedPuzzle: "example-token",
+    });
+    expect(parseAppRoute("/jigsaw/example-token/")).toEqual({
+      kind: "permalink",
+      puzzleId: "jigsaw",
+      serializedPuzzle: "example-token",
+    });
   });
 
-  it("preserves unknown or nested paths as not-found routes", () => {
+  it("preserves unknown paths and over-nested paths as not-found routes", () => {
     expect(parseAppRoute("/missing")).toEqual({ kind: "not-found", pathname: "/missing" });
-    expect(parseAppRoute("/jigsaw/example/")).toEqual({ kind: "not-found", pathname: "/jigsaw/example" });
+    expect(parseAppRoute("/p/example/extra")).toEqual({ kind: "not-found", pathname: "/p/example/extra" });
+    expect(parseAppRoute("/jigsaw/example/extra")).toEqual({ kind: "not-found", pathname: "/jigsaw/example/extra" });
   });
 
   it("serializes every route", () => {
     expect(appRoutePath({ kind: "home" })).toBe("/");
     expect(appRoutePath({ kind: "puzzle", puzzleId: "sudoku" })).toBe("/sudoku");
-    expect(appRoutePath({ kind: "puzzle", puzzleId: "sudoku", puzzleReference: "pf1.seed/value" }))
-      .toBe("/sudoku?ref=pf1.seed%2Fvalue");
+    expect(appRoutePath({ kind: "permalink", serializedPuzzle: "seed/value" }))
+      .toBe("/p/seed%2Fvalue");
+    expect(appRoutePath({ kind: "permalink", puzzleId: "sudoku", serializedPuzzle: "seed/value" }))
+      .toBe("/sudoku/seed%2Fvalue");
     expect(appRoutePath({ kind: "puzzle", puzzleId: "tile-swap" })).toBe("/tile-swap");
     expect(appRoutePath({ kind: "puzzle", puzzleId: "sliding-puzzle" })).toBe("/sliding-puzzle");
     expect(appRoutePath({ kind: "updates" })).toBe("/updates");
