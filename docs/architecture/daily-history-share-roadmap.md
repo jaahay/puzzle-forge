@@ -61,6 +61,18 @@ Solitaire daily needs special care because a seeded deal may not be known-solvab
 
 ## Shared concepts
 
+### Canonical puzzle resource identity
+
+Daily, random, and custom puzzles should all converge on the same typed resource model described in `puzzle-resource-identity.md`:
+
+```text
+/<puzzle-type>/<generation-id>
+```
+
+The generation id canonically represents the complete generation request for that puzzle type, not only the raw random seed. The same generation id may therefore exist under different puzzle-type namespaces without collision.
+
+A concrete puzzle URL describes the puzzle resource only. Mutable play state remains local session data keyed by the typed resource identity. This allows multiple resumable puzzles of the same type and makes daily/history/share features refer to the same puzzle identity instead of inventing parallel identifiers.
+
 ### Daily identity
 
 ```ts
@@ -72,6 +84,8 @@ type DailyPuzzleIdentity = {
   difficulty?: PuzzleDifficulty;
 };
 ```
+
+A daily identity is generation input, not a separate URL identity system. Once resolved into the canonical generation request, it should produce the same typed generation id used by ordinary puzzle resources.
 
 ### Completion record
 
@@ -90,6 +104,8 @@ type PuzzleCompletionRecord = {
   shareSummary?: string;
 };
 ```
+
+`puzzleInstanceId` should converge on the canonical generation id rather than an unrelated session identifier.
 
 Keep `stats` generic, but prefer puzzle-specific formatter functions to avoid arbitrary UI coupling.
 
@@ -205,5 +221,5 @@ Manual QA:
 Use this prompt for an implementation-focused ChatGPT instance:
 
 ```text
-You are implementing the daily/history/share roadmap in `jaahay/puzzle-forge`. Read `docs/architecture/daily-history-share-roadmap.md`, then inspect `src/games/shared/daily.ts`, `src/app/session.ts`, `src/app/usePuzzleSessions.ts`, `src/components/PuzzleWorkspace.tsx`, `src/catalog/types.ts`, and Word Guess share/progress modules. Implement one coherent phase only. Prefer shared, versioned localStorage helpers. Do not add accounts, cloud sync, or telemetry. Keep share output spoiler-safe. Add tests for storage, malformed records, daily identity, and any formatter changes. Validate with `pnpm build`.
+You are implementing the daily/history/share roadmap in `jaahay/puzzle-forge`. Read `docs/architecture/daily-history-share-roadmap.md` and `docs/architecture/puzzle-resource-identity.md`, then inspect `src/games/shared/daily.ts`, `src/app/session.ts`, `src/app/usePuzzleSessions.ts`, `src/components/PuzzleWorkspace.tsx`, `src/catalog/types.ts`, and Word Guess share/progress modules. Implement one coherent phase only. Prefer shared, versioned localStorage helpers for completion/history records. Do not add accounts, cloud sync, or telemetry. Keep share output spoiler-safe. Add tests for storage, malformed records, daily identity, and any formatter changes. Validate with `pnpm build`.
 ```
