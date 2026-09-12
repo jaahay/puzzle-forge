@@ -39,6 +39,8 @@ describe("materialized puzzle serialization", () => {
       difficulty: "Medium",
       sudokuVariation: "zero-killer",
     });
+    expect(puzzle.kind).toBe("grid");
+    if (puzzle.kind !== "grid") return;
 
     const decoded = expectRoundTrip(puzzle);
     expect(decoded.kind).toBe("grid");
@@ -59,6 +61,8 @@ describe("materialized puzzle serialization", () => {
       difficulty: "Hard",
       requireUniqueSolution: true,
     });
+    expect(puzzle.kind).toBe("grid");
+    if (puzzle.kind !== "grid") return;
 
     const decoded = expectRoundTrip(puzzle);
     expect(decoded.kind).toBe("grid");
