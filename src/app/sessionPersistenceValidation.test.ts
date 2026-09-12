@@ -189,7 +189,8 @@ describe("persisted session boundary validation", () => {
       writeSession(storage, { ...persisted, generationId: "not-a-generation-id" });
       expect(loadPersistedPuzzleSessions()).toBeNull();
 
-      writeSession(storage, { ...persisted, puzzleId: "nonogram" });
+      const resourceKey = writeSession(storage, persisted);
+      storage.set(`puzzle-forge.session.${resourceKey}`, JSON.stringify({ ...persisted, puzzleId: "nonogram" }));
       expect(loadPersistedPuzzleSessions()).toBeNull();
 
       writeSession(storage, { ...persisted, completedAt: 42 as unknown as string });
