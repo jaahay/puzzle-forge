@@ -12,15 +12,16 @@ import { StartView } from "./components/StartView";
 import { getLocalDateStamp } from "./games/shared/daily";
 import { isImageBackedPuzzleId } from "./games/imageAssets";
 import { defaultSolitaireVariation, normalizeSolitaireVariation } from "./games/solitaire/variation";
-import { defaultSudokuVariation, normalizeSudokuVariation } from "./games/sudoku/variation";
+import { defaultSudokuVariation } from "./games/sudoku/variation";
 import {
   generatedPuzzleMatchesIdentity,
   getGeneratedPuzzleRuntimeSettings,
+  type GenerationIdentity,
   type GenerationRuntimeSettings,
 } from "./app/generationIdentity";
 import { resolveGenerationIdentity, type GenerationSettings } from "./app/generationSettings";
 import { getInitialSelectedPuzzleId, markPuzzleNavigation } from "./app/homeNavigation";
-import { deserializePuzzle, materializedPuzzlesEqual, serializePuzzle } from "./app/puzzleSerialization";
+import { decodeGenerationId, encodeGenerationId } from "./app/puzzleResourceIdentity";
 import { defaultPuzzleDifficulty, makeRandomSeed } from "./app/runtime";
 import { getCurrentAppRoute, parseAppRoute, pushAppRoute, replaceAppRoute, type AppRoute } from "./app/routes";
 import { initialSolitaireStats, loadPersistedPuzzleSessions } from "./app/session";
@@ -32,8 +33,17 @@ import { useSolitaireController } from "./app/useSolitaireController";
 import type { AppView } from "./site/views";
 
 const initialStatusMessage = "Pick a puzzle to start.";
-type GenerationBehavior = { preserveScroll?: boolean };
+type ResourceHistoryBehavior = "push" | "replace";
+type GenerationBehavior = {
+  preserveScroll?: boolean;
+  resourceHistory?: ResourceHistoryBehavior;
+};
 type NavigationBehavior = { pushHistory?: boolean };
+type PendingGenerationResource = {
+  identity: GenerationIdentity;
+  route: Extract<AppRoute, { kind: "resource" }>;
+  history: ResourceHistoryBehavior;
+};
 
 const makeInitialGenerationDefaults = (): GenerationRuntimeSettings => ({
   seed: makeRandomSeed(),
@@ -52,15 +62,20 @@ const viewForRoute = (route: AppRoute): AppView | null => {
   return "catalog";
 };
 
+const generatedBaselinesMatch = (left: GeneratedPuzzle, right: GeneratedPuzzle) =>
+  left.puzzleId === right.puzzleId &&
+  left.seed === right.seed &&
+  left.width === right.width &&
+  left.height === right.height &&
+  left.checksum === right.checksum;
+
 export const App = () => {
   const initialRoute = useMemo(getCurrentAppRoute, []);
   const storedPuzzleId = useMemo(() => getInitialSelectedPuzzleId(), []);
-  const initialSelectedPuzzleId = initialRoute.kind === "puzzle"
+  const initialSelectedPuzzleId = initialRoute.kind === "puzzle" || initialRoute.kind === "resource"
     ? initialRoute.puzzleId
-    : initialRoute.kind === "permalink" && initialRoute.puzzleId
-      ? initialRoute.puzzleId
-      : storedPuzzleId;
-  const shouldStartOnPuzzleSurface = initialRoute.kind === "puzzle" || initialRoute.kind === "permalink";
+    : storedPuzzleId;
+  const shouldStartOnPuzzleSurface = initialRoute.kind === "puzzle" || initialRoute.kind === "resource";
   const [route, setRoute] = useState<AppRoute>(initialRoute);
   const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>(initialSelectedPuzzleId);
   const [generationDefaults, setGenerationDefaults] = useState<GenerationRuntimeSettings>(makeInitialGenerationDefaults);
@@ -71,6 +86,7 @@ export const App = () => {
   const [hasSelectedPuzzle, setHasSelectedPuzzle] = useState(shouldStartOnPuzzleSurface);
   const [isHomeSelected, setIsHomeSelected] = useState(!shouldStartOnPuzzleSurface);
   const pendingScrollRestore = useRef<{ x: number; y: number } | null>(null);
+  const pendingGenerationResourceRef = useRef<PendingGenerationResource | null>(null);
   const generatedPuzzleHandlerRef = useRef<(generatedPuzzle: GeneratedPuzzle) => void>(() => undefined);
   const routeNavigationHandlerRef = useRef<(route: AppRoute) => void>(() => undefined);
   const saveCurrentSessionRef = useRef<() => void>(() => undefined);
@@ -99,6 +115,7 @@ export const App = () => {
   const activeView = viewForRoute(route);
 
   const cancelPendingGeneration = () => {
+    pendingGenerationResourceRef.current = null;
     generation.cancelGeneration();
   };
 
@@ -123,9 +140,21 @@ export const App = () => {
     setRoute(nextRoute);
   };
 
+  const commitResourceRoute = (
+    nextRoute: Extract<AppRoute, { kind: "resource" }>,
+    history: ResourceHistoryBehavior,
+  ) => {
+    if (history === "push") {
+      setAppRoute(nextRoute);
+      return;
+    }
+    replaceCurrentRoute(nextRoute);
+  };
+
   const restoreSession = (
     session: ReturnType<typeof buildRuntimeSession>,
     nextRoute: AppRoute = { kind: "puzzle", puzzleId: session.puzzle.puzzleId },
+    routeHistory: ResourceHistoryBehavior = "replace",
   ) => {
     const restoredPuzzle = session.puzzle;
     const puzzleId = restoredPuzzle.puzzleId;
@@ -137,7 +166,8 @@ export const App = () => {
     setSelectedPuzzleId(puzzleId);
     setGenerationDefaults((current) => getGeneratedPuzzleRuntimeSettings(restoredPuzzle, current));
     setPuzzle(restoredPuzzle);
-    replaceCurrentRoute(nextRoute);
+    if (nextRoute.kind === "resource") commitResourceRoute(nextRoute, routeHistory);
+    else replaceCurrentRoute(nextRoute);
 
     if (session.progress.kind === "cards") {
       solitaire.restoreSolitaireSnapshot({
@@ -197,26 +227,35 @@ export const App = () => {
     if (behavior.preserveScroll) rememberScrollPosition();
     setPuzzleLinkError(null);
     const requestedPuzzleId = options.puzzleId ?? selectedPuzzleId;
-    let requestOptions = options;
-    if (requestedPuzzleId === "klondike-solitaire") {
-      requestOptions = { ...options, solitaireVariation: normalizeSolitaireVariation(options.solitaireVariation ?? solitaireVariation) };
-    } else if (requestedPuzzleId === "sudoku") {
-      requestOptions = { ...options, sudokuVariation: normalizeSudokuVariation(options.sudokuVariation ?? sudokuVariation) };
-    } else if (isImageBackedPuzzleId(requestedPuzzleId)) {
-      const currentImageAsset = puzzle?.kind === "tiles" && puzzle.puzzleId === requestedPuzzleId && puzzle.asset.kind === "image"
-        ? puzzle.asset
-        : null;
-      requestOptions = {
-        ...options,
-        imageId: options.imageId ?? currentImageAsset?.id,
-      };
-    }
-    const result = generation.beginGeneration({ selectedPuzzleId, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation }, requestOptions);
+    const { puzzleId: _ignoredPuzzleId, ...settings } = options;
+    const identity = resolveGenerationIdentity({
+      puzzleId: requestedPuzzleId,
+      currentPuzzle: puzzle,
+      runtimeSettings: generationDefaults,
+      settings,
+      makeSeed: makeRandomSeed,
+    });
+    const result = generation.beginGeneration(
+      { selectedPuzzleId, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation },
+      {
+        puzzleId: identity.puzzleId,
+        seed: identity.seed,
+        width: identity.width,
+        height: identity.height,
+        difficulty: identity.difficulty,
+        requireUniqueSolution: identity.requireUniqueSolution,
+        sudokuVariation: identity.puzzleId === "sudoku" ? identity.sudokuVariation : undefined,
+        solitaireVariation: identity.puzzleId === "klondike-solitaire" ? identity.solitaireVariation : undefined,
+        imageId: isImageBackedPuzzleId(identity.puzzleId) ? identity.imageId : undefined,
+        provenance: identity.provenance,
+      },
+    );
 
     setHasSelectedPuzzle(true);
     setIsHomeSelected(false);
     markPuzzleNavigation(requestedPuzzleId);
     if (result.kind === "planned") {
+      pendingGenerationResourceRef.current = null;
       const definition = getPuzzleDefinition(result.puzzleId);
       setSelectedPuzzleId(result.puzzleId);
       updateGenerationDefaults({ width: definition.defaultWidth, height: definition.defaultHeight });
@@ -227,48 +266,65 @@ export const App = () => {
     }
 
     const { request, title } = result;
+    pendingGenerationResourceRef.current = {
+      identity,
+      route: {
+        kind: "resource",
+        puzzleId: identity.puzzleId,
+        generationId: encodeGenerationId(identity),
+      },
+      history: behavior.resourceHistory ?? "replace",
+    };
     setSelectedPuzzleId(request.puzzleId);
-    setGenerationDefaults((current) => ({
-      seed: request.seed,
-      width: request.width,
-      height: request.height,
-      difficulty: request.difficulty ?? current.difficulty,
-      requireUniqueSolution: request.requireUniqueSolution ?? current.requireUniqueSolution,
-      sudokuVariation: request.puzzleId === "sudoku" ? normalizeSudokuVariation(request.sudokuVariation) : current.sudokuVariation,
-      solitaireVariation: request.puzzleId === "klondike-solitaire" ? normalizeSolitaireVariation(request.solitaireVariation) : current.solitaireVariation,
-    }));
+    setGenerationDefaults({
+      seed: identity.seed,
+      width: identity.width,
+      height: identity.height,
+      difficulty: identity.difficulty,
+      requireUniqueSolution: identity.requireUniqueSolution,
+      sudokuVariation: identity.sudokuVariation,
+      solitaireVariation: identity.solitaireVariation,
+    });
     if (puzzle?.puzzleId !== request.puzzleId) resetRuntimePuzzleState();
     setStatusMessage(`Generating ${title}...`);
   };
 
-  const beginPersistedPuzzle = (puzzleId: PuzzleId) => {
-    const restoredSession = sessions.restorePersistedSession(puzzleId);
-    if (!restoredSession) return false;
-    restoreSession(restoredSession);
-    return true;
-  };
-
   const handleGeneratedPuzzle = (generatedPuzzle: GeneratedPuzzle) => {
+    const pendingResource = pendingGenerationResourceRef.current;
+    pendingGenerationResourceRef.current = null;
     setPuzzleLinkError(null);
-    const readyMessage = generation.makeReadyMessage(generatedPuzzle);
-    setPuzzle(generatedPuzzle);
-    replaceCurrentRoute({ kind: "puzzle", puzzleId: generatedPuzzle.puzzleId });
-    setGenerationDefaults((current) => getGeneratedPuzzleRuntimeSettings(generatedPuzzle, current));
-    if (generatedPuzzle.kind === "cards") {
-      solitaire.restoreSolitaireSnapshot({
-        cardStacks: generatedPuzzle.stacks,
-        selectedCard: null,
-        solitaireStats: initialSolitaireStats,
-        solitaireUndoStack: [],
-        solitaireRedoStack: [],
-        statusMessage: readyMessage,
-      });
-    } else {
-      solitaire.resetSolitaire();
-      setStatusMessage(readyMessage);
+
+    if (
+      !pendingResource ||
+      pendingResource.identity.puzzleId !== generatedPuzzle.puzzleId ||
+      !generatedPuzzleMatchesIdentity(generatedPuzzle, pendingResource.identity)
+    ) {
+      const message = "Generated puzzle did not match its requested resource identity.";
+      resetRuntimePuzzleState();
+      setPuzzleLinkError(message);
+      setStatusMessage(message);
+      return;
     }
-    grid.prepareGeneratedGrid(generatedPuzzle);
-    restoreScrollPosition();
+
+    const puzzleId = generatedPuzzle.puzzleId;
+    const cachedSession = sessions.getCachedSession(puzzleId);
+    if (cachedSession && generatedBaselinesMatch(cachedSession.puzzle, generatedPuzzle)) {
+      restoreSession(cachedSession, pendingResource.route, pendingResource.history);
+      return;
+    }
+
+    const persistedSession = sessions.restorePersistedSession(puzzleId, generatedPuzzle);
+    if (persistedSession) {
+      restoreSession(persistedSession, pendingResource.route, pendingResource.history);
+      return;
+    }
+
+    const readyMessage = generation.makeReadyMessage(generatedPuzzle);
+    restoreSession(
+      buildFreshSessionForGeneratedPuzzle(generatedPuzzle, readyMessage),
+      pendingResource.route,
+      pendingResource.history,
+    );
   };
   generatedPuzzleHandlerRef.current = handleGeneratedPuzzle;
 
@@ -292,72 +348,70 @@ export const App = () => {
     const nextRoute: AppRoute = { kind: "puzzle", puzzleId };
     setAppRoute(nextRoute, behavior);
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
+    cancelPendingGeneration();
     markPuzzleNavigation(puzzleId);
     setHasSelectedPuzzle(true);
     setIsHomeSelected(false);
     setSelectedPuzzleId(puzzleId);
     setPuzzleLinkError(null);
 
-    const cachedSession = sessions.getCachedSession(puzzleId);
-    if (cachedSession) { restoreSession(cachedSession, nextRoute); return; }
-    if (beginPersistedPuzzle(puzzleId)) return;
-    beginGeneration(makeInitialPuzzleGenerationOptions({
-      puzzleId,
-      makeSeed: makeRandomSeed,
-      rememberedDraft: getRememberedNextPuzzleDraft(puzzleId),
-    }));
+    beginGeneration(
+      makeInitialPuzzleGenerationOptions({
+        puzzleId,
+        makeSeed: makeRandomSeed,
+        rememberedDraft: getRememberedNextPuzzleDraft(puzzleId),
+      }),
+      { resourceHistory: "replace" },
+    );
   };
 
-  const selectPermalink = (
-    permalinkRoute: Extract<AppRoute, { kind: "permalink" }>,
+  const selectResource = (
+    resourceRoute: Extract<AppRoute, { kind: "resource" }>,
     behavior: NavigationBehavior = {},
   ) => {
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
     cancelPendingGeneration();
-    setAppRoute(permalinkRoute, behavior);
+    setAppRoute(resourceRoute, behavior);
     setHasSelectedPuzzle(true);
     setIsHomeSelected(false);
+    setSelectedPuzzleId(resourceRoute.puzzleId);
+    markPuzzleNavigation(resourceRoute.puzzleId);
 
-    const decoded = deserializePuzzle(permalinkRoute.serializedPuzzle);
+    const decoded = decodeGenerationId(resourceRoute.puzzleId, resourceRoute.generationId);
     if (!decoded.ok) {
-      const message = "This puzzle link is invalid or unavailable.";
+      const message = "This puzzle resource is invalid or unavailable.";
       resetRuntimePuzzleState();
       setPuzzleLinkError(message);
       setStatusMessage(message);
       return;
     }
 
-    const linkedPuzzle = decoded.puzzle;
-    if (permalinkRoute.puzzleId && permalinkRoute.puzzleId !== linkedPuzzle.puzzleId) {
-      const message = "This puzzle link does not match the puzzle type in its URL.";
-      resetRuntimePuzzleState();
-      setPuzzleLinkError(message);
-      setStatusMessage(message);
-      return;
-    }
-
-    const puzzleId = linkedPuzzle.puzzleId;
-    const canonicalRoute: AppRoute = {
-      kind: "permalink",
-      serializedPuzzle: serializePuzzle(linkedPuzzle),
-    };
-    markPuzzleNavigation(puzzleId);
-    setSelectedPuzzleId(puzzleId);
-
-    const cachedSession = sessions.getCachedSession(puzzleId);
-    if (cachedSession && materializedPuzzlesEqual(cachedSession.puzzle, linkedPuzzle)) {
-      restoreSession(cachedSession, canonicalRoute);
-      return;
-    }
-
-    const persistedSession = sessions.restorePersistedSession(puzzleId, linkedPuzzle);
-    if (persistedSession) {
-      restoreSession(persistedSession, canonicalRoute);
-      return;
-    }
-
-    const readyMessage = generation.makeReadyMessage(linkedPuzzle);
-    restoreSession(buildFreshSessionForGeneratedPuzzle(linkedPuzzle, readyMessage), canonicalRoute);
+    const identity = decoded.identity;
+    setPuzzleLinkError(null);
+    setGenerationDefaults({
+      seed: identity.seed,
+      width: identity.width,
+      height: identity.height,
+      difficulty: identity.difficulty,
+      requireUniqueSolution: identity.requireUniqueSolution,
+      sudokuVariation: identity.sudokuVariation,
+      solitaireVariation: identity.solitaireVariation,
+    });
+    beginGeneration(
+      {
+        puzzleId: identity.puzzleId,
+        seed: identity.seed,
+        width: identity.width,
+        height: identity.height,
+        difficulty: identity.difficulty,
+        requireUniqueSolution: identity.requireUniqueSolution,
+        sudokuVariation: identity.sudokuVariation,
+        solitaireVariation: identity.solitaireVariation,
+        imageId: identity.imageId,
+        provenance: identity.provenance,
+      },
+      { resourceHistory: "replace" },
+    );
   };
 
   const selectSiteView = (view: Exclude<AppView, "catalog">, behavior: NavigationBehavior = {}) => {
@@ -379,8 +433,8 @@ export const App = () => {
   routeNavigationHandlerRef.current = (nextRoute) => {
     if (nextRoute.kind === "puzzle") {
       selectPuzzle(nextRoute.puzzleId, { pushHistory: false });
-    } else if (nextRoute.kind === "permalink") {
-      selectPermalink(nextRoute, { pushHistory: false });
+    } else if (nextRoute.kind === "resource") {
+      selectResource(nextRoute, { pushHistory: false });
     } else if (nextRoute.kind === "home") {
       selectHome({ pushHistory: false });
     } else if (nextRoute.kind === "not-found") {
@@ -409,6 +463,7 @@ export const App = () => {
       event,
       (generatedPuzzle) => generatedPuzzleHandlerRef.current(generatedPuzzle),
       (error) => {
+        pendingGenerationResourceRef.current = null;
         setStatusMessage(error);
         restoreScrollPosition();
       },
@@ -420,8 +475,8 @@ export const App = () => {
 
     if (initialRoute.kind === "puzzle") {
       selectPuzzle(initialRoute.puzzleId, { pushHistory: false });
-    } else if (initialRoute.kind === "permalink") {
-      selectPermalink(initialRoute, { pushHistory: false });
+    } else if (initialRoute.kind === "resource") {
+      selectResource(initialRoute, { pushHistory: false });
     }
 
     return () => generation.worker.removeEventListener("message", handleMessage);
@@ -449,7 +504,7 @@ export const App = () => {
       sudokuVariation,
       solitaireVariation,
       makeSeed: makeRandomSeed,
-    }));
+    }), { resourceHistory: "replace" });
   }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, puzzle, puzzleLinkError, selectedPuzzleId, selectedPuzzleIsGeneratable, selectedDefinition, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation]);
 
   useEffect(() => {
@@ -457,7 +512,7 @@ export const App = () => {
     saveCurrentSession();
   }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, selectedPuzzleId, puzzle, solitaire.cardStacks, solitaire.selectedCard, solitaire.solitaireStats, solitaire.solitaireUndoStack, solitaire.solitaireRedoStack, grid.gridCells, grid.selectedGridCell, grid.gridHistory, statusMessage]);
 
-  const generate = () => beginGeneration({}, { preserveScroll: true });
+  const generate = () => beginGeneration({}, { preserveScroll: true, resourceHistory: "push" });
 
   const resetCurrentPuzzle = () => {
     if (!puzzle) return;
@@ -505,7 +560,7 @@ export const App = () => {
       solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? identity.solitaireVariation : undefined,
       imageId: isImageBackedPuzzleId(selectedPuzzleId) ? identity.imageId : undefined,
       provenance: identity.provenance,
-    }, { preserveScroll: true });
+    }, { preserveScroll: true, resourceHistory: "push" });
   };
 
   const generateNextPuzzle = () => {
