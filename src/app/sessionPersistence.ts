@@ -440,8 +440,18 @@ const restorePersistedTilePuzzle = (progress: PersistedTileProgress, puzzle: Til
   }
 
   if (puzzle.tiles.some((tile) => !tileIndexes.has(tile.id))) return null;
-  const tiles = puzzle.tiles.map((tile) => ({ ...tile, currentIndex: tileIndexes.get(tile.id) ?? tile.currentIndex }));
 
+  if (puzzle.puzzleId === "jigsaw") {
+    return {
+      ...puzzle,
+      tiles: puzzle.tiles.map((tile) => ({
+        ...tile,
+        currentIndex: tileIndexes.get(tile.id) ?? tile.currentIndex,
+      })),
+    };
+  }
+
+  const tiles = puzzle.tiles.map((tile) => ({ ...tile, currentIndex: tileIndexes.get(tile.id) ?? tile.currentIndex }));
   if (puzzle.puzzleId === "sliding-puzzle") {
     const emptyIndex = Array.from({ length: boardCellCount }, (_, index) => index).find((index) => !usedIndexes.has(index));
     if (emptyIndex === undefined) return null;
