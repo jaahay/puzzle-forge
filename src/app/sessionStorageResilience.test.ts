@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
+import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { gridHistoryLimit, type GridHistoryEntry } from "./gridHistory";
-import { serializePuzzle } from "./puzzleSerialization";
+import { encodeGenerationId, makePuzzleResourceKey } from "./puzzleResourceIdentity";
 import {
   buildPersistedPuzzleSession,
   loadPersistedPuzzleSessions,
@@ -9,8 +10,6 @@ import {
   savePersistedPuzzleSessions,
   type PuzzleSession,
 } from "./session";
-
-const sudokuStorageKey = "puzzle-forge.session.sudoku";
 
 const makeEmptyZeroKillerCells = (): PuzzleCell[] =>
   Array.from({ length: 81 }, (_, index) => {
@@ -42,6 +41,24 @@ const makeZeroKillerPuzzle = (): GridGeneratedPuzzle => ({
   kind: "grid",
   cells: makeEmptyZeroKillerCells(),
 });
+
+const makeZeroKillerResource = () => {
+  const generationId = encodeGenerationId({
+    puzzleId: "sudoku",
+    seed: "refresh-seed",
+    width: 9,
+    height: 9,
+    difficulty: "Medium",
+    requireUniqueSolution: true,
+    sudokuVariation: "zero-killer",
+    solitaireVariation: defaultSolitaireVariation,
+  });
+  return {
+    puzzleId: "sudoku" as const,
+    generationId,
+    resourceKey: makePuzzleResourceKey("sudoku", generationId),
+  };
+};
 
 const makeHistoryEntry = (step: number): GridHistoryEntry => {
   const targetIndex = step % 81;
@@ -120,18 +137,22 @@ const withMemoryStorage = (run: (storage: Map<string, string>) => void) => {
 };
 
 describe("active puzzle persistence resilience", () => {
-  it("round-trips Zero Killer player progress with the exact materialized puzzle", () => {
+  it("round-trips Zero Killer player progress over a regenerated baseline", () => {
     const session = makeZeroKillerSession();
-    const persisted = buildPersistedPuzzleSession("sudoku", session);
+    const resource = makeZeroKillerResource();
+    const persisted = buildPersistedPuzzleSession(resource, session);
 
     expect(persisted).not.toBeNull();
     if (!persisted) return;
-    expect(persisted.puzzle).toBe(serializePuzzle(session.puzzle));
+    expect(persisted.generationId).toBe(resource.generationId);
+    expect(persisted.baselineChecksum).toBe(session.puzzle.checksum);
+    expect(persisted).not.toHaveProperty("puzzle");
 
-    const restored = restorePuzzleSessionFromPersisted(persisted);
+    const regeneratedPuzzle = makeZeroKillerPuzzle();
+    const restored = restorePuzzleSessionFromPersisted(persisted, regeneratedPuzzle);
     expect(restored?.progress.kind).toBe("grid");
     if (!restored || restored.progress.kind !== "grid") return;
-    expect(serializePuzzle(restored.puzzle)).toBe(serializePuzzle(session.puzzle));
+    expect(restored.puzzle).toBe(regeneratedPuzzle);
     expect(restored.progress.cells.find((cell) => cell.row === 2 && cell.column === 1)?.value).toBe("2");
     expect(restored.progress.cells.find((cell) => cell.row === 2 && cell.column === 4)?.value).toBe("3");
   });
@@ -139,22 +160,28 @@ describe("active puzzle persistence resilience", () => {
   it("persists and restores the full grid history limit using compact durable snapshots", () => {
     withMemoryStorage((storage) => {
       const session = makeZeroKillerSession();
+      const resource = makeZeroKillerResource();
       if (session.progress.kind !== "grid") return;
       const undoStack = Array.from({ length: gridHistoryLimit }, (_, index) => makeHistoryEntry(index));
       const redoStack = Array.from({ length: gridHistoryLimit }, (_, index) => makeHistoryEntry(index + gridHistoryLimit));
       session.progress.undoStack = undoStack;
       session.progress.redoStack = redoStack;
 
-      savePersistedPuzzleSessions({ activePuzzleId: "sudoku", sessions: { sudoku: session } });
+      savePersistedPuzzleSessions({
+        activeResourceKey: resource.resourceKey,
+        sessions: { [resource.resourceKey]: session },
+      });
 
       expect(session.progress.undoStack).toHaveLength(gridHistoryLimit);
       expect(session.progress.redoStack).toHaveLength(gridHistoryLimit);
 
-      const raw = storage.get(sudokuStorageKey);
+      const raw = storage.get(`puzzle-forge.session.${resource.resourceKey}`);
       expect(raw).toBeDefined();
       if (!raw) return;
       const durable = JSON.parse(raw) as {
         puzzle?: string;
+        generationId: string;
+        baselineChecksum: string;
         progress: {
           kind: "grid";
           history?: { undo: unknown[]; redo: unknown[] };
@@ -162,7 +189,9 @@ describe("active puzzle persistence resilience", () => {
           redoStack?: unknown;
         };
       };
-      expect(typeof durable.puzzle).toBe("string");
+      expect(durable.puzzle).toBeUndefined();
+      expect(durable.generationId).toBe(resource.generationId);
+      expect(durable.baselineChecksum).toBe(session.puzzle.checksum);
       expect(durable.progress.history?.undo).toHaveLength(gridHistoryLimit);
       expect(durable.progress.history?.redo).toHaveLength(gridHistoryLimit);
       expect(durable.progress.undoStack).toBeUndefined();
@@ -174,10 +203,10 @@ describe("active puzzle persistence resilience", () => {
       expect(compactHistoryJson).not.toContain('"row"');
       expect(compactHistoryJson.length).toBeLessThan(richHistoryJson.length / 5);
 
-      const persisted = loadPersistedPuzzleSessions()?.sessions.sudoku;
+      const persisted = loadPersistedPuzzleSessions()?.sessions[resource.resourceKey];
       expect(persisted?.progress.kind).toBe("grid");
       if (!persisted || persisted.progress.kind !== "grid") return;
-      const restored = restorePuzzleSessionFromPersisted(persisted);
+      const restored = restorePuzzleSessionFromPersisted(persisted, makeZeroKillerPuzzle());
       expect(restored?.progress.kind).toBe("grid");
       if (!restored || restored.progress.kind !== "grid") return;
       expect(restored.progress.undoStack).toHaveLength(gridHistoryLimit);
