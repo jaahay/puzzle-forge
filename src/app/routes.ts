@@ -4,7 +4,7 @@ import { puzzleIds } from "./sessionConstants";
 export type AppRoute =
   | { kind: "home" }
   | { kind: "puzzle"; puzzleId: PuzzleId }
-  | { kind: "permalink"; serializedPuzzle: string; puzzleId?: PuzzleId }
+  | { kind: "permalink"; puzzleId: PuzzleId; serializedPuzzle: string }
   | { kind: "updates" }
   | { kind: "about" }
   | { kind: "not-found"; pathname: string };
@@ -21,10 +21,6 @@ export const parseAppRoute = (pathname: string): AppRoute => {
   const segments = normalizedPath.slice(1).split("/").filter(Boolean);
   if (segments.length === 1 && puzzleIdSet.has(segments[0])) {
     return { kind: "puzzle", puzzleId: segments[0] as PuzzleId };
-  }
-
-  if (segments.length === 2 && segments[0] === "p" && segments[1]) {
-    return { kind: "permalink", serializedPuzzle: segments[1] };
   }
 
   if (segments.length === 2 && puzzleIdSet.has(segments[0]) && segments[1]) {
@@ -45,9 +41,7 @@ export const appRoutePath = (route: AppRoute): string => {
     case "puzzle":
       return `/${route.puzzleId}`;
     case "permalink":
-      return route.puzzleId
-        ? `/${route.puzzleId}/${encodeURIComponent(route.serializedPuzzle)}`
-        : `/p/${encodeURIComponent(route.serializedPuzzle)}`;
+      return `/${route.puzzleId}/${encodeURIComponent(route.serializedPuzzle)}`;
     case "updates":
       return "/updates";
     case "about":
