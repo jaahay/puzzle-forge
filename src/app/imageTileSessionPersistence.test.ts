@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { ImageTileGeneratedPuzzle, ImageTilePuzzleId } from "../catalog/types";
 import { generateSlidingPuzzle } from "../games/slidingPuzzle/generate";
 import { generateTileSwap } from "../games/tileSwap/generate";
+import { deserializePuzzle, serializePuzzle } from "./puzzleSerialization";
 import {
   buildPersistedPuzzleSession,
   restorePuzzleSessionFromPersisted,
@@ -31,18 +32,23 @@ const cases: Array<{
 ];
 
 describe("image tile session identity", () => {
-  it.each(cases)("persists concrete artwork and generated identity for $puzzleId", ({ puzzleId, make }) => {
+  it.each(cases)("persists the exact materialized $puzzleId puzzle", ({ puzzleId, make }) => {
     const puzzle = make("great-wave");
     const persisted = buildPersistedPuzzleSession(puzzleId, makeTileSession(puzzle));
 
-    expect(persisted?.imageId).toBe("great-wave");
-    expect(persisted?.puzzleInstanceId).toBe(puzzle.id);
     expect(persisted).not.toBeNull();
     if (!persisted) return;
+    expect(persisted.puzzle).toBe(serializePuzzle(puzzle));
 
+    const decoded = deserializePuzzle(persisted.puzzle);
+    expect(decoded.ok).toBe(true);
+    if (!decoded.ok || decoded.puzzle.kind !== "tiles") return;
+    expect(decoded.puzzle.asset.id).toBe("great-wave");
+    expect(decoded.puzzle.id).toBe(puzzle.id);
+
+    expect(restorePuzzleSessionFromPersisted(persisted)).not.toBeNull();
     expect(restorePuzzleSessionFromPersisted(persisted, puzzle)).not.toBeNull();
     expect(restorePuzzleSessionFromPersisted(persisted, make("roses"))).toBeNull();
-    expect(restorePuzzleSessionFromPersisted({ ...persisted, puzzleInstanceId: `${puzzle.id}-other` }, puzzle)).toBeNull();
   });
 
   it("rejects duplicate and out-of-range persisted tile positions", () => {
@@ -74,7 +80,7 @@ describe("image tile session identity", () => {
       },
     };
 
-    expect(restorePuzzleSessionFromPersisted(duplicatePosition, puzzle)).toBeNull();
-    expect(restorePuzzleSessionFromPersisted(outOfRangePosition, puzzle)).toBeNull();
+    expect(restorePuzzleSessionFromPersisted(duplicatePosition)).toBeNull();
+    expect(restorePuzzleSessionFromPersisted(outOfRangePosition)).toBeNull();
   });
 });
