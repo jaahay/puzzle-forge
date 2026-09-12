@@ -93,7 +93,7 @@ export const resolveGenerationIdentity = ({
       ? currentPuzzle.asset.id
       : undefined;
   const provenance = settings.provenance === null ? undefined : settings.provenance;
-  const seed = provenance?.source === "daily"
+  const seed = provenance?.source === "daily" && explicitSeed === null
     ? getDailyPuzzleSeedForProfile(puzzleId, provenance.dateStamp, {
         width,
         height,
