@@ -1,10 +1,11 @@
 import type { PuzzleId } from "../catalog/types";
+import { deserializePuzzle } from "./puzzleSerialization";
 import { puzzleIds } from "./sessionConstants";
 
 export type AppRoute =
   | { kind: "home" }
   | { kind: "puzzle"; puzzleId: PuzzleId }
-  | { kind: "permalink"; puzzleId: PuzzleId; serializedPuzzle: string }
+  | { kind: "permalink"; serializedPuzzle: string; puzzleId?: PuzzleId }
   | { kind: "updates" }
   | { kind: "about" }
   | { kind: "not-found"; pathname: string };
@@ -34,6 +35,13 @@ export const parseAppRoute = (pathname: string): AppRoute => {
   return { kind: "not-found", pathname: normalizedPath };
 };
 
+const permalinkPuzzleId = (route: Extract<AppRoute, { kind: "permalink" }>) => {
+  if (route.puzzleId) return route.puzzleId;
+  const decoded = deserializePuzzle(route.serializedPuzzle);
+  if (!decoded.ok) throw new Error("Cannot route an invalid materialized puzzle permalink.");
+  return decoded.puzzle.puzzleId;
+};
+
 export const appRoutePath = (route: AppRoute): string => {
   switch (route.kind) {
     case "home":
@@ -41,7 +49,7 @@ export const appRoutePath = (route: AppRoute): string => {
     case "puzzle":
       return `/${route.puzzleId}`;
     case "permalink":
-      return `/${route.puzzleId}/${encodeURIComponent(route.serializedPuzzle)}`;
+      return `/${permalinkPuzzleId(route)}/${encodeURIComponent(route.serializedPuzzle)}`;
     case "updates":
       return "/updates";
     case "about":
