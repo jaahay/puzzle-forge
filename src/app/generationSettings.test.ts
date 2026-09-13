@@ -1,9 +1,15 @@
 import { describe, expect, it } from "vitest";
 import type { GeneratedPuzzle } from "../catalog/types";
+import { getPuzzleImageAsset } from "../games/imageAssets";
 import { getDailyPuzzleSeedForProfile } from "../games/shared/daily";
+import { generateSlidingPuzzle } from "../games/slidingPuzzle/generate";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation } from "../games/sudoku/variation";
-import type { GenerationRuntimeSettings } from "./generationIdentity";
+import { generateTileSwap } from "../games/tileSwap/generate";
+import {
+  generatedPuzzleMatchesIdentity,
+  type GenerationRuntimeSettings,
+} from "./generationIdentity";
 import { resolveGenerationIdentity } from "./generationSettings";
 
 const runtimeSettings: GenerationRuntimeSettings = {
@@ -31,6 +37,8 @@ const cardPuzzle: GeneratedPuzzle = {
   solitaireVariation: { ...defaultSolitaireVariation, drawMode: "draw-3" },
 };
 
+const currentImageAsset = getPuzzleImageAsset("great-wave", "tile-swap");
+
 const imagePuzzle: GeneratedPuzzle = {
   id: "tile-current",
   puzzleId: "tile-swap",
@@ -43,21 +51,7 @@ const imagePuzzle: GeneratedPuzzle = {
   notes: [],
   kind: "tiles",
   tiles: [],
-  asset: {
-    kind: "image",
-    id: "current-art",
-    title: "Current art",
-    alt: "Current art",
-    orientation: "square",
-    intrinsicWidth: 100,
-    intrinsicHeight: 100,
-    files: {
-      puzzle: "/puzzle.jpg",
-      preview: "/preview.jpg",
-      thumbnail: "/thumbnail.jpg",
-    },
-    credit: { text: "Test", sourceName: "Test" },
-  },
+  asset: currentImageAsset,
 };
 
 describe("resolveGenerationIdentity", () => {
@@ -212,7 +206,40 @@ describe("resolveGenerationIdentity", () => {
     }).solitaireVariation.drawMode).toBe("draw-3");
   });
 
+  it("resolves implicit default artwork before Tile Swap and Sliding Puzzle generation", () => {
+    for (const puzzleId of ["tile-swap", "sliding-puzzle"] as const) {
+      const identity = resolveGenerationIdentity({
+        puzzleId,
+        currentPuzzle: null,
+        runtimeSettings: { ...runtimeSettings, width: 4, height: 4 },
+        settings: { seed: "default-artwork", width: 4, height: 4 },
+        makeSeed: () => "fallback",
+      });
+      const expectedImageId = getPuzzleImageAsset(undefined, puzzleId).id;
+      const generated = puzzleId === "tile-swap"
+        ? generateTileSwap({
+            puzzleId,
+            seed: identity.seed,
+            width: identity.width,
+            height: identity.height,
+            imageId: identity.imageId,
+          })
+        : generateSlidingPuzzle({
+            puzzleId,
+            seed: identity.seed,
+            width: identity.width,
+            height: identity.height,
+            imageId: identity.imageId,
+          });
+
+      expect(identity.imageId).toBe(expectedImageId);
+      expect(generated.asset.id).toBe(expectedImageId);
+      expect(generatedPuzzleMatchesIdentity(generated, identity)).toBe(true);
+    }
+  });
+
   it("keeps current artwork unless another image is explicitly requested", () => {
+    const replacementImageId = getPuzzleImageAsset("cypresses", "tile-swap").id;
     const current = resolveGenerationIdentity({
       puzzleId: "tile-swap",
       currentPuzzle: imagePuzzle,
@@ -223,12 +250,12 @@ describe("resolveGenerationIdentity", () => {
       puzzleId: "tile-swap",
       currentPuzzle: imagePuzzle,
       runtimeSettings,
-      settings: { imageId: "new-art" },
+      settings: { imageId: replacementImageId },
       makeSeed: () => "fallback",
     });
 
-    expect(current.imageId).toBe("current-art");
-    expect(replacement.imageId).toBe("new-art");
+    expect(current.imageId).toBe(currentImageAsset.id);
+    expect(replacement.imageId).toBe(replacementImageId);
   });
 
   it("treats an explicitly blank seed as a request to reuse the current puzzle seed", () => {

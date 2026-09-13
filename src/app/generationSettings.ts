@@ -7,6 +7,7 @@ import type {
   SolitaireVariation,
   SudokuVariation,
 } from "../catalog/types";
+import { getPuzzleImageAsset, isImageBackedPuzzleId } from "../games/imageAssets";
 import { getDailyPuzzleSeedForProfile } from "../games/shared/daily";
 import { normalizeSolitaireVariation } from "../games/solitaire/variation";
 import { normalizeSudokuVariation } from "../games/sudoku/variation";
@@ -92,6 +93,10 @@ export const resolveGenerationIdentity = ({
     currentPuzzle?.kind === "tiles" && currentPuzzle.puzzleId === puzzleId && currentPuzzle.asset.kind === "image"
       ? currentPuzzle.asset.id
       : undefined;
+  const requestedImageId = settings.imageId ?? currentImageId;
+  const imageId = isImageBackedPuzzleId(puzzleId)
+    ? getPuzzleImageAsset(requestedImageId, puzzleId).id
+    : requestedImageId;
   const provenance = settings.provenance === null ? undefined : settings.provenance;
   const seed = provenance?.source === "daily" && explicitSeed === null
     ? getDailyPuzzleSeedForProfile(puzzleId, provenance.dateStamp, {
@@ -112,7 +117,7 @@ export const resolveGenerationIdentity = ({
     requireUniqueSolution,
     sudokuVariation,
     solitaireVariation,
-    imageId: settings.imageId ?? currentImageId,
+    imageId,
     provenance,
   };
 };
