@@ -241,7 +241,7 @@ export const makePuzzleResourceKey = (
   generationId: string,
 ): PuzzleResourceKey => `${puzzleId}/${generationId}`;
 
-const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: string): GenerationIdDecodeResult => {
+export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: string): GenerationIdDecodeResult => {
   const bytes = decodeBase64UrlBytes(generationId);
   if (!bytes) return { ok: false, reason: "malformed" };
 
