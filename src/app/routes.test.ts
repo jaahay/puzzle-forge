@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { appRoutePath, parseAppRoute } from "./routes";
+import { puzzleResourceAliases } from "./puzzleResourceAliases";
+import { appRoutePath, parseAppRoute, shouldPreserveResourceAliasPath } from "./routes";
+
+const getAlias = (puzzleId: "sudoku" | "nonogram", alias: string) => {
+  const entry = puzzleResourceAliases.find(
+    (candidate) => candidate.puzzleId === puzzleId && candidate.alias === alias,
+  );
+  if (!entry) throw new Error(`Missing test alias ${puzzleId}/${alias}`);
+  return entry;
+};
 
 describe("pathname routing", () => {
   it("parses home and site pages", () => {
@@ -26,10 +35,40 @@ describe("pathname routing", () => {
       puzzleId: "jigsaw",
       generationId: "example-generation-id",
     });
+    expect(parseAppRoute("/sudoku/Happy2026!")).toEqual({
+      kind: "resource",
+      puzzleId: "sudoku",
+      generationId: "Happy2026!",
+    });
     expect(parseAppRoute("/p/example-generation-id")).toEqual({
       kind: "not-found",
       pathname: "/p/example-generation-id",
     });
+  });
+
+  it("preserves a visible alias only while canonicalizing that same resource", () => {
+    const sudokuAlias = getAlias("sudoku", "Happy2026!");
+    const nonogramAlias = getAlias("nonogram", "Happy2026!");
+
+    expect(shouldPreserveResourceAliasPath(
+      "/sudoku/Happy2026!",
+      { kind: "resource", puzzleId: "sudoku", generationId: sudokuAlias.generationId },
+    )).toBe(true);
+
+    expect(shouldPreserveResourceAliasPath(
+      `/sudoku/${sudokuAlias.generationId}`,
+      { kind: "resource", puzzleId: "sudoku", generationId: sudokuAlias.generationId },
+    )).toBe(false);
+
+    expect(shouldPreserveResourceAliasPath(
+      "/sudoku/Happy2026!",
+      { kind: "resource", puzzleId: "sudoku", generationId: nonogramAlias.generationId },
+    )).toBe(false);
+
+    expect(shouldPreserveResourceAliasPath(
+      "/nonogram/Happy2026!",
+      { kind: "resource", puzzleId: "sudoku", generationId: sudokuAlias.generationId },
+    )).toBe(false);
   });
 
   it("preserves unknown paths and over-nested paths as not-found routes", () => {
@@ -43,6 +82,8 @@ describe("pathname routing", () => {
     expect(appRoutePath({ kind: "puzzle", puzzleId: "sudoku" })).toBe("/sudoku");
     expect(appRoutePath({ kind: "resource", puzzleId: "sudoku", generationId: "seed/value" }))
       .toBe("/sudoku/seed%2Fvalue");
+    expect(appRoutePath({ kind: "resource", puzzleId: "sudoku", generationId: "Happy2026!" }))
+      .toBe("/sudoku/Happy2026!");
     expect(appRoutePath({ kind: "puzzle", puzzleId: "tile-swap" })).toBe("/tile-swap");
     expect(appRoutePath({ kind: "puzzle", puzzleId: "sliding-puzzle" })).toBe("/sliding-puzzle");
     expect(appRoutePath({ kind: "updates" })).toBe("/updates");

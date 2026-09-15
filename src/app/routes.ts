@@ -1,4 +1,5 @@
 import type { PuzzleId } from "../catalog/types";
+import { resolvePuzzleResourceSegment } from "./puzzleResourceIdentity";
 import { puzzleIds } from "./sessionConstants";
 
 export type AppRoute =
@@ -56,6 +57,25 @@ export const getCurrentAppRoute = (): AppRoute =>
     ? { kind: "home" }
     : parseAppRoute(window.location.pathname);
 
+export const shouldPreserveResourceAliasPath = (
+  currentPathname: string,
+  nextRoute: AppRoute,
+) => {
+  if (nextRoute.kind !== "resource") return false;
+  const currentRoute = parseAppRoute(currentPathname);
+  if (currentRoute.kind !== "resource" || currentRoute.puzzleId !== nextRoute.puzzleId) return false;
+
+  const resolved = resolvePuzzleResourceSegment(
+    currentRoute.puzzleId,
+    currentRoute.generationId,
+  );
+  return (
+    resolved.ok &&
+    resolved.alias !== undefined &&
+    resolved.canonicalResource.generationId === nextRoute.generationId
+  );
+};
+
 const currentBrowserPath = () => window.location.pathname;
 
 export const pushAppRoute = (route: AppRoute) => {
@@ -67,7 +87,12 @@ export const pushAppRoute = (route: AppRoute) => {
 
 export const replaceAppRoute = (route: AppRoute) => {
   if (typeof window === "undefined") return;
+  const currentPath = currentBrowserPath();
+  if (shouldPreserveResourceAliasPath(currentPath, route)) {
+    if (window.location.hash) window.history.replaceState(null, "", currentPath);
+    return;
+  }
   const nextPath = appRoutePath(route);
-  if (currentBrowserPath() === nextPath && !window.location.hash) return;
+  if (currentPath === nextPath && !window.location.hash) return;
   window.history.replaceState(null, "", nextPath);
 };
