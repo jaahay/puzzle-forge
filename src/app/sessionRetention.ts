@@ -74,7 +74,7 @@ const selectRetainedResourceKeys = (
     .map(readPersistedSessionRecency)
     .filter((candidate): candidate is PersistedSessionRecency => candidate !== null);
   const candidatesByKey = new Map(candidates.map((candidate) => [candidate.resourceKey, candidate] as const));
-  const protectedCandidates = protectedResourceKeys
+  const protectedCandidates = [...new Set(protectedResourceKeys)]
     .map((resourceKey) => candidatesByKey.get(resourceKey))
     .filter((candidate): candidate is PersistedSessionRecency => candidate !== undefined);
   const protectedKeySet = new Set(protectedCandidates.map(({ resourceKey }) => resourceKey));
@@ -106,7 +106,9 @@ export const preparePuzzleSessionRetention = (nextActiveResourceKey: PuzzleResou
   const metadata = readPersistedMetadata();
   if (!metadata) return;
 
-  const nextActiveAlreadyPersisted = readPersistedSessionRecency(nextActiveResourceKey) !== null;
+  const nextActiveAlreadyPersisted =
+    metadata.savedResourceKeys.includes(nextActiveResourceKey) &&
+    readPersistedSessionRecency(nextActiveResourceKey) !== null;
   const existingSessionLimit = Math.max(0, persistedPuzzleSessionLimit - (nextActiveAlreadyPersisted ? 0 : 1));
   const retainedResourceKeys = selectRetainedResourceKeys(
     metadata.savedResourceKeys,
