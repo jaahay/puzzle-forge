@@ -1,9 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { getPuzzleImageAsset } from "../games/imageAssets";
+import { getPuzzleAvailability } from "../catalog/puzzleAvailability";
+import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
+import { getPuzzleImageAsset, isImageBackedPuzzleId } from "../games/imageAssets";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation } from "../games/sudoku/variation";
 import type { GenerationIdentity } from "./generationIdentity";
-import { decodeGenerationId, encodeGenerationId } from "./puzzleResourceIdentity";
+import {
+  decodeGenerationId,
+  encodeGenerationId,
+  resolvePuzzleResourceSegment,
+} from "./puzzleResourceIdentity";
+import { makeRandomSeed, maxPuzzleSeedLength } from "./runtime";
 
 const makeIdentity = (overrides: Partial<GenerationIdentity> = {}): GenerationIdentity => ({
   puzzleId: "sudoku",
@@ -17,49 +24,72 @@ const makeIdentity = (overrides: Partial<GenerationIdentity> = {}): GenerationId
   ...overrides,
 });
 
-const decodeBase64Url = (value: string) => atob(
-  value.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - value.length % 4) % 4),
-);
-
-const encodeBase64Url = (value: string) => btoa(value)
+const encodeLegacyBase64Url = (value: string) => btoa(value)
   .replace(/\+/g, "-")
   .replace(/\//g, "_")
   .replace(/=+$/g, "");
 
 describe("canonical puzzle generation identity", () => {
-  it("round-trips the generator inputs relevant to the typed puzzle resource", () => {
-    const provenance = { source: "daily" as const, dateStamp: "2026-09-11" };
-    const generationId = encodeGenerationId(makeIdentity({
-      imageId: "irrelevant-to-sudoku",
-      provenance,
-    }));
+  it("uses a compact self-contained id for ordinary generated puzzles", () => {
+    const seed = makeRandomSeed();
+    expect(seed).toMatch(/^[A-Za-z0-9_-]{16}$/);
 
-    const decodedJson = decodeBase64Url(generationId);
-    expect(decodedJson).not.toContain("sudoku");
-    expect(decodedJson).not.toContain("irrelevant-to-sudoku");
+    const generationId = encodeGenerationId(makeIdentity({ seed, difficulty: "Medium" }));
+    expect(generationId).toMatch(/^[A-Za-z0-9_-]+$/);
+    expect(generationId).toHaveLength(27);
 
     const decoded = decodeGenerationId("sudoku", generationId);
     expect(decoded.ok).toBe(true);
     if (!decoded.ok) return;
-    expect(decoded.identity).toMatchObject({
-      puzzleId: "sudoku",
-      seed: "resource-seed",
-      width: 9,
-      height: 9,
-      difficulty: "Hard",
-      requireUniqueSolution: true,
-      sudokuVariation: defaultSudokuVariation,
-      provenance,
-    });
-    expect(decoded.identity.imageId).toBeUndefined();
-    expect(decoded.identity.solitaireVariation).toEqual(defaultSolitaireVariation);
+    expect(decoded.identity.seed).toBe(seed);
+    expect(decoded.identity.difficulty).toBe("Medium");
+    expect(decoded.identity.sudokuVariation).toBe(defaultSudokuVariation);
+  });
+
+  it("round-trips the material identity of every currently generatable puzzle family", () => {
+    const { generatablePuzzles } = getPuzzleAvailability();
+
+    for (const definition of generatablePuzzles) {
+      const identity = makeIdentity({
+        puzzleId: definition.id,
+        seed: "round-trip-seed",
+        width: definition.defaultWidth,
+        height: definition.defaultHeight,
+        difficulty: "Hard",
+        requireUniqueSolution: false,
+        sudokuVariation: definition.id === "sudoku" ? "diagonal" : defaultSudokuVariation,
+        imageId: isImageBackedPuzzleId(definition.id)
+          ? getPuzzleImageAsset(undefined, definition.id).id
+          : undefined,
+      });
+      const generationId = encodeGenerationId(identity);
+      const decoded = decodeGenerationId(definition.id, generationId);
+
+      expect(decoded.ok, definition.id).toBe(true);
+      if (!decoded.ok) continue;
+      expect(decoded.identity.puzzleId).toBe(definition.id);
+      expect(decoded.identity.seed).toBe("round-trip-seed");
+      expect(encodeGenerationId(decoded.identity)).toBe(generationId);
+    }
+  });
+
+  it("round-trips compact daily provenance without spelling the date into JSON", () => {
+    const provenance = { source: "daily" as const, dateStamp: "2026-09-11" };
+    const generationId = encodeGenerationId(makeIdentity({ provenance }));
+    const decoded = decodeGenerationId("sudoku", generationId);
+
+    expect(decoded.ok).toBe(true);
+    if (!decoded.ok) return;
+    expect(decoded.identity.provenance).toEqual(provenance);
+    expect(decoded.identity.seed).toBe("resource-seed");
   });
 
   it("does not fork a Nonogram resource id for settings its generator ignores", () => {
+    const definition = getPuzzleDefinition("nonogram");
     const identity = makeIdentity({
       puzzleId: "nonogram",
-      width: 10,
-      height: 11,
+      width: definition.defaultWidth,
+      height: definition.defaultHeight,
       difficulty: "Expert",
       requireUniqueSolution: false,
     });
@@ -74,60 +104,83 @@ describe("canonical puzzle generation identity", () => {
     expect(irrelevantChanges).toBe(generationId);
     expect(encodeGenerationId({ ...identity, requireUniqueSolution: true })).not.toBe(generationId);
     expect(encodeGenerationId({ ...identity, difficulty: "Hard" })).not.toBe(generationId);
-    expect(encodeGenerationId({ ...identity, width: 9 })).not.toBe(generationId);
   });
 
   it("canonicalizes implicit and explicit default artwork to the same image resource id", () => {
+    const definition = getPuzzleDefinition("tile-swap");
     const defaultImageId = getPuzzleImageAsset(undefined, "tile-swap").id;
     const identity = makeIdentity({
       puzzleId: "tile-swap",
-      width: 4,
-      height: 4,
+      width: definition.defaultWidth,
+      height: definition.defaultHeight,
       imageId: undefined,
     });
 
     expect(encodeGenerationId(identity)).toBe(encodeGenerationId({ ...identity, imageId: defaultImageId }));
   });
 
-  it("allows one canonical generation id in distinct compatible puzzle namespaces", () => {
-    const wordGuessIdentity = makeIdentity({
-      puzzleId: "word-guess",
-      width: 6,
-      height: 6,
-    });
+  it("allows one compact canonical id in distinct compatible puzzle namespaces", () => {
+    const wordGuessDefinition = getPuzzleDefinition("word-guess");
+    const logicGridDefinition = getPuzzleDefinition("logic-grid");
+    const width = Math.max(wordGuessDefinition.minWidth, logicGridDefinition.minWidth);
+    const height = Math.max(wordGuessDefinition.minHeight, logicGridDefinition.minHeight);
+    const wordGuessIdentity = makeIdentity({ puzzleId: "word-guess", width, height });
     const logicGridIdentity = { ...wordGuessIdentity, puzzleId: "logic-grid" as const };
     const generationId = encodeGenerationId(wordGuessIdentity);
 
     expect(encodeGenerationId(logicGridIdentity)).toBe(generationId);
-    const wordGuess = decodeGenerationId("word-guess", generationId);
-    const logicGrid = decodeGenerationId("logic-grid", generationId);
-    expect(wordGuess.ok).toBe(true);
-    expect(logicGrid.ok).toBe(true);
-    if (!wordGuess.ok || !logicGrid.ok) return;
-    expect(wordGuess.identity.puzzleId).toBe("word-guess");
-    expect(logicGrid.identity.puzzleId).toBe("logic-grid");
+    expect(decodeGenerationId("word-guess", generationId).ok).toBe(true);
+    expect(decodeGenerationId("logic-grid", generationId).ok).toBe(true);
   });
 
-  it("does not require or emit a generation schema version", () => {
-    const generationId = encodeGenerationId(makeIdentity());
-    const decodedJson = decodeBase64Url(generationId);
+  it("resolves a date-only Daily locator to one stable default-profile canonical resource", () => {
+    const resolved = resolvePuzzleResourceSegment("sudoku", "Daily-2026-09-15");
+    expect(resolved.ok).toBe(true);
+    if (!resolved.ok) return;
 
-    expect(decodedJson).not.toContain('"v"');
-    expect(decodedJson).not.toContain("version");
+    expect(resolved.semanticLocator).toEqual({ kind: "daily", dateStamp: "2026-09-15" });
+    expect(resolved.identity).toMatchObject({
+      puzzleId: "sudoku",
+      width: 9,
+      height: 9,
+      difficulty: "Medium",
+      requireUniqueSolution: true,
+      sudokuVariation: "classic",
+      provenance: { source: "daily", dateStamp: "2026-09-15" },
+    });
+
+    const canonical = decodeGenerationId("sudoku", resolved.canonicalResource.generationId);
+    expect(canonical.ok).toBe(true);
+    if (!canonical.ok) return;
+    expect(canonical.identity).toEqual(resolved.identity);
+    expect(decodeGenerationId("sudoku", "Daily-2026-09-15").ok).toBe(false);
   });
 
-  it("rejects malformed, out-of-range, and noncanonical generation identities", () => {
-    expect(decodeGenerationId("sudoku", "not-base64-json")).toEqual({ ok: false, reason: "malformed" });
+  it("rejects invalid Daily dates and does not synthesize Daily resources for planned puzzles", () => {
+    expect(resolvePuzzleResourceSegment("sudoku", "Daily-2026-02-29").ok).toBe(false);
+    expect(resolvePuzzleResourceSegment("kenken", "Daily-2026-09-15").ok).toBe(false);
+  });
 
-    const tooWide = encodeGenerationId(makeIdentity({ puzzleId: "nonogram", width: 99 }));
-    expect(decodeGenerationId("nonogram", tooWide)).toEqual({ ok: false, reason: "invalid-identity" });
+  it("enforces the textual seed upper bound without shrinking generated seed entropy", () => {
+    expect(makeRandomSeed()).toHaveLength(16);
+    expect(() => encodeGenerationId(makeIdentity({ seed: "x".repeat(maxPuzzleSeedLength + 1) })))
+      .toThrow(`Puzzle seeds may contain at most ${maxPuzzleSeedLength} characters.`);
+  });
 
-    const noncanonicalSudoku = encodeBase64Url(JSON.stringify({
+  it("rejects malformed, noncanonical, and pre-compact generation ids", () => {
+    expect(decodeGenerationId("sudoku", "%%%" )).toEqual({ ok: false, reason: "malformed" });
+
+    const canonical = encodeGenerationId(makeIdentity());
+    expect(decodeGenerationId("sudoku", `${canonical}A`).ok).toBe(false);
+
+    const legacyGenerationId = encodeLegacyBase64Url(JSON.stringify({
       s: "resource-seed",
       d: "Hard",
-      x: defaultSudokuVariation,
-      w: 9,
+      x: "classic",
     }));
-    expect(decodeGenerationId("sudoku", noncanonicalSudoku)).toEqual({ ok: false, reason: "invalid-identity" });
+    expect(decodeGenerationId("sudoku", legacyGenerationId)).toEqual({
+      ok: false,
+      reason: "invalid-identity",
+    });
   });
 });
