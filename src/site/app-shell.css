@@ -248,6 +248,103 @@
   transform: translateY(-1px);
 }
 
+.recent-puzzle-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.recent-puzzle-card {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  width: 100%;
+  border: 1px solid rgba(51, 65, 85, 0.82);
+  border-radius: 0.9rem;
+  padding: 0.7rem 0.8rem;
+  color: #cbd5e1;
+  background: rgba(17, 24, 39, 0.66);
+  cursor: pointer;
+  text-align: left;
+}
+
+.recent-puzzle-card:hover,
+.recent-puzzle-card:focus-visible {
+  border-color: rgba(167, 243, 208, 0.72);
+  background: rgba(17, 24, 39, 0.92);
+  outline: none;
+}
+
+.recent-puzzle-icon {
+  display: inline-grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 1px solid rgba(167, 243, 208, 0.18);
+  border-radius: 0.7rem;
+  color: #a7f3d0;
+  background: rgba(167, 243, 208, 0.06);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.recent-puzzle-copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.16rem;
+}
+
+.recent-puzzle-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.recent-puzzle-title-row strong {
+  color: #f8fafc;
+  font-size: 0.98rem;
+}
+
+.recent-puzzle-state {
+  border: 1px solid rgba(167, 243, 208, 0.24);
+  border-radius: 999px;
+  padding: 0.08rem 0.35rem;
+  color: #a7f3d0;
+  background: rgba(167, 243, 208, 0.07);
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.recent-puzzle-state.completed {
+  border-color: rgba(148, 163, 184, 0.28);
+  color: #cbd5e1;
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.recent-puzzle-summary,
+.recent-puzzle-time {
+  min-width: 0;
+  overflow: hidden;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-puzzle-time {
+  color: #64748b;
+  font-size: 0.72rem;
+}
+
+.recent-puzzle-action {
+  color: #a7f3d0;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
 .coming-soon-list {
   display: flex;
   flex-wrap: wrap;
@@ -286,6 +383,19 @@
   }
 
   .catalog-card > span:not(.status):not(.catalog-card-icon) {
+    white-space: normal;
+  }
+
+  .recent-puzzle-card {
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+  }
+
+  .recent-puzzle-action {
+    display: none;
+  }
+
+  .recent-puzzle-summary,
+  .recent-puzzle-time {
     white-space: normal;
   }
 }
