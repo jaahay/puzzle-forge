@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { generateSudoku } from "../games/sudoku/generate";
-import { makePuzzleResourceKey } from "./puzzleResourceIdentity";
-import { puzzleResourceAliases, resolvePuzzleResourceSegment } from "./puzzleResourceAliases";
+import {
+  makePuzzleResourceKey,
+  resolvePuzzleResourceSegment,
+} from "./puzzleResourceIdentity";
+import { puzzleResourceAliases } from "./puzzleResourceAliases";
 
 const getAlias = (puzzleId: "sudoku" | "nonogram", alias: string) => {
   const entry = puzzleResourceAliases.find(
@@ -73,7 +76,7 @@ describe("puzzle resource aliases", () => {
   });
 
   it("keeps unknown or malformed resource segments unavailable", () => {
-    expect(resolvePuzzleResourceSegment("sudoku", "NotRegistered")).toEqual({ ok: false });
-    expect(resolvePuzzleResourceSegment("sudoku", "%%%" )).toEqual({ ok: false });
+    expect(resolvePuzzleResourceSegment("sudoku", "NotRegistered").ok).toBe(false);
+    expect(resolvePuzzleResourceSegment("sudoku", "%%%").ok).toBe(false);
   });
 });
