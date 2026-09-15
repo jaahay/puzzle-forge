@@ -19,6 +19,7 @@ import {
   sudokuVariations,
 } from "../games/sudoku/variation";
 import type { GenerationIdentity } from "./generationIdentity";
+import { getPuzzleResourceAlias, type PuzzleResourceAlias } from "./puzzleResourceAliases";
 import { isPuzzleProvenance, type PuzzleProvenance } from "./puzzleProvenance";
 import { defaultPuzzleDifficulty } from "./runtime";
 
@@ -50,6 +51,16 @@ export type PuzzleResourceIdentity = {
 
 export type GenerationIdDecodeResult =
   | { ok: true; identity: GenerationIdentity }
+  | { ok: false; reason: "malformed" | "invalid-identity" };
+
+export type PuzzleResourceSegmentResolution =
+  | {
+      ok: true;
+      identity: GenerationIdentity;
+      canonicalResource: PuzzleResourceIdentity;
+      requestedSegment: string;
+      alias?: PuzzleResourceAlias;
+    }
   | { ok: false; reason: "malformed" | "invalid-identity" };
 
 const puzzleDifficulties = new Set<PuzzleDifficulty>(["Easy", "Medium", "Hard", "Expert"]);
@@ -173,7 +184,7 @@ export const makePuzzleResourceKey = (
   generationId: string,
 ): PuzzleResourceKey => `${puzzleId}/${generationId}`;
 
-export const decodeGenerationId = (puzzleId: PuzzleId, generationId: string): GenerationIdDecodeResult => {
+const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: string): GenerationIdDecodeResult => {
   let decoded: unknown;
   try {
     decoded = JSON.parse(decodeBase64Url(generationId));
@@ -232,4 +243,27 @@ export const decodeGenerationId = (puzzleId: PuzzleId, generationId: string): Ge
   }
 
   return { ok: true, identity };
+};
+
+export const resolvePuzzleResourceSegment = (
+  puzzleId: PuzzleId,
+  requestedSegment: string,
+): PuzzleResourceSegmentResolution => {
+  const alias = getPuzzleResourceAlias(puzzleId, requestedSegment);
+  const generationId = alias?.generationId ?? requestedSegment;
+  const decoded = decodeCanonicalGenerationId(puzzleId, generationId);
+  if (!decoded.ok) return decoded;
+
+  return {
+    ok: true,
+    identity: decoded.identity,
+    canonicalResource: { puzzleId, generationId },
+    requestedSegment,
+    ...(alias ? { alias } : {}),
+  };
+};
+
+export const decodeGenerationId = (puzzleId: PuzzleId, generationId: string): GenerationIdDecodeResult => {
+  const resolved = resolvePuzzleResourceSegment(puzzleId, generationId);
+  return resolved.ok ? { ok: true, identity: resolved.identity } : resolved;
 };
