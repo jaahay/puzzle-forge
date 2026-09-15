@@ -4,6 +4,8 @@ import { loadPersistedPuzzleSessions } from "../app/session";
 import { puzzleIcons } from "../catalog/puzzleIcons";
 import type { PuzzleDefinition, PuzzleId } from "../catalog/types";
 
+const homeRecentPuzzleLimit = 4;
+
 type StartViewProps = {
   readyPuzzles: PuzzleDefinition[];
   previewPuzzles: PuzzleDefinition[];
@@ -27,7 +29,7 @@ const StartPuzzleButton = ({ definition, label, onSelectPuzzle }: StartPuzzleBut
 
 const formatLastPlayed = (updatedAt: string) => {
   const value = new Date(updatedAt);
-  if (Number.isNaN(value.getTime())) return "Recently played";
+  if (Number.isNaN(value.getTime())) return "Recently";
   return new Intl.DateTimeFormat(undefined, {
     month: "short",
     day: "numeric",
@@ -36,35 +38,47 @@ const formatLastPlayed = (updatedAt: string) => {
   }).format(value);
 };
 
+const recentPuzzleActionLabel = (entry: RecentPuzzleEntry) => {
+  if (entry.completedAt) return "Open";
+  return entry.isActive ? "Continue" : "Resume";
+};
+
 const resumeRecentPuzzle = ({ puzzleId, generationId }: RecentPuzzleEntry) => {
   if (typeof window === "undefined") return;
   pushAppRoute({ kind: "resource", puzzleId, generationId });
   window.dispatchEvent(new PopStateEvent("popstate"));
 };
 
-const RecentPuzzleButton = ({ entry }: { entry: RecentPuzzleEntry }) => (
-  <button
-    class="recent-puzzle-card"
-    type="button"
-    onClick={() => resumeRecentPuzzle(entry)}
-    aria-label={`Resume ${entry.title}${entry.summary ? `, ${entry.summary}` : ""}`}
-  >
-    <span class="recent-puzzle-icon" aria-hidden="true">{puzzleIcons[entry.puzzleId]}</span>
-    <span class="recent-puzzle-copy">
-      <span class="recent-puzzle-title-row">
-        <strong>{entry.title}</strong>
-        {entry.isActive ? <span class="recent-puzzle-state">Current</span> : null}
-        {entry.completedAt ? <span class="recent-puzzle-state completed">Completed</span> : null}
+const RecentPuzzleButton = ({ entry }: { entry: RecentPuzzleEntry }) => {
+  const actionLabel = recentPuzzleActionLabel(entry);
+
+  return (
+    <button
+      class="recent-puzzle-card"
+      type="button"
+      onClick={() => resumeRecentPuzzle(entry)}
+      aria-label={`${actionLabel} ${entry.title}${entry.summary ? `, ${entry.summary}` : ""}`}
+    >
+      <span class="recent-puzzle-icon" aria-hidden="true">{puzzleIcons[entry.puzzleId]}</span>
+      <span class="recent-puzzle-copy">
+        <span class="recent-puzzle-title-row">
+          <strong>{entry.title}</strong>
+          {entry.isActive ? <span class="recent-puzzle-state">Current</span> : null}
+          {entry.completedAt ? <span class="recent-puzzle-state completed">Completed</span> : null}
+        </span>
+        <span class="recent-puzzle-meta">
+          {entry.summary ? <span>{entry.summary}</span> : null}
+          {entry.summary ? <span aria-hidden="true"> · </span> : null}
+          <time dateTime={entry.updatedAt}>{formatLastPlayed(entry.updatedAt)}</time>
+        </span>
       </span>
-      {entry.summary ? <span class="recent-puzzle-summary">{entry.summary}</span> : null}
-      <time class="recent-puzzle-time" dateTime={entry.updatedAt}>Last played {formatLastPlayed(entry.updatedAt)}</time>
-    </span>
-    <span class="recent-puzzle-action" aria-hidden="true">Resume</span>
-  </button>
-);
+      <span class="recent-puzzle-action" aria-hidden="true">{actionLabel}</span>
+    </button>
+  );
+};
 
 export const StartView = ({ readyPuzzles, previewPuzzles, onSelectPuzzle }: StartViewProps) => {
-  const recentPuzzles = getRecentPuzzleEntries(loadPersistedPuzzleSessions());
+  const recentPuzzles = getRecentPuzzleEntries(loadPersistedPuzzleSessions()).slice(0, homeRecentPuzzleLimit);
 
   return (
     <section class="start-layout" aria-labelledby="puzzle-start-title">
