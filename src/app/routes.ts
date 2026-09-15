@@ -57,7 +57,7 @@ export const getCurrentAppRoute = (): AppRoute =>
     ? { kind: "home" }
     : parseAppRoute(window.location.pathname);
 
-export const shouldPreserveResourceLocatorPath = (
+export const shouldPreserveResourceAliasPath = (
   currentPathname: string,
   nextRoute: AppRoute,
 ) => {
@@ -71,7 +71,7 @@ export const shouldPreserveResourceLocatorPath = (
   );
   return (
     resolved.ok &&
-    (resolved.alias !== undefined || resolved.semanticLocator !== undefined) &&
+    resolved.alias !== undefined &&
     resolved.canonicalResource.generationId === nextRoute.generationId
   );
 };
@@ -88,7 +88,7 @@ export const pushAppRoute = (route: AppRoute) => {
 export const replaceAppRoute = (route: AppRoute) => {
   if (typeof window === "undefined") return;
   const currentPath = currentBrowserPath();
-  if (shouldPreserveResourceLocatorPath(currentPath, route)) {
+  if (shouldPreserveResourceAliasPath(currentPath, route)) {
     if (window.location.hash) window.history.replaceState(null, "", currentPath);
     return;
   }
