@@ -1,12 +1,4 @@
 import type { PuzzleId } from "../catalog/types";
-import { defaultSolitaireVariation } from "../games/solitaire/variation";
-import { defaultSudokuVariation } from "../games/sudoku/variation";
-import type { GenerationIdentity } from "./generationIdentity";
-import {
-  decodeGenerationId,
-  encodeGenerationId,
-  type PuzzleResourceIdentity,
-} from "./puzzleResourceIdentity";
 
 export type PuzzleResourceAlias = {
   puzzleId: PuzzleId;
@@ -14,66 +6,25 @@ export type PuzzleResourceAlias = {
   generationId: string;
 };
 
-export type PuzzleResourceSegmentResolution =
-  | {
-      ok: true;
-      identity: GenerationIdentity;
-      canonicalResource: PuzzleResourceIdentity;
-      requestedSegment: string;
-      alias?: PuzzleResourceAlias;
-    }
-  | { ok: false };
-
-const makeIdentity = (
-  puzzleId: PuzzleId,
-  seed: string,
-  overrides: Partial<GenerationIdentity> = {},
-): GenerationIdentity => ({
-  puzzleId,
-  seed,
-  width: 9,
-  height: 9,
-  difficulty: "Medium",
-  requireUniqueSolution: true,
-  sudokuVariation: defaultSudokuVariation,
-  solitaireVariation: defaultSolitaireVariation,
-  ...overrides,
-});
-
 export const puzzleResourceAliases: readonly PuzzleResourceAlias[] = [
   {
     puzzleId: "sudoku",
     alias: "Happy2026!",
-    generationId: encodeGenerationId(makeIdentity("sudoku", "happy-2026-sudoku")),
+    generationId: "eyJzIjoiaGFwcHktMjAyNi1zdWRva3UiLCJkIjoiTWVkaXVtIiwieCI6ImNsYXNzaWMifQ",
   },
   {
     puzzleId: "nonogram",
     alias: "Happy2026!",
-    generationId: encodeGenerationId(makeIdentity("nonogram", "happy-2026-nonogram", { width: 10, height: 10 })),
+    generationId: "eyJzIjoiaGFwcHktMjAyNi1ub25vZ3JhbSIsInciOjEwLCJoIjoxMCwiZCI6Ik1lZGl1bSIsInUiOjF9",
   },
   {
     puzzleId: "sudoku",
     alias: "Welcome",
-    generationId: encodeGenerationId(makeIdentity("sudoku", "welcome-sudoku", { difficulty: "Easy" })),
+    generationId: "eyJzIjoid2VsY29tZS1zdWRva3UiLCJkIjoiRWFzeSIsIngiOiJjbGFzc2ljIn0",
   },
 ];
 
-export const resolvePuzzleResourceSegment = (
-  puzzleId: PuzzleId,
-  requestedSegment: string,
-): PuzzleResourceSegmentResolution => {
-  const alias = puzzleResourceAliases.find(
-    (candidate) => candidate.puzzleId === puzzleId && candidate.alias === requestedSegment,
+export const getPuzzleResourceAlias = (puzzleId: PuzzleId, alias: string) =>
+  puzzleResourceAliases.find(
+    (candidate) => candidate.puzzleId === puzzleId && candidate.alias === alias,
   );
-  const generationId = alias?.generationId ?? requestedSegment;
-  const decoded = decodeGenerationId(puzzleId, generationId);
-  if (!decoded.ok) return { ok: false };
-
-  return {
-    ok: true,
-    identity: decoded.identity,
-    canonicalResource: { puzzleId, generationId },
-    requestedSegment,
-    ...(alias ? { alias } : {}),
-  };
-};
