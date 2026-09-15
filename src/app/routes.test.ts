@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { puzzleResourceAliases } from "./puzzleResourceAliases";
-import { resolvePuzzleResourceSegment } from "./puzzleResourceIdentity";
-import { appRoutePath, parseAppRoute, shouldPreserveResourceLocatorPath } from "./routes";
+import { appRoutePath, parseAppRoute, shouldPreserveResourceAliasPath } from "./routes";
 
 const getAlias = (puzzleId: "sudoku" | "nonogram", alias: string) => {
   const entry = puzzleResourceAliases.find(
@@ -25,7 +24,7 @@ describe("pathname routing", () => {
     expect(parseAppRoute("/word-guess")).toEqual({ kind: "puzzle", puzzleId: "word-guess" });
   });
 
-  it("parses typed canonical resources and human-facing locator segments", () => {
+  it("parses only puzzle-type-scoped concrete resources", () => {
     expect(parseAppRoute("/sudoku/example-generation-id")).toEqual({
       kind: "resource",
       puzzleId: "sudoku",
@@ -41,45 +40,32 @@ describe("pathname routing", () => {
       puzzleId: "sudoku",
       generationId: "Happy2026!",
     });
-    expect(parseAppRoute("/sudoku/Daily-2026-09-15")).toEqual({
-      kind: "resource",
-      puzzleId: "sudoku",
-      generationId: "Daily-2026-09-15",
-    });
     expect(parseAppRoute("/p/example-generation-id")).toEqual({
       kind: "not-found",
       pathname: "/p/example-generation-id",
     });
   });
 
-  it("preserves a visible human locator only while canonicalizing that same resource", () => {
+  it("preserves a visible alias only while canonicalizing that same resource", () => {
     const sudokuAlias = getAlias("sudoku", "Happy2026!");
     const nonogramAlias = getAlias("nonogram", "Happy2026!");
-    const daily = resolvePuzzleResourceSegment("sudoku", "Daily-2026-09-15");
-    expect(daily.ok).toBe(true);
-    if (!daily.ok) return;
 
-    expect(shouldPreserveResourceLocatorPath(
+    expect(shouldPreserveResourceAliasPath(
       "/sudoku/Happy2026!",
       { kind: "resource", puzzleId: "sudoku", generationId: sudokuAlias.generationId },
     )).toBe(true);
 
-    expect(shouldPreserveResourceLocatorPath(
-      "/sudoku/Daily-2026-09-15",
-      { kind: "resource", puzzleId: "sudoku", generationId: daily.canonicalResource.generationId },
-    )).toBe(true);
-
-    expect(shouldPreserveResourceLocatorPath(
+    expect(shouldPreserveResourceAliasPath(
       `/sudoku/${sudokuAlias.generationId}`,
       { kind: "resource", puzzleId: "sudoku", generationId: sudokuAlias.generationId },
     )).toBe(false);
 
-    expect(shouldPreserveResourceLocatorPath(
+    expect(shouldPreserveResourceAliasPath(
       "/sudoku/Happy2026!",
       { kind: "resource", puzzleId: "sudoku", generationId: nonogramAlias.generationId },
     )).toBe(false);
 
-    expect(shouldPreserveResourceLocatorPath(
+    expect(shouldPreserveResourceAliasPath(
       "/nonogram/Happy2026!",
       { kind: "resource", puzzleId: "sudoku", generationId: sudokuAlias.generationId },
     )).toBe(false);
@@ -98,8 +84,6 @@ describe("pathname routing", () => {
       .toBe("/sudoku/seed%2Fvalue");
     expect(appRoutePath({ kind: "resource", puzzleId: "sudoku", generationId: "Happy2026!" }))
       .toBe("/sudoku/Happy2026!");
-    expect(appRoutePath({ kind: "resource", puzzleId: "sudoku", generationId: "Daily-2026-09-15" }))
-      .toBe("/sudoku/Daily-2026-09-15");
     expect(appRoutePath({ kind: "puzzle", puzzleId: "tile-swap" })).toBe("/tile-swap");
     expect(appRoutePath({ kind: "puzzle", puzzleId: "sliding-puzzle" })).toBe("/sliding-puzzle");
     expect(appRoutePath({ kind: "updates" })).toBe("/updates");
