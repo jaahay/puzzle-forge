@@ -67,6 +67,18 @@ The generated baseline itself does not need to be duplicated into local storage 
 
 Storage should persist the intended session state as a unit. If ordinary browser storage cannot hold an acceptable session representation, that is an implementation defect to address rather than a reason to silently discard portions of the session.
 
+### Retention policy
+
+Puzzle Forge retains at most **8 persisted resource sessions globally**, including the currently active resource.
+
+- The active resource is always protected from routine retention pruning.
+- Inactive sessions are retained by descending `updatedAt`; canonical resource key provides a deterministic tie-breaker.
+- Pruning removes an entire inactive session rather than truncating Undo/Redo or other progress to make it fit.
+- Successful pruning removes both the session payload and its metadata reference.
+- A pruned resource URL remains valid. Reopening it regenerates the pristine puzzle baseline normally; only that device's former mutable progress is absent.
+
+The cap is deliberately modest rather than quota-driven. Current full-history compact grid sessions are on the order of tens of kilobytes, while a deliberately pessimistic full-history Solitaire session can approach roughly half a megabyte. Eight retained resources therefore keeps persistence bounded with useful room for a Recent-puzzles surface without depending on a particular browser quota.
+
 ## Generator evolution
 
 Puzzle Forge does not currently guarantee that a generation id will produce identical output forever. The product is too early to impose generator-version compatibility machinery by default.
