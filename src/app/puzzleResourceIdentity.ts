@@ -1,13 +1,12 @@
-import { getPuzzleDefinition, isGeneratable } from "../catalog/puzzleCatalog";
+import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type {
   PuzzleDifficulty,
   PuzzleId,
   SolitaireVariation,
   SudokuVariation,
 } from "../catalog/types";
-import { getPuzzleImageAsset, isImageBackedPuzzleId } from "../games/imageAssets";
+import { getPuzzleImageAsset } from "../games/imageAssets";
 import { normalizeSeed } from "../games/shared";
-import { getDailyPuzzleSeedForProfile } from "../games/shared/daily";
 import {
   defaultSolitaireVariation,
   normalizeSolitaireVariation,
@@ -30,11 +29,6 @@ export type PuzzleResourceIdentity = {
   generationId: string;
 };
 
-export type PuzzleResourceSemanticLocator = {
-  kind: "daily";
-  dateStamp: string;
-};
-
 export type GenerationIdDecodeResult =
   | { ok: true; identity: GenerationIdentity }
   | { ok: false; reason: "malformed" | "invalid-identity" };
@@ -46,7 +40,6 @@ export type PuzzleResourceSegmentResolution =
       canonicalResource: PuzzleResourceIdentity;
       requestedSegment: string;
       alias?: PuzzleResourceAlias;
-      semanticLocator?: PuzzleResourceSemanticLocator;
     }
   | { ok: false; reason: "malformed" | "invalid-identity" };
 
@@ -54,7 +47,6 @@ const compactGenerationIdVersion = 1;
 const puzzleDifficulties = ["Easy", "Medium", "Hard", "Expert"] as const satisfies readonly PuzzleDifficulty[];
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
-const dailyLocatorPrefix = "Daily-";
 const dailyDateStampPattern = /^\d{4}-\d{2}-\d{2}$/;
 
 class ByteReader {
@@ -369,37 +361,6 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
   }
 };
 
-const makeDefaultDailyIdentity = (puzzleId: PuzzleId, dateStamp: string): GenerationIdentity | null => {
-  const definition = getPuzzleDefinition(puzzleId);
-  if (!isGeneratable(definition) || !parseDailyDateStamp(dateStamp)) return null;
-
-  const provenance = { source: "daily" as const, dateStamp };
-  const profile = {
-    width: definition.defaultWidth,
-    height: definition.defaultHeight,
-    difficulty: defaultPuzzleDifficulty,
-    requireUniqueSolution: true,
-    sudokuVariation: defaultSudokuVariation,
-  };
-  const seed = getDailyPuzzleSeedForProfile(puzzleId, dateStamp, profile);
-  const imageId = isImageBackedPuzzleId(puzzleId)
-    ? getPuzzleImageAsset(undefined, puzzleId).id
-    : undefined;
-
-  return {
-    puzzleId,
-    seed,
-    width: profile.width,
-    height: profile.height,
-    difficulty: profile.difficulty,
-    requireUniqueSolution: profile.requireUniqueSolution,
-    sudokuVariation: profile.sudokuVariation,
-    solitaireVariation: defaultSolitaireVariation,
-    ...(imageId ? { imageId } : {}),
-    provenance,
-  };
-};
-
 export const resolvePuzzleResourceSegment = (
   puzzleId: PuzzleId,
   requestedSegment: string,
@@ -414,20 +375,6 @@ export const resolvePuzzleResourceSegment = (
       canonicalResource: { puzzleId, generationId: alias.generationId },
       requestedSegment,
       alias,
-    };
-  }
-
-  if (requestedSegment.startsWith(dailyLocatorPrefix)) {
-    const dateStamp = requestedSegment.slice(dailyLocatorPrefix.length);
-    const identity = makeDefaultDailyIdentity(puzzleId, dateStamp);
-    if (!identity) return { ok: false, reason: "invalid-identity" };
-    const generationId = encodeGenerationId(identity);
-    return {
-      ok: true,
-      identity,
-      canonicalResource: { puzzleId, generationId },
-      requestedSegment,
-      semanticLocator: { kind: "daily", dateStamp },
     };
   }
 
