@@ -5,11 +5,7 @@ import { getPuzzleImageAsset, isImageBackedPuzzleId } from "../games/imageAssets
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation } from "../games/sudoku/variation";
 import type { GenerationIdentity } from "./generationIdentity";
-import {
-  decodeGenerationId,
-  encodeGenerationId,
-  resolvePuzzleResourceSegment,
-} from "./puzzleResourceIdentity";
+import { decodeGenerationId, encodeGenerationId } from "./puzzleResourceIdentity";
 import { makeRandomSeed, maxPuzzleSeedLength } from "./runtime";
 
 const makeIdentity = (overrides: Partial<GenerationIdentity> = {}): GenerationIdentity => ({
@@ -73,7 +69,7 @@ describe("canonical puzzle generation identity", () => {
     }
   });
 
-  it("round-trips compact daily provenance without spelling the date into JSON", () => {
+  it("round-trips compact daily provenance without imposing a human-facing locator syntax", () => {
     const provenance = { source: "daily" as const, dateStamp: "2026-09-11" };
     const generationId = encodeGenerationId(makeIdentity({ provenance }));
     const decoded = decodeGenerationId("sudoku", generationId);
@@ -133,34 +129,6 @@ describe("canonical puzzle generation identity", () => {
     expect(decodeGenerationId("logic-grid", generationId).ok).toBe(true);
   });
 
-  it("resolves a date-only Daily locator to one stable default-profile canonical resource", () => {
-    const resolved = resolvePuzzleResourceSegment("sudoku", "Daily-2026-09-15");
-    expect(resolved.ok).toBe(true);
-    if (!resolved.ok) return;
-
-    expect(resolved.semanticLocator).toEqual({ kind: "daily", dateStamp: "2026-09-15" });
-    expect(resolved.identity).toMatchObject({
-      puzzleId: "sudoku",
-      width: 9,
-      height: 9,
-      difficulty: "Medium",
-      requireUniqueSolution: true,
-      sudokuVariation: "classic",
-      provenance: { source: "daily", dateStamp: "2026-09-15" },
-    });
-
-    const canonical = decodeGenerationId("sudoku", resolved.canonicalResource.generationId);
-    expect(canonical.ok).toBe(true);
-    if (!canonical.ok) return;
-    expect(canonical.identity).toEqual(resolved.identity);
-    expect(decodeGenerationId("sudoku", "Daily-2026-09-15").ok).toBe(false);
-  });
-
-  it("rejects invalid Daily dates and does not synthesize Daily resources for planned puzzles", () => {
-    expect(resolvePuzzleResourceSegment("sudoku", "Daily-2026-02-29").ok).toBe(false);
-    expect(resolvePuzzleResourceSegment("kenken", "Daily-2026-09-15").ok).toBe(false);
-  });
-
   it("enforces the textual seed upper bound without shrinking generated seed entropy", () => {
     expect(makeRandomSeed()).toHaveLength(16);
     expect(() => encodeGenerationId(makeIdentity({ seed: "x".repeat(maxPuzzleSeedLength + 1) })))
@@ -168,7 +136,7 @@ describe("canonical puzzle generation identity", () => {
   });
 
   it("rejects malformed, noncanonical, and pre-compact generation ids", () => {
-    expect(decodeGenerationId("sudoku", "%%%" )).toEqual({ ok: false, reason: "malformed" });
+    expect(decodeGenerationId("sudoku", "%%%")).toEqual({ ok: false, reason: "malformed" });
 
     const canonical = encodeGenerationId(makeIdentity());
     expect(decodeGenerationId("sudoku", `${canonical}A`).ok).toBe(false);
