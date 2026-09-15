@@ -441,7 +441,4 @@ export const resolvePuzzleResourceSegment = (
   };
 };
 
-export const decodeGenerationId = (puzzleId: PuzzleId, generationId: string): GenerationIdDecodeResult => {
-  const resolved = resolvePuzzleResourceSegment(puzzleId, generationId);
-  return resolved.ok ? { ok: true, identity: resolved.identity } : resolved;
-};
+export const decodeGenerationId = decodeCanonicalGenerationId;
