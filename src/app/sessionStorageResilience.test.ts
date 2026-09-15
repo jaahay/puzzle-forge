@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { gridHistoryLimit, type GridHistoryEntry } from "./gridHistory";
@@ -6,6 +6,7 @@ import { encodeGenerationId, makePuzzleResourceKey } from "./puzzleResourceIdent
 import {
   buildPersistedPuzzleSession,
   loadPersistedPuzzleSessions,
+  persistedPuzzleSessionLimit,
   restorePuzzleSessionFromPersisted,
   savePersistedPuzzleSessions,
   type PuzzleSession,
@@ -244,5 +245,100 @@ describe("active puzzle persistence resilience", () => {
       expect(persisted?.sessions[secondResource.resourceKey]?.generationId).toBe(secondResource.generationId);
       expect(persisted?.sessions[secondResource.resourceKey]?.baselineChecksum).toBe("checksum-two");
     });
+  });
+
+  it("retains only the most recent bounded set of persisted puzzle resources", () => {
+    vi.useFakeTimers();
+    try {
+      withMemoryStorage((storage) => {
+        const resources = Array.from(
+          { length: persistedPuzzleSessionLimit + 3 },
+          (_, index) => makeZeroKillerResource(`retention-${index}`),
+        );
+
+        resources.forEach((resource, index) => {
+          vi.setSystemTime(new Date(Date.UTC(2026, 8, index + 1, 12)));
+          savePersistedPuzzleSessions({
+            activeResourceKey: resource.resourceKey,
+            sessions: {
+              [resource.resourceKey]: makeZeroKillerSession(`retention-${index}`, `checksum-${index}`),
+            },
+          });
+        });
+
+        const retainedResources = resources.slice(-persistedPuzzleSessionLimit).reverse();
+        const prunedResources = resources.slice(0, -persistedPuzzleSessionLimit);
+        const persisted = loadPersistedPuzzleSessions();
+        expect(persisted?.activeResourceKey).toBe(resources.at(-1)?.resourceKey);
+        expect(Object.keys(persisted?.sessions ?? {})).toHaveLength(persistedPuzzleSessionLimit);
+
+        const rawMetadata = storage.get("puzzle-forge.sessions");
+        expect(rawMetadata).toBeDefined();
+        if (!rawMetadata) return;
+        const metadata = JSON.parse(rawMetadata) as { savedResourceKeys: string[] };
+        expect(metadata.savedResourceKeys).toEqual(retainedResources.map(({ resourceKey }) => resourceKey));
+
+        for (const { resourceKey } of prunedResources) {
+          expect(storage.has(`puzzle-forge.session.${resourceKey}`)).toBe(false);
+          expect(persisted?.sessions[resourceKey]).toBeUndefined();
+        }
+        for (const { resourceKey } of retainedResources) {
+          expect(storage.has(`puzzle-forge.session.${resourceKey}`)).toBe(true);
+          expect(persisted?.sessions[resourceKey]).toBeDefined();
+        }
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("protects the active resource even when its saved timestamp is older than inactive sessions", () => {
+    vi.useFakeTimers();
+    try {
+      withMemoryStorage((storage) => {
+        const inactiveResources = Array.from(
+          { length: persistedPuzzleSessionLimit },
+          (_, index) => makeZeroKillerResource(`active-protection-${index}`),
+        );
+
+        inactiveResources.forEach((resource, index) => {
+          vi.setSystemTime(new Date(Date.UTC(2026, 8, index + 2, 12)));
+          savePersistedPuzzleSessions({
+            activeResourceKey: resource.resourceKey,
+            sessions: {
+              [resource.resourceKey]: makeZeroKillerSession(`active-protection-${index}`, `checksum-${index}`),
+            },
+          });
+        });
+
+        const oldActiveResource = makeZeroKillerResource("active-protection-old-active");
+        vi.setSystemTime(new Date(Date.UTC(2026, 8, 1, 12)));
+        savePersistedPuzzleSessions({
+          activeResourceKey: oldActiveResource.resourceKey,
+          sessions: {
+            [oldActiveResource.resourceKey]: makeZeroKillerSession("active-protection-old-active", "checksum-active"),
+          },
+        });
+
+        const persisted = loadPersistedPuzzleSessions();
+        expect(persisted?.activeResourceKey).toBe(oldActiveResource.resourceKey);
+        expect(persisted?.sessions[oldActiveResource.resourceKey]).toBeDefined();
+        expect(Object.keys(persisted?.sessions ?? {})).toHaveLength(persistedPuzzleSessionLimit);
+
+        const oldestInactiveResource = inactiveResources[0];
+        expect(oldestInactiveResource).toBeDefined();
+        if (!oldestInactiveResource) return;
+        expect(storage.has(`puzzle-forge.session.${oldestInactiveResource.resourceKey}`)).toBe(false);
+        expect(persisted?.sessions[oldestInactiveResource.resourceKey]).toBeUndefined();
+
+        const rawMetadata = storage.get("puzzle-forge.sessions");
+        expect(rawMetadata).toBeDefined();
+        if (!rawMetadata) return;
+        const metadata = JSON.parse(rawMetadata) as { savedResourceKeys: string[] };
+        expect(metadata.savedResourceKeys[0]).toBe(oldActiveResource.resourceKey);
+      });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
