@@ -5,9 +5,15 @@ import type { GridHistoryEntry } from "./gridHistory";
 import {
   loadPersistedPuzzleSessions as loadPersistedPuzzleSessionsUnsafe,
   savePersistedPuzzleSessions as savePersistedPuzzleSessionsUnsafe,
+  type RuntimePuzzleSessions,
 } from "./sessionPersistence";
+import {
+  finalizePuzzleSessionRetention,
+  preparePuzzleSessionRetention,
+} from "./sessionRetention";
 export { puzzleIds, solitaireHistoryLimit, solitaireHistoryLimitNotice } from "./sessionConstants";
 export * from "./sessionPersistence";
+export { persistedPuzzleSessionLimit } from "./sessionRetention";
 
 export type SolitaireStats = {
   moveCount: number;
@@ -83,4 +89,13 @@ export const loadPersistedPuzzleSessions = () => {
   }
 };
 
-export const savePersistedPuzzleSessions = savePersistedPuzzleSessionsUnsafe;
+export const savePersistedPuzzleSessions = (sessions: RuntimePuzzleSessions) => {
+  if (!sessions.sessions[sessions.activeResourceKey]) {
+    savePersistedPuzzleSessionsUnsafe(sessions);
+    return;
+  }
+
+  preparePuzzleSessionRetention(sessions.activeResourceKey);
+  savePersistedPuzzleSessionsUnsafe(sessions);
+  finalizePuzzleSessionRetention(sessions.activeResourceKey);
+};
