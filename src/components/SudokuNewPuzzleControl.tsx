@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "preact/hooks";
 import type { PuzzleDifficulty, SudokuVariation } from "../catalog/types";
-import { makeRandomSeed } from "../app/runtime";
+import { makeRandomSeed, maxPuzzleSeedLength } from "../app/runtime";
 import { sudokuVariationDescriptions, sudokuVariationLabels } from "../games/sudoku/variation";
 import { InfoIcon, PlayIcon, RandomIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
 import { CurrentSeedDisplay } from "./SeedControl";
@@ -194,6 +194,7 @@ export const SudokuNewPuzzleControl = ({
                 <input
                   aria-label="Seed to load"
                   value={seedLoadInput}
+                  maxLength={maxPuzzleSeedLength}
                   onInput={(event) => onSeedLoadInputChange(event.currentTarget.value)}
                   onKeyDown={(event) => {
                     if (event.key === "Enter") loadSeed();
