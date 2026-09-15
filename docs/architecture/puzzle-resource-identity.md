@@ -32,6 +32,22 @@ Depending on the puzzle, generation identity may include:
 
 The generation id is an opaque resource identifier to callers. Its internal encoding may evolve independently of UI labels.
 
+## Human-readable aliases
+
+Curated aliases provide memorable display URLs for selected canonical resources, for example:
+
+```text
+/sudoku/Happy2026!
+```
+
+An alias is not a second generation-identity scheme. It is a type-scoped name that maps to one canonical generation id. `/sudoku/Happy2026!` and `/nonogram/Happy2026!` may therefore intentionally name different resources.
+
+Resource-segment resolution checks the bundled alias registry first and otherwise falls through to ordinary canonical generation-id decoding. Alias recognition is based on registry membership, not punctuation or any reserved string shape.
+
+The canonical typed resource remains the persistence identity. Opening an alias and opening its canonical generation-id URL therefore regenerate the same baseline and address the same local session. Mutable player state is never encoded in an alias.
+
+When a registered alias is opened intentionally, canonical restoration may update the app's internal resource identity while preserving the alias in the visible browser URL. Explicit navigation to another concrete resource uses that new resource's ordinary canonical URL.
+
 ## Materialization and navigation
 
 `/<puzzle-type>` is the puzzle-type entry surface. Once the app commits a concrete generation identity and materializes the puzzle, the browser URL should update automatically to `/<puzzle-type>/<generation-id>`.
@@ -40,7 +56,8 @@ History semantics:
 
 - initial automatic materialization from `/<puzzle-type>` should normally use `history.replaceState`, so the transient entry surface does not become a useless Back destination;
 - an explicit action that chooses another concrete puzzle, such as New, Today, or loading a different generation identity, should normally use `history.pushState`, so Back can return to the previous puzzle resource;
-- refreshing a typed resource URL regenerates that resource from its generation identity.
+- refreshing a typed resource URL regenerates that resource from its generation identity;
+- when the current typed URL is a registered alias for the same canonical resource being restored, replacement should preserve the visible alias instead of exposing the opaque generation id.
 
 ## Session persistence
 
@@ -58,10 +75,11 @@ This permits multiple resumable puzzles of the same type at the same time.
 
 When opening a resource with persisted session data:
 
-1. decode the generation id into the canonical generation request;
-2. regenerate the puzzle baseline through the normal puzzle generator;
-3. compare the regenerated baseline with the persisted session's baseline fingerprint/checksum;
-4. restore mutable progress only when the persisted progress is compatible with the regenerated baseline.
+1. resolve any registered human-readable alias to its canonical generation id;
+2. decode the canonical generation id into the canonical generation request;
+3. regenerate the puzzle baseline through the normal puzzle generator;
+4. compare the regenerated baseline with the persisted session's baseline fingerprint/checksum;
+5. restore mutable progress only when the persisted progress is compatible with the regenerated baseline.
 
 The generated baseline itself does not need to be duplicated into local storage when it can be regenerated from the resource identity.
 
@@ -91,13 +109,15 @@ The intended ownership is:
 
 ```text
 URL path
-  -> puzzle type + canonical generation id
+  -> puzzle type + requested resource segment
+  -> optional human-readable alias resolution
+  -> canonical generation id
   -> generation request
   -> normal puzzle generator
   -> immutable puzzle baseline
 
 local storage
-  -> typed puzzle resource identity
+  -> typed canonical puzzle resource identity
   -> baseline fingerprint/checksum
   -> mutable player progress and history
 ```
