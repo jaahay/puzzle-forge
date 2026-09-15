@@ -1,5 +1,10 @@
+import { getRecentPuzzleEntries, type RecentPuzzleEntry } from "../app/recentPuzzles";
+import { pushAppRoute } from "../app/routes";
+import { loadPersistedPuzzleSessions } from "../app/session";
 import { puzzleIcons } from "../catalog/puzzleIcons";
 import type { PuzzleDefinition, PuzzleId } from "../catalog/types";
+
+const homeRecentPuzzleLimit = 4;
 
 type StartViewProps = {
   readyPuzzles: PuzzleDefinition[];
@@ -22,31 +27,94 @@ const StartPuzzleButton = ({ definition, label, onSelectPuzzle }: StartPuzzleBut
   </button>
 );
 
-export const StartView = ({ readyPuzzles, previewPuzzles, onSelectPuzzle }: StartViewProps) => (
-  <section class="start-layout" aria-labelledby="puzzle-start-title">
-    <div class="puzzle-start-panel">
-      <h1 id="puzzle-start-title">Choose a puzzle</h1>
-      <p class="hero-copy">Seeded generators and playable puzzle workspaces.</p>
+const formatLastPlayed = (updatedAt: string) => {
+  const value = new Date(updatedAt);
+  if (Number.isNaN(value.getTime())) return "Recently";
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(value);
+};
 
-      <section class="start-section" aria-label="Ready puzzles">
-        <p class="start-section-label">Ready</p>
-        <div class="start-card-grid">
-          {readyPuzzles.map((definition) => (
-            <StartPuzzleButton definition={definition} key={definition.id} onSelectPuzzle={onSelectPuzzle} />
-          ))}
-        </div>
-      </section>
+const recentPuzzleActionLabel = (entry: RecentPuzzleEntry) => {
+  if (entry.completedAt) return "Open";
+  return entry.isActive ? "Continue" : "Resume";
+};
 
-      {previewPuzzles.length > 0 ? (
-        <section class="start-section" aria-label="Preview puzzles">
-          <p class="start-section-label">Preview</p>
-          <div class="start-card-grid compact">
-            {previewPuzzles.map((definition) => (
-              <StartPuzzleButton definition={definition} key={definition.id} label="Preview" onSelectPuzzle={onSelectPuzzle} />
+const resumeRecentPuzzle = ({ puzzleId, generationId }: RecentPuzzleEntry) => {
+  if (typeof window === "undefined") return;
+  pushAppRoute({ kind: "resource", puzzleId, generationId });
+  window.dispatchEvent(new PopStateEvent("popstate"));
+};
+
+const RecentPuzzleButton = ({ entry }: { entry: RecentPuzzleEntry }) => {
+  const actionLabel = recentPuzzleActionLabel(entry);
+
+  return (
+    <button
+      class="recent-puzzle-card"
+      type="button"
+      onClick={() => resumeRecentPuzzle(entry)}
+      aria-label={`${actionLabel} ${entry.title}${entry.summary ? `, ${entry.summary}` : ""}`}
+    >
+      <span class="recent-puzzle-icon" aria-hidden="true">{puzzleIcons[entry.puzzleId]}</span>
+      <span class="recent-puzzle-copy">
+        <span class="recent-puzzle-title-row">
+          <strong>{entry.title}</strong>
+          {entry.isActive ? <span class="recent-puzzle-state">Current</span> : null}
+          {entry.completedAt ? <span class="recent-puzzle-state completed">Completed</span> : null}
+        </span>
+        <span class="recent-puzzle-meta">
+          {entry.summary ? <span>{entry.summary}</span> : null}
+          {entry.summary ? <span aria-hidden="true"> · </span> : null}
+          <time dateTime={entry.updatedAt}>{formatLastPlayed(entry.updatedAt)}</time>
+        </span>
+      </span>
+      <span class="recent-puzzle-action" aria-hidden="true">{actionLabel}</span>
+    </button>
+  );
+};
+
+export const StartView = ({ readyPuzzles, previewPuzzles, onSelectPuzzle }: StartViewProps) => {
+  const recentPuzzles = getRecentPuzzleEntries(loadPersistedPuzzleSessions()).slice(0, homeRecentPuzzleLimit);
+
+  return (
+    <section class="start-layout" aria-labelledby="puzzle-start-title">
+      <div class="puzzle-start-panel">
+        <h1 id="puzzle-start-title">Choose a puzzle</h1>
+        <p class="hero-copy">Seeded generators and playable puzzle workspaces.</p>
+
+        <section class="start-section" aria-label="Ready puzzles">
+          <p class="start-section-label">Ready</p>
+          <div class="start-card-grid">
+            {readyPuzzles.map((definition) => (
+              <StartPuzzleButton definition={definition} key={definition.id} onSelectPuzzle={onSelectPuzzle} />
             ))}
           </div>
         </section>
-      ) : null}
-    </div>
-  </section>
-);
+
+        {recentPuzzles.length > 0 ? (
+          <section class="start-section" aria-label="Recent puzzles">
+            <p class="start-section-label">Recent</p>
+            <div class="recent-puzzle-list">
+              {recentPuzzles.map((entry) => <RecentPuzzleButton entry={entry} key={entry.resourceKey} />)}
+            </div>
+          </section>
+        ) : null}
+
+        {previewPuzzles.length > 0 ? (
+          <section class="start-section" aria-label="Preview puzzles">
+            <p class="start-section-label">Preview</p>
+            <div class="start-card-grid compact">
+              {previewPuzzles.map((definition) => (
+                <StartPuzzleButton definition={definition} key={definition.id} label="Preview" onSelectPuzzle={onSelectPuzzle} />
+              ))}
+            </div>
+          </section>
+        ) : null}
+      </div>
+    </section>
+  );
+};
