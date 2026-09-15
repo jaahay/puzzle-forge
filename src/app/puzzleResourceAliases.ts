@@ -10,17 +10,17 @@ export const puzzleResourceAliases: readonly PuzzleResourceAlias[] = [
   {
     puzzleId: "sudoku",
     alias: "Happy2026!",
-    generationId: "eyJzIjoiaGFwcHktMjAyNi1zdWRva3UiLCJkIjoiTWVkaXVtIiwieCI6ImNsYXNzaWMifQ",
+    generationId: "ARFoYXBweS0yMDI2LXN1ZG9rdQAB",
   },
   {
     puzzleId: "nonogram",
     alias: "Happy2026!",
-    generationId: "eyJzIjoiaGFwcHktMjAyNi1ub25vZ3JhbSIsInciOjEwLCJoIjoxMCwiZCI6Ik1lZGl1bSIsInUiOjF9",
+    generationId: "ARNoYXBweS0yMDI2LW5vbm9ncmFtAAoKBQ",
   },
   {
     puzzleId: "sudoku",
     alias: "Welcome",
-    generationId: "eyJzIjoid2VsY29tZS1zdWRva3UiLCJkIjoiRWFzeSIsIngiOiJjbGFzc2ljIn0",
+    generationId: "AQ53ZWxjb21lLXN1ZG9rdQAA",
   },
 ];
 
