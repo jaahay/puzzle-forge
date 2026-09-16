@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decodeGenerationId } from "./puzzleResourceIdentity";
+import { decodeGenerationId, encodeGenerationId } from "./puzzleResourceIdentity";
 import {
   canonicalizeDailyResourceQuery,
   makeDailyResourceLocatorPath,
@@ -28,6 +28,16 @@ describe("Daily resource semantics", () => {
     expect(canonical.ok).toBe(true);
     if (!canonical.ok) return;
     expect(canonical.identity).toEqual(resolved.identity);
+  });
+
+  it("does not present explicit-seed Daily provenance as a semantic Daily locator", () => {
+    const resolved = resolveDailyResource("sudoku", "2026-09-15");
+    expect(resolved.ok).toBe(true);
+    if (!resolved.ok) return;
+
+    const explicitSeedIdentity = { ...resolved.identity, seed: "explicit-daily-seed" };
+    expect(encodeGenerationId(explicitSeedIdentity)).not.toBe(resolved.canonicalResource.generationId);
+    expect(makeDailyResourceLocatorPath(explicitSeedIdentity)).toBeNull();
   });
 
   it("canonicalizes qualified Nonogram Daily profiles without losing identity", () => {
