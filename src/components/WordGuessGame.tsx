@@ -28,6 +28,7 @@ type WordGuessGameProps = {
   statusMessage: string;
   onCellInput: (cell: PuzzleCell, value: string) => void;
   onSubmitGuess: () => void;
+  onReset: () => void;
 };
 
 const getRows = (cells: PuzzleCell[], rowCount: number) =>
@@ -74,7 +75,7 @@ const restoreGuessIntoRow = (rowCells: PuzzleCell[], guess: string, onCellInput:
   });
 };
 
-export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSubmitGuess }: WordGuessGameProps) => {
+export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSubmitGuess, onReset }: WordGuessGameProps) => {
   const answer = puzzle.answerKey?.join("").toUpperCase() ?? "";
   const wordBank = useMemo(() => getWordGuessBank(puzzle.width), [puzzle.width]);
   const rows = useMemo(() => getRows(cells, puzzle.height), [cells, puzzle.height]);
@@ -224,6 +225,26 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     setCopiedShare(false);
   };
 
+  const resetGame = () => {
+    skipNextSave.current = true;
+    onReset();
+    setSubmittedRows(0);
+    setStatus("playing");
+    setMessage(`Type a ${puzzle.width}-letter word.`);
+    setCopiedShare(false);
+    setHardMode(false);
+    writeWordGuessProgress({
+      puzzleId: puzzle.id,
+      wordLength: puzzle.width,
+      maxGuesses: puzzle.height,
+      guesses: [],
+      status: "playing",
+    });
+    window.setTimeout(() => {
+      skipNextSave.current = false;
+    }, 0);
+  };
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.altKey || event.ctrlKey || event.metaKey || isTextEditingTarget(event.target)) {
@@ -335,6 +356,9 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
       <div class="word-guess-actions">
         <button type="button" onClick={submitGuess} disabled={status !== "playing"}>
           Submit
+        </button>
+        <button type="button" onClick={resetGame}>
+          Reset
         </button>
         <button type="button" onClick={copyShareText} disabled={submittedRows === 0}>
           {copiedShare ? "Copied" : "Share"}

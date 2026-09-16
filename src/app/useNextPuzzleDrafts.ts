@@ -1,7 +1,6 @@
 import { useRef, useState } from "preact/hooks";
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { GeneratedPuzzle, PuzzleId } from "../catalog/types";
-import { isImageBackedPuzzleId } from "../games/imageAssets";
 import { defaultSolitaireVariation, normalizeSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation } from "../games/sudoku/variation";
 import type { GenerationSettings, NextPuzzleDraft } from "./generationSettings";
@@ -101,10 +100,7 @@ export const useNextPuzzleDrafts = ({
     saveNextPuzzleDraftCache(next);
   };
 
-  const currentPuzzleIsVisibleImageConfig =
-    isImageBackedPuzzleId(selectedPuzzleId) && puzzle?.puzzleId === selectedPuzzleId;
-  const visibleImageDraft = currentPuzzleIsVisibleImageConfig ? makeDraft(selectedPuzzleId) : null;
-  const nextPuzzleDraft = visibleImageDraft ?? drafts[selectedPuzzleId] ?? makeDraft(selectedPuzzleId);
+  const nextPuzzleDraft = drafts[selectedPuzzleId] ?? makeDraft(selectedPuzzleId);
   const seedLoadInput = seedLoadInputs[selectedPuzzleId] ?? "";
 
   const getRememberedNextPuzzleDraft = (puzzleId: PuzzleId) => draftsRef.current[puzzleId] ?? null;
@@ -122,7 +118,7 @@ export const useNextPuzzleDrafts = ({
 
   const rememberNextPuzzleDraft = () => {
     updateDrafts((current) =>
-      currentPuzzleIsVisibleImageConfig || !current[selectedPuzzleId]
+      !current[selectedPuzzleId]
         ? { ...current, [selectedPuzzleId]: nextPuzzleDraft }
         : current,
     );

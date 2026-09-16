@@ -1,15 +1,14 @@
 import { useCallback, useState } from "preact/hooks";
 import type { ImageTileGeneratedPuzzle, ImageTilePuzzleId } from "../catalog/types";
-import { ArtworkAlbum } from "./ArtworkAlbum";
-import { ImmediateTopPuzzleConfiguration } from "./PuzzleConfiguration";
-import type { ImmediateImageWorkspaceProps } from "./PuzzleWorkspace.types";
-import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
-import { SeedControl } from "./SeedControl";
+import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
+import { ImageTileNewPuzzleControl } from "./ImageTileNewPuzzleControl";
 import { ImageTilePuzzlePreview } from "./ImageTilePuzzlePreview";
+import type { ImageWorkspaceProps } from "./PuzzleWorkspace.types";
+import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { usePuzzleCompletionPresentation } from "./usePuzzleCompletionPresentation";
 
 const asImageTilePuzzle = (
-  puzzle: ImmediateImageWorkspaceProps["puzzle"],
+  puzzle: ImageWorkspaceProps["puzzle"],
   puzzleId: ImageTilePuzzleId,
 ): ImageTileGeneratedPuzzle | null =>
   puzzle?.kind === "tiles" && puzzle.puzzleId === puzzleId ? puzzle : null;
@@ -22,21 +21,18 @@ type CompletionState = {
 export const ImageTilePuzzleWorkspace = ({
   selectedDefinition,
   selectedPuzzleIsGeneratable,
-  seed,
-  width,
-  height,
   puzzle,
+  nextPuzzleDraft,
+  seedLoadInput,
   statusMessage,
   isGenerating,
-  onSeedChange,
-  onWidthChange,
-  onHeightChange,
-  onSettingsCommit,
-  onGenerate,
-  onToday,
-  onRandomize,
   onReset,
-}: ImmediateImageWorkspaceProps) => {
+  onNextPuzzleDraftChange,
+  onSeedLoadInputChange,
+  onNewPuzzle,
+  onToday,
+  onLoadSeed,
+}: ImageWorkspaceProps) => {
   const puzzleId: ImageTilePuzzleId = selectedDefinition.id === "sliding-puzzle" ? "sliding-puzzle" : "tile-swap";
   const imagePuzzle = asImageTilePuzzle(puzzle, puzzleId);
   const [resetVersion, setResetVersion] = useState(0);
@@ -53,7 +49,8 @@ export const ImageTilePuzzleWorkspace = ({
     trackedKeys: ["Enter", " "],
   });
   const isCompletionPresented = isSolved && completionPresentation.phase === "completed";
-  const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
+  const puzzleArrivalIdentity = imagePuzzle ? getPuzzleArrivalIdentity(imagePuzzle) : null;
+  const isPuzzleArriving = usePuzzleArrival(puzzleArrivalIdentity);
   const handleSolvedChange = useCallback((solved: boolean) => {
     const puzzleInstanceId = imagePuzzle?.id ?? null;
     setCompletionState((current) =>
@@ -67,43 +64,38 @@ export const ImageTilePuzzleWorkspace = ({
     setResetVersion((current) => current + 1);
     setCompletionState({ puzzleInstanceId: imagePuzzle?.id ?? null, solved: false });
   };
-  const seedInput = (
-    <SeedControl
-      seed={seed}
-      onSeedChange={onSeedChange}
-      onSeedCommit={(nextSeed) => onSettingsCommit({ seed: nextSeed })}
-    />
-  );
 
-  const artworkControl = imagePuzzle ? (
-    <ArtworkAlbum
+  const newPuzzleControl = imagePuzzle ? (
+    <ImageTileNewPuzzleControl
       puzzleId={puzzleId}
       puzzleTitle={selectedDefinition.title}
-      selectedAsset={imagePuzzle.asset}
-      disabled={isGenerating}
-      onSelectAsset={(asset) => onSettingsCommit({ imageId: asset.id })}
+      currentSeed={imagePuzzle.seed}
+      imageId={nextPuzzleDraft.imageId}
+      width={nextPuzzleDraft.width}
+      height={nextPuzzleDraft.height}
+      minWidth={selectedDefinition.minWidth}
+      maxWidth={selectedDefinition.maxWidth}
+      minHeight={selectedDefinition.minHeight}
+      maxHeight={selectedDefinition.maxHeight}
+      seedLoadInput={seedLoadInput}
+      disabled={isGenerating || !selectedPuzzleIsGeneratable}
+      onImageChange={(imageId) => onNextPuzzleDraftChange({ imageId })}
+      onWidthChange={(width) => onNextPuzzleDraftChange({ width })}
+      onHeightChange={(height) => onNextPuzzleDraftChange({ height })}
+      onSeedLoadInputChange={onSeedLoadInputChange}
+      onNewPuzzle={onNewPuzzle}
+      onToday={onToday}
+      onLoadSeed={onLoadSeed}
     />
   ) : null;
-
-  const generation = (
-    <ImmediateTopPuzzleConfiguration
-      selectedDefinition={selectedDefinition}
-      selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
-      seedInput={seedInput}
-      width={width}
-      height={height}
-      isFixedSize={isFixedSize}
-      isGenerating={isGenerating}
-      showRandomize={!isCompletionPresented}
-      onWidthChange={onWidthChange}
-      onHeightChange={onHeightChange}
-      onSettingsCommit={onSettingsCommit}
-      onToday={onToday}
-      onUseSeed={onGenerate}
-      onRandomize={onRandomize}
-      onReset={resetPuzzle}
+  const crown = imagePuzzle ? (
+    <CurrentPuzzleHeader
+      key={puzzleArrivalIdentity ?? undefined}
+      puzzle={imagePuzzle}
+      newPuzzleControl={newPuzzleControl}
+      isArriving={isPuzzleArriving}
     />
-  );
+  ) : null;
 
   const loadingBoard = (
     <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label={`${selectedDefinition.title} is generating`}>
@@ -113,8 +105,11 @@ export const ImageTilePuzzleWorkspace = ({
   );
 
   const board = imagePuzzle ? (
-    <section class="puzzle-panel image-tile-puzzle-panel" aria-label={`Generated ${selectedDefinition.title} puzzle`}>
-      {artworkControl}
+    <section
+      key={puzzleArrivalIdentity ?? undefined}
+      class={`puzzle-panel image-tile-puzzle-panel${isPuzzleArriving ? " puzzle-arrival" : ""}`}
+      aria-label={`Generated ${selectedDefinition.title} puzzle`}
+    >
       <ImageTilePuzzlePreview
         key={imagePuzzle.id}
         puzzle={imagePuzzle}
@@ -134,26 +129,31 @@ export const ImageTilePuzzleWorkspace = ({
         <strong>Puzzle solved</strong>
       </div>
       <div class="puzzle-actions">
+        <button type="button" onClick={resetPuzzle} disabled={isGenerating}>Reset</button>
         <button
           class="new-puzzle-primary"
           type="button"
-          onClick={onRandomize}
+          onClick={onNewPuzzle}
           disabled={isGenerating}
-          aria-label={`Start a new ${selectedDefinition.title} with the current settings`}
+          aria-label={`Start a new ${selectedDefinition.title} with the selected next-puzzle settings`}
         >
           New puzzle
         </button>
       </div>
     </section>
+  ) : imagePuzzle ? (
+    <div class="puzzle-actions">
+      <button type="button" onClick={resetPuzzle} disabled={isGenerating}>Reset</button>
+    </div>
   ) : null;
 
   return (
     <PuzzleWorkspaceLayout
       className="image-tile-workspace"
+      crown={crown}
       status={<p class="status-line" aria-live="polite">{statusMessage}</p>}
       board={board}
       gameplay={gameplay}
-      generation={generation}
       enableImmersive
     />
   );

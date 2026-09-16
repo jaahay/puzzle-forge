@@ -1,14 +1,11 @@
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
-import { TopPuzzleConfiguration } from "./PuzzleConfiguration";
+import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
 import type { SolitaireWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
-import { SeedControl } from "./SeedControl";
-import { SolitaireSettings } from "./SolitaireSettings";
+import { SolitaireNewPuzzleControl } from "./SolitaireNewPuzzleControl";
 
 export const SolitaireWorkspace = ({
-  selectedDefinition,
   selectedPuzzleIsGeneratable,
-  seed,
   puzzle,
   nextPuzzleDraft,
   seedLoadInput,
@@ -33,46 +30,37 @@ export const SolitaireWorkspace = ({
   onStackClick,
 }: SolitaireWorkspaceProps) => {
   const solitairePuzzle = puzzle?.kind === "cards" && puzzle.puzzleId === "klondike-solitaire" ? puzzle : null;
-  const seedInput = (
-    <SeedControl
-      currentSeed={solitairePuzzle?.seed ?? seed}
-      seed={seedLoadInput}
-      onSeedChange={onSeedLoadInputChange}
+  const puzzleArrivalIdentity = solitairePuzzle ? getPuzzleArrivalIdentity(solitairePuzzle) : null;
+  const isPuzzleArriving = usePuzzleArrival(puzzleArrivalIdentity);
+  const newPuzzleControl = solitairePuzzle ? (
+    <SolitaireNewPuzzleControl
+      currentSeed={solitairePuzzle.seed}
+      variation={nextPuzzleDraft.solitaireVariation}
+      seedLoadInput={seedLoadInput}
+      disabled={isGenerating || !selectedPuzzleIsGeneratable}
+      onVariationChange={(solitaireVariation) => onNextPuzzleDraftChange({ solitaireVariation })}
+      onSeedLoadInputChange={onSeedLoadInputChange}
+      onNewPuzzle={onNewPuzzle}
+      onToday={onToday}
+      onLoadSeed={onLoadSeed}
     />
-  );
+  ) : null;
+  const crown = solitairePuzzle ? (
+    <CurrentPuzzleHeader
+      key={puzzleArrivalIdentity ?? undefined}
+      puzzle={solitairePuzzle}
+      newPuzzleControl={newPuzzleControl}
+      isArriving={isPuzzleArriving}
+    />
+  ) : null;
   const actionControls = (
     <div class="solitaire-action-row" aria-label="Solitaire controls">
       <button type="button" onClick={onUndoSolitaire} disabled={!canUndoSolitaire} aria-label="Undo Solitaire move" title="Undo">↶</button>
       <button type="button" onClick={onRedoSolitaire} disabled={!canRedoSolitaire} aria-label="Redo Solitaire move" title="Redo">↷</button>
       <button type="button" onClick={onAutoMoveToFoundations} aria-label="Move all currently legal cards to foundations" title="Auto foundation">♣→</button>
+      <button type="button" onClick={onReset} disabled={isGenerating}>Reset</button>
     </div>
   );
-
-  const generation = solitairePuzzle ? (
-    <TopPuzzleConfiguration
-      selectedDefinition={selectedDefinition}
-      selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
-      seedInput={seedInput}
-      width={nextPuzzleDraft.width}
-      height={nextPuzzleDraft.height}
-      isFixedSize={selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight}
-      isGenerating={isGenerating}
-      className="solitaire-control-panel"
-      settings={(
-        <SolitaireSettings
-          variation={nextPuzzleDraft.solitaireVariation}
-          onVariationChange={(solitaireVariation) => onNextPuzzleDraftChange({ solitaireVariation })}
-        />
-      )}
-      onWidthChange={(width) => onNextPuzzleDraftChange({ width })}
-      onHeightChange={(height) => onNextPuzzleDraftChange({ height })}
-      onSettingsCommit={onNextPuzzleDraftChange}
-      onToday={onToday}
-      onUseSeed={onLoadSeed}
-      onRandomize={onNewPuzzle}
-      onReset={onReset}
-    />
-  ) : null;
 
   const loadingBoard = (
     <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label="Klondike Solitaire is generating">
@@ -82,7 +70,11 @@ export const SolitaireWorkspace = ({
   );
 
   const board = solitairePuzzle && cardStacks ? (
-    <section class="puzzle-panel" aria-label="Generated puzzle preview">
+    <section
+      key={puzzleArrivalIdentity ?? undefined}
+      class={`puzzle-panel${isPuzzleArriving ? " puzzle-arrival" : ""}`}
+      aria-label="Generated puzzle preview"
+    >
       <CardPuzzlePreview
         stacks={cardStacks}
         selectedCard={selectedCard}
@@ -99,9 +91,9 @@ export const SolitaireWorkspace = ({
   return (
     <PuzzleWorkspaceLayout
       className="solitaire-workspace"
+      crown={crown}
       status={<p class="status-line" aria-live="polite">{statusMessage}</p>}
       board={board}
-      generation={generation}
     />
   );
 };
