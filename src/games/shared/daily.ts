@@ -13,6 +13,27 @@ export type DailyPuzzleGenerationProfile = {
 
 const padDatePart = (value: number) => value.toString().padStart(2, "0");
 const dailyDateStampPattern = /^\d{4}-\d{2}-\d{2}$/;
+const isLeapYear = (year: number) => year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+const daysInMonth = (year: number, month: number) => [
+  31,
+  isLeapYear(year) ? 29 : 28,
+  31,
+  30,
+  31,
+  30,
+  31,
+  31,
+  30,
+  31,
+  30,
+  31,
+][month - 1] ?? 0;
+
+export const isDailyDateStamp = (dateStamp: string) => {
+  if (!dailyDateStampPattern.test(dateStamp)) return false;
+  const [year, month, day] = dateStamp.split("-").map(Number);
+  return year >= 0 && year <= 9999 && month >= 1 && month <= 12 && day >= 1 && day <= daysInMonth(year, month);
+};
 
 const hashDailySeedMaterial = (material: string) => {
   let first = 0x811c9dc5;
@@ -30,7 +51,7 @@ const hashDailySeedMaterial = (material: string) => {
 export const getLocalDateStamp = (date = new Date()) =>
   `${date.getFullYear()}-${padDatePart(date.getMonth() + 1)}-${padDatePart(date.getDate())}`;
 
-// Legacy date-scoped daily seeds remain useful to puzzle families such as Word Guess.
+// Date-scoped daily seeds remain useful to puzzle families such as Word Guess.
 // Sudoku and Nonogram daily tracks use getDailyPuzzleSeedForProfile instead; their
 // provenance is carried explicitly by the app rather than reconstructed from a seed.
 export const getDailyPuzzleSeed = (puzzleId: PuzzleId, date = new Date()) =>
@@ -41,7 +62,7 @@ export const getDailyPuzzleLabel = (puzzleId: PuzzleId, seed: string) => {
   if (!seed.startsWith(prefix)) return null;
 
   const dateStamp = seed.slice(prefix.length);
-  return dailyDateStampPattern.test(dateStamp) ? dateStamp : null;
+  return isDailyDateStamp(dateStamp) ? dateStamp : null;
 };
 
 export const getDailyPuzzleSeedForProfile = (

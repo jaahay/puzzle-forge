@@ -1,4 +1,5 @@
 import type { GeneratedPuzzle } from "../catalog/types";
+import { isDailyDateStamp } from "../games/shared/daily";
 
 export type PuzzleProvenance = {
   source: "daily";
@@ -9,8 +10,6 @@ type GeneratedPuzzleWithProvenance = GeneratedPuzzle & {
   provenance?: PuzzleProvenance;
 };
 
-const dailyDateStampPattern = /^\d{4}-\d{2}-\d{2}$/;
-
 const clonePuzzleProvenance = (provenance: PuzzleProvenance): PuzzleProvenance => ({ ...provenance });
 
 export const isPuzzleProvenance = (value: unknown): value is PuzzleProvenance => {
@@ -18,7 +17,7 @@ export const isPuzzleProvenance = (value: unknown): value is PuzzleProvenance =>
   const candidate = value as Record<string, unknown>;
   return candidate.source === "daily" &&
     typeof candidate.dateStamp === "string" &&
-    dailyDateStampPattern.test(candidate.dateStamp);
+    isDailyDateStamp(candidate.dateStamp);
 };
 
 export const getPuzzleProvenance = (puzzle: GeneratedPuzzle): PuzzleProvenance | undefined => {

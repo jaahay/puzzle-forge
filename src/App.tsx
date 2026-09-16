@@ -21,7 +21,7 @@ import {
 } from "./app/generationIdentity";
 import { resolveGenerationIdentity, type GenerationSettings } from "./app/generationSettings";
 import { getInitialSelectedPuzzleId, markPuzzleNavigation } from "./app/homeNavigation";
-import { decodeGenerationId, encodeGenerationId } from "./app/puzzleResourceIdentity";
+import { encodeGenerationId, resolvePuzzleResourceSegment } from "./app/puzzleResourceIdentity";
 import { defaultPuzzleDifficulty, makeRandomSeed } from "./app/runtime";
 import { getCurrentAppRoute, parseAppRoute, pushAppRoute, replaceAppRoute, type AppRoute } from "./app/routes";
 import { initialSolitaireStats, loadPersistedPuzzleSessions } from "./app/session";
@@ -381,7 +381,7 @@ export const App = () => {
     setSelectedPuzzleId(resourceRoute.puzzleId);
     markPuzzleNavigation(resourceRoute.puzzleId);
 
-    const decoded = decodeGenerationId(resourceRoute.puzzleId, resourceRoute.generationId);
+    const decoded = resolvePuzzleResourceSegment(resourceRoute.puzzleId, resourceRoute.generationId);
     if (!decoded.ok) {
       const message = "This puzzle resource is invalid or unavailable.";
       resetRuntimePuzzleState();

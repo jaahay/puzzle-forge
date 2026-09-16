@@ -64,6 +64,11 @@ describe("puzzle resource aliases", () => {
     expect(resolved.alias?.alias).toBe("Welcome");
   });
 
+  it("keeps Daily routing keywords out of the curated alias registry", () => {
+    const reserved = new Set(["daily", "today"]);
+    expect(puzzleResourceAliases.some((entry) => reserved.has(entry.alias.toLowerCase()))).toBe(false);
+  });
+
   it("falls through to ordinary canonical generation ids unchanged", () => {
     const alias = getAlias("sudoku", "Happy2026!");
     const resolved = resolvePuzzleResourceSegment("sudoku", alias.generationId);

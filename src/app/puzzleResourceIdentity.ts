@@ -2,12 +2,12 @@ import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type {
   PuzzleDifficulty,
   PuzzleId,
-  SolitaireRedealLimit,
   SolitaireVariation,
   SudokuVariation,
 } from "../catalog/types";
 import { getPuzzleImageAsset } from "../games/imageAssets";
 import { normalizeSeed } from "../games/shared";
+import { isDailyDateStamp } from "../games/shared/daily";
 import {
   defaultSolitaireVariation,
   normalizeSolitaireVariation,
@@ -21,26 +21,7 @@ import {
 import type { GenerationIdentity } from "./generationIdentity";
 import { getPuzzleResourceAlias, type PuzzleResourceAlias } from "./puzzleResourceAliases";
 import { isPuzzleProvenance, type PuzzleProvenance } from "./puzzleProvenance";
-import { defaultPuzzleDifficulty } from "./runtime";
-
-type WireSolitaireVariation = [
-  drawMode: SolitaireVariation["drawMode"],
-  redeals: SolitaireRedealLimit,
-  wasteMode: SolitaireVariation["wasteMode"],
-  knownSolvable: 0 | 1,
-];
-
-type WireGenerationIdentity = {
-  s: string;
-  w?: number;
-  h?: number;
-  d?: PuzzleDifficulty;
-  u?: 0 | 1;
-  x?: SudokuVariation;
-  l?: WireSolitaireVariation;
-  i?: string;
-  o?: PuzzleProvenance;
-};
+import { defaultPuzzleDifficulty, maxPuzzleSeedLength } from "./runtime";
 
 export type PuzzleResourceKey = `${PuzzleId}/${string}`;
 
@@ -63,18 +44,37 @@ export type PuzzleResourceSegmentResolution =
     }
   | { ok: false; reason: "malformed" | "invalid-identity" };
 
-const puzzleDifficulties = new Set<PuzzleDifficulty>(["Easy", "Medium", "Hard", "Expert"]);
-const sudokuVariationSet = new Set<SudokuVariation>(sudokuVariations);
-const solitaireRedealLimitSet = new Set<SolitaireRedealLimit>(solitaireRedealLimits);
+const compactGenerationIdVersion = 1;
+const puzzleDifficulties = ["Easy", "Medium", "Hard", "Expert"] as const satisfies readonly PuzzleDifficulty[];
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
+class ByteReader {
+  private offset = 0;
 
-const isPositiveInteger = (value: unknown): value is number =>
-  typeof value === "number" && Number.isInteger(value) && value > 0;
+  constructor(private readonly bytes: Uint8Array) {}
 
-const encodeBase64Url = (value: string) => {
-  const bytes = new TextEncoder().encode(value);
+  readByte() {
+    if (this.offset >= this.bytes.length) throw new Error("Unexpected end of resource id.");
+    const value = this.bytes[this.offset];
+    this.offset += 1;
+    return value;
+  }
+
+  readText() {
+    const length = this.readByte();
+    if (this.offset + length > this.bytes.length) throw new Error("Invalid resource text length.");
+    const value = textDecoder.decode(this.bytes.slice(this.offset, this.offset + length));
+    this.offset += length;
+    return value;
+  }
+
+  get done() {
+    return this.offset === this.bytes.length;
+  }
+}
+
+const encodeBase64UrlBytes = (bytes: Uint8Array) => {
   let binary = "";
   bytes.forEach((byte) => {
     binary += String.fromCharCode(byte);
@@ -82,167 +82,268 @@ const encodeBase64Url = (value: string) => {
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 };
 
-const decodeBase64Url = (value: string) => {
-  const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
-  const padding = "=".repeat((4 - (base64.length % 4)) % 4);
-  const binary = atob(`${base64}${padding}`);
-  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
-};
-
-const solitaireVariationToWire = (variation: SolitaireVariation): WireSolitaireVariation => [
-  variation.drawMode,
-  variation.redeals,
-  variation.wasteMode,
-  variation.knownSolvable ? 1 : 0,
-];
-
-const isWireSolitaireVariation = (value: unknown): value is WireSolitaireVariation =>
-  Array.isArray(value) &&
-  value.length === 4 &&
-  (value[0] === "draw-1" || value[0] === "draw-3") &&
-  solitaireRedealLimitSet.has(value[1] as SolitaireRedealLimit) &&
-  (value[2] === "standard" || value[2] === "relaxed") &&
-  (value[3] === 0 || value[3] === 1);
-
-const solitaireVariationFromWire = (wire: WireSolitaireVariation): SolitaireVariation => ({
-  drawMode: wire[0],
-  redeals: wire[1],
-  wasteMode: wire[2],
-  knownSolvable: wire[3] === 1,
-});
-
-const withProvenance = (
-  wire: Omit<WireGenerationIdentity, "o">,
-  provenance: PuzzleProvenance | undefined,
-): WireGenerationIdentity => provenance ? { ...wire, o: provenance } : wire;
-
-const identityToWire = (identity: GenerationIdentity): WireGenerationIdentity => {
-  const seed = normalizeSeed(identity.seed);
-
-  switch (identity.puzzleId) {
-    case "sudoku":
-      return withProvenance({
-        s: seed,
-        d: identity.difficulty,
-        x: normalizeSudokuVariation(identity.sudokuVariation),
-      }, identity.provenance);
-    case "nonogram":
-      return withProvenance({
-        s: seed,
-        w: identity.width,
-        h: identity.height,
-        d: identity.difficulty,
-        u: identity.requireUniqueSolution ? 1 : 0,
-      }, identity.provenance);
-    case "word-guess":
-    case "logic-grid":
-      return withProvenance({
-        s: seed,
-        w: identity.width,
-        h: identity.height,
-      }, identity.provenance);
-    case "jigsaw":
-    case "tile-swap":
-    case "sliding-puzzle":
-      return withProvenance({
-        s: seed,
-        w: identity.width,
-        h: identity.height,
-        i: getPuzzleImageAsset(identity.imageId, identity.puzzleId).id,
-      }, identity.provenance);
-    case "klondike-solitaire":
-      return withProvenance({
-        s: seed,
-        l: solitaireVariationToWire(normalizeSolitaireVariation(identity.solitaireVariation)),
-      }, identity.provenance);
-    case "peg-solitaire":
-      return withProvenance({ s: seed }, identity.provenance);
-    case "futoshiki":
-      return withProvenance({
-        s: seed,
-        d: identity.difficulty,
-      }, identity.provenance);
-    case "kenken":
-    case "minesweeper":
-    case "slitherlink":
-      return withProvenance({
-        s: seed,
-        w: identity.width,
-        h: identity.height,
-        d: identity.difficulty,
-        u: identity.requireUniqueSolution ? 1 : 0,
-      }, identity.provenance);
+const decodeBase64UrlBytes = (value: string): Uint8Array | null => {
+  if (!value || !/^[A-Za-z0-9_-]+$/.test(value) || value.length % 4 === 1) return null;
+  try {
+    const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
+    const padding = "=".repeat((4 - (base64.length % 4)) % 4);
+    const binary = atob(`${base64}${padding}`);
+    return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  } catch {
+    return null;
   }
 };
 
-export const encodeGenerationId = (identity: GenerationIdentity) =>
-  encodeBase64Url(JSON.stringify(identityToWire(identity)));
+const pushText = (bytes: number[], value: string) => {
+  const encoded = textEncoder.encode(value);
+  if (encoded.length === 0 || encoded.length > 255) throw new Error("Resource text field is outside the supported length.");
+  bytes.push(encoded.length, ...encoded);
+};
+
+const pushByte = (bytes: number[], value: number) => {
+  if (!Number.isInteger(value) || value < 0 || value > 255) throw new Error("Resource byte is outside the supported range.");
+  bytes.push(value);
+};
+
+const difficultyIndex = (difficulty: PuzzleDifficulty) => {
+  const index = puzzleDifficulties.indexOf(difficulty);
+  if (index < 0) throw new Error(`Unsupported puzzle difficulty: ${difficulty}`);
+  return index;
+};
+
+const difficultyAt = (index: number) => puzzleDifficulties[index] as PuzzleDifficulty | undefined;
+
+const hasValidDimensions = (puzzleId: PuzzleId, width: number, height: number) => {
+  const definition = getPuzzleDefinition(puzzleId);
+  return Number.isInteger(width) &&
+    Number.isInteger(height) &&
+    width >= definition.minWidth &&
+    width <= definition.maxWidth &&
+    height >= definition.minHeight &&
+    height <= definition.maxHeight;
+};
+
+const pushDimensions = (bytes: number[], identity: GenerationIdentity) => {
+  if (!hasValidDimensions(identity.puzzleId, identity.width, identity.height)) {
+    throw new Error(`Puzzle dimensions are outside the supported range for ${identity.puzzleId}.`);
+  }
+  pushByte(bytes, identity.width);
+  pushByte(bytes, identity.height);
+};
+
+const pushProvenance = (bytes: number[], provenance: PuzzleProvenance | undefined) => {
+  if (!provenance) {
+    bytes.push(0);
+    return;
+  }
+  if (!isPuzzleProvenance(provenance) || provenance.source !== "daily") {
+    throw new Error("Unsupported puzzle provenance.");
+  }
+  const [year, month, day] = provenance.dateStamp.split("-").map(Number);
+  bytes.push(1, (year >>> 8) & 0xff, year & 0xff, month, day);
+};
+
+const readProvenance = (reader: ByteReader): PuzzleProvenance | undefined => {
+  const kind = reader.readByte();
+  if (kind === 0) return undefined;
+  if (kind !== 1) throw new Error("Unknown puzzle provenance kind.");
+  const year = (reader.readByte() << 8) | reader.readByte();
+  const month = reader.readByte();
+  const day = reader.readByte();
+  const dateStamp = `${year.toString().padStart(4, "0")}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
+  if (!isDailyDateStamp(dateStamp)) throw new Error("Invalid daily puzzle date.");
+  return { source: "daily", dateStamp };
+};
+
+const pushPuzzlePayload = (bytes: number[], identity: GenerationIdentity) => {
+  switch (identity.puzzleId) {
+    case "sudoku": {
+      const variation = normalizeSudokuVariation(identity.sudokuVariation);
+      const variationIndex = sudokuVariations.indexOf(variation);
+      if (variationIndex < 0) throw new Error(`Unsupported Sudoku variation: ${variation}`);
+      pushByte(bytes, difficultyIndex(identity.difficulty) | (variationIndex << 2));
+      return;
+    }
+    case "nonogram":
+      pushDimensions(bytes, identity);
+      pushByte(bytes, difficultyIndex(identity.difficulty) | (identity.requireUniqueSolution ? 0x04 : 0));
+      return;
+    case "word-guess":
+    case "logic-grid":
+      pushDimensions(bytes, identity);
+      return;
+    case "jigsaw":
+    case "tile-swap":
+    case "sliding-puzzle": {
+      pushDimensions(bytes, identity);
+      pushText(bytes, getPuzzleImageAsset(identity.imageId, identity.puzzleId).id);
+      return;
+    }
+    case "klondike-solitaire": {
+      const variation = normalizeSolitaireVariation(identity.solitaireVariation);
+      const redealIndex = solitaireRedealLimits.indexOf(variation.redeals);
+      if (redealIndex < 0) throw new Error(`Unsupported Solitaire redeal limit: ${variation.redeals}`);
+      const flags =
+        (variation.drawMode === "draw-3" ? 0x01 : 0) |
+        (redealIndex << 1) |
+        (variation.wasteMode === "relaxed" ? 0x08 : 0) |
+        (variation.knownSolvable ? 0x10 : 0);
+      pushByte(bytes, flags);
+      return;
+    }
+    case "peg-solitaire":
+      return;
+    case "futoshiki":
+      pushByte(bytes, difficultyIndex(identity.difficulty));
+      return;
+    case "kenken":
+    case "minesweeper":
+    case "slitherlink":
+      pushDimensions(bytes, identity);
+      pushByte(bytes, difficultyIndex(identity.difficulty) | (identity.requireUniqueSolution ? 0x04 : 0));
+      return;
+  }
+};
+
+export const encodeGenerationId = (identity: GenerationIdentity) => {
+  const seed = normalizeSeed(identity.seed);
+  if (seed.length > maxPuzzleSeedLength) {
+    throw new Error(`Puzzle seeds may contain at most ${maxPuzzleSeedLength} characters.`);
+  }
+
+  const bytes: number[] = [compactGenerationIdVersion];
+  pushText(bytes, seed);
+  pushProvenance(bytes, identity.provenance);
+  pushPuzzlePayload(bytes, identity);
+  return encodeBase64UrlBytes(Uint8Array.from(bytes));
+};
 
 export const makePuzzleResourceKey = (
   puzzleId: PuzzleId,
   generationId: string,
 ): PuzzleResourceKey => `${puzzleId}/${generationId}`;
 
-const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: string): GenerationIdDecodeResult => {
-  let decoded: unknown;
-  try {
-    decoded = JSON.parse(decodeBase64Url(generationId));
-  } catch {
-    return { ok: false, reason: "malformed" };
-  }
-
-  if (!isRecord(decoded)) return { ok: false, reason: "invalid-identity" };
-
-  if (
-    typeof decoded.s !== "string" ||
-    decoded.s.length === 0 ||
-    (decoded.w !== undefined && !isPositiveInteger(decoded.w)) ||
-    (decoded.h !== undefined && !isPositiveInteger(decoded.h)) ||
-    (decoded.d !== undefined && (typeof decoded.d !== "string" || !puzzleDifficulties.has(decoded.d as PuzzleDifficulty))) ||
-    (decoded.u !== undefined && decoded.u !== 0 && decoded.u !== 1) ||
-    (decoded.x !== undefined && (typeof decoded.x !== "string" || !sudokuVariationSet.has(decoded.x as SudokuVariation))) ||
-    (decoded.l !== undefined && !isWireSolitaireVariation(decoded.l)) ||
-    (decoded.i !== undefined && (typeof decoded.i !== "string" || decoded.i.length === 0)) ||
-    (decoded.o !== undefined && !isPuzzleProvenance(decoded.o))
-  ) {
-    return { ok: false, reason: "invalid-identity" };
-  }
-
-  const definition = getPuzzleDefinition(puzzleId);
-  if (
-    (decoded.w !== undefined && (decoded.w < definition.minWidth || decoded.w > definition.maxWidth)) ||
-    (decoded.h !== undefined && (decoded.h < definition.minHeight || decoded.h > definition.maxHeight))
-  ) {
-    return { ok: false, reason: "invalid-identity" };
-  }
-
-  const identity: GenerationIdentity = {
-    puzzleId,
-    seed: normalizeSeed(decoded.s),
-    width: (decoded.w as number | undefined) ?? definition.defaultWidth,
-    height: (decoded.h as number | undefined) ?? definition.defaultHeight,
-    difficulty: (decoded.d as PuzzleDifficulty | undefined) ?? defaultPuzzleDifficulty,
-    requireUniqueSolution: decoded.u === undefined ? true : decoded.u === 1,
-    sudokuVariation: decoded.x === undefined
-      ? defaultSudokuVariation
-      : normalizeSudokuVariation(decoded.x as SudokuVariation),
-    solitaireVariation: decoded.l === undefined
-      ? defaultSolitaireVariation
-      : solitaireVariationFromWire(decoded.l as WireSolitaireVariation),
-    ...(decoded.i !== undefined ? { imageId: decoded.i as string } : {}),
-    ...(decoded.o !== undefined ? { provenance: decoded.o as PuzzleProvenance } : {}),
-  };
+export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: string): GenerationIdDecodeResult => {
+  const bytes = decodeBase64UrlBytes(generationId);
+  if (!bytes) return { ok: false, reason: "malformed" };
 
   try {
+    const reader = new ByteReader(bytes);
+    if (reader.readByte() !== compactGenerationIdVersion) {
+      return { ok: false, reason: "invalid-identity" };
+    }
+
+    const seed = reader.readText();
+    if (!seed || seed.length > maxPuzzleSeedLength || normalizeSeed(seed) !== seed) {
+      return { ok: false, reason: "invalid-identity" };
+    }
+
+    const provenance = readProvenance(reader);
+    const definition = getPuzzleDefinition(puzzleId);
+    let width = definition.defaultWidth;
+    let height = definition.defaultHeight;
+    let difficulty = defaultPuzzleDifficulty;
+    let requireUniqueSolution = true;
+    let sudokuVariation: SudokuVariation = defaultSudokuVariation;
+    let solitaireVariation: SolitaireVariation = defaultSolitaireVariation;
+    let imageId: string | undefined;
+
+    switch (puzzleId) {
+      case "sudoku": {
+        const flags = reader.readByte();
+        if ((flags & 0xf0) !== 0) return { ok: false, reason: "invalid-identity" };
+        const decodedDifficulty = difficultyAt(flags & 0x03);
+        const decodedVariation = sudokuVariations[(flags >>> 2) & 0x03];
+        if (!decodedDifficulty || !decodedVariation) return { ok: false, reason: "invalid-identity" };
+        difficulty = decodedDifficulty;
+        sudokuVariation = decodedVariation;
+        break;
+      }
+      case "nonogram": {
+        width = reader.readByte();
+        height = reader.readByte();
+        const flags = reader.readByte();
+        if ((flags & 0xf8) !== 0) return { ok: false, reason: "invalid-identity" };
+        const decodedDifficulty = difficultyAt(flags & 0x03);
+        if (!decodedDifficulty) return { ok: false, reason: "invalid-identity" };
+        difficulty = decodedDifficulty;
+        requireUniqueSolution = (flags & 0x04) !== 0;
+        break;
+      }
+      case "word-guess":
+      case "logic-grid":
+        width = reader.readByte();
+        height = reader.readByte();
+        break;
+      case "jigsaw":
+      case "tile-swap":
+      case "sliding-puzzle":
+        width = reader.readByte();
+        height = reader.readByte();
+        imageId = getPuzzleImageAsset(reader.readText(), puzzleId).id;
+        break;
+      case "klondike-solitaire": {
+        const flags = reader.readByte();
+        if ((flags & 0xe0) !== 0) return { ok: false, reason: "invalid-identity" };
+        const redeals = solitaireRedealLimits[(flags >>> 1) & 0x03];
+        if (redeals === undefined) return { ok: false, reason: "invalid-identity" };
+        solitaireVariation = {
+          drawMode: (flags & 0x01) !== 0 ? "draw-3" : "draw-1",
+          redeals,
+          wasteMode: (flags & 0x08) !== 0 ? "relaxed" : "standard",
+          knownSolvable: (flags & 0x10) !== 0,
+        };
+        break;
+      }
+      case "peg-solitaire":
+        break;
+      case "futoshiki": {
+        const decodedDifficulty = difficultyAt(reader.readByte());
+        if (!decodedDifficulty) return { ok: false, reason: "invalid-identity" };
+        difficulty = decodedDifficulty;
+        break;
+      }
+      case "kenken":
+      case "minesweeper":
+      case "slitherlink": {
+        width = reader.readByte();
+        height = reader.readByte();
+        const flags = reader.readByte();
+        if ((flags & 0xf8) !== 0) return { ok: false, reason: "invalid-identity" };
+        const decodedDifficulty = difficultyAt(flags & 0x03);
+        if (!decodedDifficulty) return { ok: false, reason: "invalid-identity" };
+        difficulty = decodedDifficulty;
+        requireUniqueSolution = (flags & 0x04) !== 0;
+        break;
+      }
+    }
+
+    if (!reader.done) return { ok: false, reason: "invalid-identity" };
+    if (!hasValidDimensions(puzzleId, width, height)) {
+      return { ok: false, reason: "invalid-identity" };
+    }
+
+    const identity: GenerationIdentity = {
+      puzzleId,
+      seed,
+      width,
+      height,
+      difficulty,
+      requireUniqueSolution,
+      sudokuVariation,
+      solitaireVariation,
+      ...(imageId ? { imageId } : {}),
+      ...(provenance ? { provenance } : {}),
+    };
+
     if (encodeGenerationId(identity) !== generationId) {
       return { ok: false, reason: "invalid-identity" };
     }
+
+    return { ok: true, identity };
   } catch {
     return { ok: false, reason: "invalid-identity" };
   }
-
-  return { ok: true, identity };
 };
 
 export const resolvePuzzleResourceSegment = (
@@ -250,20 +351,26 @@ export const resolvePuzzleResourceSegment = (
   requestedSegment: string,
 ): PuzzleResourceSegmentResolution => {
   const alias = getPuzzleResourceAlias(puzzleId, requestedSegment);
-  const generationId = alias?.generationId ?? requestedSegment;
-  const decoded = decodeCanonicalGenerationId(puzzleId, generationId);
-  if (!decoded.ok) return decoded;
+  if (alias) {
+    const decoded = decodeCanonicalGenerationId(puzzleId, alias.generationId);
+    if (!decoded.ok) return decoded;
+    return {
+      ok: true,
+      identity: decoded.identity,
+      canonicalResource: { puzzleId, generationId: alias.generationId },
+      requestedSegment,
+      alias,
+    };
+  }
 
+  const decoded = decodeCanonicalGenerationId(puzzleId, requestedSegment);
+  if (!decoded.ok) return decoded;
   return {
     ok: true,
     identity: decoded.identity,
-    canonicalResource: { puzzleId, generationId },
+    canonicalResource: { puzzleId, generationId: requestedSegment },
     requestedSegment,
-    ...(alias ? { alias } : {}),
   };
 };
 
-export const decodeGenerationId = (puzzleId: PuzzleId, generationId: string): GenerationIdDecodeResult => {
-  const resolved = resolvePuzzleResourceSegment(puzzleId, generationId);
-  return resolved.ok ? { ok: true, identity: resolved.identity } : resolved;
-};
+export const decodeGenerationId = decodeCanonicalGenerationId;

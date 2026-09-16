@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "preact/hooks";
-import { makeRandomSeed } from "../app/runtime";
+import { makeRandomSeed, maxPuzzleSeedLength } from "../app/runtime";
 import type { PuzzleDifficulty } from "../catalog/types";
 import { BoundedNumberInput } from "./BoundedNumberInput";
 import { InfoIcon, PlayIcon, RandomIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
@@ -231,6 +231,7 @@ export const NonogramNewPuzzleControl = ({
                 <input
                   aria-label="Seed to load"
                   value={seedLoadInput}
+                  maxLength={maxPuzzleSeedLength}
                   onInput={(event) => onSeedLoadInputChange(event.currentTarget.value)}
                   onKeyDown={(event) => {
                     if (event.key === "Enter") loadSeed();

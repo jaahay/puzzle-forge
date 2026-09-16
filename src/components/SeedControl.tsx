@@ -1,4 +1,5 @@
 import { useState } from "preact/hooks";
+import { maxPuzzleSeedLength } from "../app/runtime";
 
 type CurrentSeedDisplayProps = {
   seed: string;
@@ -87,6 +88,7 @@ export const SeedControl = ({ seed, currentSeed, onSeedChange, onSeedCommit }: S
           <input
             aria-label="Seed to load"
             value={seed}
+            maxLength={maxPuzzleSeedLength}
             onInput={(event) => onSeedChange(event.currentTarget.value)}
             onKeyDown={blurOnEnter}
           />
@@ -99,6 +101,7 @@ export const SeedControl = ({ seed, currentSeed, onSeedChange, onSeedCommit }: S
     <div class="seed-control">
       <input
         value={seed}
+        maxLength={maxPuzzleSeedLength}
         onBlur={(event) => onSeedCommit?.(event.currentTarget.value)}
         onInput={(event) => onSeedChange(event.currentTarget.value)}
         onKeyDown={blurOnEnter}
