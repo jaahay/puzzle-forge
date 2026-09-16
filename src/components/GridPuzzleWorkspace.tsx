@@ -15,6 +15,23 @@ import { WordGuessNewPuzzleControl } from "./WordGuessNewPuzzleControl";
 const getFilledOpenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => !cell.locked && cell.value).length ?? 0;
 const getOpenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => !cell.locked).length ?? 0;
 
+export const getGridPuzzleMetaItems = ({
+  isFutoshiki,
+  isWordGuess,
+  filledOpenCount,
+  openCount,
+  dailyLabel,
+}: {
+  isFutoshiki: boolean;
+  isWordGuess: boolean;
+  filledOpenCount: number;
+  openCount: number;
+  dailyLabel: string | null;
+}) => [
+  ...(isWordGuess ? ["Answer-list solvable"] : []),
+  ...(isFutoshiki ? [`${filledOpenCount}/${openCount} filled`] : dailyLabel ? [`Daily: ${dailyLabel}`] : []),
+];
+
 export const GridPuzzleWorkspace = ({
   selectedDefinition,
   selectedPuzzleIsGeneratable,
@@ -47,6 +64,7 @@ export const GridPuzzleWorkspace = ({
   const filledOpenCount = getFilledOpenCount(gridCells);
   const openCount = getOpenCount(gridCells);
   const dailyLabel = puzzle ? getPuzzleProvenance(puzzle)?.dateStamp ?? null : null;
+  const puzzleMetaItems = getGridPuzzleMetaItems({ isFutoshiki, isWordGuess, filledOpenCount, openCount, dailyLabel });
   const workspaceClass = [
     isNonogram ? "nonogram-workspace" : "",
     isWordGuess ? "word-guess-workspace" : "",
@@ -160,9 +178,7 @@ export const GridPuzzleWorkspace = ({
     >
       {isNonogram ? null : (
         <div class="puzzle-meta">
-          {isFutoshiki ? <span>{puzzle.uniqueSolution ? "Unique" : "Open"}</span> : null}
-          {isWordGuess ? <span>Answer-list solvable</span> : null}
-          {isFutoshiki ? <span>{filledOpenCount}/{openCount} filled</span> : dailyLabel ? <span>Daily: {dailyLabel}</span> : null}
+          {puzzleMetaItems.map((item) => <span key={item}>{item}</span>)}
         </div>
       )}
       {puzzle.puzzleId === "word-guess" && gridCells ? (
