@@ -4,6 +4,45 @@ import { makeRandomSeed, maxPuzzleSeedLength } from "../app/runtime";
 import { InfoIcon, PlayIcon, RandomIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
 import { CurrentSeedDisplay } from "./SeedControl";
 
+type NewPuzzleCommandActionOptions = {
+  disabled: boolean;
+  seedLoadInput: string;
+  closeOptions: (restoreFocus?: boolean) => void;
+  onNewPuzzle: () => void;
+  onToday: () => void;
+  onLoadSeed: () => void;
+  renewSeedCandidate: () => void;
+};
+
+export const createNewPuzzleCommandActions = ({
+  disabled,
+  seedLoadInput,
+  closeOptions,
+  onNewPuzzle,
+  onToday,
+  onLoadSeed,
+  renewSeedCandidate,
+}: NewPuzzleCommandActionOptions) => ({
+  startRandomPuzzle: (restoreMenuFocus = false) => {
+    if (disabled) return;
+    closeOptions(restoreMenuFocus);
+    onNewPuzzle();
+    renewSeedCandidate();
+  },
+  startToday: () => {
+    if (disabled) return;
+    closeOptions(true);
+    onToday();
+    renewSeedCandidate();
+  },
+  loadSeed: () => {
+    if (disabled || !seedLoadInput.trim()) return;
+    closeOptions(true);
+    onLoadSeed();
+    renewSeedCandidate();
+  },
+});
+
 type NewPuzzleCommandProps = {
   puzzleTitle: string;
   currentSeed: string;
@@ -47,6 +86,15 @@ export const NewPuzzleCommand = ({
   };
 
   const renewSeedCandidate = () => onSeedLoadInputChange(makeRandomSeed());
+  const { startRandomPuzzle, startToday, loadSeed } = createNewPuzzleCommandActions({
+    disabled,
+    seedLoadInput,
+    closeOptions,
+    onNewPuzzle,
+    onToday,
+    onLoadSeed,
+    renewSeedCandidate,
+  });
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -70,27 +118,6 @@ export const NewPuzzleCommand = ({
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
-
-  const startRandomPuzzle = (restoreMenuFocus = false) => {
-    if (disabled) return;
-    closeOptions(restoreMenuFocus);
-    onNewPuzzle();
-    renewSeedCandidate();
-  };
-
-  const startToday = () => {
-    if (disabled) return;
-    closeOptions(true);
-    onToday();
-    renewSeedCandidate();
-  };
-
-  const loadSeed = () => {
-    if (disabled || !seedLoadInput.trim()) return;
-    closeOptions(true);
-    onLoadSeed();
-    renewSeedCandidate();
-  };
 
   const panelClass = ["new-puzzle-options-panel", panelClassName].filter(Boolean).join(" ");
 
