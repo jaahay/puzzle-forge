@@ -7,6 +7,7 @@ import type {
 } from "../catalog/types";
 import { getPuzzleImageAsset } from "../games/imageAssets";
 import { normalizeSeed } from "../games/shared";
+import { isDailyDateStamp } from "../games/shared/daily";
 import {
   defaultSolitaireVariation,
   normalizeSolitaireVariation,
@@ -47,7 +48,6 @@ const compactGenerationIdVersion = 1;
 const puzzleDifficulties = ["Easy", "Medium", "Hard", "Expert"] as const satisfies readonly PuzzleDifficulty[];
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
-const dailyDateStampPattern = /^\d{4}-\d{2}-\d{2}$/;
 
 class ByteReader {
   private offset = 0;
@@ -113,27 +113,22 @@ const difficultyIndex = (difficulty: PuzzleDifficulty) => {
 
 const difficultyAt = (index: number) => puzzleDifficulties[index] as PuzzleDifficulty | undefined;
 
-const isLeapYear = (year: number) => year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
-const daysInMonth = (year: number, month: number) => [
-  31,
-  isLeapYear(year) ? 29 : 28,
-  31,
-  30,
-  31,
-  30,
-  31,
-  31,
-  30,
-  31,
-  30,
-  31,
-][month - 1] ?? 0;
+const hasValidDimensions = (puzzleId: PuzzleId, width: number, height: number) => {
+  const definition = getPuzzleDefinition(puzzleId);
+  return Number.isInteger(width) &&
+    Number.isInteger(height) &&
+    width >= definition.minWidth &&
+    width <= definition.maxWidth &&
+    height >= definition.minHeight &&
+    height <= definition.maxHeight;
+};
 
-const parseDailyDateStamp = (dateStamp: string) => {
-  if (!dailyDateStampPattern.test(dateStamp)) return null;
-  const [year, month, day] = dateStamp.split("-").map(Number);
-  if (year < 0 || year > 9999 || month < 1 || month > 12 || day < 1 || day > daysInMonth(year, month)) return null;
-  return { year, month, day };
+const pushDimensions = (bytes: number[], identity: GenerationIdentity) => {
+  if (!hasValidDimensions(identity.puzzleId, identity.width, identity.height)) {
+    throw new Error(`Puzzle dimensions are outside the supported range for ${identity.puzzleId}.`);
+  }
+  pushByte(bytes, identity.width);
+  pushByte(bytes, identity.height);
 };
 
 const pushProvenance = (bytes: number[], provenance: PuzzleProvenance | undefined) => {
@@ -144,9 +139,8 @@ const pushProvenance = (bytes: number[], provenance: PuzzleProvenance | undefine
   if (!isPuzzleProvenance(provenance) || provenance.source !== "daily") {
     throw new Error("Unsupported puzzle provenance.");
   }
-  const date = parseDailyDateStamp(provenance.dateStamp);
-  if (!date) throw new Error("Invalid daily puzzle date.");
-  bytes.push(1, (date.year >>> 8) & 0xff, date.year & 0xff, date.month, date.day);
+  const [year, month, day] = provenance.dateStamp.split("-").map(Number);
+  bytes.push(1, (year >>> 8) & 0xff, year & 0xff, month, day);
 };
 
 const readProvenance = (reader: ByteReader): PuzzleProvenance | undefined => {
@@ -157,7 +151,7 @@ const readProvenance = (reader: ByteReader): PuzzleProvenance | undefined => {
   const month = reader.readByte();
   const day = reader.readByte();
   const dateStamp = `${year.toString().padStart(4, "0")}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
-  if (!parseDailyDateStamp(dateStamp)) throw new Error("Invalid daily puzzle date.");
+  if (!isDailyDateStamp(dateStamp)) throw new Error("Invalid daily puzzle date.");
   return { source: "daily", dateStamp };
 };
 
@@ -171,20 +165,17 @@ const pushPuzzlePayload = (bytes: number[], identity: GenerationIdentity) => {
       return;
     }
     case "nonogram":
-      pushByte(bytes, identity.width);
-      pushByte(bytes, identity.height);
+      pushDimensions(bytes, identity);
       pushByte(bytes, difficultyIndex(identity.difficulty) | (identity.requireUniqueSolution ? 0x04 : 0));
       return;
     case "word-guess":
     case "logic-grid":
-      pushByte(bytes, identity.width);
-      pushByte(bytes, identity.height);
+      pushDimensions(bytes, identity);
       return;
     case "jigsaw":
     case "tile-swap":
     case "sliding-puzzle": {
-      pushByte(bytes, identity.width);
-      pushByte(bytes, identity.height);
+      pushDimensions(bytes, identity);
       pushText(bytes, getPuzzleImageAsset(identity.imageId, identity.puzzleId).id);
       return;
     }
@@ -208,8 +199,7 @@ const pushPuzzlePayload = (bytes: number[], identity: GenerationIdentity) => {
     case "kenken":
     case "minesweeper":
     case "slitherlink":
-      pushByte(bytes, identity.width);
-      pushByte(bytes, identity.height);
+      pushDimensions(bytes, identity);
       pushByte(bytes, difficultyIndex(identity.difficulty) | (identity.requireUniqueSolution ? 0x04 : 0));
       return;
   }
@@ -329,12 +319,7 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
     }
 
     if (!reader.done) return { ok: false, reason: "invalid-identity" };
-    if (
-      width < definition.minWidth ||
-      width > definition.maxWidth ||
-      height < definition.minHeight ||
-      height > definition.maxHeight
-    ) {
+    if (!hasValidDimensions(puzzleId, width, height)) {
       return { ok: false, reason: "invalid-identity" };
     }
 
