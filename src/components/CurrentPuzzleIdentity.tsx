@@ -1,8 +1,14 @@
 import type { ComponentChildren } from "preact";
 import { useEffect, useRef } from "preact/hooks";
+import { getPuzzleProvenance } from "../app/puzzleProvenance";
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { GeneratedPuzzle } from "../catalog/types";
-import { getPuzzleProvenance } from "../app/puzzleProvenance";
+import {
+  normalizeSolitaireVariation,
+  solitaireDrawModeLabels,
+  solitaireRedealLimitLabels,
+  solitaireWasteModeLabels,
+} from "../games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
 import { useLiveLocalDateStamp } from "./NewPuzzleActionVisuals";
 
@@ -71,6 +77,47 @@ export const getCurrentPuzzleIdentity = (
     };
   }
 
+  if (puzzle.puzzleId === "word-guess") {
+    return {
+      puzzleLabel: definition.title,
+      sourceLabel,
+      details: [`${puzzle.width} letters`, `${puzzle.height} guesses`],
+      difficultyLabel: null,
+    };
+  }
+
+  if (puzzle.puzzleId === "futoshiki") {
+    return {
+      puzzleLabel: definition.title,
+      sourceLabel,
+      details: [puzzle.uniqueSolution === false ? "Open" : "Unique"],
+      difficultyLabel,
+    };
+  }
+
+  if (puzzle.kind === "cards" && puzzle.puzzleId === "klondike-solitaire") {
+    const variation = normalizeSolitaireVariation(puzzle.solitaireVariation);
+    return {
+      puzzleLabel: definition.title,
+      sourceLabel,
+      details: [
+        solitaireDrawModeLabels[variation.drawMode],
+        solitaireRedealLimitLabels[String(variation.redeals)],
+        solitaireWasteModeLabels[variation.wasteMode],
+      ],
+      difficultyLabel: null,
+    };
+  }
+
+  if (puzzle.kind === "tiles") {
+    return {
+      puzzleLabel: definition.title,
+      sourceLabel,
+      details: [puzzle.asset.title, `${puzzle.width}×${puzzle.height}`],
+      difficultyLabel: null,
+    };
+  }
+
   return {
     puzzleLabel: definition.title,
     sourceLabel,
@@ -81,6 +128,9 @@ export const getCurrentPuzzleIdentity = (
 
 export const getPuzzleArrivalIdentity = (puzzle: GeneratedPuzzle) => {
   const provenance = getPuzzleProvenance(puzzle);
+  const solitaireVariation = puzzle.kind === "cards"
+    ? normalizeSolitaireVariation(puzzle.solitaireVariation)
+    : null;
   return [
     puzzle.puzzleId,
     puzzle.seed,
@@ -89,6 +139,11 @@ export const getPuzzleArrivalIdentity = (puzzle: GeneratedPuzzle) => {
     puzzle.difficulty ?? "",
     puzzle.uniqueSolution === undefined ? "" : puzzle.uniqueSolution ? "one" : "unchecked",
     puzzle.sudokuVariation ?? "",
+    solitaireVariation?.drawMode ?? "",
+    solitaireVariation?.redeals ?? "",
+    solitaireVariation?.wasteMode ?? "",
+    solitaireVariation?.knownSolvable ? "known-solvable" : "",
+    puzzle.kind === "tiles" ? puzzle.asset.id : "",
     provenance?.source ?? "",
     provenance?.dateStamp ?? "",
   ].join(":");
