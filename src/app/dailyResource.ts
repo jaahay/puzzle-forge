@@ -35,6 +35,12 @@ export type DailyResourceResolution =
 
 const difficulties = ["Easy", "Medium", "Hard", "Expert"] as const satisfies readonly PuzzleDifficulty[];
 const difficultyByQueryValue = new Map(difficulties.map((difficulty) => [difficulty.toLowerCase(), difficulty]));
+const redealLimitByQueryValue = new Map<string, SolitaireRedealLimit>([
+  ["unlimited", "unlimited"],
+  ["3", 3],
+  ["1", 1],
+  ["0", 0],
+]);
 const dailyDatePattern = /^\d{4}-\d{2}-\d{2}$/;
 const sizePattern = /^(\d+)x(\d+)$/;
 const queryKeyOrder = [
@@ -243,8 +249,10 @@ export const canonicalizeDailyResourceQuery = (
 
   if (params.has("image")) {
     if (!isImageBackedPuzzleId(puzzleId)) return { ok: false, reason: "invalid-query" };
+    const imageId = params.get("image") ?? "";
+    if (!imageId) return { ok: false, reason: "invalid-query" };
     try {
-      settings.imageId = getPuzzleImageAsset(params.get("image") ?? undefined, puzzleId).id;
+      settings.imageId = getPuzzleImageAsset(imageId, puzzleId).id;
     } catch {
       return { ok: false, reason: "invalid-query" };
     }
@@ -258,9 +266,8 @@ export const canonicalizeDailyResourceQuery = (
       variation.drawMode = draw === "3" ? "draw-3" : "draw-1";
     }
     if (params.has("redeals")) {
-      const value = params.get("redeals") ?? "";
-      const redeals: SolitaireRedealLimit = value === "unlimited" ? "unlimited" : Number(value) as SolitaireRedealLimit;
-      if (!solitaireRedealLimits.includes(redeals)) return { ok: false, reason: "invalid-query" };
+      const redeals = redealLimitByQueryValue.get(params.get("redeals") ?? "");
+      if (redeals === undefined) return { ok: false, reason: "invalid-query" };
       variation.redeals = redeals;
     }
     if (params.has("waste")) {
