@@ -70,7 +70,7 @@ Owns card stacks, selection, stats, history, stock/waste behavior, moves, and co
 - Sudoku: core + prospective generation + grid interaction;
 - grid puzzles: core + prospective generation + grid interaction;
 - Klondike: core + prospective generation + Solitaire interaction;
-- image-backed immediate workspaces: core + immediate generation.
+- image-backed puzzles: core + prospective generation.
 
 This avoids a universal workspace prop bag becoming an implicit dependency surface.
 
@@ -78,11 +78,13 @@ This avoids a universal workspace prop bag becoming an implicit dependency surfa
 
 - Current puzzle identity comes from the generated puzzle.
 - Prospective settings never masquerade as current-puzzle metadata.
+- Editing prospective settings never mutates or regenerates the current puzzle.
+- New-puzzle creation is explicit: primary `New` creates a random puzzle, while Today and entered Seed are alternate creation identities over the same prospective settings.
 - Presentation strings are not machine-readable state.
 - Late or cancelled worker responses cannot replace the active puzzle.
 - Persisted data is validated at the storage boundary before restore code consumes it.
 - New puzzle types should extend explicit capability boundaries rather than adding puzzle-specific conditionals throughout `App.tsx`.
 
-## Remaining restraint
+## Generation boundary
 
-Some image-backed workspaces still use immediate-generation semantics. Do not collapse that distinction merely to make types or components look uniform; change it only as an intentional product decision.
+All generated puzzle workspaces, including image-backed puzzles, use prospective generation capabilities. Identity-changing settings are edited as next-puzzle drafts and take effect only when a creation action is invoked. The current puzzle remains authoritative until its replacement is explicitly created.
