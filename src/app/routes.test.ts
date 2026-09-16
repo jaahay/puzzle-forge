@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { puzzleResourceAliases } from "./puzzleResourceAliases";
-import { appRoutePath, parseAppRoute, shouldPreserveResourceLocatorPath } from "./routes";
+import {
+  appRoutePath,
+  parseAppRoute,
+  replaceAppRoute,
+  shouldPreserveResourceLocatorPath,
+} from "./routes";
 
 const getAlias = (puzzleId: "sudoku" | "nonogram", alias: string) => {
   const entry = puzzleResourceAliases.find(
@@ -8,6 +13,36 @@ const getAlias = (puzzleId: "sudoku" | "nonogram", alias: string) => {
   );
   if (!entry) throw new Error(`Missing test alias ${puzzleId}/${alias}`);
   return entry;
+};
+
+const withMockBrowserUrl = (
+  pathname: string,
+  search: string,
+  run: (history: { replacements: string[] }) => void,
+) => {
+  const originalWindow = globalThis.window;
+  const replacements: string[] = [];
+
+  Object.defineProperty(globalThis, "window", {
+    configurable: true,
+    value: {
+      location: { pathname, search, hash: "" },
+      history: {
+        replaceState: (_state: unknown, _title: string, url?: string | URL | null) => {
+          if (url !== undefined && url !== null) replacements.push(String(url));
+        },
+      },
+    },
+  });
+
+  try {
+    run({ replacements });
+  } finally {
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: originalWindow,
+    });
+  }
 };
 
 describe("pathname routing", () => {
@@ -142,6 +177,43 @@ describe("pathname routing", () => {
       "?size=10x10&difficulty=hard&unique=false",
       route,
     )).toBe(false);
+  });
+
+  it("canonicalizes Today to the dated Daily browser URL", () => {
+    const route = parseAppRoute("/sudoku/today", "", "2026-09-15");
+    expect(route.kind).toBe("resource");
+    if (route.kind !== "resource") return;
+
+    withMockBrowserUrl("/sudoku/today", "", ({ replacements }) => {
+      replaceAppRoute(route);
+      expect(replacements).toEqual(["/sudoku/daily/2026-09-15"]);
+    });
+  });
+
+  it("normalizes a noncanonical Daily query but preserves an explicit compact canonical URL", () => {
+    const route = parseAppRoute(
+      "/nonogram/daily/2026-09-15",
+      "?unique=false&difficulty=hard&size=10x10",
+    );
+    expect(route.kind).toBe("resource");
+    if (route.kind !== "resource") return;
+
+    withMockBrowserUrl(
+      "/nonogram/daily/2026-09-15",
+      "?unique=false&difficulty=hard&size=10x10",
+      ({ replacements }) => {
+        replaceAppRoute(route);
+        expect(replacements).toEqual([
+          "/nonogram/daily/2026-09-15?size=10x10&difficulty=hard&unique=false",
+        ]);
+      },
+    );
+
+    const canonicalPath = appRoutePath(route);
+    withMockBrowserUrl(canonicalPath, "", ({ replacements }) => {
+      replaceAppRoute(route);
+      expect(replacements).toEqual([]);
+    });
   });
 
   it("preserves unknown paths and over-nested paths as not-found routes", () => {
