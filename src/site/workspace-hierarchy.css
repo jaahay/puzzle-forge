@@ -5,11 +5,16 @@
 }
 
 .workspace-layout-help,
-.sudoku-workspace .workspace-layout-crown,
-.nonogram-workspace .workspace-layout-crown {
+.workspace-layout-crown {
   display: grid;
   min-width: 0;
   justify-items: center;
+}
+
+.workspace-layout-crown {
+  position: relative;
+  z-index: 20;
+  overflow: visible;
 }
 
 .workspace-layout-play-surface {
