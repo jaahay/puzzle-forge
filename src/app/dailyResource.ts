@@ -7,6 +7,7 @@ import type {
   SudokuVariation,
 } from "../catalog/types";
 import { getPuzzleImageAsset, isImageBackedPuzzleId } from "../games/imageAssets";
+import { isDailyDateStamp } from "../games/shared/daily";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import {
   defaultSudokuVariation,
@@ -38,7 +39,6 @@ const redealLimitByQueryValue = new Map<string, SolitaireRedealLimit>([
   ["1", 1],
   ["0", 0],
 ]);
-const dailyDatePattern = /^\d{4}-\d{2}-\d{2}$/;
 const sizePattern = /^(\d+)x(\d+)$/;
 const queryKeyOrder = [
   "size",
@@ -52,27 +52,7 @@ const queryKeyOrder = [
   "solvable",
 ] as const;
 
-const isLeapYear = (year: number) => year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
-const daysInMonth = (year: number, month: number) => [
-  31,
-  isLeapYear(year) ? 29 : 28,
-  31,
-  30,
-  31,
-  30,
-  31,
-  31,
-  30,
-  31,
-  30,
-  31,
-][month - 1] ?? 0;
-
-export const isDailyResourceDate = (dateStamp: string) => {
-  if (!dailyDatePattern.test(dateStamp)) return false;
-  const [year, month, day] = dateStamp.split("-").map(Number);
-  return year >= 0 && year <= 9999 && month >= 1 && month <= 12 && day >= 1 && day <= daysInMonth(year, month);
-};
+export const isDailyResourceDate = isDailyDateStamp;
 
 const makeDefaultRuntimeSettings = (puzzleId: PuzzleId): GenerationRuntimeSettings => {
   const definition = getPuzzleDefinition(puzzleId);
