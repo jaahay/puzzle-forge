@@ -89,4 +89,10 @@ describe("Daily resource semantics", () => {
     expect(resolveDailyResource("nonogram", "2026-09-15", "size=99x99").ok).toBe(false);
     expect(resolveDailyResource("kenken", "2026-09-15").ok).toBe(false);
   });
+
+  it("rejects empty and non-enumerated qualifier values", () => {
+    expect(resolveDailyResource("klondike-solitaire", "2026-09-15", "redeals=").ok).toBe(false);
+    expect(resolveDailyResource("klondike-solitaire", "2026-09-15", "redeals=01").ok).toBe(false);
+    expect(resolveDailyResource("jigsaw", "2026-09-15", "image=").ok).toBe(false);
+  });
 });
