@@ -16,14 +16,12 @@ const encodeBase64UrlBytes = (bytes: Uint8Array) => {
 export const makeRequestId = () => Math.random().toString(36).slice(2);
 
 export const makeRandomSeed = () => {
-  const bytes = new Uint8Array(randomSeedByteLength);
-  if (typeof globalThis.crypto?.getRandomValues === "function") {
-    globalThis.crypto.getRandomValues(bytes);
-  } else {
-    for (let index = 0; index < bytes.length; index += 1) {
-      bytes[index] = Math.floor(Math.random() * 256);
-    }
+  if (typeof globalThis.crypto?.getRandomValues !== "function") {
+    throw new Error("Secure random puzzle seed generation is unavailable in this environment.");
   }
+
+  const bytes = new Uint8Array(randomSeedByteLength);
+  globalThis.crypto.getRandomValues(bytes);
   return encodeBase64UrlBytes(bytes);
 };
 
