@@ -3,14 +3,14 @@ import { getPuzzleProvenance } from "../app/puzzleProvenance";
 import { getBoardViewportNaturalWidth } from "./BoardViewport";
 import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
 import { FutoshikiBoard } from "./FutoshikiBoard";
+import { FutoshikiNewPuzzleControl } from "./FutoshikiNewPuzzleControl";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
 import { NonogramNewPuzzleControl } from "./NonogramNewPuzzleControl";
 import { PuzzleHistoryActions } from "./PuzzleHistoryActions";
-import { BottomPuzzleConfiguration, TopPuzzleConfiguration } from "./PuzzleConfiguration";
 import type { GridPuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
-import { SeedControl } from "./SeedControl";
 import { WordGuessGame } from "./WordGuessGame";
+import { WordGuessNewPuzzleControl } from "./WordGuessNewPuzzleControl";
 
 const getFilledOpenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => !cell.locked && cell.value).length ?? 0;
 const getOpenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => !cell.locked).length ?? 0;
@@ -18,7 +18,6 @@ const getOpenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => !ce
 export const GridPuzzleWorkspace = ({
   selectedDefinition,
   selectedPuzzleIsGeneratable,
-  seed,
   puzzle,
   nextPuzzleDraft,
   seedLoadInput,
@@ -45,7 +44,6 @@ export const GridPuzzleWorkspace = ({
   const isWordGuess = selectedDefinition.id === "word-guess";
   const isFutoshiki = selectedDefinition.id === "futoshiki";
   const usesDedicatedStatus = isNonogram || isWordGuess || isFutoshiki;
-  const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
   const filledOpenCount = getFilledOpenCount(gridCells);
   const openCount = getOpenCount(gridCells);
   const dailyLabel = puzzle ? getPuzzleProvenance(puzzle)?.dateStamp ?? null : null;
@@ -54,17 +52,17 @@ export const GridPuzzleWorkspace = ({
     isWordGuess ? "word-guess-workspace" : "",
     isFutoshiki ? "futoshiki-workspace" : "",
   ].filter(Boolean).join(" ");
-  const seedInput = <SeedControl currentSeed={puzzle?.seed ?? seed} seed={seedLoadInput} onSeedChange={onSeedLoadInputChange} />;
   const nonogramRowClueSlots = puzzle?.kind === "grid" && isNonogram
     ? Math.max(1, ...(puzzle.clues?.rows ?? []).map((clue) => clue.length))
     : 1;
   const playColumnMax = puzzle?.kind === "grid" && isNonogram
     ? getBoardViewportNaturalWidth({ kind: "nonogram", columns: puzzle.width, rowClueSlots: nonogramRowClueSlots })
     : undefined;
-  const puzzleArrivalIdentity = puzzle && isNonogram ? getPuzzleArrivalIdentity(puzzle) : null;
+  const hasCrown = Boolean(puzzle && (isNonogram || isWordGuess || isFutoshiki));
+  const puzzleArrivalIdentity = hasCrown && puzzle ? getPuzzleArrivalIdentity(puzzle) : null;
   const isPuzzleArriving = usePuzzleArrival(puzzleArrivalIdentity);
 
-  const newPuzzleControl = puzzle && isNonogram ? (
+  const newPuzzleControl = !puzzle ? null : isNonogram ? (
     <NonogramNewPuzzleControl
       currentSeed={puzzle.seed}
       difficulty={nextPuzzleDraft.difficulty}
@@ -86,7 +84,38 @@ export const GridPuzzleWorkspace = ({
       onToday={onToday}
       onLoadSeed={onLoadSeed}
     />
+  ) : isWordGuess ? (
+    <WordGuessNewPuzzleControl
+      currentSeed={puzzle.seed}
+      width={nextPuzzleDraft.width}
+      height={nextPuzzleDraft.height}
+      minWidth={selectedDefinition.minWidth}
+      maxWidth={selectedDefinition.maxWidth}
+      minHeight={selectedDefinition.minHeight}
+      maxHeight={selectedDefinition.maxHeight}
+      seedLoadInput={seedLoadInput}
+      disabled={isGenerating || !selectedPuzzleIsGeneratable}
+      onWidthChange={(width) => onNextPuzzleDraftChange({ width })}
+      onHeightChange={(height) => onNextPuzzleDraftChange({ height })}
+      onSeedLoadInputChange={onSeedLoadInputChange}
+      onNewPuzzle={onNewPuzzle}
+      onToday={onToday}
+      onLoadSeed={onLoadSeed}
+    />
+  ) : isFutoshiki ? (
+    <FutoshikiNewPuzzleControl
+      currentSeed={puzzle.seed}
+      difficulty={nextPuzzleDraft.difficulty}
+      seedLoadInput={seedLoadInput}
+      disabled={isGenerating || !selectedPuzzleIsGeneratable}
+      onDifficultyChange={(difficulty) => onNextPuzzleDraftChange({ difficulty })}
+      onSeedLoadInputChange={onSeedLoadInputChange}
+      onNewPuzzle={onNewPuzzle}
+      onToday={onToday}
+      onLoadSeed={onLoadSeed}
+    />
   ) : null;
+
   const historyActions = puzzle && isNonogram ? (
     <PuzzleHistoryActions
       canUndo={canUndoGrid}
@@ -96,7 +125,8 @@ export const GridPuzzleWorkspace = ({
       onRedo={onRedoGrid}
     />
   ) : null;
-  const currentPuzzleCrown = puzzle && isNonogram ? (
+
+  const currentPuzzleCrown = puzzle && hasCrown ? (
     <CurrentPuzzleHeader
       key={puzzleArrivalIdentity ?? undefined}
       puzzle={puzzle}
@@ -104,57 +134,7 @@ export const GridPuzzleWorkspace = ({
       newPuzzleControl={newPuzzleControl}
       isArriving={isPuzzleArriving}
     />
-  ) : newPuzzleControl;
-
-  const generation = !puzzle || isNonogram ? null : isWordGuess ? (
-    <BottomPuzzleConfiguration
-      kind="word-guess"
-      selectedDefinition={selectedDefinition}
-      selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
-      seedInput={seedInput}
-      width={nextPuzzleDraft.width}
-      height={nextPuzzleDraft.height}
-      isGenerating={isGenerating}
-      onWidthChange={(width) => onNextPuzzleDraftChange({ width })}
-      onHeightChange={(height) => onNextPuzzleDraftChange({ height })}
-      onSettingsCommit={onNextPuzzleDraftChange}
-      onToday={onToday}
-      onUseSeed={onLoadSeed}
-      onRandomize={onNewPuzzle}
-      onReset={onReset}
-    />
-  ) : isFutoshiki ? (
-    <BottomPuzzleConfiguration
-      kind="futoshiki"
-      selectedDefinition={selectedDefinition}
-      selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
-      seedInput={seedInput}
-      difficulty={nextPuzzleDraft.difficulty}
-      isGenerating={isGenerating}
-      onDifficultyChange={(difficulty) => onNextPuzzleDraftChange({ difficulty })}
-      onToday={onToday}
-      onUseSeed={onLoadSeed}
-      onRandomize={onNewPuzzle}
-      onReset={onReset}
-    />
-  ) : (
-    <TopPuzzleConfiguration
-      selectedDefinition={selectedDefinition}
-      selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
-      seedInput={seedInput}
-      width={nextPuzzleDraft.width}
-      height={nextPuzzleDraft.height}
-      isFixedSize={isFixedSize}
-      isGenerating={isGenerating}
-      onWidthChange={(width) => onNextPuzzleDraftChange({ width })}
-      onHeightChange={(height) => onNextPuzzleDraftChange({ height })}
-      onSettingsCommit={onNextPuzzleDraftChange}
-      onToday={onToday}
-      onUseSeed={onLoadSeed}
-      onRandomize={onNewPuzzle}
-      onReset={onReset}
-    />
-  );
+  ) : null;
 
   const status = usesDedicatedStatus ? null : <p class="status-line" aria-live="polite">{statusMessage}</p>;
   const validation = isNonogram && gridCheckFeedbackTone ? (
@@ -174,21 +154,26 @@ export const GridPuzzleWorkspace = ({
 
   const board = puzzle?.kind === "grid" ? (
     <section
-      key={isNonogram ? puzzleArrivalIdentity ?? undefined : undefined}
-      class={`puzzle-panel${isNonogram && isPuzzleArriving ? " puzzle-arrival" : ""}`}
+      key={puzzleArrivalIdentity ?? undefined}
+      class={`puzzle-panel${hasCrown && isPuzzleArriving ? " puzzle-arrival" : ""}`}
       aria-label="Generated puzzle preview"
     >
       {isNonogram ? null : (
         <div class="puzzle-meta">
-          <span>{`${puzzle.width} x ${puzzle.height}`}</span>
-          {puzzle.difficulty ? <span>{puzzle.difficulty}</span> : null}
           {isFutoshiki ? <span>{puzzle.uniqueSolution ? "Unique" : "Open"}</span> : null}
           {isWordGuess ? <span>Answer-list solvable</span> : null}
           {isFutoshiki ? <span>{filledOpenCount}/{openCount} filled</span> : dailyLabel ? <span>Daily: {dailyLabel}</span> : null}
         </div>
       )}
       {puzzle.puzzleId === "word-guess" && gridCells ? (
-        <WordGuessGame puzzle={puzzle} cells={gridCells} statusMessage={statusMessage} onCellInput={onCellInput} onSubmitGuess={onCheck} />
+        <WordGuessGame
+          puzzle={puzzle}
+          cells={gridCells}
+          statusMessage={statusMessage}
+          onCellInput={onCellInput}
+          onSubmitGuess={onCheck}
+          onReset={onReset}
+        />
       ) : puzzle.puzzleId === "futoshiki" && gridCells ? (
         <FutoshikiBoard puzzle={puzzle} cells={gridCells} selectedGridCell={selectedGridCell} onCellClick={onCellClick} onCellInput={onCellInput} />
       ) : gridCells ? (
@@ -204,7 +189,7 @@ export const GridPuzzleWorkspace = ({
     <div class="gameplay-control-stack">
       <div class={`puzzle-actions ${isNonogram ? "nonogram-current-actions" : ""}`.trim()}>
         <button type="button" onClick={onCheck}>Check</button>
-        {isNonogram ? <button type="button" onClick={onReset} disabled={isGenerating}>Reset</button> : null}
+        {isNonogram || isFutoshiki ? <button type="button" onClick={onReset} disabled={isGenerating}>Reset</button> : null}
       </div>
       {validation}
     </div>
@@ -217,7 +202,6 @@ export const GridPuzzleWorkspace = ({
       status={status}
       board={board}
       gameplay={gameplay}
-      generation={generation}
       playColumnMax={playColumnMax}
     />
   );
