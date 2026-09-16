@@ -39,6 +39,15 @@
   justify-self: center;
 }
 
+/* The crown owns stable image identity; preview summaries stay focused on
+   progress or completion state rather than repeating artwork and dimensions. */
+.jigsaw-workspace .tile-puzzle-summary > span:nth-child(2),
+.jigsaw-workspace .tile-puzzle-summary > span:nth-child(3),
+.image-tile-workspace .image-tile-summary > span:nth-child(2),
+.image-tile-workspace .image-tile-summary > span:nth-child(3) {
+  display: none;
+}
+
 /* The crown is a stable, transparent current-puzzle band. Association with the
    board comes from shared width and proximity rather than enclosing chrome. */
 .current-puzzle-header {
