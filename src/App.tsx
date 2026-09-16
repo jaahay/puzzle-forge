@@ -516,8 +516,6 @@ export const App = () => {
     saveCurrentSession();
   }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, selectedPuzzleId, puzzle, solitaire.cardStacks, solitaire.selectedCard, solitaire.solitaireStats, solitaire.solitaireUndoStack, solitaire.solitaireRedoStack, grid.gridCells, grid.selectedGridCell, grid.gridHistory, statusMessage]);
 
-  const generate = () => beginGeneration({}, { preserveScroll: true, resourceHistory: "push" });
-
   const resetCurrentPuzzle = () => {
     if (!puzzle) return;
     rememberScrollPosition();
@@ -587,11 +585,6 @@ export const App = () => {
     });
   };
 
-  const commitRememberedGenerationSettings = (settings: GenerationSettings = {}) => {
-    updateNextPuzzleDraft(settings);
-    commitGenerationSettings(settings);
-  };
-
   const handleCheck = () => { if (!puzzle) return; puzzle.kind === "cards" ? solitaire.checkSolitaire() : grid.checkGrid(puzzle, setStatusMessage); };
   const workspaceIsGenerating = generation.isGenerating || (!puzzle && selectedPuzzleIsGeneratable && !isHomeSelected && !puzzleLinkError);
   const workspaceCore = {
@@ -637,17 +630,6 @@ export const App = () => {
     onCardDoubleClick: solitaire.moveSingleCardToFoundation,
     onStackClick: solitaire.handleStackClick,
   };
-  const workspaceImmediate = {
-    width,
-    height,
-    onSeedChange: (nextSeed: string) => updateGenerationDefaults({ seed: nextSeed }),
-    onWidthChange: (nextWidth: number) => updateGenerationDefaults({ width: nextWidth }),
-    onHeightChange: (nextHeight: number) => updateGenerationDefaults({ height: nextHeight }),
-    onSettingsCommit: commitRememberedGenerationSettings,
-    onGenerate: generate,
-    onToday: loadToday,
-    onRandomize: generateNextPuzzle,
-  };
 
   const puzzleNavigation = activeView === "catalog" ? <PuzzleCatalog isCollapsed={isCatalogCollapsed} isHomeSelected={isHomeSelected || !hasSelectedPuzzle} selectedPuzzleId={selectedPuzzleId} onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)} onHomeSelect={() => selectHome()} onSelectPuzzle={(puzzleId) => selectPuzzle(puzzleId)} /> : null;
 
@@ -671,7 +653,6 @@ export const App = () => {
             prospective={workspaceProspective}
             grid={workspaceGrid}
             solitaire={workspaceSolitaire}
-            immediate={workspaceImmediate}
           />
         )}
       </section>
