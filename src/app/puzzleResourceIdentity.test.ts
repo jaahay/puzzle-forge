@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { getPuzzleAvailability } from "../catalog/puzzleAvailability";
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
-import { getPuzzleImageAsset, isImageBackedPuzzleId } from "../games/imageAssets";
+import {
+  getPuzzleImageAsset,
+  getPuzzleImageAssetsFor,
+  isImageBackedPuzzleId,
+} from "../games/imageAssets";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation } from "../games/sudoku/variation";
 import type { GenerationIdentity } from "./generationIdentity";
@@ -20,6 +24,12 @@ const makeIdentity = (overrides: Partial<GenerationIdentity> = {}): GenerationId
   ...overrides,
 });
 
+const alternateDimension = (value: number, minimum: number, maximum: number) => {
+  if (value < maximum) return value + 1;
+  if (value > minimum) return value - 1;
+  return value;
+};
+
 describe("canonical puzzle generation identity", () => {
   it("uses a compact self-contained id for ordinary generated puzzles", () => {
     const seed = makeRandomSeed();
@@ -37,21 +47,28 @@ describe("canonical puzzle generation identity", () => {
     expect(decoded.identity.sudokuVariation).toBe(defaultSudokuVariation);
   });
 
-  it("round-trips the material identity of every currently generatable puzzle family", () => {
+  it("round-trips non-default material fields for every currently generatable puzzle family", () => {
     const { generatablePuzzles } = getPuzzleAvailability();
 
     for (const definition of generatablePuzzles) {
+      const width = alternateDimension(definition.defaultWidth, definition.minWidth, definition.maxWidth);
+      const height = alternateDimension(definition.defaultHeight, definition.minHeight, definition.maxHeight);
+      const imageId = isImageBackedPuzzleId(definition.id)
+        ? (getPuzzleImageAssetsFor(definition.id)[1] ?? getPuzzleImageAsset(undefined, definition.id)).id
+        : undefined;
+      const solitaireVariation = definition.id === "klondike-solitaire"
+        ? { drawMode: "draw-3" as const, redeals: 1 as const, wasteMode: "relaxed" as const, knownSolvable: true }
+        : defaultSolitaireVariation;
       const identity = makeIdentity({
         puzzleId: definition.id,
         seed: "round-trip-seed",
-        width: definition.defaultWidth,
-        height: definition.defaultHeight,
-        difficulty: "Hard",
+        width,
+        height,
+        difficulty: "Expert",
         requireUniqueSolution: false,
-        sudokuVariation: definition.id === "sudoku" ? "diagonal" : defaultSudokuVariation,
-        imageId: isImageBackedPuzzleId(definition.id)
-          ? getPuzzleImageAsset(undefined, definition.id).id
-          : undefined,
+        sudokuVariation: definition.id === "sudoku" ? "zero-killer" : defaultSudokuVariation,
+        solitaireVariation,
+        imageId,
       });
       const generationId = encodeGenerationId(identity);
       const decoded = decodeGenerationId(definition.id, generationId);
@@ -61,10 +78,41 @@ describe("canonical puzzle generation identity", () => {
       expect(decoded.identity.puzzleId).toBe(definition.id);
       expect(decoded.identity.seed).toBe("round-trip-seed");
       expect(encodeGenerationId(decoded.identity)).toBe(generationId);
+
+      switch (definition.id) {
+        case "sudoku":
+          expect(decoded.identity).toMatchObject({ difficulty: "Expert", sudokuVariation: "zero-killer" });
+          break;
+        case "nonogram":
+          expect(decoded.identity).toMatchObject({ width, height, difficulty: "Expert", requireUniqueSolution: false });
+          break;
+        case "word-guess":
+        case "logic-grid":
+          expect(decoded.identity).toMatchObject({ width, height });
+          break;
+        case "jigsaw":
+        case "tile-swap":
+        case "sliding-puzzle":
+          expect(decoded.identity).toMatchObject({ width, height, imageId });
+          break;
+        case "klondike-solitaire":
+          expect(decoded.identity.solitaireVariation).toEqual(solitaireVariation);
+          break;
+        case "futoshiki":
+          expect(decoded.identity.difficulty).toBe("Expert");
+          break;
+        case "peg-solitaire":
+          break;
+        case "kenken":
+        case "minesweeper":
+        case "slitherlink":
+          expect(decoded.identity).toMatchObject({ width, height, difficulty: "Expert", requireUniqueSolution: false });
+          break;
+      }
     }
   });
 
-  it("round-trips compact daily provenance without imposing a human-facing locator syntax", () => {
+  it("round-trips compact Daily provenance", () => {
     const provenance = { source: "daily" as const, dateStamp: "2026-09-11" };
     const generationId = encodeGenerationId(makeIdentity({ provenance }));
     const decoded = decodeGenerationId("sudoku", generationId);
@@ -73,6 +121,12 @@ describe("canonical puzzle generation identity", () => {
     if (!decoded.ok) return;
     expect(decoded.identity.provenance).toEqual(provenance);
     expect(decoded.identity.seed).toBe("resource-seed");
+  });
+
+  it("rejects invalid Daily provenance dates at the canonical identity boundary", () => {
+    expect(() => encodeGenerationId(makeIdentity({
+      provenance: { source: "daily", dateStamp: "2026-02-29" },
+    }))).toThrow();
   });
 
   it("does not fork a Nonogram resource id for settings its generator ignores", () => {
@@ -95,6 +149,15 @@ describe("canonical puzzle generation identity", () => {
     expect(irrelevantChanges).toBe(generationId);
     expect(encodeGenerationId({ ...identity, requireUniqueSolution: true })).not.toBe(generationId);
     expect(encodeGenerationId({ ...identity, difficulty: "Hard" })).not.toBe(generationId);
+  });
+
+  it("rejects out-of-range material dimensions before emitting a canonical id", () => {
+    const definition = getPuzzleDefinition("nonogram");
+    expect(() => encodeGenerationId(makeIdentity({
+      puzzleId: "nonogram",
+      width: definition.maxWidth + 1,
+      height: definition.defaultHeight,
+    }))).toThrow("Puzzle dimensions are outside the supported range for nonogram.");
   });
 
   it("canonicalizes implicit and explicit default artwork to the same image resource id", () => {
