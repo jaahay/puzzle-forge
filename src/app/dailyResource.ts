@@ -7,10 +7,7 @@ import type {
   SudokuVariation,
 } from "../catalog/types";
 import { getPuzzleImageAsset, isImageBackedPuzzleId } from "../games/imageAssets";
-import {
-  defaultSolitaireVariation,
-  solitaireRedealLimits,
-} from "../games/solitaire/variation";
+import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import {
   defaultSudokuVariation,
   sudokuVariations,
