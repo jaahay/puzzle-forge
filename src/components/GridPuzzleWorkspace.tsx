@@ -29,7 +29,11 @@ export const getGridPuzzleMetaItems = ({
   dailyLabel: string | null;
 }) => [
   ...(isWordGuess ? ["Answer-list solvable"] : []),
-  ...(isFutoshiki ? [`${filledOpenCount}/${openCount} filled`] : dailyLabel ? [`Daily: ${dailyLabel}`] : []),
+  ...(isFutoshiki
+    ? [`${filledOpenCount}/${openCount} filled`]
+    : !isWordGuess && dailyLabel
+      ? [`Daily: ${dailyLabel}`]
+      : []),
 ];
 
 export const GridPuzzleWorkspace = ({
