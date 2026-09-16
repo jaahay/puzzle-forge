@@ -174,7 +174,7 @@ History semantics:
 
 - initial automatic materialization from `/<puzzle-type>` normally uses `history.replaceState`, so the transient entry surface does not become a useless Back destination;
 - an explicit action that chooses another concrete puzzle, such as New, Today, or loading a different seed, normally uses `history.pushState`, so Back can return to the previous puzzle resource;
-- refreshing any accepted stable locator regenerates the same canonical resource before compatible local progress is overlaid.
+- refreshing any accepted stable locator regenerates the same canonical resource before local progress with a matching baseline fingerprint is overlaid.
 
 ## Session persistence
 
@@ -196,7 +196,7 @@ Resource restoration is:
 2. decode the canonical compact generation id;
 3. regenerate the immutable puzzle baseline;
 4. compare its checksum/fingerprint with persisted session metadata;
-5. overlay mutable progress only when compatible.
+5. overlay mutable progress only when the fingerprint matches.
 
 The generated baseline itself is not duplicated in storage when it can be regenerated from canonical identity.
 
@@ -211,22 +211,6 @@ Puzzle Forge retains at most **8 persisted resource sessions globally**, includi
 - Pruning removes an entire inactive session rather than truncating Undo/Redo or other progress.
 - Successful pruning removes both session payload and metadata reference.
 - A pruned resource URL remains valid and regenerates the pristine baseline; only that device's former mutable progress is absent.
-
-## Transition from pre-compact IDs
-
-The compact wire format is an intentional clean break from the earlier JSON-then-Base64URL representation.
-
-Pre-compact generation ids are not accepted by the canonical decoder. Existing long-form URLs therefore do not remain compatibility aliases, and persisted sessions keyed by those identifiers fail current resource validation and are not restored. The project is young enough that preserving a permanent legacy codec would add more architectural cost than product value.
-
-Curated aliases are updated to target the new compact canonical ids, so the stable human-facing alias contract survives the wire-format change.
-
-If preserving an old generation scheme becomes valuable in the future, that decision should be made explicitly rather than inferred from permissive decoding.
-
-## Generator evolution
-
-The compact token's version byte versions the **wire representation**. It does not by itself promise that generator algorithms remain byte-for-byte or puzzle-for-puzzle compatible forever.
-
-Puzzle Forge still does not guarantee indefinite historical generator compatibility. If generator compatibility later becomes a product requirement, the identity model can add an explicit generator/version discriminator and retain the corresponding generation semantics deliberately.
 
 ## Separation of concerns
 
