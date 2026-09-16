@@ -90,7 +90,7 @@ export const getCurrentPuzzleIdentity = (
     return {
       puzzleLabel: definition.title,
       sourceLabel,
-      details: [puzzle.uniqueSolution === false ? "Open" : "Unique"],
+      details: [],
       difficultyLabel,
     };
   }
