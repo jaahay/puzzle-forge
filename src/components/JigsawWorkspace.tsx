@@ -1,151 +1,96 @@
-import { useEffect, useState } from "preact/hooks";
-import type { JigsawImageAsset, PuzzleDifficulty } from "../catalog/types";
-import { getPuzzleProvenance } from "../app/puzzleProvenance";
-import {
-  getJigsawDifficultyForDimensions,
-  jigsawDifficultyOrder,
-  resolveJigsawDifficultyDimensions,
-} from "../games/jigsaw/difficulty";
-import { ArtworkAlbum } from "./ArtworkAlbum";
-import { ImmediateTopPuzzleConfiguration } from "./PuzzleConfiguration";
-import type { ImmediateImageWorkspaceProps } from "./PuzzleWorkspace.types";
+import { useState } from "preact/hooks";
+import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
+import { JigsawNewPuzzleControl } from "./JigsawNewPuzzleControl";
+import type { ImageWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
-import { SeedControl } from "./SeedControl";
 import { TilePuzzlePreview } from "./TilePuzzlePreview";
-
-export const jigsawCustomPreset = "Custom" as const;
-export type JigsawPresetSelection = PuzzleDifficulty | typeof jigsawCustomPreset;
-
-export const makeJigsawImageSelectionSettings = (
-  asset: JigsawImageAsset,
-  preset: JigsawPresetSelection,
-) => {
-  if (preset === jigsawCustomPreset) {
-    return { imageId: asset.id };
-  }
-
-  const dimensions = resolveJigsawDifficultyDimensions(asset, preset);
-  return {
-    imageId: asset.id,
-    width: dimensions.width,
-    height: dimensions.height,
-  };
-};
 
 export const JigsawWorkspace = ({
   selectedDefinition,
   selectedPuzzleIsGeneratable,
-  seed,
-  width,
-  height,
   puzzle,
+  nextPuzzleDraft,
+  seedLoadInput,
   statusMessage,
   isGenerating,
-  onSeedChange,
-  onWidthChange,
-  onHeightChange,
-  onSettingsCommit,
-  onGenerate,
-  onToday,
-  onRandomize,
   onReset,
-}: ImmediateImageWorkspaceProps) => {
+  onNextPuzzleDraftChange,
+  onSeedLoadInputChange,
+  onNewPuzzle,
+  onToday,
+  onLoadSeed,
+}: ImageWorkspaceProps) => {
   const [resetVersion, setResetVersion] = useState(0);
   const jigsawPuzzle = puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw" ? puzzle : null;
-  const initialPreset: JigsawPresetSelection = jigsawPuzzle
-    ? getJigsawDifficultyForDimensions(jigsawPuzzle.asset, jigsawPuzzle.width, jigsawPuzzle.height) ?? jigsawCustomPreset
-    : jigsawCustomPreset;
-  const [selectedPreset, setSelectedPreset] = useState<JigsawPresetSelection>(initialPreset);
-  const isFixedSize = selectedDefinition.minWidth === selectedDefinition.maxWidth && selectedDefinition.minHeight === selectedDefinition.maxHeight;
-  const dailyLabel = jigsawPuzzle ? getPuzzleProvenance(jigsawPuzzle)?.dateStamp ?? null : null;
-
-  useEffect(() => {
-    if (!jigsawPuzzle) return;
-    setSelectedPreset(getJigsawDifficultyForDimensions(jigsawPuzzle.asset, jigsawPuzzle.width, jigsawPuzzle.height) ?? jigsawCustomPreset);
-  }, [jigsawPuzzle?.id, jigsawPuzzle?.asset.id, jigsawPuzzle?.width, jigsawPuzzle?.height]);
+  const puzzleArrivalIdentity = jigsawPuzzle ? getPuzzleArrivalIdentity(jigsawPuzzle) : null;
+  const isPuzzleArriving = usePuzzleArrival(puzzleArrivalIdentity);
 
   const resetJigsaw = () => {
     onReset();
     setResetVersion((current) => current + 1);
   };
-  const selectCustomWidth = (nextWidth: number) => {
-    setSelectedPreset(jigsawCustomPreset);
-    onWidthChange(nextWidth);
-  };
-  const selectCustomHeight = (nextHeight: number) => {
-    setSelectedPreset(jigsawCustomPreset);
-    onHeightChange(nextHeight);
-  };
-  const commitCustomDimensions = (settings?: { width?: number; height?: number }) => {
-    setSelectedPreset(jigsawCustomPreset);
-    onSettingsCommit(settings);
-  };
-  const seedInput = <SeedControl seed={seed} onSeedChange={onSeedChange} onSeedCommit={(nextSeed) => onSettingsCommit({ seed: nextSeed })} />;
 
-  const generation = jigsawPuzzle ? (
-    <div class="jigsaw-generation-stack">
-      <div class="jigsaw-difficulty-settings" role="group" aria-label="Jigsaw difficulty">
-        <div class="jigsaw-difficulty-heading">
-          <strong>Difficulty</strong>
-          <span>{selectedPreset} · {width} x {height}</span>
-        </div>
-        <div class="jigsaw-difficulty-options">
-          {jigsawDifficultyOrder.map((difficulty) => {
-            const dimensions = resolveJigsawDifficultyDimensions(jigsawPuzzle.asset, difficulty);
-            return (
-              <button
-                type="button"
-                class="jigsaw-difficulty-option"
-                aria-pressed={selectedPreset === difficulty}
-                disabled={isGenerating}
-                onClick={() => {
-                  setSelectedPreset(difficulty);
-                  onSettingsCommit({ width: dimensions.width, height: dimensions.height });
-                }}
-                key={difficulty}
-              >
-                <strong>{difficulty}</strong>
-                <span>{dimensions.width} x {dimensions.height} · {dimensions.pieceCount}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <ImmediateTopPuzzleConfiguration
-        selectedDefinition={selectedDefinition}
-        selectedPuzzleIsGeneratable={selectedPuzzleIsGeneratable}
-        seedInput={seedInput}
-        width={width}
-        height={height}
-        isFixedSize={isFixedSize}
-        isGenerating={isGenerating}
-        onWidthChange={selectCustomWidth}
-        onHeightChange={selectCustomHeight}
-        onSettingsCommit={commitCustomDimensions}
-        onToday={onToday}
-        onUseSeed={onGenerate}
-        onRandomize={onRandomize}
-        onReset={resetJigsaw}
-      />
-    </div>
+  const newPuzzleControl = jigsawPuzzle ? (
+    <JigsawNewPuzzleControl
+      currentSeed={jigsawPuzzle.seed}
+      imageId={nextPuzzleDraft.imageId}
+      width={nextPuzzleDraft.width}
+      height={nextPuzzleDraft.height}
+      minWidth={selectedDefinition.minWidth}
+      maxWidth={selectedDefinition.maxWidth}
+      minHeight={selectedDefinition.minHeight}
+      maxHeight={selectedDefinition.maxHeight}
+      seedLoadInput={seedLoadInput}
+      disabled={isGenerating || !selectedPuzzleIsGeneratable}
+      onSettingsChange={onNextPuzzleDraftChange}
+      onSeedLoadInputChange={onSeedLoadInputChange}
+      onNewPuzzle={onNewPuzzle}
+      onToday={onToday}
+      onLoadSeed={onLoadSeed}
+    />
+  ) : null;
+  const crown = jigsawPuzzle ? (
+    <CurrentPuzzleHeader
+      key={puzzleArrivalIdentity ?? undefined}
+      puzzle={jigsawPuzzle}
+      newPuzzleControl={newPuzzleControl}
+      isArriving={isPuzzleArriving}
+    />
   ) : null;
 
-  const loadingBoard = <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label="Jigsaw is generating"><div class="puzzle-loading-copy"><strong>Generating Jigsaw</strong><span>{statusMessage}</span></div><div class="puzzle-loading-grid" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <span key={index} />)}</div></section>;
+  const loadingBoard = (
+    <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label="Jigsaw is generating">
+      <div class="puzzle-loading-copy"><strong>Generating Jigsaw</strong><span>{statusMessage}</span></div>
+      <div class="puzzle-loading-grid" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <span key={index} />)}</div>
+    </section>
+  );
   const board = jigsawPuzzle ? (
-    <section class="puzzle-panel jigsaw-puzzle-panel" aria-label="Generated Jigsaw puzzle">
-      <ArtworkAlbum
-        puzzleId="jigsaw"
-        puzzleTitle={selectedDefinition.title}
-        selectedAsset={jigsawPuzzle.asset}
-        disabled={isGenerating}
-        onSelectAsset={(asset) => onSettingsCommit(makeJigsawImageSelectionSettings(asset, selectedPreset))}
-      />
-      <div class="puzzle-meta"><span>{`${jigsawPuzzle.width} x ${jigsawPuzzle.height}`}</span>{dailyLabel ? <span>Daily: {dailyLabel}</span> : null}</div>
+    <section
+      key={puzzleArrivalIdentity ?? undefined}
+      class={`puzzle-panel jigsaw-puzzle-panel${isPuzzleArriving ? " puzzle-arrival" : ""}`}
+      aria-label="Generated Jigsaw puzzle"
+    >
       <TilePuzzlePreview puzzle={jigsawPuzzle} resetVersion={resetVersion} />
-      {jigsawPuzzle.notes.length === 0 ? null : <ul class="notes-list">{jigsawPuzzle.notes.map((note) => <li key={note}>{note}</li>)}</ul>}
+      {jigsawPuzzle.notes.length === 0 ? null : (
+        <ul class="notes-list">{jigsawPuzzle.notes.map((note) => <li key={note}>{note}</li>)}</ul>
+      )}
     </section>
   ) : isGenerating ? loadingBoard : null;
 
-  return <PuzzleWorkspaceLayout className="jigsaw-workspace" status={<p class="status-line" aria-live="polite">{statusMessage}</p>} board={board} generation={generation} enableImmersive />;
+  const gameplay = jigsawPuzzle ? (
+    <div class="puzzle-actions">
+      <button type="button" onClick={resetJigsaw} disabled={isGenerating}>Reset</button>
+    </div>
+  ) : null;
+
+  return (
+    <PuzzleWorkspaceLayout
+      className="jigsaw-workspace"
+      crown={crown}
+      status={<p class="status-line" aria-live="polite">{statusMessage}</p>}
+      board={board}
+      gameplay={gameplay}
+      enableImmersive
+    />
+  );
 };
