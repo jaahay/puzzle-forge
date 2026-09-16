@@ -54,27 +54,14 @@ export type SolitaireInteractionProps = {
   onStackClick: (stack: CardStack) => void;
 };
 
-export type ImmediateGenerationProps = {
-  width: number;
-  height: number;
-  onSeedChange: (seed: string) => void;
-  onWidthChange: (width: number) => void;
-  onHeightChange: (height: number) => void;
-  onSettingsCommit: (settings?: GenerationSettings) => void;
-  onGenerate: () => void;
-  onToday: () => void;
-  onRandomize: () => void;
-};
-
 export type SudokuWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps & GridInteractionProps;
 export type GridPuzzleWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps & GridInteractionProps;
 export type SolitaireWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps & SolitaireInteractionProps;
-export type ImmediateImageWorkspaceProps = CoreWorkspaceProps & ImmediateGenerationProps;
+export type ImageWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps;
 
 export type PuzzleWorkspaceProps = {
   core: CoreWorkspaceProps;
   prospective: ProspectiveGenerationProps;
   grid: GridInteractionProps;
   solitaire: SolitaireInteractionProps;
-  immediate: ImmediateGenerationProps;
 };
