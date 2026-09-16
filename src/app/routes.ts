@@ -1,4 +1,9 @@
 import type { PuzzleId } from "../catalog/types";
+import {
+  canonicalizeDailyResourceQuery,
+  isDailyResourceDate,
+  resolveDailyResource,
+} from "./dailyResource";
 import { resolvePuzzleResourceSegment } from "./puzzleResourceIdentity";
 import { puzzleIds } from "./sessionConstants";
 
@@ -6,13 +11,16 @@ export type AppRoute =
   | { kind: "home" }
   | { kind: "puzzle"; puzzleId: PuzzleId }
   | { kind: "resource"; puzzleId: PuzzleId; generationId: string }
+  | { kind: "daily"; puzzleId: PuzzleId; dateStamp: string; query: string }
+  | { kind: "today"; puzzleId: PuzzleId; query: string }
   | { kind: "updates" }
   | { kind: "about" }
   | { kind: "not-found"; pathname: string };
 
 const puzzleIdSet = new Set<string>(puzzleIds);
+const withQuery = (pathname: string, query: string) => query ? `${pathname}?${query}` : pathname;
 
-export const parseAppRoute = (pathname: string): AppRoute => {
+export const parseAppRoute = (pathname: string, search = ""): AppRoute => {
   const normalizedPath = pathname.replace(/\/+$/, "") || "/";
 
   if (normalizedPath === "/") return { kind: "home" };
@@ -24,12 +32,34 @@ export const parseAppRoute = (pathname: string): AppRoute => {
     return { kind: "puzzle", puzzleId: segments[0] as PuzzleId };
   }
 
-  if (segments.length === 2 && puzzleIdSet.has(segments[0]) && segments[1]) {
-    return {
-      kind: "resource",
-      puzzleId: segments[0] as PuzzleId,
-      generationId: decodeURIComponent(segments[1]),
-    };
+  if (segments.length >= 2 && puzzleIdSet.has(segments[0])) {
+    const puzzleId = segments[0] as PuzzleId;
+
+    if (segments.length === 2 && segments[1] === "today") {
+      const parsedQuery = canonicalizeDailyResourceQuery(puzzleId, search);
+      return parsedQuery.ok
+        ? { kind: "today", puzzleId, query: parsedQuery.query }
+        : { kind: "not-found", pathname: normalizedPath };
+    }
+
+    if (segments.length === 3 && segments[1] === "daily" && isDailyResourceDate(segments[2])) {
+      const parsedQuery = canonicalizeDailyResourceQuery(puzzleId, search);
+      return parsedQuery.ok
+        ? { kind: "daily", puzzleId, dateStamp: segments[2], query: parsedQuery.query }
+        : { kind: "not-found", pathname: normalizedPath };
+    }
+
+    if (segments.length === 2 && segments[1] === "daily") {
+      return { kind: "not-found", pathname: normalizedPath };
+    }
+
+    if (segments.length === 2 && segments[1]) {
+      return {
+        kind: "resource",
+        puzzleId,
+        generationId: decodeURIComponent(segments[1]),
+      };
+    }
   }
 
   return { kind: "not-found", pathname: normalizedPath };
@@ -43,6 +73,10 @@ export const appRoutePath = (route: AppRoute): string => {
       return `/${route.puzzleId}`;
     case "resource":
       return `/${route.puzzleId}/${encodeURIComponent(route.generationId)}`;
+    case "daily":
+      return withQuery(`/${route.puzzleId}/daily/${route.dateStamp}`, route.query);
+    case "today":
+      return withQuery(`/${route.puzzleId}/today`, route.query);
     case "updates":
       return "/updates";
     case "about":
@@ -55,44 +89,61 @@ export const appRoutePath = (route: AppRoute): string => {
 export const getCurrentAppRoute = (): AppRoute =>
   typeof window === "undefined"
     ? { kind: "home" }
-    : parseAppRoute(window.location.pathname);
+    : parseAppRoute(window.location.pathname, window.location.search);
 
-export const shouldPreserveResourceAliasPath = (
+export const shouldPreserveResourceLocatorPath = (
   currentPathname: string,
+  currentSearch: string,
   nextRoute: AppRoute,
 ) => {
   if (nextRoute.kind !== "resource") return false;
-  const currentRoute = parseAppRoute(currentPathname);
-  if (currentRoute.kind !== "resource" || currentRoute.puzzleId !== nextRoute.puzzleId) return false;
+  const currentRoute = parseAppRoute(currentPathname, currentSearch);
+  if (currentRoute.puzzleId !== nextRoute.puzzleId) return false;
 
-  const resolved = resolvePuzzleResourceSegment(
-    currentRoute.puzzleId,
-    currentRoute.generationId,
-  );
-  return (
-    resolved.ok &&
-    resolved.alias !== undefined &&
-    resolved.canonicalResource.generationId === nextRoute.generationId
-  );
+  if (currentRoute.kind === "resource") {
+    if (currentSearch) return false;
+    const resolved = resolvePuzzleResourceSegment(
+      currentRoute.puzzleId,
+      currentRoute.generationId,
+    );
+    return (
+      resolved.ok &&
+      resolved.alias !== undefined &&
+      resolved.canonicalResource.generationId === nextRoute.generationId
+    );
+  }
+
+  if (currentRoute.kind === "daily") {
+    const resolved = resolveDailyResource(
+      currentRoute.puzzleId,
+      currentRoute.dateStamp,
+      currentRoute.query,
+    );
+    return resolved.ok && resolved.canonicalResource.generationId === nextRoute.generationId;
+  }
+
+  return false;
 };
 
-const currentBrowserPath = () => window.location.pathname;
+const currentBrowserUrl = () => `${window.location.pathname}${window.location.search}`;
 
 export const pushAppRoute = (route: AppRoute) => {
   if (typeof window === "undefined") return;
   const nextPath = appRoutePath(route);
-  if (currentBrowserPath() === nextPath && !window.location.hash) return;
+  if (currentBrowserUrl() === nextPath && !window.location.hash) return;
   window.history.pushState(null, "", nextPath);
 };
 
 export const replaceAppRoute = (route: AppRoute) => {
   if (typeof window === "undefined") return;
-  const currentPath = currentBrowserPath();
-  if (shouldPreserveResourceAliasPath(currentPath, route)) {
-    if (window.location.hash) window.history.replaceState(null, "", currentPath);
+  const currentPath = window.location.pathname;
+  const currentSearch = window.location.search;
+  const currentUrl = `${currentPath}${currentSearch}`;
+  if (shouldPreserveResourceLocatorPath(currentPath, currentSearch, route)) {
+    if (window.location.hash) window.history.replaceState(null, "", currentUrl);
     return;
   }
   const nextPath = appRoutePath(route);
-  if (currentPath === nextPath && !window.location.hash) return;
+  if (currentUrl === nextPath && !window.location.hash) return;
   window.history.replaceState(null, "", nextPath);
 };
