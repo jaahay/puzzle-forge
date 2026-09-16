@@ -5,6 +5,9 @@ import type { ImageWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { TilePuzzlePreview } from "./TilePuzzlePreview";
 
+export const getJigsawGameplayNotes = (notes: string[], assetTitle: string) =>
+  notes.filter((note) => note !== `Jigsaw using the bundled ${assetTitle} image.`);
+
 export const JigsawWorkspace = ({
   selectedDefinition,
   selectedPuzzleIsGeneratable,
@@ -24,6 +27,7 @@ export const JigsawWorkspace = ({
   const jigsawPuzzle = puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw" ? puzzle : null;
   const puzzleArrivalIdentity = jigsawPuzzle ? getPuzzleArrivalIdentity(jigsawPuzzle) : null;
   const isPuzzleArriving = usePuzzleArrival(puzzleArrivalIdentity);
+  const gameplayNotes = jigsawPuzzle ? getJigsawGameplayNotes(jigsawPuzzle.notes, jigsawPuzzle.asset.title) : [];
 
   const resetJigsaw = () => {
     onReset();
@@ -71,8 +75,8 @@ export const JigsawWorkspace = ({
       aria-label="Generated Jigsaw puzzle"
     >
       <TilePuzzlePreview puzzle={jigsawPuzzle} resetVersion={resetVersion} />
-      {jigsawPuzzle.notes.length === 0 ? null : (
-        <ul class="notes-list">{jigsawPuzzle.notes.map((note) => <li key={note}>{note}</li>)}</ul>
+      {gameplayNotes.length === 0 ? null : (
+        <ul class="notes-list">{gameplayNotes.map((note) => <li key={note}>{note}</li>)}</ul>
       )}
     </section>
   ) : isGenerating ? loadingBoard : null;
