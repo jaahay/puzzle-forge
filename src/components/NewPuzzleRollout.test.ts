@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { getCurrentPuzzleIdentity } from "./CurrentPuzzleIdentity";
 import * as gridWorkspaceModule from "./GridPuzzleWorkspace";
+import * as imageTilePreviewModule from "./ImageTilePuzzlePreview";
 import * as newPuzzleCommandModule from "./NewPuzzleCommand";
+import * as tilePuzzlePreviewModule from "./TilePuzzlePreview";
+import * as wordGuessNewPuzzleControlModule from "./WordGuessNewPuzzleControl";
 
 type CommandActions = {
   startRandomPuzzle: (restoreMenuFocus?: boolean) => void;
@@ -26,6 +30,19 @@ type GridMetaResolver = (options: {
   dailyLabel: string | null;
 }) => string[];
 
+type ImageTileGameplaySummaryResolver = (options: {
+  moveCount: number;
+  isSolved: boolean;
+}) => string[];
+
+type JigsawGameplaySummaryResolver = (options: {
+  solvedCount: number;
+  pieceCount: number;
+  isSolved: boolean;
+}) => string[];
+
+type JigsawGameplayNotesResolver = (notes: string[], assetTitle: string) => string[];
+
 const commandActionFactory = (
   newPuzzleCommandModule as unknown as { createNewPuzzleCommandActions?: CommandActionFactory }
 ).createNewPuzzleCommandActions;
@@ -33,6 +50,22 @@ const commandActionFactory = (
 const gridMetaResolver = (
   gridWorkspaceModule as unknown as { getGridPuzzleMetaItems?: GridMetaResolver }
 ).getGridPuzzleMetaItems;
+
+const imageTileGameplaySummaryResolver = (
+  imageTilePreviewModule as unknown as { getImageTileGameplaySummaryItems?: ImageTileGameplaySummaryResolver }
+).getImageTileGameplaySummaryItems;
+
+const jigsawGameplaySummaryResolver = (
+  tilePuzzlePreviewModule as unknown as { getJigsawGameplaySummaryItems?: JigsawGameplaySummaryResolver }
+).getJigsawGameplaySummaryItems;
+
+const jigsawGameplayNotesResolver = (
+  tilePuzzlePreviewModule as unknown as { getJigsawGameplayNotes?: JigsawGameplayNotesResolver }
+).getJigsawGameplayNotes;
+
+const wordGuessDimensionSeparator = (
+  wordGuessNewPuzzleControlModule as unknown as { wordGuessDimensionSeparator?: string }
+).wordGuessDimensionSeparator;
 
 const requireCommandActionFactory = () => {
   expect(commandActionFactory).toBeTypeOf("function");
@@ -42,6 +75,21 @@ const requireCommandActionFactory = () => {
 const requireGridMetaResolver = () => {
   expect(gridMetaResolver).toBeTypeOf("function");
   return gridMetaResolver!;
+};
+
+const requireImageTileGameplaySummaryResolver = () => {
+  expect(imageTileGameplaySummaryResolver).toBeTypeOf("function");
+  return imageTileGameplaySummaryResolver!;
+};
+
+const requireJigsawGameplaySummaryResolver = () => {
+  expect(jigsawGameplaySummaryResolver).toBeTypeOf("function");
+  return jigsawGameplaySummaryResolver!;
+};
+
+const requireJigsawGameplayNotesResolver = () => {
+  expect(jigsawGameplayNotesResolver).toBeTypeOf("function");
+  return jigsawGameplayNotesResolver!;
 };
 
 describe("shared New puzzle command interactions", () => {
@@ -127,8 +175,26 @@ describe("shared New puzzle command interactions", () => {
   });
 });
 
-describe("rolled-out grid puzzle metadata", () => {
-  it("keeps Futoshiki uniqueness in the crown and only progress beside the board", () => {
+describe("rolled-out puzzle presentation", () => {
+  it("keeps Futoshiki invariants out of current-puzzle identity", () => {
+    const puzzle = {
+      kind: "grid",
+      puzzleId: "futoshiki",
+      seed: "futoshiki-review",
+      width: 5,
+      height: 5,
+      difficulty: "Hard",
+      uniqueSolution: true,
+    } as unknown as Parameters<typeof getCurrentPuzzleIdentity>[0];
+
+    expect(getCurrentPuzzleIdentity(puzzle, "2026-09-16")).toMatchObject({
+      puzzleLabel: "Futoshiki",
+      details: [],
+      difficultyLabel: "Hard",
+    });
+  });
+
+  it("keeps only Futoshiki progress beside the board", () => {
     const resolveGridMeta = requireGridMetaResolver();
 
     expect(resolveGridMeta({
@@ -140,7 +206,7 @@ describe("rolled-out grid puzzle metadata", () => {
     })).toEqual(["7/16 filled"]);
   });
 
-  it("preserves non-duplicated Word Guess and daily metadata", () => {
+  it("keeps Word Guess provenance in the crown instead of repeating it beside the board", () => {
     const resolveGridMeta = requireGridMetaResolver();
 
     expect(resolveGridMeta({
@@ -149,6 +215,33 @@ describe("rolled-out grid puzzle metadata", () => {
       filledOpenCount: 0,
       openCount: 0,
       dailyLabel: "2026-09-16",
-    })).toEqual(["Answer-list solvable", "Daily: 2026-09-16"]);
+    })).toEqual(["Answer-list solvable"]);
+  });
+
+  it("uses a non-geometric separator for Word Guess choices", () => {
+    expect(wordGuessDimensionSeparator).toBe("·");
+  });
+
+  it("keeps image-tile summaries focused on gameplay state", () => {
+    const resolveSummary = requireImageTileGameplaySummaryResolver();
+
+    expect(resolveSummary({ moveCount: 23, isSolved: false })).toEqual(["23 moves"]);
+    expect(resolveSummary({ moveCount: 23, isSolved: true })).toEqual(["Solved"]);
+  });
+
+  it("keeps Jigsaw summaries focused on placement progress", () => {
+    const resolveSummary = requireJigsawGameplaySummaryResolver();
+
+    expect(resolveSummary({ solvedCount: 17, pieceCount: 48, isSolved: false })).toEqual(["17/48 placed"]);
+    expect(resolveSummary({ solvedCount: 48, pieceCount: 48, isSolved: true })).toEqual(["Solved"]);
+  });
+
+  it("filters the generated Jigsaw artwork note while preserving real gameplay notes", () => {
+    const resolveNotes = requireJigsawGameplayNotesResolver();
+
+    expect(resolveNotes([
+      "Jigsaw using the bundled Alpine Lake image.",
+      "A future gameplay-specific note.",
+    ], "Alpine Lake")).toEqual(["A future gameplay-specific note."]);
   });
 });
