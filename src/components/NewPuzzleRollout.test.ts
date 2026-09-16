@@ -1,9 +1,9 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { getCurrentPuzzleIdentity } from "./CurrentPuzzleIdentity";
 import * as gridWorkspaceModule from "./GridPuzzleWorkspace";
-import * as imageTilePreviewModule from "./ImageTilePuzzlePreview";
+import * as jigsawWorkspaceModule from "./JigsawWorkspace";
 import * as newPuzzleCommandModule from "./NewPuzzleCommand";
-import * as tilePuzzlePreviewModule from "./TilePuzzlePreview";
 import * as wordGuessNewPuzzleControlModule from "./WordGuessNewPuzzleControl";
 
 type CommandActions = {
@@ -30,17 +30,6 @@ type GridMetaResolver = (options: {
   dailyLabel: string | null;
 }) => string[];
 
-type ImageTileGameplaySummaryResolver = (options: {
-  moveCount: number;
-  isSolved: boolean;
-}) => string[];
-
-type JigsawGameplaySummaryResolver = (options: {
-  solvedCount: number;
-  pieceCount: number;
-  isSolved: boolean;
-}) => string[];
-
 type JigsawGameplayNotesResolver = (notes: string[], assetTitle: string) => string[];
 
 const commandActionFactory = (
@@ -51,21 +40,18 @@ const gridMetaResolver = (
   gridWorkspaceModule as unknown as { getGridPuzzleMetaItems?: GridMetaResolver }
 ).getGridPuzzleMetaItems;
 
-const imageTileGameplaySummaryResolver = (
-  imageTilePreviewModule as unknown as { getImageTileGameplaySummaryItems?: ImageTileGameplaySummaryResolver }
-).getImageTileGameplaySummaryItems;
-
-const jigsawGameplaySummaryResolver = (
-  tilePuzzlePreviewModule as unknown as { getJigsawGameplaySummaryItems?: JigsawGameplaySummaryResolver }
-).getJigsawGameplaySummaryItems;
-
 const jigsawGameplayNotesResolver = (
-  tilePuzzlePreviewModule as unknown as { getJigsawGameplayNotes?: JigsawGameplayNotesResolver }
+  jigsawWorkspaceModule as unknown as { getJigsawGameplayNotes?: JigsawGameplayNotesResolver }
 ).getJigsawGameplayNotes;
 
 const wordGuessDimensionSeparator = (
   wordGuessNewPuzzleControlModule as unknown as { wordGuessDimensionSeparator?: string }
 ).wordGuessDimensionSeparator;
+
+const workspaceHierarchyCss = readFileSync(
+  new URL("../site/workspace-hierarchy.css", import.meta.url),
+  "utf8",
+);
 
 const requireCommandActionFactory = () => {
   expect(commandActionFactory).toBeTypeOf("function");
@@ -75,16 +61,6 @@ const requireCommandActionFactory = () => {
 const requireGridMetaResolver = () => {
   expect(gridMetaResolver).toBeTypeOf("function");
   return gridMetaResolver!;
-};
-
-const requireImageTileGameplaySummaryResolver = () => {
-  expect(imageTileGameplaySummaryResolver).toBeTypeOf("function");
-  return imageTileGameplaySummaryResolver!;
-};
-
-const requireJigsawGameplaySummaryResolver = () => {
-  expect(jigsawGameplaySummaryResolver).toBeTypeOf("function");
-  return jigsawGameplaySummaryResolver!;
 };
 
 const requireJigsawGameplayNotesResolver = () => {
@@ -222,18 +198,16 @@ describe("rolled-out puzzle presentation", () => {
     expect(wordGuessDimensionSeparator).toBe("·");
   });
 
-  it("keeps image-tile summaries focused on gameplay state", () => {
-    const resolveSummary = requireImageTileGameplaySummaryResolver();
+  it("leaves image-family preview summaries to gameplay state while the crown owns identity", () => {
+    const selectors = [
+      ".jigsaw-workspace .tile-puzzle-summary > span:nth-child(2)",
+      ".jigsaw-workspace .tile-puzzle-summary > span:nth-child(3)",
+      ".image-tile-workspace .image-tile-summary > span:nth-child(2)",
+      ".image-tile-workspace .image-tile-summary > span:nth-child(3)",
+    ];
 
-    expect(resolveSummary({ moveCount: 23, isSolved: false })).toEqual(["23 moves"]);
-    expect(resolveSummary({ moveCount: 23, isSolved: true })).toEqual(["Solved"]);
-  });
-
-  it("keeps Jigsaw summaries focused on placement progress", () => {
-    const resolveSummary = requireJigsawGameplaySummaryResolver();
-
-    expect(resolveSummary({ solvedCount: 17, pieceCount: 48, isSolved: false })).toEqual(["17/48 placed"]);
-    expect(resolveSummary({ solvedCount: 48, pieceCount: 48, isSolved: true })).toEqual(["Solved"]);
+    selectors.forEach((selector) => expect(workspaceHierarchyCss).toContain(selector));
+    expect(workspaceHierarchyCss).toMatch(/\.jigsaw-workspace \.tile-puzzle-summary[\s\S]*?\.image-tile-workspace \.image-tile-summary[\s\S]*?\{\s*display:\s*none;\s*\}/);
   });
 
   it("filters the generated Jigsaw artwork note while preserving real gameplay notes", () => {
