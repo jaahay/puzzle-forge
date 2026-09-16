@@ -1,6 +1,8 @@
 import { BoundedNumberInput } from "./BoundedNumberInput";
 import { NewPuzzleCommand } from "./NewPuzzleCommand";
 
+export const wordGuessDimensionSeparator = "·";
+
 type WordGuessNewPuzzleControlProps = {
   currentSeed: string;
   width: number;
@@ -69,7 +71,7 @@ export const WordGuessNewPuzzleControl = ({
               onCommit={onWidthChange}
             />
           </label>
-          <span class="new-puzzle-size-separator" aria-hidden="true">×</span>
+          <span class="new-puzzle-size-separator" aria-hidden="true">{wordGuessDimensionSeparator}</span>
           <label>
             <span>Guesses</span>
             <BoundedNumberInput
