@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { defaultJigsawImageAsset, jigsawImageAssets } from "../games/jigsaw/imageAssets";
-import { jigsawCustomPreset, makeJigsawImageSelectionSettings } from "./JigsawWorkspace";
+import { jigsawCustomPreset, makeJigsawImageSelectionSettings } from "./JigsawNewPuzzleControl";
 
 describe("Jigsaw image library", () => {
   it("preserves explicit custom dimensions across image changes", () => {
