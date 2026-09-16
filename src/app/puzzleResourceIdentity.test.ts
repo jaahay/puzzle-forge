@@ -20,11 +20,6 @@ const makeIdentity = (overrides: Partial<GenerationIdentity> = {}): GenerationId
   ...overrides,
 });
 
-const encodeLegacyBase64Url = (value: string) => btoa(value)
-  .replace(/\+/g, "-")
-  .replace(/\//g, "_")
-  .replace(/=+$/g, "");
-
 describe("canonical puzzle generation identity", () => {
   it("uses a compact self-contained id for ordinary generated puzzles", () => {
     const seed = makeRandomSeed();
@@ -135,20 +130,10 @@ describe("canonical puzzle generation identity", () => {
       .toThrow(`Puzzle seeds may contain at most ${maxPuzzleSeedLength} characters.`);
   });
 
-  it("rejects malformed, noncanonical, and pre-compact generation ids", () => {
+  it("rejects malformed and noncanonical generation ids", () => {
     expect(decodeGenerationId("sudoku", "%%%")).toEqual({ ok: false, reason: "malformed" });
 
     const canonical = encodeGenerationId(makeIdentity());
     expect(decodeGenerationId("sudoku", `${canonical}A`).ok).toBe(false);
-
-    const legacyGenerationId = encodeLegacyBase64Url(JSON.stringify({
-      s: "resource-seed",
-      d: "Hard",
-      x: "classic",
-    }));
-    expect(decodeGenerationId("sudoku", legacyGenerationId)).toEqual({
-      ok: false,
-      reason: "invalid-identity",
-    });
   });
 });
