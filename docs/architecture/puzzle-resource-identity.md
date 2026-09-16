@@ -9,7 +9,7 @@ Four URL forms have distinct jobs:
 ```text
 /sudoku/<compact-generation-id>        canonical machine locator
 /sudoku/Happy2026!                     curated alias
-/sudoku/daily/2026-09-15               stable Daily locator
+/sudoku/daily/2026-09-15               dated Daily locator
 /sudoku/today                          changing selector
 ```
 
@@ -86,7 +86,7 @@ Daily provenance is part of canonical generation identity, but Daily also has a 
 /<puzzle>/daily/YYYY-MM-DD
 ```
 
-A dated Daily locator is stable. Given the same puzzle type, date, and material Daily profile, it resolves deterministically to one canonical generation identity and therefore one compact generation id.
+A dated Daily locator is deterministic under the application's current generation semantics. Given the same puzzle type, date, and material Daily profile, it resolves to one canonical generation identity and therefore one compact generation id.
 
 The default Daily profile uses that puzzle type's ordinary generation defaults. When a puzzle family has material settings that differ from those defaults, the Daily locator may carry a sparse query string. Query parameters are qualifications of the Daily resource, not a second general-purpose generation codec.
 
@@ -125,7 +125,7 @@ This query vocabulary is deliberately narrow. Puzzle Forge does not expose gener
 
 `/<puzzle>/today` is a selector, not an immutable resource identity.
 
-It resolves using the user's local calendar date plus any valid Daily profile qualifiers, then canonicalizes the browser URL to the stable dated form:
+It resolves using the user's local calendar date plus any valid Daily profile qualifiers, then canonicalizes the browser URL to the dated form:
 
 ```text
 /sudoku/today
@@ -174,7 +174,7 @@ History semantics:
 
 - initial automatic materialization from `/<puzzle-type>` normally uses `history.replaceState`, so the transient entry surface does not become a useless Back destination;
 - an explicit action that chooses another concrete puzzle, such as New, Today, or loading a different seed, normally uses `history.pushState`, so Back can return to the previous puzzle resource;
-- refreshing any accepted stable locator regenerates the same canonical resource before local progress with a matching baseline fingerprint is overlaid.
+- refreshing any accepted concrete locator regenerates the same canonical resource before local progress with a matching baseline fingerprint is overlaid.
 
 ## Session persistence
 
