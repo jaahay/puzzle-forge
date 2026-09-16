@@ -291,7 +291,15 @@ export const canonicalizeDailyResourceQuery = (
 export const makeDailyResourceLocatorPath = (identity: GenerationIdentity) => {
   const provenance = identity.provenance;
   if (provenance?.source !== "daily") return null;
+
   const query = appendCanonicalQuery(identity);
+  const resolved = resolveDailyResource(
+    identity.puzzleId,
+    provenance.dateStamp,
+    query ? `?${query}` : "",
+  );
+  if (!resolved.ok || resolved.canonicalResource.generationId !== encodeGenerationId(identity)) return null;
+
   const pathname = `/${identity.puzzleId}/daily/${provenance.dateStamp}`;
   return query ? `${pathname}?${query}` : pathname;
 };
