@@ -6,6 +6,7 @@ import { scoreWordGuess } from "../games/wordGuess/feedback";
 import { readWordGuessProgress, writeWordGuessProgress, type WordGuessProgressStatus } from "../games/wordGuess/progress";
 import { formatWordGuessShareText } from "../games/wordGuess/share";
 import { getWordGuessBank, isValidWordGuess, normalizeWordGuessWord } from "../games/wordGuess/words";
+import { PuzzleTerminalDock } from "./PuzzleTerminalDock";
 
 const difficultyLabels = {
   gentle: "Gentle",
@@ -30,6 +31,7 @@ type WordGuessGameProps = {
   onCellInput: (cell: PuzzleCell, value: string) => void;
   onSubmitGuess: () => void;
   onReset: () => void;
+  onNewPuzzle: () => void;
 };
 
 const getRows = (cells: PuzzleCell[], rowCount: number) =>
@@ -85,7 +87,13 @@ export const getWordGuessTerminalState = (
   return playingTerminalState;
 };
 
-export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSubmitGuess, onReset }: WordGuessGameProps) => {
+export const getWordGuessActionPresentation = (status: WordGuessProgressStatus, submittedRows: number) => ({
+  terminal: status !== "playing",
+  resetLabel: status === "playing" ? "Reset" : "Retry",
+  canShare: submittedRows > 0,
+});
+
+export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSubmitGuess, onReset, onNewPuzzle }: WordGuessGameProps) => {
   const answer = puzzle.answerKey?.join("").toUpperCase() ?? "";
   const wordBank = useMemo(() => getWordGuessBank(puzzle.width), [puzzle.width]);
   const rows = useMemo(() => getRows(cells, puzzle.height), [cells, puzzle.height]);
@@ -102,6 +110,11 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
   const submittedGuessKey = submittedGuesses.join("|");
   const analysis = useMemo(() => getWordGuessAnalysis(answer, submittedGuesses, wordBank), [answer, submittedGuessKey, wordBank]);
   const letterMarks = useMemo(() => getLetterMarks(answer, submittedGuesses), [answer, submittedGuessKey]);
+  const terminalState = getWordGuessTerminalState(
+    status,
+    status === "lost" ? `No match. The word was ${answer}.` : undefined,
+  );
+  const actionPresentation = getWordGuessActionPresentation(status, submittedRows);
 
   useEffect(() => {
     if (restoredPuzzleId.current === puzzle.id) {
@@ -363,17 +376,34 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
         ))}
       </div>
 
-      <div class="word-guess-actions">
-        <button type="button" onClick={submitGuess} disabled={status !== "playing"}>
-          Submit
-        </button>
-        <button type="button" onClick={resetGame}>
-          Reset
-        </button>
-        <button type="button" onClick={copyShareText} disabled={submittedRows === 0}>
-          {copiedShare ? "Copied" : "Share"}
-        </button>
-      </div>
+      {terminalState.kind !== "playing" ? (
+        <PuzzleTerminalDock
+          state={terminalState}
+          label={message}
+          ariaLabel={status === "won" ? "Word Guess solved" : "Word Guess finished"}
+          onReset={resetGame}
+          resetLabel={actionPresentation.resetLabel}
+          onNewPuzzle={onNewPuzzle}
+        >
+          {actionPresentation.canShare ? (
+            <button type="button" onClick={copyShareText}>
+              {copiedShare ? "Copied" : "Share"}
+            </button>
+          ) : null}
+        </PuzzleTerminalDock>
+      ) : (
+        <div class="word-guess-actions">
+          <button type="button" onClick={submitGuess}>
+            Submit
+          </button>
+          <button type="button" onClick={resetGame}>
+            {actionPresentation.resetLabel}
+          </button>
+          <button type="button" onClick={copyShareText} disabled={!actionPresentation.canShare}>
+            {copiedShare ? "Copied" : "Share"}
+          </button>
+        </div>
+      )}
 
       <details class="word-guess-solver-details">
         <summary>Solver</summary>
