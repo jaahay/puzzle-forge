@@ -1,5 +1,8 @@
+import { solvedTerminalState } from "../app/puzzleTerminalState";
+import { isSolitaireSolved } from "../app/solitaireTerminal";
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
 import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
+import { PuzzleTerminalDock } from "./PuzzleTerminalDock";
 import type { SolitaireWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { SolitaireNewPuzzleControl } from "./SolitaireNewPuzzleControl";
@@ -32,6 +35,7 @@ export const SolitaireWorkspace = ({
   const solitairePuzzle = puzzle?.kind === "cards" && puzzle.puzzleId === "klondike-solitaire" ? puzzle : null;
   const puzzleArrivalIdentity = solitairePuzzle ? getPuzzleArrivalIdentity(solitairePuzzle) : null;
   const isPuzzleArriving = usePuzzleArrival(puzzleArrivalIdentity);
+  const isSolved = isSolitaireSolved(cardStacks);
   const newPuzzleControl = solitairePuzzle ? (
     <SolitaireNewPuzzleControl
       currentSeed={solitairePuzzle.seed}
@@ -53,7 +57,16 @@ export const SolitaireWorkspace = ({
       isArriving={isPuzzleArriving}
     />
   ) : null;
-  const actionControls = (
+  const actionControls = isSolved ? (
+    <PuzzleTerminalDock
+      state={solvedTerminalState}
+      label={`Solved in ${solitaireStats.moveCount} move(s)`}
+      ariaLabel="Klondike Solitaire solved"
+      disabled={isGenerating}
+      onReset={onReset}
+      onNewPuzzle={onNewPuzzle}
+    />
+  ) : (
     <div class="solitaire-action-row" aria-label="Solitaire controls">
       <button type="button" onClick={onUndoSolitaire} disabled={!canUndoSolitaire} aria-label="Undo Solitaire move" title="Undo">↶</button>
       <button type="button" onClick={onRedoSolitaire} disabled={!canRedoSolitaire} aria-label="Redo Solitaire move" title="Redo">↷</button>
@@ -81,6 +94,7 @@ export const SolitaireWorkspace = ({
         stats={solitaireStats}
         toolbar={actionControls}
         variation={solitairePuzzle.solitaireVariation}
+        disabled={isSolved}
         onCardClick={onCardClick}
         onCardDoubleClick={onCardDoubleClick}
         onStackClick={onStackClick}
