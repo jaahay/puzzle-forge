@@ -243,6 +243,22 @@ export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: Puzzl
     return makeGridCheckResult(nextCells, `Solved. ${currentPuzzle.title} is correct.`, "success");
   }
 
+  if (currentPuzzle.puzzleId === "futoshiki") {
+    if (assessment.incorrectCount === 0) {
+      return makeGridCheckResult(
+        nextCells,
+        `Looks good so far. ${pluralize(assessment.emptyCount, "cell")} remaining.`,
+        "progress",
+      );
+    }
+
+    return makeGridCheckResult(
+      nextCells,
+      `${pluralize(assessment.incorrectCount, "entry", "entries")} need attention${assessment.emptyCount > 0 ? `; ${pluralize(assessment.emptyCount, "cell")} empty` : ""}.`,
+      "error",
+    );
+  }
+
   return makeGridCheckResult(
     nextCells,
     `Not solved: ${assessment.emptyCount} empty cell(s), ${assessment.incorrectCount} incorrect cell(s).`,
