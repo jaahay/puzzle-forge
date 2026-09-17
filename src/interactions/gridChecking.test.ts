@@ -24,6 +24,21 @@ const makeFutoshikiPuzzle = (): GridGeneratedPuzzle => ({
   title: "Futoshiki",
 });
 
+const makeNonogramPuzzle = (rowClue: number[] = [2]): GridGeneratedPuzzle => ({
+  ...makeSudokuPuzzle(),
+  id: "test-nonogram",
+  puzzleId: "nonogram",
+  title: "Nonogram",
+  width: 3,
+  height: 1,
+  cells: [],
+  answerKey: ["■", "■", ""],
+  clues: {
+    rows: [rowClue],
+    columns: [[1], [1], []],
+  },
+});
+
 const makeCell = (row: number, column: number, value: string, locked = false): PuzzleCell => ({
   row,
   column,
@@ -146,6 +161,7 @@ describe("shared answer-key checking", () => {
       makeCell(1, 1, "4", true),
     ]);
 
+    expect(result.cells.map((cell) => cell.tone)).toEqual(["empty", "empty", "empty", "given"]);
     expect(result.feedbackTone).toBe("progress");
     expect(result.message).toBe("Looks good so far. 1 cell remaining.");
   });
@@ -158,9 +174,36 @@ describe("shared answer-key checking", () => {
       makeCell(1, 1, "4", true),
     ]);
 
-    expect(result.cells.map((cell) => cell.tone)).toEqual(["answer", "hint", "answer", "given"]);
+    expect(result.cells.map((cell) => cell.tone)).toEqual(["empty", "hint", "empty", "given"]);
     expect(result.feedbackTone).toBe("error");
     expect(result.message).toBe("1 entry need attention.");
+  });
+});
+
+describe("Nonogram grid checking feedback", () => {
+  it("treats a feasible partial board as progress without decorating it as wrong", () => {
+    const result = checkGridAnswer(makeNonogramPuzzle(), [
+      makeCell(0, 0, "■"),
+      makeCell(0, 1, ""),
+      makeCell(0, 2, ""),
+    ]);
+
+    expect(result.cells.map((cell) => cell.tone)).toEqual(["accent", "empty", "empty"]);
+    expect(result.feedbackTone).toBe("progress");
+    expect(result.message).toBe("Looks good so far.");
+  });
+
+  it("marks only filled cells that participate in impossible clue lines", () => {
+    const puzzle = makeNonogramPuzzle([1]);
+    const result = checkGridAnswer(puzzle, [
+      makeCell(0, 0, "■"),
+      makeCell(0, 1, "■"),
+      makeCell(0, 2, ""),
+    ]);
+
+    expect(result.cells.map((cell) => cell.tone)).toEqual(["hint", "hint", "empty"]);
+    expect(result.feedbackTone).toBe("error");
+    expect(result.message).toBe("1 row clue and 0 column clues need attention.");
   });
 });
 
