@@ -1,6 +1,6 @@
 import { useRef, useState } from "preact/hooks";
 import type { GeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
-import { checkGridAnswer, isGridAnswerCompleteAndCorrect, type GridCheckFeedbackTone } from "../interactions/gridChecking";
+import { checkGridAnswer, isGridPuzzleSolved, type GridCheckFeedbackTone } from "../interactions/gridChecking";
 import {
   cloneGridCell,
   getCellIndex,
@@ -35,10 +35,15 @@ type GridUpdateResult = {
   clearSelection?: boolean;
 };
 
-const SUDOKU_CHECK_CELL_FEEDBACK_MS = 750;
-const SUDOKU_CHECK_MESSAGE_FEEDBACK_MS = 1600;
+const GRID_CHECK_CELL_FEEDBACK_MS = 750;
+const GRID_CHECK_MESSAGE_FEEDBACK_MS = 1600;
 const usesNeutralNumericEntryTone = (puzzleId: PuzzleId) => puzzleId === "sudoku" || puzzleId === "futoshiki";
 const supportsGridActionHistory = (puzzleId: PuzzleId) => puzzleId === "sudoku" || puzzleId === "nonogram";
+
+export const supportsAutomaticGridCompletion = (puzzleId: PuzzleId) =>
+  puzzleId === "sudoku" || puzzleId === "nonogram" || puzzleId === "futoshiki";
+
+export const usesTransientGridValidation = (puzzleId: PuzzleId) => supportsAutomaticGridCompletion(puzzleId);
 
 export const clearGridValidationTone = (puzzleId: PuzzleId, cell: PuzzleCell): PuzzleCell => {
   if (cell.locked || cell.tone === "disabled") return cell;
@@ -65,7 +70,7 @@ export const useGridController = () => {
   const initialHistory = makeEmptyGridHistoryState();
   const [gridHistory, setGridHistoryState] = useState<GridHistoryState>(initialHistory);
   const gridHistoryRef = useRef<GridHistoryState>(initialHistory);
-  const sudokuTransientFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const gridTransientFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const setGridCells = (nextCells: PuzzleCell[] | null) => {
     gridCellsRef.current = nextCells;
@@ -79,24 +84,26 @@ export const useGridController = () => {
 
   const clearGridHistory = () => setGridHistory(makeEmptyGridHistoryState());
 
-  const clearSudokuTransientFeedbackTimer = () => {
-    if (sudokuTransientFeedbackTimer.current !== null) {
-      clearTimeout(sudokuTransientFeedbackTimer.current);
-      sudokuTransientFeedbackTimer.current = null;
+  const clearGridTransientFeedbackTimer = () => {
+    if (gridTransientFeedbackTimer.current !== null) {
+      clearTimeout(gridTransientFeedbackTimer.current);
+      gridTransientFeedbackTimer.current = null;
     }
   };
 
-  const scheduleSudokuTransientFeedbackReset = () => {
-    clearSudokuTransientFeedbackTimer();
-    sudokuTransientFeedbackTimer.current = setTimeout(() => {
-      const currentCells = gridCellsRef.current;
-      if (currentCells) setGridCells(currentCells.map((cell) => clearGridValidationTone("sudoku", cell)));
+  const scheduleGridTransientFeedbackReset = (puzzleId: PuzzleId) => {
+    if (!usesTransientGridValidation(puzzleId)) return;
 
-      sudokuTransientFeedbackTimer.current = setTimeout(() => {
+    clearGridTransientFeedbackTimer();
+    gridTransientFeedbackTimer.current = setTimeout(() => {
+      const currentCells = gridCellsRef.current;
+      if (currentCells) setGridCells(currentCells.map((cell) => clearGridValidationTone(puzzleId, cell)));
+
+      gridTransientFeedbackTimer.current = setTimeout(() => {
         setCheckFeedbackTone(null);
-        sudokuTransientFeedbackTimer.current = null;
-      }, SUDOKU_CHECK_MESSAGE_FEEDBACK_MS - SUDOKU_CHECK_CELL_FEEDBACK_MS);
-    }, SUDOKU_CHECK_CELL_FEEDBACK_MS);
+        gridTransientFeedbackTimer.current = null;
+      }, GRID_CHECK_MESSAGE_FEEDBACK_MS - GRID_CHECK_CELL_FEEDBACK_MS);
+    }, GRID_CHECK_CELL_FEEDBACK_MS);
   };
 
   const clearGridInteraction = () => setSelectedGridCell(null);
@@ -118,14 +125,14 @@ export const useGridController = () => {
   };
 
   const restoreGridHistoryEntry = (entry: GridHistoryEntry) => {
-    clearSudokuTransientFeedbackTimer();
+    clearGridTransientFeedbackTimer();
     setGridCells(entry.cells.map(cloneGridCell));
     setSelectedGridCell(entry.selectedGridCell ? { ...entry.selectedGridCell } : null);
     clearCheckFeedback();
   };
 
   const resetGrid = () => {
-    clearSudokuTransientFeedbackTimer();
+    clearGridTransientFeedbackTimer();
     setGridCells(null);
     clearGridInteraction();
     clearCheckFeedback();
@@ -137,7 +144,7 @@ export const useGridController = () => {
     selectedGridCell: nextSelectedGridCell,
     gridHistory: nextGridHistory,
   }: GridControllerSnapshot) => {
-    clearSudokuTransientFeedbackTimer();
+    clearGridTransientFeedbackTimer();
     setGridCells(nextGridCells?.map(cloneGridCell) ?? null);
     setSelectedGridCell(nextSelectedGridCell ? { ...nextSelectedGridCell } : null);
     clearCheckFeedback();
@@ -145,7 +152,7 @@ export const useGridController = () => {
   };
 
   const prepareGeneratedGrid = (puzzle: GeneratedPuzzle) => {
-    clearSudokuTransientFeedbackTimer();
+    clearGridTransientFeedbackTimer();
     setGridCells(puzzle.kind === "grid" ? prepareGridCells(puzzle) : null);
     clearGridInteraction();
     clearCheckFeedback();
@@ -165,7 +172,7 @@ export const useGridController = () => {
       ? captureGridHistoryEntry(puzzle.puzzleId)
       : null;
 
-    clearSudokuTransientFeedbackTimer();
+    clearGridTransientFeedbackTimer();
     setGridCells(nextCells);
     clearGridInteraction();
     clearCheckFeedback();
@@ -218,13 +225,13 @@ export const useGridController = () => {
     if (!puzzle || puzzle.kind !== "grid" || cell.locked) return;
 
     const currentCells = gridCellsRef.current;
-    if (puzzle.puzzleId === "sudoku" && currentCells && isGridAnswerCompleteAndCorrect(puzzle, currentCells)) {
+    if (supportsAutomaticGridCompletion(puzzle.puzzleId) && currentCells && isGridPuzzleSolved(puzzle, currentCells)) {
       clearGridInteraction();
       onStatusMessage("Solved.");
       return;
     }
 
-    if (puzzle.puzzleId === "sudoku") clearSudokuTransientFeedbackTimer();
+    if (usesTransientGridValidation(puzzle.puzzleId)) clearGridTransientFeedbackTimer();
 
     const inputMode = getGridInputMode(puzzle.puzzleId);
     const nextValue = normalizeCellInput(inputMode, rawValue);
@@ -248,7 +255,7 @@ export const useGridController = () => {
         ariaLabel: `${nextValue || "Empty"} cell at row ${current.row + 1}, column ${current.column + 1}`,
       };
 
-      if (puzzle.puzzleId === "sudoku" && isGridAnswerCompleteAndCorrect(puzzle, editableCells)) {
+      if (supportsAutomaticGridCompletion(puzzle.puzzleId) && isGridPuzzleSolved(puzzle, editableCells)) {
         return {
           cells: editableCells,
           message: "Solved.",
@@ -267,9 +274,16 @@ export const useGridController = () => {
     if (result) recordGridHistoryEntry(historyEntry);
   };
 
-  const toggleNonogramCell = (cell: PuzzleCell, onStatusMessage: (message: string) => void) => {
+  const toggleNonogramCell = (puzzle: GeneratedPuzzle, cell: PuzzleCell, onStatusMessage: (message: string) => void) => {
     const currentCells = gridCellsRef.current;
-    if (!currentCells || !getGridCell(currentCells, cell)) return;
+    if (puzzle.kind !== "grid" || puzzle.puzzleId !== "nonogram" || !currentCells || !getGridCell(currentCells, cell)) return;
+    if (isGridPuzzleSolved(puzzle, currentCells)) {
+      clearGridInteraction();
+      onStatusMessage("Solved.");
+      return;
+    }
+
+    clearGridTransientFeedbackTimer();
     const historyEntry = captureGridHistoryEntry("nonogram");
 
     clearGridInteraction();
@@ -286,6 +300,16 @@ export const useGridController = () => {
         tone: nextValue ? "accent" : "empty",
         ariaLabel: `${nextValue ? "Filled" : "Empty"} nonogram cell at row ${current.row + 1}, column ${current.column + 1}`,
       };
+
+      if (isGridPuzzleSolved(puzzle, editableCells)) {
+        return {
+          cells: editableCells,
+          message: "Solved. All clues match.",
+          feedbackTone: "success",
+          clearSelection: true,
+        };
+      }
+
       return { cells: editableCells, message: nextValue ? "Marked filled square." : "Cleared square." };
     }, onStatusMessage);
 
@@ -367,7 +391,7 @@ export const useGridController = () => {
     if (!puzzle || puzzle.kind !== "grid") return;
 
     const currentCells = gridCellsRef.current;
-    if (puzzle.puzzleId === "sudoku" && currentCells && isGridAnswerCompleteAndCorrect(puzzle, currentCells)) {
+    if (supportsAutomaticGridCompletion(puzzle.puzzleId) && currentCells && isGridPuzzleSolved(puzzle, currentCells)) {
       clearGridInteraction();
       return;
     }
@@ -377,7 +401,7 @@ export const useGridController = () => {
       return;
     }
     if (puzzle.puzzleId === "nonogram") {
-      toggleNonogramCell(cell, onStatusMessage);
+      toggleNonogramCell(puzzle, cell, onStatusMessage);
       return;
     }
     if (puzzle.puzzleId === "peg-solitaire") handlePegSolitaireCellClick(cell, onStatusMessage);
@@ -397,12 +421,12 @@ export const useGridController = () => {
       const checked = checkGridAnswer(puzzle, cells);
       return {
         ...checked,
-        clearSelection: puzzle.puzzleId === "sudoku" && checked.feedbackTone === "success",
+        clearSelection: supportsAutomaticGridCompletion(puzzle.puzzleId) && checked.feedbackTone === "success",
       };
     }, onStatusMessage);
 
-    if (puzzle.puzzleId === "sudoku" && result?.feedbackTone !== "success") {
-      scheduleSudokuTransientFeedbackReset();
+    if (usesTransientGridValidation(puzzle.puzzleId) && result?.feedbackTone !== "success") {
+      scheduleGridTransientFeedbackReset(puzzle.puzzleId);
     }
   };
 
