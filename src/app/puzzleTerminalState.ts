@@ -3,9 +3,13 @@ export type PuzzleTerminalState =
   | { kind: "solved" }
   | { kind: "failed"; message?: string };
 
-export const playingTerminalState: PuzzleTerminalState = { kind: "playing" };
-export const solvedTerminalState: PuzzleTerminalState = { kind: "solved" };
-export const failedTerminalState = (message?: string): PuzzleTerminalState => ({
+type PlayingTerminalState = Extract<PuzzleTerminalState, { kind: "playing" }>;
+type SolvedTerminalState = Extract<PuzzleTerminalState, { kind: "solved" }>;
+type FailedTerminalState = Extract<PuzzleTerminalState, { kind: "failed" }>;
+
+export const playingTerminalState: PlayingTerminalState = { kind: "playing" };
+export const solvedTerminalState: SolvedTerminalState = { kind: "solved" };
+export const failedTerminalState = (message?: string): FailedTerminalState => ({
   kind: "failed",
   ...(message ? { message } : {}),
 });
