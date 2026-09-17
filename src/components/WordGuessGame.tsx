@@ -89,6 +89,7 @@ export const getWordGuessTerminalState = (
 
 export const getWordGuessActionPresentation = (status: WordGuessProgressStatus, submittedRows: number) => ({
   terminal: status !== "playing",
+  terminalLabel: status === "won" ? "Word solved" : status === "lost" ? "Attempts exhausted" : null,
   resetLabel: status === "playing" ? "Reset" : "Retry",
   canShare: submittedRows > 0,
 });
@@ -379,7 +380,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
       {terminalState.kind !== "playing" ? (
         <PuzzleTerminalDock
           state={terminalState}
-          label={message}
+          label={actionPresentation.terminalLabel ?? message}
           ariaLabel={status === "won" ? "Word Guess solved" : "Word Guess finished"}
           onReset={resetGame}
           resetLabel={actionPresentation.resetLabel}
