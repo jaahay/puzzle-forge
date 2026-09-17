@@ -138,6 +138,18 @@ describe("Sudoku grid checking feedback", () => {
 });
 
 describe("shared answer-key checking", () => {
+  it("reports valid incomplete Futoshiki input as progress", () => {
+    const result = checkGridAnswer(makeFutoshikiPuzzle(), [
+      makeCell(0, 0, "1"),
+      makeCell(0, 1, "2"),
+      makeCell(1, 0, ""),
+      makeCell(1, 1, "4", true),
+    ]);
+
+    expect(result.feedbackTone).toBe("progress");
+    expect(result.message).toBe("Looks good so far. 1 cell remaining.");
+  });
+
   it("uses the same assessment semantics for a full but incorrect Futoshiki board", () => {
     const result = checkGridAnswer(makeFutoshikiPuzzle(), [
       makeCell(0, 0, "1"),
@@ -148,7 +160,7 @@ describe("shared answer-key checking", () => {
 
     expect(result.cells.map((cell) => cell.tone)).toEqual(["answer", "hint", "answer", "given"]);
     expect(result.feedbackTone).toBe("error");
-    expect(result.message).toBe("Not solved: 0 empty cell(s), 1 incorrect cell(s).");
+    expect(result.message).toBe("1 entry need attention.");
   });
 });
 
