@@ -326,6 +326,17 @@
   font-weight: 900;
 }
 
+.terminal-failed {
+  border-color: rgba(148, 163, 184, 0.32);
+  color: #e2e8f0;
+}
+
+.terminal-failed .completion-dock-mark {
+  border-color: rgba(148, 163, 184, 0.48);
+  color: #cbd5e1;
+  background: rgba(51, 65, 85, 0.52);
+}
+
 .completion-dock .puzzle-actions {
   width: auto;
   flex: 0 0 auto;
