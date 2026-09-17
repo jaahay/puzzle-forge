@@ -12,7 +12,6 @@ import { PuzzleHistoryActions } from "./PuzzleHistoryActions";
 import { PuzzleTerminalDock } from "./PuzzleTerminalDock";
 import type { GridPuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
-import { usePuzzleCompletionPresentation } from "./usePuzzleCompletionPresentation";
 import { WordGuessGame } from "./WordGuessGame";
 import { WordGuessNewPuzzleControl } from "./WordGuessNewPuzzleControl";
 
@@ -83,13 +82,6 @@ export const GridPuzzleWorkspace = ({
   const terminalPuzzle = puzzle?.kind === "grid" ? puzzle : null;
   const terminalState = getGridWorkspaceTerminalState(terminalPuzzle, gridCells);
   const isSolved = terminalState.kind === "solved";
-  const completion = usePuzzleCompletionPresentation({
-    enabled: Boolean(terminalPuzzle && (isNonogram || isFutoshiki)),
-    identity: terminalPuzzle?.id ?? `${selectedDefinition.id}:pending`,
-    solved: isSolved,
-    trackedKeys: isFutoshiki ? ["1", "2", "3", "4", "5", "Enter", " "] : ["Enter", " "],
-  });
-  const isCompletionPresented = isSolved && completion.phase === "completed";
   const filledOpenCount = getFilledOpenCount(gridCells);
   const openCount = getOpenCount(gridCells);
   const dailyLabel = puzzle ? getPuzzleProvenance(puzzle)?.dateStamp ?? null : null;
@@ -111,13 +103,11 @@ export const GridPuzzleWorkspace = ({
 
   const handleCellClick = (cell: PuzzleCell) => {
     if (isSolved) return;
-    if (isNonogram) completion.recordCausativeInput();
     onCellClick(cell);
   };
 
   const handleCellInput = (cell: PuzzleCell, value: string) => {
     if (isSolved) return;
-    if (isFutoshiki) completion.recordCausativeInput();
     onCellInput(cell, value);
   };
 
@@ -262,7 +252,7 @@ export const GridPuzzleWorkspace = ({
 
   const gameplay = puzzle?.kind === "grid" && !isWordGuess ? (
     <div class="gameplay-control-stack">
-      {isCompletionPresented ? (
+      {isSolved ? (
         <PuzzleTerminalDock
           state={solvedTerminalState}
           label="Puzzle solved"
@@ -274,8 +264,8 @@ export const GridPuzzleWorkspace = ({
       ) : (
         <>
           <div class={`puzzle-actions ${isNonogram ? "nonogram-current-actions" : ""}`.trim()}>
-            <button type="button" onClick={onCheck} disabled={isSolved}>Check</button>
-            {isNonogram || isFutoshiki ? <button type="button" onClick={onReset} disabled={isGenerating || isSolved}>Reset</button> : null}
+            <button type="button" onClick={onCheck}>Check</button>
+            {isNonogram || isFutoshiki ? <button type="button" onClick={onReset} disabled={isGenerating}>Reset</button> : null}
           </div>
           {validation}
         </>
