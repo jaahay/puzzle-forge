@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { failedTerminalState, playingTerminalState, solvedTerminalState, type PuzzleTerminalState } from "../app/puzzleTerminalState";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { getWordGuessAnalysis } from "../games/wordGuess/analysis";
 import { scoreWordGuess } from "../games/wordGuess/feedback";
@@ -73,6 +74,15 @@ const restoreGuessIntoRow = (rowCells: PuzzleCell[], guess: string, onCellInput:
       onCellInput(cell, letter);
     }
   });
+};
+
+export const getWordGuessTerminalState = (
+  status: WordGuessProgressStatus,
+  failureMessage?: string,
+): PuzzleTerminalState => {
+  if (status === "won") return solvedTerminalState;
+  if (status === "lost") return failedTerminalState(failureMessage);
+  return playingTerminalState;
 };
 
 export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSubmitGuess, onReset }: WordGuessGameProps) => {
