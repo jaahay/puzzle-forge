@@ -88,6 +88,7 @@ type GridPuzzlePreviewProps = {
   selectedGridCell: GridCellSelection | null;
   numericSelectedCell?: PuzzleCell;
   numericActiveValue?: string;
+  disabled?: boolean;
   completionPhase?: CompletionPresentationPhase;
   onCompletionAnimationEnd?: () => void;
   onCellClick: (cell: PuzzleCell) => void;
@@ -100,6 +101,7 @@ export const GridPuzzlePreview = ({
   selectedGridCell,
   numericSelectedCell,
   numericActiveValue = "",
+  disabled = false,
   completionPhase = "playing",
   onCompletionAnimationEnd,
   onCellClick,
@@ -112,9 +114,10 @@ export const GridPuzzlePreview = ({
   const isDiagonalSudoku = isSudoku && puzzle.sudokuVariation === "diagonal";
   const isZeroKillerSudoku = isSudoku && puzzle.sudokuVariation === "zero-killer";
   const isNonogram = puzzle.puzzleId === "nonogram";
+  const interactionDisabled = disabled || isSudokuSolved;
   const showSudokuCompletionEffect = isSudokuSolved && completionPhase === "celebrating";
-  const selectedCell = isSudokuSolved ? undefined : numericSelectedCell;
-  const activeNumericValue = isSudokuSolved ? "" : numericActiveValue;
+  const selectedCell = interactionDisabled ? undefined : numericSelectedCell;
+  const activeNumericValue = interactionDisabled ? "" : numericActiveValue;
   const killerCageDecorations = isZeroKillerSudoku ? makeKillerCageDecorations(puzzle) : new Map<string, KillerCageDecoration>();
   const hasSudokuValidation = Boolean(isSudoku && cells.some((cell) => !cell.locked && (cell.tone === "answer" || cell.tone === "hint")));
   const gridTemplateColumns = `repeat(${puzzle.width}, minmax(0, 1fr))`;
@@ -126,7 +129,7 @@ export const GridPuzzlePreview = ({
     <div
       aria-label={sudokuBoardLabel ?? (isNonogram ? `${puzzle.width} by ${puzzle.height} Nonogram board` : undefined)}
       class={`grid ${puzzle.puzzleId} ${isDiagonalSudoku ? "diagonal-sudoku" : ""} ${isZeroKillerSudoku ? "zero-killer-sudoku" : ""} ${showSudokuCompletionEffect ? "solved-grid" : ""}`}
-      data-grid-selection-scope={isNumericGridPuzzle && !isSudokuSolved ? "true" : undefined}
+      data-grid-selection-scope={isNumericGridPuzzle && !interactionDisabled ? "true" : undefined}
       onAnimationEnd={(event) => {
         if (showSudokuCompletionEffect && event.target === event.currentTarget) {
           onCompletionAnimationEnd?.();
@@ -136,9 +139,9 @@ export const GridPuzzlePreview = ({
     >
       {cells.map((cell) => {
         const killerCage = killerCageDecorations.get(gridCellKey(cell.row, cell.column));
-        const isSelectable = !isSudokuSolved && cell.tone !== "disabled" && (isNumericGridPuzzle || puzzle.puzzleId === "peg-solitaire" || !cell.locked);
-        const isEditable = !isSudokuSolved && cell.tone !== "disabled" && (puzzle.puzzleId === "peg-solitaire" || !cell.locked);
-        const isSelected = !isSudokuSolved && isSelectedGridCell(selectedGridCell, cell);
+        const isSelectable = !interactionDisabled && cell.tone !== "disabled" && (isNumericGridPuzzle || puzzle.puzzleId === "peg-solitaire" || !cell.locked);
+        const isEditable = !interactionDisabled && cell.tone !== "disabled" && (puzzle.puzzleId === "peg-solitaire" || !cell.locked);
+        const isSelected = !interactionDisabled && isSelectedGridCell(selectedGridCell, cell);
         const isDiagonalPeer = Boolean(isDiagonalSudoku && selectedCell && sameSudokuDiagonal(cell, selectedCell, puzzle.width));
         const isPeer = Boolean(
           isSudoku &&
