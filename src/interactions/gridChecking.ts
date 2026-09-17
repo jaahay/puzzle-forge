@@ -171,6 +171,22 @@ export const assessGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: Puzz
 export const isGridAnswerCompleteAndCorrect = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) =>
   assessGridAnswer(currentPuzzle, cells).solved;
 
+export const isGridPuzzleSolved = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]) => {
+  if (currentPuzzle.puzzleId !== "nonogram") {
+    return isGridAnswerCompleteAndCorrect(currentPuzzle, cells);
+  }
+
+  const targetRows = currentPuzzle.clues?.rows;
+  const targetColumns = currentPuzzle.clues?.columns;
+  if (targetRows?.length !== currentPuzzle.height || targetColumns?.length !== currentPuzzle.width) {
+    return false;
+  }
+
+  const actualClues = buildNonogramCluesFromCells(cells, currentPuzzle.width, currentPuzzle.height);
+  return targetRows.every((clue, row) => sameNonogramClue(actualClues.rows[row] ?? [], clue)) &&
+    targetColumns.every((clue, column) => sameNonogramClue(actualClues.columns[column] ?? [], clue));
+};
+
 export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]): GridCheckResult => {
   if (currentPuzzle.puzzleId === "word-guess") {
     return checkWordGuess(currentPuzzle, cells);
