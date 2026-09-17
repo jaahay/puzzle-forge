@@ -11,6 +11,17 @@ const getRuleBody = (selector: string) => {
   return workspaceCss.match(new RegExp(`${escapedSelector}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
 };
 
+describe("reserved validation lanes", () => {
+  it("keeps the idle lane geometrically present but visually transparent", () => {
+    const idleLane = getRuleBody(".grid-validation-message.is-idle");
+
+    expect(idleLane).toContain("border-color: transparent;");
+    expect(idleLane).toContain("color: transparent;");
+    expect(idleLane).toContain("background: transparent;");
+    expect(idleLane).toContain("box-shadow: none;");
+  });
+});
+
 describe("PuzzleTerminalDock terminal tones", () => {
   it("keeps failed outcomes visually neutral instead of inheriting solved green", () => {
     const failedDock = getRuleBody(".terminal-failed");
