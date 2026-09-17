@@ -1,5 +1,7 @@
-import type { PuzzleCell } from "../catalog/types";
+import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { getPuzzleProvenance } from "../app/puzzleProvenance";
+import { playingTerminalState, solvedTerminalState, type PuzzleTerminalState } from "../app/puzzleTerminalState";
+import { isGridPuzzleSolved } from "../interactions/gridChecking";
 import { getBoardViewportNaturalWidth } from "./BoardViewport";
 import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
 import { FutoshikiBoard } from "./FutoshikiBoard";
@@ -7,13 +9,26 @@ import { FutoshikiNewPuzzleControl } from "./FutoshikiNewPuzzleControl";
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
 import { NonogramNewPuzzleControl } from "./NonogramNewPuzzleControl";
 import { PuzzleHistoryActions } from "./PuzzleHistoryActions";
+import { PuzzleTerminalDock } from "./PuzzleTerminalDock";
 import type { GridPuzzleWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
+import { usePuzzleCompletionPresentation } from "./usePuzzleCompletionPresentation";
 import { WordGuessGame } from "./WordGuessGame";
 import { WordGuessNewPuzzleControl } from "./WordGuessNewPuzzleControl";
 
 const getFilledOpenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => !cell.locked && cell.value).length ?? 0;
 const getOpenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => !cell.locked).length ?? 0;
+
+export const getGridWorkspaceTerminalState = (
+  puzzle: GridGeneratedPuzzle | null,
+  cells: PuzzleCell[] | null,
+): PuzzleTerminalState => {
+  if (!puzzle || !cells || (puzzle.puzzleId !== "nonogram" && puzzle.puzzleId !== "futoshiki")) {
+    return playingTerminalState;
+  }
+
+  return isGridPuzzleSolved(puzzle, cells) ? solvedTerminalState : playingTerminalState;
+};
 
 export const getGridPuzzleMetaItems = ({
   isFutoshiki,
@@ -65,6 +80,16 @@ export const GridPuzzleWorkspace = ({
   const isWordGuess = selectedDefinition.id === "word-guess";
   const isFutoshiki = selectedDefinition.id === "futoshiki";
   const usesDedicatedStatus = isNonogram || isWordGuess || isFutoshiki;
+  const terminalPuzzle = puzzle?.kind === "grid" ? puzzle : null;
+  const terminalState = getGridWorkspaceTerminalState(terminalPuzzle, gridCells);
+  const isSolved = terminalState.kind === "solved";
+  const completion = usePuzzleCompletionPresentation({
+    enabled: Boolean(terminalPuzzle && (isNonogram || isFutoshiki)),
+    identity: terminalPuzzle?.id ?? `${selectedDefinition.id}:pending`,
+    solved: isSolved,
+    trackedKeys: isFutoshiki ? ["1", "2", "3", "4", "5", "Enter", " "] : ["Enter", " "],
+  });
+  const isCompletionPresented = isSolved && completion.phase === "completed";
   const filledOpenCount = getFilledOpenCount(gridCells);
   const openCount = getOpenCount(gridCells);
   const dailyLabel = puzzle ? getPuzzleProvenance(puzzle)?.dateStamp ?? null : null;
@@ -83,6 +108,18 @@ export const GridPuzzleWorkspace = ({
   const hasCrown = Boolean(puzzle && (isNonogram || isWordGuess || isFutoshiki));
   const puzzleArrivalIdentity = hasCrown && puzzle ? getPuzzleArrivalIdentity(puzzle) : null;
   const isPuzzleArriving = usePuzzleArrival(puzzleArrivalIdentity);
+
+  const handleCellClick = (cell: PuzzleCell) => {
+    if (isSolved) return;
+    if (isNonogram) completion.recordCausativeInput();
+    onCellClick(cell);
+  };
+
+  const handleCellInput = (cell: PuzzleCell, value: string) => {
+    if (isSolved) return;
+    if (isFutoshiki) completion.recordCausativeInput();
+    onCellInput(cell, value);
+  };
 
   const newPuzzleControl = !puzzle ? null : isNonogram ? (
     <NonogramNewPuzzleControl
@@ -142,7 +179,7 @@ export const GridPuzzleWorkspace = ({
     <PuzzleHistoryActions
       canUndo={canUndoGrid}
       canRedo={canRedoGrid}
-      disabled={isGenerating}
+      disabled={isGenerating || isSolved}
       onUndo={onUndoGrid}
       onRedo={onRedoGrid}
     />
@@ -159,10 +196,15 @@ export const GridPuzzleWorkspace = ({
   ) : null;
 
   const status = usesDedicatedStatus ? null : <p class="status-line" aria-live="polite">{statusMessage}</p>;
-  const validation = isNonogram && gridCheckFeedbackTone ? (
-    <p class={`grid-validation-message ${gridCheckFeedbackTone}`} aria-live="polite">{statusMessage}</p>
-  ) : isFutoshiki ? (
-    <p class={`grid-validation-message ${gridCheckFeedbackTone ?? "progress"}`} aria-live="polite">{statusMessage}</p>
+  const validationMessage = !isSolved && gridCheckFeedbackTone ? statusMessage : "";
+  const validation = isNonogram || isFutoshiki ? (
+    <p
+      class={`grid-validation-message ${validationMessage ? gridCheckFeedbackTone : "is-idle"}`}
+      aria-hidden={validationMessage ? undefined : true}
+      aria-live="polite"
+    >
+      {validationMessage || "\u00a0"}
+    </p>
   ) : null;
 
   const loadingBoard = (
@@ -195,9 +237,21 @@ export const GridPuzzleWorkspace = ({
           onReset={onReset}
         />
       ) : puzzle.puzzleId === "futoshiki" && gridCells ? (
-        <FutoshikiBoard puzzle={puzzle} cells={gridCells} selectedGridCell={selectedGridCell} onCellClick={onCellClick} onCellInput={onCellInput} />
+        <FutoshikiBoard
+          puzzle={puzzle}
+          cells={gridCells}
+          selectedGridCell={isSolved ? null : selectedGridCell}
+          onCellClick={handleCellClick}
+          onCellInput={handleCellInput}
+        />
       ) : gridCells ? (
-        <GridPuzzlePreview puzzle={puzzle} cells={gridCells} selectedGridCell={selectedGridCell} onCellClick={onCellClick} onCellInput={onCellInput} />
+        <GridPuzzlePreview
+          puzzle={puzzle}
+          cells={gridCells}
+          selectedGridCell={isSolved ? null : selectedGridCell}
+          onCellClick={handleCellClick}
+          onCellInput={handleCellInput}
+        />
       ) : null}
       {usesDedicatedStatus || puzzle.notes.length === 0 ? null : (
         <ul class="notes-list">{puzzle.notes.map((note) => <li key={note}>{note}</li>)}</ul>
@@ -207,11 +261,24 @@ export const GridPuzzleWorkspace = ({
 
   const gameplay = puzzle?.kind === "grid" && !isWordGuess ? (
     <div class="gameplay-control-stack">
-      <div class={`puzzle-actions ${isNonogram ? "nonogram-current-actions" : ""}`.trim()}>
-        <button type="button" onClick={onCheck}>Check</button>
-        {isNonogram || isFutoshiki ? <button type="button" onClick={onReset} disabled={isGenerating}>Reset</button> : null}
-      </div>
-      {validation}
+      {isCompletionPresented ? (
+        <PuzzleTerminalDock
+          state={solvedTerminalState}
+          label="Puzzle solved"
+          ariaLabel={`${selectedDefinition.title} solved`}
+          disabled={isGenerating}
+          onReset={onReset}
+          onNewPuzzle={onNewPuzzle}
+        />
+      ) : (
+        <>
+          <div class={`puzzle-actions ${isNonogram ? "nonogram-current-actions" : ""}`.trim()}>
+            <button type="button" onClick={onCheck} disabled={isSolved}>Check</button>
+            {isNonogram || isFutoshiki ? <button type="button" onClick={onReset} disabled={isGenerating || isSolved}>Reset</button> : null}
+          </div>
+          {validation}
+        </>
+      )}
     </div>
   ) : null;
 
