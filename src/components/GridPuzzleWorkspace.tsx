@@ -235,6 +235,7 @@ export const GridPuzzleWorkspace = ({
           onCellInput={onCellInput}
           onSubmitGuess={onCheck}
           onReset={onReset}
+          onNewPuzzle={onNewPuzzle}
         />
       ) : puzzle.puzzleId === "futoshiki" && gridCells ? (
         <FutoshikiBoard
