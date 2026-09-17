@@ -14,21 +14,25 @@ describe("Word Guess terminal mapping", () => {
   it("switches terminal outcomes from Submit to Retry and New puzzle while retaining Share", () => {
     expect(getWordGuessActionPresentation("playing", 0)).toEqual({
       terminal: false,
+      terminalLabel: null,
       resetLabel: "Reset",
       canShare: false,
     });
     expect(getWordGuessActionPresentation("playing", 2)).toEqual({
       terminal: false,
+      terminalLabel: null,
       resetLabel: "Reset",
       canShare: true,
     });
     expect(getWordGuessActionPresentation("won", 3)).toEqual({
       terminal: true,
+      terminalLabel: "Word solved",
       resetLabel: "Retry",
       canShare: true,
     });
     expect(getWordGuessActionPresentation("lost", 6)).toEqual({
       terminal: true,
+      terminalLabel: "Attempts exhausted",
       resetLabel: "Retry",
       canShare: true,
     });
