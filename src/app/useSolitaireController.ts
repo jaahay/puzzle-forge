@@ -15,6 +15,7 @@ import {
   type SolitaireMoveResult,
 } from "./solitaireMoves";
 import { drawFromStockStacks, type SolitaireStockStatsDelta, type SolitaireStackUpdate } from "./solitaireStock";
+import { getSolitaireFoundationCardCount, isSolitaireSolved } from "./solitaireTerminal";
 
 export type SolitaireControllerState = {
   cardStacks: CardStack[] | null;
@@ -77,10 +78,7 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
     { clearSelection = false }: { clearSelection?: boolean } = {},
   ) => {
     const didChange = stacks !== baseStacks;
-    const foundationCardCount = stacks
-      .filter((stack) => stack.role === "foundation")
-      .reduce((total, stack) => total + stack.cards.length, 0);
-    const isSolved = foundationCardCount === 52;
+    const isSolved = isSolitaireSolved(stacks);
     const nextMessage = isSolved ? "Solved. All cards are on foundations." : message;
 
     setSolitaireState((current) => {
@@ -257,11 +255,9 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
   };
 
   const checkSolitaire = () => {
-    const foundationCardCount = cardStacks
-      ?.filter((stack) => stack.role === "foundation")
-      .reduce((total, stack) => total + stack.cards.length, 0) ?? 0;
+    const foundationCardCount = getSolitaireFoundationCardCount(cardStacks);
     setStatusMessage(
-      foundationCardCount === 52
+      isSolitaireSolved(cardStacks)
         ? `Solved in ${solitaireStats.moveCount} move(s). All cards are on foundations.`
         : `Not solved: ${foundationCardCount}/52 cards are on foundations after ${solitaireStats.moveCount} move(s).`,
     );
