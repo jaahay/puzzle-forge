@@ -6,7 +6,6 @@ import { PuzzleTerminalDock } from "./PuzzleTerminalDock";
 import type { ImageWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { TilePuzzlePreview } from "./TilePuzzlePreview";
-import { usePuzzleCompletionPresentation } from "./usePuzzleCompletionPresentation";
 
 export const getJigsawGameplayNotes = (notes: string[], assetTitle: string) =>
   notes.filter((note) => note !== `Jigsaw using the bundled ${assetTitle} image.`);
@@ -38,13 +37,6 @@ export const JigsawWorkspace = ({
     completionState?.puzzleInstanceId === puzzleInstanceId &&
     completionState.solved,
   );
-  const completionPresentation = usePuzzleCompletionPresentation({
-    enabled: Boolean(jigsawPuzzle),
-    identity: puzzleArrivalIdentity ?? "",
-    solved: isSolved,
-  });
-  const isCompletionPresented = isSolved && completionPresentation.phase === "completed";
-
   const handleSolvedChange = useCallback((solved: boolean) => {
     if (!puzzleInstanceId) return;
     setCompletionState((current) =>
@@ -113,7 +105,7 @@ export const JigsawWorkspace = ({
   ) : isGenerating ? loadingBoard : null;
 
   const gameplay = jigsawPuzzle ? (
-    isCompletionPresented ? (
+    isSolved ? (
       <PuzzleTerminalDock
         state={solvedTerminalState}
         label="Puzzle solved"
