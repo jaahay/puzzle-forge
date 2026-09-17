@@ -232,6 +232,7 @@ export const GridPuzzleWorkspace = ({
           puzzle={puzzle}
           cells={gridCells}
           selectedGridCell={isSolved ? null : selectedGridCell}
+          disabled={isSolved}
           onCellClick={handleCellClick}
           onCellInput={handleCellInput}
         />
@@ -240,6 +241,7 @@ export const GridPuzzleWorkspace = ({
           puzzle={puzzle}
           cells={gridCells}
           selectedGridCell={isSolved ? null : selectedGridCell}
+          disabled={isSolved}
           onCellClick={handleCellClick}
           onCellInput={handleCellInput}
         />
