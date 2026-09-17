@@ -1,7 +1,7 @@
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { pluralize } from "../app/runtime";
 import { scoreWordGuess, wordGuessMarkToTone } from "../games/wordGuess/feedback";
-import { buildNonogramCluesFromCells, sameNonogramClue, FILLED_NONOGRAM_CELL } from "../games/nonogram/solve";
+import { buildNonogramCluesFromCells, isNonogramLineFeasible, sameNonogramClue, FILLED_NONOGRAM_CELL } from "../games/nonogram/solve";
 import { getWordGuessBank, isValidWordGuess } from "../games/wordGuess/words";
 import { cloneGridCell } from "./gridRules";
 
@@ -82,28 +82,51 @@ const checkNonogram = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]):
   const columnMatches = Array.from({ length: currentPuzzle.width }, (_, column) =>
     sameNonogramClue(actualClues.columns[column] ?? [], targetColumns[column] ?? []),
   );
-  const incorrectRowCount = rowMatches.filter((matches) => !matches).length;
-  const incorrectColumnCount = columnMatches.filter((matches) => !matches).length;
+  const rowFeasible = Array.from({ length: currentPuzzle.height }, (_, row) =>
+    isNonogramLineFeasible(
+      currentPuzzle.width,
+      targetRows[row] ?? [],
+      cells
+        .filter((cell) => cell.row === row && cell.value === FILLED_NONOGRAM_CELL)
+        .map((cell) => cell.column),
+    ),
+  );
+  const columnFeasible = Array.from({ length: currentPuzzle.width }, (_, column) =>
+    isNonogramLineFeasible(
+      currentPuzzle.height,
+      targetColumns[column] ?? [],
+      cells
+        .filter((cell) => cell.column === column && cell.value === FILLED_NONOGRAM_CELL)
+        .map((cell) => cell.row),
+    ),
+  );
+  const incorrectRowCount = rowFeasible.filter((feasible) => !feasible).length;
+  const incorrectColumnCount = columnFeasible.filter((feasible) => !feasible).length;
   const nextCells = cells.map((cell): PuzzleCell => {
     if (cell.tone === "disabled" || cell.locked) {
       return cell;
     }
 
-    const validLineCrossing = Boolean(rowMatches[cell.row] && columnMatches[cell.column]);
+    const isFilled = cell.value === FILLED_NONOGRAM_CELL;
+    const crossesImpossibleLine = rowFeasible[cell.row] === false || columnFeasible[cell.column] === false;
 
     return {
       ...cell,
-      tone: cell.value === FILLED_NONOGRAM_CELL ? (validLineCrossing ? "accent" : "hint") : validLineCrossing ? "empty" : "hint",
+      tone: isFilled ? (crossesImpossibleLine ? "hint" : "accent") : "empty",
     };
   });
 
-  if (incorrectRowCount === 0 && incorrectColumnCount === 0) {
+  if (rowMatches.every(Boolean) && columnMatches.every(Boolean)) {
     return makeGridCheckResult(nextCells, "Solved. All clues match.", "success");
+  }
+
+  if (incorrectRowCount === 0 && incorrectColumnCount === 0) {
+    return makeGridCheckResult(nextCells, "Looks good so far.", "progress");
   }
 
   return makeGridCheckResult(
     nextCells,
-    `${pluralize(incorrectRowCount, "row clue")} and ${pluralize(incorrectColumnCount, "column clue")} do not match.`,
+    `${pluralize(incorrectRowCount, "row clue")} and ${pluralize(incorrectColumnCount, "column clue")} need attention.`,
     "error",
   );
 };
@@ -215,7 +238,9 @@ export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: Puzzl
 
     return {
       ...cell,
-      tone: currentPuzzle.puzzleId === "sudoku" ? (isEmpty || isCorrect ? "empty" : "hint") : isEmpty ? "empty" : isCorrect ? "answer" : "hint",
+      tone: currentPuzzle.puzzleId === "sudoku" || currentPuzzle.puzzleId === "futoshiki"
+        ? (isEmpty || isCorrect ? "empty" : "hint")
+        : isEmpty ? "empty" : isCorrect ? "answer" : "hint",
     };
   });
 
