@@ -20,11 +20,14 @@ describe("Sudoku wide/short play composition", () => {
     expect(workspaceLayoutSource).toContain("!play && gameplay ?");
   });
 
-  it("uses container width plus available block height instead of orientation", () => {
+  it("requires genuinely wide, height-constrained geometry instead of orientation", () => {
     expect(workspaceHierarchyCss).toMatch(
       /\.sudoku-workspace \.workspace-layout-play-surface\s*\{[^}]*container-type: inline-size;[^}]*container-name: sudoku-play-surface;/s,
     );
-    expect(workspaceHierarchyCss).toContain("@media (max-height: 48rem)");
+    expect(workspaceHierarchyCss).toContain(
+      "@media (max-height: 48rem) and (min-aspect-ratio: 4 / 3)",
+    );
+    expect(workspaceHierarchyCss).not.toContain("@media (max-height: 48rem) {");
     expect(workspaceHierarchyCss).toContain("@container sudoku-play-surface (min-width: 45rem)");
     expect(workspaceHierarchyCss).not.toContain("orientation: landscape");
     expect(workspaceHierarchyCss).toMatch(
