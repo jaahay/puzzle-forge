@@ -250,7 +250,17 @@ export const ImageTilePuzzlePreview = ({
       </div>
 
       <p class="image-tile-instruction">
-        {getImageTileInstruction(isSolved, isSliding, selectedTileId)}
+        <span class="image-tile-instruction-sizer" aria-hidden="true">
+          {getImageTileInstruction(false, isSliding, null)}
+        </span>
+        {!isSliding ? (
+          <span class="image-tile-instruction-sizer" aria-hidden="true">
+            {getImageTileInstruction(false, false, "selected")}
+          </span>
+        ) : null}
+        <span class="image-tile-instruction-copy">
+          {getImageTileInstruction(isSolved, isSliding, selectedTileId)}
+        </span>
       </p>
 
       <div class="image-tile-tools">
