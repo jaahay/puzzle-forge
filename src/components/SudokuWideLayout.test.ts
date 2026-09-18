@@ -33,7 +33,7 @@ describe("Sudoku wide/short play composition", () => {
       /@media \(any-pointer: coarse\)\s*\{\s*\.numeric-grid-digit-pad\s*\{[^}]*display: grid;/s,
     );
     expect(workspaceHierarchyCss).toMatch(
-      /\.sudoku-play-controls \.sudoku-digit-pad\s*\{[^}]*display: grid;[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/s,
+      /\.sudoku-play-controls \.numeric-grid-digit-pad\s*\{[^}]*display: grid;[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/s,
     );
   });
 
