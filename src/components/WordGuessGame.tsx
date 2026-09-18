@@ -32,6 +32,7 @@ type WordGuessGameProps = {
   onSubmitGuess: () => void;
   onReset: () => void;
   onNewPuzzle: () => void;
+  disabled?: boolean;
 };
 
 const getRows = (cells: PuzzleCell[], rowCount: number) =>
@@ -94,7 +95,7 @@ export const getWordGuessActionPresentation = (status: WordGuessProgressStatus, 
   canShare: submittedRows > 0,
 });
 
-export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSubmitGuess, onReset, onNewPuzzle }: WordGuessGameProps) => {
+export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSubmitGuess, onReset, onNewPuzzle, disabled = false }: WordGuessGameProps) => {
   const answer = puzzle.answerKey?.join("").toUpperCase() ?? "";
   const wordBank = useMemo(() => getWordGuessBank(puzzle.width), [puzzle.width]);
   const rows = useMemo(() => getRows(cells, puzzle.height), [cells, puzzle.height]);
@@ -382,6 +383,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
           state={terminalState}
           label={actionPresentation.terminalLabel ?? message}
           ariaLabel={status === "won" ? "Word Guess solved" : "Word Guess finished"}
+          disabled={disabled}
           onReset={resetGame}
           resetLabel={actionPresentation.resetLabel}
           onNewPuzzle={onNewPuzzle}
