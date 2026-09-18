@@ -258,8 +258,8 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
     const foundationCardCount = getSolitaireFoundationCardCount(cardStacks);
     setStatusMessage(
       isSolitaireSolved(cardStacks)
-        ? `Solved in ${solitaireStats.moveCount} move(s). All cards are on foundations.`
-        : `Not solved: ${foundationCardCount}/52 cards are on foundations after ${solitaireStats.moveCount} move(s).`,
+        ? `Solved in ${solitaireStats.moveCount} ${solitaireStats.moveCount === 1 ? "move" : "moves"}. All cards are on foundations.`
+        : `Not solved: ${foundationCardCount}/52 cards are on foundations after ${solitaireStats.moveCount} ${solitaireStats.moveCount === 1 ? "move" : "moves"}.`,
     );
   };
 
