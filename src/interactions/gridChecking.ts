@@ -292,7 +292,7 @@ export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: Puzzl
 
   return makeGridCheckResult(
     nextCells,
-    `Not solved: ${assessment.emptyCount} empty cell(s), ${assessment.incorrectCount} incorrect cell(s).`,
+    `Not solved: ${pluralize(assessment.emptyCount, "empty cell")}, ${pluralize(assessment.incorrectCount, "incorrect cell")}.`,
     "error",
   );
 };
