@@ -433,6 +433,16 @@
       justify-self: end;
     }
 
+    /* Keep the square board within the short play viewport without changing
+       BoardViewport's normal width-driven contract. The budget reserves the
+       2.75rem crown, the play-surface gap, and modest breathing room. */
+    .sudoku-play-board .square-grid-board-viewport {
+      width: min(
+        100%,
+        clamp(15.75rem, calc(100dvh - 4.5rem), var(--play-column-max))
+      );
+    }
+
     .sudoku-play-controls {
       align-self: start;
       justify-self: stretch;
