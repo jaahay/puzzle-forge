@@ -31,7 +31,7 @@ describe("Sudoku wide/short play composition", () => {
   it("keeps the touch digit pad available beyond the narrow-width breakpoint", () => {
     expect(numericGridCss).toContain("@media (any-pointer: coarse)");
     expect(numericGridCss).toMatch(
-      /@media \(any-pointer: coarse\)\s*\{\s*\.numeric-grid-digit-pad\s*\{[^}]*display: grid;/s,
+      /@media \(any-pointer: coarse\)\s*\{\s*\.sudoku-workspace \.numeric-grid-digit-pad\s*\{[^}]*display: grid;/s,
     );
     expect(workspaceHierarchyCss).toMatch(
       /\.sudoku-play-controls \.numeric-grid-digit-pad\s*\{[^}]*display: grid;[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/s,
