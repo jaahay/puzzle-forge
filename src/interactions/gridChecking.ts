@@ -124,9 +124,15 @@ const checkNonogram = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]):
     return makeGridCheckResult(nextCells, "Looks good so far.", "progress");
   }
 
+  const incorrectClueCount = incorrectRowCount + incorrectColumnCount;
+  const clueErrorParts = [
+    incorrectRowCount > 0 ? pluralize(incorrectRowCount, "row clue") : null,
+    incorrectColumnCount > 0 ? pluralize(incorrectColumnCount, "column clue") : null,
+  ].filter((part): part is string => Boolean(part));
+
   return makeGridCheckResult(
     nextCells,
-    `${pluralize(incorrectRowCount, "row clue")} and ${pluralize(incorrectColumnCount, "column clue")} need attention.`,
+    `${clueErrorParts.join(" and ")} ${incorrectClueCount === 1 ? "needs" : "need"} attention.`,
     "error",
   );
 };
