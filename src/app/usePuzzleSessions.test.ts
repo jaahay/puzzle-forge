@@ -70,6 +70,76 @@ describe("clonePuzzleSession", () => {
 });
 
 describe("buildRuntimeSession", () => {
+  it("does not retain transient Futoshiki validation tones in saved session state", () => {
+    const puzzle = {
+      ...makeSudokuPuzzle(),
+      id: "futoshiki-transient",
+      puzzleId: "futoshiki" as const,
+      title: "Futoshiki",
+      width: 2,
+      height: 2,
+      cells: [],
+    };
+    const gridCells: PuzzleCell[] = [
+      { row: 0, column: 0, value: "1", locked: false, tone: "hint" },
+      { row: 0, column: 1, value: "2", locked: false, tone: "answer" },
+      { row: 1, column: 0, value: "2", locked: true, tone: "given" },
+      { row: 1, column: 1, value: "", locked: false, tone: "empty" },
+    ];
+
+    const session = buildRuntimeSession({
+      puzzle,
+      cardStacks: null,
+      selectedCard: null,
+      solitaireStats: { ...initialSolitaireStats },
+      solitaireUndoStack: [],
+      solitaireRedoStack: [],
+      gridCells,
+      selectedGridCell: null,
+      statusMessage: "1 entry needs attention.",
+    });
+
+    expect(session.progress.kind).toBe("grid");
+    if (session.progress.kind !== "grid") return;
+    expect(session.progress.cells.map((cell) => cell.tone)).toEqual(["empty", "empty", "given", "empty"]);
+    expect(gridCells.map((cell) => cell.tone)).toEqual(["hint", "answer", "given", "empty"]);
+  });
+
+  it("does not retain transient Nonogram validation tones in saved session state", () => {
+    const puzzle = {
+      ...makeSudokuPuzzle(),
+      id: "nonogram-transient",
+      puzzleId: "nonogram" as const,
+      title: "Nonogram",
+      width: 3,
+      height: 1,
+      cells: [],
+      clues: { rows: [[1]], columns: [[1], [], []] },
+    };
+    const gridCells: PuzzleCell[] = [
+      { row: 0, column: 0, value: "■", locked: false, tone: "hint" },
+      { row: 0, column: 1, value: "", locked: false, tone: "hint" },
+      { row: 0, column: 2, value: "", locked: false, tone: "empty" },
+    ];
+
+    const session = buildRuntimeSession({
+      puzzle,
+      cardStacks: null,
+      selectedCard: null,
+      solitaireStats: { ...initialSolitaireStats },
+      solitaireUndoStack: [],
+      solitaireRedoStack: [],
+      gridCells,
+      selectedGridCell: null,
+      statusMessage: "1 row clue needs attention.",
+    });
+
+    expect(session.progress.kind).toBe("grid");
+    if (session.progress.kind !== "grid") return;
+    expect(session.progress.cells.map((cell) => cell.tone)).toEqual(["accent", "empty", "empty"]);
+    expect(gridCells.map((cell) => cell.tone)).toEqual(["hint", "hint", "empty"]);
+  });
+
   it("does not retain transient Sudoku validation tones in saved session state", () => {
     const gridCells: PuzzleCell[] = [
       { row: 0, column: 0, value: "1", locked: false, tone: "answer" },
