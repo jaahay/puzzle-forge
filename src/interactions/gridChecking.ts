@@ -71,7 +71,7 @@ const checkWordGuess = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[])
     return makeGridCheckResult(nextCells, `No match in the available attempts. The word was ${solutionWord}.`, "error");
   }
 
-  return makeGridCheckResult(nextCells, `Not solved yet. ${currentPuzzle.height - completeGuessCount} attempt(s) remain.`, "progress");
+  return makeGridCheckResult(nextCells, `Not solved yet. ${pluralize(currentPuzzle.height - completeGuessCount, "attempt")} remain.`, "progress");
 };
 
 const checkNonogram = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]): GridCheckResult => {
