@@ -60,7 +60,7 @@ export const SolitaireWorkspace = ({
   const actionControls = isSolved ? (
     <PuzzleTerminalDock
       state={solvedTerminalState}
-      label={`Solved in ${solitaireStats.moveCount} move(s)`}
+      label={`Solved in ${solitaireStats.moveCount} ${solitaireStats.moveCount === 1 ? "move" : "moves"}`}
       ariaLabel="Klondike Solitaire solved"
       disabled={isGenerating}
       onReset={onReset}
