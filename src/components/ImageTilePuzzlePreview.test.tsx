@@ -1,12 +1,17 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { canSlideTile, slideTileIntoGap } from "../games/imageTiles/state";
 import { generateSlidingPuzzle } from "../games/slidingPuzzle/generate";
 import { generateTileSwap } from "../games/tileSwap/generate";
 import {
   getImageTileBoardStyle,
+  getImageTileInstruction,
   restoreImageTileProgress,
   shouldRevealSlidingCompletionGap,
 } from "./ImageTilePuzzlePreview";
+
+const imageTilePreviewSource = readFileSync(new URL("./ImageTilePuzzlePreview.tsx", import.meta.url), "utf8");
+const imageTileCss = readFileSync(new URL("../site/image-tiles.css", import.meta.url), "utf8");
 
 describe("ImageTilePuzzlePreview layout", () => {
   it("defines both grid axes and caps tall boards by viewport height", () => {
@@ -16,6 +21,28 @@ describe("ImageTilePuzzlePreview layout", () => {
       aspectRatio: "2 / 8",
       width: "min(100%, 42rem, 18vh)",
     });
+  });
+
+  it("replaces active move instructions with stable completion copy after solve", () => {
+    expect(getImageTileInstruction(true, false, null)).toBe("Puzzle complete.");
+    expect(getImageTileInstruction(true, true, null)).toBe("Puzzle complete.");
+    expect(getImageTileInstruction(false, true, null)).toBe(
+      "Choose any tile in the empty space's row or column. The tiles between it and the gap slide together.",
+    );
+    expect(getImageTileInstruction(false, false, null)).toBe(
+      "Choose one tile, then another, to exchange their positions.",
+    );
+    expect(getImageTileInstruction(false, false, "tile-1")).toBe(
+      "Choose a second tile to exchange with the selected tile.",
+    );
+  });
+
+  it("reserves instruction geometry across active and solved copy", () => {
+    expect(imageTilePreviewSource.match(/class="image-tile-instruction-sizer" aria-hidden="true"/g)?.length).toBe(2);
+    expect(imageTileCss).toMatch(/\.image-tile-instruction\s*\{[^}]*display: grid;/);
+    expect(imageTileCss).toMatch(/\.image-tile-instruction > span\s*\{[^}]*grid-area: 1 \/ 1;/);
+    expect(imageTileCss).toMatch(/\.image-tile-instruction-sizer\s*\{[^}]*visibility: hidden;/);
+    expect(imageTileCss).toMatch(/\.image-tile-instruction-copy\s*\{[^}]*align-self: center;/);
   });
 
   it("keeps the Sliding Puzzle gap empty until completion presentation begins", () => {

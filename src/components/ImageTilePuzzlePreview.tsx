@@ -74,6 +74,19 @@ export const shouldRevealSlidingCompletionGap = (
   solved &&
   (completionPhase === undefined || completionPhase === "celebrating" || completionPhase === "completed");
 
+export const getImageTileInstruction = (
+  solved: boolean,
+  sliding: boolean,
+  selectedTileId: string | null,
+) =>
+  solved
+    ? "Puzzle complete."
+    : sliding
+      ? "Choose any tile in the empty space's row or column. The tiles between it and the gap slide together."
+      : selectedTileId
+        ? "Choose a second tile to exchange with the selected tile."
+        : "Choose one tile, then another, to exchange their positions.";
+
 export const restoreImageTileProgress = (
   puzzle: ImageTileGeneratedPuzzle,
   value: unknown,
@@ -237,11 +250,17 @@ export const ImageTilePuzzlePreview = ({
       </div>
 
       <p class="image-tile-instruction">
-        {isSliding
-          ? "Choose any tile in the empty space's row or column. The tiles between it and the gap slide together."
-          : selectedTileId
-            ? "Choose a second tile to exchange with the selected tile."
-            : "Choose one tile, then another, to exchange their positions."}
+        <span class="image-tile-instruction-sizer" aria-hidden="true">
+          {getImageTileInstruction(false, isSliding, null)}
+        </span>
+        {!isSliding ? (
+          <span class="image-tile-instruction-sizer" aria-hidden="true">
+            {getImageTileInstruction(false, false, "selected")}
+          </span>
+        ) : null}
+        <span class="image-tile-instruction-copy">
+          {getImageTileInstruction(isSolved, isSliding, selectedTileId)}
+        </span>
       </p>
 
       <div class="image-tile-tools">

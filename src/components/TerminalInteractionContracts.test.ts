@@ -39,6 +39,11 @@ describe("terminal interaction contracts", () => {
     expect(wordGuessSource).toContain("disabled={disabled}");
   });
 
+  it("keeps Word Guess terminal announcements in its detailed status live region only", () => {
+    expect(wordGuessSource).toContain('class="word-guess-status" aria-live="polite"');
+    expect(wordGuessSource).toMatch(/<PuzzleTerminalDock[\s\S]*?announce=\{false\}[\s\S]*?\/>|<PuzzleTerminalDock[\s\S]*?announce=\{false\}[\s\S]*?>/);
+  });
+
   it("keeps Jigsaw completion direct instead of using an unconnected presentation lifecycle", () => {
     expect(jigsawSource).not.toContain("usePuzzleCompletionPresentation");
     expect(jigsawSource).toContain("isSolved ? (");
