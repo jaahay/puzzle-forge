@@ -23,7 +23,11 @@ describe("reserved validation lanes", () => {
 });
 
 describe("PuzzleTerminalDock responsive actions", () => {
-  it("gives terminal actions the full dock width before their button minimums can overflow", () => {
+  it("allows terminal actions to shrink and wrap within the actual workspace width", () => {
+    const actions = getRuleBody(".completion-dock .puzzle-actions");
+
+    expect(actions).toContain("min-width: 0;");
+    expect(actions).toContain("flex: 0 1 auto;");
     expect(workspaceCss).toContain("@media (max-width: 520px)");
     expect(workspaceCss).toMatch(/@media \(max-width: 520px\)[\s\S]*?\.completion-dock \.puzzle-actions \{[\s\S]*?width: 100%;/);
   });
