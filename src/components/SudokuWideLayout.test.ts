@@ -35,6 +35,12 @@ describe("Sudoku wide/short play composition", () => {
     );
   });
 
+  it("caps the square board against the short dynamic viewport only in wide play", () => {
+    expect(workspaceHierarchyCss).toMatch(
+      /@media \(max-height: 48rem\) and \(min-aspect-ratio: 4 \/ 3\)[\s\S]*@container sudoku-play-surface \(min-width: 45rem\)[\s\S]*\.sudoku-play-board \.square-grid-board-viewport\s*\{[^}]*width:\s*min\(\s*100%,\s*clamp\(15\.75rem,\s*calc\(100dvh - 4\.5rem\),\s*var\(--play-column-max\)\)\s*\);/s,
+    );
+  });
+
   it("keeps the touch digit pad available beyond the narrow-width breakpoint", () => {
     expect(numericGridCss).toContain("@media (any-pointer: coarse)");
     expect(numericGridCss).toMatch(
