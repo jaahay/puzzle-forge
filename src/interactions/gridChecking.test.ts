@@ -203,7 +203,7 @@ describe("Nonogram grid checking feedback", () => {
 
     expect(result.cells.map((cell) => cell.tone)).toEqual(["hint", "hint", "empty"]);
     expect(result.feedbackTone).toBe("error");
-    expect(result.message).toBe("1 row clue and 0 column clues need attention.");
+    expect(result.message).toBe("1 row clue needs attention.");
   });
 });
 
