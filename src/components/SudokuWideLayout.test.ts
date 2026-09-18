@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const sudokuWorkspaceSource = readFileSync(new URL("./SudokuWorkspace.tsx", import.meta.url), "utf8");
+const workspaceLayoutSource = readFileSync(new URL("./PuzzleWorkspaceLayout.tsx", import.meta.url), "utf8");
 const workspaceHierarchyCss = readFileSync(new URL("../site/workspace-hierarchy.css", import.meta.url), "utf8");
 const numericGridCss = readFileSync(new URL("../site/numeric-grid.css", import.meta.url), "utf8");
 
@@ -14,6 +15,9 @@ describe("Sudoku wide/short play composition", () => {
     expect(sudokuWorkspaceSource).toContain("play={playComposition}");
     expect(sudokuWorkspaceSource).toContain("board={playComposition ? null : board}");
     expect(sudokuWorkspaceSource).not.toContain("gameplay={gameplay}");
+    expect(workspaceLayoutSource).toContain("play?: ComponentChildren");
+    expect(workspaceLayoutSource).toContain("play ?? (board ?");
+    expect(workspaceLayoutSource).toContain("!play && gameplay ?");
   });
 
   it("uses container width plus available block height instead of orientation", () => {
@@ -35,6 +39,12 @@ describe("Sudoku wide/short play composition", () => {
     );
     expect(workspaceHierarchyCss).toMatch(
       /\.sudoku-play-controls \.numeric-grid-digit-pad\s*\{[^}]*display: grid;[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/s,
+    );
+  });
+
+  it("preserves the compact mobile board treatment after moving Sudoku into the play slot", () => {
+    expect(workspaceHierarchyCss).toMatch(
+      /\.sudoku-workspace \.workspace-layout-board \.puzzle-panel,\s*\.sudoku-workspace \.sudoku-play-board \.puzzle-panel\s*\{/s,
     );
   });
 
