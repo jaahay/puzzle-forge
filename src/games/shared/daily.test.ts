@@ -1,11 +1,21 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatDailyDateStamp,
   getDailyPuzzleLabel,
   getDailyPuzzleSeed,
   getDailyPuzzleSeedForProfile,
 } from "./daily";
 
 const sampleDate = new Date(2026, 7, 29, 12, 0, 0);
+
+describe("daily date labels", () => {
+  it("formats date stamps without locale or timezone dependencies", () => {
+    expect(formatDailyDateStamp("2026-09-14")).toBe("Sep 14, 2026");
+    expect(formatDailyDateStamp("2026-09-14", "2026-10-01")).toBe("Sep 14");
+    expect(formatDailyDateStamp("2025-09-14", "2026-10-01")).toBe("Sep 14, 2025");
+    expect(formatDailyDateStamp("not-a-date")).toBe("not-a-date");
+  });
+});
 
 describe("daily puzzle identity", () => {
   it("keeps the legacy date-scoped seed contract for puzzle families that use it directly", () => {
