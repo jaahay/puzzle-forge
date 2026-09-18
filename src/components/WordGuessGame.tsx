@@ -386,6 +386,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
           state={terminalState}
           label={actionPresentation.terminalLabel ?? message}
           ariaLabel={status === "won" ? "Word Guess solved" : "Word Guess finished"}
+          announce={false}
           disabled={disabled}
           onReset={resetGame}
           resetLabel={actionPresentation.resetLabel}
