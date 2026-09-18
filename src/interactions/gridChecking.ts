@@ -265,7 +265,7 @@ export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: Puzzl
 
     return makeGridCheckResult(
       nextCells,
-      `${pluralize(assessment.incorrectCount, "entry", "entries")} need attention${assessment.emptyCount > 0 ? `; ${pluralize(assessment.emptyCount, "square")} empty` : ""}.`,
+      `${pluralize(assessment.incorrectCount, "entry", "entries")} ${assessment.incorrectCount === 1 ? "needs" : "need"} attention${assessment.emptyCount > 0 ? `; ${pluralize(assessment.emptyCount, "square")} empty` : ""}.`,
       "error",
     );
   }
@@ -285,7 +285,7 @@ export const checkGridAnswer = (currentPuzzle: GridGeneratedPuzzle, cells: Puzzl
 
     return makeGridCheckResult(
       nextCells,
-      `${pluralize(assessment.incorrectCount, "entry", "entries")} need attention${assessment.emptyCount > 0 ? `; ${pluralize(assessment.emptyCount, "cell")} empty` : ""}.`,
+      `${pluralize(assessment.incorrectCount, "entry", "entries")} ${assessment.incorrectCount === 1 ? "needs" : "need"} attention${assessment.emptyCount > 0 ? `; ${pluralize(assessment.emptyCount, "cell")} empty` : ""}.`,
       "error",
     );
   }
