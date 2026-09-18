@@ -127,7 +127,7 @@ describe("Sudoku grid checking feedback", () => {
 
     expect(result.cells.map((cell) => cell.tone)).toEqual(["empty", "hint", "empty", "given"]);
     expect(result.feedbackTone).toBe("error");
-    expect(result.message).toContain("need attention");
+    expect(result.message).toBe("1 entry needs attention; 1 square empty.");
   });
 
   it("leaves correct entries neutral when the puzzle is valid but incomplete", () => {
@@ -176,7 +176,7 @@ describe("shared answer-key checking", () => {
 
     expect(result.cells.map((cell) => cell.tone)).toEqual(["empty", "hint", "empty", "given"]);
     expect(result.feedbackTone).toBe("error");
-    expect(result.message).toBe("1 entry need attention.");
+    expect(result.message).toBe("1 entry needs attention.");
   });
 });
 
