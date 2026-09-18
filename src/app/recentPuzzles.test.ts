@@ -82,9 +82,7 @@ describe("recent puzzle resources", () => {
     const [entry] = getRecentPuzzleEntries(makePersistedSessions([daily]));
 
     expect(entry?.title).toBe("Sudoku");
-    expect(entry?.summary).toContain("Daily");
-    expect(entry?.summary).toContain("Zero Killer");
-    expect(entry?.summary).toContain("Hard");
+    expect(entry?.summary).toBe("Daily Sep 14, 2026 · Zero Killer · Hard");
     expect(entry?.summary).not.toContain(daily.generationId);
   });
 
