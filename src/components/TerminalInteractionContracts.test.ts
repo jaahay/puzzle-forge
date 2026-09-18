@@ -20,6 +20,10 @@ describe("terminal interaction contracts", () => {
     expect(futoshikiSource).toContain("disabled={disabled}");
   });
 
+  it("uses the same staged Sudoku completion presentation for explicit Check", () => {
+    expect(sudokuWorkspaceSource).toMatch(/const handleCheck = \(\) => \{[\s\S]*?completion\.recordCausativeInput\(\);[\s\S]*?onCheck\(\);[\s\S]*?\};/);
+  });
+
   it("prevents solved Sudoku history controls and shortcuts from returning to active play", () => {
     expect(sudokuWorkspaceSource).toMatch(/<PuzzleHistoryActions[\s\S]*?disabled=\{isGenerating \|\| isSolved\}[\s\S]*?\/>/);
     expect(gridControllerSource.match(/supportsAutomaticGridCompletion\(puzzle\.puzzleId\) && isGridPuzzleSolved\(puzzle, currentCells\)/g)?.length).toBeGreaterThanOrEqual(2);
