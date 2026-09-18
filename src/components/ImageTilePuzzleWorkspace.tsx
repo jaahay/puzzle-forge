@@ -1,8 +1,10 @@
 import { useCallback, useState } from "preact/hooks";
+import { solvedTerminalState } from "../app/puzzleTerminalState";
 import type { ImageTileGeneratedPuzzle, ImageTilePuzzleId } from "../catalog/types";
 import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
 import { ImageTileNewPuzzleControl } from "./ImageTileNewPuzzleControl";
 import { ImageTilePuzzlePreview } from "./ImageTilePuzzlePreview";
+import { PuzzleTerminalDock } from "./PuzzleTerminalDock";
 import type { ImageWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { usePuzzleCompletionPresentation } from "./usePuzzleCompletionPresentation";
@@ -123,24 +125,14 @@ export const ImageTilePuzzleWorkspace = ({
   ) : isGenerating ? loadingBoard : null;
 
   const gameplay = isCompletionPresented ? (
-    <section class="completion-dock" aria-live="polite" aria-label={`${selectedDefinition.title} solved`}>
-      <div class="completion-dock-copy">
-        <span class="completion-dock-mark" aria-hidden="true">✓</span>
-        <strong>Puzzle solved</strong>
-      </div>
-      <div class="puzzle-actions">
-        <button type="button" onClick={resetPuzzle} disabled={isGenerating}>Reset</button>
-        <button
-          class="new-puzzle-primary"
-          type="button"
-          onClick={onNewPuzzle}
-          disabled={isGenerating}
-          aria-label={`Start a new ${selectedDefinition.title} with the selected next-puzzle settings`}
-        >
-          New puzzle
-        </button>
-      </div>
-    </section>
+    <PuzzleTerminalDock
+      state={solvedTerminalState}
+      label="Puzzle solved"
+      ariaLabel={`${selectedDefinition.title} solved`}
+      disabled={isGenerating}
+      onReset={resetPuzzle}
+      onNewPuzzle={onNewPuzzle}
+    />
   ) : imagePuzzle ? (
     <div class="puzzle-actions">
       <button type="button" onClick={resetPuzzle} disabled={isGenerating}>Reset</button>

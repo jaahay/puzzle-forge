@@ -90,6 +90,7 @@ export const SudokuWorkspace = ({
       setValidationPresentationKey((current) => current + 1);
     }
 
+    completion.recordCausativeInput();
     onCheck();
   };
 
@@ -145,7 +146,7 @@ export const SudokuWorkspace = ({
     <PuzzleHistoryActions
       canUndo={canUndoGrid}
       canRedo={canRedoGrid}
-      disabled={isGenerating}
+      disabled={isGenerating || isSolved}
       onUndo={onUndoGrid}
       onRedo={onRedoGrid}
     />

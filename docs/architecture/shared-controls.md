@@ -42,6 +42,7 @@ Prefer small semantic primitives over a single giant configuration component:
 - `ActionHistoryControls`
 - `TransientFeedbackLane`
 - `StatusStrip`
+- `PuzzleTerminalDock`
 - `VariantControls`
 
 Puzzle-specific composition remains appropriate where mechanics differ.
@@ -130,6 +131,14 @@ Examples:
 - copied confirmation.
 
 The content may fade or clear; the lane does not collapse. Repeated events may restart the timer. A newer player action may replace stale feedback.
+
+## Terminal outcomes
+
+Terminal gameplay meaning is deliberately small: `playing`, `solved`, and, where applicable, `failed`. Puzzle-specific state remains authoritative; the shared vocabulary is an adapter boundary, not a central puzzle-state controller.
+
+`PuzzleTerminalDock` is presentation only. It renders the common continuation hierarchy after a terminal outcome without deciding how that outcome was reached. **New puzzle** is primary; Reset / Retry and puzzle-specific actions are optional secondary controls.
+
+Successful completion presentation may have its own short animation lifecycle, but animation state is transient and must not be persisted or treated as gameplay truth. Failed outcomes stay distinct from solved outcomes and do not receive affirmative completion treatment.
 
 ## Gameplay actions
 

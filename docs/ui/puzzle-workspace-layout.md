@@ -169,13 +169,17 @@ Do not replace meaningful values such as Easy/Medium/Hard, Standard/Diagonal/Zer
 
 Icon controls require accessible names and, where useful, titles/tooltips. Use a consistent SVG language rather than emoji as production controls.
 
-## Completion
+## Terminal state and completion
 
-When correctness is unambiguous, recognize completion automatically rather than requiring a redundant Check.
+Puzzle workspaces use a small semantic vocabulary for terminal meaning: `playing`, `solved`, and, where the mechanic admits an unsuccessful terminal outcome, `failed`. This vocabulary describes durable gameplay meaning, not animation phase or status copy.
 
-Completion may use a brief puzzle-wide acknowledgment because the whole puzzle is relevant to the event. Afterward, settle into a calm solved state in the same workspace geometry.
+When correctness is unambiguous, recognize completion automatically rather than requiring a redundant Check. Derive that result from authoritative puzzle state: cells and clues, submitted attempts, card stacks, piece placements, or tile arrangement as appropriate.
 
-The solved state should preserve the completed result, suppress editing where appropriate, and offer a clear next action. It should not depend on presentation copy as its source of truth.
+A solved transition may use a brief puzzle-wide acknowledgment because the whole puzzle is relevant to the event. Afterward, settle into a calm solved state in the same workspace geometry. A failed outcome must remain semantically and visually distinct from success and should not borrow affirmative completion treatment.
+
+Terminal state should preserve the completed or failed result and suppress interactions that would silently return it to active play. The gameplay region becomes the terminal continuation surface: **New puzzle** is the primary next action, while Reset / Retry and puzzle-specific actions such as Share remain secondary where meaningful.
+
+Do not persist a second solved/failed flag when the terminal result can be recomputed from authoritative puzzle state. Presentation copy is never the source of truth.
 
 ## Stability checklist
 

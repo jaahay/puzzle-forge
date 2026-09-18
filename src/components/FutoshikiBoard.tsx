@@ -7,6 +7,7 @@ type FutoshikiBoardProps = {
   puzzle: GridGeneratedPuzzle;
   cells: PuzzleCell[];
   selectedGridCell: GridCellSelection | null;
+  disabled?: boolean;
   onCellClick: (cell: PuzzleCell) => void;
   onCellInput: (cell: PuzzleCell, value: string) => void;
 };
@@ -74,10 +75,10 @@ export const getFutoshikiInequalityPresentation = (inequality: GridPuzzleInequal
   };
 };
 
-export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, onCellClick, onCellInput }: FutoshikiBoardProps) => {
+export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, disabled = false, onCellClick, onCellInput }: FutoshikiBoardProps) => {
   const inequalities = puzzle.inequalities ?? [];
   const input = useNumericGridInput({
-    enabled: true,
+    enabled: !disabled,
     puzzleIdentity: `${puzzle.puzzleId}:${puzzle.seed}:${puzzle.width}:${puzzle.height}`,
     digitCount: puzzle.width,
     cells,
@@ -97,7 +98,7 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, onCellClick, o
     row: Math.floor(index / slotCount),
     column: index % slotCount,
   }));
-  const hasValidation = cells.some((cell) => !cell.locked && (cell.tone === "answer" || cell.tone === "hint"));
+  const hasValidationError = cells.some((cell) => !cell.locked && cell.tone === "hint");
 
   return (
     <BoardViewport kind="square-grid" columns={puzzle.width} rows={puzzle.height}>
@@ -105,7 +106,7 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, onCellClick, o
         aria-describedby="futoshiki-rule"
         aria-label={`${puzzle.width} by ${puzzle.height} Futoshiki board`}
         class="futoshiki-board"
-        data-grid-selection-scope="true"
+        data-grid-selection-scope={disabled ? undefined : "true"}
       >
         {slots.map(({ row, column }) => {
           const key = cellKey(row, column);
@@ -118,12 +119,11 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, onCellClick, o
             const cellClass = [
               "cell",
               cell.tone,
-              "interactive-cell",
+              disabled ? "" : "interactive-cell",
               selected ? "selected-grid-cell" : "",
               isPeer ? "peer-cell" : "",
               isSameValue ? "same-value-cell" : "",
-              hasValidation && !cell.locked && cell.tone === "answer" ? "correct-cell" : "",
-              hasValidation && !cell.locked && cell.tone === "hint" ? "incorrect-cell" : "",
+              hasValidationError && !cell.locked && cell.tone === "hint" ? "incorrect-cell" : "",
             ]
               .filter(Boolean)
               .join(" ");
@@ -133,6 +133,7 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, onCellClick, o
                 aria-label={getFutoshikiCellAriaLabel(cell, inequalities)}
                 aria-pressed={selected}
                 class={cellClass}
+                disabled={disabled}
                 data-grid-cell-column={cell.column}
                 data-grid-cell-row={cell.row}
                 key={key}
@@ -161,6 +162,7 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, onCellClick, o
         digits={input.digits}
         activeValue={input.activeValue}
         canClearSelectedCell={input.canClearSelectedCell}
+        disabled={disabled}
         onDigit={input.setSelectedValue}
         onClear={input.clearSelectedValue}
       />

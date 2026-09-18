@@ -32,9 +32,16 @@ export type RuntimeSessionDraft = {
 
 const cloneSessionGridCell = (puzzleId: PuzzleId, cell: PuzzleCell): PuzzleCell => {
   const clonedCell = cloneGridCell(cell);
-  if (puzzleId === "sudoku" && !clonedCell.locked && (clonedCell.tone === "answer" || clonedCell.tone === "hint")) {
+  if (clonedCell.locked || clonedCell.tone === "disabled") return clonedCell;
+
+  if ((puzzleId === "sudoku" || puzzleId === "futoshiki") && (clonedCell.tone === "answer" || clonedCell.tone === "hint")) {
     return { ...clonedCell, tone: "empty" };
   }
+
+  if (puzzleId === "nonogram" && clonedCell.tone === "hint") {
+    return { ...clonedCell, tone: clonedCell.value === "■" ? "accent" : "empty" };
+  }
+
   return clonedCell;
 };
 

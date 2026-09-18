@@ -26,6 +26,7 @@ import {
 type TilePuzzlePreviewProps = {
   puzzle: JigsawGeneratedPuzzle;
   resetVersion?: number;
+  onSolvedChange?: (solved: boolean) => void;
 };
 
 type PersistedJigsawPlacementEnvelope = {
@@ -158,6 +159,11 @@ export const getPieceZIndex = (
   raised: boolean,
 ) => active ? 1000 : snapped ? 4 : raised ? 900 : 10 + tile.currentIndex;
 
+export const areJigsawPlacementsSolved = (
+  placements: readonly Pick<JigsawPlacement, "snapped">[],
+  pieceCount: number,
+) => placements.length === pieceCount && placements.every((placement) => placement.snapped);
+
 const isPersistedPlacement = (value: unknown, layout: JigsawWorldLayout): value is JigsawPlacement => {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
   const candidate = value as Partial<JigsawPlacement>;
@@ -250,7 +256,7 @@ const getEdgePanDelta = (position: number, extent: number) => {
   return 0;
 };
 
-export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePreviewProps) => {
+export const TilePuzzlePreview = ({ puzzle, resetVersion = 0, onSolvedChange }: TilePuzzlePreviewProps) => {
   const stageRef = useRef<HTMLDivElement>(null);
   const worldLayerRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<ActiveDrag | null>(null);
@@ -397,7 +403,11 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
   const placements = placementState?.puzzleId === puzzle.id ? placementState.placements : [];
   const placementById = new Map(placements.map((placement) => [placement.id, placement] as const));
   const solvedCount = placements.filter((placement) => placement.snapped).length;
-  const isSolved = placements.length === puzzle.tiles.length && solvedCount === puzzle.tiles.length;
+  const isSolved = areJigsawPlacementsSolved(placements, puzzle.tiles.length);
+
+  useEffect(() => {
+    onSolvedChange?.(isSolved);
+  }, [isSolved, onSolvedChange, puzzle.id]);
 
   const getStagePoint = (clientX: number, clientY: number) => {
     const stage = stageRef.current;
@@ -713,7 +723,7 @@ export const TilePuzzlePreview = ({ puzzle, resetVersion = 0 }: TilePuzzlePrevie
 
       <div class="tile-puzzle-tools">
         <button type="button" onClick={() => setShowPreview((current) => !current)}>{showPreview ? "Hide preview" : "Preview image"}</button>
-        <button type="button" onClick={scatterPieces}>Scatter pieces</button>
+        <button type="button" onClick={scatterPieces} disabled={isSolved}>Scatter pieces</button>
         <button
           type="button"
           aria-pressed={showEdgeSeams}

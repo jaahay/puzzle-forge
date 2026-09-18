@@ -80,11 +80,6 @@
   box-shadow: inset 0 0 0 2px rgba(191, 219, 254, 0.72);
 }
 
-.futoshiki-board .cell.correct-cell {
-  color: #052e16;
-  background: #bbf7d0;
-}
-
 .futoshiki-board .cell.incorrect-cell {
   color: #450a0a;
   background: #fecaca;

@@ -15,6 +15,7 @@ import {
   type SolitaireMoveResult,
 } from "./solitaireMoves";
 import { drawFromStockStacks, type SolitaireStockStatsDelta, type SolitaireStackUpdate } from "./solitaireStock";
+import { getSolitaireFoundationCardCount, isSolitaireSolved } from "./solitaireTerminal";
 
 export type SolitaireControllerState = {
   cardStacks: CardStack[] | null;
@@ -77,10 +78,7 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
     { clearSelection = false }: { clearSelection?: boolean } = {},
   ) => {
     const didChange = stacks !== baseStacks;
-    const foundationCardCount = stacks
-      .filter((stack) => stack.role === "foundation")
-      .reduce((total, stack) => total + stack.cards.length, 0);
-    const isSolved = foundationCardCount === 52;
+    const isSolved = isSolitaireSolved(stacks);
     const nextMessage = isSolved ? "Solved. All cards are on foundations." : message;
 
     setSolitaireState((current) => {
@@ -251,19 +249,17 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
     setSelectedCard({ stackId: stack.id, cardIndex });
     setStatusMessage(
       stack.role === "tableau"
-        ? `Selected ${card.code} and ${stack.cards.length - cardIndex - 1} card(s) below it.`
+        ? `Selected ${card.code} and ${stack.cards.length - cardIndex - 1} ${stack.cards.length - cardIndex - 1 === 1 ? "card" : "cards"} below it.`
         : `Selected ${card.code}.`,
     );
   };
 
   const checkSolitaire = () => {
-    const foundationCardCount = cardStacks
-      ?.filter((stack) => stack.role === "foundation")
-      .reduce((total, stack) => total + stack.cards.length, 0) ?? 0;
+    const foundationCardCount = getSolitaireFoundationCardCount(cardStacks);
     setStatusMessage(
-      foundationCardCount === 52
-        ? `Solved in ${solitaireStats.moveCount} move(s). All cards are on foundations.`
-        : `Not solved: ${foundationCardCount}/52 cards are on foundations after ${solitaireStats.moveCount} move(s).`,
+      isSolitaireSolved(cardStacks)
+        ? `Solved in ${solitaireStats.moveCount} ${solitaireStats.moveCount === 1 ? "move" : "moves"}. All cards are on foundations.`
+        : `Not solved: ${foundationCardCount}/52 cards are on foundations after ${solitaireStats.moveCount} ${solitaireStats.moveCount === 1 ? "move" : "moves"}.`,
     );
   };
 

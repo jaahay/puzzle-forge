@@ -1,6 +1,8 @@
-import { useState } from "preact/hooks";
+import { useCallback, useState } from "preact/hooks";
+import { solvedTerminalState } from "../app/puzzleTerminalState";
 import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
 import { JigsawNewPuzzleControl } from "./JigsawNewPuzzleControl";
+import { PuzzleTerminalDock } from "./PuzzleTerminalDock";
 import type { ImageWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { TilePuzzlePreview } from "./TilePuzzlePreview";
@@ -24,13 +26,30 @@ export const JigsawWorkspace = ({
   onLoadSeed,
 }: ImageWorkspaceProps) => {
   const [resetVersion, setResetVersion] = useState(0);
+  const [completionState, setCompletionState] = useState<{ puzzleInstanceId: string; solved: boolean } | null>(null);
   const jigsawPuzzle = puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw" ? puzzle : null;
+  const puzzleInstanceId = jigsawPuzzle?.id ?? null;
   const puzzleArrivalIdentity = jigsawPuzzle ? getPuzzleArrivalIdentity(jigsawPuzzle) : null;
   const isPuzzleArriving = usePuzzleArrival(puzzleArrivalIdentity);
   const gameplayNotes = jigsawPuzzle ? getJigsawGameplayNotes(jigsawPuzzle.notes, jigsawPuzzle.asset.title) : [];
+  const isSolved = Boolean(
+    puzzleInstanceId &&
+    completionState?.puzzleInstanceId === puzzleInstanceId &&
+    completionState.solved,
+  );
+  const handleSolvedChange = useCallback((solved: boolean) => {
+    if (!puzzleInstanceId) return;
+    setCompletionState((current) =>
+      current?.puzzleInstanceId === puzzleInstanceId && current.solved === solved
+        ? current
+        : { puzzleInstanceId, solved });
+  }, [puzzleInstanceId]);
 
   const resetJigsaw = () => {
     onReset();
+    if (puzzleInstanceId) {
+      setCompletionState({ puzzleInstanceId, solved: false });
+    }
     setResetVersion((current) => current + 1);
   };
 
@@ -74,7 +93,11 @@ export const JigsawWorkspace = ({
       class={`puzzle-panel jigsaw-puzzle-panel${isPuzzleArriving ? " puzzle-arrival" : ""}`}
       aria-label="Generated Jigsaw puzzle"
     >
-      <TilePuzzlePreview puzzle={jigsawPuzzle} resetVersion={resetVersion} />
+      <TilePuzzlePreview
+        puzzle={jigsawPuzzle}
+        resetVersion={resetVersion}
+        onSolvedChange={handleSolvedChange}
+      />
       {gameplayNotes.length === 0 ? null : (
         <ul class="notes-list">{gameplayNotes.map((note) => <li key={note}>{note}</li>)}</ul>
       )}
@@ -82,9 +105,20 @@ export const JigsawWorkspace = ({
   ) : isGenerating ? loadingBoard : null;
 
   const gameplay = jigsawPuzzle ? (
-    <div class="puzzle-actions">
-      <button type="button" onClick={resetJigsaw} disabled={isGenerating}>Reset</button>
-    </div>
+    isSolved ? (
+      <PuzzleTerminalDock
+        state={solvedTerminalState}
+        label="Puzzle solved"
+        ariaLabel="Jigsaw solved"
+        disabled={isGenerating}
+        onReset={resetJigsaw}
+        onNewPuzzle={onNewPuzzle}
+      />
+    ) : (
+      <div class="puzzle-actions">
+        <button type="button" onClick={resetJigsaw} disabled={isGenerating || isSolved}>Reset</button>
+      </div>
+    )
   ) : null;
 
   return (

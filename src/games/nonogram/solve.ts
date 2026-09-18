@@ -81,6 +81,20 @@ const enumerateLinePatterns = (length: number, clues: number[]) => {
   return patterns;
 };
 
+export const isNonogramLineFeasible = (
+  length: number,
+  clues: number[],
+  filledIndices: readonly number[],
+) => {
+  if (filledIndices.some((index) => index < 0 || index >= length)) {
+    return false;
+  }
+
+  return enumerateLinePatterns(length, clues).some((pattern) =>
+    filledIndices.every((index) => pattern[index]),
+  );
+};
+
 export const countNonogramSolutions = ({
   width,
   height,

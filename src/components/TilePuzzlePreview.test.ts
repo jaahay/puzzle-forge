@@ -8,6 +8,7 @@ import {
   type JigsawPlacement,
 } from "../games/jigsaw/placement";
 import {
+  areJigsawPlacementsSolved,
   getJigsawZoomStep,
   getMeasuredJigsawViewport,
   getPieceHitTargetProps,
@@ -38,6 +39,20 @@ describe("TilePuzzlePreview SVG clipping", () => {
       fill: "transparent",
       "pointer-events": "fill",
     });
+  });
+});
+
+describe("TilePuzzlePreview completion", () => {
+  it("is solved only when every expected placement is snapped", () => {
+    expect(areJigsawPlacementsSolved([
+      { snapped: true },
+      { snapped: true },
+    ], 2)).toBe(true);
+    expect(areJigsawPlacementsSolved([
+      { snapped: true },
+      { snapped: false },
+    ], 2)).toBe(false);
+    expect(areJigsawPlacementsSolved([{ snapped: true }], 2)).toBe(false);
   });
 });
 

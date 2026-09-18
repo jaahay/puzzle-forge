@@ -30,6 +30,7 @@ type CardStackProps = {
   stacks: CardStack[];
   selectedCard: CardSelection | null;
   variation: SolitaireVariation;
+  disabled: boolean;
   onCardClick: (stack: CardStack, cardIndex: number) => void;
   onCardDoubleClick: (stack: CardStack, cardIndex: number) => void;
   onStackClick: (stack: CardStack) => void;
@@ -123,19 +124,20 @@ const renderPlayingCard = (
   selectedCard: CardSelection | null,
   variation: SolitaireVariation,
   targetState: TargetState,
+  disabled: boolean,
   onCardClick: (stack: CardStack, cardIndex: number) => void,
   onCardDoubleClick: (stack: CardStack, cardIndex: number) => void,
 ) => {
   const selected = isSelectedCard(selectedCard, stack, index);
   const rank = rankFromCode(card);
   const suit = suitFromCode(card);
-  const canInteract = card.faceUp && canSelectFromStack(stack, index, variation);
+  const canInteract = !disabled && card.faceUp && canSelectFromStack(stack, index, variation);
 
   return (
     <button
       aria-label={card.faceUp ? card.label : "Face-down card"}
       class={`playing-card ${card.faceUp ? card.color : "back"} ${card.faceUp ? "face-up" : "face-down"} ${selected ? "selected-card" : ""} ${canInteract ? "playable-card" : "locked-card"} ${targetState === "valid" ? "valid-target-card" : ""} ${targetState === "invalid" ? "invalid-target-card" : ""}`}
-      disabled={!card.faceUp && stack.role !== "stock"}
+      disabled={disabled || (!card.faceUp && stack.role !== "stock")}
       key={`${stack.id}-${index}-${card.code}`}
       onClick={(event) => {
         const clickedAt = getNow();
@@ -177,9 +179,9 @@ const renderPlayingCard = (
   );
 };
 
-const renderCardStack = ({ stack, stacks, selectedCard, variation, onCardClick, onCardDoubleClick, onStackClick }: CardStackProps) => {
+const renderCardStack = ({ stack, stacks, selectedCard, variation, disabled, onCardClick, onCardDoubleClick, onStackClick }: CardStackProps) => {
   const { cards: cardsToRender, firstRenderedIndex } = getRenderedCards(stack, variation);
-  const targetState = getTargetState(stack, stacks, selectedCard);
+  const targetState = disabled ? null : getTargetState(stack, stacks, selectedCard);
   const placeholderLabel =
     stack.role === "foundation" ? getFoundationPlaceholder(stack) : stack.role === "stock" ? "↻" : stack.role === "tableau" ? "K" : "";
   const topCardIndex = stack.cards.length - 1;
@@ -196,12 +198,13 @@ const renderCardStack = ({ stack, stacks, selectedCard, variation, onCardClick, 
             const renderedCardIndex = firstRenderedIndex + index;
             const renderedTargetState = renderedCardIndex === topCardIndex ? targetState : null;
 
-            return renderPlayingCard(card, stack, renderedCardIndex, selectedCard, variation, renderedTargetState, onCardClick, onCardDoubleClick);
+            return renderPlayingCard(card, stack, renderedCardIndex, selectedCard, variation, renderedTargetState, disabled, onCardClick, onCardDoubleClick);
           })
         ) : (
           <button
             class={`playing-card placeholder ${targetState === "valid" ? "drop-target valid-target-card" : ""} ${targetState === "invalid" ? "invalid-target-card" : ""}`}
             aria-label={`${stack.title} is empty${targetState === "valid" ? "; valid target" : targetState === "invalid" ? "; invalid target" : ""}`}
+            disabled={disabled}
             onClick={() => onStackClick(stack)}
             type="button"
           >
@@ -219,12 +222,23 @@ type CardPuzzlePreviewProps = {
   stats: SolitaireStats;
   toolbar?: ComponentChildren;
   variation?: SolitaireVariation;
+  disabled?: boolean;
   onCardClick: (stack: CardStack, cardIndex: number) => void;
   onCardDoubleClick: (stack: CardStack, cardIndex: number) => void;
   onStackClick: (stack: CardStack) => void;
 };
 
-export const CardPuzzlePreview = ({ stacks, selectedCard, stats, toolbar, variation = defaultSolitaireVariation, onCardClick, onCardDoubleClick, onStackClick }: CardPuzzlePreviewProps) => {
+export const CardPuzzlePreview = ({
+  stacks,
+  selectedCard,
+  stats,
+  toolbar,
+  variation = defaultSolitaireVariation,
+  disabled = false,
+  onCardClick,
+  onCardDoubleClick,
+  onStackClick,
+}: CardPuzzlePreviewProps) => {
   const stockAndWaste = stacks.filter((stack) => stack.role === "stock" || stack.role === "waste");
   const foundations = stacks.filter((stack) => stack.role === "foundation");
   const tableau = stacks.filter((stack) => stack.role === "tableau");
@@ -233,7 +247,16 @@ export const CardPuzzlePreview = ({ stacks, selectedCard, stats, toolbar, variat
     (total, stack) => total + stack.cards.filter((card) => !card.faceUp).length,
     0,
   );
-  const renderStack = (stack: CardStack) => renderCardStack({ stack, stacks, selectedCard, variation, onCardClick, onCardDoubleClick, onStackClick });
+  const renderStack = (stack: CardStack) => renderCardStack({
+    stack,
+    stacks,
+    selectedCard,
+    variation,
+    disabled,
+    onCardClick,
+    onCardDoubleClick,
+    onStackClick,
+  });
 
   return (
     <div class="cards-layout">
