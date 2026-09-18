@@ -183,6 +183,13 @@ export const useGridController = () => {
   const undoGridAction = (puzzle: GeneratedPuzzle | null, onStatusMessage: (message: string) => void) => {
     if (!puzzle || puzzle.kind !== "grid" || !supportsGridActionHistory(puzzle.puzzleId)) return;
 
+    const currentCells = gridCellsRef.current;
+    if (currentCells && supportsAutomaticGridCompletion(puzzle.puzzleId) && isGridPuzzleSolved(puzzle, currentCells)) {
+      clearGridInteraction();
+      onStatusMessage("Solved.");
+      return;
+    }
+
     const current = captureGridHistoryEntry(puzzle.puzzleId);
     if (!current) return;
     const transition = undoGridHistory(gridHistoryRef.current, current);
@@ -195,6 +202,13 @@ export const useGridController = () => {
 
   const redoGridAction = (puzzle: GeneratedPuzzle | null, onStatusMessage: (message: string) => void) => {
     if (!puzzle || puzzle.kind !== "grid" || !supportsGridActionHistory(puzzle.puzzleId)) return;
+
+    const currentCells = gridCellsRef.current;
+    if (currentCells && supportsAutomaticGridCompletion(puzzle.puzzleId) && isGridPuzzleSolved(puzzle, currentCells)) {
+      clearGridInteraction();
+      onStatusMessage("Solved.");
+      return;
+    }
 
     const current = captureGridHistoryEntry(puzzle.puzzleId);
     if (!current) return;
