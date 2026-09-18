@@ -90,6 +90,7 @@ export const SudokuWorkspace = ({
       setValidationPresentationKey((current) => current + 1);
     }
 
+    completion.recordCausativeInput();
     onCheck();
   };
 
