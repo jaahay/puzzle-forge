@@ -418,7 +418,7 @@
 
 /* Short, genuinely wide play surfaces can spend horizontal room on current-play
    controls without teaching the shared workspace a generic landscape mode. */
-@media (max-height: 48rem) {
+@media (max-height: 48rem) and (min-aspect-ratio: 4 / 3) {
   @container sudoku-play-surface (min-width: 45rem) {
     .sudoku-play-composition {
       grid-template-columns: minmax(0, 42rem) minmax(12rem, 15rem);
