@@ -265,14 +265,12 @@ export const GridPuzzleWorkspace = ({
           onNewPuzzle={onNewPuzzle}
         />
       ) : (
-        <>
-          <div class={`puzzle-actions ${isNonogram ? "nonogram-current-actions" : ""}`.trim()}>
-            <button type="button" onClick={onCheck}>Check</button>
-            {isNonogram || isFutoshiki ? <button type="button" onClick={onReset} disabled={isGenerating}>Reset</button> : null}
-          </div>
-          {validation}
-        </>
+        <div class={`puzzle-actions ${isNonogram ? "nonogram-current-actions" : ""}`.trim()}>
+          <button type="button" onClick={onCheck}>Check</button>
+          {isNonogram || isFutoshiki ? <button type="button" onClick={onReset} disabled={isGenerating}>Reset</button> : null}
+        </div>
       )}
+      {validation}
     </div>
   ) : null;
 
