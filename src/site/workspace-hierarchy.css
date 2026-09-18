@@ -336,13 +336,13 @@
   justify-items: center;
 }
 
-.sudoku-play-controls .sudoku-digit-pad {
+.sudoku-play-controls .numeric-grid-digit-pad {
   width: 100%;
   max-width: none;
   margin: 0;
 }
 
-.sudoku-play-controls .sudoku-digit-pad button {
+.sudoku-play-controls .numeric-grid-digit-pad button {
   min-height: 2.75rem;
 }
 
@@ -445,7 +445,7 @@
       width: 100%;
     }
 
-    .sudoku-play-controls .sudoku-digit-pad {
+    .sudoku-play-controls .numeric-grid-digit-pad {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
