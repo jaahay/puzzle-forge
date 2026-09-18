@@ -10,6 +10,10 @@ const wordGuessSource = readFileSync(new URL("./WordGuessGame.tsx", import.meta.
 const jigsawSource = readFileSync(new URL("./JigsawWorkspace.tsx", import.meta.url), "utf8");
 
 describe("terminal interaction contracts", () => {
+  it("keeps the reserved grid validation lane mounted after completion", () => {
+    expect(gridWorkspaceSource).toContain("      )}\n      {validation}\n    </div>");
+  });
+
   it("disables solved Nonogram and Futoshiki interaction at the board boundary", () => {
     expect(gridWorkspaceSource).toMatch(/<FutoshikiBoard[\s\S]*?disabled=\{isSolved\}[\s\S]*?<\/FutoshikiBoard>|<FutoshikiBoard[\s\S]*?disabled=\{isSolved\}[\s\S]*?\/>/);
     expect(gridWorkspaceSource).toMatch(/<GridPuzzlePreview[\s\S]*?disabled=\{isSolved\}[\s\S]*?\/>/);
