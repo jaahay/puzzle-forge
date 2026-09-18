@@ -95,6 +95,9 @@ export const getWordGuessActionPresentation = (status: WordGuessProgressStatus, 
   canShare: submittedRows > 0,
 });
 
+const formatRemainingAttempts = (count: number) =>
+  `${count} ${count === 1 ? "attempt" : "attempts"} remain.`;
+
 export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSubmitGuess, onReset, onNewPuzzle, disabled = false }: WordGuessGameProps) => {
   const answer = puzzle.answerKey?.join("").toUpperCase() ?? "";
   const wordBank = useMemo(() => getWordGuessBank(puzzle.width), [puzzle.width]);
@@ -157,7 +160,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
           : saved.status === "lost"
             ? `No match. The word was ${answer}.`
             : restoredSubmittedRows > 0
-              ? `${puzzle.height - restoredSubmittedRows} attempt(s) remain.`
+              ? formatRemainingAttempts(puzzle.height - restoredSubmittedRows)
               : `Type a ${puzzle.width}-letter word.`,
       );
     }
@@ -214,7 +217,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
 
     setSubmittedRows(nextSubmittedRows);
     setStatus(won ? "won" : lost ? "lost" : "playing");
-    setMessage(won ? `Solved in ${nextSubmittedRows}/${puzzle.height}.` : lost ? `No match. The word was ${answer}.` : `${puzzle.height - nextSubmittedRows} attempt(s) remain.`);
+    setMessage(won ? `Solved in ${nextSubmittedRows}/${puzzle.height}.` : lost ? `No match. The word was ${answer}.` : formatRemainingAttempts(puzzle.height - nextSubmittedRows));
   };
 
   const inputLetter = (letter: string) => {
