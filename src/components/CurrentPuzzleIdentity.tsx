@@ -10,9 +10,8 @@ import {
   solitaireWasteModeLabels,
 } from "../games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
+import { formatDailyDateStamp } from "../games/shared/daily";
 import { useLiveLocalDateStamp } from "./NewPuzzleActionVisuals";
-
-const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
 
 type CurrentPuzzleIdentityModel = {
   puzzleLabel: string;
@@ -28,14 +27,6 @@ type CurrentPuzzleHeaderProps = {
   isArriving?: boolean;
 };
 
-const formatDailyDateLabel = (dateStamp: string, currentDateStamp: string) => {
-  const [year = "", month = "1", day = "1"] = dateStamp.split("-");
-  const [currentYear = ""] = currentDateStamp.split("-");
-  const monthIndex = Math.max(0, Math.min(11, Number(month) - 1));
-  const yearSuffix = year && year !== currentYear ? `, ${year}` : "";
-  return `${monthLabels[monthIndex]} ${Number(day)}${yearSuffix}`;
-};
-
 export const getCurrentPuzzleIdentity = (
   puzzle: GeneratedPuzzle,
   currentDateStamp: string,
@@ -45,7 +36,7 @@ export const getCurrentPuzzleIdentity = (
   const sourceLabel = dailyDateStamp
     ? dailyDateStamp === currentDateStamp
       ? "Today"
-      : `Daily ${formatDailyDateLabel(dailyDateStamp, currentDateStamp)}`
+      : `Daily ${formatDailyDateStamp(dailyDateStamp, currentDateStamp)}`
     : null;
   const definition = getPuzzleDefinition(puzzle.puzzleId);
   const difficultyLabel = puzzle.difficulty ?? null;
