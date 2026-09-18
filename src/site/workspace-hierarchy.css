@@ -25,6 +25,30 @@
   justify-items: center;
 }
 
+.sudoku-workspace .workspace-layout-play-surface {
+  container-type: inline-size;
+  container-name: sudoku-play-surface;
+}
+
+.sudoku-play-composition {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  gap: 0.75rem;
+  justify-items: center;
+}
+
+.sudoku-play-board,
+.sudoku-play-controls {
+  width: 100%;
+  min-width: 0;
+}
+
+.sudoku-play-controls {
+  display: grid;
+  justify-items: center;
+}
+
 .sudoku-workspace .square-grid-board-viewport,
 .nonogram-workspace .nonogram-board-viewport,
 .sudoku-workspace .sudoku-validation-message,
@@ -312,13 +336,13 @@
   justify-items: center;
 }
 
-.workspace-layout-gameplay .sudoku-digit-pad {
+.sudoku-play-controls .sudoku-digit-pad {
   width: 100%;
   max-width: none;
   margin: 0;
 }
 
-.workspace-layout-gameplay .sudoku-digit-pad button {
+.sudoku-play-controls .sudoku-digit-pad button {
   min-height: 2.75rem;
 }
 
@@ -390,6 +414,50 @@
 
 .sudoku-workspace .completion-control-solved {
   align-self: start;
+}
+
+/* Short, genuinely wide play surfaces can spend horizontal room on current-play
+   controls without teaching the shared workspace a generic landscape mode. */
+@media (max-height: 48rem) {
+  @container sudoku-play-surface (min-width: 45rem) {
+    .sudoku-play-composition {
+      grid-template-columns: minmax(0, 42rem) minmax(12rem, 15rem);
+      width: min(100%, 58rem);
+      align-items: start;
+      justify-content: center;
+      justify-items: stretch;
+      gap: clamp(0.75rem, 2cqw, 1.25rem);
+    }
+
+    .sudoku-play-board {
+      justify-self: end;
+    }
+
+    .sudoku-play-controls {
+      align-self: start;
+      justify-self: stretch;
+    }
+
+    .sudoku-play-controls .gameplay-control-stack,
+    .sudoku-play-controls .completion-control-stage,
+    .sudoku-play-controls .completion-dock,
+    .sudoku-play-controls .sudoku-validation-message {
+      width: 100%;
+    }
+
+    .sudoku-play-controls .sudoku-digit-pad {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .sudoku-play-controls .completion-dock {
+      align-items: stretch;
+    }
+
+    .sudoku-play-controls .completion-dock .puzzle-actions {
+      width: 100%;
+    }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
