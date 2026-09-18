@@ -119,7 +119,7 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, disabled = fal
             const cellClass = [
               "cell",
               cell.tone,
-              "interactive-cell",
+              disabled ? "" : "interactive-cell",
               selected ? "selected-grid-cell" : "",
               isPeer ? "peer-cell" : "",
               isSameValue ? "same-value-cell" : "",
