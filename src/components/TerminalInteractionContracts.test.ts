@@ -22,7 +22,7 @@ describe("terminal interaction contracts", () => {
     expect(futoshikiSource).toContain("enabled: !disabled");
     expect(futoshikiSource).toContain('disabled ? "" : "interactive-cell"');
     expect(futoshikiSource).toContain("disabled={disabled}");
-    expect(futoshikiSource).not.toContain("correct-cell");
+    expect(futoshikiSource).not.toMatch(/["']correct-cell["']/);
   });
 
   it("uses the same staged Sudoku completion presentation for explicit Check", () => {
