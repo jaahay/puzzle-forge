@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { GeneratedPuzzle, PuzzleCell } from "../catalog/types";
+import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { generateJigsaw } from "../games/jigsaw/generate";
 import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
 import { initialSolitaireStats, type PuzzleSession } from "./session";
@@ -22,7 +22,7 @@ const makeJigsawSession = (): PuzzleSession => {
   };
 };
 
-const makeSudokuPuzzle = (): GeneratedPuzzle => ({
+const makeSudokuPuzzle = (): GridGeneratedPuzzle => ({
   id: "sudoku-transient",
   puzzleId: "sudoku",
   title: "Sudoku",
