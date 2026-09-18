@@ -266,12 +266,19 @@ export const SudokuWorkspace = ({
     </section>
   ) : isGenerating ? loadingBoard : null;
 
+  const playComposition = sudokuPuzzle && gridCells ? (
+    <div class="sudoku-play-composition">
+      <section class="sudoku-play-board" aria-label="Puzzle board">{board}</section>
+      <section class="sudoku-play-controls" aria-label="Gameplay controls">{gameplay}</section>
+    </div>
+  ) : null;
+
   return (
     <PuzzleWorkspaceLayout
       className="sudoku-workspace"
       crown={currentPuzzleCrown}
-      board={board}
-      gameplay={gameplay}
+      play={playComposition}
+      board={playComposition ? null : board}
     />
   );
 };
