@@ -8,10 +8,11 @@ const numericGridCss = readFileSync(new URL("../site/numeric-grid.css", import.m
 describe("Sudoku wide/short play composition", () => {
   it("keeps the crown outside one Sudoku-owned board and gameplay composition", () => {
     expect(sudokuWorkspaceSource).toContain('class="sudoku-play-composition"');
-    expect(sudokuWorkspaceSource).toContain('class="sudoku-play-board"');
+    expect(sudokuWorkspaceSource).toContain('class="sudoku-play-board" aria-label="Puzzle board"');
     expect(sudokuWorkspaceSource).toContain('class="sudoku-play-controls" aria-label="Gameplay controls"');
     expect(sudokuWorkspaceSource).toContain("crown={currentPuzzleCrown}");
-    expect(sudokuWorkspaceSource).toContain("board={playComposition}");
+    expect(sudokuWorkspaceSource).toContain("play={playComposition}");
+    expect(sudokuWorkspaceSource).toContain("board={playComposition ? null : board}");
     expect(sudokuWorkspaceSource).not.toContain("gameplay={gameplay}");
   });
 
