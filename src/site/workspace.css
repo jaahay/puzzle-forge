@@ -355,7 +355,7 @@
   padding: 0.5rem 0.85rem;
 }
 
-@media (max-width: 300px) {
+@media (max-width: 520px) {
   .completion-dock {
     align-items: stretch;
   }
@@ -363,7 +363,9 @@
   .completion-dock .puzzle-actions {
     width: 100%;
   }
+}
 
+@media (max-width: 300px) {
   .completion-dock .puzzle-actions button {
     width: 100%;
   }
