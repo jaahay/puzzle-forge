@@ -172,7 +172,7 @@
 /* A wide landscape phone can exceed the old width breakpoint while still
    requiring an on-screen input path. */
 @media (any-pointer: coarse) {
-  .numeric-grid-digit-pad {
+  .sudoku-workspace .numeric-grid-digit-pad {
     display: grid;
   }
 }
