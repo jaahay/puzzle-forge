@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { canSlideTile, slideTileIntoGap } from "../games/imageTiles/state";
 import { generateSlidingPuzzle } from "../games/slidingPuzzle/generate";
@@ -8,6 +9,9 @@ import {
   restoreImageTileProgress,
   shouldRevealSlidingCompletionGap,
 } from "./ImageTilePuzzlePreview";
+
+const imageTilePreviewSource = readFileSync(new URL("./ImageTilePuzzlePreview.tsx", import.meta.url), "utf8");
+const imageTileCss = readFileSync(new URL("../site/image-tiles.css", import.meta.url), "utf8");
 
 describe("ImageTilePuzzlePreview layout", () => {
   it("defines both grid axes and caps tall boards by viewport height", () => {
@@ -31,6 +35,14 @@ describe("ImageTilePuzzlePreview layout", () => {
     expect(getImageTileInstruction(false, false, "tile-1")).toBe(
       "Choose a second tile to exchange with the selected tile.",
     );
+  });
+
+  it("reserves instruction geometry across active and solved copy", () => {
+    expect(imageTilePreviewSource.match(/class="image-tile-instruction-sizer" aria-hidden="true"/g)?.length).toBe(2);
+    expect(imageTileCss).toMatch(/\.image-tile-instruction\s*\{[^}]*display: grid;/);
+    expect(imageTileCss).toMatch(/\.image-tile-instruction > span\s*\{[^}]*grid-area: 1 \/ 1;/);
+    expect(imageTileCss).toMatch(/\.image-tile-instruction-sizer\s*\{[^}]*visibility: hidden;/);
+    expect(imageTileCss).toMatch(/\.image-tile-instruction-copy\s*\{[^}]*align-self: center;/);
   });
 
   it("keeps the Sliding Puzzle gap empty until completion presentation begins", () => {
