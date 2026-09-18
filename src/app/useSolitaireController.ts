@@ -249,7 +249,7 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
     setSelectedCard({ stackId: stack.id, cardIndex });
     setStatusMessage(
       stack.role === "tableau"
-        ? `Selected ${card.code} and ${stack.cards.length - cardIndex - 1} card(s) below it.`
+        ? `Selected ${card.code} and ${stack.cards.length - cardIndex - 1} ${stack.cards.length - cardIndex - 1 === 1 ? "card" : "cards"} below it.`
         : `Selected ${card.code}.`,
     );
   };
