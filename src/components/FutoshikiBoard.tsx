@@ -98,7 +98,7 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, disabled = fal
     row: Math.floor(index / slotCount),
     column: index % slotCount,
   }));
-  const hasValidation = cells.some((cell) => !cell.locked && (cell.tone === "answer" || cell.tone === "hint"));
+  const hasValidationError = cells.some((cell) => !cell.locked && cell.tone === "hint");
 
   return (
     <BoardViewport kind="square-grid" columns={puzzle.width} rows={puzzle.height}>
@@ -123,8 +123,7 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, disabled = fal
               selected ? "selected-grid-cell" : "",
               isPeer ? "peer-cell" : "",
               isSameValue ? "same-value-cell" : "",
-              hasValidation && !cell.locked && cell.tone === "answer" ? "correct-cell" : "",
-              hasValidation && !cell.locked && cell.tone === "hint" ? "incorrect-cell" : "",
+              hasValidationError && !cell.locked && cell.tone === "hint" ? "incorrect-cell" : "",
             ]
               .filter(Boolean)
               .join(" ");
