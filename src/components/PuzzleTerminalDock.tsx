@@ -7,6 +7,7 @@ type PuzzleTerminalDockProps = {
   state: TerminalOutcome;
   label: string;
   ariaLabel?: string;
+  announce?: boolean;
   disabled?: boolean;
   onNewPuzzle: () => void;
   onReset?: () => void;
@@ -23,6 +24,7 @@ export const PuzzleTerminalDock = ({
   state,
   label,
   ariaLabel,
+  announce = true,
   disabled = false,
   onNewPuzzle,
   onReset,
@@ -34,7 +36,7 @@ export const PuzzleTerminalDock = ({
   return (
     <section
       class={`completion-dock terminal-dock terminal-${presentation.tone}`}
-      aria-live="polite"
+      aria-live={announce ? "polite" : undefined}
       aria-label={ariaLabel ?? label}
     >
       <div class="completion-dock-copy">
