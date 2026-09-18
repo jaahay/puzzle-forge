@@ -97,11 +97,24 @@
 }
 
 .image-tile-instruction {
+  display: grid;
   max-width: 42rem;
   margin: 0;
   color: #cbd5e1;
   font-size: 0.9rem;
   text-align: center;
+}
+
+.image-tile-instruction > span {
+  grid-area: 1 / 1;
+}
+
+.image-tile-instruction-sizer {
+  visibility: hidden;
+}
+
+.image-tile-instruction-copy {
+  align-self: center;
 }
 
 .image-tile-tools button {
