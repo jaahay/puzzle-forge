@@ -22,6 +22,13 @@ describe("reserved validation lanes", () => {
   });
 });
 
+describe("PuzzleTerminalDock responsive actions", () => {
+  it("gives terminal actions the full dock width before their button minimums can overflow", () => {
+    expect(workspaceCss).toContain("@media (max-width: 520px)");
+    expect(workspaceCss).toMatch(/@media \(max-width: 520px\)[\s\S]*?\.completion-dock \.puzzle-actions \{[\s\S]*?width: 100%;/);
+  });
+});
+
 describe("PuzzleTerminalDock terminal tones", () => {
   it("keeps failed outcomes visually neutral instead of inheriting solved green", () => {
     const failedDock = getRuleBody(".terminal-failed");
