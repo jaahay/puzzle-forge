@@ -165,7 +165,7 @@ export const GridPuzzleWorkspace = ({
     />
   ) : null;
 
-  const historyActions = puzzle && isNonogram ? (
+  const historyActions = puzzle && (isNonogram || isFutoshiki) ? (
     <PuzzleHistoryActions
       canUndo={canUndoGrid}
       canRedo={canRedoGrid}
