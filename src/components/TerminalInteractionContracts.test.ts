@@ -25,6 +25,15 @@ describe("terminal interaction contracts", () => {
     expect(futoshikiSource).not.toMatch(/["']correct-cell["']/);
   });
 
+  it("exposes shared history controls for Futoshiki and disables them after solve", () => {
+    expect(gridWorkspaceSource).toContain(
+      "const historyActions = puzzle && (isNonogram || isFutoshiki) ? (",
+    );
+    expect(gridWorkspaceSource).toMatch(
+      /<PuzzleHistoryActions[\s\S]*?disabled=\{isGenerating \|\| isSolved\}[\s\S]*?\/>/,
+    );
+  });
+
   it("uses the same staged Sudoku completion presentation for explicit Check", () => {
     expect(sudokuWorkspaceSource).toMatch(/const handleCheck = \(\) => \{[\s\S]*?completion\.recordCausativeInput\(\);[\s\S]*?onCheck\(\);[\s\S]*?\};/);
   });

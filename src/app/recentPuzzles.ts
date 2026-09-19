@@ -1,6 +1,7 @@
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { PuzzleId } from "../catalog/types";
 import { getPuzzleImageAsset, isImageBackedPuzzleId } from "../games/imageAssets";
+import { formatDailyDateStamp } from "../games/shared/daily";
 import { sudokuVariationLabels } from "../games/sudoku/variation";
 import { decodeGenerationId, makePuzzleResourceKey, type PuzzleResourceKey } from "./puzzleResourceIdentity";
 import type { PersistedPuzzleSession, PersistedPuzzleSessions } from "./sessionPersistence";
@@ -14,17 +15,6 @@ export type RecentPuzzleEntry = {
   updatedAt: string;
   completedAt?: string;
   isActive: boolean;
-};
-
-const formatDailyDate = (dateStamp: string) => {
-  const [year, month, day] = dateStamp.split("-").map(Number);
-  if (!year || !month || !day) return dateStamp;
-  return new Intl.DateTimeFormat(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(Date.UTC(year, month - 1, day)));
 };
 
 const formatSolitaireSummary = (session: ReturnType<typeof decodeGenerationId> & { ok: true }) => {
@@ -43,7 +33,7 @@ const formatIdentitySummary = (puzzleId: PuzzleId, generationId: string) => {
   const parts: string[] = [];
 
   if (identity.provenance?.source === "daily") {
-    parts.push(`Daily ${formatDailyDate(identity.provenance.dateStamp)}`);
+    parts.push(`Daily ${formatDailyDateStamp(identity.provenance.dateStamp)}`);
   }
 
   switch (puzzleId) {

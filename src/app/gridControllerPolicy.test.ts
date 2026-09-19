@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { supportsAutomaticGridCompletion, usesTransientGridValidation } from "./useGridController";
+import { supportsAutomaticGridCompletion, supportsGridActionHistory, usesTransientGridValidation } from "./useGridController";
+
+describe("grid controller history policy", () => {
+  it("enables shared action history for Sudoku, Nonogram, and Futoshiki", () => {
+    expect(supportsGridActionHistory("sudoku")).toBe(true);
+    expect(supportsGridActionHistory("nonogram")).toBe(true);
+    expect(supportsGridActionHistory("futoshiki")).toBe(true);
+    expect(supportsGridActionHistory("word-guess")).toBe(false);
+  });
+});
 
 describe("grid controller terminal policy", () => {
   it("auto-completes only puzzle families with authoritative board completion", () => {

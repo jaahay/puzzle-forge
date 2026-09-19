@@ -38,7 +38,8 @@ type GridUpdateResult = {
 const GRID_CHECK_CELL_FEEDBACK_MS = 750;
 const GRID_CHECK_MESSAGE_FEEDBACK_MS = 1600;
 const usesNeutralNumericEntryTone = (puzzleId: PuzzleId) => puzzleId === "sudoku" || puzzleId === "futoshiki";
-const supportsGridActionHistory = (puzzleId: PuzzleId) => puzzleId === "sudoku" || puzzleId === "nonogram";
+export const supportsGridActionHistory = (puzzleId: PuzzleId) =>
+  puzzleId === "sudoku" || puzzleId === "nonogram" || puzzleId === "futoshiki";
 
 export const supportsAutomaticGridCompletion = (puzzleId: PuzzleId) =>
   puzzleId === "sudoku" || puzzleId === "nonogram" || puzzleId === "futoshiki";

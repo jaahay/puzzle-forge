@@ -13,6 +13,7 @@ export type DailyPuzzleGenerationProfile = {
 
 const padDatePart = (value: number) => value.toString().padStart(2, "0");
 const dailyDateStampPattern = /^\d{4}-\d{2}-\d{2}$/;
+const shortMonthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
 const isLeapYear = (year: number) => year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
 const daysInMonth = (year: number, month: number) => [
   31,
@@ -33,6 +34,14 @@ export const isDailyDateStamp = (dateStamp: string) => {
   if (!dailyDateStampPattern.test(dateStamp)) return false;
   const [year, month, day] = dateStamp.split("-").map(Number);
   return year >= 0 && year <= 9999 && month >= 1 && month <= 12 && day >= 1 && day <= daysInMonth(year, month);
+};
+
+export const formatDailyDateStamp = (dateStamp: string, currentDateStamp?: string) => {
+  if (!isDailyDateStamp(dateStamp)) return dateStamp;
+  const [year, month, day] = dateStamp.split("-").map(Number);
+  const currentYear = currentDateStamp?.split("-")[0];
+  const yearSuffix = currentYear === String(year) ? "" : `, ${year}`;
+  return `${shortMonthLabels[month - 1]} ${day}${yearSuffix}`;
 };
 
 const hashDailySeedMaterial = (material: string) => {
