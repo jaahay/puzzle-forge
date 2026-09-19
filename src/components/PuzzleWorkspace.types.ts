@@ -13,6 +13,7 @@ export type CoreWorkspaceProps = {
   seed: string;
   puzzle: GeneratedPuzzle | null;
   statusMessage: string;
+  onStatusMessageChange: (message: string) => void;
   isGenerating: boolean;
   onReset: () => void;
 };

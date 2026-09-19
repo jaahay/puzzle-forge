@@ -593,6 +593,7 @@ export const App = () => {
     seed,
     puzzle,
     statusMessage,
+    onStatusMessageChange: setStatusMessage,
     isGenerating: workspaceIsGenerating,
     onReset: resetCurrentPuzzle,
   };

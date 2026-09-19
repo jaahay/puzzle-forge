@@ -1,9 +1,11 @@
-import { useCallback, useState } from "preact/hooks";
+import { useCallback, useRef, useState } from "preact/hooks";
 import { solvedTerminalState } from "../app/puzzleTerminalState";
 import type { ImageTileGeneratedPuzzle, ImageTilePuzzleId } from "../catalog/types";
+import type { ImageTileHistoryAction } from "../games/imageTiles/history";
 import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
 import { ImageTileNewPuzzleControl } from "./ImageTileNewPuzzleControl";
-import { ImageTilePuzzlePreview } from "./ImageTilePuzzlePreview";
+import { ImageTilePuzzlePreview, type ImageTileHistoryAvailability, type ImageTileHistoryDispatcher } from "./ImageTilePuzzlePreview";
+import { PuzzleHistoryActions } from "./PuzzleHistoryActions";
 import { PuzzleTerminalDock } from "./PuzzleTerminalDock";
 import type { ImageWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
@@ -20,6 +22,10 @@ type CompletionState = {
   solved: boolean;
 };
 
+type ImageTileHistoryAvailabilityState = ImageTileHistoryAvailability & {
+  puzzleInstanceId: string | null;
+};
+
 export const ImageTilePuzzleWorkspace = ({
   selectedDefinition,
   selectedPuzzleIsGeneratable,
@@ -27,6 +33,7 @@ export const ImageTilePuzzleWorkspace = ({
   nextPuzzleDraft,
   seedLoadInput,
   statusMessage,
+  onStatusMessageChange,
   isGenerating,
   onReset,
   onNextPuzzleDraftChange,
@@ -39,6 +46,12 @@ export const ImageTilePuzzleWorkspace = ({
   const imagePuzzle = asImageTilePuzzle(puzzle, puzzleId);
   const [resetVersion, setResetVersion] = useState(0);
   const [completionState, setCompletionState] = useState<CompletionState>({ puzzleInstanceId: null, solved: false });
+  const historyDispatcherRef = useRef<ImageTileHistoryDispatcher | null>(null);
+  const [historyAvailability, setHistoryAvailability] = useState<ImageTileHistoryAvailabilityState>({
+    puzzleInstanceId: null,
+    canUndo: false,
+    canRedo: false,
+  });
   const isSolved = Boolean(
     imagePuzzle &&
     completionState.puzzleInstanceId === imagePuzzle.id &&
@@ -60,6 +73,29 @@ export const ImageTilePuzzleWorkspace = ({
         ? current
         : { puzzleInstanceId, solved });
   }, [imagePuzzle?.id]);
+  const handleHistoryAvailabilityChange = useCallback((availability: ImageTileHistoryAvailability) => {
+    const puzzleInstanceId = imagePuzzle?.id ?? null;
+    setHistoryAvailability((current) =>
+      current.puzzleInstanceId === puzzleInstanceId &&
+      current.canUndo === availability.canUndo &&
+      current.canRedo === availability.canRedo
+        ? current
+        : { puzzleInstanceId, ...availability });
+  }, [imagePuzzle?.id]);
+  const handleHistoryDispatcherChange = useCallback((dispatcher: ImageTileHistoryDispatcher | null) => {
+    historyDispatcherRef.current = dispatcher;
+  }, []);
+
+  const requestHistoryAction = (action: ImageTileHistoryAction) => {
+    if (!imagePuzzle || puzzleId !== "tile-swap") return;
+    const available = historyAvailability.puzzleInstanceId === imagePuzzle.id &&
+      (action === "undo" ? historyAvailability.canUndo : historyAvailability.canRedo);
+    const dispatcher = historyDispatcherRef.current;
+    if (!available || !dispatcher) return;
+
+    dispatcher(action);
+    onStatusMessageChange(action === "undo" ? "Undid last puzzle action." : "Redid last puzzle action.");
+  };
 
   const resetPuzzle = () => {
     onReset();
@@ -90,10 +126,26 @@ export const ImageTilePuzzleWorkspace = ({
       onLoadSeed={onLoadSeed}
     />
   ) : null;
+  const historyActions = imagePuzzle && puzzleId === "tile-swap" ? (
+    <PuzzleHistoryActions
+      canUndo={
+        historyAvailability.puzzleInstanceId === imagePuzzle.id &&
+        historyAvailability.canUndo
+      }
+      canRedo={
+        historyAvailability.puzzleInstanceId === imagePuzzle.id &&
+        historyAvailability.canRedo
+      }
+      disabled={isGenerating}
+      onUndo={() => requestHistoryAction("undo")}
+      onRedo={() => requestHistoryAction("redo")}
+    />
+  ) : null;
   const crown = imagePuzzle ? (
     <CurrentPuzzleHeader
       key={puzzleArrivalIdentity ?? undefined}
       puzzle={imagePuzzle}
+      historyControl={historyActions}
       newPuzzleControl={newPuzzleControl}
       isArriving={isPuzzleArriving}
     />
@@ -120,6 +172,12 @@ export const ImageTilePuzzleWorkspace = ({
         onCausativeInput={completionPresentation.recordCausativeInput}
         onCompletionAnimationEnd={completionPresentation.completePresentation}
         onSolvedChange={handleSolvedChange}
+        onHistoryAvailabilityChange={
+          puzzleId === "tile-swap" ? handleHistoryAvailabilityChange : undefined
+        }
+        onHistoryDispatcherChange={
+          puzzleId === "tile-swap" ? handleHistoryDispatcherChange : undefined
+        }
       />
     </section>
   ) : isGenerating ? loadingBoard : null;
