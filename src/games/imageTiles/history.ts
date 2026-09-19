@@ -1,4 +1,5 @@
 import type { TilePuzzlePiece } from "../../catalog/types";
+import { swapTilePositions } from "./state";
 
 export type ImageTileActionState = {
   tiles: TilePuzzlePiece[];
@@ -10,6 +11,13 @@ export type ImageTileHistoryState = {
   undoStack: ImageTileActionState[];
   redoStack: ImageTileActionState[];
 };
+
+export type ImageTileActionRuntime = {
+  state: ImageTileActionState;
+  history: ImageTileHistoryState;
+};
+
+export type ImageTileHistoryAction = "undo" | "redo";
 
 export const imageTileHistoryLimit = 100;
 
@@ -85,5 +93,51 @@ export const redoImageTileHistory = (
       undoStack: [...history.undoStack, cloneImageTileActionState(current)].slice(-imageTileHistoryLimit),
       redoStack: history.redoStack.slice(0, -1).map(cloneImageTileActionState),
     },
+  };
+};
+
+export const swapImageTileAction = (
+  runtime: ImageTileActionRuntime,
+  firstTileId: string,
+  secondTileId: string,
+): ImageTileActionRuntime | null => {
+  const tiles = swapTilePositions(runtime.state.tiles, firstTileId, secondTileId);
+  const changed = tiles.some((tile, index) => tile.currentIndex !== runtime.state.tiles[index]?.currentIndex);
+  if (!changed) return null;
+
+  return {
+    state: {
+      ...runtime.state,
+      tiles,
+      moveCount: runtime.state.moveCount + 1,
+    },
+    history: pushImageTileHistoryEntry(runtime.history, runtime.state),
+  };
+};
+
+export const resetImageTileAction = (
+  runtime: ImageTileActionRuntime,
+  initialState: ImageTileActionState,
+): ImageTileActionRuntime | null => {
+  if (sameImageTileActionState(runtime.state, initialState)) return null;
+
+  return {
+    state: cloneImageTileActionState(initialState),
+    history: pushImageTileHistoryEntry(runtime.history, runtime.state),
+  };
+};
+
+export const applyImageTileHistoryAction = (
+  runtime: ImageTileActionRuntime,
+  action: ImageTileHistoryAction,
+): ImageTileActionRuntime | null => {
+  const transition = action === "undo"
+    ? undoImageTileHistory(runtime.history, runtime.state)
+    : redoImageTileHistory(runtime.history, runtime.state);
+  if (!transition) return null;
+
+  return {
+    state: transition.entry,
+    history: transition.history,
   };
 };
