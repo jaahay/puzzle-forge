@@ -3,6 +3,15 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import type { ImageTileGeneratedPuzzle, TilePuzzlePiece } from "../catalog/types";
 import { getImageTileCrop } from "../games/imageTiles/geometry";
 import {
+  makeEmptyImageTileHistoryState,
+  pushImageTileHistoryEntry,
+  redoImageTileHistory,
+  sameImageTileActionState,
+  undoImageTileHistory,
+  type ImageTileActionState,
+  type ImageTileHistoryState,
+} from "../games/imageTiles/history";
+import {
   canSlideTileTowardGap,
   hasUniqueTilePositions,
   isImageTileSolved,
@@ -11,13 +20,28 @@ import {
 } from "../games/imageTiles/state";
 import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
 
+export type ImageTileHistoryAction = "undo" | "redo";
+
+export type ImageTileHistoryCommand = {
+  puzzleInstanceId: string;
+  version: number;
+  action: ImageTileHistoryAction;
+};
+
+export type ImageTileHistoryAvailability = {
+  canUndo: boolean;
+  canRedo: boolean;
+};
+
 type ImageTilePuzzlePreviewProps = {
   puzzle: ImageTileGeneratedPuzzle;
   resetVersion?: number;
+  historyCommand?: ImageTileHistoryCommand | null;
   completionPhase?: CompletionPresentationPhase;
   onCausativeInput?: () => void;
   onCompletionAnimationEnd?: () => void;
   onSolvedChange?: (solved: boolean) => void;
+  onHistoryAvailabilityChange?: (availability: ImageTileHistoryAvailability) => void;
 };
 
 type ImageTileProgress = {
@@ -25,6 +49,11 @@ type ImageTileProgress = {
   tiles: TilePuzzlePiece[];
   emptyIndex?: number;
   moveCount: number;
+};
+
+type ImageTileRuntimeState = {
+  progress: ImageTileProgress;
+  history: ImageTileHistoryState;
 };
 
 type PersistedImageTileProgress = {
@@ -49,6 +78,22 @@ const makeInitialProgress = (puzzle: ImageTileGeneratedPuzzle): ImageTileProgres
   tiles: puzzle.tiles.map((tile) => ({ ...tile })),
   ...(puzzle.puzzleId === "sliding-puzzle" ? { emptyIndex: puzzle.emptyIndex } : {}),
   moveCount: 0,
+});
+
+const toImageTileActionState = (progress: ImageTileProgress): ImageTileActionState => ({
+  tiles: progress.tiles.map((tile) => ({ ...tile })),
+  ...(progress.emptyIndex === undefined ? {} : { emptyIndex: progress.emptyIndex }),
+  moveCount: progress.moveCount,
+});
+
+const restoreImageTileActionState = (
+  progress: ImageTileProgress,
+  state: ImageTileActionState,
+): ImageTileProgress => ({
+  puzzleInstanceId: progress.puzzleInstanceId,
+  tiles: state.tiles.map((tile) => ({ ...tile })),
+  ...(state.emptyIndex === undefined ? {} : { emptyIndex: state.emptyIndex }),
+  moveCount: state.moveCount,
 });
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -164,16 +209,22 @@ const saveImageTileProgress = (puzzle: ImageTileGeneratedPuzzle, progress: Image
 export const ImageTilePuzzlePreview = ({
   puzzle,
   resetVersion = 0,
+  historyCommand = null,
   completionPhase,
   onCausativeInput,
   onCompletionAnimationEnd,
   onSolvedChange,
+  onHistoryAvailabilityChange,
 }: ImageTilePuzzlePreviewProps) => {
-  const [progress, setProgress] = useState<ImageTileProgress>(() =>
-    loadImageTileProgress(puzzle) ?? makeInitialProgress(puzzle));
+  const [runtime, setRuntime] = useState<ImageTileRuntimeState>(() => ({
+    progress: loadImageTileProgress(puzzle) ?? makeInitialProgress(puzzle),
+    history: makeEmptyImageTileHistoryState(),
+  }));
+  const progress = runtime.progress;
   const [selectedTileId, setSelectedTileId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const lastResetVersion = useRef(resetVersion);
+  const lastHistoryCommandVersion = useRef(historyCommand?.version ?? 0);
   const boardCellCount = puzzle.width * puzzle.height;
   const isSliding = puzzle.puzzleId === "sliding-puzzle";
   const isSolved = isImageTileSolved(progress.tiles, progress.emptyIndex, isSliding ? boardCellCount : undefined);
@@ -184,9 +235,59 @@ export const ImageTilePuzzlePreview = ({
   useEffect(() => {
     if (lastResetVersion.current === resetVersion) return;
     lastResetVersion.current = resetVersion;
-    setProgress(makeInitialProgress(puzzle));
+    setRuntime((current) => {
+      const initialProgress = makeInitialProgress(puzzle);
+      if (puzzle.puzzleId !== "tile-swap") {
+        return { progress: initialProgress, history: makeEmptyImageTileHistoryState() };
+      }
+
+      const currentAction = toImageTileActionState(current.progress);
+      const initialAction = toImageTileActionState(initialProgress);
+      return {
+        progress: initialProgress,
+        history: sameImageTileActionState(currentAction, initialAction)
+          ? current.history
+          : pushImageTileHistoryEntry(current.history, currentAction),
+      };
+    });
     setSelectedTileId(null);
   }, [puzzle, resetVersion]);
+
+  useEffect(() => {
+    if (
+      !historyCommand ||
+      historyCommand.puzzleInstanceId !== puzzle.id ||
+      historyCommand.version === lastHistoryCommandVersion.current ||
+      puzzle.puzzleId !== "tile-swap"
+    ) return;
+
+    lastHistoryCommandVersion.current = historyCommand.version;
+    setRuntime((current) => {
+      const actionState = toImageTileActionState(current.progress);
+      const transition = historyCommand.action === "undo"
+        ? undoImageTileHistory(current.history, actionState)
+        : redoImageTileHistory(current.history, actionState);
+      if (!transition) return current;
+
+      return {
+        progress: restoreImageTileActionState(current.progress, transition.entry),
+        history: transition.history,
+      };
+    });
+    setSelectedTileId(null);
+  }, [historyCommand, puzzle.id, puzzle.puzzleId]);
+
+  useEffect(() => {
+    onHistoryAvailabilityChange?.({
+      canUndo: puzzle.puzzleId === "tile-swap" && runtime.history.undoStack.length > 0,
+      canRedo: puzzle.puzzleId === "tile-swap" && runtime.history.redoStack.length > 0,
+    });
+  }, [
+    onHistoryAvailabilityChange,
+    puzzle.puzzleId,
+    runtime.history.undoStack.length,
+    runtime.history.redoStack.length,
+  ]);
 
   useEffect(() => {
     saveImageTileProgress(puzzle, progress);
@@ -202,15 +303,24 @@ export const ImageTilePuzzlePreview = ({
     if (isSliding) {
       if (progress.emptyIndex === undefined || !canSlideTileTowardGap(tile, progress.emptyIndex, puzzle.width, puzzle.height)) return;
       onCausativeInput?.();
-      setProgress((current) => {
-        if (current.emptyIndex === undefined) return current;
-        const next = slideTileTowardGap(current.tiles, tile.id, current.emptyIndex, puzzle.width, puzzle.height);
+      setRuntime((current) => {
+        if (current.progress.emptyIndex === undefined) return current;
+        const next = slideTileTowardGap(
+          current.progress.tiles,
+          tile.id,
+          current.progress.emptyIndex,
+          puzzle.width,
+          puzzle.height,
+        );
         if (!next.moved) return current;
         return {
           ...current,
-          tiles: next.tiles,
-          emptyIndex: next.emptyIndex,
-          moveCount: current.moveCount + 1,
+          progress: {
+            ...current.progress,
+            tiles: next.tiles,
+            emptyIndex: next.emptyIndex,
+            moveCount: current.progress.moveCount + 1,
+          },
         };
       });
       return;
@@ -226,11 +336,17 @@ export const ImageTilePuzzlePreview = ({
     }
 
     onCausativeInput?.();
-    setProgress((current) => ({
-      ...current,
-      tiles: swapTilePositions(current.tiles, selectedTileId, tile.id),
-      moveCount: current.moveCount + 1,
-    }));
+    setRuntime((current) => {
+      const nextProgress = {
+        ...current.progress,
+        tiles: swapTilePositions(current.progress.tiles, selectedTileId, tile.id),
+        moveCount: current.progress.moveCount + 1,
+      };
+      return {
+        progress: nextProgress,
+        history: pushImageTileHistoryEntry(current.history, toImageTileActionState(current.progress)),
+      };
+    });
     setSelectedTileId(null);
   };
 
