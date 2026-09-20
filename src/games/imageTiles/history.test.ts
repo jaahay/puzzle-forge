@@ -50,7 +50,10 @@ const makeSlidingRuntime = (
   state: {
     tiles: Array.from({ length: width * height }, (_, solvedIndex) => solvedIndex === width * height - 1
       ? null
-      : makeTile(solvedIndex, positions?.[solvedIndex] ?? solvedIndex))
+      : makeTile(
+          solvedIndex,
+          positions?.[solvedIndex] ?? (solvedIndex === emptyIndex ? width * height - 1 : solvedIndex),
+        ))
       .filter((tile): tile is TilePuzzlePiece => tile !== null),
     emptyIndex,
     moveCount: 0,
@@ -164,7 +167,7 @@ describe("image tile action history", () => {
   });
 
   it("undoes a finishing Sliding Puzzle move back into play", () => {
-    const initial = makeSlidingRuntime(2, 2, 2, { 2: 3 });
+    const initial = makeSlidingRuntime(2, 2, 2);
     const solved = requireTransition(slideImageTileAction(initial, "tile-2", 2, 2));
 
     expect(isImageTileSolved(solved.state.tiles, solved.state.emptyIndex, 4)).toBe(true);
