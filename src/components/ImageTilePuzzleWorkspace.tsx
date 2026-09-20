@@ -87,7 +87,7 @@ export const ImageTilePuzzleWorkspace = ({
   }, []);
 
   const requestHistoryAction = (action: ImageTileHistoryAction) => {
-    if (!imagePuzzle || puzzleId !== "tile-swap") return;
+    if (!imagePuzzle) return;
     const available = historyAvailability.puzzleInstanceId === imagePuzzle.id &&
       (action === "undo" ? historyAvailability.canUndo : historyAvailability.canRedo);
     const dispatcher = historyDispatcherRef.current;
@@ -126,7 +126,7 @@ export const ImageTilePuzzleWorkspace = ({
       onLoadSeed={onLoadSeed}
     />
   ) : null;
-  const historyActions = imagePuzzle && puzzleId === "tile-swap" ? (
+  const historyActions = imagePuzzle ? (
     <PuzzleHistoryActions
       canUndo={
         historyAvailability.puzzleInstanceId === imagePuzzle.id &&
@@ -172,12 +172,8 @@ export const ImageTilePuzzleWorkspace = ({
         onCausativeInput={completionPresentation.recordCausativeInput}
         onCompletionAnimationEnd={completionPresentation.completePresentation}
         onSolvedChange={handleSolvedChange}
-        onHistoryAvailabilityChange={
-          puzzleId === "tile-swap" ? handleHistoryAvailabilityChange : undefined
-        }
-        onHistoryDispatcherChange={
-          puzzleId === "tile-swap" ? handleHistoryDispatcherChange : undefined
-        }
+        onHistoryAvailabilityChange={handleHistoryAvailabilityChange}
+        onHistoryDispatcherChange={handleHistoryDispatcherChange}
       />
     </section>
   ) : isGenerating ? loadingBoard : null;
