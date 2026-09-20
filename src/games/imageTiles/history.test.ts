@@ -142,6 +142,15 @@ describe("image tile action history", () => {
     expect(sameImageTileActionState(redone.state, slid.state)).toBe(true);
   });
 
+  it("does not record an illegal Sliding Puzzle request", () => {
+    const initial = makeSlidingRuntime(4, 3, 7);
+    const invalid = slideImageTileAction(initial, "tile-0", 4, 3);
+
+    expect(invalid).toBeNull();
+    expect(initial.history.undoStack).toHaveLength(0);
+    expect(initial.history.redoStack).toHaveLength(0);
+  });
+
   it("undoes a finishing Sliding Puzzle move back into play", () => {
     const initial = makeSlidingRuntime(2, 2, 2, { 2: 3 });
     const solved = requireTransition(slideImageTileAction(initial, "tile-2", 2, 2));
