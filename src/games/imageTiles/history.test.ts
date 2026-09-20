@@ -8,6 +8,7 @@ import {
   pushImageTileHistoryEntry,
   resetImageTileAction,
   sameImageTileActionState,
+  slideImageTileAction,
   swapImageTileAction,
   type ImageTileActionRuntime,
   type ImageTileActionState,
@@ -39,6 +40,26 @@ const requireTransition = <T>(value: T | null): T => {
   if (value === null) throw new Error("Expected image-tile history transition.");
   return value;
 };
+
+const makeSlidingRuntime = (
+  width: number,
+  height: number,
+  emptyIndex: number,
+  positions?: Record<number, number>,
+): ImageTileActionRuntime => ({
+  state: {
+    tiles: Array.from({ length: width * height }, (_, solvedIndex) => solvedIndex === width * height - 1
+      ? null
+      : makeTile(
+          solvedIndex,
+          positions?.[solvedIndex] ?? (solvedIndex === emptyIndex ? width * height - 1 : solvedIndex),
+        ))
+      .filter((tile): tile is TilePuzzlePiece => tile !== null),
+    emptyIndex,
+    moveCount: 0,
+  },
+  history: makeEmptyImageTileHistoryState(),
+});
 
 describe("image tile action history", () => {
   it("treats one completed swap as one undoable and redoable action", () => {
@@ -103,6 +124,59 @@ describe("image tile action history", () => {
 
     const divergent = requireTransition(swapImageTileAction(undone, "tile-0", "tile-2"));
     expect(divergent.history.redoStack).toHaveLength(0);
+  });
+
+  it("treats an aligned multi-tile Sliding Puzzle shift as one action", () => {
+    const initial = makeSlidingRuntime(4, 3, 7);
+    const slid = requireTransition(slideImageTileAction(initial, "tile-4", 4, 3));
+
+    expect(slid.state.emptyIndex).toBe(4);
+    expect(slid.state.moveCount).toBe(1);
+    expect(slid.state.tiles.find((tile) => tile.id === "tile-4")?.currentIndex).toBe(5);
+    expect(slid.state.tiles.find((tile) => tile.id === "tile-5")?.currentIndex).toBe(6);
+    expect(slid.state.tiles.find((tile) => tile.id === "tile-6")?.currentIndex).toBe(7);
+    expect(slid.history.undoStack).toHaveLength(1);
+
+    const undone = requireTransition(applyImageTileHistoryAction(slid, "undo"));
+    expect(sameImageTileActionState(undone.state, initial.state)).toBe(true);
+    expect(undone.history.redoStack).toHaveLength(1);
+
+    const redone = requireTransition(applyImageTileHistoryAction(undone, "redo"));
+    expect(sameImageTileActionState(redone.state, slid.state)).toBe(true);
+  });
+
+  it("treats Sliding Puzzle Reset as one reversible action including the gap", () => {
+    const initial = makeSlidingRuntime(4, 3, 7);
+    const progressed = requireTransition(slideImageTileAction(initial, "tile-4", 4, 3));
+    const reset = requireTransition(resetImageTileAction(progressed, initial.state));
+
+    expect(sameImageTileActionState(reset.state, initial.state)).toBe(true);
+
+    const undone = requireTransition(applyImageTileHistoryAction(reset, "undo"));
+    expect(sameImageTileActionState(undone.state, progressed.state)).toBe(true);
+    expect(undone.state.emptyIndex).toBe(4);
+  });
+
+  it("does not record an illegal Sliding Puzzle request", () => {
+    const initial = makeSlidingRuntime(4, 3, 7);
+    const invalid = slideImageTileAction(initial, "tile-0", 4, 3);
+
+    expect(invalid).toBeNull();
+    expect(initial.history.undoStack).toHaveLength(0);
+    expect(initial.history.redoStack).toHaveLength(0);
+  });
+
+  it("undoes a finishing Sliding Puzzle move back into play", () => {
+    const initial = makeSlidingRuntime(2, 2, 2);
+    const solved = requireTransition(slideImageTileAction(initial, "tile-2", 2, 2));
+
+    expect(isImageTileSolved(solved.state.tiles, solved.state.emptyIndex, 4)).toBe(true);
+    expect(solved.state.moveCount).toBe(1);
+
+    const reopened = requireTransition(applyImageTileHistoryAction(solved, "undo"));
+    expect(isImageTileSolved(reopened.state.tiles, reopened.state.emptyIndex, 4)).toBe(false);
+    expect(reopened.state.emptyIndex).toBe(2);
+    expect(reopened.state.moveCount).toBe(0);
   });
 
   it("keeps history bounded and snapshots immutable", () => {

@@ -1,5 +1,5 @@
 import type { TilePuzzlePiece } from "../../catalog/types";
-import { swapTilePositions } from "./state";
+import { slideTileTowardGap, swapTilePositions } from "./state";
 
 export type ImageTileActionState = {
   tiles: TilePuzzlePiece[];
@@ -109,6 +109,34 @@ export const swapImageTileAction = (
     state: {
       ...runtime.state,
       tiles,
+      moveCount: runtime.state.moveCount + 1,
+    },
+    history: pushImageTileHistoryEntry(runtime.history, runtime.state),
+  };
+};
+
+export const slideImageTileAction = (
+  runtime: ImageTileActionRuntime,
+  tileId: string,
+  width: number,
+  height: number,
+): ImageTileActionRuntime | null => {
+  if (runtime.state.emptyIndex === undefined) return null;
+
+  const next = slideTileTowardGap(
+    runtime.state.tiles,
+    tileId,
+    runtime.state.emptyIndex,
+    width,
+    height,
+  );
+  if (!next.moved) return null;
+
+  return {
+    state: {
+      ...runtime.state,
+      tiles: next.tiles,
+      emptyIndex: next.emptyIndex,
       moveCount: runtime.state.moveCount + 1,
     },
     history: pushImageTileHistoryEntry(runtime.history, runtime.state),
