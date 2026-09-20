@@ -34,8 +34,11 @@ export type GridInteractionProps = {
   gridCheckFeedbackTone: GridCheckFeedbackTone | null;
   canUndoGrid: boolean;
   canRedoGrid: boolean;
+  canUndoGridNow: () => boolean;
+  canRedoGridNow: () => boolean;
   onUndoGrid: () => void;
   onRedoGrid: () => void;
+  onCommitGridHistory: () => void;
   onCheck: () => void;
   onCellClick: (cell: PuzzleCell) => void;
   onCellInput: (cell: PuzzleCell, value: string) => void;
