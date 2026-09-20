@@ -30,6 +30,7 @@ type WordGuessGameProps = {
   statusMessage: string;
   onCellInput: (cell: PuzzleCell, value: string) => void;
   onSubmitGuess: () => void;
+  onCommitCurrentGuess: () => void;
   onReset: () => void;
   onNewPuzzle: () => void;
   disabled?: boolean;
@@ -70,13 +71,16 @@ const getLetterMarks = (answer: string, submittedGuesses: string[]) => {
 };
 
 const restoreGuessIntoRow = (rowCells: PuzzleCell[], guess: string, onCellInput: (cell: PuzzleCell, value: string) => void) => {
+  let changed = false;
   Array.from(guess).forEach((letter, columnIndex) => {
     const cell = rowCells[columnIndex];
 
     if (cell && cell.value !== letter) {
       onCellInput(cell, letter);
+      changed = true;
     }
   });
+  return changed;
 };
 
 export const getWordGuessTerminalState = (
@@ -98,7 +102,7 @@ export const getWordGuessActionPresentation = (status: WordGuessProgressStatus, 
 const formatRemainingAttempts = (count: number) =>
   `${count} ${count === 1 ? "attempt" : "attempts"} remain.`;
 
-export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSubmitGuess, onReset, onNewPuzzle, disabled = false }: WordGuessGameProps) => {
+export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSubmitGuess, onCommitCurrentGuess, onReset, onNewPuzzle, disabled = false }: WordGuessGameProps) => {
   const answer = puzzle.answerKey?.join("").toUpperCase() ?? "";
   const wordBank = useMemo(() => getWordGuessBank(puzzle.width), [puzzle.width]);
   const rows = useMemo(() => getRows(cells, puzzle.height), [cells, puzzle.height]);
@@ -144,13 +148,20 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
       const restoredCurrentInput = saved.status === "playing" ? normalizeWordGuessWord(saved.currentInput ?? "").slice(0, puzzle.width) : "";
       const restoredSubmittedRows = Math.min(restoredGuesses.length, puzzle.height);
 
+      let restoredCellInput = false;
       restoredGuesses.forEach((guess, rowIndex) => {
-        restoreGuessIntoRow(rows[rowIndex] ?? [], guess, onCellInput);
+        restoredCellInput = restoreGuessIntoRow(rows[rowIndex] ?? [], guess, onCellInput) || restoredCellInput;
       });
 
       if (restoredCurrentInput && restoredSubmittedRows < puzzle.height) {
-        restoreGuessIntoRow(rows[restoredSubmittedRows] ?? [], restoredCurrentInput, onCellInput);
+        restoredCellInput = restoreGuessIntoRow(
+          rows[restoredSubmittedRows] ?? [],
+          restoredCurrentInput,
+          onCellInput,
+        ) || restoredCellInput;
       }
+
+      if (restoredCellInput) onCommitCurrentGuess();
 
       setSubmittedRows(restoredSubmittedRows);
       setStatus(saved.status);
@@ -168,7 +179,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     window.setTimeout(() => {
       skipNextSave.current = false;
     }, 0);
-  }, [answer, onCellInput, puzzle.id, puzzle.height, puzzle.width, rows]);
+  }, [answer, onCellInput, onCommitCurrentGuess, puzzle.id, puzzle.height, puzzle.width, rows]);
 
   useEffect(() => {
     if (skipNextSave.current) {
@@ -210,6 +221,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     }
 
     onSubmitGuess();
+    onCommitCurrentGuess();
 
     const nextSubmittedRows = submittedRows + 1;
     const won = guess === answer;
