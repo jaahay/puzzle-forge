@@ -12,6 +12,7 @@ import {
 } from "../interactions/gridRules";
 import {
   cloneGridHistoryState,
+  commitGridHistoryState,
   makeEmptyGridHistoryState,
   makeGridHistoryEntry,
   pushGridHistoryEntry,
@@ -86,7 +87,7 @@ export const useGridController = () => {
     setGridHistoryState(nextHistory);
   };
 
-  const clearGridHistory = () => setGridHistory(makeEmptyGridHistoryState());
+  const clearGridHistory = () => setGridHistory(commitGridHistoryState());
   const canUndoGridNow = () => gridHistoryRef.current.undoStack.length > 0;
   const canRedoGridNow = () => gridHistoryRef.current.redoStack.length > 0;
 
