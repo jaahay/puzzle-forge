@@ -1,12 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { supportsAutomaticGridCompletion, supportsGridActionHistory, usesTransientGridValidation } from "./useGridController";
+import { supportsAutomaticGridCompletion, supportsGridActionHistory, supportsReversibleGridReset, usesTransientGridValidation } from "./useGridController";
 
 describe("grid controller history policy", () => {
-  it("enables shared action history for Sudoku, Nonogram, and Futoshiki", () => {
+  it("enables shared action history for Sudoku, Nonogram, Futoshiki, and Word Guess editing", () => {
     expect(supportsGridActionHistory("sudoku")).toBe(true);
     expect(supportsGridActionHistory("nonogram")).toBe(true);
     expect(supportsGridActionHistory("futoshiki")).toBe(true);
-    expect(supportsGridActionHistory("word-guess")).toBe(false);
+    expect(supportsGridActionHistory("word-guess")).toBe(true);
+  });
+
+  it("keeps Word Guess Reset outside reversible history", () => {
+    expect(supportsReversibleGridReset("sudoku")).toBe(true);
+    expect(supportsReversibleGridReset("nonogram")).toBe(true);
+    expect(supportsReversibleGridReset("futoshiki")).toBe(true);
+    expect(supportsReversibleGridReset("word-guess")).toBe(false);
   });
 });
 

@@ -23,6 +23,8 @@ export const makeEmptyGridHistoryState = (): GridHistoryState => ({
   redoStack: [],
 });
 
+export const commitGridHistoryState = (): GridHistoryState => makeEmptyGridHistoryState();
+
 export const cloneGridHistoryEntry = (entry: GridHistoryEntry): GridHistoryEntry => ({
   cells: entry.cells.map(cloneGridCell),
   selectedGridCell: entry.selectedGridCell ? { ...entry.selectedGridCell } : null,

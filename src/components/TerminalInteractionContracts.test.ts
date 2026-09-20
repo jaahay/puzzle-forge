@@ -25,9 +25,9 @@ describe("terminal interaction contracts", () => {
     expect(futoshikiSource).not.toMatch(/["']correct-cell["']/);
   });
 
-  it("exposes shared history controls for Futoshiki and disables them after solve", () => {
+  it("exposes shared history controls for Futoshiki and Word Guess while disabling solved grid play", () => {
     expect(gridWorkspaceSource).toContain(
-      "const historyActions = puzzle && (isNonogram || isFutoshiki) ? (",
+      "const historyActions = puzzle && (isNonogram || isFutoshiki || isWordGuess) ? (",
     );
     expect(gridWorkspaceSource).toMatch(
       /<PuzzleHistoryActions[\s\S]*?disabled=\{isGenerating \|\| isSolved\}[\s\S]*?\/>/,

@@ -12,6 +12,7 @@ import {
 } from "../interactions/gridRules";
 import {
   cloneGridHistoryState,
+  commitGridHistoryState,
   makeEmptyGridHistoryState,
   makeGridHistoryEntry,
   pushGridHistoryEntry,
@@ -39,7 +40,10 @@ const GRID_CHECK_CELL_FEEDBACK_MS = 750;
 const GRID_CHECK_MESSAGE_FEEDBACK_MS = 1600;
 const usesNeutralNumericEntryTone = (puzzleId: PuzzleId) => puzzleId === "sudoku" || puzzleId === "futoshiki";
 export const supportsGridActionHistory = (puzzleId: PuzzleId) =>
-  puzzleId === "sudoku" || puzzleId === "nonogram" || puzzleId === "futoshiki";
+  puzzleId === "sudoku" || puzzleId === "nonogram" || puzzleId === "futoshiki" || puzzleId === "word-guess";
+
+export const supportsReversibleGridReset = (puzzleId: PuzzleId) =>
+  supportsGridActionHistory(puzzleId) && puzzleId !== "word-guess";
 
 export const supportsAutomaticGridCompletion = (puzzleId: PuzzleId) =>
   puzzleId === "sudoku" || puzzleId === "nonogram" || puzzleId === "futoshiki";
@@ -83,7 +87,9 @@ export const useGridController = () => {
     setGridHistoryState(nextHistory);
   };
 
-  const clearGridHistory = () => setGridHistory(makeEmptyGridHistoryState());
+  const clearGridHistory = () => setGridHistory(commitGridHistoryState());
+  const canUndoGridNow = () => gridHistoryRef.current.undoStack.length > 0;
+  const canRedoGridNow = () => gridHistoryRef.current.redoStack.length > 0;
 
   const clearGridTransientFeedbackTimer = () => {
     if (gridTransientFeedbackTimer.current !== null) {
@@ -169,7 +175,9 @@ export const useGridController = () => {
 
     const currentCells = gridCellsRef.current;
     const nextCells = prepareGridCells(puzzle);
-    const historyEntry = currentCells && !sameGridPlayerState(currentCells, nextCells)
+    const historyEntry = supportsReversibleGridReset(puzzle.puzzleId) &&
+      currentCells &&
+      !sameGridPlayerState(currentCells, nextCells)
       ? captureGridHistoryEntry(puzzle.puzzleId)
       : null;
 
@@ -177,7 +185,11 @@ export const useGridController = () => {
     setGridCells(nextCells);
     clearGridInteraction();
     clearCheckFeedback();
-    recordGridHistoryEntry(historyEntry);
+    if (supportsReversibleGridReset(puzzle.puzzleId)) {
+      recordGridHistoryEntry(historyEntry);
+    } else if (supportsGridActionHistory(puzzle.puzzleId)) {
+      clearGridHistory();
+    }
     onStatusMessage(message);
   };
 
@@ -452,6 +464,9 @@ export const useGridController = () => {
     checkFeedbackTone,
     canUndoGrid: gridHistory.undoStack.length > 0,
     canRedoGrid: gridHistory.redoStack.length > 0,
+    canUndoGridNow,
+    canRedoGridNow,
+    commitGridHistory: clearGridHistory,
     resetGrid,
     restoreGridSnapshot,
     prepareGeneratedGrid,
