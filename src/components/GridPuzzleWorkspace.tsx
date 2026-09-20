@@ -63,8 +63,11 @@ export const GridPuzzleWorkspace = ({
   isGenerating,
   canUndoGrid,
   canRedoGrid,
+  canUndoGridNow,
+  canRedoGridNow,
   onUndoGrid,
   onRedoGrid,
+  onCommitGridHistory,
   onReset,
   onCheck,
   onNextPuzzleDraftChange,
@@ -165,11 +168,13 @@ export const GridPuzzleWorkspace = ({
     />
   ) : null;
 
-  const historyActions = puzzle && (isNonogram || isFutoshiki) ? (
+  const historyActions = puzzle && (isNonogram || isFutoshiki || isWordGuess) ? (
     <PuzzleHistoryActions
       canUndo={canUndoGrid}
       canRedo={canRedoGrid}
       disabled={isGenerating || isSolved}
+      canUndoNow={canUndoGridNow}
+      canRedoNow={canRedoGridNow}
       onUndo={onUndoGrid}
       onRedo={onRedoGrid}
     />
@@ -224,6 +229,7 @@ export const GridPuzzleWorkspace = ({
           statusMessage={statusMessage}
           onCellInput={onCellInput}
           onSubmitGuess={onCheck}
+          onCommitCurrentGuess={onCommitGridHistory}
           onReset={onReset}
           onNewPuzzle={onNewPuzzle}
           disabled={isGenerating}
