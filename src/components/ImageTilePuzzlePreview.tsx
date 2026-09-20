@@ -243,6 +243,13 @@ export const ImageTilePuzzlePreview = ({
   const showSolvedPresentation = isSolved && (completionPhase === undefined || completionPhase === "completed");
   const revealSlidingCompletionGap = isSliding && shouldRevealSlidingCompletionGap(isSolved, completionPhase);
 
+  const publishHistoryAvailability = useCallback((current: ImageTileRuntimeState) => {
+    onHistoryAvailabilityChange?.({
+      canUndo: current.history.undoStack.length > 0,
+      canRedo: current.history.redoStack.length > 0,
+    });
+  }, [onHistoryAvailabilityChange]);
+
   const commitRuntime = useCallback((
     transition: (current: ImageTileRuntimeState) => ImageTileRuntimeState,
   ) => {
@@ -252,8 +259,9 @@ export const ImageTilePuzzlePreview = ({
 
     runtimeRef.current = next;
     setRuntime(next);
+    publishHistoryAvailability(next);
     return next;
-  }, []);
+  }, [publishHistoryAvailability]);
 
   const canHistoryAction = useCallback((action: ImageTileHistoryAction) => {
     const history = runtimeRef.current.history;
@@ -284,9 +292,10 @@ export const ImageTilePuzzlePreview = ({
     const restored = restoreImageTileActionRuntime(current, next);
     runtimeRef.current = restored;
     setRuntime(restored);
+    publishHistoryAvailability(restored);
     setSelectedTileId(null);
     return true;
-  }, [canHistoryAction]);
+  }, [canHistoryAction, publishHistoryAvailability]);
 
   useEffect(() => {
     if (!onHistoryControllerChange) return;
@@ -300,16 +309,8 @@ export const ImageTilePuzzlePreview = ({
   }, [canHistoryAction, dispatchHistoryAction, onHistoryControllerChange, puzzle.id]);
 
   useEffect(() => {
-    onHistoryAvailabilityChange?.({
-      canUndo: runtime.history.undoStack.length > 0,
-      canRedo: runtime.history.redoStack.length > 0,
-    });
-  }, [
-    onHistoryAvailabilityChange,
-    puzzle.puzzleId,
-    runtime.history.undoStack.length,
-    runtime.history.redoStack.length,
-  ]);
+    publishHistoryAvailability(runtimeRef.current);
+  }, [publishHistoryAvailability, puzzle.id]);
 
   useEffect(() => {
     saveImageTileProgress(puzzle, progress);
