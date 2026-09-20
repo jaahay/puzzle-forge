@@ -23,6 +23,21 @@ export const makeEmptyJigsawHistoryState = (): JigsawHistoryState => ({
   redoStack: [],
 });
 
+export const getJigsawHistoryAvailability = (
+  history: JigsawHistoryState,
+  blocked = false,
+) => blocked
+  ? { canUndo: false, canRedo: false }
+  : {
+      canUndo: history.undoStack.length > 0,
+      canRedo: history.redoStack.length > 0,
+    };
+
+export const resolveJigsawActionBaseline = (
+  current: readonly JigsawPlacement[],
+  inFlightStart: readonly JigsawPlacement[] | null = null,
+) => cloneJigsawPlacements(inFlightStart ?? current);
+
 export const sameJigsawPlacements = (
   left: readonly JigsawPlacement[],
   right: readonly JigsawPlacement[],
