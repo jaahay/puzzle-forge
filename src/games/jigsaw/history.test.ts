@@ -3,8 +3,10 @@ import type { JigsawPlacement } from "./placement";
 import {
   applyJigsawHistoryAction,
   commitJigsawPlacementAction,
+  getJigsawHistoryAvailability,
   jigsawHistoryLimit,
   makeEmptyJigsawHistoryState,
+  resolveJigsawActionBaseline,
   sameJigsawPlacements,
 } from "./history";
 
@@ -61,6 +63,43 @@ describe("Jigsaw action history", () => {
 
     const divergent = commitJigsawPlacementAction(undone!.history, undone!.placements, second);
     expect(divergent.redoStack).toHaveLength(0);
+  });
+
+  it("uses the pre-drag committed state as the Reset/Scatter history baseline", () => {
+    const committed = placements(["a", 10, 20, false], ["b", 30, 40, true]);
+    const inFlight = placements(["a", 75, 85, false], ["b", 30, 40, true]);
+    const scattered = placements(["a", 5, 10, false], ["b", 110, 120, false]);
+
+    const baseline = resolveJigsawActionBaseline(inFlight, committed);
+    const history = commitJigsawPlacementAction(
+      makeEmptyJigsawHistoryState(),
+      baseline,
+      scattered,
+    );
+    const undone = applyJigsawHistoryAction(history, scattered, "undo");
+
+    expect(undone).not.toBeNull();
+    expect(sameJigsawPlacements(undone!.placements, committed)).toBe(true);
+    expect(sameJigsawPlacements(undone!.placements, inFlight)).toBe(false);
+  });
+
+  it("temporarily suppresses rendered history availability during an active gesture", () => {
+    const history = commitJigsawPlacementAction(
+      makeEmptyJigsawHistoryState(),
+      placements(["a", 10, 20, false]),
+      placements(["a", 30, 40, false]),
+    );
+    const undone = applyJigsawHistoryAction(history, placements(["a", 30, 40, false]), "undo");
+    expect(undone).not.toBeNull();
+
+    expect(getJigsawHistoryAvailability(undone!.history)).toEqual({
+      canUndo: false,
+      canRedo: true,
+    });
+    expect(getJigsawHistoryAvailability(undone!.history, true)).toEqual({
+      canUndo: false,
+      canRedo: false,
+    });
   });
 
   it("treats Scatter or Reset as one reversible placement action", () => {
