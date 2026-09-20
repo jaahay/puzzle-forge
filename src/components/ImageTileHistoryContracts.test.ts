@@ -9,15 +9,15 @@ describe("image tile history integration", () => {
     expect(workspaceSource).toContain("const historyActions = imagePuzzle ? (");
     expect(workspaceSource).toContain("<PuzzleHistoryActions");
     expect(workspaceSource).toContain("historyControl={historyActions}");
-    expect(workspaceSource).toContain("historyDispatcherRef");
+    expect(workspaceSource).toContain("historyControllerRef");
     expect(workspaceSource).not.toContain('puzzleId !== "tile-swap"');
   });
 
   it("dispatches every history action directly instead of storing only the latest command", () => {
     expect(workspaceSource).not.toContain("historyCommand");
     expect(previewSource).not.toContain("historyCommand");
-    expect(workspaceSource).toContain("dispatcher(action);");
-    expect(previewSource).toContain("onHistoryDispatcherChange(dispatchHistoryAction)");
+    expect(workspaceSource).toContain("controller.dispatch(action)");
+    expect(previewSource).toContain("onHistoryControllerChange(controller)");
     expect(previewSource).toContain(
       "applyImageTileHistoryAction(toImageTileActionRuntime(current), action)",
     );
@@ -59,10 +59,20 @@ describe("image tile history integration", () => {
     expect(previewSource).not.toContain('puzzle.puzzleId !== "tile-swap"');
   });
 
-  it("registers shared history availability and dispatch callbacks for both puzzle types", () => {
+  it("keeps live history availability authoritative during rapid command sequences", () => {
+    expect(workspaceSource).toContain('canUndoNow={() => canHistoryActionNow("undo")}');
+    expect(workspaceSource).toContain('canRedoNow={() => canHistoryActionNow("redo")}');
+    expect(workspaceSource).not.toContain("const available = historyAvailability");
+    expect(previewSource).toContain("const runtimeRef = useRef(runtime);");
+    expect(previewSource).toContain("publishHistoryAvailability(next);");
+    expect(previewSource).toContain("publishHistoryAvailability(restored);");
+  });
+
+  it("registers the shared history controller and rendered availability for both puzzle types", () => {
     expect(workspaceSource).toContain("onHistoryAvailabilityChange={handleHistoryAvailabilityChange}");
-    expect(workspaceSource).toContain("onHistoryDispatcherChange={handleHistoryDispatcherChange}");
-    expect(previewSource).toContain("canUndo: runtime.history.undoStack.length > 0");
-    expect(previewSource).toContain("canRedo: runtime.history.redoStack.length > 0");
+    expect(workspaceSource).toContain("onHistoryControllerChange={handleHistoryControllerChange}");
+    expect(previewSource).toContain("puzzleInstanceId: puzzle.id");
+    expect(previewSource).toContain("can: canHistoryAction");
+    expect(previewSource).toContain("dispatch: dispatchHistoryAction");
   });
 });
