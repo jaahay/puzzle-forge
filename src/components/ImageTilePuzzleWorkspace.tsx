@@ -4,7 +4,7 @@ import type { ImageTileGeneratedPuzzle, ImageTilePuzzleId } from "../catalog/typ
 import type { ImageTileHistoryAction } from "../games/imageTiles/history";
 import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
 import { ImageTileNewPuzzleControl } from "./ImageTileNewPuzzleControl";
-import { ImageTilePuzzlePreview, type ImageTileHistoryAvailability, type ImageTileHistoryDispatcher } from "./ImageTilePuzzlePreview";
+import { ImageTilePuzzlePreview, type ImageTileHistoryAvailability, type ImageTileHistoryController } from "./ImageTilePuzzlePreview";
 import { PuzzleHistoryActions } from "./PuzzleHistoryActions";
 import { PuzzleTerminalDock } from "./PuzzleTerminalDock";
 import type { ImageWorkspaceProps } from "./PuzzleWorkspace.types";
@@ -46,7 +46,7 @@ export const ImageTilePuzzleWorkspace = ({
   const imagePuzzle = asImageTilePuzzle(puzzle, puzzleId);
   const [resetVersion, setResetVersion] = useState(0);
   const [completionState, setCompletionState] = useState<CompletionState>({ puzzleInstanceId: null, solved: false });
-  const historyDispatcherRef = useRef<ImageTileHistoryDispatcher | null>(null);
+  const historyControllerRef = useRef<ImageTileHistoryController | null>(null);
   const [historyAvailability, setHistoryAvailability] = useState<ImageTileHistoryAvailabilityState>({
     puzzleInstanceId: null,
     canUndo: false,
@@ -82,18 +82,22 @@ export const ImageTilePuzzleWorkspace = ({
         ? current
         : { puzzleInstanceId, ...availability });
   }, [imagePuzzle?.id]);
-  const handleHistoryDispatcherChange = useCallback((dispatcher: ImageTileHistoryDispatcher | null) => {
-    historyDispatcherRef.current = dispatcher;
+  const handleHistoryControllerChange = useCallback((controller: ImageTileHistoryController | null) => {
+    historyControllerRef.current = controller;
   }, []);
+  const canHistoryActionNow = useCallback((action: ImageTileHistoryAction) => {
+    const controller = historyControllerRef.current;
+    return Boolean(
+      imagePuzzle &&
+      controller?.puzzleInstanceId === imagePuzzle.id &&
+      controller.can(action),
+    );
+  }, [imagePuzzle?.id]);
 
   const requestHistoryAction = (action: ImageTileHistoryAction) => {
-    if (!imagePuzzle) return;
-    const available = historyAvailability.puzzleInstanceId === imagePuzzle.id &&
-      (action === "undo" ? historyAvailability.canUndo : historyAvailability.canRedo);
-    const dispatcher = historyDispatcherRef.current;
-    if (!available || !dispatcher) return;
+    const controller = historyControllerRef.current;
+    if (!imagePuzzle || controller?.puzzleInstanceId !== imagePuzzle.id || !controller.dispatch(action)) return;
 
-    dispatcher(action);
     onStatusMessageChange(action === "undo" ? "Undid last puzzle action." : "Redid last puzzle action.");
   };
 
@@ -137,6 +141,8 @@ export const ImageTilePuzzleWorkspace = ({
         historyAvailability.canRedo
       }
       disabled={isGenerating}
+      canUndoNow={() => canHistoryActionNow("undo")}
+      canRedoNow={() => canHistoryActionNow("redo")}
       onUndo={() => requestHistoryAction("undo")}
       onRedo={() => requestHistoryAction("redo")}
     />
@@ -173,7 +179,7 @@ export const ImageTilePuzzleWorkspace = ({
         onCompletionAnimationEnd={completionPresentation.completePresentation}
         onSolvedChange={handleSolvedChange}
         onHistoryAvailabilityChange={handleHistoryAvailabilityChange}
-        onHistoryDispatcherChange={handleHistoryDispatcherChange}
+        onHistoryControllerChange={handleHistoryControllerChange}
       />
     </section>
   ) : isGenerating ? loadingBoard : null;
