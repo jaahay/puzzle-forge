@@ -142,6 +142,18 @@ describe("image tile action history", () => {
     expect(sameImageTileActionState(redone.state, slid.state)).toBe(true);
   });
 
+  it("treats Sliding Puzzle Reset as one reversible action including the gap", () => {
+    const initial = makeSlidingRuntime(4, 3, 7);
+    const progressed = requireTransition(slideImageTileAction(initial, "tile-4", 4, 3));
+    const reset = requireTransition(resetImageTileAction(progressed, initial.state));
+
+    expect(sameImageTileActionState(reset.state, initial.state)).toBe(true);
+
+    const undone = requireTransition(applyImageTileHistoryAction(reset, "undo"));
+    expect(sameImageTileActionState(undone.state, progressed.state)).toBe(true);
+    expect(undone.state.emptyIndex).toBe(4);
+  });
+
   it("does not record an illegal Sliding Puzzle request", () => {
     const initial = makeSlidingRuntime(4, 3, 7);
     const invalid = slideImageTileAction(initial, "tile-0", 4, 3);
