@@ -53,6 +53,8 @@ export type SolitaireInteractionProps = {
   onRedoSolitaire: () => void;
   canUndoSolitaire: boolean;
   canRedoSolitaire: boolean;
+  canUndoSolitaireNow: () => boolean;
+  canRedoSolitaireNow: () => boolean;
   onCardClick: (stack: CardStack, cardIndex: number) => void;
   onCardDoubleClick: (stack: CardStack, cardIndex: number) => void;
   onStackClick: (stack: CardStack) => void;
