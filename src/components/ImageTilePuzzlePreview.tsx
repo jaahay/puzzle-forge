@@ -6,6 +6,7 @@ import {
   applyImageTileHistoryAction,
   makeEmptyImageTileHistoryState,
   resetImageTileAction,
+  slideImageTileAction,
   swapImageTileAction,
   type ImageTileActionRuntime,
   type ImageTileActionState,
@@ -16,7 +17,6 @@ import {
   canSlideTileTowardGap,
   hasUniqueTilePositions,
   isImageTileSolved,
-  slideTileTowardGap,
 } from "../games/imageTiles/state";
 import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
 
@@ -243,10 +243,6 @@ export const ImageTilePuzzlePreview = ({
     lastResetVersion.current = resetVersion;
     setRuntime((current) => {
       const initialProgress = makeInitialProgress(puzzle);
-      if (puzzle.puzzleId !== "tile-swap") {
-        return { progress: initialProgress, history: makeEmptyImageTileHistoryState() };
-      }
-
       const reset = resetImageTileAction(
         toImageTileActionRuntime(current),
         toImageTileActionState(initialProgress),
@@ -257,8 +253,6 @@ export const ImageTilePuzzlePreview = ({
   }, [puzzle, resetVersion]);
 
   const dispatchHistoryAction = useCallback((action: ImageTileHistoryAction) => {
-    if (puzzle.puzzleId !== "tile-swap") return;
-
     setRuntime((current) => {
       const next = applyImageTileHistoryAction(toImageTileActionRuntime(current), action);
       return next ? restoreImageTileActionRuntime(current, next) : current;
@@ -267,15 +261,15 @@ export const ImageTilePuzzlePreview = ({
   }, [puzzle.puzzleId]);
 
   useEffect(() => {
-    if (!onHistoryDispatcherChange || puzzle.puzzleId !== "tile-swap") return;
+    if (!onHistoryDispatcherChange) return;
     onHistoryDispatcherChange(dispatchHistoryAction);
     return () => onHistoryDispatcherChange(null);
-  }, [dispatchHistoryAction, onHistoryDispatcherChange, puzzle.puzzleId]);
+  }, [dispatchHistoryAction, onHistoryDispatcherChange]);
 
   useEffect(() => {
     onHistoryAvailabilityChange?.({
-      canUndo: puzzle.puzzleId === "tile-swap" && runtime.history.undoStack.length > 0,
-      canRedo: puzzle.puzzleId === "tile-swap" && runtime.history.redoStack.length > 0,
+      canUndo: runtime.history.undoStack.length > 0,
+      canRedo: runtime.history.redoStack.length > 0,
     });
   }, [
     onHistoryAvailabilityChange,
@@ -299,24 +293,13 @@ export const ImageTilePuzzlePreview = ({
       if (progress.emptyIndex === undefined || !canSlideTileTowardGap(tile, progress.emptyIndex, puzzle.width, puzzle.height)) return;
       onCausativeInput?.();
       setRuntime((current) => {
-        if (current.progress.emptyIndex === undefined) return current;
-        const next = slideTileTowardGap(
-          current.progress.tiles,
+        const next = slideImageTileAction(
+          toImageTileActionRuntime(current),
           tile.id,
-          current.progress.emptyIndex,
           puzzle.width,
           puzzle.height,
         );
-        if (!next.moved) return current;
-        return {
-          ...current,
-          progress: {
-            ...current.progress,
-            tiles: next.tiles,
-            emptyIndex: next.emptyIndex,
-            moveCount: current.progress.moveCount + 1,
-          },
-        };
+        return next ? restoreImageTileActionRuntime(current, next) : current;
       });
       return;
     }
