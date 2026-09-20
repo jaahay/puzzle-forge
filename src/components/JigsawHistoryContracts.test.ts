@@ -51,11 +51,28 @@ describe("Jigsaw history integration", () => {
     expect(cancelDrag).not.toContain("commitJigsawPlacementAction");
   });
 
-  it("treats Scatter/Reset as one reversible placement action", () => {
+  it("treats Scatter/Reset as one reversible action from the last committed drag state", () => {
     const scatter = sourceBetween(previewSource, "const scatterPieces =", "useEffect(() => {");
+    expect(scatter).toContain(
+      "resolveJigsawActionBaseline(current.placements, activeDrag?.startPlacements ?? null)",
+    );
     expect(scatter).toContain("commitJigsawPlacementAction");
-    expect(scatter).toContain("before.placements");
+    expect(scatter).toContain("baseline");
     expect(scatter).toContain("nextPlacements");
+  });
+
+  it("disables rendered history controls throughout drag and pinch gestures", () => {
+    const beginDrag = sourceBetween(previewSource, "const beginDrag =", "const moveDrag =");
+    const finishDrag = sourceBetween(previewSource, "const finishDrag =", "const cancelDrag =");
+    const cancelDrag = sourceBetween(previewSource, "const cancelDrag =", "const beginPan =");
+    const pinchStart = sourceBetween(previewSource, "const beginTouchPinch =", "const moveTouchPinch =");
+    const pinchEnd = sourceBetween(previewSource, "const endTouchPinch =", "const getPointerPlacement =");
+
+    expect(beginDrag).toContain("publishHistoryAvailability(historyRef.current, true)");
+    expect(pinchStart).toContain("publishHistoryAvailability(historyRef.current, true)");
+    expect(finishDrag).toContain("publishHistoryAvailability(historyRef.current)");
+    expect(cancelDrag).toContain("publishHistoryAvailability(historyRef.current)");
+    expect(pinchEnd).toContain("publishHistoryAvailability(historyRef.current)");
   });
 
   it("binds history commands to the active puzzle instance", () => {
