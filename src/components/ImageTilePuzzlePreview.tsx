@@ -20,7 +20,10 @@ import {
 } from "../games/imageTiles/state";
 import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
 
-export type ImageTileHistoryDispatcher = (action: ImageTileHistoryAction) => void;
+export type ImageTileHistoryController = {
+  can: (action: ImageTileHistoryAction) => boolean;
+  dispatch: (action: ImageTileHistoryAction) => boolean;
+};
 
 export type ImageTileHistoryAvailability = {
   canUndo: boolean;
@@ -35,7 +38,7 @@ type ImageTilePuzzlePreviewProps = {
   onCompletionAnimationEnd?: () => void;
   onSolvedChange?: (solved: boolean) => void;
   onHistoryAvailabilityChange?: (availability: ImageTileHistoryAvailability) => void;
-  onHistoryDispatcherChange?: (dispatcher: ImageTileHistoryDispatcher | null) => void;
+  onHistoryControllerChange?: (controller: ImageTileHistoryController | null) => void;
 };
 
 type ImageTileProgress = {
@@ -221,12 +224,13 @@ export const ImageTilePuzzlePreview = ({
   onCompletionAnimationEnd,
   onSolvedChange,
   onHistoryAvailabilityChange,
-  onHistoryDispatcherChange,
+  onHistoryControllerChange,
 }: ImageTilePuzzlePreviewProps) => {
   const [runtime, setRuntime] = useState<ImageTileRuntimeState>(() => ({
     progress: loadImageTileProgress(puzzle) ?? makeInitialProgress(puzzle),
     history: makeEmptyImageTileHistoryState(),
   }));
+  const runtimeRef = useRef(runtime);
   const progress = runtime.progress;
   const [selectedTileId, setSelectedTileId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -238,10 +242,27 @@ export const ImageTilePuzzlePreview = ({
   const showSolvedPresentation = isSolved && (completionPhase === undefined || completionPhase === "completed");
   const revealSlidingCompletionGap = isSliding && shouldRevealSlidingCompletionGap(isSolved, completionPhase);
 
+  const commitRuntime = useCallback((
+    transition: (current: ImageTileRuntimeState) => ImageTileRuntimeState,
+  ) => {
+    const current = runtimeRef.current;
+    const next = transition(current);
+    if (next === current) return current;
+
+    runtimeRef.current = next;
+    setRuntime(next);
+    return next;
+  }, []);
+
+  const canHistoryAction = useCallback((action: ImageTileHistoryAction) => {
+    const history = runtimeRef.current.history;
+    return action === "undo" ? history.undoStack.length > 0 : history.redoStack.length > 0;
+  }, []);
+
   useEffect(() => {
     if (lastResetVersion.current === resetVersion) return;
     lastResetVersion.current = resetVersion;
-    setRuntime((current) => {
+    commitRuntime((current) => {
       const initialProgress = makeInitialProgress(puzzle);
       const reset = resetImageTileAction(
         toImageTileActionRuntime(current),
@@ -250,21 +271,31 @@ export const ImageTilePuzzlePreview = ({
       return reset ? restoreImageTileActionRuntime(current, reset) : current;
     });
     setSelectedTileId(null);
-  }, [puzzle, resetVersion]);
+  }, [commitRuntime, puzzle, resetVersion]);
 
   const dispatchHistoryAction = useCallback((action: ImageTileHistoryAction) => {
-    setRuntime((current) => {
-      const next = applyImageTileHistoryAction(toImageTileActionRuntime(current), action);
-      return next ? restoreImageTileActionRuntime(current, next) : current;
-    });
+    if (!canHistoryAction(action)) return false;
+
+    const current = runtimeRef.current;
+    const next = applyImageTileHistoryAction(toImageTileActionRuntime(current), action);
+    if (!next) return false;
+
+    const restored = restoreImageTileActionRuntime(current, next);
+    runtimeRef.current = restored;
+    setRuntime(restored);
     setSelectedTileId(null);
-  }, [puzzle.puzzleId]);
+    return true;
+  }, [canHistoryAction]);
 
   useEffect(() => {
-    if (!onHistoryDispatcherChange) return;
-    onHistoryDispatcherChange(dispatchHistoryAction);
-    return () => onHistoryDispatcherChange(null);
-  }, [dispatchHistoryAction, onHistoryDispatcherChange]);
+    if (!onHistoryControllerChange) return;
+    const controller: ImageTileHistoryController = {
+      can: canHistoryAction,
+      dispatch: dispatchHistoryAction,
+    };
+    onHistoryControllerChange(controller);
+    return () => onHistoryControllerChange(null);
+  }, [canHistoryAction, dispatchHistoryAction, onHistoryControllerChange]);
 
   useEffect(() => {
     onHistoryAvailabilityChange?.({
@@ -292,7 +323,7 @@ export const ImageTilePuzzlePreview = ({
     if (isSliding) {
       if (progress.emptyIndex === undefined || !canSlideTileTowardGap(tile, progress.emptyIndex, puzzle.width, puzzle.height)) return;
       onCausativeInput?.();
-      setRuntime((current) => {
+      commitRuntime((current) => {
         const next = slideImageTileAction(
           toImageTileActionRuntime(current),
           tile.id,
@@ -314,7 +345,7 @@ export const ImageTilePuzzlePreview = ({
     }
 
     onCausativeInput?.();
-    setRuntime((current) => {
+    commitRuntime((current) => {
       const next = swapImageTileAction(
         toImageTileActionRuntime(current),
         selectedTileId,
