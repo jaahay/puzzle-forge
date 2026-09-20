@@ -2,6 +2,7 @@ import { solvedTerminalState } from "../app/puzzleTerminalState";
 import { isSolitaireSolved } from "../app/solitaireTerminal";
 import { CardPuzzlePreview } from "./CardPuzzlePreview";
 import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
+import { PuzzleHistoryActions } from "./PuzzleHistoryActions";
 import { PuzzleTerminalDock } from "./PuzzleTerminalDock";
 import type { SolitaireWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
@@ -28,6 +29,8 @@ export const SolitaireWorkspace = ({
   onRedoSolitaire,
   canUndoSolitaire,
   canRedoSolitaire,
+  canUndoSolitaireNow,
+  canRedoSolitaireNow,
   onCardClick,
   onCardDoubleClick,
   onStackClick,
@@ -49,10 +52,22 @@ export const SolitaireWorkspace = ({
       onLoadSeed={onLoadSeed}
     />
   ) : null;
+  const historyActions = solitairePuzzle ? (
+    <PuzzleHistoryActions
+      canUndo={canUndoSolitaire}
+      canRedo={canRedoSolitaire}
+      disabled={isGenerating}
+      canUndoNow={canUndoSolitaireNow}
+      canRedoNow={canRedoSolitaireNow}
+      onUndo={onUndoSolitaire}
+      onRedo={onRedoSolitaire}
+    />
+  ) : null;
   const crown = solitairePuzzle ? (
     <CurrentPuzzleHeader
       key={puzzleArrivalIdentity ?? undefined}
       puzzle={solitairePuzzle}
+      historyControl={historyActions}
       newPuzzleControl={newPuzzleControl}
       isArriving={isPuzzleArriving}
     />
@@ -68,8 +83,6 @@ export const SolitaireWorkspace = ({
     />
   ) : (
     <div class="solitaire-action-row" aria-label="Solitaire controls">
-      <button type="button" onClick={onUndoSolitaire} disabled={!canUndoSolitaire} aria-label="Undo Solitaire move" title="Undo">↶</button>
-      <button type="button" onClick={onRedoSolitaire} disabled={!canRedoSolitaire} aria-label="Redo Solitaire move" title="Redo">↷</button>
       <button type="button" onClick={onAutoMoveToFoundations} aria-label="Move all currently legal cards to foundations" title="Auto foundation">♣→</button>
       <button type="button" onClick={onReset} disabled={isGenerating}>Reset</button>
     </div>
