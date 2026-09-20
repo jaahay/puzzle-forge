@@ -4,6 +4,8 @@ type PuzzleHistoryActionsProps = {
   canUndo: boolean;
   canRedo: boolean;
   disabled?: boolean;
+  canUndoNow?: () => boolean;
+  canRedoNow?: () => boolean;
   onUndo: () => void;
   onRedo: () => void;
 };
@@ -11,6 +13,16 @@ type PuzzleHistoryActionsProps = {
 type HistoryShortcutEvent = Pick<KeyboardEvent, "key" | "ctrlKey" | "metaKey" | "shiftKey" | "altKey">;
 
 export type PuzzleHistoryShortcutAction = "undo" | "redo" | null;
+
+export const isPuzzleHistoryActionAvailable = (
+  action: Exclude<PuzzleHistoryShortcutAction, null>,
+  canUndo: boolean,
+  canRedo: boolean,
+  canUndoNow?: () => boolean,
+  canRedoNow?: () => boolean,
+) => action === "undo"
+  ? canUndoNow?.() ?? canUndo
+  : canRedoNow?.() ?? canRedo;
 
 export const getPuzzleHistoryShortcutAction = (event: HistoryShortcutEvent): PuzzleHistoryShortcutAction => {
   if (event.altKey) return null;
@@ -46,6 +58,8 @@ export const PuzzleHistoryActions = ({
   canUndo,
   canRedo,
   disabled = false,
+  canUndoNow,
+  canRedoNow,
   onUndo,
   onRedo,
 }: PuzzleHistoryActionsProps) => {
@@ -56,10 +70,10 @@ export const PuzzleHistoryActions = ({
       if (event.defaultPrevented || isTextEditingTarget(event.target)) return;
       const action = getPuzzleHistoryShortcutAction(event);
 
-      if (action === "undo" && canUndo) {
+      if (action === "undo" && isPuzzleHistoryActionAvailable(action, canUndo, canRedo, canUndoNow, canRedoNow)) {
         event.preventDefault();
         onUndo();
-      } else if (action === "redo" && canRedo) {
+      } else if (action === "redo" && isPuzzleHistoryActionAvailable(action, canUndo, canRedo, canUndoNow, canRedoNow)) {
         event.preventDefault();
         onRedo();
       }
@@ -67,7 +81,7 @@ export const PuzzleHistoryActions = ({
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [canUndo, canRedo, disabled, onUndo, onRedo]);
+  }, [canUndo, canRedo, canUndoNow, canRedoNow, disabled, onUndo, onRedo]);
 
   return (
     <div class="puzzle-history-actions" role="group" aria-label="Puzzle history">
