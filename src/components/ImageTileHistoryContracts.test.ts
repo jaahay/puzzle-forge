@@ -4,12 +4,13 @@ import { describe, expect, it } from "vitest";
 const workspaceSource = readFileSync(new URL("./ImageTilePuzzleWorkspace.tsx", import.meta.url), "utf8");
 const previewSource = readFileSync(new URL("./ImageTilePuzzlePreview.tsx", import.meta.url), "utf8");
 
-describe("Tile Swap history integration", () => {
-  it("owns Undo/Redo in the current-puzzle crown for Tile Swap only", () => {
-    expect(workspaceSource).toContain('imagePuzzle && puzzleId === "tile-swap"');
+describe("image tile history integration", () => {
+  it("owns Undo/Redo in the current-puzzle crown for both image-tile puzzle types", () => {
+    expect(workspaceSource).toContain("const historyActions = imagePuzzle ? (");
     expect(workspaceSource).toContain("<PuzzleHistoryActions");
     expect(workspaceSource).toContain("historyControl={historyActions}");
     expect(workspaceSource).toContain("historyDispatcherRef");
+    expect(workspaceSource).not.toContain('puzzleId !== "tile-swap"');
   });
 
   it("dispatches every history action directly instead of storing only the latest command", () => {
@@ -37,7 +38,7 @@ describe("Tile Swap history integration", () => {
     );
   });
 
-  it("records completed swaps rather than tile selection as actions", () => {
+  it("records completed Tile Swap exchanges rather than tile selection as actions", () => {
     const firstSelection = previewSource.indexOf("if (!selectedTileId)");
     const historySwap = previewSource.indexOf("swapImageTileAction(", firstSelection);
 
@@ -48,11 +49,20 @@ describe("Tile Swap history integration", () => {
     ).not.toContain("swapImageTileAction");
   });
 
-  it("treats Reset as one reversible Tile Swap action without changing Sliding history", () => {
-    expect(previewSource).toContain('if (puzzle.puzzleId !== "tile-swap")');
+  it("records each legal Sliding Puzzle line shift through the shared history transition", () => {
+    expect(previewSource).toContain("slideImageTileAction(");
+    expect(previewSource).not.toContain("slideTileTowardGap(");
+  });
+
+  it("treats Reset as one reversible action for both image-tile puzzle types", () => {
     expect(previewSource).toContain("resetImageTileAction(");
-    expect(previewSource).toMatch(
-      /slideTileTowardGap[\s\S]*?return \{[\s\S]*?\.\.\.current,[\s\S]*?progress:/,
-    );
+    expect(previewSource).not.toContain('puzzle.puzzleId !== "tile-swap"');
+  });
+
+  it("registers shared history availability and dispatch callbacks for both puzzle types", () => {
+    expect(workspaceSource).toContain("onHistoryAvailabilityChange={handleHistoryAvailabilityChange}");
+    expect(workspaceSource).toContain("onHistoryDispatcherChange={handleHistoryDispatcherChange}");
+    expect(previewSource).toContain("canUndo: runtime.history.undoStack.length > 0");
+    expect(previewSource).toContain("canRedo: runtime.history.redoStack.length > 0");
   });
 });
