@@ -63,6 +63,21 @@ describe("Jigsaw action history", () => {
     expect(divergent.redoStack).toHaveLength(0);
   });
 
+  it("treats Scatter or Reset as one reversible placement action", () => {
+    const progressed = placements(["a", 90, 80, true], ["b", 30, 40, false]);
+    const scattered = placements(["a", 5, 10, false], ["b", 110, 120, false]);
+    const history = commitJigsawPlacementAction(
+      makeEmptyJigsawHistoryState(),
+      progressed,
+      scattered,
+    );
+
+    expect(history.undoStack).toHaveLength(1);
+    const undone = applyJigsawHistoryAction(history, scattered, "undo");
+    expect(undone).not.toBeNull();
+    expect(sameJigsawPlacements(undone!.placements, progressed)).toBe(true);
+  });
+
   it("keeps history bounded and snapshots immutable", () => {
     let history = makeEmptyJigsawHistoryState();
     let current = placements(["a", 0, 0, false]);
