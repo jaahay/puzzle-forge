@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getPuzzleHistoryShortcutAction } from "./PuzzleHistoryActions";
+import { getPuzzleHistoryShortcutAction, isPuzzleHistoryActionAvailable } from "./PuzzleHistoryActions";
 
 const shortcut = (overrides: Partial<KeyboardEvent> = {}) => ({
   key: "z",
@@ -26,5 +26,11 @@ describe("puzzle history keyboard shortcuts", () => {
     expect(getPuzzleHistoryShortcutAction(shortcut())).toBeNull();
     expect(getPuzzleHistoryShortcutAction(shortcut({ altKey: true, ctrlKey: true }))).toBeNull();
     expect(getPuzzleHistoryShortcutAction(shortcut({ key: "y", metaKey: true }))).toBeNull();
+  });
+
+  it("prefers authoritative live availability over the last rendered availability", () => {
+    expect(isPuzzleHistoryActionAvailable("redo", true, false, undefined, () => true)).toBe(true);
+    expect(isPuzzleHistoryActionAvailable("undo", true, true, () => false, undefined)).toBe(false);
+    expect(isPuzzleHistoryActionAvailable("redo", true, false)).toBe(false);
   });
 });
