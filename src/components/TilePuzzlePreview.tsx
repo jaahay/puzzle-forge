@@ -6,7 +6,9 @@ import {
   applyJigsawHistoryAction,
   cloneJigsawPlacements,
   commitJigsawPlacementAction,
+  getJigsawHistoryAvailability,
   makeEmptyJigsawHistoryState,
+  resolveJigsawActionBaseline,
   type JigsawHistoryAction,
   type JigsawHistoryState,
 } from "../games/jigsaw/history";
@@ -310,11 +312,11 @@ export const TilePuzzlePreview = ({
     puzzleHeight: puzzle.height,
   }), [puzzle.asset.intrinsicHeight, puzzle.asset.intrinsicWidth, puzzle.height, puzzle.width]);
 
-  const publishHistoryAvailability = useCallback((history: JigsawHistoryState) => {
-    onHistoryAvailabilityChange?.({
-      canUndo: history.undoStack.length > 0,
-      canRedo: history.redoStack.length > 0,
-    });
+  const publishHistoryAvailability = useCallback((
+    history: JigsawHistoryState,
+    blocked = false,
+  ) => {
+    onHistoryAvailabilityChange?.(getJigsawHistoryAvailability(history, blocked));
   }, [onHistoryAvailabilityChange]);
 
   const replaceHistory = useCallback((history: JigsawHistoryState) => {
@@ -434,7 +436,11 @@ export const TilePuzzlePreview = ({
     const stagingViewport = getMeasuredJigsawViewport(stageRef.current);
     if (!stagingViewport) return false;
 
-    const before = placementStateRef.current;
+    const current = placementStateRef.current;
+    const activeDrag = dragRef.current;
+    const baseline = current?.puzzleId === puzzle.id
+      ? resolveJigsawActionBaseline(current.placements, activeDrag?.startPlacements ?? null)
+      : null;
     const nextPlacements = createInitialJigsawPlacements(layout, puzzle.tiles, stagingViewport);
     dragRef.current = null;
     panRef.current = null;
@@ -447,10 +453,10 @@ export const TilePuzzlePreview = ({
       puzzleId: puzzle.id,
       placements: nextPlacements,
     }));
-    if (before?.puzzleId === puzzle.id) {
+    if (baseline) {
       replaceHistory(commitJigsawPlacementAction(
         historyRef.current,
-        before.placements,
+        baseline,
         nextPlacements,
       ));
     }
@@ -546,6 +552,7 @@ export const TilePuzzlePreview = ({
           startPoints,
           startCamera: wheelStateRef.current.camera,
         };
+        publishHistoryAvailability(historyRef.current, true);
         const interruptedDrag = dragRef.current;
         if (interruptedDrag) {
           updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
@@ -600,6 +607,7 @@ export const TilePuzzlePreview = ({
     if (pinch?.pointerIds.includes(event.pointerId)) {
       pinchRef.current = null;
       setCamera(wheelStateRef.current.camera);
+      publishHistoryAvailability(historyRef.current);
     }
 
     if (wasPinching) {
@@ -640,6 +648,7 @@ export const TilePuzzlePreview = ({
       offsetWorldY: worldPoint.y - position.top,
       startPlacements: cloneJigsawPlacements(currentPlacementState.placements),
     };
+    publishHistoryAvailability(historyRef.current, true);
     stageRef.current?.focus({ preventScroll: true });
     target.setPointerCapture(event.pointerId);
     setRaisedTileId(tile.id);
@@ -688,6 +697,7 @@ export const TilePuzzlePreview = ({
         ...current,
         placements: cloneJigsawPlacements(drag.startPlacements),
       } : current);
+      publishHistoryAvailability(historyRef.current);
       return;
     }
     const snaps = shouldSnapJigsawPlacement(layout, tile, nextPosition);
@@ -701,6 +711,8 @@ export const TilePuzzlePreview = ({
         drag.startPlacements,
         nextState.placements,
       ));
+    } else {
+      publishHistoryAvailability(historyRef.current);
     }
     event.stopPropagation();
     event.preventDefault();
@@ -715,6 +727,7 @@ export const TilePuzzlePreview = ({
     } : current);
     dragRef.current = null;
     setActiveTileId(null);
+    publishHistoryAvailability(historyRef.current);
     event.stopPropagation();
   };
 
