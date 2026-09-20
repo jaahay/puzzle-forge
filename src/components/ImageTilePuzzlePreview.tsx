@@ -21,6 +21,7 @@ import {
 import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
 
 export type ImageTileHistoryController = {
+  puzzleInstanceId: string;
   can: (action: ImageTileHistoryAction) => boolean;
   dispatch: (action: ImageTileHistoryAction) => boolean;
 };
@@ -290,12 +291,13 @@ export const ImageTilePuzzlePreview = ({
   useEffect(() => {
     if (!onHistoryControllerChange) return;
     const controller: ImageTileHistoryController = {
+      puzzleInstanceId: puzzle.id,
       can: canHistoryAction,
       dispatch: dispatchHistoryAction,
     };
     onHistoryControllerChange(controller);
     return () => onHistoryControllerChange(null);
-  }, [canHistoryAction, dispatchHistoryAction, onHistoryControllerChange]);
+  }, [canHistoryAction, dispatchHistoryAction, onHistoryControllerChange, puzzle.id]);
 
   useEffect(() => {
     onHistoryAvailabilityChange?.({
