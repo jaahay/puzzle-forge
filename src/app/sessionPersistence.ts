@@ -38,6 +38,7 @@ export type PersistedTileProgress = {
   kind: "tiles";
   tileOrder: Array<{ id: string; currentIndex: number }>;
   selectedTileId: string | null;
+  jigsawSnappedPieceIds?: string[];
 };
 
 export type PersistedCompactGridHistoryEntry = {
@@ -192,6 +193,9 @@ const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzlePr
       kind: "tiles",
       tileOrder: session.puzzle.tiles.map(({ id, currentIndex }) => ({ id, currentIndex })),
       selectedTileId: null,
+      ...(session.puzzle.puzzleId === "jigsaw" && session.progress.jigsawSnappedPieceIds
+        ? { jigsawSnappedPieceIds: [...session.progress.jigsawSnappedPieceIds] }
+        : {}),
     };
   }
 
@@ -213,6 +217,10 @@ export const buildPersistedPuzzleSession = (
   session: PuzzleSession,
 ): PersistedPuzzleSession | null => {
   if (session.puzzle.puzzleId !== resource.puzzleId || !resource.generationId) return null;
+  if (
+    session.puzzle.puzzleId === "jigsaw" &&
+    (session.kind !== "tiles" || session.progress.jigsawSnappedPieceIds === undefined)
+  ) return null;
 
   return {
     puzzleId: resource.puzzleId,
@@ -247,7 +255,11 @@ const isPersistedCardProgress = (value: Record<string, unknown>): value is Persi
 const isPersistedTileProgress = (value: Record<string, unknown>): value is PersistedTileProgress =>
   Array.isArray(value.tileOrder) &&
   value.tileOrder.every(isPersistedTileOrderEntry) &&
-  (value.selectedTileId === null || typeof value.selectedTileId === "string");
+  (value.selectedTileId === null || typeof value.selectedTileId === "string") &&
+  (value.jigsawSnappedPieceIds === undefined || (
+    Array.isArray(value.jigsawSnappedPieceIds) &&
+    value.jigsawSnappedPieceIds.every((pieceId) => typeof pieceId === "string")
+  ));
 
 const isPersistedGridProgress = (value: Record<string, unknown>): value is PersistedGridProgress =>
   Array.isArray(value.cells) &&
@@ -275,6 +287,13 @@ const isPersistedPuzzleSession = (value: unknown): value is PersistedPuzzleSessi
     (value.completedAt !== undefined && typeof value.completedAt !== "string") ||
     !isPersistedPuzzleProgress(value.progress)
   ) return false;
+
+  const progress = value.progress as PersistedPuzzleProgress;
+  if (value.puzzleId === "jigsaw") {
+    if (progress.kind !== "tiles" || progress.jigsawSnappedPieceIds === undefined) return false;
+  } else if (progress.kind === "tiles" && progress.jigsawSnappedPieceIds !== undefined) {
+    return false;
+  }
 
   return decodeGenerationId(value.puzzleId, value.generationId).ok;
 };
@@ -312,6 +331,9 @@ const clonePersistedPuzzleProgress = (progress: PersistedPuzzleProgress): Persis
       kind: "tiles",
       tileOrder: progress.tileOrder.map(({ id, currentIndex }) => ({ id, currentIndex })),
       selectedTileId: progress.selectedTileId ?? null,
+      ...(progress.jigsawSnappedPieceIds
+        ? { jigsawSnappedPieceIds: [...progress.jigsawSnappedPieceIds] }
+        : {}),
     };
   }
 
@@ -431,6 +453,27 @@ const restorePersistedGridProgress = (progress: PersistedGridProgress, puzzle: G
   };
 };
 
+const restorePersistedJigsawSnappedPieceIds = (
+  progress: PersistedTileProgress,
+  puzzle: TileGeneratedPuzzle,
+): string[] | undefined | null => {
+  if (puzzle.puzzleId !== "jigsaw") {
+    return progress.jigsawSnappedPieceIds === undefined ? undefined : null;
+  }
+
+  const snappedPieceIds = progress.jigsawSnappedPieceIds;
+  if (snappedPieceIds === undefined) return null;
+
+  const expectedIds = new Set(puzzle.tiles.map((tile) => tile.id));
+  const seenIds = new Set<string>();
+  for (const pieceId of snappedPieceIds) {
+    if (!expectedIds.has(pieceId) || seenIds.has(pieceId)) return null;
+    seenIds.add(pieceId);
+  }
+
+  return [...snappedPieceIds];
+};
+
 const restorePersistedTilePuzzle = (progress: PersistedTileProgress, puzzle: TileGeneratedPuzzle): TileGeneratedPuzzle | null => {
   const boardCellCount = puzzle.width * puzzle.height;
   const expectedTileCount = puzzle.puzzleId === "sliding-puzzle" ? boardCellCount - 1 : boardCellCount;
@@ -498,11 +541,15 @@ export const restorePuzzleSessionFromPersisted = (
 
   if (persisted.progress.kind === "tiles" && generatedPuzzle.kind === "tiles") {
     const restoredPuzzle = restorePersistedTilePuzzle(persisted.progress, generatedPuzzle);
-    if (!restoredPuzzle) return null;
+    const jigsawSnappedPieceIds = restorePersistedJigsawSnappedPieceIds(persisted.progress, generatedPuzzle);
+    if (!restoredPuzzle || jigsawSnappedPieceIds === null) return null;
     return {
       kind: "tiles",
       puzzle: restoredPuzzle,
-      progress: { kind: "tiles" },
+      progress: {
+        kind: "tiles",
+        ...(jigsawSnappedPieceIds ? { jigsawSnappedPieceIds } : {}),
+      },
       statusMessage: persisted.statusMessage,
     };
   }

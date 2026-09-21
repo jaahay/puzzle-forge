@@ -27,6 +27,7 @@ export type RuntimeSessionDraft = {
   gridCells: PuzzleCell[] | null;
   selectedGridCell: GridCellSelection | null;
   gridHistory?: GridHistoryState;
+  jigsawSnappedPieceIds?: string[] | null;
   statusMessage: string;
 };
 
@@ -125,7 +126,12 @@ export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => {
   return {
     kind: "tiles",
     puzzle: cloneTilePuzzle(session.puzzle),
-    progress: { kind: "tiles" },
+    progress: {
+      kind: "tiles",
+      ...(session.progress.jigsawSnappedPieceIds
+        ? { jigsawSnappedPieceIds: [...session.progress.jigsawSnappedPieceIds] }
+        : {}),
+    },
     statusMessage: session.statusMessage,
   };
 };
@@ -140,6 +146,7 @@ export const buildRuntimeSession = ({
   gridCells,
   selectedGridCell,
   gridHistory,
+  jigsawSnappedPieceIds,
   statusMessage,
 }: RuntimeSessionDraft): PuzzleSession => {
   if (puzzle.kind === "cards") {
@@ -177,7 +184,12 @@ export const buildRuntimeSession = ({
   return {
     kind: "tiles",
     puzzle,
-    progress: { kind: "tiles" },
+    progress: {
+      kind: "tiles",
+      ...(puzzle.puzzleId === "jigsaw" && jigsawSnappedPieceIds
+        ? { jigsawSnappedPieceIds: [...jigsawSnappedPieceIds] }
+        : {}),
+    },
     statusMessage,
   };
 };
@@ -214,7 +226,15 @@ export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPu
     };
   }
 
-  return { kind: "tiles", puzzle: generatedPuzzle, progress: { kind: "tiles" }, statusMessage };
+  return {
+    kind: "tiles",
+    puzzle: generatedPuzzle,
+    progress: {
+      kind: "tiles",
+      ...(generatedPuzzle.puzzleId === "jigsaw" ? { jigsawSnappedPieceIds: [] } : {}),
+    },
+    statusMessage,
+  };
 };
 
 export const usePuzzleSessions = () => {

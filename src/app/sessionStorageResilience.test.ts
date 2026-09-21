@@ -137,7 +137,47 @@ const withMemoryStorage = (run: (storage: Map<string, string>) => void) => {
   }
 };
 
+const withFailingStorage = (run: () => void) => {
+  const originalWindow = globalThis.window;
+
+  Object.defineProperty(globalThis, "window", {
+    configurable: true,
+    value: {
+      localStorage: {
+        getItem: () => null,
+        setItem: () => {
+          throw new Error("Storage unavailable");
+        },
+        removeItem: () => {
+          throw new Error("Storage unavailable");
+        },
+      },
+    },
+  });
+
+  try {
+    run();
+  } finally {
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: originalWindow,
+    });
+  }
+};
+
 describe("active puzzle persistence resilience", () => {
+  it("treats browser storage write failures as non-fatal", () => {
+    withFailingStorage(() => {
+      const session = makeZeroKillerSession();
+      const resource = makeZeroKillerResource();
+
+      expect(() => savePersistedPuzzleSessions({
+        activeResourceKey: resource.resourceKey,
+        sessions: { [resource.resourceKey]: session },
+      })).not.toThrow();
+    });
+  });
+
   it("round-trips Zero Killer player progress over a regenerated baseline", () => {
     const session = makeZeroKillerSession();
     const resource = makeZeroKillerResource();

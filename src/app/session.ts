@@ -55,6 +55,7 @@ export type GridSessionProgress = {
 
 export type TileSessionProgress = {
   kind: "tiles";
+  jigsawSnappedPieceIds?: string[];
 };
 
 type TileGeneratedPuzzle = Exclude<GeneratedPuzzle, CardGeneratedPuzzle | GridGeneratedPuzzle>;
@@ -90,12 +91,16 @@ export const loadPersistedPuzzleSessions = () => {
 };
 
 export const savePersistedPuzzleSessions = (sessions: RuntimePuzzleSessions) => {
-  if (!sessions.sessions[sessions.activeResourceKey]) {
-    savePersistedPuzzleSessionsUnsafe(sessions);
-    return;
-  }
+  try {
+    if (!sessions.sessions[sessions.activeResourceKey]) {
+      savePersistedPuzzleSessionsUnsafe(sessions);
+      return;
+    }
 
-  preparePuzzleSessionRetention(sessions.activeResourceKey);
-  savePersistedPuzzleSessionsUnsafe(sessions);
-  finalizePuzzleSessionRetention(sessions.activeResourceKey);
+    preparePuzzleSessionRetention(sessions.activeResourceKey);
+    savePersistedPuzzleSessionsUnsafe(sessions);
+    finalizePuzzleSessionRetention(sessions.activeResourceKey);
+  } catch {
+    // Browser persistence is best-effort; the in-memory session remains authoritative.
+  }
 };

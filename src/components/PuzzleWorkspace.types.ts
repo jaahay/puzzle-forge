@@ -44,6 +44,11 @@ export type GridInteractionProps = {
   onCellInput: (cell: PuzzleCell, value: string) => void;
 };
 
+export type JigsawInteractionProps = {
+  jigsawSnappedPieceIds: string[] | null;
+  onJigsawSnappedPieceIdsChange: (pieceIds: string[]) => void;
+};
+
 export type SolitaireInteractionProps = {
   cardStacks: CardStack[] | null;
   selectedCard: CardSelection | null;
@@ -63,6 +68,7 @@ export type SolitaireInteractionProps = {
 export type SudokuWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps & GridInteractionProps;
 export type GridPuzzleWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps & GridInteractionProps;
 export type SolitaireWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps & SolitaireInteractionProps;
+export type JigsawWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps & JigsawInteractionProps;
 export type ImageWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps;
 
 export type PuzzleWorkspaceProps = {
@@ -70,4 +76,5 @@ export type PuzzleWorkspaceProps = {
   prospective: ProspectiveGenerationProps;
   grid: GridInteractionProps;
   solitaire: SolitaireInteractionProps;
+  jigsaw: JigsawInteractionProps;
 };
