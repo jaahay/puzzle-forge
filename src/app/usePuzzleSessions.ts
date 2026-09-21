@@ -14,6 +14,8 @@ import {
   type SolitaireStats,
 } from "./session";
 import { cloneGridHistoryState, makeEmptyGridHistoryState, type GridHistoryState } from "./gridHistory";
+import { cloneJigsawPlacements } from "../games/jigsaw/history";
+import type { JigsawPlacement } from "../games/jigsaw/placement";
 import { makePuzzleResourceKey, type PuzzleResourceIdentity } from "./puzzleResourceIdentity";
 import { cloneSolitaireHistoryEntry } from "./solitaireHistory";
 
@@ -27,6 +29,7 @@ export type RuntimeSessionDraft = {
   gridCells: PuzzleCell[] | null;
   selectedGridCell: GridCellSelection | null;
   gridHistory?: GridHistoryState;
+  jigsawPlacements?: JigsawPlacement[] | null;
   statusMessage: string;
 };
 
@@ -125,7 +128,12 @@ export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => {
   return {
     kind: "tiles",
     puzzle: cloneTilePuzzle(session.puzzle),
-    progress: { kind: "tiles" },
+    progress: {
+      kind: "tiles",
+      ...(session.progress.jigsawPlacements
+        ? { jigsawPlacements: cloneJigsawPlacements(session.progress.jigsawPlacements) }
+        : {}),
+    },
     statusMessage: session.statusMessage,
   };
 };
@@ -140,6 +148,7 @@ export const buildRuntimeSession = ({
   gridCells,
   selectedGridCell,
   gridHistory,
+  jigsawPlacements,
   statusMessage,
 }: RuntimeSessionDraft): PuzzleSession => {
   if (puzzle.kind === "cards") {
@@ -177,7 +186,12 @@ export const buildRuntimeSession = ({
   return {
     kind: "tiles",
     puzzle,
-    progress: { kind: "tiles" },
+    progress: {
+      kind: "tiles",
+      ...(puzzle.puzzleId === "jigsaw" && jigsawPlacements
+        ? { jigsawPlacements: cloneJigsawPlacements(jigsawPlacements) }
+        : {}),
+    },
     statusMessage,
   };
 };
