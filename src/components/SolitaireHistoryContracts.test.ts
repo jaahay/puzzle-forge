@@ -5,15 +5,47 @@ const appSource = readFileSync(new URL("../App.tsx", import.meta.url), "utf8");
 const controllerSource = readFileSync(new URL("../app/useSolitaireController.ts", import.meta.url), "utf8");
 const workspaceSource = readFileSync(new URL("./SolitaireWorkspace.tsx", import.meta.url), "utf8");
 
+const sourceBetween = (source: string, start: string, end: string) => {
+  const startIndex = source.indexOf(start);
+  const endIndex = source.indexOf(end, startIndex + start.length);
+  expect(startIndex).toBeGreaterThan(-1);
+  expect(endIndex).toBeGreaterThan(startIndex);
+  return source.slice(startIndex, endIndex);
+};
+
 describe("Solitaire shared history integration", () => {
-  it("uses the shared crown history controls and removes the legacy board-local arrows", () => {
-    expect(workspaceSource).toContain("<PuzzleHistoryActions");
+  it("uses the shared crown history controls with rendered and live availability", () => {
+    const historyControl = sourceBetween(
+      workspaceSource,
+      "const historyActions = solitairePuzzle ? (",
+      "const crown = solitairePuzzle ? (",
+    );
+
+    expect(historyControl).toContain("<PuzzleHistoryActions");
+    expect(historyControl).toContain("canUndo={canUndoSolitaire}");
+    expect(historyControl).toContain("canRedo={canRedoSolitaire}");
+    expect(historyControl).toContain("canUndoNow={canUndoSolitaireNow}");
+    expect(historyControl).toContain("canRedoNow={canRedoSolitaireNow}");
+    expect(historyControl).toContain("onUndo={onUndoSolitaire}");
+    expect(historyControl).toContain("onRedo={onRedoSolitaire}");
+    expect(historyControl).not.toContain("isSolved");
     expect(workspaceSource).toContain("historyControl={historyActions}");
-    expect(workspaceSource).toContain("canUndoNow={canUndoSolitaireNow}");
-    expect(workspaceSource).toContain("canRedoNow={canRedoSolitaireNow}");
+  });
+
+  it("removes legacy history arrows while retaining Solitaire-specific board actions", () => {
+    const actionControls = sourceBetween(
+      workspaceSource,
+      "const actionControls = isSolved ? (",
+      "const loadingBoard = (",
+    );
+
     expect(workspaceSource).not.toContain("Undo Solitaire move");
     expect(workspaceSource).not.toContain("Redo Solitaire move");
-    expect(workspaceSource).toContain("onAutoMoveToFoundations");
+    expect(actionControls).toContain('class="solitaire-action-row"');
+    expect(actionControls).toContain("onAutoMoveToFoundations");
+    expect(actionControls).toContain('title="Auto foundation"');
+    expect(actionControls).toContain("onClick={onReset}");
+    expect(actionControls).toContain(">Reset</button>");
   });
 
   it("routes shortcuts through authoritative live controller state", () => {
@@ -26,7 +58,7 @@ describe("Solitaire shared history integration", () => {
     expect(appSource).toContain("canRedoSolitaireNow: solitaire.canRedoSolitaireNow");
   });
 
-  it("preserves Solitaire's existing terminal history policy", () => {
+  it("preserves Solitaire's existing solved-terminal history policy", () => {
     expect(controllerSource).toMatch(
       /if \(isSolved\) \{[\s\S]*?solitaireUndoStack: \[\],[\s\S]*?solitaireRedoStack: \[\],[\s\S]*?\}/,
     );
