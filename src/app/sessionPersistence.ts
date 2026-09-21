@@ -217,6 +217,10 @@ export const buildPersistedPuzzleSession = (
   session: PuzzleSession,
 ): PersistedPuzzleSession | null => {
   if (session.puzzle.puzzleId !== resource.puzzleId || !resource.generationId) return null;
+  if (
+    session.puzzle.puzzleId === "jigsaw" &&
+    (session.kind !== "tiles" || session.progress.jigsawSnappedPieceIds === undefined)
+  ) return null;
 
   return {
     puzzleId: resource.puzzleId,
@@ -283,6 +287,13 @@ const isPersistedPuzzleSession = (value: unknown): value is PersistedPuzzleSessi
     (value.completedAt !== undefined && typeof value.completedAt !== "string") ||
     !isPersistedPuzzleProgress(value.progress)
   ) return false;
+
+  const progress = value.progress as PersistedPuzzleProgress;
+  if (value.puzzleId === "jigsaw") {
+    if (progress.kind !== "tiles" || progress.jigsawSnappedPieceIds === undefined) return false;
+  } else if (progress.kind === "tiles" && progress.jigsawSnappedPieceIds !== undefined) {
+    return false;
+  }
 
   return decodeGenerationId(value.puzzleId, value.generationId).ok;
 };
@@ -451,7 +462,7 @@ const restorePersistedJigsawSnappedPieceIds = (
   }
 
   const snappedPieceIds = progress.jigsawSnappedPieceIds;
-  if (snappedPieceIds === undefined) return undefined;
+  if (snappedPieceIds === undefined) return null;
 
   const expectedIds = new Set(puzzle.tiles.map((tile) => tile.id));
   const seenIds = new Set<string>();
