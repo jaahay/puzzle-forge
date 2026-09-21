@@ -8,6 +8,8 @@ const gridPreviewSource = readFileSync(new URL("./GridPuzzlePreview.tsx", import
 const futoshikiSource = readFileSync(new URL("./FutoshikiBoard.tsx", import.meta.url), "utf8");
 const wordGuessSource = readFileSync(new URL("./WordGuessGame.tsx", import.meta.url), "utf8");
 const jigsawSource = readFileSync(new URL("./JigsawWorkspace.tsx", import.meta.url), "utf8");
+const jigsawPreviewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", import.meta.url), "utf8");
+const jigsawCss = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
 
 describe("terminal interaction contracts", () => {
   it("keeps the reserved grid validation lane mounted after completion", () => {
@@ -53,8 +55,24 @@ describe("terminal interaction contracts", () => {
     expect(wordGuessSource).toMatch(/<PuzzleTerminalDock[\s\S]*?announce=\{false\}[\s\S]*?\/>|<PuzzleTerminalDock[\s\S]*?announce=\{false\}[\s\S]*?>/);
   });
 
-  it("keeps Jigsaw completion direct instead of using an unconnected presentation lifecycle", () => {
+  it("keeps Jigsaw completion direct, stage-native, and available in immersive mode", () => {
     expect(jigsawSource).not.toContain("usePuzzleCompletionPresentation");
-    expect(jigsawSource).toContain("isSolved ? (");
+    expect(jigsawSource).not.toContain("PuzzleTerminalDock");
+    expect(jigsawSource).toContain("onResetPuzzle={resetJigsaw}");
+    expect(jigsawSource).toContain("onNewPuzzle={onNewPuzzle}");
+    expect(jigsawPreviewSource).toContain('class="jigsaw-solved-presentation"');
+    expect(jigsawPreviewSource).toContain("<strong>Puzzle solved</strong>");
+    expect(jigsawPreviewSource).toContain("onClick={onResetPuzzle}");
+    expect(jigsawPreviewSource).toContain("onClick={onNewPuzzle}");
+  });
+
+  it("lets solved Jigsaw artwork replace construction chrome without losing reduced-motion support", () => {
+    expect(jigsawPreviewSource).toContain("shouldRenderJigsawEdgeSeams(showEdgeSeams, isSolved)");
+    expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .tile-puzzle-piece-visual");
+    expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .tile-puzzle-piece-outline");
+    expect(jigsawCss).toContain(".jigsaw-solved-card");
+    expect(jigsawCss).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.jigsaw-solved-card[\s\S]*?animation: none;/,
+    );
   });
 });
