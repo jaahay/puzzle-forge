@@ -630,6 +630,8 @@ export const App = () => {
     onRedoSolitaire: solitaire.redoSolitaireMove,
     canUndoSolitaire: solitaire.solitaireUndoStack.length > 0,
     canRedoSolitaire: solitaire.solitaireRedoStack.length > 0,
+    canUndoSolitaireNow: solitaire.canUndoSolitaireNow,
+    canRedoSolitaireNow: solitaire.canRedoSolitaireNow,
     onCardClick: solitaire.handleCardClick,
     onCardDoubleClick: solitaire.moveSingleCardToFoundation,
     onStackClick: solitaire.handleStackClick,
