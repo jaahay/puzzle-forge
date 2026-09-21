@@ -49,11 +49,28 @@ describe("Solitaire shared history integration", () => {
   });
 
   it("routes shortcuts through authoritative live controller state", () => {
+    const stateUpdater = sourceBetween(
+      controllerSource,
+      "const updateSolitaireState =",
+      "const setStatusMessage =",
+    );
+    const historyAction = sourceBetween(
+      controllerSource,
+      'const applyHistoryAction = (action: "undo" | "redo") => {',
+      "const undoSolitaireMove =",
+    );
+
     expect(controllerSource).toContain("const solitaireStateRef = useRef(solitaireState);");
+    expect(stateUpdater).toContain("solitaireStateRef.current = next;");
+    expect(stateUpdater).toContain("setRenderedSolitaireState(next);");
+    expect(stateUpdater.indexOf("solitaireStateRef.current = next;")).toBeLessThan(
+      stateUpdater.indexOf("setRenderedSolitaireState(next);"),
+    );
     expect(controllerSource).toContain("const canUndoSolitaireNow =");
     expect(controllerSource).toContain("const canRedoSolitaireNow =");
-    expect(controllerSource).toContain("const current = solitaireStateRef.current;");
-    expect(controllerSource).toContain("applySolitaireHistoryAction({");
+    expect(historyAction).toContain("const current = solitaireStateRef.current;");
+    expect(historyAction).toContain("applySolitaireHistoryAction({");
+    expect(historyAction).toContain("updateSolitaireState(() => ({");
     expect(appSource).toContain("canUndoSolitaireNow: solitaire.canUndoSolitaireNow");
     expect(appSource).toContain("canRedoSolitaireNow: solitaire.canRedoSolitaireNow");
   });
