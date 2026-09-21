@@ -17,17 +17,12 @@ const makeJigsawSession = (snappedCount = 2): Extract<PuzzleSession, { kind: "ti
     height: 3,
     imageId: defaultJigsawImageAsset.id,
   });
-  const jigsawPlacements = puzzle.tiles.map((tile, index) => ({
-    id: tile.id,
-    worldX: 120 + index * 17,
-    worldY: 80 + index * 11,
-    snapped: index < snappedCount,
-  }));
+  const jigsawSnappedPieceIds = puzzle.tiles.slice(0, snappedCount).map((tile) => tile.id);
 
   return {
     kind: "tiles",
     puzzle,
-    progress: { kind: "tiles", jigsawPlacements },
+    progress: { kind: "tiles", jigsawSnappedPieceIds },
     statusMessage: "Jigsaw in progress.",
   };
 };
@@ -58,7 +53,8 @@ describe("Jigsaw session image identity", () => {
     expect(persisted).not.toHaveProperty("puzzle");
     expect(persisted.progress.kind).toBe("tiles");
     if (persisted.progress.kind !== "tiles") return;
-    expect(persisted.progress.jigsawPlacements).toEqual(session.progress.jigsawPlacements);
+    expect(persisted.progress.jigsawSnappedPieceIds).toEqual(session.progress.jigsawSnappedPieceIds);
+    expect(persisted.progress).not.toHaveProperty("jigsawPlacements");
 
     const regenerated = generateJigsaw({
       puzzleId: "jigsaw",
@@ -76,7 +72,7 @@ describe("Jigsaw session image identity", () => {
     expect(restored.puzzle.tiles).toEqual(puzzle.tiles);
     expect(restored.progress.kind).toBe("tiles");
     if (restored.progress.kind !== "tiles") return;
-    expect(restored.progress.jigsawPlacements).toEqual(session.progress.jigsawPlacements);
+    expect(restored.progress.jigsawSnappedPieceIds).toEqual(session.progress.jigsawSnappedPieceIds);
 
     expect(restorePuzzleSessionFromPersisted(persisted, { ...regenerated, checksum: "different-baseline" })).toBeNull();
   });
@@ -103,11 +99,11 @@ describe("Jigsaw session image identity", () => {
     const restored = restorePuzzleSessionFromPersisted(persisted, puzzle);
     expect(restored?.progress.kind).toBe("tiles");
     if (!restored || restored.progress.kind !== "tiles") return;
-    expect(restored.progress.jigsawPlacements).toHaveLength(puzzle.tiles.length);
-    expect(restored.progress.jigsawPlacements?.every((placement) => placement.snapped)).toBe(true);
+    expect(restored.progress.jigsawSnappedPieceIds).toHaveLength(puzzle.tiles.length);
+    expect(new Set(restored.progress.jigsawSnappedPieceIds)).toEqual(new Set(puzzle.tiles.map((tile) => tile.id)));
   });
 
-  it("rejects Jigsaw placements that do not belong to the regenerated resource", () => {
+  it("rejects snapped Jigsaw piece ids that do not belong to the regenerated resource", () => {
     const session = makeJigsawSession();
     const puzzle = session.puzzle;
     if (puzzle.kind !== "tiles" || puzzle.puzzleId !== "jigsaw") return;
@@ -124,14 +120,14 @@ describe("Jigsaw session image identity", () => {
     });
     const persisted = buildPersistedPuzzleSession({ puzzleId: "jigsaw", generationId }, session);
     expect(persisted?.progress.kind).toBe("tiles");
-    if (!persisted || persisted.progress.kind !== "tiles" || !persisted.progress.jigsawPlacements) return;
+    if (!persisted || persisted.progress.kind !== "tiles" || !persisted.progress.jigsawSnappedPieceIds) return;
 
-    const [first, ...rest] = persisted.progress.jigsawPlacements;
-    if (!first) return;
-    const foreignPlacements = [{ ...first, id: "foreign-piece" }, ...rest];
     expect(restorePuzzleSessionFromPersisted({
       ...persisted,
-      progress: { ...persisted.progress, jigsawPlacements: foreignPlacements },
+      progress: {
+        ...persisted.progress,
+        jigsawSnappedPieceIds: ["foreign-piece", ...persisted.progress.jigsawSnappedPieceIds.slice(1)],
+      },
     }, puzzle)).toBeNull();
   });
 });
