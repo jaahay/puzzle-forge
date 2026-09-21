@@ -22,9 +22,10 @@ describe("Jigsaw resource-session persistence integration", () => {
     expect(appSource).toContain("jigsaw={workspaceJigsaw}");
   });
 
-  it("routes snapped progress through the Jigsaw workspace", () => {
+  it("routes snapped progress through the Jigsaw workspace before staging", () => {
     expect(workspaceSource).toContain("initialSnappedPieceIds={jigsawSnappedPieceIds}");
     expect(workspaceSource).toContain("onSnappedPieceIdsChange={onJigsawSnappedPieceIdsChange}");
+    expect(previewSource).toContain("if (initialSnappedPieceIds === null) return;");
   });
 
   it("has no component-local persistence or migration fallback", () => {
