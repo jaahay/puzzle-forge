@@ -12,7 +12,7 @@ const unreachablePuzzleId = (puzzleId: never): never => {
   throw new Error(`No workspace registered for puzzle type: ${String(puzzleId)}`);
 };
 
-export const PuzzleWorkspace = ({ core, prospective, grid, solitaire }: PuzzleWorkspaceProps) => {
+export const PuzzleWorkspace = ({ core, prospective, grid, solitaire, jigsaw }: PuzzleWorkspaceProps) => {
   const puzzleId: PuzzleId = core.selectedDefinition.id;
 
   switch (puzzleId) {
@@ -21,7 +21,7 @@ export const PuzzleWorkspace = ({ core, prospective, grid, solitaire }: PuzzleWo
     case "klondike-solitaire":
       return <SolitaireWorkspace {...core} {...prospective} {...solitaire} />;
     case "jigsaw":
-      return <JigsawWorkspace {...core} {...prospective} />;
+      return <JigsawWorkspace {...core} {...prospective} {...jigsaw} />;
     case "tile-swap":
     case "sliding-puzzle":
       return <ImageTilePuzzleWorkspace {...core} {...prospective} />;
