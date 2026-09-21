@@ -95,7 +95,7 @@ describe("Solitaire history", () => {
     expect(redone!.redoStack).toHaveLength(0);
   });
 
-  it("supports back-to-back authoritative Undo transitions without stale rendered state", () => {
+  it("supports back-to-back authoritative Undo transitions", () => {
     const initialStacks = stacks(["A♣", "2♣"], []);
     const afterFirst = stacks(["A♣"], ["2♣"]);
     const afterSecond = stacks([], ["2♣", "A♣"]);
