@@ -9,7 +9,7 @@ import {
   type PuzzleSession,
 } from "./session";
 
-const makeJigsawSession = (snappedCount = 2): PuzzleSession => {
+const makeJigsawSession = (snappedCount = 2): Extract<PuzzleSession, { kind: "tiles" }> => {
   const puzzle = generateJigsaw({
     puzzleId: "jigsaw",
     seed: "persist-image-selection",
