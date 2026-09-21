@@ -4,7 +4,6 @@ import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition } from ".
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCheckFeedbackTone } from "../interactions/gridChecking";
 import type { GridCellSelection } from "../interactions/gridRules";
-import type { JigsawPlacement } from "../games/jigsaw/placement";
 
 export type { GenerationSettings, NextPuzzleDraft } from "../app/generationSettings";
 
@@ -46,8 +45,8 @@ export type GridInteractionProps = {
 };
 
 export type JigsawInteractionProps = {
-  jigsawPlacements: JigsawPlacement[] | null;
-  onJigsawPlacementsChange: (placements: JigsawPlacement[]) => void;
+  jigsawSnappedPieceIds: string[] | null;
+  onJigsawSnappedPieceIdsChange: (pieceIds: string[]) => void;
 };
 
 export type SolitaireInteractionProps = {
