@@ -47,6 +47,8 @@ export type JigsawHistoryController = {
 type TilePuzzlePreviewProps = {
   puzzle: JigsawGeneratedPuzzle;
   resetVersion?: number;
+  initialPlacements?: JigsawPlacement[] | null;
+  onPlacementsCommit?: (placements: JigsawPlacement[]) => void;
   onSolvedChange?: (solved: boolean) => void;
   onHistoryAvailabilityChange?: (availability: JigsawHistoryAvailability) => void;
   onHistoryControllerChange?: (controller: JigsawHistoryController | null) => void;
@@ -201,7 +203,7 @@ const isPersistedPlacement = (value: unknown, layout: JigsawWorldLayout): value 
   );
 };
 
-const loadPersistedPlacements = (puzzle: JigsawGeneratedPuzzle, layout: JigsawWorldLayout) => {
+const loadLegacyPersistedPlacements = (puzzle: JigsawGeneratedPuzzle, layout: JigsawWorldLayout) => {
   if (typeof window === "undefined") return null;
 
   try {
@@ -239,31 +241,6 @@ const loadPersistedPlacements = (puzzle: JigsawGeneratedPuzzle, layout: JigsawWo
   }
 };
 
-const savePersistedPlacements = (
-  puzzle: JigsawGeneratedPuzzle,
-  placements: JigsawPlacement[],
-) => {
-  if (typeof window === "undefined") return;
-  const envelope: PersistedJigsawPlacementEnvelope = {
-    schemaVersion: placementSchemaVersion,
-    puzzleId: "jigsaw",
-    puzzleInstanceId: puzzle.id,
-    seed: puzzle.seed,
-    width: puzzle.width,
-    height: puzzle.height,
-    assetId: puzzle.asset.id,
-    edgeModelRevision: puzzle.edgeModel.catalogRevision,
-    placements,
-    updatedAt: new Date().toISOString(),
-  };
-
-  try {
-    window.localStorage.setItem(getPlacementStorageKey(puzzle), JSON.stringify(envelope));
-  } catch {
-    // Persistence is best-effort; Jigsaw remains playable when browser storage is unavailable.
-  }
-};
-
 const updatePlacement = (
   placements: JigsawPlacement[],
   tileId: string,
@@ -283,6 +260,8 @@ const getEdgePanDelta = (position: number, extent: number) => {
 export const TilePuzzlePreview = ({
   puzzle,
   resetVersion = 0,
+  initialPlacements = null,
+  onPlacementsCommit,
   onSolvedChange,
   onHistoryAvailabilityChange,
   onHistoryControllerChange,
@@ -323,6 +302,10 @@ export const TilePuzzlePreview = ({
     historyRef.current = history;
     publishHistoryAvailability(history);
   }, [publishHistoryAvailability]);
+
+  const publishCommittedPlacements = useCallback((placements: JigsawPlacement[]) => {
+    onPlacementsCommit?.(cloneJigsawPlacements(placements));
+  }, [onPlacementsCommit]);
 
   const updatePlacementState = useCallback((
     updater: (current: PlacementState | null) => PlacementState | null,
@@ -392,18 +375,24 @@ export const TilePuzzlePreview = ({
   }, [puzzle.id, replaceHistory]);
 
   useEffect(() => {
+    let committedPlacements: JigsawPlacement[] | null = null;
     updatePlacementState((current) => {
       if (current?.puzzleId === puzzle.id) return current;
-      const persisted = loadPersistedPlacements(puzzle, layout);
+      const restoredPlacements = initialPlacements ?? loadLegacyPersistedPlacements(puzzle, layout);
       const placements = resolveInitialJigsawPlacements(
-        persisted,
+        restoredPlacements,
         layout,
         puzzle.tiles,
         getMeasuredJigsawViewport(stageRef.current),
       );
-      return placements ? { puzzleId: puzzle.id, placements } : current;
+      if (!placements) return current;
+      committedPlacements = placements;
+      return { puzzleId: puzzle.id, placements };
     });
-  }, [layout, puzzle, puzzle.id, puzzle.tiles, updatePlacementState, viewport.height, viewport.width]);
+    if (committedPlacements && !initialPlacements) {
+      publishCommittedPlacements(committedPlacements);
+    }
+  }, [initialPlacements, layout, publishCommittedPlacements, puzzle, puzzle.id, puzzle.tiles, updatePlacementState, viewport.height, viewport.width]);
 
   useEffect(() => {
     if (!isUsableJigsawViewport(viewport)) return;
@@ -416,11 +405,6 @@ export const TilePuzzlePreview = ({
       ),
     }));
   }, [layout, puzzle.id, viewport.height, viewport.width]);
-
-  useEffect(() => {
-    if (!placementState || placementState.puzzleId !== puzzle.id) return;
-    savePersistedPlacements(puzzle, placementState.placements);
-  }, [placementState, puzzle]);
 
   const setCamera = (camera: JigsawCamera) => {
     wheelStateRef.current = { ...wheelStateRef.current, puzzleId: puzzle.id, camera };
@@ -453,6 +437,7 @@ export const TilePuzzlePreview = ({
       puzzleId: puzzle.id,
       placements: nextPlacements,
     }));
+    publishCommittedPlacements(nextPlacements);
     if (baseline) {
       replaceHistory(commitJigsawPlacementAction(
         historyRef.current,
@@ -497,11 +482,12 @@ export const TilePuzzlePreview = ({
       puzzleId: puzzle.id,
       placements: transition.placements,
     }));
+    publishCommittedPlacements(transition.placements);
     replaceHistory(transition.history);
     setActiveTileId(null);
     setRaisedTileId(null);
     return true;
-  }, [canHistoryAction, puzzle.id, replaceHistory, updatePlacementState]);
+  }, [canHistoryAction, publishCommittedPlacements, puzzle.id, replaceHistory, updatePlacementState]);
 
   useEffect(() => {
     if (!onHistoryControllerChange) return;
@@ -706,6 +692,7 @@ export const TilePuzzlePreview = ({
       placements: updatePlacement(current.placements, tile.id, (placement) => ({ ...placement, ...nextPosition, snapped: snaps })),
     } : current);
     if (nextState?.puzzleId === puzzle.id) {
+      publishCommittedPlacements(nextState.placements);
       replaceHistory(commitJigsawPlacementAction(
         historyRef.current,
         drag.startPlacements,
