@@ -12,6 +12,7 @@ import { StartView } from "./components/StartView";
 import { getLocalDateStamp } from "./games/shared/daily";
 import { isImageBackedPuzzleId } from "./games/imageAssets";
 import { defaultSolitaireVariation, normalizeSolitaireVariation } from "./games/solitaire/variation";
+import type { JigsawPlacement } from "./games/jigsaw/placement";
 import { defaultSudokuVariation } from "./games/sudoku/variation";
 import {
   generatedPuzzleMatchesIdentity,
@@ -81,6 +82,7 @@ export const App = () => {
   const [generationDefaults, setGenerationDefaults] = useState<GenerationRuntimeSettings>(makeInitialGenerationDefaults);
   const [puzzle, setPuzzle] = useState<GeneratedPuzzle | null>(null);
   const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
+  const [jigsawProgress, setJigsawProgress] = useState<{ puzzleInstanceId: string; placements: JigsawPlacement[] } | null>(null);
   const [puzzleLinkError, setPuzzleLinkError] = useState<string | null>(null);
   const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(true);
   const [hasSelectedPuzzle, setHasSelectedPuzzle] = useState(shouldStartOnPuzzleSurface);
@@ -169,6 +171,19 @@ export const App = () => {
     if (nextRoute.kind === "resource") commitResourceRoute(nextRoute, routeHistory);
     else replaceCurrentRoute(nextRoute);
 
+    if (
+      session.progress.kind === "tiles" &&
+      restoredPuzzle.puzzleId === "jigsaw" &&
+      session.progress.jigsawPlacements
+    ) {
+      setJigsawProgress({
+        puzzleInstanceId: restoredPuzzle.id,
+        placements: session.progress.jigsawPlacements.map((placement) => ({ ...placement })),
+      });
+    } else {
+      setJigsawProgress(null);
+    }
+
     if (session.progress.kind === "cards") {
       solitaire.restoreSolitaireSnapshot({
         cardStacks: session.progress.cardStacks,
@@ -209,6 +224,10 @@ export const App = () => {
         gridCells: grid.gridCells,
         selectedGridCell: grid.selectedGridCell,
         gridHistory: grid.gridHistory,
+        jigsawPlacements:
+          puzzle.puzzleId === "jigsaw" && jigsawProgress?.puzzleInstanceId === puzzle.id
+            ? jigsawProgress.placements
+            : null,
         statusMessage,
       })
     : null;
@@ -222,7 +241,7 @@ export const App = () => {
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
   };
 
-  const resetRuntimePuzzleState = () => { setPuzzle(null); solitaire.resetSolitaire(); grid.resetGrid(); };
+  const resetRuntimePuzzleState = () => { setPuzzle(null); setJigsawProgress(null); solitaire.resetSolitaire(); grid.resetGrid(); };
 
   const beginGeneration = (options: BeginGenerationOptions = {}, behavior: GenerationBehavior = {}) => {
     if (behavior.preserveScroll) rememberScrollPosition();
@@ -514,7 +533,7 @@ export const App = () => {
   useEffect(() => {
     if (!hasSelectedPuzzle || generation.isGenerating || isHomeSelected || !puzzle) return;
     saveCurrentSession();
-  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, selectedPuzzleId, puzzle, solitaire.cardStacks, solitaire.selectedCard, solitaire.solitaireStats, solitaire.solitaireUndoStack, solitaire.solitaireRedoStack, grid.gridCells, grid.selectedGridCell, grid.gridHistory, statusMessage]);
+  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, selectedPuzzleId, puzzle, solitaire.cardStacks, solitaire.selectedCard, solitaire.solitaireStats, solitaire.solitaireUndoStack, solitaire.solitaireRedoStack, grid.gridCells, grid.selectedGridCell, grid.gridHistory, jigsawProgress, statusMessage]);
 
   const resetCurrentPuzzle = () => {
     if (!puzzle) return;
@@ -524,6 +543,9 @@ export const App = () => {
       solitaire.restoreSolitaireSnapshot({ cardStacks: puzzle.stacks, selectedCard: null, solitaireStats: initialSolitaireStats, solitaireUndoStack: [], solitaireRedoStack: [], statusMessage: readyMessage });
     } else if (puzzle.kind === "grid") {
       grid.resetCurrentGrid(puzzle, readyMessage, setStatusMessage);
+    } else if (puzzle.puzzleId === "jigsaw") {
+      setJigsawProgress(null);
+      setStatusMessage(readyMessage);
     } else {
       grid.prepareGeneratedGrid(puzzle);
       setStatusMessage(readyMessage);
@@ -621,6 +643,21 @@ export const App = () => {
     onCellClick: (cell: Parameters<typeof grid.handleGridCellClick>[1]) => grid.handleGridCellClick(puzzle, cell, setStatusMessage),
     onCellInput: (cell: Parameters<typeof grid.handleGridCellInput>[1], value: string) => grid.handleGridCellInput(puzzle, cell, value, setStatusMessage),
   };
+  const workspaceJigsaw = {
+    jigsawPlacements:
+      puzzle?.kind === "tiles" &&
+      puzzle.puzzleId === "jigsaw" &&
+      jigsawProgress?.puzzleInstanceId === puzzle.id
+        ? jigsawProgress.placements
+        : null,
+    onJigsawPlacementsChange: (placements: JigsawPlacement[]) => {
+      if (puzzle?.kind !== "tiles" || puzzle.puzzleId !== "jigsaw") return;
+      setJigsawProgress({
+        puzzleInstanceId: puzzle.id,
+        placements: placements.map((placement) => ({ ...placement })),
+      });
+    },
+  };
   const workspaceSolitaire = {
     cardStacks: solitaire.cardStacks,
     selectedCard: solitaire.selectedCard,
@@ -659,6 +696,7 @@ export const App = () => {
             prospective={workspaceProspective}
             grid={workspaceGrid}
             solitaire={workspaceSolitaire}
+            jigsaw={workspaceJigsaw}
           />
         )}
       </section>
