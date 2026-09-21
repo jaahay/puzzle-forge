@@ -14,35 +14,37 @@ const sourceBetween = (source: string, start: string, end: string) => {
 };
 
 describe("Jigsaw resource-session persistence integration", () => {
-  it("keeps exact Jigsaw placements in the canonical app session state", () => {
+  it("keeps snapped Jigsaw progress in the canonical app session state", () => {
     expect(appSource).toContain("const [jigsawProgress, setJigsawProgress]");
-    expect(appSource).toContain("session.progress.jigsawPlacements");
+    expect(appSource).toContain("session.progress.jigsawSnappedPieceIds");
     expect(appSource).toContain('puzzle.puzzleId === "jigsaw" && jigsawProgress?.puzzleInstanceId === puzzle.id');
-    expect(appSource).toContain("jigsawPlacements:");
+    expect(appSource).toContain("jigsawSnappedPieceIds:");
     expect(appSource).toContain("jigsaw={workspaceJigsaw}");
   });
 
-  it("routes restored and committed placements through the Jigsaw workspace", () => {
-    expect(workspaceSource).toContain("initialPlacements={jigsawPlacements}");
-    expect(workspaceSource).toContain("onPlacementsCommit={onJigsawPlacementsChange}");
+  it("routes snapped progress through the Jigsaw workspace", () => {
+    expect(workspaceSource).toContain("initialSnappedPieceIds={jigsawSnappedPieceIds}");
+    expect(workspaceSource).toContain("onSnappedPieceIdsChange={onJigsawSnappedPieceIdsChange}");
   });
 
-  it("uses legacy component storage only as a read-only migration fallback", () => {
-    expect(previewSource).toContain("loadLegacyPersistedPlacements");
-    expect(previewSource).toContain("initialPlacements ?? loadLegacyPersistedPlacements");
-    expect(previewSource).not.toContain("localStorage.setItem");
-    expect(previewSource).not.toContain("savePersistedPlacements");
+  it("has no component-local persistence or migration fallback", () => {
+    expect(previewSource).not.toContain("localStorage");
+    expect(previewSource).not.toContain("loadLegacy");
+    expect(previewSource).not.toContain("puzzle-forge.jigsaw");
+    expect(previewSource).not.toContain("placementSchemaVersion");
+    expect(previewSource).not.toContain("onPlacementsCommit");
+    expect(previewSource).not.toContain("initialPlacements");
   });
 
-  it("publishes only committed placement states across the session boundary", () => {
+  it("publishes only committed snapped progress across the session boundary", () => {
     const scatter = sourceBetween(previewSource, "const scatterPieces =", "useEffect(() => {\n    if (lastResetVersion");
     const history = sourceBetween(previewSource, "const dispatchHistoryAction =", "useEffect(() => {\n    if (!onHistoryControllerChange)");
     const moveDrag = sourceBetween(previewSource, "const moveDrag =", "const finishDrag =");
     const finishDrag = sourceBetween(previewSource, "const finishDrag =", "const cancelDrag =");
 
-    expect(scatter).toContain("publishCommittedPlacements(nextPlacements);");
-    expect(history).toContain("publishCommittedPlacements(transition.placements);");
-    expect(moveDrag).not.toContain("publishCommittedPlacements");
-    expect(finishDrag).toContain("publishCommittedPlacements(nextState.placements);");
+    expect(scatter).toContain("publishSnappedProgress(nextPlacements);");
+    expect(history).toContain("publishSnappedProgress(transition.placements);");
+    expect(moveDrag).not.toContain("publishSnappedProgress");
+    expect(finishDrag).toContain("publishSnappedProgress(nextState.placements);");
   });
 });
