@@ -170,14 +170,10 @@ export const App = () => {
     if (nextRoute.kind === "resource") commitResourceRoute(nextRoute, routeHistory);
     else replaceCurrentRoute(nextRoute);
 
-    if (
-      session.progress.kind === "tiles" &&
-      restoredPuzzle.puzzleId === "jigsaw" &&
-      session.progress.jigsawSnappedPieceIds
-    ) {
+    if (session.progress.kind === "tiles" && restoredPuzzle.puzzleId === "jigsaw") {
       setJigsawProgress({
         puzzleInstanceId: restoredPuzzle.id,
-        snappedPieceIds: [...session.progress.jigsawSnappedPieceIds],
+        snappedPieceIds: [...(session.progress.jigsawSnappedPieceIds ?? [])],
       });
     } else {
       setJigsawProgress(null);
