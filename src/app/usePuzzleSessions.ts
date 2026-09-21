@@ -14,8 +14,6 @@ import {
   type SolitaireStats,
 } from "./session";
 import { cloneGridHistoryState, makeEmptyGridHistoryState, type GridHistoryState } from "./gridHistory";
-import { cloneJigsawPlacements } from "../games/jigsaw/history";
-import type { JigsawPlacement } from "../games/jigsaw/placement";
 import { makePuzzleResourceKey, type PuzzleResourceIdentity } from "./puzzleResourceIdentity";
 import { cloneSolitaireHistoryEntry } from "./solitaireHistory";
 
@@ -29,7 +27,7 @@ export type RuntimeSessionDraft = {
   gridCells: PuzzleCell[] | null;
   selectedGridCell: GridCellSelection | null;
   gridHistory?: GridHistoryState;
-  jigsawPlacements?: JigsawPlacement[] | null;
+  jigsawSnappedPieceIds?: string[] | null;
   statusMessage: string;
 };
 
@@ -130,8 +128,8 @@ export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => {
     puzzle: cloneTilePuzzle(session.puzzle),
     progress: {
       kind: "tiles",
-      ...(session.progress.jigsawPlacements
-        ? { jigsawPlacements: cloneJigsawPlacements(session.progress.jigsawPlacements) }
+      ...(session.progress.jigsawSnappedPieceIds
+        ? { jigsawSnappedPieceIds: [...session.progress.jigsawSnappedPieceIds] }
         : {}),
     },
     statusMessage: session.statusMessage,
@@ -148,7 +146,7 @@ export const buildRuntimeSession = ({
   gridCells,
   selectedGridCell,
   gridHistory,
-  jigsawPlacements,
+  jigsawSnappedPieceIds,
   statusMessage,
 }: RuntimeSessionDraft): PuzzleSession => {
   if (puzzle.kind === "cards") {
@@ -188,8 +186,8 @@ export const buildRuntimeSession = ({
     puzzle,
     progress: {
       kind: "tiles",
-      ...(puzzle.puzzleId === "jigsaw" && jigsawPlacements
-        ? { jigsawPlacements: cloneJigsawPlacements(jigsawPlacements) }
+      ...(puzzle.puzzleId === "jigsaw" && jigsawSnappedPieceIds
+        ? { jigsawSnappedPieceIds: [...jigsawSnappedPieceIds] }
         : {}),
     },
     statusMessage,
