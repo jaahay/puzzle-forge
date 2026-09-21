@@ -27,8 +27,8 @@ export const JigsawWorkspace = ({
   onNewPuzzle,
   onToday,
   onLoadSeed,
-  jigsawPlacements,
-  onJigsawPlacementsChange,
+  jigsawSnappedPieceIds,
+  onJigsawSnappedPieceIdsChange,
 }: JigsawWorkspaceProps) => {
   const [resetVersion, setResetVersion] = useState(0);
   const [completionState, setCompletionState] = useState<{ puzzleInstanceId: string; solved: boolean } | null>(null);
@@ -160,8 +160,8 @@ export const JigsawWorkspace = ({
       <TilePuzzlePreview
         puzzle={jigsawPuzzle}
         resetVersion={resetVersion}
-        initialPlacements={jigsawPlacements}
-        onPlacementsCommit={onJigsawPlacementsChange}
+        initialSnappedPieceIds={jigsawSnappedPieceIds}
+        onSnappedPieceIdsChange={onJigsawSnappedPieceIdsChange}
         onSolvedChange={handleSolvedChange}
         onHistoryAvailabilityChange={handleHistoryAvailabilityChange}
         onHistoryControllerChange={handleHistoryControllerChange}
