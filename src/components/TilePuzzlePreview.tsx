@@ -754,6 +754,7 @@ export const TilePuzzlePreview = ({
       event.preventDefault();
       return;
     }
+    if (event.target !== event.currentTarget) return;
 
     const direction = event.key;
     if (!["ArrowUp", "ArrowRight", "ArrowDown", "ArrowLeft"].includes(direction)) return;
@@ -908,13 +909,12 @@ export const TilePuzzlePreview = ({
           })}
         </div>
         {isSolved ? (
-          <div class="jigsaw-solved-presentation" aria-live="polite">
+          <div class="jigsaw-solved-presentation">
             <div
               class="jigsaw-solved-card"
-              role="status"
               onPointerDown={(event) => event.stopPropagation()}
             >
-              <div class="jigsaw-solved-copy">
+              <div class="jigsaw-solved-copy" role="status" aria-live="polite" aria-atomic="true">
                 <span class="jigsaw-solved-mark" aria-hidden="true">✓</span>
                 <strong>Puzzle solved</strong>
               </div>
