@@ -52,6 +52,9 @@ type TilePuzzlePreviewProps = {
   onSolvedChange?: (solved: boolean) => void;
   onHistoryAvailabilityChange?: (availability: JigsawHistoryAvailability) => void;
   onHistoryControllerChange?: (controller: JigsawHistoryController | null) => void;
+  completionDisabled: boolean;
+  onResetPuzzle: () => void;
+  onNewPuzzle: () => void;
 };
 
 type PlacementState = {
@@ -176,6 +179,9 @@ export const areJigsawPlacementsSolved = (
   pieceCount: number,
 ) => placements.length === pieceCount && placements.every((placement) => placement.snapped);
 
+export const shouldRenderJigsawEdgeSeams = (showEdgeSeams: boolean, isSolved: boolean) =>
+  showEdgeSeams && !isSolved;
+
 const updatePlacement = (
   placements: JigsawPlacement[],
   tileId: string,
@@ -200,6 +206,9 @@ export const TilePuzzlePreview = ({
   onSolvedChange,
   onHistoryAvailabilityChange,
   onHistoryControllerChange,
+  completionDisabled,
+  onResetPuzzle,
+  onNewPuzzle,
 }: TilePuzzlePreviewProps) => {
   const stageRef = useRef<HTMLDivElement>(null);
   const worldLayerRef = useRef<HTMLDivElement>(null);
@@ -456,6 +465,8 @@ export const TilePuzzlePreview = ({
 
   const beginTouchPinch = (event: StagePointerEvent) => {
     if (event.pointerType !== "touch") return;
+    const target = event.target as Element | null;
+    if (target?.closest(".jigsaw-solved-card")) return;
     const point = getStagePoint(event.clientX, event.clientY);
     if (!point) return;
     touchPointsRef.current.set(event.pointerId, point);
@@ -785,8 +796,11 @@ export const TilePuzzlePreview = ({
           type="button"
           aria-pressed={showEdgeSeams}
           onClick={() => setShowEdgeSeams((current) => !current)}
+          disabled={isSolved}
         >
-          {showEdgeSeams ? "Hide edge guides" : "Show edge guides"}
+          {isSolved
+            ? (showEdgeSeams ? "Edge guides hidden" : "Edge guides off")
+            : (showEdgeSeams ? "Hide edge guides" : "Show edge guides")}
         </button>
       </div>
 
@@ -881,7 +895,7 @@ export const TilePuzzlePreview = ({
                   />
                   <path class="tile-puzzle-piece-hit-target" d={outlinePath} {...getPieceHitTargetProps()} />
                   <path class="tile-puzzle-piece-outline" d={outlinePath} />
-                  {showEdgeSeams ? getJigsawPieceSeamPaths(tile).map((seam) => (
+                  {shouldRenderJigsawEdgeSeams(showEdgeSeams, isSolved) ? getJigsawPieceSeamPaths(tile).map((seam) => (
                     <path
                       class={`tile-puzzle-edge-seam ${seam.boundary ? "boundary" : "interior"} ${seam.polarity}`}
                       d={seam.d}
@@ -893,6 +907,31 @@ export const TilePuzzlePreview = ({
             );
           })}
         </div>
+        {isSolved ? (
+          <div class="jigsaw-solved-presentation" aria-live="polite">
+            <div
+              class="jigsaw-solved-card"
+              role="status"
+              onPointerDown={(event) => event.stopPropagation()}
+            >
+              <div class="jigsaw-solved-copy">
+                <span class="jigsaw-solved-mark" aria-hidden="true">✓</span>
+                <strong>Puzzle solved</strong>
+              </div>
+              <div class="jigsaw-solved-actions">
+                <button type="button" onClick={onResetPuzzle} disabled={completionDisabled}>Reset</button>
+                <button
+                  class="new-puzzle-primary"
+                  type="button"
+                  onClick={onNewPuzzle}
+                  disabled={completionDisabled}
+                >
+                  New puzzle
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
     </section>
   );
