@@ -139,13 +139,13 @@ export const getMeasuredJigsawViewport = (
 };
 
 export const resolveInitialJigsawPlacements = (
-  snappedPieceIds: readonly string[] | null,
+  snappedPieceIds: readonly string[],
   layout: JigsawWorldLayout,
   pieces: readonly JigsawPiece[],
   stagingViewport: JigsawViewport | null,
 ) => {
   if (!isUsableJigsawViewport(stagingViewport)) return null;
-  const snappedIds = new Set(snappedPieceIds ?? []);
+  const snappedIds = new Set(snappedPieceIds);
   return createInitialJigsawPlacements(layout, pieces, stagingViewport).map((placement) => ({
     ...placement,
     snapped: snappedIds.has(placement.id),
@@ -312,6 +312,7 @@ export const TilePuzzlePreview = ({
   }, [puzzle.id, replaceHistory]);
 
   useEffect(() => {
+    if (initialSnappedPieceIds === null) return;
     updatePlacementState((current) => {
       if (current?.puzzleId === puzzle.id) return current;
       const placements = resolveInitialJigsawPlacements(
