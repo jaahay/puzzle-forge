@@ -15,6 +15,7 @@ import {
   getPieceZIndex,
   initializeOrPreserveJigsawCamera,
   resolveInitialJigsawPlacements,
+  shouldRenderJigsawEdgeSeams,
 } from "./TilePuzzlePreview";
 
 const makePiece = (solvedIndex: number, width = 4): JigsawPiece => ({
@@ -53,6 +54,12 @@ describe("TilePuzzlePreview completion", () => {
     ], 2)).toBe(false);
     expect(areJigsawPlacementsSolved([{ snapped: true }], 2)).toBe(false);
   });
+  it("suppresses solved edge guides without changing the stored preference", () => {
+    expect(shouldRenderJigsawEdgeSeams(false, false)).toBe(false);
+    expect(shouldRenderJigsawEdgeSeams(true, false)).toBe(true);
+    expect(shouldRenderJigsawEdgeSeams(true, true)).toBe(false);
+  });
+
 });
 
 describe("TilePuzzlePreview piece stacking", () => {
