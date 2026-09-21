@@ -18,6 +18,7 @@ import { cloneGridHistoryState, gridHistoryLimit, type GridHistoryEntry } from "
 import { decodeGenerationId, makePuzzleResourceKey, type PuzzleResourceIdentity, type PuzzleResourceKey } from "./puzzleResourceIdentity";
 import { puzzleIds } from "./sessionConstants";
 import type { PuzzleSession, SolitaireStats } from "./session";
+import type { JigsawPlacement } from "../games/jigsaw/placement";
 
 const persistenceMetadataStorageKey = "puzzle-forge.sessions";
 const persistenceSessionStorageKeyPrefix = "puzzle-forge.session.";
@@ -38,6 +39,7 @@ export type PersistedTileProgress = {
   kind: "tiles";
   tileOrder: Array<{ id: string; currentIndex: number }>;
   selectedTileId: string | null;
+  jigsawPlacements?: JigsawPlacement[];
 };
 
 export type PersistedCompactGridHistoryEntry = {
@@ -113,6 +115,12 @@ const isPuzzleCell = (value: unknown): value is PuzzleCell =>
   (value.ariaLabel === undefined || typeof value.ariaLabel === "string");
 const isPersistedTileOrderEntry = (value: unknown): value is PersistedTileProgress["tileOrder"][number] =>
   isRecord(value) && typeof value.id === "string" && isNonNegativeInteger(value.currentIndex);
+const isPersistedJigsawPlacement = (value: unknown): value is JigsawPlacement =>
+  isRecord(value) &&
+  typeof value.id === "string" &&
+  typeof value.worldX === "number" && Number.isFinite(value.worldX) &&
+  typeof value.worldY === "number" && Number.isFinite(value.worldY) &&
+  typeof value.snapped === "boolean";
 const isPersistedSolitaireHistoryEntry = (value: unknown): value is PersistedSolitaireHistoryEntry =>
   isRecord(value) &&
   Array.isArray(value.cardStacks) &&
@@ -192,6 +200,9 @@ const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzlePr
       kind: "tiles",
       tileOrder: session.puzzle.tiles.map(({ id, currentIndex }) => ({ id, currentIndex })),
       selectedTileId: null,
+      ...(session.puzzle.puzzleId === "jigsaw" && session.progress.jigsawPlacements
+        ? { jigsawPlacements: session.progress.jigsawPlacements.map((placement) => ({ ...placement })) }
+        : {}),
     };
   }
 
@@ -247,7 +258,10 @@ const isPersistedCardProgress = (value: Record<string, unknown>): value is Persi
 const isPersistedTileProgress = (value: Record<string, unknown>): value is PersistedTileProgress =>
   Array.isArray(value.tileOrder) &&
   value.tileOrder.every(isPersistedTileOrderEntry) &&
-  (value.selectedTileId === null || typeof value.selectedTileId === "string");
+  (value.selectedTileId === null || typeof value.selectedTileId === "string") &&
+  (value.jigsawPlacements === undefined || (
+    Array.isArray(value.jigsawPlacements) && value.jigsawPlacements.every(isPersistedJigsawPlacement)
+  ));
 
 const isPersistedGridProgress = (value: Record<string, unknown>): value is PersistedGridProgress =>
   Array.isArray(value.cells) &&
@@ -312,6 +326,9 @@ const clonePersistedPuzzleProgress = (progress: PersistedPuzzleProgress): Persis
       kind: "tiles",
       tileOrder: progress.tileOrder.map(({ id, currentIndex }) => ({ id, currentIndex })),
       selectedTileId: progress.selectedTileId ?? null,
+      ...(progress.jigsawPlacements
+        ? { jigsawPlacements: progress.jigsawPlacements.map((placement) => ({ ...placement })) }
+        : {}),
     };
   }
 
@@ -431,6 +448,28 @@ const restorePersistedGridProgress = (progress: PersistedGridProgress, puzzle: G
   };
 };
 
+const restorePersistedJigsawPlacements = (
+  progress: PersistedTileProgress,
+  puzzle: TileGeneratedPuzzle,
+): JigsawPlacement[] | undefined | null => {
+  if (puzzle.puzzleId !== "jigsaw") {
+    return progress.jigsawPlacements === undefined ? undefined : null;
+  }
+
+  const placements = progress.jigsawPlacements;
+  if (placements === undefined) return undefined;
+  if (placements.length !== puzzle.tiles.length) return null;
+
+  const expectedIds = new Set(puzzle.tiles.map((tile) => tile.id));
+  const seenIds = new Set<string>();
+  for (const placement of placements) {
+    if (!expectedIds.has(placement.id) || seenIds.has(placement.id)) return null;
+    seenIds.add(placement.id);
+  }
+
+  return placements.map((placement) => ({ ...placement }));
+};
+
 const restorePersistedTilePuzzle = (progress: PersistedTileProgress, puzzle: TileGeneratedPuzzle): TileGeneratedPuzzle | null => {
   const boardCellCount = puzzle.width * puzzle.height;
   const expectedTileCount = puzzle.puzzleId === "sliding-puzzle" ? boardCellCount - 1 : boardCellCount;
@@ -498,11 +537,15 @@ export const restorePuzzleSessionFromPersisted = (
 
   if (persisted.progress.kind === "tiles" && generatedPuzzle.kind === "tiles") {
     const restoredPuzzle = restorePersistedTilePuzzle(persisted.progress, generatedPuzzle);
-    if (!restoredPuzzle) return null;
+    const jigsawPlacements = restorePersistedJigsawPlacements(persisted.progress, generatedPuzzle);
+    if (!restoredPuzzle || jigsawPlacements === null) return null;
     return {
       kind: "tiles",
       puzzle: restoredPuzzle,
-      progress: { kind: "tiles" },
+      progress: {
+        kind: "tiles",
+        ...(jigsawPlacements ? { jigsawPlacements } : {}),
+      },
       statusMessage: persisted.statusMessage,
     };
   }
