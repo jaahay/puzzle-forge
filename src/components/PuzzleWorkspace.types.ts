@@ -4,6 +4,7 @@ import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition } from ".
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCheckFeedbackTone } from "../interactions/gridChecking";
 import type { GridCellSelection } from "../interactions/gridRules";
+import type { JigsawPlacement } from "../games/jigsaw/placement";
 
 export type { GenerationSettings, NextPuzzleDraft } from "../app/generationSettings";
 
@@ -44,6 +45,11 @@ export type GridInteractionProps = {
   onCellInput: (cell: PuzzleCell, value: string) => void;
 };
 
+export type JigsawInteractionProps = {
+  jigsawPlacements: JigsawPlacement[] | null;
+  onJigsawPlacementsChange: (placements: JigsawPlacement[]) => void;
+};
+
 export type SolitaireInteractionProps = {
   cardStacks: CardStack[] | null;
   selectedCard: CardSelection | null;
@@ -63,6 +69,7 @@ export type SolitaireInteractionProps = {
 export type SudokuWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps & GridInteractionProps;
 export type GridPuzzleWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps & GridInteractionProps;
 export type SolitaireWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps & SolitaireInteractionProps;
+export type JigsawWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps & JigsawInteractionProps;
 export type ImageWorkspaceProps = CoreWorkspaceProps & ProspectiveGenerationProps;
 
 export type PuzzleWorkspaceProps = {
@@ -70,4 +77,5 @@ export type PuzzleWorkspaceProps = {
   prospective: ProspectiveGenerationProps;
   grid: GridInteractionProps;
   solitaire: SolitaireInteractionProps;
+  jigsaw: JigsawInteractionProps;
 };
