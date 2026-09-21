@@ -5,7 +5,7 @@ import type { JigsawHistoryAction } from "../games/jigsaw/history";
 import { JigsawNewPuzzleControl } from "./JigsawNewPuzzleControl";
 import { PuzzleHistoryActions } from "./PuzzleHistoryActions";
 import { PuzzleTerminalDock } from "./PuzzleTerminalDock";
-import type { ImageWorkspaceProps } from "./PuzzleWorkspace.types";
+import type { JigsawWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { TilePuzzlePreview, type JigsawHistoryAvailability, type JigsawHistoryController } from "./TilePuzzlePreview";
 
@@ -27,7 +27,9 @@ export const JigsawWorkspace = ({
   onNewPuzzle,
   onToday,
   onLoadSeed,
-}: ImageWorkspaceProps) => {
+  jigsawPlacements,
+  onJigsawPlacementsChange,
+}: JigsawWorkspaceProps) => {
   const [resetVersion, setResetVersion] = useState(0);
   const [completionState, setCompletionState] = useState<{ puzzleInstanceId: string; solved: boolean } | null>(null);
   const [historyAvailability, setHistoryAvailability] = useState<{
@@ -158,6 +160,8 @@ export const JigsawWorkspace = ({
       <TilePuzzlePreview
         puzzle={jigsawPuzzle}
         resetVersion={resetVersion}
+        initialPlacements={jigsawPlacements}
+        onPlacementsCommit={onJigsawPlacementsChange}
         onSolvedChange={handleSolvedChange}
         onHistoryAvailabilityChange={handleHistoryAvailabilityChange}
         onHistoryControllerChange={handleHistoryControllerChange}
