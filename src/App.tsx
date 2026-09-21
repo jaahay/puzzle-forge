@@ -539,7 +539,7 @@ export const App = () => {
     } else if (puzzle.kind === "grid") {
       grid.resetCurrentGrid(puzzle, readyMessage, setStatusMessage);
     } else if (puzzle.puzzleId === "jigsaw") {
-      setJigsawProgress(null);
+      setJigsawProgress({ puzzleInstanceId: puzzle.id, snappedPieceIds: [] });
       setStatusMessage(readyMessage);
     } else {
       grid.prepareGeneratedGrid(puzzle);
@@ -648,7 +648,6 @@ export const App = () => {
     onJigsawSnappedPieceIdsChange: (pieceIds: string[]) => {
       if (puzzle?.kind !== "tiles" || puzzle.puzzleId !== "jigsaw") return;
       setJigsawProgress((current) => {
-        if (!current && pieceIds.length === 0) return current;
         if (
           current?.puzzleInstanceId === puzzle.id &&
           current.snappedPieceIds.length === pieceIds.length &&
