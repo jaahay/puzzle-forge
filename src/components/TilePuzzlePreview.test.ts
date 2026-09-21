@@ -5,7 +5,6 @@ import {
   createJigsawFitCamera,
   createJigsawWorldLayout,
   getJigsawStagingMode,
-  type JigsawPlacement,
 } from "../games/jigsaw/placement";
 import {
   areJigsawPlacementsSolved,
@@ -123,22 +122,24 @@ describe("TilePuzzlePreview placement initialization", () => {
     });
   });
 
-  it("restores persisted placements without waiting for a play-surface measurement", () => {
+  it("restores snapped progress onto fresh staging for the current play surface", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1200,
       imageHeight: 900,
       puzzleWidth: 4,
       puzzleHeight: 4,
     });
-    const pieces = [makePiece(0)];
-    const persisted: JigsawPlacement[] = [{
-      id: "tile-0",
-      worldX: 24,
-      worldY: 36,
-      snapped: false,
-    }];
+    const pieces = [makePiece(0), makePiece(1)];
+    const placements = resolveInitialJigsawPlacements(
+      ["tile-0"],
+      layout,
+      pieces,
+      { width: 900, height: 600 },
+    );
 
-    expect(resolveInitialJigsawPlacements(persisted, layout, pieces, null)).toBe(persisted);
+    expect(placements).not.toBeNull();
+    expect(placements?.find((placement) => placement.id === "tile-0")?.snapped).toBe(true);
+    expect(placements?.find((placement) => placement.id === "tile-1")?.snapped).toBe(false);
   });
 
   it("waits for a real play-surface measurement before staging a fresh puzzle", () => {
@@ -150,7 +151,7 @@ describe("TilePuzzlePreview placement initialization", () => {
     });
     const pieces = Array.from({ length: 48 }, (_, index) => makePiece(index, 6));
 
-    expect(resolveInitialJigsawPlacements(null, layout, pieces, null)).toBeNull();
+    expect(resolveInitialJigsawPlacements(["tile-0"], layout, pieces, null)).toBeNull();
     expect(resolveInitialJigsawPlacements(null, layout, pieces, { width: 0, height: 800 })).toBeNull();
   });
 
