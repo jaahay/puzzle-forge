@@ -47,24 +47,11 @@ export type JigsawHistoryController = {
 type TilePuzzlePreviewProps = {
   puzzle: JigsawGeneratedPuzzle;
   resetVersion?: number;
-  initialPlacements?: JigsawPlacement[] | null;
-  onPlacementsCommit?: (placements: JigsawPlacement[]) => void;
+  initialSnappedPieceIds?: string[] | null;
+  onSnappedPieceIdsChange?: (pieceIds: string[]) => void;
   onSolvedChange?: (solved: boolean) => void;
   onHistoryAvailabilityChange?: (availability: JigsawHistoryAvailability) => void;
   onHistoryControllerChange?: (controller: JigsawHistoryController | null) => void;
-};
-
-type PersistedJigsawPlacementEnvelope = {
-  schemaVersion: 4;
-  puzzleId: "jigsaw";
-  puzzleInstanceId: string;
-  seed: string;
-  width: number;
-  height: number;
-  assetId: string;
-  edgeModelRevision: number;
-  placements: JigsawPlacement[];
-  updatedAt: string;
 };
 
 type PlacementState = {
@@ -101,7 +88,6 @@ type ActivePinch = {
   startCamera: JigsawCamera;
 };
 
-const placementSchemaVersion = 4;
 const fallbackViewport: JigsawViewport = { width: 760, height: 560 };
 const edgePanZone = 56;
 const edgePanSpeed = 18;
@@ -153,18 +139,18 @@ export const getMeasuredJigsawViewport = (
 };
 
 export const resolveInitialJigsawPlacements = (
-  persistedPlacements: JigsawPlacement[] | null,
+  snappedPieceIds: readonly string[] | null,
   layout: JigsawWorldLayout,
   pieces: readonly JigsawPiece[],
   stagingViewport: JigsawViewport | null,
 ) => {
-  if (persistedPlacements) return persistedPlacements;
   if (!isUsableJigsawViewport(stagingViewport)) return null;
-  return createInitialJigsawPlacements(layout, pieces, stagingViewport);
+  const snappedIds = new Set(snappedPieceIds ?? []);
+  return createInitialJigsawPlacements(layout, pieces, stagingViewport).map((placement) => ({
+    ...placement,
+    snapped: snappedIds.has(placement.id),
+  }));
 };
-
-const getPlacementStorageKey = (puzzle: JigsawGeneratedPuzzle) =>
-  `puzzle-forge.jigsaw.${placementSchemaVersion}.${puzzle.id}.${puzzle.seed}.${puzzle.width}x${puzzle.height}`;
 
 const getPieceClipPathId = (puzzle: JigsawGeneratedPuzzle, tile: JigsawPiece) =>
   `jigsaw-piece-${puzzle.id}-${tile.id}`.replace(/[^a-zA-Z0-9_-]/g, "-");
@@ -190,57 +176,6 @@ export const areJigsawPlacementsSolved = (
   pieceCount: number,
 ) => placements.length === pieceCount && placements.every((placement) => placement.snapped);
 
-const isPersistedPlacement = (value: unknown, layout: JigsawWorldLayout): value is JigsawPlacement => {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
-  const candidate = value as Partial<JigsawPlacement>;
-  return (
-    typeof candidate.id === "string" &&
-    typeof candidate.worldX === "number" && Number.isFinite(candidate.worldX) &&
-    candidate.worldX >= 0 && candidate.worldX <= layout.worldWidth &&
-    typeof candidate.worldY === "number" && Number.isFinite(candidate.worldY) &&
-    candidate.worldY >= 0 && candidate.worldY <= layout.worldHeight &&
-    typeof candidate.snapped === "boolean"
-  );
-};
-
-const loadLegacyPersistedPlacements = (puzzle: JigsawGeneratedPuzzle, layout: JigsawWorldLayout) => {
-  if (typeof window === "undefined") return null;
-
-  try {
-    const rawEnvelope = window.localStorage.getItem(getPlacementStorageKey(puzzle));
-    if (!rawEnvelope) return null;
-
-    const envelope: unknown = JSON.parse(rawEnvelope);
-    if (typeof envelope !== "object" || envelope === null || Array.isArray(envelope)) return null;
-    const candidate = envelope as Partial<PersistedJigsawPlacementEnvelope>;
-    const expectedIds = new Set(puzzle.tiles.map((tile) => tile.id));
-    const placements = Array.isArray(candidate.placements) && candidate.placements.every((placement) => isPersistedPlacement(placement, layout))
-      ? candidate.placements
-      : null;
-
-    if (
-      candidate.schemaVersion !== placementSchemaVersion ||
-      candidate.puzzleId !== "jigsaw" ||
-      candidate.puzzleInstanceId !== puzzle.id ||
-      candidate.seed !== puzzle.seed ||
-      candidate.width !== puzzle.width ||
-      candidate.height !== puzzle.height ||
-      candidate.assetId !== puzzle.asset.id ||
-      candidate.edgeModelRevision !== puzzle.edgeModel.catalogRevision ||
-      !placements ||
-      placements.length !== puzzle.tiles.length ||
-      placements.some((placement) => !expectedIds.has(placement.id)) ||
-      new Set(placements.map((placement) => placement.id)).size !== expectedIds.size
-    ) {
-      return null;
-    }
-
-    return placements;
-  } catch {
-    return null;
-  }
-};
-
 const updatePlacement = (
   placements: JigsawPlacement[],
   tileId: string,
@@ -260,8 +195,8 @@ const getEdgePanDelta = (position: number, extent: number) => {
 export const TilePuzzlePreview = ({
   puzzle,
   resetVersion = 0,
-  initialPlacements = null,
-  onPlacementsCommit,
+  initialSnappedPieceIds = null,
+  onSnappedPieceIdsChange,
   onSolvedChange,
   onHistoryAvailabilityChange,
   onHistoryControllerChange,
@@ -303,9 +238,11 @@ export const TilePuzzlePreview = ({
     publishHistoryAvailability(history);
   }, [publishHistoryAvailability]);
 
-  const publishCommittedPlacements = useCallback((placements: JigsawPlacement[]) => {
-    onPlacementsCommit?.(cloneJigsawPlacements(placements));
-  }, [onPlacementsCommit]);
+  const publishSnappedProgress = useCallback((placements: readonly JigsawPlacement[]) => {
+    onSnappedPieceIdsChange?.(
+      placements.filter((placement) => placement.snapped).map((placement) => placement.id),
+    );
+  }, [onSnappedPieceIdsChange]);
 
   const updatePlacementState = useCallback((
     updater: (current: PlacementState | null) => PlacementState | null,
@@ -375,24 +312,17 @@ export const TilePuzzlePreview = ({
   }, [puzzle.id, replaceHistory]);
 
   useEffect(() => {
-    let committedPlacements: JigsawPlacement[] | null = null;
     updatePlacementState((current) => {
       if (current?.puzzleId === puzzle.id) return current;
-      const restoredPlacements = initialPlacements ?? loadLegacyPersistedPlacements(puzzle, layout);
       const placements = resolveInitialJigsawPlacements(
-        restoredPlacements,
+        initialSnappedPieceIds,
         layout,
         puzzle.tiles,
         getMeasuredJigsawViewport(stageRef.current),
       );
-      if (!placements) return current;
-      committedPlacements = placements;
-      return { puzzleId: puzzle.id, placements };
+      return placements ? { puzzleId: puzzle.id, placements } : current;
     });
-    if (committedPlacements && !initialPlacements) {
-      publishCommittedPlacements(committedPlacements);
-    }
-  }, [initialPlacements, layout, publishCommittedPlacements, puzzle, puzzle.id, puzzle.tiles, updatePlacementState, viewport.height, viewport.width]);
+  }, [initialSnappedPieceIds, layout, puzzle.id, puzzle.tiles, updatePlacementState, viewport.height, viewport.width]);
 
   useEffect(() => {
     if (!isUsableJigsawViewport(viewport)) return;
@@ -437,7 +367,7 @@ export const TilePuzzlePreview = ({
       puzzleId: puzzle.id,
       placements: nextPlacements,
     }));
-    publishCommittedPlacements(nextPlacements);
+    publishSnappedProgress(nextPlacements);
     if (baseline) {
       replaceHistory(commitJigsawPlacementAction(
         historyRef.current,
@@ -482,12 +412,12 @@ export const TilePuzzlePreview = ({
       puzzleId: puzzle.id,
       placements: transition.placements,
     }));
-    publishCommittedPlacements(transition.placements);
+    publishSnappedProgress(transition.placements);
     replaceHistory(transition.history);
     setActiveTileId(null);
     setRaisedTileId(null);
     return true;
-  }, [canHistoryAction, publishCommittedPlacements, puzzle.id, replaceHistory, updatePlacementState]);
+  }, [canHistoryAction, publishSnappedProgress, puzzle.id, replaceHistory, updatePlacementState]);
 
   useEffect(() => {
     if (!onHistoryControllerChange) return;
@@ -692,7 +622,7 @@ export const TilePuzzlePreview = ({
       placements: updatePlacement(current.placements, tile.id, (placement) => ({ ...placement, ...nextPosition, snapped: snaps })),
     } : current);
     if (nextState?.puzzleId === puzzle.id) {
-      publishCommittedPlacements(nextState.placements);
+      publishSnappedProgress(nextState.placements);
       replaceHistory(commitJigsawPlacementAction(
         historyRef.current,
         drag.startPlacements,
