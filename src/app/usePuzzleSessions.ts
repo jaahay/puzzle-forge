@@ -226,7 +226,15 @@ export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPu
     };
   }
 
-  return { kind: "tiles", puzzle: generatedPuzzle, progress: { kind: "tiles" }, statusMessage };
+  return {
+    kind: "tiles",
+    puzzle: generatedPuzzle,
+    progress: {
+      kind: "tiles",
+      ...(generatedPuzzle.puzzleId === "jigsaw" ? { jigsawSnappedPieceIds: [] } : {}),
+    },
+    statusMessage,
+  };
 };
 
 export const usePuzzleSessions = () => {
