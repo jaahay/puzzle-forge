@@ -152,7 +152,7 @@ describe("TilePuzzlePreview placement initialization", () => {
     const pieces = Array.from({ length: 48 }, (_, index) => makePiece(index, 6));
 
     expect(resolveInitialJigsawPlacements(["tile-0"], layout, pieces, null)).toBeNull();
-    expect(resolveInitialJigsawPlacements(null, layout, pieces, { width: 0, height: 800 })).toBeNull();
+    expect(resolveInitialJigsawPlacements([], layout, pieces, { width: 0, height: 800 })).toBeNull();
   });
 
   it("stages a fresh puzzle from the supplied play-surface shape", () => {
@@ -166,8 +166,8 @@ describe("TilePuzzlePreview placement initialization", () => {
     const wideStage = { width: 1180, height: 640 };
     const veryTallStage = { width: 360, height: 1440 };
 
-    const widePlacements = resolveInitialJigsawPlacements(null, layout, pieces, wideStage);
-    const tallPlacements = resolveInitialJigsawPlacements(null, layout, pieces, veryTallStage);
+    const widePlacements = resolveInitialJigsawPlacements([], layout, pieces, wideStage);
+    const tallPlacements = resolveInitialJigsawPlacements([], layout, pieces, veryTallStage);
 
     expect(getJigsawStagingMode(layout, pieces.length, wideStage)).toBe("sides");
     expect(getJigsawStagingMode(layout, pieces.length, veryTallStage)).toBe("top-bottom");
