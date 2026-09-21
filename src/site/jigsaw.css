@@ -321,7 +321,6 @@
   border-color: transparent;
   background: transparent;
   box-shadow: 0 18px 44px rgba(2, 6, 23, 0.28);
-  animation: jigsaw-solved-board-settle 720ms ease-out both;
 }
 
 .jigsaw-freeform-stage.solved .jigsaw-assembly-board::after,
@@ -441,7 +440,7 @@
   }
 }
 
-@keyframes jigsaw-solved-board-settle {
+@keyframes jigsaw-solved-world-settle {
   0% {
     filter: brightness(1.08);
   }
@@ -555,6 +554,10 @@
   stroke-width: 1.1;
 }
 
+.jigsaw-freeform-stage.solved .jigsaw-world-layer {
+  animation: jigsaw-solved-world-settle 720ms ease-out both;
+}
+
 .jigsaw-freeform-stage.solved .tile-puzzle-piece-visual {
   filter: none;
 }
@@ -652,7 +655,7 @@
     transition: none;
   }
 
-  .jigsaw-freeform-stage.solved .jigsaw-assembly-board,
+  .jigsaw-freeform-stage.solved .jigsaw-world-layer,
   .jigsaw-solved-card {
     animation: none;
   }
