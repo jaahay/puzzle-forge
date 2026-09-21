@@ -103,7 +103,7 @@ describe("Jigsaw session image identity", () => {
     expect(new Set(restored.progress.jigsawSnappedPieceIds)).toEqual(new Set(puzzle.tiles.map((tile) => tile.id)));
   });
 
-  it("rejects snapped Jigsaw piece ids that do not belong to the regenerated resource", () => {
+  it("rejects foreign or duplicate snapped Jigsaw piece ids", () => {
     const session = makeJigsawSession();
     const puzzle = session.puzzle;
     if (puzzle.kind !== "tiles" || puzzle.puzzleId !== "jigsaw") return;
@@ -127,6 +127,16 @@ describe("Jigsaw session image identity", () => {
       progress: {
         ...persisted.progress,
         jigsawSnappedPieceIds: ["foreign-piece", ...persisted.progress.jigsawSnappedPieceIds.slice(1)],
+      },
+    }, puzzle)).toBeNull();
+
+    const firstPieceId = persisted.progress.jigsawSnappedPieceIds[0];
+    if (!firstPieceId) return;
+    expect(restorePuzzleSessionFromPersisted({
+      ...persisted,
+      progress: {
+        ...persisted.progress,
+        jigsawSnappedPieceIds: [firstPieceId, firstPieceId],
       },
     }, puzzle)).toBeNull();
   });
