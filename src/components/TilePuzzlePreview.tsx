@@ -186,6 +186,9 @@ export const areJigsawPlacementsSolved = (
 export const shouldRenderJigsawEdgeSeams = (showEdgeSeams: boolean, isSolved: boolean) =>
   showEdgeSeams && !isSolved;
 
+export const shouldRenderJigsawReferencePreview = (showPreview: boolean, isSolved: boolean) =>
+  showPreview && !isSolved;
+
 export const shouldShowJigsawCompletionCelebration = (
   isSolved: boolean,
   phase: CompletionPresentationPhase,
@@ -842,7 +845,7 @@ export const TilePuzzlePreview = ({
         <button type="button" onClick={() => fitView("workspace")}>Fit workspace</button>
       </div>
 
-      {showPreview ? (
+      {shouldRenderJigsawReferencePreview(showPreview, isSolved) ? (
         <div class="tile-puzzle-art-preview" aria-label={puzzle.asset.alt} style={previewStyle} />
       ) : null}
 
