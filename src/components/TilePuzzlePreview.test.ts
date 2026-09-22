@@ -16,6 +16,7 @@ import {
   initializeOrPreserveJigsawCamera,
   resolveInitialJigsawPlacements,
   shouldRenderJigsawEdgeSeams,
+  shouldRenderJigsawReferencePreview,
   shouldShowJigsawCompletionCelebration,
   shouldShowJigsawSolvedControls,
 } from "./TilePuzzlePreview";
@@ -60,6 +61,12 @@ describe("TilePuzzlePreview completion", () => {
     expect(shouldRenderJigsawEdgeSeams(false, false)).toBe(false);
     expect(shouldRenderJigsawEdgeSeams(true, false)).toBe(true);
     expect(shouldRenderJigsawEdgeSeams(true, true)).toBe(false);
+  });
+
+  it("suppresses the reference image while solved without changing its stored toggle", () => {
+    expect(shouldRenderJigsawReferencePreview(false, false)).toBe(false);
+    expect(shouldRenderJigsawReferencePreview(true, false)).toBe(true);
+    expect(shouldRenderJigsawReferencePreview(true, true)).toBe(false);
   });
 
   it("separates transient celebration from persistent solved controls", () => {
