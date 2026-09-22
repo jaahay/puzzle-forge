@@ -333,10 +333,17 @@
   inset: 0;
   z-index: 2000;
   display: grid;
-  align-items: start;
-  justify-items: center;
   padding: clamp(0.7rem, 2vw, 1.15rem);
   pointer-events: none;
+}
+
+.jigsaw-solved-presentation.is-celebrating {
+  place-items: center;
+}
+
+.jigsaw-solved-presentation.is-completed {
+  align-items: start;
+  justify-items: end;
 }
 
 .jigsaw-solved-card {
@@ -347,16 +354,30 @@
   justify-content: center;
   gap: 0.65rem 0.85rem;
   border: 1px solid rgba(110, 231, 183, 0.42);
-  border-radius: 999px;
-  padding: 0.48rem 0.58rem 0.48rem 0.72rem;
   color: #ecfdf5;
   background: rgba(6, 20, 35, 0.88);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     0 12px 30px rgba(2, 6, 23, 0.32);
   backdrop-filter: blur(10px);
-  pointer-events: auto;
+}
+
+.jigsaw-solved-card.is-celebrating {
+  border-radius: 999px;
+  padding: 0.68rem 0.95rem;
+  pointer-events: none;
   animation: jigsaw-solved-card-arrive 620ms ease-out both;
+}
+
+.jigsaw-solved-card.is-completed {
+  max-width: min(100%, 24rem);
+  border-radius: 999px;
+  padding: 0.34rem 0.42rem 0.34rem 0.55rem;
+  background: rgba(6, 20, 35, 0.78);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 8px 20px rgba(2, 6, 23, 0.24);
+  pointer-events: auto;
 }
 
 .jigsaw-solved-copy {
@@ -364,6 +385,15 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.9rem;
+}
+
+.jigsaw-solved-card.is-celebrating .jigsaw-solved-copy {
+  font-size: 1rem;
+}
+
+.jigsaw-solved-card.is-completed .jigsaw-solved-copy {
+  gap: 0.4rem;
+  font-size: 0.78rem;
 }
 
 .jigsaw-solved-mark {
@@ -379,22 +409,28 @@
   font-weight: 900;
 }
 
+.jigsaw-solved-card.is-completed .jigsaw-solved-mark {
+  width: 1.45rem;
+  font-size: 0.72rem;
+}
+
 .jigsaw-solved-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.45rem;
+  gap: 0.4rem;
 }
 
 .jigsaw-solved-actions button {
-  min-height: 2.2rem;
-  min-width: 6.5rem;
+  min-height: 2rem;
+  min-width: 5.5rem;
   border: 1px solid rgba(96, 165, 250, 0.4);
   border-radius: 999px;
-  padding: 0.48rem 0.8rem;
+  padding: 0.4rem 0.68rem;
   color: #dbeafe;
   background: linear-gradient(180deg, #365f8c, #254569);
   cursor: pointer;
+  font-size: 0.78rem;
   font-weight: 900;
 }
 
@@ -554,7 +590,7 @@
   stroke-width: 1.1;
 }
 
-.jigsaw-freeform-stage.solved .jigsaw-world-layer {
+.jigsaw-freeform-stage.completion-celebrating .jigsaw-world-layer {
   animation: jigsaw-solved-world-settle 720ms ease-out both;
 }
 
@@ -585,17 +621,14 @@
 }
 
 @media (max-width: 700px) {
-  .jigsaw-solved-card {
+  .jigsaw-solved-card.is-celebrating {
     max-width: min(100%, 24rem);
     border-radius: 1rem;
   }
 
-  .jigsaw-solved-actions {
-    width: 100%;
-  }
-
-  .jigsaw-solved-actions button {
-    flex: 1 1 8rem;
+  .jigsaw-solved-card.is-completed {
+    max-width: min(100%, 22rem);
+    border-radius: 0.9rem;
   }
 
   .jigsaw-workspace .puzzle-panel,
@@ -655,8 +688,8 @@
     transition: none;
   }
 
-  .jigsaw-freeform-stage.solved .jigsaw-world-layer,
-  .jigsaw-solved-card {
+  .jigsaw-freeform-stage.completion-celebrating .jigsaw-world-layer,
+  .jigsaw-solved-card.is-celebrating {
     animation: none;
   }
 }
