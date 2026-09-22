@@ -719,6 +719,8 @@ export const TilePuzzlePreview = ({
   };
 
   const handleWheel = (event: WheelEvent) => {
+    const target = event.target as Element | null;
+    if (target?.closest(".jigsaw-solved-card")) return;
     const stagePoint = getStagePoint(event.clientX, event.clientY);
     if (!stagePoint) return;
     const current = wheelStateRef.current;
