@@ -591,7 +591,7 @@
 }
 
 .jigsaw-freeform-stage.completion-celebrating .jigsaw-world-layer {
-  animation: jigsaw-solved-world-settle 720ms ease-out both;
+  animation: jigsaw-solved-world-settle 620ms ease-out both;
 }
 
 .jigsaw-freeform-stage.solved .tile-puzzle-piece-visual {
