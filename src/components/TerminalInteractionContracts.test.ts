@@ -55,24 +55,32 @@ describe("terminal interaction contracts", () => {
     expect(wordGuessSource).toMatch(/<PuzzleTerminalDock[\s\S]*?announce=\{false\}[\s\S]*?\/>|<PuzzleTerminalDock[\s\S]*?announce=\{false\}[\s\S]*?>/);
   });
 
-  it("keeps Jigsaw completion direct, stage-native, and available in immersive mode", () => {
-    expect(jigsawSource).not.toContain("usePuzzleCompletionPresentation");
+  it("keeps Jigsaw completion stage-native while separating live celebration from restored solved state", () => {
+    expect(jigsawSource).toContain("usePuzzleCompletionPresentation");
     expect(jigsawSource).not.toContain("PuzzleTerminalDock");
-    expect(jigsawSource).toContain("onResetPuzzle={resetJigsaw}");
-    expect(jigsawSource).toContain("onNewPuzzle={onNewPuzzle}");
-    expect(jigsawPreviewSource).toContain('class="jigsaw-solved-presentation"');
-    expect(jigsawPreviewSource).toContain("<strong>Puzzle solved</strong>");
+    expect(jigsawSource).toContain("completionPhase={completion.phase}");
+    expect(jigsawSource).toContain("onCausativeInput={completion.recordCausativeInput}");
+    expect(jigsawSource).toContain("onCompletionAnimationEnd={completion.completePresentation}");
+    expect(jigsawPreviewSource).toContain("shouldShowJigsawCompletionCelebration(isSolved, completionPhase)");
+    expect(jigsawPreviewSource).toContain("shouldShowJigsawSolvedControls(isSolved, completionPhase)");
+    expect(jigsawPreviewSource).toContain('class="jigsaw-solved-card is-celebrating"');
+    expect(jigsawPreviewSource).toContain('class="jigsaw-solved-card is-completed"');
     expect(jigsawPreviewSource).toContain("onClick={onResetPuzzle}");
     expect(jigsawPreviewSource).toContain("onClick={onNewPuzzle}");
   });
 
-  it("lets solved Jigsaw artwork replace construction chrome without losing reduced-motion support", () => {
+  it("celebrates only the causative final drop and keeps solved artwork visually quiet afterward", () => {
+    expect(jigsawPreviewSource).toMatch(
+      /if \(areJigsawPlacementsSolved\(nextState\.placements, puzzle\.tiles\.length\)\) \{[\s\S]*?onCausativeInput\(\);[\s\S]*?\}/,
+    );
     expect(jigsawPreviewSource).toContain("shouldRenderJigsawEdgeSeams(showEdgeSeams, isSolved)");
     expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .tile-puzzle-piece-visual");
     expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .tile-puzzle-piece-outline");
-    expect(jigsawCss).toContain(".jigsaw-solved-card");
+    expect(jigsawCss).toContain(".jigsaw-freeform-stage.completion-celebrating .jigsaw-world-layer");
+    expect(jigsawCss).toContain(".jigsaw-solved-card.is-completed");
+    expect(jigsawCss).not.toContain(".jigsaw-freeform-stage.solved .jigsaw-world-layer");
     expect(jigsawCss).toMatch(
-      /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.jigsaw-solved-card[\s\S]*?animation: none;/,
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.jigsaw-solved-card\.is-celebrating[\s\S]*?animation: none;/,
     );
   });
 });
