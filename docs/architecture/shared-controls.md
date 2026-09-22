@@ -154,7 +154,7 @@ Examples:
 
 - Solitaire variation/draw rules;
 - Sudoku Standard / Diagonal / Zero Killer;
-- Jigsaw difficulty/dimensions;
+- Jigsaw size/dimensions;
 - future puzzle-specific modes.
 
 Keep identity-changing variants inside the prospective New-puzzle model. Image-backed puzzles that currently regenerate immediately on settings commits should migrate semantically before adopting the shared New shell.
