@@ -64,6 +64,7 @@
   overflow: hidden;
 }
 
+.jigsaw-workspace.is-immersive .workspace-layout-play-surface,
 .jigsaw-workspace.is-immersive .workspace-layout-board,
 .jigsaw-workspace.is-immersive .jigsaw-puzzle-panel,
 .jigsaw-workspace.is-immersive .tile-puzzle-preview {
