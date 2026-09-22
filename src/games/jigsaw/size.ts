@@ -1,24 +1,25 @@
-import type { JigsawImageAsset, PuzzleDifficulty } from "../../catalog/types";
+import type { JigsawImageAsset } from "../../catalog/types";
 
 export const jigsawMinimumAxis = 2;
 export const jigsawMaximumAxis = 32;
 
-export const jigsawDifficultyOrder: readonly PuzzleDifficulty[] = ["Easy", "Medium", "Hard", "Expert"];
+export const jigsawSizePresets = ["Small", "Medium", "Large", "Extra large"] as const;
+export type JigsawSizePreset = (typeof jigsawSizePresets)[number];
 
-export const jigsawDifficultyTargetPieces: Record<PuzzleDifficulty, number> = {
-  Easy: 16,
+export const jigsawSizeTargetPieces: Record<JigsawSizePreset, number> = {
+  Small: 16,
   Medium: 36,
-  Hard: 64,
-  Expert: 100,
+  Large: 64,
+  "Extra large": 100,
 };
 
-export type JigsawDifficultyDimensions = {
+export type JigsawSizeDimensions = {
   width: number;
   height: number;
   pieceCount: number;
 };
 
-type ScoredDimensions = JigsawDifficultyDimensions & {
+type ScoredDimensions = JigsawSizeDimensions & {
   score: number;
   countError: number;
   aspectError: number;
@@ -62,12 +63,12 @@ const isBetterCandidate = (candidate: ScoredDimensions, current: ScoredDimension
   return candidate.width < current.width;
 };
 
-export const resolveJigsawDifficultyDimensions = (
+export const resolveJigsawSizeDimensions = (
   asset: Pick<JigsawImageAsset, "intrinsicWidth" | "intrinsicHeight">,
-  difficulty: PuzzleDifficulty,
-): JigsawDifficultyDimensions => {
+  preset: JigsawSizePreset,
+): JigsawSizeDimensions => {
   const imageRatio = Math.max(0.01, asset.intrinsicWidth / Math.max(1, asset.intrinsicHeight));
-  const targetPieceCount = jigsawDifficultyTargetPieces[difficulty];
+  const targetPieceCount = jigsawSizeTargetPieces[preset];
   let best: ScoredDimensions | null = null;
 
   for (let width = jigsawMinimumAxis; width <= jigsawMaximumAxis; width += 1) {
@@ -82,12 +83,12 @@ export const resolveJigsawDifficultyDimensions = (
     : { width: 4, height: 4, pieceCount: 16 };
 };
 
-export const getJigsawDifficultyForDimensions = (
+export const getJigsawSizePresetForDimensions = (
   asset: Pick<JigsawImageAsset, "intrinsicWidth" | "intrinsicHeight">,
   width: number,
   height: number,
-): PuzzleDifficulty | null =>
-  jigsawDifficultyOrder.find((difficulty) => {
-    const resolved = resolveJigsawDifficultyDimensions(asset, difficulty);
+): JigsawSizePreset | null =>
+  jigsawSizePresets.find((preset) => {
+    const resolved = resolveJigsawSizeDimensions(asset, preset);
     return resolved.width === width && resolved.height === height;
   }) ?? null;

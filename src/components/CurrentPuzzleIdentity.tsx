@@ -104,7 +104,9 @@ export const getCurrentPuzzleIdentity = (
     return {
       puzzleLabel: definition.title,
       sourceLabel,
-      details: [puzzle.asset.title, `${puzzle.width}×${puzzle.height}`],
+      details: puzzle.puzzleId === "jigsaw"
+        ? [puzzle.asset.title, `${puzzle.width * puzzle.height} pieces`, `${puzzle.width}×${puzzle.height}`]
+        : [puzzle.asset.title, `${puzzle.width}×${puzzle.height}`],
       difficultyLabel: null,
     };
   }

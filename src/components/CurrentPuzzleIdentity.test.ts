@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { GeneratedPuzzle, GridGeneratedPuzzle } from "../catalog/types";
 import { withPuzzleProvenance } from "../app/puzzleProvenance";
+import { generateJigsaw } from "../games/jigsaw/generate";
 import { getCurrentPuzzleIdentity, getPuzzleArrivalIdentity } from "./CurrentPuzzleIdentity";
 
 const makeGridPuzzle = (overrides: Partial<GridGeneratedPuzzle> = {}): GridGeneratedPuzzle => ({
@@ -159,6 +160,23 @@ describe("current puzzle identity", () => {
       sourceLabel: "Today",
       details: ["Diagonal"],
       difficultyLabel: "Hard",
+    });
+  });
+
+  it("describes Jigsaw size with piece count and dimensions rather than difficulty", () => {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "identity-jigsaw",
+      width: 6,
+      height: 6,
+      imageId: "wheat-field-cypresses",
+    });
+
+    expect(getCurrentPuzzleIdentity(puzzle, currentDateStamp)).toEqual({
+      puzzleLabel: "Jigsaw",
+      sourceLabel: null,
+      details: ["Wheat Field with Cypresses", "36 pieces", "6×6"],
+      difficultyLabel: null,
     });
   });
 
