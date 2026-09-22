@@ -7,7 +7,7 @@ import type {
 } from "../../catalog/types";
 import { getPuzzleImageAsset } from "../imageAssets";
 import { createGeneratedJigsawPuzzle, createRandom, normalizeDimension, normalizeSeed } from "../shared";
-import { jigsawMaximumAxis, jigsawMinimumAxis } from "./difficulty";
+import { jigsawMaximumAxis, jigsawMinimumAxis } from "./size";
 import { jigsawEdgeProfileCatalogRevision, jigsawEdgeProfileIds } from "./edgeProfiles";
 
 const edgeSides: readonly JigsawEdgeSide[] = ["top", "right", "bottom", "left"];

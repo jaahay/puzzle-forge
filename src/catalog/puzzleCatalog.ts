@@ -80,7 +80,7 @@ export const puzzleCatalog: PuzzleDefinition[] = [
     id: "jigsaw",
     title: "Jigsaw",
     tagline: "Seeded image assembly in a freeform workspace.",
-    description: "Generate deterministic image-backed Jigsaws with shaped pieces, freeform placement, and adaptive difficulty.",
+    description: "Generate deterministic image-backed Jigsaws with shaped pieces, freeform placement, and artwork-aware size presets.",
     category: "grid",
     status: "prototype",
     tags: ["image", "tiles", "spatial", "seeded"],

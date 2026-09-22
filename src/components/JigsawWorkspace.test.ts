@@ -9,11 +9,11 @@ describe("Jigsaw image library", () => {
     });
   });
 
-  it("carries an active difficulty across image changes with aspect-aware dimensions", () => {
+  it("carries an active size preset across image changes with aspect-aware dimensions", () => {
     const portrait = jigsawImageAssets.find((asset) => asset.id === "snowy-gorge");
     expect(portrait).toBeDefined();
 
-    expect(makeJigsawImageSelectionSettings(portrait!, "Expert")).toEqual({
+    expect(makeJigsawImageSelectionSettings(portrait!, "Extra large")).toEqual({
       imageId: "snowy-gorge",
       width: 6,
       height: 17,
