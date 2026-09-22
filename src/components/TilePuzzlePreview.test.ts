@@ -16,6 +16,8 @@ import {
   initializeOrPreserveJigsawCamera,
   resolveInitialJigsawPlacements,
   shouldRenderJigsawEdgeSeams,
+  shouldShowJigsawCompletionCelebration,
+  shouldShowJigsawSolvedControls,
 } from "./TilePuzzlePreview";
 
 const makePiece = (solvedIndex: number, width = 4): JigsawPiece => ({
@@ -58,6 +60,16 @@ describe("TilePuzzlePreview completion", () => {
     expect(shouldRenderJigsawEdgeSeams(false, false)).toBe(false);
     expect(shouldRenderJigsawEdgeSeams(true, false)).toBe(true);
     expect(shouldRenderJigsawEdgeSeams(true, true)).toBe(false);
+  });
+
+  it("separates transient celebration from persistent solved controls", () => {
+    expect(shouldShowJigsawCompletionCelebration(true, "celebrating")).toBe(true);
+    expect(shouldShowJigsawCompletionCelebration(true, "completed")).toBe(false);
+    expect(shouldShowJigsawCompletionCelebration(false, "celebrating")).toBe(false);
+
+    expect(shouldShowJigsawSolvedControls(true, "completed")).toBe(true);
+    expect(shouldShowJigsawSolvedControls(true, "celebrating")).toBe(false);
+    expect(shouldShowJigsawSolvedControls(false, "completed")).toBe(false);
   });
 
 });
