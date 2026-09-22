@@ -32,6 +32,7 @@ import {
   type JigsawViewport,
   type JigsawWorldLayout,
 } from "../games/jigsaw/placement";
+import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
 
 export type JigsawHistoryAvailability = {
   canUndo: boolean;
@@ -52,6 +53,9 @@ type TilePuzzlePreviewProps = {
   onSolvedChange?: (solved: boolean) => void;
   onHistoryAvailabilityChange?: (availability: JigsawHistoryAvailability) => void;
   onHistoryControllerChange?: (controller: JigsawHistoryController | null) => void;
+  completionPhase: CompletionPresentationPhase;
+  onCausativeInput: () => void;
+  onCompletionAnimationEnd: () => void;
   completionDisabled: boolean;
   onResetPuzzle: () => void;
   onNewPuzzle: () => void;
@@ -182,6 +186,16 @@ export const areJigsawPlacementsSolved = (
 export const shouldRenderJigsawEdgeSeams = (showEdgeSeams: boolean, isSolved: boolean) =>
   showEdgeSeams && !isSolved;
 
+export const shouldShowJigsawCompletionCelebration = (
+  isSolved: boolean,
+  phase: CompletionPresentationPhase,
+) => isSolved && phase === "celebrating";
+
+export const shouldShowJigsawSolvedControls = (
+  isSolved: boolean,
+  phase: CompletionPresentationPhase,
+) => isSolved && phase === "completed";
+
 const updatePlacement = (
   placements: JigsawPlacement[],
   tileId: string,
@@ -206,6 +220,9 @@ export const TilePuzzlePreview = ({
   onSolvedChange,
   onHistoryAvailabilityChange,
   onHistoryControllerChange,
+  completionPhase,
+  onCausativeInput,
+  onCompletionAnimationEnd,
   completionDisabled,
   onResetPuzzle,
   onNewPuzzle,
@@ -634,6 +651,9 @@ export const TilePuzzlePreview = ({
       placements: updatePlacement(current.placements, tile.id, (placement) => ({ ...placement, ...nextPosition, snapped: snaps })),
     } : current);
     if (nextState?.puzzleId === puzzle.id) {
+      if (areJigsawPlacementsSolved(nextState.placements, puzzle.tiles.length)) {
+        onCausativeInput();
+      }
       publishSnappedProgress(nextState.placements);
       replaceHistory(commitJigsawPlacementAction(
         historyRef.current,
@@ -825,7 +845,7 @@ export const TilePuzzlePreview = ({
       ) : null}
 
       <div
-        class={`jigsaw-freeform-stage ${isSolved ? "solved" : ""} ${isPanning ? "panning" : ""}`}
+        class={`jigsaw-freeform-stage ${isSolved ? "solved" : ""} completion-${completionPhase} ${isPanning ? "panning" : ""}`}
         ref={stageRef}
         onPointerDownCapture={beginTouchPinch}
         onPointerMoveCapture={moveTouchPinch}
@@ -908,17 +928,30 @@ export const TilePuzzlePreview = ({
             );
           })}
         </div>
-        {isSolved ? (
-          <div class="jigsaw-solved-presentation">
+        {shouldShowJigsawCompletionCelebration(isSolved, completionPhase) ? (
+          <div class="jigsaw-solved-presentation is-celebrating" aria-hidden="true">
             <div
-              class="jigsaw-solved-card"
+              class="jigsaw-solved-card is-celebrating"
+              onAnimationEnd={onCompletionAnimationEnd}
+            >
+              <div class="jigsaw-solved-copy">
+                <span class="jigsaw-solved-mark" aria-hidden="true">✓</span>
+                <strong>Puzzle solved</strong>
+              </div>
+            </div>
+          </div>
+        ) : null}
+        {shouldShowJigsawSolvedControls(isSolved, completionPhase) ? (
+          <div class="jigsaw-solved-presentation is-completed">
+            <div
+              class="jigsaw-solved-card is-completed"
               onPointerDown={(event) => event.stopPropagation()}
             >
               <div class="jigsaw-solved-copy" role="status" aria-live="polite" aria-atomic="true">
                 <span class="jigsaw-solved-mark" aria-hidden="true">✓</span>
-                <strong>Puzzle solved</strong>
+                <strong>Solved</strong>
               </div>
-              <div class="jigsaw-solved-actions">
+              <div class="jigsaw-solved-actions" aria-label="Solved Jigsaw actions">
                 <button type="button" onClick={onResetPuzzle} disabled={completionDisabled}>Reset</button>
                 <button
                   class="new-puzzle-primary"
