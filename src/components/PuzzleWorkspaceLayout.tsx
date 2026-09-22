@@ -34,7 +34,7 @@ type PuzzleWorkspaceLayoutProps = {
   help?: ComponentChildren;
   generation?: ComponentChildren;
   enableImmersive?: boolean;
-  immersiveControls?: "workspace" | "descendant";
+  immersiveEntry?: "workspace" | "descendant";
   playColumnMax?: number;
 };
 
@@ -49,7 +49,7 @@ export const PuzzleWorkspaceLayout = ({
   help,
   generation,
   enableImmersive = false,
-  immersiveControls = "workspace",
+  immersiveEntry = "workspace",
   playColumnMax,
 }: PuzzleWorkspaceLayoutProps) => {
   const workspaceRef = useRef<HTMLElement>(null);
@@ -128,7 +128,7 @@ export const PuzzleWorkspaceLayout = ({
       ref={workspaceRef}
       style={workspaceStyle}
     >
-      {enableImmersive && immersiveControls === "workspace" ? (
+      {enableImmersive && (isExpanded || immersiveEntry === "workspace") ? (
         <div class="puzzle-workspace-display-tools" aria-label="Puzzle display controls">
           {isExpanded ? (
             <>
