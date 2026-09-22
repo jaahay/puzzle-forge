@@ -1,16 +1,18 @@
-import type { JigsawImageAsset, PuzzleDifficulty } from "../catalog/types";
+import type { JigsawImageAsset } from "../catalog/types";
 import { getPuzzleImageAsset } from "../games/imageAssets";
 import {
-  getJigsawDifficultyForDimensions,
-  jigsawDifficultyOrder,
-  resolveJigsawDifficultyDimensions,
-} from "../games/jigsaw/difficulty";
+  getJigsawSizePresetForDimensions,
+  jigsawSizePresets,
+  jigsawSizeTargetPieces,
+  resolveJigsawSizeDimensions,
+  type JigsawSizePreset,
+} from "../games/jigsaw/size";
 import { ArtworkAlbum } from "./ArtworkAlbum";
 import { BoundedNumberInput } from "./BoundedNumberInput";
 import { NewPuzzleCommand } from "./NewPuzzleCommand";
 
 export const jigsawCustomPreset = "Custom" as const;
-export type JigsawPresetSelection = PuzzleDifficulty | typeof jigsawCustomPreset;
+export type JigsawPresetSelection = JigsawSizePreset | typeof jigsawCustomPreset;
 
 export const makeJigsawImageSelectionSettings = (
   asset: JigsawImageAsset,
@@ -20,7 +22,7 @@ export const makeJigsawImageSelectionSettings = (
     return { imageId: asset.id };
   }
 
-  const dimensions = resolveJigsawDifficultyDimensions(asset, preset);
+  const dimensions = resolveJigsawSizeDimensions(asset, preset);
   return {
     imageId: asset.id,
     width: dimensions.width,
@@ -65,8 +67,9 @@ export const JigsawNewPuzzleControl = ({
 }: JigsawNewPuzzleControlProps) => {
   const selectedAsset = getPuzzleImageAsset(imageId, "jigsaw");
   const selectedPreset: JigsawPresetSelection =
-    getJigsawDifficultyForDimensions(selectedAsset, width, height) ?? jigsawCustomPreset;
-  const configurationSummary = `${selectedAsset.title} · ${selectedPreset} · ${width}×${height}`;
+    getJigsawSizePresetForDimensions(selectedAsset, width, height) ?? jigsawCustomPreset;
+  const pieceCount = width * height;
+  const configurationSummary = `${selectedAsset.title} · ${selectedPreset} · ${pieceCount} pieces · ${width}×${height}`;
 
   return (
     <NewPuzzleCommand
@@ -82,31 +85,31 @@ export const JigsawNewPuzzleControl = ({
       onLoadSeed={onLoadSeed}
       info={(
         <>
-          <p>Difficulty preset, custom dimensions, and artwork configure the next Jigsaw only. Changing them here does not rebuild the puzzle currently being played.</p>
-          <p>Named difficulty presets adapt their dimensions to the selected artwork. Custom dimensions remain explicit when artwork changes.</p>
+          <p>Size preset, custom dimensions, and artwork configure the next Jigsaw only. Changing them here does not rebuild the puzzle currently being played.</p>
+          <p>Named size presets target an approximate piece count and adapt their dimensions to the selected artwork. Custom dimensions remain explicit when artwork changes.</p>
         </>
       )}
       settings={(
         <>
-          <div class="jigsaw-difficulty-settings" role="group" aria-label="Jigsaw difficulty">
-            <div class="jigsaw-difficulty-heading">
-              <strong>Difficulty</strong>
-              <span>{selectedPreset} · {width} × {height}</span>
+          <div class="jigsaw-size-settings" role="group" aria-label="Jigsaw size">
+            <div class="jigsaw-size-heading">
+              <strong>Size</strong>
+              <span>{selectedPreset} · {pieceCount} pieces · {width} × {height}</span>
             </div>
-            <div class="jigsaw-difficulty-options">
-              {jigsawDifficultyOrder.map((difficulty) => {
-                const dimensions = resolveJigsawDifficultyDimensions(selectedAsset, difficulty);
+            <div class="jigsaw-size-options">
+              {jigsawSizePresets.map((preset) => {
+                const dimensions = resolveJigsawSizeDimensions(selectedAsset, preset);
                 return (
                   <button
                     type="button"
-                    class="jigsaw-difficulty-option"
-                    aria-pressed={selectedPreset === difficulty}
+                    class="jigsaw-size-option"
+                    aria-pressed={selectedPreset === preset}
                     disabled={disabled}
                     onClick={() => onSettingsChange({ width: dimensions.width, height: dimensions.height })}
-                    key={difficulty}
+                    key={preset}
                   >
-                    <strong>{difficulty}</strong>
-                    <span>{dimensions.width} × {dimensions.height} · {dimensions.pieceCount}</span>
+                    <strong>{preset}</strong>
+                    <span>~{jigsawSizeTargetPieces[preset]} pieces · {dimensions.width} × {dimensions.height}</span>
                   </button>
                 );
               })}
