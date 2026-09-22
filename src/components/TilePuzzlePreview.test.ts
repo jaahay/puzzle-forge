@@ -15,6 +15,10 @@ import {
   getPieceZIndex,
   initializeOrPreserveJigsawCamera,
   resolveInitialJigsawPlacements,
+  shouldRenderJigsawEdgeSeams,
+  shouldRenderJigsawReferencePreview,
+  shouldShowJigsawCompletionCelebration,
+  shouldShowJigsawSolvedControls,
 } from "./TilePuzzlePreview";
 
 const makePiece = (solvedIndex: number, width = 4): JigsawPiece => ({
@@ -53,6 +57,28 @@ describe("TilePuzzlePreview completion", () => {
     ], 2)).toBe(false);
     expect(areJigsawPlacementsSolved([{ snapped: true }], 2)).toBe(false);
   });
+  it("suppresses solved edge guides without changing the stored preference", () => {
+    expect(shouldRenderJigsawEdgeSeams(false, false)).toBe(false);
+    expect(shouldRenderJigsawEdgeSeams(true, false)).toBe(true);
+    expect(shouldRenderJigsawEdgeSeams(true, true)).toBe(false);
+  });
+
+  it("suppresses the reference image while solved without changing its stored toggle", () => {
+    expect(shouldRenderJigsawReferencePreview(false, false)).toBe(false);
+    expect(shouldRenderJigsawReferencePreview(true, false)).toBe(true);
+    expect(shouldRenderJigsawReferencePreview(true, true)).toBe(false);
+  });
+
+  it("separates transient celebration from persistent solved controls", () => {
+    expect(shouldShowJigsawCompletionCelebration(true, "celebrating")).toBe(true);
+    expect(shouldShowJigsawCompletionCelebration(true, "completed")).toBe(false);
+    expect(shouldShowJigsawCompletionCelebration(false, "celebrating")).toBe(false);
+
+    expect(shouldShowJigsawSolvedControls(true, "completed")).toBe(true);
+    expect(shouldShowJigsawSolvedControls(true, "celebrating")).toBe(false);
+    expect(shouldShowJigsawSolvedControls(false, "completed")).toBe(false);
+  });
+
 });
 
 describe("TilePuzzlePreview piece stacking", () => {

@@ -8,6 +8,8 @@ const gridPreviewSource = readFileSync(new URL("./GridPuzzlePreview.tsx", import
 const futoshikiSource = readFileSync(new URL("./FutoshikiBoard.tsx", import.meta.url), "utf8");
 const wordGuessSource = readFileSync(new URL("./WordGuessGame.tsx", import.meta.url), "utf8");
 const jigsawSource = readFileSync(new URL("./JigsawWorkspace.tsx", import.meta.url), "utf8");
+const jigsawPreviewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", import.meta.url), "utf8");
+const jigsawCss = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
 
 describe("terminal interaction contracts", () => {
   it("keeps the reserved grid validation lane mounted after completion", () => {
@@ -53,8 +55,38 @@ describe("terminal interaction contracts", () => {
     expect(wordGuessSource).toMatch(/<PuzzleTerminalDock[\s\S]*?announce=\{false\}[\s\S]*?\/>|<PuzzleTerminalDock[\s\S]*?announce=\{false\}[\s\S]*?>/);
   });
 
-  it("keeps Jigsaw completion direct instead of using an unconnected presentation lifecycle", () => {
-    expect(jigsawSource).not.toContain("usePuzzleCompletionPresentation");
-    expect(jigsawSource).toContain("isSolved ? (");
+  it("keeps Jigsaw completion stage-native while separating live celebration from restored solved state", () => {
+    expect(jigsawSource).toContain("usePuzzleCompletionPresentation");
+    expect(jigsawSource).not.toContain("PuzzleTerminalDock");
+    expect(jigsawSource).toContain("completionPhase={completion.phase}");
+    expect(jigsawSource).toContain("onCausativeInput={completion.recordCausativeInput}");
+    expect(jigsawSource).toContain("onCompletionAnimationEnd={completion.completePresentation}");
+    expect(jigsawPreviewSource).toContain("shouldShowJigsawCompletionCelebration(isSolved, completionPhase)");
+    expect(jigsawPreviewSource).toContain("shouldShowJigsawSolvedControls(isSolved, completionPhase)");
+    expect(jigsawPreviewSource).toContain('class="jigsaw-solved-card is-celebrating"');
+    expect(jigsawPreviewSource).toContain('class="jigsaw-solved-card is-completed"');
+    expect(jigsawPreviewSource).toContain("onClick={onResetPuzzle}");
+    expect(jigsawPreviewSource).toContain("onClick={onNewPuzzle}");
+    expect(jigsawPreviewSource).toContain('if (target?.closest(".jigsaw-solved-card")) return;');
+  });
+
+  it("celebrates only the causative final drop and keeps solved artwork visually quiet afterward", () => {
+    expect(jigsawPreviewSource).toMatch(
+      /if \(areJigsawPlacementsSolved\(nextState\.placements, puzzle\.tiles\.length\)\) \{[\s\S]*?onCausativeInput\(\);[\s\S]*?\}/,
+    );
+    expect(jigsawPreviewSource).toContain("shouldRenderJigsawEdgeSeams(showEdgeSeams, isSolved)");
+    expect(jigsawPreviewSource).toContain('class={`tile-puzzle-tools ${isSolved ? "is-solved" : ""}`}');
+    expect(jigsawCss).toContain(".tile-puzzle-tools.is-solved");
+    expect(jigsawCss).toContain("visibility: hidden;");
+    expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .tile-puzzle-piece-visual");
+    expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .tile-puzzle-piece-outline");
+    expect(jigsawCss).toContain(".jigsaw-freeform-stage.completion-celebrating .jigsaw-world-layer");
+    expect(jigsawCss).toContain(".jigsaw-solved-card.is-completed");
+    expect(jigsawCss).toContain("animation: jigsaw-solved-card-arrive 620ms ease-out both;");
+    expect(jigsawCss).toContain("animation: jigsaw-solved-world-settle 620ms ease-out both;");
+    expect(jigsawCss).not.toContain(".jigsaw-freeform-stage.solved .jigsaw-world-layer");
+    expect(jigsawCss).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.jigsaw-solved-card\.is-celebrating[\s\S]*?animation: none;/,
+    );
   });
 });

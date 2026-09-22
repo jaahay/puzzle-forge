@@ -1,13 +1,12 @@
 import { useCallback, useRef, useState } from "preact/hooks";
-import { solvedTerminalState } from "../app/puzzleTerminalState";
 import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
 import type { JigsawHistoryAction } from "../games/jigsaw/history";
 import { JigsawNewPuzzleControl } from "./JigsawNewPuzzleControl";
 import { PuzzleHistoryActions } from "./PuzzleHistoryActions";
-import { PuzzleTerminalDock } from "./PuzzleTerminalDock";
 import type { JigsawWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { TilePuzzlePreview, type JigsawHistoryAvailability, type JigsawHistoryController } from "./TilePuzzlePreview";
+import { usePuzzleCompletionPresentation } from "./usePuzzleCompletionPresentation";
 
 export const getJigsawGameplayNotes = (notes: string[], assetTitle: string) =>
   notes.filter((note) => note !== `Jigsaw using the bundled ${assetTitle} image.`);
@@ -48,6 +47,11 @@ export const JigsawWorkspace = ({
     completionState?.puzzleInstanceId === puzzleInstanceId &&
     completionState.solved,
   );
+  const completion = usePuzzleCompletionPresentation({
+    enabled: Boolean(jigsawPuzzle),
+    identity: puzzleInstanceId ?? "jigsaw:pending",
+    solved: isSolved,
+  });
   const handleSolvedChange = useCallback((solved: boolean) => {
     if (!puzzleInstanceId) return;
     setCompletionState((current) =>
@@ -165,6 +169,12 @@ export const JigsawWorkspace = ({
         onSolvedChange={handleSolvedChange}
         onHistoryAvailabilityChange={handleHistoryAvailabilityChange}
         onHistoryControllerChange={handleHistoryControllerChange}
+        completionPhase={completion.phase}
+        onCausativeInput={completion.recordCausativeInput}
+        onCompletionAnimationEnd={completion.completePresentation}
+        completionDisabled={isGenerating}
+        onResetPuzzle={resetJigsaw}
+        onNewPuzzle={onNewPuzzle}
       />
       {gameplayNotes.length === 0 ? null : (
         <ul class="notes-list">{gameplayNotes.map((note) => <li key={note}>{note}</li>)}</ul>
@@ -172,21 +182,10 @@ export const JigsawWorkspace = ({
     </section>
   ) : isGenerating ? loadingBoard : null;
 
-  const gameplay = jigsawPuzzle ? (
-    isSolved ? (
-      <PuzzleTerminalDock
-        state={solvedTerminalState}
-        label="Puzzle solved"
-        ariaLabel="Jigsaw solved"
-        disabled={isGenerating}
-        onReset={resetJigsaw}
-        onNewPuzzle={onNewPuzzle}
-      />
-    ) : (
-      <div class="puzzle-actions">
-        <button type="button" onClick={resetJigsaw} disabled={isGenerating || isSolved}>Reset</button>
-      </div>
-    )
+  const gameplay = jigsawPuzzle && !isSolved ? (
+    <div class="puzzle-actions">
+      <button type="button" onClick={resetJigsaw} disabled={isGenerating}>Reset</button>
+    </div>
   ) : null;
 
   return (
