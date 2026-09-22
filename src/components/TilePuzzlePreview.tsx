@@ -856,17 +856,6 @@ export const TilePuzzlePreview = ({
         ) : null}
       </div>
 
-      {displayMode.isExpanded ? (
-        <div class="jigsaw-expanded-display-tools" aria-label="Expanded workspace controls">
-          {displayMode.fullscreenAvailable ? (
-            <button type="button" onClick={() => void displayMode.toggleBrowserFullscreen()}>
-              {displayMode.isBrowserFullscreen ? "Exit fullscreen" : "Fullscreen"}
-            </button>
-          ) : null}
-          <button type="button" onClick={() => void displayMode.exitExpanded()}>Exit expanded</button>
-        </div>
-      ) : null}
-
       {shouldRenderJigsawReferencePreview(showPreview, isSolved) ? (
         <div class="tile-puzzle-art-preview" aria-label={puzzle.asset.alt} style={previewStyle} />
       ) : null}
