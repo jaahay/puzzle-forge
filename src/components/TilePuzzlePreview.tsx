@@ -812,7 +812,7 @@ export const TilePuzzlePreview = ({
         <span>{puzzle.width} x {puzzle.height}</span>
       </div>
 
-      <div class="tile-puzzle-tools">
+      <div class={`tile-puzzle-tools ${isSolved ? "is-solved" : ""}`}>
         <button type="button" onClick={() => setShowPreview((current) => !current)}>{showPreview ? "Hide preview" : "Preview image"}</button>
         <button type="button" onClick={scatterPieces} disabled={isSolved}>Scatter pieces</button>
         <button
