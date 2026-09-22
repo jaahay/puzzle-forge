@@ -67,6 +67,7 @@ describe("terminal interaction contracts", () => {
     expect(jigsawPreviewSource).toContain('class="jigsaw-solved-card is-completed"');
     expect(jigsawPreviewSource).toContain("onClick={onResetPuzzle}");
     expect(jigsawPreviewSource).toContain("onClick={onNewPuzzle}");
+    expect(jigsawPreviewSource).toContain('if (target?.closest(".jigsaw-solved-card")) return;');
   });
 
   it("celebrates only the causative final drop and keeps solved artwork visually quiet afterward", () => {
@@ -78,6 +79,8 @@ describe("terminal interaction contracts", () => {
     expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .tile-puzzle-piece-outline");
     expect(jigsawCss).toContain(".jigsaw-freeform-stage.completion-celebrating .jigsaw-world-layer");
     expect(jigsawCss).toContain(".jigsaw-solved-card.is-completed");
+    expect(jigsawCss).toContain("animation: jigsaw-solved-card-arrive 620ms ease-out both;");
+    expect(jigsawCss).toContain("animation: jigsaw-solved-world-settle 620ms ease-out both;");
     expect(jigsawCss).not.toContain(".jigsaw-freeform-stage.solved .jigsaw-world-layer");
     expect(jigsawCss).toMatch(
       /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.jigsaw-solved-card\.is-celebrating[\s\S]*?animation: none;/,
