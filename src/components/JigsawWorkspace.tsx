@@ -6,6 +6,7 @@ import { PuzzleHistoryActions } from "./PuzzleHistoryActions";
 import type { JigsawWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { TilePuzzlePreview, type JigsawHistoryAvailability, type JigsawHistoryController } from "./TilePuzzlePreview";
+import { usePuzzleCompletionPresentation } from "./usePuzzleCompletionPresentation";
 
 export const getJigsawGameplayNotes = (notes: string[], assetTitle: string) =>
   notes.filter((note) => note !== `Jigsaw using the bundled ${assetTitle} image.`);
@@ -46,6 +47,11 @@ export const JigsawWorkspace = ({
     completionState?.puzzleInstanceId === puzzleInstanceId &&
     completionState.solved,
   );
+  const completion = usePuzzleCompletionPresentation({
+    enabled: Boolean(jigsawPuzzle),
+    identity: puzzleInstanceId ?? "jigsaw:pending",
+    solved: isSolved,
+  });
   const handleSolvedChange = useCallback((solved: boolean) => {
     if (!puzzleInstanceId) return;
     setCompletionState((current) =>
@@ -163,6 +169,9 @@ export const JigsawWorkspace = ({
         onSolvedChange={handleSolvedChange}
         onHistoryAvailabilityChange={handleHistoryAvailabilityChange}
         onHistoryControllerChange={handleHistoryControllerChange}
+        completionPhase={completion.phase}
+        onCausativeInput={completion.recordCausativeInput}
+        onCompletionAnimationEnd={completion.completePresentation}
         completionDisabled={isGenerating}
         onResetPuzzle={resetJigsaw}
         onNewPuzzle={onNewPuzzle}
