@@ -196,7 +196,7 @@ export const JigsawWorkspace = ({
       board={board}
       gameplay={gameplay}
       enableImmersive
-      immersiveControls="descendant"
+      immersiveEntry="descendant"
     />
   );
 };
