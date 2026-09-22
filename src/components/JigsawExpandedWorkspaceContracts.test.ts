@@ -26,6 +26,7 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(immersiveCss).toContain("grid-template-rows: minmax(0, 1fr);");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .tile-puzzle-summary");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .tile-puzzle-art-preview");
+    expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .workspace-layout-play-surface");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .tile-puzzle-tools");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .jigsaw-camera-tools");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .jigsaw-freeform-stage");
