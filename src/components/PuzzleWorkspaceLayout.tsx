@@ -3,20 +3,12 @@ import { useContext, useEffect, useRef, useState } from "preact/hooks";
 
 export type PuzzleWorkspaceDisplayMode = {
   isExpanded: boolean;
-  isBrowserFullscreen: boolean;
-  fullscreenAvailable: boolean;
   enterExpanded: () => void;
-  exitExpanded: () => Promise<void>;
-  toggleBrowserFullscreen: () => Promise<void>;
 };
 
 const defaultDisplayMode: PuzzleWorkspaceDisplayMode = {
   isExpanded: false,
-  isBrowserFullscreen: false,
-  fullscreenAvailable: false,
   enterExpanded: () => undefined,
-  exitExpanded: async () => undefined,
-  toggleBrowserFullscreen: async () => undefined,
 };
 
 const PuzzleWorkspaceDisplayModeContext = createContext<PuzzleWorkspaceDisplayMode>(defaultDisplayMode);
@@ -113,11 +105,7 @@ export const PuzzleWorkspaceLayout = ({
   const modeClass = `${isExpanded ? "is-immersive" : ""} ${isBrowserFullscreen ? "is-browser-fullscreen" : ""}`;
   const displayMode: PuzzleWorkspaceDisplayMode = {
     isExpanded,
-    isBrowserFullscreen,
-    fullscreenAvailable,
     enterExpanded,
-    exitExpanded,
-    toggleBrowserFullscreen,
   };
 
   return (
