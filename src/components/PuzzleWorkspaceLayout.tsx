@@ -1,5 +1,27 @@
-import type { ComponentChildren, JSX } from "preact";
-import { useEffect, useRef, useState } from "preact/hooks";
+import { createContext, type ComponentChildren, type JSX } from "preact";
+import { useContext, useEffect, useRef, useState } from "preact/hooks";
+
+export type PuzzleWorkspaceDisplayMode = {
+  isExpanded: boolean;
+  isBrowserFullscreen: boolean;
+  fullscreenAvailable: boolean;
+  enterExpanded: () => void;
+  exitExpanded: () => Promise<void>;
+  toggleBrowserFullscreen: () => Promise<void>;
+};
+
+const defaultDisplayMode: PuzzleWorkspaceDisplayMode = {
+  isExpanded: false,
+  isBrowserFullscreen: false,
+  fullscreenAvailable: false,
+  enterExpanded: () => undefined,
+  exitExpanded: async () => undefined,
+  toggleBrowserFullscreen: async () => undefined,
+};
+
+const PuzzleWorkspaceDisplayModeContext = createContext<PuzzleWorkspaceDisplayMode>(defaultDisplayMode);
+
+export const usePuzzleWorkspaceDisplayMode = () => useContext(PuzzleWorkspaceDisplayModeContext);
 
 type PuzzleWorkspaceLayoutProps = {
   className?: string;
@@ -12,6 +34,7 @@ type PuzzleWorkspaceLayoutProps = {
   help?: ComponentChildren;
   generation?: ComponentChildren;
   enableImmersive?: boolean;
+  immersiveControls?: "workspace" | "descendant";
   playColumnMax?: number;
 };
 
@@ -26,10 +49,11 @@ export const PuzzleWorkspaceLayout = ({
   help,
   generation,
   enableImmersive = false,
+  immersiveControls = "workspace",
   playColumnMax,
 }: PuzzleWorkspaceLayoutProps) => {
   const workspaceRef = useRef<HTMLElement>(null);
-  const [isImmersive, setIsImmersive] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isBrowserFullscreen, setIsBrowserFullscreen] = useState(false);
   const fullscreenAvailable = typeof document !== "undefined" && document.fullscreenEnabled;
   const workspaceStyle = playColumnMax
@@ -47,14 +71,14 @@ export const PuzzleWorkspaceLayout = ({
   }, [enableImmersive]);
 
   useEffect(() => {
-    if (!isImmersive || typeof document === "undefined") return;
+    if (!isExpanded || typeof document === "undefined") return;
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape" || document.fullscreenElement) return;
-      setIsImmersive(false);
+      setIsExpanded(false);
     };
     document.addEventListener("keydown", handleKeyDown);
 
@@ -62,14 +86,16 @@ export const PuzzleWorkspaceLayout = ({
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isImmersive]);
+  }, [isExpanded]);
 
-  const exitImmersive = async () => {
+  const exitExpanded = async () => {
     if (typeof document !== "undefined" && document.fullscreenElement === workspaceRef.current) {
       await document.exitFullscreen();
     }
-    setIsImmersive(false);
+    setIsExpanded(false);
   };
+
+  const enterExpanded = () => setIsExpanded(true);
 
   const toggleBrowserFullscreen = async () => {
     const workspace = workspaceRef.current;
@@ -80,32 +106,41 @@ export const PuzzleWorkspaceLayout = ({
       return;
     }
 
-    setIsImmersive(true);
+    setIsExpanded(true);
     await workspace.requestFullscreen();
   };
 
-  const modeClass = `${isImmersive ? "is-immersive" : ""} ${isBrowserFullscreen ? "is-browser-fullscreen" : ""}`;
+  const modeClass = `${isExpanded ? "is-immersive" : ""} ${isBrowserFullscreen ? "is-browser-fullscreen" : ""}`;
+  const displayMode: PuzzleWorkspaceDisplayMode = {
+    isExpanded,
+    isBrowserFullscreen,
+    fullscreenAvailable,
+    enterExpanded,
+    exitExpanded,
+    toggleBrowserFullscreen,
+  };
 
   return (
-    <section
+    <PuzzleWorkspaceDisplayModeContext.Provider value={displayMode}>
+      <section
       class={`workspace-panel puzzle-workspace-layout ${className} ${modeClass}`.trim()}
       aria-label="Selected puzzle workspace"
       ref={workspaceRef}
       style={workspaceStyle}
     >
-      {enableImmersive ? (
+      {enableImmersive && immersiveControls === "workspace" ? (
         <div class="puzzle-workspace-display-tools" aria-label="Puzzle display controls">
-          {isImmersive ? (
+          {isExpanded ? (
             <>
               {fullscreenAvailable ? (
                 <button type="button" onClick={() => void toggleBrowserFullscreen()}>
                   {isBrowserFullscreen ? "Exit fullscreen" : "Fullscreen"}
                 </button>
               ) : null}
-              <button type="button" onClick={() => void exitImmersive()}>Exit immersive</button>
+              <button type="button" onClick={() => void exitExpanded()}>Exit expanded</button>
             </>
           ) : (
-            <button type="button" onClick={() => setIsImmersive(true)}>Immersive</button>
+            <button type="button" onClick={enterExpanded}>Expand workspace</button>
           )}
         </div>
       ) : null}
@@ -126,6 +161,7 @@ export const PuzzleWorkspaceLayout = ({
       {help ? <section class="workspace-layout-help" aria-label="Puzzle help">{help}</section> : null}
 
       {generation ? <section class="workspace-layout-generation" aria-label="Generation controls">{generation}</section> : null}
-    </section>
+      </section>
+    </PuzzleWorkspaceDisplayModeContext.Provider>
   );
 };
