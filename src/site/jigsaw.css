@@ -68,6 +68,20 @@
   background: rgba(37, 99, 235, 0.62);
 }
 
+.jigsaw-camera-tools .jigsaw-expand-workspace {
+  border-color: rgba(125, 211, 252, 0.58);
+  padding-inline: 1rem;
+  color: #e0f2fe;
+  background: linear-gradient(180deg, rgba(14, 116, 144, 0.82), rgba(30, 64, 175, 0.78));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 8px 20px rgba(2, 6, 23, 0.24);
+  font-weight: 900;
+}
+
+.jigsaw-camera-tools .jigsaw-expand-workspace:hover,
+.jigsaw-camera-tools .jigsaw-expand-workspace:focus-visible {
+  background: linear-gradient(180deg, rgba(8, 145, 178, 0.88), rgba(37, 99, 235, 0.82));
+}
+
 .jigsaw-camera-tools span {
   min-width: 4rem;
   color: #cbd5e1;
