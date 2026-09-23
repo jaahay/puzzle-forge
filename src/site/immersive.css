@@ -79,7 +79,13 @@
 }
 
 .jigsaw-workspace.is-immersive .jigsaw-puzzle-panel {
+  box-sizing: border-box;
   grid-template-rows: minmax(0, 1fr);
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .jigsaw-workspace.is-immersive .tile-puzzle-preview {
