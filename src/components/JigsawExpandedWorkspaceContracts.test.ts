@@ -5,6 +5,7 @@ const layoutSource = readFileSync(new URL("./PuzzleWorkspaceLayout.tsx", import.
 const jigsawWorkspaceSource = readFileSync(new URL("./JigsawWorkspace.tsx", import.meta.url), "utf8");
 const jigsawPreviewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", import.meta.url), "utf8");
 const immersiveCss = readFileSync(new URL("../site/immersive.css", import.meta.url), "utf8");
+const jigsawCss = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
 
 const cssRule = (source: string, selector: string) => {
   const start = source.indexOf(selector);
@@ -25,6 +26,8 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).toContain("usePuzzleWorkspaceDisplayMode");
     expect(jigsawPreviewSource).toContain("displayMode.enterExpanded");
     expect(jigsawPreviewSource).toContain("Expand workspace");
+    expect(jigsawPreviewSource).toContain('class="jigsaw-expand-workspace"');
+    expect(jigsawCss).toContain(".jigsaw-camera-tools .jigsaw-expand-workspace");
     expect(jigsawPreviewSource).not.toContain("displayMode.exitExpanded");
     expect(jigsawPreviewSource).not.toContain("displayMode.toggleBrowserFullscreen");
   });
