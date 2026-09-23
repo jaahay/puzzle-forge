@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 const layoutSource = readFileSync(new URL("./PuzzleWorkspaceLayout.tsx", import.meta.url), "utf8");
 const jigsawWorkspaceSource = readFileSync(new URL("./JigsawWorkspace.tsx", import.meta.url), "utf8");
+const imageTileWorkspaceSource = readFileSync(new URL("./ImageTilePuzzleWorkspace.tsx", import.meta.url), "utf8");
 const jigsawPreviewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", import.meta.url), "utf8");
 const immersiveCss = readFileSync(new URL("../site/immersive.css", import.meta.url), "utf8");
 const jigsawCss = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
@@ -32,8 +33,18 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).not.toContain("displayMode.toggleBrowserFullscreen");
   });
 
+  it("keeps the shared immersive shell generic while Jigsaw alone takes the one-row overlay composition", () => {
+    expect(imageTileWorkspaceSource).toContain("enableImmersive");
+    const sharedLayoutRule = cssRule(immersiveCss, ".puzzle-workspace-layout.is-immersive {");
+    expect(sharedLayoutRule).toContain("grid-template-rows: auto minmax(0, 1fr);");
+    expect(sharedLayoutRule).toContain("overflow: auto;");
+    const jigsawLayoutRule = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive {");
+    expect(jigsawLayoutRule).toContain("grid-template-rows: minmax(0, 1fr);");
+    expect(jigsawLayoutRule).toContain("overflow: hidden;");
+    expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive > .puzzle-workspace-display-tools");
+  });
+
   it("gives the expanded Jigsaw stage the layout while moving controls into overlay chrome", () => {
-    expect(immersiveCss).toContain("grid-template-rows: minmax(0, 1fr);");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .tile-puzzle-summary");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .tile-puzzle-art-preview");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .workspace-layout-play-surface");
