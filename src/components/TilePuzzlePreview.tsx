@@ -298,8 +298,10 @@ export const TilePuzzlePreview = ({
     layout,
     viewport: renderViewport,
   });
-  const preservePinchCamera = pinchRef.current !== null && wheelStateRef.current.puzzleId === puzzle.id;
-  const renderCamera = preservePinchCamera ? wheelStateRef.current.camera : activeCamera;
+  const preserveImperativeCamera =
+    (pinchRef.current !== null || dragRef.current !== null) &&
+    wheelStateRef.current.puzzleId === puzzle.id;
+  const renderCamera = preserveImperativeCamera ? wheelStateRef.current.camera : activeCamera;
   wheelStateRef.current = {
     puzzleId: puzzle.id,
     camera: renderCamera,
@@ -637,7 +639,12 @@ export const TilePuzzlePreview = ({
     if (placement.snapped || isSolved || pinchRef.current) return;
     const stagePoint = getStagePoint(event.clientX, event.clientY);
     if (!stagePoint) return;
-    const worldPoint = screenToJigsawWorld(activeCamera, renderViewport, stagePoint.x, stagePoint.y);
+    const worldPoint = screenToJigsawWorld(
+      wheelStateRef.current.camera,
+      renderViewport,
+      stagePoint.x,
+      stagePoint.y,
+    );
     const position = getJigsawPlacementPosition(layout, tile, placement);
     const currentPlacementState = placementStateRef.current;
     if (!currentPlacementState || currentPlacementState.puzzleId !== puzzle.id) return;
