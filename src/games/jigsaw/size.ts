@@ -19,6 +19,8 @@ export type JigsawSizeDimensions = {
   pieceCount: number;
 };
 
+export const jigsawGridAdaptationDistortionThreshold = 1.75;
+
 type ScoredDimensions = JigsawSizeDimensions & {
   score: number;
   countError: number;
@@ -63,17 +65,35 @@ const isBetterCandidate = (candidate: ScoredDimensions, current: ScoredDimension
   return candidate.width < current.width;
 };
 
-export const resolveJigsawSizeDimensions = (
+export const getJigsawPieceAspectRatio = (
   asset: Pick<JigsawImageAsset, "intrinsicWidth" | "intrinsicHeight">,
-  preset: JigsawSizePreset,
+  width: number,
+  height: number,
+) => {
+  const imageRatio = Math.max(0.01, asset.intrinsicWidth / Math.max(1, asset.intrinsicHeight));
+  return imageRatio * Math.max(1, height) / Math.max(1, width);
+};
+
+export const getJigsawPieceDistortion = (
+  asset: Pick<JigsawImageAsset, "intrinsicWidth" | "intrinsicHeight">,
+  width: number,
+  height: number,
+) => {
+  const aspectRatio = Math.max(0.01, getJigsawPieceAspectRatio(asset, width, height));
+  return Math.max(aspectRatio, 1 / aspectRatio);
+};
+
+export const resolveJigsawDimensionsForPieceCount = (
+  asset: Pick<JigsawImageAsset, "intrinsicWidth" | "intrinsicHeight">,
+  targetPieceCount: number,
 ): JigsawSizeDimensions => {
   const imageRatio = Math.max(0.01, asset.intrinsicWidth / Math.max(1, asset.intrinsicHeight));
-  const targetPieceCount = jigsawSizeTargetPieces[preset];
+  const safeTargetPieceCount = Math.max(1, Math.round(targetPieceCount));
   let best: ScoredDimensions | null = null;
 
   for (let width = jigsawMinimumAxis; width <= jigsawMaximumAxis; width += 1) {
     for (let height = jigsawMinimumAxis; height <= jigsawMaximumAxis; height += 1) {
-      const candidate = scoreDimensions(imageRatio, targetPieceCount, width, height);
+      const candidate = scoreDimensions(imageRatio, safeTargetPieceCount, width, height);
       if (isBetterCandidate(candidate, best)) best = candidate;
     }
   }
@@ -81,6 +101,27 @@ export const resolveJigsawSizeDimensions = (
   return best
     ? { width: best.width, height: best.height, pieceCount: best.pieceCount }
     : { width: 4, height: 4, pieceCount: 16 };
+};
+
+export const resolveJigsawSizeDimensions = (
+  asset: Pick<JigsawImageAsset, "intrinsicWidth" | "intrinsicHeight">,
+  preset: JigsawSizePreset,
+): JigsawSizeDimensions =>
+  resolveJigsawDimensionsForPieceCount(asset, jigsawSizeTargetPieces[preset]);
+
+export const getJigsawGridAdaptation = (
+  asset: Pick<JigsawImageAsset, "intrinsicWidth" | "intrinsicHeight">,
+  width: number,
+  height: number,
+): JigsawSizeDimensions | null => {
+  const currentDistortion = getJigsawPieceDistortion(asset, width, height);
+  if (currentDistortion < jigsawGridAdaptationDistortionThreshold) return null;
+
+  const adapted = resolveJigsawDimensionsForPieceCount(asset, width * height);
+  if (adapted.width === width && adapted.height === height) return null;
+
+  const adaptedDistortion = getJigsawPieceDistortion(asset, adapted.width, adapted.height);
+  return adaptedDistortion <= currentDistortion * 0.8 ? adapted : null;
 };
 
 export const getJigsawSizePresetForDimensions = (
