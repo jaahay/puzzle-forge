@@ -1,6 +1,8 @@
 import type { JigsawImageAsset } from "../catalog/types";
 import { getPuzzleImageAsset } from "../games/imageAssets";
 import {
+  getJigsawGridAdaptation,
+  getJigsawPieceAspectRatio,
   getJigsawSizePresetForDimensions,
   jigsawSizePresets,
   jigsawSizeTargetPieces,
@@ -69,6 +71,12 @@ export const JigsawNewPuzzleControl = ({
   const selectedPreset: JigsawPresetSelection =
     getJigsawSizePresetForDimensions(selectedAsset, width, height) ?? jigsawCustomPreset;
   const pieceCount = width * height;
+  const gridAdaptation = selectedPreset === jigsawCustomPreset
+    ? getJigsawGridAdaptation(selectedAsset, width, height)
+    : null;
+  const stretchedPieceDirection = gridAdaptation
+    ? (getJigsawPieceAspectRatio(selectedAsset, width, height) > 1 ? "wide" : "tall")
+    : null;
   const configurationSummary = `${selectedAsset.title} · ${selectedPreset} · ${pieceCount} pieces · ${width}×${height}`;
 
   return (
@@ -86,7 +94,7 @@ export const JigsawNewPuzzleControl = ({
       info={(
         <>
           <p>Size preset, custom dimensions, and artwork configure the next Jigsaw only. Changing them here does not rebuild the puzzle currently being played.</p>
-          <p>Named size presets target an approximate piece count and adapt their dimensions to the selected artwork. Custom dimensions remain explicit when artwork changes.</p>
+          <p>Named size presets target an approximate piece count and adapt their dimensions to the selected artwork. Custom dimensions remain explicit when artwork changes; unusually stretched Custom grids can be adapted explicitly without changing the intended piece count.</p>
         </>
       )}
       settings={(
@@ -143,6 +151,28 @@ export const JigsawNewPuzzleControl = ({
               />
             </label>
           </div>
+
+          {gridAdaptation ? (
+            <div class="jigsaw-grid-adaptation">
+              <div class="jigsaw-grid-adaptation-copy">
+                <strong>Grid may stretch pieces</strong>
+                <span>
+                  These dimensions make pieces very {stretchedPieceDirection} for this artwork.
+                  Adapt to {gridAdaptation.width} × {gridAdaptation.height} ({gridAdaptation.pieceCount} pieces).
+                </span>
+              </div>
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={() => onSettingsChange({
+                  width: gridAdaptation.width,
+                  height: gridAdaptation.height,
+                })}
+              >
+                Adapt grid
+              </button>
+            </div>
+          ) : null}
 
           <ArtworkAlbum
             puzzleId="jigsaw"
