@@ -7,6 +7,7 @@ type BoundedNumberInputProps = {
   ariaLabel?: string;
   disabled?: boolean;
   commitOnValidInput?: boolean;
+  onEdit?: () => void;
   onCommit: (value: number) => void;
 };
 
@@ -20,6 +21,7 @@ export const BoundedNumberInput = ({
   ariaLabel,
   disabled = false,
   commitOnValidInput = false,
+  onEdit,
   onCommit,
 }: BoundedNumberInputProps) => {
   const [draft, setDraft] = useState(String(value));
@@ -30,6 +32,7 @@ export const BoundedNumberInput = ({
   }, [value]);
 
   const updateDraft = (nextDraft: string) => {
+    onEdit?.();
     setDraft(nextDraft);
     if (!commitOnValidInput || nextDraft.trim() === "") return;
 
