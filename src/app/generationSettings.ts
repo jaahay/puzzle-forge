@@ -8,6 +8,7 @@ import type {
   SudokuVariation,
 } from "../catalog/types";
 import { getPuzzleImageAsset, isImageBackedPuzzleId } from "../games/imageAssets";
+import type { JigsawSizeSelection } from "../games/jigsaw/size";
 import { getDailyPuzzleSeedForProfile } from "../games/shared/daily";
 import { normalizeSolitaireVariation } from "../games/solitaire/variation";
 import { normalizeSudokuVariation } from "../games/sudoku/variation";
@@ -27,6 +28,7 @@ export type GenerationSettings = Partial<
     | "imageId"
   >
 > & {
+  jigsawSizeSelection?: JigsawSizeSelection;
   provenance?: PuzzleProvenance | null;
 };
 
@@ -38,6 +40,7 @@ export type NextPuzzleDraft = {
   sudokuVariation: SudokuVariation;
   solitaireVariation: SolitaireVariation;
   imageId?: string;
+  jigsawSizeSelection?: JigsawSizeSelection;
 };
 
 type ResolveGenerationIdentityInput = {
