@@ -5,6 +5,12 @@ export const jigsawMaximumAxis = 32;
 
 export const jigsawSizePresets = ["Small", "Medium", "Large", "Extra large"] as const;
 export type JigsawSizePreset = (typeof jigsawSizePresets)[number];
+export const jigsawCustomSizeSelection = "Custom" as const;
+export type JigsawSizeSelection = JigsawSizePreset | typeof jigsawCustomSizeSelection;
+
+export const isJigsawSizeSelection = (value: unknown): value is JigsawSizeSelection =>
+  value === jigsawCustomSizeSelection ||
+  jigsawSizePresets.includes(value as JigsawSizePreset);
 
 export const jigsawSizeTargetPieces: Record<JigsawSizePreset, number> = {
   Small: 16,
@@ -84,11 +90,12 @@ export const getJigsawPieceDistortion = (
   return Math.max(aspectRatio, 1 / aspectRatio);
 };
 
-export const resolveJigsawDimensionsForPieceCount = (
+const findJigsawDimensionsForPieceCount = (
   asset: Pick<JigsawImageAsset, "intrinsicWidth" | "intrinsicHeight">,
   targetPieceCount: number,
-  maxCountError = Number.POSITIVE_INFINITY,
-): JigsawSizeDimensions => {
+  maxCountError: number,
+  maxDistortion: number,
+): ScoredDimensions | null => {
   const imageRatio = Math.max(0.01, asset.intrinsicWidth / Math.max(1, asset.intrinsicHeight));
   const safeTargetPieceCount = Math.max(1, Math.round(targetPieceCount));
   let best: ScoredDimensions | null = null;
@@ -97,9 +104,25 @@ export const resolveJigsawDimensionsForPieceCount = (
     for (let height = jigsawMinimumAxis; height <= jigsawMaximumAxis; height += 1) {
       const candidate = scoreDimensions(imageRatio, safeTargetPieceCount, width, height);
       if (candidate.countError > maxCountError) continue;
+      if (Math.exp(candidate.aspectError) >= maxDistortion) continue;
       if (isBetterCandidate(candidate, best)) best = candidate;
     }
   }
+
+  return best;
+};
+
+export const resolveJigsawDimensionsForPieceCount = (
+  asset: Pick<JigsawImageAsset, "intrinsicWidth" | "intrinsicHeight">,
+  targetPieceCount: number,
+  maxCountError = Number.POSITIVE_INFINITY,
+): JigsawSizeDimensions => {
+  const best = findJigsawDimensionsForPieceCount(
+    asset,
+    targetPieceCount,
+    maxCountError,
+    Number.POSITIVE_INFINITY,
+  );
 
   return best
     ? { width: best.width, height: best.height, pieceCount: best.pieceCount }
@@ -120,13 +143,15 @@ export const getJigsawGridAdaptation = (
   const currentDistortion = getJigsawPieceDistortion(asset, width, height);
   if (currentDistortion < jigsawGridAdaptationDistortionThreshold) return null;
 
-  const adapted = resolveJigsawDimensionsForPieceCount(
+  const best = findJigsawDimensionsForPieceCount(
     asset,
     width * height,
     jigsawGridAdaptationMaxPieceCountError,
+    jigsawGridAdaptationDistortionThreshold,
   );
-  if (adapted.width === width && adapted.height === height) return null;
+  if (!best || (best.width === width && best.height === height)) return null;
 
+  const adapted = { width: best.width, height: best.height, pieceCount: best.pieceCount };
   const adaptedDistortion = getJigsawPieceDistortion(asset, adapted.width, adapted.height);
   return adaptedDistortion <= currentDistortion * 0.8 ? adapted : null;
 };
