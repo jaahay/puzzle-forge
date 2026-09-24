@@ -252,6 +252,11 @@ export const TilePuzzlePreview = ({
   const [showEdgeSeams, setShowEdgeSeams] = useState(false);
   const displayMode = usePuzzleWorkspaceDisplayMode();
 
+  useEffect(() => () => {
+    stopDragAnimation();
+    dragRef.current = null;
+  }, []);
+
   const layout = useMemo(() => createJigsawWorldLayout({
     imageWidth: puzzle.asset.intrinsicWidth,
     imageHeight: puzzle.asset.intrinsicHeight,
