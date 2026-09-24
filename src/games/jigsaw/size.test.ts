@@ -91,4 +91,11 @@ describe("Jigsaw size dimensions", () => {
     expect(adapted).not.toBeNull();
     expect(Math.abs((adapted?.pieceCount ?? 0) - 49) / 49).toBeLessThanOrEqual(0.15);
   });
+
+  it("does not recommend Adapt when the count budget cannot produce a sane piece shape", () => {
+    const extremePanorama = makeAsset(8000, 1000);
+
+    expect(getJigsawPieceDistortion(extremePanorama, 4, 4)).toBe(8);
+    expect(getJigsawGridAdaptation(extremePanorama, 4, 4)).toBeNull();
+  });
 });
