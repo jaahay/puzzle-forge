@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { defaultJigsawImageAsset, jigsawImageAssets } from "../games/jigsaw/imageAssets";
-import { jigsawCustomPreset, makeJigsawImageSelectionSettings } from "./JigsawNewPuzzleControl";
+import { jigsawCustomSizeSelection } from "../games/jigsaw/size";
+import { makeJigsawImageSelectionSettings } from "./JigsawNewPuzzleControl";
 
 describe("Jigsaw image library", () => {
   it("preserves explicit custom dimensions across image changes", () => {
-    expect(makeJigsawImageSelectionSettings(defaultJigsawImageAsset, jigsawCustomPreset)).toEqual({
+    expect(makeJigsawImageSelectionSettings(defaultJigsawImageAsset, jigsawCustomSizeSelection)).toEqual({
       imageId: defaultJigsawImageAsset.id,
     });
   });
