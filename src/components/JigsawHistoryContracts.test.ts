@@ -36,8 +36,10 @@ describe("Jigsaw history integration", () => {
     expect(beginDrag).toContain(
       "startPlacements: cloneJigsawPlacements(currentPlacementState.placements)",
     );
-    expect(moveDrag).toContain("updatePlacementState");
+    expect(moveDrag).toContain("renderDraggedPieceImmediately");
+    expect(moveDrag).not.toContain("updatePlacementState");
     expect(moveDrag).not.toContain("commitJigsawPlacementAction");
+    expect(finishDrag).toContain("updatePlacementState");
     expect(finishDrag).toContain("commitJigsawPlacementAction");
     expect(finishDrag).toContain("drag.startPlacements");
   });
