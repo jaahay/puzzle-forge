@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { JigsawImageAsset } from "../../catalog/types";
 import {
+  getJigsawGridAdaptation,
+  getJigsawPieceDistortion,
   getJigsawSizePresetForDimensions,
   jigsawMaximumAxis,
   jigsawSizePresets,
@@ -53,5 +55,32 @@ describe("Jigsaw size dimensions", () => {
 
     expect(getJigsawSizePresetForDimensions(artwork, medium.width, medium.height)).toBe("Medium");
     expect(getJigsawSizePresetForDimensions(artwork, 5, 4)).toBeNull();
+  });
+
+  it("adapts pathological custom grids around their current piece count", () => {
+    const panorama = makeAsset(3200, 800);
+    const portrait = makeAsset(800, 3200);
+
+    expect(getJigsawGridAdaptation(panorama, 8, 8)).toEqual({
+      width: 16,
+      height: 4,
+      pieceCount: 64,
+    });
+    expect(getJigsawGridAdaptation(portrait, 8, 8)).toEqual({
+      width: 4,
+      height: 16,
+      pieceCount: 64,
+    });
+    expect(getJigsawPieceDistortion(panorama, 16, 4)).toBe(1);
+    expect(getJigsawPieceDistortion(portrait, 4, 16)).toBe(1);
+  });
+
+  it("does not recommend adaptation for already sensible custom piece shapes", () => {
+    const square = makeAsset(1600, 1600);
+    const panorama = makeAsset(3200, 800);
+
+    expect(getJigsawGridAdaptation(square, 8, 8)).toBeNull();
+    expect(getJigsawGridAdaptation(square, 8, 6)).toBeNull();
+    expect(getJigsawGridAdaptation(panorama, 16, 4)).toBeNull();
   });
 });
