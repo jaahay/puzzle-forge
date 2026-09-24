@@ -183,6 +183,60 @@
   white-space: nowrap;
 }
 
+.jigsaw-grid-adaptation {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: center;
+  border: 1px solid rgba(251, 191, 36, 0.24);
+  border-radius: 0.7rem;
+  padding: 0.55rem 0.6rem;
+  color: #cbd5e1;
+  background: rgba(120, 53, 15, 0.12);
+}
+
+.jigsaw-grid-adaptation-copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.12rem;
+  line-height: 1.28;
+}
+
+.jigsaw-grid-adaptation-copy strong {
+  color: #fde68a;
+  font-size: 0.76rem;
+}
+
+.jigsaw-grid-adaptation-copy span {
+  color: #cbd5e1;
+  font-size: 0.68rem;
+}
+
+.jigsaw-grid-adaptation button {
+  min-width: 6.2rem;
+  min-height: 2.3rem;
+  border: 1px solid rgba(251, 191, 36, 0.38);
+  border-radius: 0.65rem;
+  padding: 0.42rem 0.6rem;
+  color: #fef3c7;
+  background: rgba(146, 64, 14, 0.58);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.jigsaw-grid-adaptation button:hover:not(:disabled),
+.jigsaw-grid-adaptation button:focus-visible {
+  background: rgba(180, 83, 9, 0.72);
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.12);
+  outline: none;
+}
+
+.jigsaw-grid-adaptation button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
 .jigsaw-image-library {
   display: grid;
   width: min(100%, 62rem);
@@ -657,6 +711,14 @@
 
   .jigsaw-size-options {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .jigsaw-grid-adaptation {
+    grid-template-columns: 1fr;
+  }
+
+  .jigsaw-grid-adaptation button {
+    width: 100%;
   }
 
   .jigsaw-freeform-stage {

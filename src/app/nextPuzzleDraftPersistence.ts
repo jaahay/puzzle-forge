@@ -1,6 +1,7 @@
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { PuzzleDifficulty, PuzzleId, SolitaireRedealLimit, SolitaireVariation, SudokuVariation } from "../catalog/types";
 import { getPuzzleImageAssetsFor, isImageBackedPuzzleId } from "../games/imageAssets";
+import { isJigsawSizeSelection } from "../games/jigsaw/size";
 import { solitaireRedealLimits } from "../games/solitaire/variation";
 import { puzzleIds } from "./sessionConstants";
 import type { NextPuzzleDraft } from "./generationSettings";
@@ -49,6 +50,9 @@ const isImageIdForPuzzle = (puzzleId: PuzzleId, value: unknown) => {
   return getPuzzleImageAssetsFor(puzzleId).some((asset) => asset.id === value);
 };
 
+const isJigsawSizeSelectionForPuzzle = (puzzleId: PuzzleId, value: unknown) =>
+  puzzleId === "jigsaw" ? isJigsawSizeSelection(value) : value === undefined;
+
 const parseDraft = (puzzleId: PuzzleId, value: unknown): NextPuzzleDraft | null => {
   if (
     !isRecord(value) ||
@@ -58,7 +62,8 @@ const parseDraft = (puzzleId: PuzzleId, value: unknown): NextPuzzleDraft | null 
     typeof value.requireUniqueSolution !== "boolean" ||
     !isSudokuVariation(value.sudokuVariation) ||
     !isSolitaireVariation(value.solitaireVariation) ||
-    !isImageIdForPuzzle(puzzleId, value.imageId)
+    !isImageIdForPuzzle(puzzleId, value.imageId) ||
+    !isJigsawSizeSelectionForPuzzle(puzzleId, value.jigsawSizeSelection)
   ) {
     return null;
   }
@@ -71,6 +76,9 @@ const parseDraft = (puzzleId: PuzzleId, value: unknown): NextPuzzleDraft | null 
     sudokuVariation: value.sudokuVariation,
     solitaireVariation: { ...value.solitaireVariation },
     ...(typeof value.imageId === "string" ? { imageId: value.imageId } : {}),
+    ...(puzzleId === "jigsaw"
+      ? { jigsawSizeSelection: value.jigsawSizeSelection as NextPuzzleDraft["jigsawSizeSelection"] }
+      : {}),
   };
 };
 

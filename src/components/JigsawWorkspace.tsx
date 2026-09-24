@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "preact/hooks";
 import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
 import type { JigsawHistoryAction } from "../games/jigsaw/history";
+import { jigsawCustomSizeSelection } from "../games/jigsaw/size";
 import { JigsawNewPuzzleControl } from "./JigsawNewPuzzleControl";
 import { PuzzleHistoryActions } from "./PuzzleHistoryActions";
 import type { JigsawWorkspaceProps } from "./PuzzleWorkspace.types";
@@ -109,6 +110,7 @@ export const JigsawWorkspace = ({
       imageId={nextPuzzleDraft.imageId}
       width={nextPuzzleDraft.width}
       height={nextPuzzleDraft.height}
+      sizeSelection={nextPuzzleDraft.jigsawSizeSelection ?? jigsawCustomSizeSelection}
       minWidth={selectedDefinition.minWidth}
       maxWidth={selectedDefinition.maxWidth}
       minHeight={selectedDefinition.minHeight}

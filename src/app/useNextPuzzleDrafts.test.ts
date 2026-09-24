@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { GeneratedPuzzle } from "../catalog/types";
+import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
+import { resolveJigsawSizeDimensions } from "../games/jigsaw/size";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { buildNextPuzzleDraft } from "./useNextPuzzleDrafts";
 import type { GenerationRuntimeSettings } from "./generationIdentity";
@@ -44,6 +46,26 @@ describe("buildNextPuzzleDraft", () => {
       difficulty: "Medium",
       requireUniqueSolution: true,
       sudokuVariation: "zero-killer",
+    });
+  });
+
+  it("materializes explicit Jigsaw size intent when constructing a new draft", () => {
+    const small = resolveJigsawSizeDimensions(defaultJigsawImageAsset, "Small");
+    const jigsawDraft = buildNextPuzzleDraft({
+      puzzleId: "jigsaw",
+      selectedPuzzleId: "jigsaw",
+      currentPuzzle: null,
+      runtimeSettings: {
+        ...runtimeSettings,
+        width: small.width,
+        height: small.height,
+      },
+    });
+
+    expect(jigsawDraft).toMatchObject({
+      width: small.width,
+      height: small.height,
+      jigsawSizeSelection: "Small",
     });
   });
 

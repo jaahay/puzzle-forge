@@ -1,28 +1,27 @@
 import type { JigsawImageAsset } from "../catalog/types";
 import { getPuzzleImageAsset } from "../games/imageAssets";
 import {
-  getJigsawSizePresetForDimensions,
+  getJigsawGridAdaptation,
+  getJigsawPieceAspectRatio,
+  jigsawCustomSizeSelection,
   jigsawSizePresets,
   jigsawSizeTargetPieces,
   resolveJigsawSizeDimensions,
-  type JigsawSizePreset,
+  type JigsawSizeSelection,
 } from "../games/jigsaw/size";
 import { ArtworkAlbum } from "./ArtworkAlbum";
 import { BoundedNumberInput } from "./BoundedNumberInput";
 import { NewPuzzleCommand } from "./NewPuzzleCommand";
 
-export const jigsawCustomPreset = "Custom" as const;
-export type JigsawPresetSelection = JigsawSizePreset | typeof jigsawCustomPreset;
-
 export const makeJigsawImageSelectionSettings = (
   asset: JigsawImageAsset,
-  preset: JigsawPresetSelection,
+  sizeSelection: JigsawSizeSelection,
 ) => {
-  if (preset === jigsawCustomPreset) {
+  if (sizeSelection === jigsawCustomSizeSelection) {
     return { imageId: asset.id };
   }
 
-  const dimensions = resolveJigsawSizeDimensions(asset, preset);
+  const dimensions = resolveJigsawSizeDimensions(asset, sizeSelection);
   return {
     imageId: asset.id,
     width: dimensions.width,
@@ -35,13 +34,19 @@ type JigsawNewPuzzleControlProps = {
   imageId: string | undefined;
   width: number;
   height: number;
+  sizeSelection: JigsawSizeSelection;
   minWidth: number;
   maxWidth: number;
   minHeight: number;
   maxHeight: number;
   seedLoadInput: string;
   disabled: boolean;
-  onSettingsChange: (settings: { imageId?: string; width?: number; height?: number }) => void;
+  onSettingsChange: (settings: {
+    imageId?: string;
+    width?: number;
+    height?: number;
+    jigsawSizeSelection?: JigsawSizeSelection;
+  }) => void;
   onSeedLoadInputChange: (seed: string) => void;
   onNewPuzzle: () => void;
   onToday: () => void;
@@ -53,6 +58,7 @@ export const JigsawNewPuzzleControl = ({
   imageId,
   width,
   height,
+  sizeSelection,
   minWidth,
   maxWidth,
   minHeight,
@@ -66,10 +72,14 @@ export const JigsawNewPuzzleControl = ({
   onLoadSeed,
 }: JigsawNewPuzzleControlProps) => {
   const selectedAsset = getPuzzleImageAsset(imageId, "jigsaw");
-  const selectedPreset: JigsawPresetSelection =
-    getJigsawSizePresetForDimensions(selectedAsset, width, height) ?? jigsawCustomPreset;
   const pieceCount = width * height;
-  const configurationSummary = `${selectedAsset.title} · ${selectedPreset} · ${pieceCount} pieces · ${width}×${height}`;
+  const gridAdaptation = sizeSelection === jigsawCustomSizeSelection
+    ? getJigsawGridAdaptation(selectedAsset, width, height)
+    : null;
+  const stretchedPieceDirection = gridAdaptation
+    ? (getJigsawPieceAspectRatio(selectedAsset, width, height) > 1 ? "wide" : "tall")
+    : null;
+  const configurationSummary = `${selectedAsset.title} · ${sizeSelection} · ${pieceCount} pieces · ${width}×${height}`;
 
   return (
     <NewPuzzleCommand
@@ -86,7 +96,7 @@ export const JigsawNewPuzzleControl = ({
       info={(
         <>
           <p>Size preset, custom dimensions, and artwork configure the next Jigsaw only. Changing them here does not rebuild the puzzle currently being played.</p>
-          <p>Named size presets target an approximate piece count and adapt their dimensions to the selected artwork. Custom dimensions remain explicit when artwork changes.</p>
+          <p>Named size presets target an approximate piece count and adapt their dimensions to the selected artwork. Custom dimensions remain explicit when artwork changes; unusually stretched Custom grids can be adapted explicitly while keeping approximately the same piece count.</p>
         </>
       )}
       settings={(
@@ -94,7 +104,7 @@ export const JigsawNewPuzzleControl = ({
           <div class="jigsaw-size-settings" role="group" aria-label="Jigsaw size">
             <div class="jigsaw-size-heading">
               <strong>Size</strong>
-              <span>{selectedPreset} · {pieceCount} pieces · {width} × {height}</span>
+              <span>{sizeSelection} · {pieceCount} pieces · {width} × {height}</span>
             </div>
             <div class="jigsaw-size-options">
               {jigsawSizePresets.map((preset) => {
@@ -103,9 +113,13 @@ export const JigsawNewPuzzleControl = ({
                   <button
                     type="button"
                     class="jigsaw-size-option"
-                    aria-pressed={selectedPreset === preset}
+                    aria-pressed={sizeSelection === preset}
                     disabled={disabled}
-                    onClick={() => onSettingsChange({ width: dimensions.width, height: dimensions.height })}
+                    onClick={() => onSettingsChange({
+                      width: dimensions.width,
+                      height: dimensions.height,
+                      jigsawSizeSelection: preset,
+                    })}
                     key={preset}
                   >
                     <strong>{preset}</strong>
@@ -126,6 +140,9 @@ export const JigsawNewPuzzleControl = ({
                 max={maxWidth}
                 disabled={disabled}
                 commitOnValidInput
+                onEdit={() => onSettingsChange({
+                  jigsawSizeSelection: jigsawCustomSizeSelection,
+                })}
                 onCommit={(nextWidth) => onSettingsChange({ width: nextWidth })}
               />
             </label>
@@ -139,17 +156,48 @@ export const JigsawNewPuzzleControl = ({
                 max={maxHeight}
                 disabled={disabled}
                 commitOnValidInput
+                onEdit={() => onSettingsChange({
+                  jigsawSizeSelection: jigsawCustomSizeSelection,
+                })}
                 onCommit={(nextHeight) => onSettingsChange({ height: nextHeight })}
               />
             </label>
           </div>
+
+          {gridAdaptation ? (
+            <div class="jigsaw-grid-adaptation">
+              <div
+                class="jigsaw-grid-adaptation-copy"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                <strong>Grid may stretch pieces</strong>
+                <span>
+                  These dimensions make pieces very {stretchedPieceDirection} for this artwork.
+                  Adapt to {gridAdaptation.width} × {gridAdaptation.height} ({gridAdaptation.pieceCount} pieces).
+                </span>
+              </div>
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={() => onSettingsChange({
+                  width: gridAdaptation.width,
+                  height: gridAdaptation.height,
+                  jigsawSizeSelection: jigsawCustomSizeSelection,
+                })}
+              >
+                Adapt grid
+              </button>
+            </div>
+          ) : null}
 
           <ArtworkAlbum
             puzzleId="jigsaw"
             puzzleTitle="Jigsaw"
             selectedAsset={selectedAsset}
             disabled={disabled}
-            onSelectAsset={(asset) => onSettingsChange(makeJigsawImageSelectionSettings(asset, selectedPreset))}
+            onSelectAsset={(asset) => onSettingsChange(makeJigsawImageSelectionSettings(asset, sizeSelection))}
           />
         </>
       )}
