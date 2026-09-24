@@ -20,6 +20,7 @@ export type JigsawSizeDimensions = {
 };
 
 export const jigsawGridAdaptationDistortionThreshold = 1.75;
+export const jigsawGridAdaptationMaxPieceCountError = 0.15;
 
 type ScoredDimensions = JigsawSizeDimensions & {
   score: number;
@@ -86,6 +87,7 @@ export const getJigsawPieceDistortion = (
 export const resolveJigsawDimensionsForPieceCount = (
   asset: Pick<JigsawImageAsset, "intrinsicWidth" | "intrinsicHeight">,
   targetPieceCount: number,
+  maxCountError = Number.POSITIVE_INFINITY,
 ): JigsawSizeDimensions => {
   const imageRatio = Math.max(0.01, asset.intrinsicWidth / Math.max(1, asset.intrinsicHeight));
   const safeTargetPieceCount = Math.max(1, Math.round(targetPieceCount));
@@ -94,6 +96,7 @@ export const resolveJigsawDimensionsForPieceCount = (
   for (let width = jigsawMinimumAxis; width <= jigsawMaximumAxis; width += 1) {
     for (let height = jigsawMinimumAxis; height <= jigsawMaximumAxis; height += 1) {
       const candidate = scoreDimensions(imageRatio, safeTargetPieceCount, width, height);
+      if (candidate.countError > maxCountError) continue;
       if (isBetterCandidate(candidate, best)) best = candidate;
     }
   }
@@ -117,7 +120,11 @@ export const getJigsawGridAdaptation = (
   const currentDistortion = getJigsawPieceDistortion(asset, width, height);
   if (currentDistortion < jigsawGridAdaptationDistortionThreshold) return null;
 
-  const adapted = resolveJigsawDimensionsForPieceCount(asset, width * height);
+  const adapted = resolveJigsawDimensionsForPieceCount(
+    asset,
+    width * height,
+    jigsawGridAdaptationMaxPieceCountError,
+  );
   if (adapted.width === width && adapted.height === height) return null;
 
   const adaptedDistortion = getJigsawPieceDistortion(asset, adapted.width, adapted.height);
