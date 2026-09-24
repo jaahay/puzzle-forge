@@ -1,6 +1,11 @@
 import { useRef, useState } from "preact/hooks";
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { GeneratedPuzzle, PuzzleId } from "../catalog/types";
+import { getPuzzleImageAsset } from "../games/imageAssets";
+import {
+  getJigsawSizePresetForDimensions,
+  jigsawCustomSizeSelection,
+} from "../games/jigsaw/size";
 import { defaultSolitaireVariation, normalizeSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation } from "../games/sudoku/variation";
 import type { GenerationSettings, NextPuzzleDraft } from "./generationSettings";
@@ -30,10 +35,15 @@ export const buildNextPuzzleDraft = ({
   const cards = puzzle?.kind === "cards" ? puzzle : null;
   const imageId = puzzle?.kind === "tiles" && puzzle.asset.kind === "image" ? puzzle.asset.id : undefined;
   const useRuntimeFallback = puzzleId === selectedPuzzleId;
+  const width = puzzle?.width ?? (useRuntimeFallback ? runtimeSettings.width : definition.defaultWidth);
+  const height = puzzle?.height ?? (useRuntimeFallback ? runtimeSettings.height : definition.defaultHeight);
+  const jigsawSizeSelection = puzzleId === "jigsaw"
+    ? getJigsawSizePresetForDimensions(getPuzzleImageAsset(imageId, "jigsaw"), width, height) ?? jigsawCustomSizeSelection
+    : undefined;
 
   return {
-    width: puzzle?.width ?? (useRuntimeFallback ? runtimeSettings.width : definition.defaultWidth),
-    height: puzzle?.height ?? (useRuntimeFallback ? runtimeSettings.height : definition.defaultHeight),
+    width,
+    height,
     difficulty: puzzle?.difficulty ?? (useRuntimeFallback ? runtimeSettings.difficulty : defaultPuzzleDifficulty),
     requireUniqueSolution: puzzle?.uniqueSolution ?? (useRuntimeFallback ? runtimeSettings.requireUniqueSolution : true),
     sudokuVariation:
@@ -49,10 +59,14 @@ export const buildNextPuzzleDraft = ({
           ? normalizeSolitaireVariation(runtimeSettings.solitaireVariation)
           : defaultSolitaireVariation,
     ...(imageId ? { imageId } : {}),
+    ...(jigsawSizeSelection ? { jigsawSizeSelection } : {}),
   };
 };
 
-const updateDraft = (base: NextPuzzleDraft, settings: GenerationSettings): NextPuzzleDraft => ({
+export const applyNextPuzzleDraftSettings = (
+  base: NextPuzzleDraft,
+  settings: GenerationSettings,
+): NextPuzzleDraft => ({
   width: Number.isFinite(settings.width) ? Number(settings.width) : base.width,
   height: Number.isFinite(settings.height) ? Number(settings.height) : base.height,
   difficulty: settings.difficulty ?? base.difficulty,
@@ -67,6 +81,7 @@ const updateDraft = (base: NextPuzzleDraft, settings: GenerationSettings): NextP
     ? normalizeSolitaireVariation(settings.solitaireVariation)
     : base.solitaireVariation,
   imageId: settings.imageId ?? base.imageId,
+  jigsawSizeSelection: settings.jigsawSizeSelection ?? base.jigsawSizeSelection,
 });
 
 type UseNextPuzzleDraftsInput = {
@@ -108,7 +123,7 @@ export const useNextPuzzleDrafts = ({
   const updateNextPuzzleDraft = (settings: GenerationSettings) => {
     updateDrafts((current) => {
       const base = current[selectedPuzzleId] ?? makeDraft(selectedPuzzleId);
-      return { ...current, [selectedPuzzleId]: updateDraft(base, settings) };
+      return { ...current, [selectedPuzzleId]: applyNextPuzzleDraftSettings(base, settings) };
     });
   };
 
