@@ -33,6 +33,7 @@ import {
   type JigsawWorldLayout,
 } from "../games/jigsaw/placement";
 import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
+import { usePuzzleWorkspaceDisplayMode } from "./PuzzleWorkspaceLayout";
 
 export type JigsawHistoryAvailability = {
   canUndo: boolean;
@@ -247,6 +248,7 @@ export const TilePuzzlePreview = ({
   const [isPanning, setIsPanning] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showEdgeSeams, setShowEdgeSeams] = useState(false);
+  const displayMode = usePuzzleWorkspaceDisplayMode();
 
   const layout = useMemo(() => createJigsawWorldLayout({
     imageWidth: puzzle.asset.intrinsicWidth,
@@ -843,6 +845,15 @@ export const TilePuzzlePreview = ({
         <button type="button" onClick={() => zoomView("in")} aria-label="Zoom in">+</button>
         <button type="button" onClick={() => fitView("board")}>Fit board</button>
         <button type="button" onClick={() => fitView("workspace")}>Fit workspace</button>
+        {!displayMode.isExpanded ? (
+          <button
+            class="jigsaw-expand-workspace"
+            type="button"
+            onClick={displayMode.enterExpanded}
+          >
+            Expand workspace
+          </button>
+        ) : null}
       </div>
 
       {shouldRenderJigsawReferencePreview(showPreview, isSolved) ? (

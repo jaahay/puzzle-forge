@@ -60,9 +60,20 @@
 }
 
 .jigsaw-workspace.is-immersive {
+  grid-template-rows: minmax(0, 1fr);
+  gap: 0;
+  padding: clamp(0.45rem, 1vw, 0.75rem);
   overflow: hidden;
 }
 
+.jigsaw-workspace.is-immersive > .puzzle-workspace-display-tools {
+  position: absolute;
+  top: clamp(0.7rem, 1.5vw, 1rem);
+  right: clamp(0.7rem, 1.5vw, 1rem);
+  z-index: 20;
+}
+
+.jigsaw-workspace.is-immersive .workspace-layout-play-surface,
 .jigsaw-workspace.is-immersive .workspace-layout-board,
 .jigsaw-workspace.is-immersive .jigsaw-puzzle-panel,
 .jigsaw-workspace.is-immersive .tile-puzzle-preview {
@@ -77,12 +88,54 @@
 }
 
 .jigsaw-workspace.is-immersive .jigsaw-puzzle-panel {
+  box-sizing: border-box;
   grid-template-rows: minmax(0, 1fr);
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .jigsaw-workspace.is-immersive .tile-puzzle-preview {
-  grid-template-rows: auto auto auto minmax(0, 1fr);
+  position: relative;
+  grid-template-rows: minmax(0, 1fr);
   align-content: stretch;
+  gap: 0;
+}
+
+.jigsaw-workspace.is-immersive .tile-puzzle-summary,
+.jigsaw-workspace.is-immersive .tile-puzzle-art-preview {
+  display: none;
+}
+
+.jigsaw-workspace.is-immersive .tile-puzzle-tools,
+.jigsaw-workspace.is-immersive .jigsaw-camera-tools {
+  position: absolute;
+  z-index: 30;
+  width: auto;
+  max-width: calc(100% - 1.5rem);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 999px;
+  padding: 0.36rem;
+  background: rgba(8, 15, 30, 0.82);
+  box-shadow: 0 10px 26px rgba(2, 6, 23, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.jigsaw-workspace.is-immersive .tile-puzzle-tools {
+  top: 0.75rem;
+  left: 0.75rem;
+}
+
+.jigsaw-workspace.is-immersive .jigsaw-camera-tools {
+  left: 50%;
+  bottom: 0.75rem;
+  transform: translateX(-50%);
+}
+
+.jigsaw-workspace.is-immersive .jigsaw-solved-presentation.is-completed {
+  padding-top: 4.25rem;
 }
 
 .jigsaw-workspace.is-immersive .jigsaw-freeform-stage {
@@ -101,5 +154,22 @@
     min-width: 0;
     min-height: 2.75rem;
     padding: 0.55rem 0.75rem;
+  }
+
+  .jigsaw-workspace.is-immersive .tile-puzzle-tools,
+  .jigsaw-workspace.is-immersive .jigsaw-camera-tools {
+    max-width: calc(100% - 0.9rem);
+  }
+
+  .jigsaw-workspace.is-immersive .tile-puzzle-tools {
+    top: 50%;
+    left: 0.45rem;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    transform: translateY(-50%);
+  }
+
+  .jigsaw-workspace.is-immersive .jigsaw-camera-tools {
+    bottom: 0.45rem;
   }
 }
