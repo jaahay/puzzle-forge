@@ -1,7 +1,27 @@
 import { describe, expect, it } from "vitest";
+import type { NextPuzzleDraft } from "../app/generationSettings";
+import { applyNextPuzzleDraftSettings } from "../app/useNextPuzzleDrafts";
 import { defaultJigsawImageAsset, jigsawImageAssets } from "../games/jigsaw/imageAssets";
-import { jigsawCustomSizeSelection } from "../games/jigsaw/size";
+import {
+  getJigsawGridAdaptation,
+  getJigsawSizePresetForDimensions,
+  jigsawCustomSizeSelection,
+  resolveJigsawSizeDimensions,
+} from "../games/jigsaw/size";
+import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { makeJigsawImageSelectionSettings } from "./JigsawNewPuzzleControl";
+
+const makeJigsawDraft = (overrides: Partial<NextPuzzleDraft> = {}): NextPuzzleDraft => ({
+  width: 8,
+  height: 8,
+  difficulty: "Medium",
+  requireUniqueSolution: true,
+  sudokuVariation: "classic",
+  solitaireVariation: defaultSolitaireVariation,
+  imageId: defaultJigsawImageAsset.id,
+  jigsawSizeSelection: jigsawCustomSizeSelection,
+  ...overrides,
+});
 
 describe("Jigsaw image library", () => {
   it("preserves explicit custom dimensions across image changes", () => {
@@ -18,6 +38,81 @@ describe("Jigsaw image library", () => {
       imageId: "snowy-gorge",
       width: 6,
       height: 17,
+    });
+  });
+
+  it("keeps manual Custom intent when its dimensions happen to equal a named preset", () => {
+    const snowyGorge = jigsawImageAssets.find((asset) => asset.id === "snowy-gorge");
+    expect(snowyGorge).toBeDefined();
+    expect(getJigsawSizePresetForDimensions(snowyGorge!, 6, 17)).toBe("Extra large");
+
+    const customDraft = makeJigsawDraft({
+      width: 6,
+      height: 17,
+      imageId: snowyGorge!.id,
+      jigsawSizeSelection: jigsawCustomSizeSelection,
+    });
+    const changedArtwork = applyNextPuzzleDraftSettings(
+      customDraft,
+      makeJigsawImageSelectionSettings(defaultJigsawImageAsset, customDraft.jigsawSizeSelection!),
+    );
+
+    expect(changedArtwork).toMatchObject({
+      imageId: defaultJigsawImageAsset.id,
+      width: 6,
+      height: 17,
+      jigsawSizeSelection: "Custom",
+    });
+  });
+
+  it("keeps Adapt grid in Custom mode even when the result equals a named preset", () => {
+    const snowyGorge = jigsawImageAssets.find((asset) => asset.id === "snowy-gorge");
+    expect(snowyGorge).toBeDefined();
+    const adaptation = getJigsawGridAdaptation(snowyGorge!, 10, 10);
+    expect(adaptation).toEqual({ width: 6, height: 17, pieceCount: 102 });
+    expect(getJigsawSizePresetForDimensions(snowyGorge!, 6, 17)).toBe("Extra large");
+
+    const adaptedDraft = applyNextPuzzleDraftSettings(
+      makeJigsawDraft({
+        width: 10,
+        height: 10,
+        imageId: snowyGorge!.id,
+        jigsawSizeSelection: jigsawCustomSizeSelection,
+      }),
+      {
+        width: adaptation!.width,
+        height: adaptation!.height,
+        jigsawSizeSelection: jigsawCustomSizeSelection,
+      },
+    );
+
+    expect(adaptedDraft).toMatchObject({
+      width: 6,
+      height: 17,
+      jigsawSizeSelection: "Custom",
+    });
+  });
+
+  it("continues to adapt named size presets when artwork changes", () => {
+    const snowyGorge = jigsawImageAssets.find((asset) => asset.id === "snowy-gorge");
+    expect(snowyGorge).toBeDefined();
+    const initial = resolveJigsawSizeDimensions(defaultJigsawImageAsset, "Extra large");
+    const presetDraft = makeJigsawDraft({
+      width: initial.width,
+      height: initial.height,
+      jigsawSizeSelection: "Extra large",
+    });
+
+    const changedArtwork = applyNextPuzzleDraftSettings(
+      presetDraft,
+      makeJigsawImageSelectionSettings(snowyGorge!, presetDraft.jigsawSizeSelection!),
+    );
+
+    expect(changedArtwork).toMatchObject({
+      imageId: "snowy-gorge",
+      width: 6,
+      height: 17,
+      jigsawSizeSelection: "Extra large",
     });
   });
 
