@@ -83,4 +83,12 @@ describe("Jigsaw size dimensions", () => {
     expect(getJigsawGridAdaptation(square, 8, 6)).toBeNull();
     expect(getJigsawGridAdaptation(panorama, 16, 4)).toBeNull();
   });
+
+  it("keeps adapted custom grids within fifteen percent of the requested piece count", () => {
+    const panorama = makeAsset(3200, 800);
+    const adapted = getJigsawGridAdaptation(panorama, 7, 7);
+
+    expect(adapted).not.toBeNull();
+    expect(Math.abs((adapted?.pieceCount ?? 0) - 49) / 49).toBeLessThanOrEqual(0.15);
+  });
 });
