@@ -140,10 +140,10 @@ export const JigsawNewPuzzleControl = ({
                 max={maxWidth}
                 disabled={disabled}
                 commitOnValidInput
-                onCommit={(nextWidth) => onSettingsChange({
-                  width: nextWidth,
+                onEdit={() => onSettingsChange({
                   jigsawSizeSelection: jigsawCustomSizeSelection,
                 })}
+                onCommit={(nextWidth) => onSettingsChange({ width: nextWidth })}
               />
             </label>
             <span class="new-puzzle-size-separator" aria-hidden="true">×</span>
@@ -156,10 +156,10 @@ export const JigsawNewPuzzleControl = ({
                 max={maxHeight}
                 disabled={disabled}
                 commitOnValidInput
-                onCommit={(nextHeight) => onSettingsChange({
-                  height: nextHeight,
+                onEdit={() => onSettingsChange({
                   jigsawSizeSelection: jigsawCustomSizeSelection,
                 })}
+                onCommit={(nextHeight) => onSettingsChange({ height: nextHeight })}
               />
             </label>
           </div>
