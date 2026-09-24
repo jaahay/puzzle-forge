@@ -27,6 +27,7 @@ describe("persisted next-puzzle preferences", () => {
       width: 6,
       height: 5,
       imageId: "great-wave",
+      jigsawSizeSelection: "Custom" as const,
     };
     const drafts = parseNextPuzzleDraftCache({
       schemaVersion: 1,
@@ -34,6 +35,34 @@ describe("persisted next-puzzle preferences", () => {
     });
 
     expect(drafts.jigsaw).toEqual(jigsawDraft);
+  });
+
+  it("rejects ambiguous stale Jigsaw drafts that do not carry size intent", () => {
+    const drafts = parseNextPuzzleDraftCache({
+      schemaVersion: 1,
+      drafts: {
+        jigsaw: { ...zeroKillerDraft, width: 6, height: 5, imageId: "great-wave" },
+      },
+    });
+
+    expect(drafts).toEqual({});
+  });
+
+  it("rejects invalid Jigsaw size intent", () => {
+    const drafts = parseNextPuzzleDraftCache({
+      schemaVersion: 1,
+      drafts: {
+        jigsaw: {
+          ...zeroKillerDraft,
+          width: 6,
+          height: 5,
+          imageId: "great-wave",
+          jigsawSizeSelection: "Huge",
+        },
+      },
+    });
+
+    expect(drafts).toEqual({});
   });
 
   it("rejects artwork that is unknown or attached to a non-image puzzle", () => {
