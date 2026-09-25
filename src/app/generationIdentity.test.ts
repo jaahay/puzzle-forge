@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { GeneratedPuzzle, PuzzleDifficulty, SolitaireVariation, SudokuVariation } from "../catalog/types";
+import { generateJigsaw } from "../games/jigsaw/generate";
+import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation } from "../games/sudoku/variation";
 import {
@@ -138,6 +140,32 @@ describe("generated puzzle identity matching", () => {
       ...identity,
       solitaireVariation: { ...defaultSolitaireVariation, drawMode: "draw-3" },
     })).toBe(false);
+  });
+
+  it("rejects a Jigsaw whose edge-model revision no longer matches the current resource model", () => {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "seed-1",
+      width: 4,
+      height: 3,
+      imageId: defaultJigsawImageAsset.id,
+    });
+    const identity = {
+      ...baseIdentity("jigsaw"),
+      width: 4,
+      height: 3,
+      imageId: defaultJigsawImageAsset.id,
+    };
+    const stalePuzzle = {
+      ...puzzle,
+      edgeModel: {
+        ...puzzle.edgeModel,
+        catalogRevision: puzzle.edgeModel.catalogRevision - 1,
+      },
+    };
+
+    expect(generatedPuzzleMatchesIdentity(puzzle, identity)).toBe(true);
+    expect(generatedPuzzleMatchesIdentity(stalePuzzle, identity)).toBe(false);
   });
 
   it("includes image identity and dimensions for image-backed puzzles", () => {
