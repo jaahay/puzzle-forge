@@ -96,7 +96,7 @@ const edgeProfileGeometry = {
   },
 } as const satisfies Record<JigsawEdgeProfileId, EdgeProfileGeometry>;
 
-const edgeSampleCount = 48;
+const edgeSampleCount = 32;
 export const jigsawEdgeMaximumDepth = 20;
 const pieceEdgeOrder: readonly JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
 
