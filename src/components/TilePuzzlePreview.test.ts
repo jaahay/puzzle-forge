@@ -8,6 +8,7 @@ import {
 } from "../games/jigsaw/placement";
 import {
   areJigsawPlacementsSolved,
+  getJigsawPieceTransform,
   getJigsawZoomStep,
   getMeasuredJigsawViewport,
   getPieceHitTargetProps,
@@ -79,6 +80,14 @@ describe("TilePuzzlePreview completion", () => {
     expect(shouldShowJigsawSolvedControls(false, "completed")).toBe(false);
   });
 
+});
+
+describe("TilePuzzlePreview piece rendering", () => {
+  it("uses one canonical world transform format for declarative and imperative placement", () => {
+    expect(getJigsawPieceTransform({ left: 123.5, top: 47 })).toBe(
+      "translate3d(123.5px, 47px, 0)",
+    );
+  });
 });
 
 describe("TilePuzzlePreview piece stacking", () => {
