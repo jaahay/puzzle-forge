@@ -307,7 +307,7 @@ export const TilePuzzlePreview = ({
     viewport: renderViewport,
   });
   const preserveImperativeCamera =
-    (pinchRef.current !== null || dragRef.current !== null) &&
+    (pinchRef.current !== null || dragRef.current?.puzzleId === puzzle.id) &&
     wheelStateRef.current.puzzleId === puzzle.id;
   const renderCamera = preserveImperativeCamera ? wheelStateRef.current.camera : activeCamera;
   wheelStateRef.current = {
@@ -396,7 +396,7 @@ export const TilePuzzlePreview = ({
     if (!stagingViewport) return false;
 
     const current = placementStateRef.current;
-    const activeDrag = dragRef.current;
+    const activeDrag = dragRef.current?.puzzleId === puzzle.id ? dragRef.current : null;
     const baseline = current?.puzzleId === puzzle.id
       ? resolveJigsawActionBaseline(current.placements, activeDrag?.startPlacements ?? null)
       : null;
@@ -517,7 +517,7 @@ export const TilePuzzlePreview = ({
           startCamera: wheelStateRef.current.camera,
         };
         publishHistoryAvailability(historyRef.current, true);
-        const interruptedDrag = dragRef.current;
+        const interruptedDrag = dragRef.current?.puzzleId === puzzle.id ? dragRef.current : null;
         if (interruptedDrag) {
           updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
             ...current,
@@ -621,6 +621,10 @@ export const TilePuzzlePreview = ({
     const previousTime = dragAnimationTimeRef.current;
     dragAnimationTimeRef.current = time;
     const current = wheelStateRef.current;
+    if (drag.puzzleId !== current.puzzleId) {
+      stopDragAnimation();
+      return;
+    }
     const stagePoint = getStagePoint(drag.clientX, drag.clientY);
     if (stagePoint && previousTime !== null) {
       const nextCamera = advanceJigsawEdgePanCamera(
@@ -693,7 +697,7 @@ export const TilePuzzlePreview = ({
   const moveDrag = (event: PiecePointerEvent) => {
     if (pinchRef.current) return;
     const drag = dragRef.current;
-    if (!drag || drag.pointerId !== event.pointerId) return;
+    if (!drag || drag.puzzleId !== puzzle.id || drag.pointerId !== event.pointerId) return;
     drag.clientX = event.clientX;
     drag.clientY = event.clientY;
     renderDraggedPieceImmediately(drag);
@@ -703,7 +707,12 @@ export const TilePuzzlePreview = ({
 
   const finishDrag = (event: PiecePointerEvent, tile: JigsawPiece) => {
     const drag = dragRef.current;
-    if (!drag || drag.pointerId !== event.pointerId || drag.tileId !== tile.id) return;
+    if (
+      !drag ||
+      drag.puzzleId !== puzzle.id ||
+      drag.pointerId !== event.pointerId ||
+      drag.tileId !== tile.id
+    ) return;
     drag.clientX = event.clientX;
     drag.clientY = event.clientY;
     stopDragAnimation();
