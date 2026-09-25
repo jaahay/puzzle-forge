@@ -560,6 +560,8 @@
 }
 
 .tile-puzzle-piece {
+  --jigsaw-active-drag-x: 0px;
+  --jigsaw-active-drag-y: 0px;
   position: absolute;
   left: 0;
   top: 0;
@@ -577,7 +579,17 @@
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
+  transform: translate3d(
+    calc(var(--jigsaw-piece-x, 0px) + var(--jigsaw-active-drag-x)),
+    calc(var(--jigsaw-piece-y, 0px) + var(--jigsaw-active-drag-y)),
+    0
+  );
   will-change: transform;
+}
+
+.tile-puzzle-piece.dragging {
+  --jigsaw-active-drag-x: var(--jigsaw-drag-x, 0px);
+  --jigsaw-active-drag-y: var(--jigsaw-drag-y, 0px);
 }
 
 .tile-puzzle-piece.loose:hover,
