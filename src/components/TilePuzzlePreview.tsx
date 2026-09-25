@@ -761,7 +761,7 @@ export const TilePuzzlePreview = ({
 
   const cancelDrag = (event: PiecePointerEvent) => {
     const drag = dragRef.current;
-    if (!drag || drag.pointerId !== event.pointerId) return;
+    if (!drag || drag.puzzleId !== puzzle.id || drag.pointerId !== event.pointerId) return;
     stopDragAnimation();
     setCamera(wheelStateRef.current.camera);
     updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
