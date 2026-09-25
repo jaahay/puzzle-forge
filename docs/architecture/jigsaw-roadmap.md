@@ -126,32 +126,42 @@ type JigsawPiece = {
 
 ### Edge-shape repository
 
-Start with a small typed repository of edge profiles. The repository should describe semantics and rendering intent without requiring the first model PR to implement SVG masks.
+The edge repository now models a weighted generative connector vocabulary rather than several cosmetic names backed by only a few path families.
 
 ```ts
 type JigsawEdgeProfileId =
-  | "classic-round"
-  | "soft-round"
-  | "angular"
+  | "classic-bulb"
+  | "narrow-neck"
+  | "broad-shallow"
+  | "offset-bulb"
+  | "keyhole"
+  | "asymmetric-scoop"
   | "wave"
-  | "simple-lock";
+  | "angular"
+  | "multi-lobe";
 
 type JigsawEdgeProfile = {
   id: JigsawEdgeProfileId;
   label: string;
   description: string;
-  pathFamily: "round-tab" | "angular-tab" | "wave-tab";
+  pathFamily: JigsawEdgeProfileId;
+  selectionWeight: number;
   difficultyWeight: number;
 };
 ```
+
+Each interior edge still stores only `profileId + seedOffset`. Those values deterministically derive the family-specific center, width, depth, asymmetry, and other curve character, so complementary neighbors reproduce exactly the same seam without persisting renderer-derived curve parameters.
 
 ### Edge invariants
 
 - Every border edge is flat and has no neighbor.
 - Every interior edge has a neighbor edge.
-- Neighboring interior edges share the same profile id.
+- Neighboring interior edges share the same profile id and seed offset.
 - Neighboring interior edges have inverse polarity: `tab` against `blank`.
-- The same seed, dimensions, image id, and edge profile settings produce the same edge graph.
+- Connector sampling stays monotonic along the owning edge, preventing self-intersection by construction.
+- Generated connector points stay inside the declared visual/hit-test depth bound.
+- The same seed, dimensions, image id, and edge-model revision produce the same edge graph.
+- The canonical Jigsaw resource id carries the current edge-model revision; unsupported or pre-revision identities are rejected rather than silently reinterpreted by a newer geometry catalog.
 
 ### Validation
 
