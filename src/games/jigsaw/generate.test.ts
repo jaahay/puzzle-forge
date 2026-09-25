@@ -93,19 +93,48 @@ describe("generateJigsaw", () => {
 
   it("provides a complete, explicitly ordered edge profile repository", () => {
     expect(jigsawEdgeProfileIds).toEqual([
-      "classic-round",
-      "soft-round",
-      "angular",
+      "classic-bulb",
+      "narrow-neck",
+      "broad-shallow",
+      "offset-bulb",
+      "keyhole",
+      "asymmetric-scoop",
       "wave",
-      "simple-lock",
+      "angular",
+      "multi-lobe",
     ]);
 
     for (const profileId of jigsawEdgeProfileIds) {
       const profile = getJigsawEdgeProfile(profileId);
       expect(profile.id).toBe(profileId);
+      expect(profile.pathFamily).toBe(profileId);
       expect(profile.description.length).toBeGreaterThan(0);
+      expect(profile.selectionWeight).toBeGreaterThan(0);
       expect(profile.difficultyWeight).toBeGreaterThan(0);
     }
+  });
+
+  it("uses the full connector vocabulary without letting one family dominate", () => {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "connector-distribution",
+      width: 24,
+      height: 24,
+      imageId: defaultJigsawImageAsset.id,
+    });
+    const uniqueInteriorEdges = getAllEdges(puzzle).filter(
+      (edge) => !edge.boundary && edge.edgeId < edge.neighborEdgeId,
+    );
+    const counts = new Map<string, number>();
+
+    for (const edge of uniqueInteriorEdges) {
+      if (edge.boundary) continue;
+      counts.set(edge.profileId, (counts.get(edge.profileId) ?? 0) + 1);
+    }
+
+    expect([...counts.keys()].sort()).toEqual([...jigsawEdgeProfileIds].sort());
+    expect(Math.max(...counts.values()) / uniqueInteriorEdges.length).toBeLessThan(0.35);
+    expect(counts.get("classic-bulb")).toBeGreaterThan(counts.get("multi-lobe") ?? 0);
   });
 
   it("makes every border edge flat, unpaired, and profile-free", () => {
