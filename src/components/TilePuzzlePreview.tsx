@@ -489,10 +489,10 @@ export const TilePuzzlePreview = ({
     return first && second ? [first, second] : null;
   };
 
-  const renderCameraImmediately = (camera: JigsawCamera) => {
+  const renderCameraImmediately = (state = wheelStateRef.current) => {
     const worldLayer = worldLayerRef.current;
     if (!worldLayer) return;
-    const transform = getJigsawCameraTransform(camera, renderViewport);
+    const transform = getJigsawCameraTransform(state.camera, state.viewport);
     worldLayer.style.transform = `translate3d(${transform.translateX}px, ${transform.translateY}px, 0) scale(${transform.scale})`;
   };
 
@@ -553,7 +553,7 @@ export const TilePuzzlePreview = ({
         currentPoints,
       );
       wheelStateRef.current = { ...wheelStateRef.current, camera: nextCamera };
-      renderCameraImmediately(nextCamera);
+      renderCameraImmediately();
     }
 
     event.preventDefault();
@@ -582,20 +582,20 @@ export const TilePuzzlePreview = ({
     clientX: number,
     clientY: number,
     drag: ActiveDrag,
-    camera = wheelStateRef.current.camera,
+    state = wheelStateRef.current,
   ) => {
     const stagePoint = getStagePoint(clientX, clientY);
     if (!stagePoint) return null;
-    const worldPoint = screenToJigsawWorld(camera, renderViewport, stagePoint.x, stagePoint.y);
+    const worldPoint = screenToJigsawWorld(state.camera, state.viewport, stagePoint.x, stagePoint.y);
     return normalizeJigsawWorldPosition(
-      layout,
+      state.layout,
       worldPoint.x - drag.offsetWorldX,
       worldPoint.y - drag.offsetWorldY,
     );
   };
 
-  const renderDraggedPieceImmediately = (drag: ActiveDrag, camera: JigsawCamera) => {
-    const nextPosition = getPointerPlacement(drag.clientX, drag.clientY, drag, camera);
+  const renderDraggedPieceImmediately = (drag: ActiveDrag, state = wheelStateRef.current) => {
+    const nextPosition = getPointerPlacement(drag.clientX, drag.clientY, drag, state);
     if (!nextPosition) return null;
     drag.pieceElement.style.transform = `translate3d(${nextPosition.worldX}px, ${nextPosition.worldY}px, 0)`;
     return nextPosition;
@@ -626,11 +626,11 @@ export const TilePuzzlePreview = ({
         nextCamera.zoom !== current.camera.zoom
       ) {
         wheelStateRef.current = { ...current, camera: nextCamera };
-        renderCameraImmediately(nextCamera);
+        renderCameraImmediately(wheelStateRef.current);
       }
     }
 
-    renderDraggedPieceImmediately(drag, wheelStateRef.current.camera);
+    renderDraggedPieceImmediately(drag, wheelStateRef.current);
     dragAnimationFrameRef.current = window.requestAnimationFrame(runDragAnimationFrame);
   };
 
@@ -644,13 +644,14 @@ export const TilePuzzlePreview = ({
     if (placement.snapped || isSolved || pinchRef.current) return;
     const stagePoint = getStagePoint(event.clientX, event.clientY);
     if (!stagePoint) return;
+    const current = wheelStateRef.current;
     const worldPoint = screenToJigsawWorld(
-      wheelStateRef.current.camera,
-      renderViewport,
+      current.camera,
+      current.viewport,
       stagePoint.x,
       stagePoint.y,
     );
-    const position = getJigsawPlacementPosition(layout, tile, placement);
+    const position = getJigsawPlacementPosition(current.layout, tile, placement);
     const currentPlacementState = placementStateRef.current;
     if (!currentPlacementState || currentPlacementState.puzzleId !== puzzle.id) return;
     const target = event.currentTarget as HTMLButtonElement;
@@ -680,7 +681,7 @@ export const TilePuzzlePreview = ({
     if (!drag || drag.pointerId !== event.pointerId) return;
     drag.clientX = event.clientX;
     drag.clientY = event.clientY;
-    renderDraggedPieceImmediately(drag, wheelStateRef.current.camera);
+    renderDraggedPieceImmediately(drag);
     event.stopPropagation();
     event.preventDefault();
   };
@@ -691,7 +692,7 @@ export const TilePuzzlePreview = ({
     drag.clientX = event.clientX;
     drag.clientY = event.clientY;
     stopDragAnimation();
-    const nextPosition = getPointerPlacement(event.clientX, event.clientY, drag, wheelStateRef.current.camera);
+    const nextPosition = getPointerPlacement(event.clientX, event.clientY, drag);
     setCamera(wheelStateRef.current.camera);
     const target = event.currentTarget as HTMLButtonElement;
     if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId);
@@ -819,18 +820,19 @@ export const TilePuzzlePreview = ({
   }, []);
 
   const setZoomAtCenter = (zoom: number) => {
+    const current = wheelStateRef.current;
     setCamera(zoomJigsawCameraAtPoint(
-      layout,
-      renderViewport,
-      activeCamera,
+      current.layout,
+      current.viewport,
+      current.camera,
       zoom,
-      renderViewport.width / 2,
-      renderViewport.height / 2,
+      current.viewport.width / 2,
+      current.viewport.height / 2,
     ));
   };
 
   const zoomView = (direction: "in" | "out") => {
-    setZoomAtCenter(getJigsawZoomStep(activeCamera.zoom, direction));
+    setZoomAtCenter(getJigsawZoomStep(wheelStateRef.current.camera.zoom, direction));
   };
 
   const handleStageKeyDown = (event: StageKeyboardEvent) => {
@@ -846,7 +848,8 @@ export const TilePuzzlePreview = ({
     const step = event.shiftKey ? keyboardPanStep * 2 : keyboardPanStep;
     const deltaX = direction === "ArrowRight" ? step : direction === "ArrowLeft" ? -step : 0;
     const deltaY = direction === "ArrowDown" ? step : direction === "ArrowUp" ? -step : 0;
-    setCamera(panJigsawCamera(layout, renderViewport, activeCamera, deltaX, deltaY));
+    const current = wheelStateRef.current;
+    setCamera(panJigsawCamera(current.layout, current.viewport, current.camera, deltaX, deltaY));
     event.preventDefault();
   };
 
