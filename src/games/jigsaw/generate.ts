@@ -8,7 +8,11 @@ import type {
 import { getPuzzleImageAsset } from "../imageAssets";
 import { createGeneratedJigsawPuzzle, createRandom, normalizeDimension, normalizeSeed } from "../shared";
 import { jigsawMaximumAxis, jigsawMinimumAxis } from "./size";
-import { jigsawEdgeProfileCatalogRevision, jigsawEdgeProfileIds } from "./edgeProfiles";
+import {
+  jigsawEdgeProfileCatalogRevision,
+  jigsawEdgeProfileIds,
+  selectJigsawEdgeProfile,
+} from "./edgeProfiles";
 
 const edgeSides: readonly JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
 const oppositeSide: Record<JigsawEdgeSide, JigsawEdgeSide> = {
@@ -88,7 +92,7 @@ const makePieceEdges = ({
 
     const pairKey = makeEdgePairKey(row, column, side);
     const random = createRandom(`${edgeSeed}:${pairKey}`);
-    const profileId = jigsawEdgeProfileIds[Math.floor(random() * jigsawEdgeProfileIds.length)];
+    const profileId = selectJigsawEdgeProfile(random());
     const leadingPolarity: Exclude<JigsawEdgePolarity, "flat"> = random() < 0.5 ? "tab" : "blank";
     const seedOffset = Math.floor(random() * 1_000_000);
     const isLeadingPiece = side === "right" || side === "bottom";
