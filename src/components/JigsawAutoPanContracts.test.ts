@@ -33,6 +33,29 @@ describe("Jigsaw auto-pan controller boundary", () => {
     expect(dragLoop).toContain("renderDraggedPieceImmediately(drag, wheelStateRef.current)");
   });
 
+  it("settles imperative piece rendering before every drag termination handoff", () => {
+    const pinchStart = sourceBetween(
+      previewSource,
+      "const beginTouchPinch =",
+      "const moveTouchPinch =",
+    );
+    const dragLoop = sourceBetween(
+      previewSource,
+      "const settleDraggedPieceImmediately =",
+      "const beginPan =",
+    );
+    const scatter = sourceBetween(
+      previewSource,
+      "const scatterPieces =",
+      "useEffect(() => {",
+    );
+
+    expect(pinchStart).toContain("settleDraggedPieceImmediately(interruptedDrag, startPlacement)");
+    expect(dragLoop).toContain("settleDraggedPieceImmediately(drag, startPlacement)");
+    expect(dragLoop).toContain("settleDraggedPieceImmediately(drag, nextPlacement)");
+    expect(scatter).toContain("settleDraggedPieceImmediately(activeDrag, nextPlacement)");
+  });
+
   it("derives keyboard and zoom camera commands from the live camera ref", () => {
     const controls = sourceBetween(
       previewSource,
