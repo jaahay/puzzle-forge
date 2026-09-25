@@ -12,6 +12,7 @@ import {
   getJigsawEdgePoints,
   getJigsawPieceOutlinePath,
   getJigsawPieceOutlinePoints,
+  jigsawEdgeMaximumDepth,
 } from "./edgePaths";
 
 const makeBoundaryEdge = (side: JigsawEdgeSide): JigsawBoundaryEdge => ({
@@ -27,7 +28,7 @@ const makeBoundaryEdge = (side: JigsawEdgeSide): JigsawBoundaryEdge => ({
 
 const makeInteriorEdge = ({
   side,
-  profileId = "classic-round",
+  profileId = "classic-bulb",
   polarity = "tab",
   seedOffset = 123_456,
 }: {
@@ -87,29 +88,65 @@ describe("Jigsaw edge paths", () => {
     });
   });
 
-  it("changes controlled asymmetry when the shared seed offset changes", () => {
-    const first = getJigsawEdgePath(makeInteriorEdge({ side: "top", seedOffset: 10 }));
-    const second = getJigsawEdgePath(makeInteriorEdge({ side: "top", seedOffset: 11 }));
-
-    expect(first).not.toBe(second);
+  it("changes materially within each family when the shared seed offset changes", () => {
+    for (const profileId of jigsawEdgeProfileIds) {
+      const paths = Array.from({ length: 8 }, (_, seedOffset) =>
+        getJigsawEdgePath(makeInteriorEdge({ side: "top", profileId, seedOffset })),
+      );
+      expect(new Set(paths).size).toBeGreaterThanOrEqual(6);
+    }
   });
 
-  it("maps reciprocal right and left edges onto the same world-space seam", () => {
-    const right = getJigsawEdgePoints(makeInteriorEdge({ side: "right", polarity: "tab" }));
-    const left = getJigsawEdgePoints(makeInteriorEdge({ side: "left", polarity: "blank" }))
-      .map((point) => ({ x: point.x + 100, y: point.y }))
-      .reverse();
+  it("keeps seeded connector geometry inside safe bounds without reversing along its edge", () => {
+    const sides: JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
+    const polarities: JigsawInteriorEdge["polarity"][] = ["tab", "blank"];
 
-    expectPointsToMatch(right, left);
+    for (const profileId of jigsawEdgeProfileIds) {
+      for (const side of sides) {
+        for (const polarity of polarities) {
+          for (const seedOffset of [1, 17, 991, 123_456, 999_999]) {
+            const points = getJigsawEdgePoints(makeInteriorEdge({ side, profileId, polarity, seedOffset }));
+
+            for (const point of points) {
+              expect(point.x).toBeGreaterThanOrEqual(-jigsawEdgeMaximumDepth);
+              expect(point.x).toBeLessThanOrEqual(100 + jigsawEdgeMaximumDepth);
+              expect(point.y).toBeGreaterThanOrEqual(-jigsawEdgeMaximumDepth);
+              expect(point.y).toBeLessThanOrEqual(100 + jigsawEdgeMaximumDepth);
+            }
+
+            const primary = points.map((point) =>
+              side === "top" || side === "bottom" ? point.x : point.y,
+            );
+            const direction = side === "top" || side === "right" ? 1 : -1;
+            for (let index = 1; index < primary.length; index += 1) {
+              expect((primary[index] - primary[index - 1]) * direction).toBeGreaterThan(0);
+            }
+          }
+        }
+      }
+    }
   });
 
-  it("maps reciprocal bottom and top edges onto the same world-space seam", () => {
-    const bottom = getJigsawEdgePoints(makeInteriorEdge({ side: "bottom", polarity: "tab" }));
-    const top = getJigsawEdgePoints(makeInteriorEdge({ side: "top", polarity: "blank" }))
-      .map((point) => ({ x: point.x, y: point.y + 100 }))
-      .reverse();
+  it("maps reciprocal right and left edges onto the same world-space seam for every family", () => {
+    for (const profileId of jigsawEdgeProfileIds) {
+      const right = getJigsawEdgePoints(makeInteriorEdge({ side: "right", profileId, polarity: "tab" }));
+      const left = getJigsawEdgePoints(makeInteriorEdge({ side: "left", profileId, polarity: "blank" }))
+        .map((point) => ({ x: point.x + 100, y: point.y }))
+        .reverse();
 
-    expectPointsToMatch(bottom, top);
+      expectPointsToMatch(right, left);
+    }
+  });
+
+  it("maps reciprocal bottom and top edges onto the same world-space seam for every family", () => {
+    for (const profileId of jigsawEdgeProfileIds) {
+      const bottom = getJigsawEdgePoints(makeInteriorEdge({ side: "bottom", profileId, polarity: "tab" }));
+      const top = getJigsawEdgePoints(makeInteriorEdge({ side: "top", profileId, polarity: "blank" }))
+        .map((point) => ({ x: point.x, y: point.y + 100 }))
+        .reverse();
+
+      expectPointsToMatch(bottom, top);
+    }
   });
 
   it("draws tabs outside and blanks inside the owning square", () => {
