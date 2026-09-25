@@ -6,6 +6,7 @@ import {
   getPuzzleImageAssetsFor,
   isImageBackedPuzzleId,
 } from "../games/imageAssets";
+import { jigsawEdgeProfileCatalogRevision } from "../games/jigsaw/edgeProfiles";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation } from "../games/sudoku/variation";
 import type { GenerationIdentity } from "./generationIdentity";
@@ -28,6 +29,18 @@ const alternateDimension = (value: number, minimum: number, maximum: number) => 
   if (value < maximum) return value + 1;
   if (value > minimum) return value - 1;
   return value;
+};
+
+const mutateGenerationIdBytes = (
+  generationId: string,
+  mutate: (bytes: number[]) => void,
+) => {
+  const base64 = generationId.replace(/-/g, "+").replace(/_/g, "/");
+  const padding = "=".repeat((4 - (base64.length % 4)) % 4);
+  const bytes = Array.from(atob(`${base64}${padding}`), (character) => character.charCodeAt(0));
+  mutate(bytes);
+  const binary = String.fromCharCode(...bytes);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 };
 
 describe("canonical puzzle generation identity", () => {
@@ -171,6 +184,32 @@ describe("canonical puzzle generation identity", () => {
     });
 
     expect(encodeGenerationId(identity)).toBe(encodeGenerationId({ ...identity, imageId: defaultImageId }));
+  });
+
+  it("rejects Jigsaw resource ids whose edge-model revision is missing or unsupported", () => {
+    const definition = getPuzzleDefinition("jigsaw");
+    const identity = makeIdentity({
+      puzzleId: "jigsaw",
+      width: definition.defaultWidth,
+      height: definition.defaultHeight,
+      imageId: getPuzzleImageAsset(undefined, "jigsaw").id,
+    });
+    const generationId = encodeGenerationId(identity);
+    const missingRevision = mutateGenerationIdBytes(generationId, (bytes) => {
+      bytes.pop();
+    });
+    const unsupportedRevision = mutateGenerationIdBytes(generationId, (bytes) => {
+      bytes[bytes.length - 1] = jigsawEdgeProfileCatalogRevision + 1;
+    });
+
+    expect(decodeGenerationId("jigsaw", missingRevision)).toEqual({
+      ok: false,
+      reason: "invalid-identity",
+    });
+    expect(decodeGenerationId("jigsaw", unsupportedRevision)).toEqual({
+      ok: false,
+      reason: "invalid-identity",
+    });
   });
 
   it("allows one compact canonical id in distinct compatible puzzle namespaces", () => {
