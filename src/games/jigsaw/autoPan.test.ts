@@ -84,4 +84,22 @@ describe("Jigsaw edge auto-pan", () => {
     expect(renderedAnchor.x).toBeCloseTo(pointer.x, 8);
     expect(renderedAnchor.y).toBeCloseTo(pointer.y, 8);
   });
+
+  it("preserves the dragged anchor when the live viewport changes mid-drag", () => {
+    const compactViewport = { width: 760, height: 560 };
+    const expandedViewport = { width: 1500, height: 900 };
+    const camera = createJigsawFitCamera(layout, compactViewport, "board");
+    const pointer = { x: expandedViewport.width - 1, y: expandedViewport.height / 2 };
+    const offset = { x: 22, y: 17 };
+    const nextCamera = advanceJigsawEdgePanCamera(layout, expandedViewport, camera, pointer, 16);
+    const worldPoint = screenToJigsawWorld(nextCamera, expandedViewport, pointer.x, pointer.y);
+    const piecePosition = {
+      x: worldPoint.x - offset.x,
+      y: worldPoint.y - offset.y,
+    };
+    const transform = getJigsawCameraTransform(nextCamera, expandedViewport);
+
+    expect((piecePosition.x + offset.x) * transform.scale + transform.translateX).toBeCloseTo(pointer.x, 8);
+    expect((piecePosition.y + offset.y) * transform.scale + transform.translateY).toBeCloseTo(pointer.y, 8);
+  });
 });
