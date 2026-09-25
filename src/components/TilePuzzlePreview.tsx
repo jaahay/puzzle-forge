@@ -79,10 +79,11 @@ type StageKeyboardEvent = JSX.TargetedKeyboardEvent<HTMLDivElement>;
 
 type ActiveDrag = {
   tileId: string;
-  tile: JigsawPiece;
   pointerId: number;
   offsetWorldX: number;
   offsetWorldY: number;
+  originWorldX: number;
+  originWorldY: number;
   startPlacements: JigsawPlacement[];
   clientX: number;
   clientY: number;
@@ -208,9 +209,6 @@ const updatePlacement = (
   tileId: string,
   updater: (placement: JigsawPlacement) => JigsawPlacement,
 ) => placements.map((placement) => placement.id === tileId ? updater(placement) : placement);
-
-export const getJigsawPieceTransform = (position: { left: number; top: number }) =>
-  `translate3d(${position.left}px, ${position.top}px, 0)`;
 
 export const TilePuzzlePreview = ({
   puzzle,
@@ -402,10 +400,6 @@ export const TilePuzzlePreview = ({
       ? resolveJigsawActionBaseline(current.placements, activeDrag?.startPlacements ?? null)
       : null;
     const nextPlacements = createInitialJigsawPlacements(layout, puzzle.tiles, stagingViewport);
-    if (activeDrag) {
-      const nextPlacement = nextPlacements.find((placement) => placement.id === activeDrag.tileId);
-      if (nextPlacement) settleDraggedPieceImmediately(activeDrag, nextPlacement);
-    }
     stopDragAnimation();
     dragRef.current = null;
     panRef.current = null;
@@ -524,10 +518,6 @@ export const TilePuzzlePreview = ({
         publishHistoryAvailability(historyRef.current, true);
         const interruptedDrag = dragRef.current;
         if (interruptedDrag) {
-          const startPlacement = interruptedDrag.startPlacements.find(
-            (placement) => placement.id === interruptedDrag.tileId,
-          );
-          if (startPlacement) settleDraggedPieceImmediately(interruptedDrag, startPlacement);
           updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
             ...current,
             placements: cloneJigsawPlacements(interruptedDrag.startPlacements),
@@ -606,22 +596,17 @@ export const TilePuzzlePreview = ({
     );
   };
 
-  const settleDraggedPieceImmediately = (
-    drag: ActiveDrag,
-    placement: JigsawPlacement,
-    state = wheelStateRef.current,
-  ) => {
-    const position = getJigsawPlacementPosition(state.layout, drag.tile, placement);
-    drag.pieceElement.style.transform = getJigsawPieceTransform(position);
-  };
-
   const renderDraggedPieceImmediately = (drag: ActiveDrag, state = wheelStateRef.current) => {
     const nextPosition = getPointerPlacement(drag.clientX, drag.clientY, drag, state);
     if (!nextPosition) return null;
-    drag.pieceElement.style.transform = getJigsawPieceTransform({
-      left: nextPosition.worldX,
-      top: nextPosition.worldY,
-    });
+    drag.pieceElement.style.setProperty(
+      "--jigsaw-drag-x",
+      `${nextPosition.worldX - drag.originWorldX}px`,
+    );
+    drag.pieceElement.style.setProperty(
+      "--jigsaw-drag-y",
+      `${nextPosition.worldY - drag.originWorldY}px`,
+    );
     return nextPosition;
   };
 
@@ -679,12 +664,15 @@ export const TilePuzzlePreview = ({
     const currentPlacementState = placementStateRef.current;
     if (!currentPlacementState || currentPlacementState.puzzleId !== puzzle.id) return;
     const target = event.currentTarget as HTMLButtonElement;
+    target.style.setProperty("--jigsaw-drag-x", "0px");
+    target.style.setProperty("--jigsaw-drag-y", "0px");
     dragRef.current = {
       tileId: tile.id,
-      tile,
       pointerId: event.pointerId,
       offsetWorldX: worldPoint.x - position.left,
       offsetWorldY: worldPoint.y - position.top,
+      originWorldX: position.left,
+      originWorldY: position.top,
       startPlacements: cloneJigsawPlacements(currentPlacementState.placements),
       clientX: event.clientX,
       clientY: event.clientY,
@@ -725,8 +713,6 @@ export const TilePuzzlePreview = ({
     setActiveTileId(null);
 
     if (!nextPosition) {
-      const startPlacement = drag.startPlacements.find((placement) => placement.id === drag.tileId);
-      if (startPlacement) settleDraggedPieceImmediately(drag, startPlacement);
       updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
         ...current,
         placements: cloneJigsawPlacements(drag.startPlacements),
@@ -735,15 +721,13 @@ export const TilePuzzlePreview = ({
       return;
     }
     const snaps = shouldSnapJigsawPlacement(layout, tile, nextPosition);
-    const nextPlacement: JigsawPlacement = {
-      id: drag.tileId,
-      ...nextPosition,
-      snapped: snaps,
-    };
-    settleDraggedPieceImmediately(drag, nextPlacement);
     const nextState = updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
       ...current,
-      placements: updatePlacement(current.placements, tile.id, () => nextPlacement),
+      placements: updatePlacement(current.placements, tile.id, (placement) => ({
+        ...placement,
+        ...nextPosition,
+        snapped: snaps,
+      })),
     } : current);
     if (nextState?.puzzleId === puzzle.id) {
       if (areJigsawPlacementsSolved(nextState.placements, puzzle.tiles.length)) {
@@ -767,8 +751,6 @@ export const TilePuzzlePreview = ({
     if (!drag || drag.pointerId !== event.pointerId) return;
     stopDragAnimation();
     setCamera(wheelStateRef.current.camera);
-    const startPlacement = drag.startPlacements.find((placement) => placement.id === drag.tileId);
-    if (startPlacement) settleDraggedPieceImmediately(drag, startPlacement);
     updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
       ...current,
       placements: cloneJigsawPlacements(drag.startPlacements),
@@ -987,7 +969,8 @@ export const TilePuzzlePreview = ({
             const pieceStyle = {
               width: `${layout.pieceWidth}px`,
               height: `${layout.pieceHeight}px`,
-              transform: getJigsawPieceTransform(position),
+              "--jigsaw-piece-x": `${position.left}px`,
+              "--jigsaw-piece-y": `${position.top}px`,
               zIndex: getPieceZIndex(tile, placement.snapped, active, raised),
             } as JSX.CSSProperties;
 
