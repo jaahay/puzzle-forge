@@ -6,6 +6,7 @@ import type {
   SudokuVariation,
 } from "../catalog/types";
 import { getPuzzleImageAsset } from "../games/imageAssets";
+import { jigsawEdgeProfileCatalogRevision } from "../games/jigsaw/edgeProfiles";
 import { normalizeSeed } from "../games/shared";
 import { isDailyDateStamp } from "../games/shared/daily";
 import {
@@ -173,12 +174,15 @@ const pushPuzzlePayload = (bytes: number[], identity: GenerationIdentity) => {
       pushDimensions(bytes, identity);
       return;
     case "jigsaw":
+      pushDimensions(bytes, identity);
+      pushText(bytes, getPuzzleImageAsset(identity.imageId, identity.puzzleId).id);
+      pushByte(bytes, jigsawEdgeProfileCatalogRevision);
+      return;
     case "tile-swap":
-    case "sliding-puzzle": {
+    case "sliding-puzzle":
       pushDimensions(bytes, identity);
       pushText(bytes, getPuzzleImageAsset(identity.imageId, identity.puzzleId).id);
       return;
-    }
     case "klondike-solitaire": {
       const variation = normalizeSolitaireVariation(identity.solitaireVariation);
       const redealIndex = solitaireRedealLimits.indexOf(variation.redeals);
@@ -276,6 +280,13 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
         height = reader.readByte();
         break;
       case "jigsaw":
+        width = reader.readByte();
+        height = reader.readByte();
+        imageId = getPuzzleImageAsset(reader.readText(), puzzleId).id;
+        if (reader.readByte() !== jigsawEdgeProfileCatalogRevision) {
+          return { ok: false, reason: "invalid-identity" };
+        }
+        break;
       case "tile-swap":
       case "sliding-puzzle":
         width = reader.readByte();
