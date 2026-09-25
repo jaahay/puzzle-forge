@@ -91,6 +91,30 @@ describe("Jigsaw auto-pan controller boundary", () => {
     expect(scatter).toContain("setActiveTileId(null)");
   });
 
+  it("quarantines transient drag work to the originating puzzle instance", () => {
+    const pinchStart = sourceBetween(
+      previewSource,
+      "const beginTouchPinch =",
+      "const moveTouchPinch =",
+    );
+    const dragLoop = sourceBetween(
+      previewSource,
+      "const runDragAnimationFrame =",
+      "const beginPan =",
+    );
+    const scatter = sourceBetween(
+      previewSource,
+      "const scatterPieces =",
+      "useEffect(() => {",
+    );
+
+    expect(previewSource).toContain("dragRef.current?.puzzleId === puzzle.id");
+    expect(scatter).toContain("dragRef.current?.puzzleId === puzzle.id ? dragRef.current : null");
+    expect(pinchStart).toContain("dragRef.current?.puzzleId === puzzle.id ? dragRef.current : null");
+    expect(dragLoop).toContain("drag.puzzleId !== current.puzzleId");
+    expect(dragLoop).toContain("drag.puzzleId !== puzzle.id");
+  });
+
   it("derives keyboard and zoom camera commands from the live camera ref", () => {
     const controls = sourceBetween(
       previewSource,
