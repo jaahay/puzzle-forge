@@ -92,6 +92,9 @@ const makePieceEdges = ({
 
     const pairKey = makeEdgePairKey(row, column, side);
     const random = createRandom(`${edgeSeed}:${pairKey}`);
+    // The first sample from similarly structured pair seeds is visibly correlated.
+    // Burn it so profile/polarity/shape variation use the well-mixed subsequent sequence.
+    random();
     const profileId = selectJigsawEdgeProfile(random());
     const leadingPolarity: Exclude<JigsawEdgePolarity, "flat"> = random() < 0.5 ? "tab" : "blank";
     const seedOffset = Math.floor(random() * 1_000_000);
