@@ -94,14 +94,19 @@ describe("generateJigsaw", () => {
   it("provides a complete, explicitly ordered edge profile repository", () => {
     expect(jigsawEdgeProfileIds).toEqual([
       "classic-bulb",
-      "narrow-neck",
-      "broad-shallow",
-      "offset-bulb",
+      "mushroom",
       "keyhole",
-      "asymmetric-scoop",
-      "wave",
-      "angular",
-      "multi-lobe",
+      "dovetail",
+      "t-lock",
+      "bottle",
+      "hook",
+      "teardrop",
+      "double-lobe",
+      "crescent",
+      "s-lock",
+      "lightning",
+      "castle",
+      "arrowhead",
     ]);
 
     for (const profileId of jigsawEdgeProfileIds) {
@@ -133,8 +138,9 @@ describe("generateJigsaw", () => {
     }
 
     expect([...counts.keys()].sort()).toEqual([...jigsawEdgeProfileIds].sort());
-    expect(Math.max(...counts.values()) / uniqueInteriorEdges.length).toBeLessThan(0.35);
-    expect(counts.get("classic-bulb")).toBeGreaterThan(counts.get("multi-lobe") ?? 0);
+    expect(Math.max(...counts.values()) / uniqueInteriorEdges.length).toBeLessThan(0.25);
+    expect(counts.get("classic-bulb")).toBeGreaterThan(counts.get("lightning") ?? 0);
+    expect(counts.get("classic-bulb")).toBeGreaterThan(counts.get("castle") ?? 0);
   });
 
   it("makes every border edge flat, unpaired, and profile-free", () => {
