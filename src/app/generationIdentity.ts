@@ -6,7 +6,6 @@ import type {
   SudokuVariation,
 } from "../catalog/types";
 import { isImageBackedPuzzleId } from "../games/imageAssets";
-import { jigsawEdgeProfileCatalogRevision } from "../games/jigsaw/edgeProfiles";
 import { normalizeSolitaireVariation, solitaireVariationsEqual } from "../games/solitaire/variation";
 import { normalizeSudokuVariation } from "../games/sudoku/variation";
 import { puzzleProvenanceMatches, type PuzzleProvenance } from "./puzzleProvenance";
@@ -98,11 +97,7 @@ export const generatedPuzzleMatchesIdentity = (
       puzzle.kind === "tiles" &&
       puzzle.width === identity.width &&
       puzzle.height === identity.height &&
-      puzzle.asset.id === identity.imageId &&
-      (
-        puzzle.puzzleId !== "jigsaw" ||
-        puzzle.edgeModel.catalogRevision === jigsawEdgeProfileCatalogRevision
-      )
+      puzzle.asset.id === identity.imageId
     );
   }
 
