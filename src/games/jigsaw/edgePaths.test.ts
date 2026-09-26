@@ -7,6 +7,8 @@ import type {
   JigsawPiece,
 } from "../../catalog/types";
 import { jigsawEdgeProfileIds } from "./edgeProfiles";
+import { generateJigsaw } from "./generate";
+import { defaultJigsawImageAsset } from "./imageAssets";
 import {
   getJigsawEdgePath,
   getJigsawEdgePoints,
@@ -225,6 +227,22 @@ describe("Jigsaw edge paths", () => {
         ]);
 
         expectNoSelfIntersection(getJigsawPieceOutlinePoints(piece));
+      }
+    }
+  });
+
+  it("keeps generated mixed-family boards free of crossing piece outlines", () => {
+    for (const seed of ["mixed-outline-a", "mixed-outline-b", "mixed-outline-c"]) {
+      const puzzle = generateJigsaw({
+        puzzleId: "jigsaw",
+        seed,
+        width: 12,
+        height: 12,
+        imageId: defaultJigsawImageAsset.id,
+      });
+
+      for (const tile of puzzle.tiles) {
+        expectNoSelfIntersection(getJigsawPieceOutlinePoints(tile));
       }
     }
   });
