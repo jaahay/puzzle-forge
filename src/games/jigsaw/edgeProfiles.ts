@@ -1,6 +1,6 @@
 import type { JigsawEdgeProfile, JigsawEdgeProfileId } from "../../catalog/types";
 
-export const jigsawEdgeProfileCatalogRevision = 2;
+export const jigsawEdgeProfileCatalogRevision = 1;
 
 export const jigsawEdgeProfileIds = [
   "classic-bulb",
