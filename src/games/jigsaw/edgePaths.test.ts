@@ -214,6 +214,21 @@ describe("Jigsaw edge paths", () => {
     expect(Math.min(...blank.map((point) => point.x))).toBeLessThan(100);
   });
 
+  it("keeps complete expressive piece outlines free of proper self-intersection", () => {
+    for (const profileId of jigsawEdgeProfileIds) {
+      for (const seedOffset of [7, 123, 8_001, 456_789]) {
+        const piece = makePiece([
+          makeInteriorEdge({ side: "top", profileId, polarity: "tab", seedOffset }),
+          makeInteriorEdge({ side: "right", profileId, polarity: "blank", seedOffset: seedOffset + 1 }),
+          makeInteriorEdge({ side: "bottom", profileId, polarity: "tab", seedOffset: seedOffset + 2 }),
+          makeInteriorEdge({ side: "left", profileId, polarity: "blank", seedOffset: seedOffset + 3 }),
+        ]);
+
+        expectNoSelfIntersection(getJigsawPieceOutlinePoints(piece));
+      }
+    }
+  });
+
   it("joins the four directed edges into one closed piece outline", () => {
     const piece = makePiece([
       makeBoundaryEdge("top"),
