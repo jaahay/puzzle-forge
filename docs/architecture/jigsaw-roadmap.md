@@ -160,8 +160,7 @@ Each interior edge still stores only `profileId + seedOffset`. Those values dete
 - Neighboring interior edges have inverse polarity: `tab` against `blank`.
 - Connector sampling stays monotonic along the owning edge, preventing self-intersection by construction.
 - Generated connector points stay inside the declared visual/hit-test depth bound.
-- The same seed, dimensions, image id, and edge-model revision produce the same edge graph.
-- The canonical Jigsaw resource id carries the current edge-model revision; unsupported or pre-revision identities are rejected rather than silently reinterpreted by a newer geometry catalog.
+- Within the current generator implementation, the same seed, dimensions, and image id produce the same edge graph.
 
 ### Validation
 
