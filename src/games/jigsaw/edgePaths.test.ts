@@ -67,6 +67,42 @@ const expectPointsToMatch = (
   });
 };
 
+const cross = (
+  first: { x: number; y: number },
+  second: { x: number; y: number },
+  third: { x: number; y: number },
+) =>
+  (second.x - first.x) * (third.y - first.y) -
+  (second.y - first.y) * (third.x - first.x);
+
+const segmentsProperlyIntersect = (
+  firstStart: { x: number; y: number },
+  firstEnd: { x: number; y: number },
+  secondStart: { x: number; y: number },
+  secondEnd: { x: number; y: number },
+) => {
+  const firstSideA = cross(firstStart, firstEnd, secondStart);
+  const firstSideB = cross(firstStart, firstEnd, secondEnd);
+  const secondSideA = cross(secondStart, secondEnd, firstStart);
+  const secondSideB = cross(secondStart, secondEnd, firstEnd);
+  return firstSideA * firstSideB < -1e-6 && secondSideA * secondSideB < -1e-6;
+};
+
+const expectNoSelfIntersection = (points: Array<{ x: number; y: number }>) => {
+  for (let first = 0; first < points.length - 1; first += 1) {
+    for (let second = first + 2; second < points.length - 1; second += 1) {
+      expect(
+        segmentsProperlyIntersect(
+          points[first],
+          points[first + 1],
+          points[second],
+          points[second + 1],
+        ),
+      ).toBe(false);
+    }
+  }
+};
+
 describe("Jigsaw edge paths", () => {
   it("keeps all boundary edges flat", () => {
     expect(getJigsawEdgePath(makeBoundaryEdge("top"))).toBe("M 0 0 L 100 0");
@@ -97,7 +133,7 @@ describe("Jigsaw edge paths", () => {
     }
   });
 
-  it("keeps seeded connector geometry inside safe bounds without reversing along its edge", () => {
+  it("keeps seeded 2D connector geometry inside safe bounds and free of self-intersection", () => {
     const sides: JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
     const polarities: JigsawInteriorEdge["polarity"][] = ["tab", "blank"];
 
@@ -114,17 +150,38 @@ describe("Jigsaw edge paths", () => {
               expect(point.y).toBeLessThanOrEqual(100 + jigsawEdgeMaximumDepth);
             }
 
-            const primary = points.map((point) =>
-              side === "top" || side === "bottom" ? point.x : point.y,
-            );
-            const direction = side === "top" || side === "right" ? 1 : -1;
-            for (let index = 1; index < primary.length; index += 1) {
-              expect((primary[index] - primary[index - 1]) * direction).toBeGreaterThan(0);
-            }
+            expectNoSelfIntersection(points);
           }
         }
       }
     }
+  });
+
+  it("allows unmistakable connector topology beyond a single-valued edge bump", () => {
+    const backtrackingFamilies: JigsawEdgeProfileId[] = [
+      "mushroom",
+      "keyhole",
+      "dovetail",
+      "t-lock",
+      "hook",
+      "lightning",
+      "arrowhead",
+    ];
+
+    for (const profileId of backtrackingFamilies) {
+      const points = getJigsawEdgePoints(
+        makeInteriorEdge({ side: "top", profileId, polarity: "tab", seedOffset: 123_456 }),
+      );
+      expect(
+        points.some((point, index) => index > 0 && point.x < points[index - 1].x - 0.05),
+      ).toBe(true);
+    }
+
+    const serpentine = getJigsawEdgePoints(
+      makeInteriorEdge({ side: "top", profileId: "s-lock", polarity: "tab", seedOffset: 123_456 }),
+    );
+    expect(Math.min(...serpentine.map((point) => point.y))).toBeLessThan(-1);
+    expect(Math.max(...serpentine.map((point) => point.y))).toBeGreaterThan(1);
   });
 
   it("maps reciprocal right and left edges onto the same world-space seam for every family", () => {
