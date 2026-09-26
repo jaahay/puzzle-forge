@@ -156,14 +156,19 @@ export type JigsawEdgeSide = "top" | "right" | "bottom" | "left";
 export type JigsawEdgePolarity = "flat" | "tab" | "blank";
 export type JigsawEdgePathFamily =
   | "classic-bulb"
-  | "narrow-neck"
-  | "broad-shallow"
-  | "offset-bulb"
+  | "mushroom"
   | "keyhole"
-  | "asymmetric-scoop"
-  | "wave"
-  | "angular"
-  | "multi-lobe";
+  | "dovetail"
+  | "t-lock"
+  | "bottle"
+  | "hook"
+  | "teardrop"
+  | "double-lobe"
+  | "crescent"
+  | "s-lock"
+  | "lightning"
+  | "castle"
+  | "arrowhead";
 export type JigsawEdgeProfileId = JigsawEdgePathFamily;
 
 export type JigsawEdgeProfile = {
