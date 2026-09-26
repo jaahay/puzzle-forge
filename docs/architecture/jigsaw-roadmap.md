@@ -131,14 +131,19 @@ The edge repository now models a weighted generative connector vocabulary rather
 ```ts
 type JigsawEdgeProfileId =
   | "classic-bulb"
-  | "narrow-neck"
-  | "broad-shallow"
-  | "offset-bulb"
+  | "mushroom"
   | "keyhole"
-  | "asymmetric-scoop"
-  | "wave"
-  | "angular"
-  | "multi-lobe";
+  | "dovetail"
+  | "t-lock"
+  | "bottle"
+  | "hook"
+  | "teardrop"
+  | "double-lobe"
+  | "crescent"
+  | "s-lock"
+  | "lightning"
+  | "castle"
+  | "arrowhead";
 
 type JigsawEdgeProfile = {
   id: JigsawEdgeProfileId;
@@ -150,7 +155,9 @@ type JigsawEdgeProfile = {
 };
 ```
 
-Each interior edge still stores only `profileId + seedOffset`. Those values deterministically derive the family-specific center, width, depth, asymmetry, and other curve character, so complementary neighbors reproduce exactly the same seam without persisting renderer-derived curve parameters.
+Each interior edge still stores only `profileId + seedOffset`. Those values deterministically expand into one canonical two-dimensional seam path. A family is free to backtrack along the nominal edge axis, cross the baseline, form undercuts, or use rectilinear geometry; the neighboring piece receives the exact reversed/complementary seam. Renderer-derived control points are not persisted.
+
+This deliberately avoids treating every connector as a single-valued height function over a rectangular side. Mushroom/keyhole/T-lock/arrowhead families can have true necks and overhangs, while S-lock and similarly expressive families can use both sides of the nominal baseline.
 
 ### Edge invariants
 
@@ -158,8 +165,9 @@ Each interior edge still stores only `profileId + seedOffset`. Those values dete
 - Every interior edge has a neighbor edge.
 - Neighboring interior edges share the same profile id and seed offset.
 - Neighboring interior edges have inverse polarity: `tab` against `blank`.
-- Connector sampling stays monotonic along the owning edge, preventing self-intersection by construction.
+- Connector geometry may be non-monotonic along the owning edge; generated seams are instead required to remain non-self-intersecting.
 - Generated connector points stay inside the declared visual/hit-test depth bound.
+- Distinct families should remain visually distinguishable at ordinary play scale rather than differing only through small width/depth perturbations.
 - Within the current generator implementation, the same seed, dimensions, and image id produce the same edge graph.
 
 ### Validation
@@ -171,6 +179,15 @@ Add generator tests for:
 - bottom/top adjacent edges are compatible;
 - generated edges are deterministic;
 - every interior edge has exactly one neighbor edge.
+
+### Follow-on geometry directions
+
+Two separate future directions are intentionally outside the ordinary connector-family work:
+
+- #190 explores rare surprise/anomaly geometry whose value depends on being exceptional rather than part of the everyday distribution.
+- #191 explores non-grid piece topology such as circular medallion pieces, arbitrary neighbor counts, and piece boundaries that are not four rectangular sides.
+
+The ordinary seam representation should not prevent those directions, but it should not prematurely implement their topology either.
 
 ## Phase 3: Visual custom-edge rendering
 
