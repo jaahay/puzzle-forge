@@ -135,6 +135,35 @@ describe("Jigsaw edge paths", () => {
     });
   });
 
+  it("renders organic families as curves while preserving deliberately angular families", () => {
+    const organicFamilies: JigsawEdgeProfileId[] = [
+      "classic-bulb",
+      "mushroom",
+      "keyhole",
+      "bottle",
+      "hook",
+      "teardrop",
+      "double-lobe",
+      "crescent",
+      "s-lock",
+    ];
+    const angularFamilies: JigsawEdgeProfileId[] = [
+      "dovetail",
+      "t-lock",
+      "lightning",
+      "castle",
+      "arrowhead",
+    ];
+
+    for (const profileId of organicFamilies) {
+      expect(getJigsawEdgePath(makeInteriorEdge({ side: "top", profileId }))).toContain(" C ");
+    }
+
+    for (const profileId of angularFamilies) {
+      expect(getJigsawEdgePath(makeInteriorEdge({ side: "top", profileId }))).not.toContain(" C ");
+    }
+  });
+
   it("changes materially within each family when the shared seed offset changes", () => {
     for (const profileId of jigsawEdgeProfileIds) {
       const paths = Array.from({ length: 8 }, (_, seedOffset) =>
@@ -240,7 +269,7 @@ describe("Jigsaw edge paths", () => {
     }
   });
 
-  it("keeps generated mixed-family boards free of crossing piece outlines", () => {
+  it("keeps generated one-family boards free of crossing piece outlines", () => {
     for (const seed of ["mixed-outline-a", "mixed-outline-b"]) {
       const puzzle = generateJigsaw({
         puzzleId: "jigsaw",
