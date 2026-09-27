@@ -68,6 +68,11 @@ const normalizePoint = (point: JigsawEdgePoint): JigsawEdgePoint => ({
   y: roundCoordinate(point.y),
 });
 
+const normalizeSignedZeroPoint = (candidate: JigsawEdgePoint): JigsawEdgePoint => ({
+  x: Object.is(candidate.x, -0) ? 0 : candidate.x,
+  y: Object.is(candidate.y, -0) ? 0 : candidate.y,
+});
+
 const point = (x: number, y: number): JigsawEdgePoint => ({ x, y });
 
 const mirrorAnchors = (points: readonly JigsawEdgePoint[]) =>
@@ -551,7 +556,7 @@ const sampleSegments = (segments: readonly JigsawEdgeSegment[]): JigsawEdgePoint
     }
   }
 
-  return points;
+  return points.map(normalizeSignedZeroPoint);
 };
 
 const segmentCommand = (segment: JigsawEdgeSegment) =>
