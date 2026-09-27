@@ -126,7 +126,7 @@ type JigsawPiece = {
 
 ### Edge-shape repository
 
-The edge repository now models a weighted generative connector vocabulary rather than several cosmetic names backed by only a few path families.
+The edge repository now models a weighted generative connector vocabulary rather than several cosmetic names backed by only a few path families. For the initial rollout, the generator chooses one connector family once per puzzle; selection weights therefore shape variety across games, not within one board. Individual seams still vary substantially through their seeded geometry parameters.
 
 ```ts
 type JigsawEdgeProfileId =
@@ -159,10 +159,13 @@ Each interior edge still stores only `profileId + seedOffset`. Those values dete
 
 This deliberately avoids treating every connector as a single-valued height function over a rectangular side. Mushroom/keyhole/T-lock/arrowhead families can have true necks and overhangs, while S-lock and similarly expressive families can use both sides of the nominal baseline.
 
+Organic families render the canonical seam with cubic Bézier segments so their rounded forms are genuinely curved rather than subdivided straight polylines. Deliberately mechanical families such as dovetail, T-lock, lightning, castle, and arrowhead retain straight segments. Curve sampling exists for geometry validation and hit-safety checks; it is not the rendered shape itself.
+
 ### Edge invariants
 
 - Every border edge is flat and has no neighbor.
 - Every interior edge has a neighbor edge.
+- All interior edges in one generated puzzle share the puzzle's selected connector family during the initial rollout.
 - Neighboring interior edges share the same profile id and seed offset.
 - Neighboring interior edges have inverse polarity: `tab` against `blank`.
 - Connector geometry may be non-monotonic along the owning edge; generated seams are instead required to remain non-self-intersecting.
@@ -178,6 +181,8 @@ Add generator tests for:
 - right/left adjacent edges are compatible;
 - bottom/top adjacent edges are compatible;
 - generated edges are deterministic;
+- each generated puzzle uses exactly one connector family while different puzzle seeds can select across the catalog;
+- organic families render with curves and intentionally angular families remain angular;
 - every interior edge has exactly one neighbor edge.
 
 ### Follow-on geometry directions
