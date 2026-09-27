@@ -1,5 +1,6 @@
 import type {
   JigsawEdgePolarity,
+  JigsawEdgeProfileId,
   JigsawEdgeSide,
   JigsawPiece,
   JigsawPieceEdge,
@@ -63,6 +64,7 @@ const makePieceEdges = ({
   width,
   height,
   edgeSeed,
+  profileId,
 }: {
   pieceId: string;
   row: number;
@@ -70,6 +72,7 @@ const makePieceEdges = ({
   width: number;
   height: number;
   edgeSeed: string;
+  profileId: JigsawEdgeProfileId;
 }): JigsawPieceEdge[] =>
   edgeSides.map((side) => {
     const offset = neighborOffset[side];
@@ -93,9 +96,8 @@ const makePieceEdges = ({
     const pairKey = makeEdgePairKey(row, column, side);
     const random = createRandom(`${edgeSeed}:${pairKey}`);
     // The first sample from similarly structured pair seeds is visibly correlated.
-    // Burn it so profile/polarity/shape variation use the well-mixed subsequent sequence.
+    // Burn it so polarity and shape variation use the well-mixed subsequent sequence.
     random();
-    const profileId = selectJigsawEdgeProfile(random());
     const leadingPolarity: Exclude<JigsawEdgePolarity, "flat"> = random() < 0.5 ? "tab" : "blank";
     const seedOffset = Math.floor(random() * 1_000_000);
     const isLeadingPiece = side === "right" || side === "bottom";
@@ -127,6 +129,9 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({ seed, width, height, ima
   const solvedIndexes = Array.from({ length: boundedWidth * boundedHeight }, (_, index) => index);
   const shuffleSeed = `jigsaw:${normalizedSeed}:${boundedWidth}x${boundedHeight}:${imageIdentity}`;
   const edgeSeed = `${shuffleSeed}:${edgeIdentity}`;
+  const profileRandom = createRandom(`${edgeSeed}:profile`);
+  profileRandom();
+  const profileId = selectJigsawEdgeProfile(profileRandom());
   const piecesBySolvedIndex = solvedIndexes.map((solvedIndex): JigsawPiece => {
     const row = Math.floor(solvedIndex / boundedWidth);
     const column = solvedIndex % boundedWidth;
@@ -145,6 +150,7 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({ seed, width, height, ima
         width: boundedWidth,
         height: boundedHeight,
         edgeSeed,
+        profileId,
       }),
     };
   });
