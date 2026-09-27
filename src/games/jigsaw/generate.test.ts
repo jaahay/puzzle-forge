@@ -119,28 +119,47 @@ describe("generateJigsaw", () => {
     }
   });
 
-  it("uses the full connector vocabulary without letting one family dominate", () => {
-    const puzzle = generateJigsaw({
-      puzzleId: "jigsaw",
-      seed: "connector-distribution",
-      width: 24,
-      height: 24,
-      imageId: defaultJigsawImageAsset.id,
-    });
-    const uniqueInteriorEdges = getAllEdges(puzzle).filter(
-      (edge) => !edge.boundary && edge.edgeId < edge.neighborEdgeId,
-    );
-    const counts = new Map<string, number>();
+  it("uses exactly one connector family throughout each generated game", () => {
+    for (const seed of ["one-family-a", "one-family-b", "one-family-c"]) {
+      const puzzle = generateJigsaw({
+        puzzleId: "jigsaw",
+        seed,
+        width: 12,
+        height: 12,
+        imageId: defaultJigsawImageAsset.id,
+      });
+      const profileIds = new Set(
+        getAllEdges(puzzle)
+          .filter((edge) => !edge.boundary)
+          .map((edge) => edge.profileId),
+      );
 
-    for (const edge of uniqueInteriorEdges) {
-      if (edge.boundary) continue;
-      counts.set(edge.profileId, (counts.get(edge.profileId) ?? 0) + 1);
+      expect(profileIds.size).toBe(1);
+    }
+  });
+
+  it("selects the full weighted connector vocabulary across different games", () => {
+    const counts = new Map<string, number>();
+    const sampleCount = 160;
+
+    for (let index = 0; index < sampleCount; index += 1) {
+      const puzzle = generateJigsaw({
+        puzzleId: "jigsaw",
+        seed: `family-sample-${index}`,
+        width: 4,
+        height: 4,
+        imageId: defaultJigsawImageAsset.id,
+      });
+      const firstInteriorEdge = getAllEdges(puzzle).find((edge) => !edge.boundary);
+      if (!firstInteriorEdge || firstInteriorEdge.boundary) {
+        throw new Error("Expected an interior Jigsaw edge.");
+      }
+
+      counts.set(firstInteriorEdge.profileId, (counts.get(firstInteriorEdge.profileId) ?? 0) + 1);
     }
 
     expect([...counts.keys()].sort()).toEqual([...jigsawEdgeProfileIds].sort());
-    expect(Math.max(...counts.values()) / uniqueInteriorEdges.length).toBeLessThan(0.25);
-    expect(counts.get("classic-bulb")).toBeGreaterThan(counts.get("lightning") ?? 0);
-    expect(counts.get("classic-bulb")).toBeGreaterThan(counts.get("castle") ?? 0);
+    expect(Math.max(...counts.values()) / sampleCount).toBeLessThan(0.25);
   });
 
   it("makes every border edge flat, unpaired, and profile-free", () => {
