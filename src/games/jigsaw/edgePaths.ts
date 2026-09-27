@@ -504,15 +504,15 @@ const getJigsawEdgeSegments = (edge: JigsawPieceEdge): JigsawEdgeSegment[] => {
   const polarity = !edge.boundary && edge.polarity === "blank" ? -1 : 1;
 
   return oriented.map((segment) =>
-    mapSegmentPoints(segment, (candidate) =>
-      normalizePoint(
-        transformPoint(
-          edge.side,
+    mapSegmentPoints(segment, (candidate) => {
+      const local = normalizePoint(
+        point(
           candidate.x,
           candidate.y * polarity,
         ),
-      ),
-    ),
+      );
+      return transformPoint(edge.side, local.x, local.y);
+    }),
   );
 };
 
