@@ -102,14 +102,16 @@ const segmentsProperlyIntersect = (
 const expectNoSelfIntersection = (points: Array<{ x: number; y: number }>) => {
   for (let first = 0; first < points.length - 1; first += 1) {
     for (let second = first + 2; second < points.length - 1; second += 1) {
-      expect(
+      if (
         segmentsProperlyIntersect(
           points[first],
           points[first + 1],
           points[second],
           points[second + 1],
-        ),
-      ).toBe(false);
+        )
+      ) {
+        throw new Error(`Segments ${first} and ${second} intersect.`);
+      }
     }
   }
 };
