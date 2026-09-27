@@ -551,7 +551,7 @@ const sampleSegments = (segments: readonly JigsawEdgeSegment[]): JigsawEdgePoint
     }
   }
 
-  return points.map(normalizePoint);
+  return points;
 };
 
 const segmentCommand = (segment: JigsawEdgeSegment) =>
