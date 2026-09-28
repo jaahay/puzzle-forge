@@ -42,7 +42,6 @@ describe("Jigsaw seam grammar", () => {
       "necked-head",
       "scoop",
       "serpentine",
-      "curl",
       "stacked-lock",
     ] as const) {
       const programs = Array.from({ length: 16 }, (_, seedOffset) =>
@@ -73,5 +72,6 @@ describe("Jigsaw seam grammar", () => {
     expect(jigsawSeamGrammarIds).not.toContain("bottle");
     expect(jigsawSeamGrammarIds).not.toContain("dovetail");
     expect(jigsawSeamGrammarIds).not.toContain("t-lock");
+    expect(jigsawSeamGrammarIds).not.toContain("curl");
   });
 });
