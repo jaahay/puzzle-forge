@@ -32,7 +32,7 @@ type EdgeFamilyGeometry = {
 
 const edgeFamilyGeometry = {
   "classic-bulb": { width: [64, 82], depth: [12, 19], cornerBuffer: 7, lean: 0.05, smooth: true },
-  mushroom: { width: [72, 88], depth: [17, 23], cornerBuffer: 6, lean: 0.06, smooth: true },
+  mushroom: { width: [72, 88], depth: [20, 26], cornerBuffer: 6, lean: 0.06, smooth: true },
   keyhole: { width: [62, 78], depth: [16, 22], cornerBuffer: 7, lean: 0.05, smooth: true },
   dovetail: { width: [66, 84], depth: [14, 20], cornerBuffer: 7, lean: 0.05, smooth: false },
   "t-lock": { width: [64, 82], depth: [16, 22], cornerBuffer: 7, lean: 0.04, smooth: false },
@@ -47,7 +47,7 @@ const edgeFamilyGeometry = {
   arrowhead: { width: [66, 84], depth: [16, 22], cornerBuffer: 7, lean: 0.05, smooth: false },
 } as const satisfies Record<JigsawEdgePathFamily, EdgeFamilyGeometry>;
 
-export const jigsawEdgeMaximumDepth = 25;
+export const jigsawEdgeMaximumDepth = 30;
 const pieceEdgeOrder: readonly JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
 
 const seededUnit = (seedOffset: number, salt: number) => {
@@ -103,15 +103,15 @@ const getFamilyAnchors = (
       return [
         point(-1, 0),
         point(-0.36, 0.02),
-        point(-neck, 0.34),
-        point(-cap, 0.54),
-        point(-cap - 0.03, 0.76),
-        point(-0.34, 0.96),
-        point(0, 1.04),
-        point(0.34, 0.96),
-        point(cap + 0.03, 0.76),
-        point(cap, 0.54),
-        point(neck, 0.34),
+        point(-neck, 0.4),
+        point(-cap, 0.62),
+        point(-cap - 0.03, 0.82),
+        point(-0.34, 1.02),
+        point(0, 1.12),
+        point(0.34, 1.02),
+        point(cap + 0.03, 0.82),
+        point(cap, 0.62),
+        point(neck, 0.4),
         point(0.36, 0.02),
         point(1, 0),
       ];
