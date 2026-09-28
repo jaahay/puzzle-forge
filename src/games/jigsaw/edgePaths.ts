@@ -31,20 +31,20 @@ type EdgeFamilyGeometry = {
 };
 
 const edgeFamilyGeometry = {
-  "classic-bulb": { width: [64, 82], depth: [19, 27], cornerBuffer: 7, lean: 0.05, smooth: true },
+  "classic-bulb": { width: [64, 82], depth: [18, 26], cornerBuffer: 7, lean: 0.05, smooth: true },
   mushroom: { width: [72, 88], depth: [20, 26], cornerBuffer: 6, lean: 0.06, smooth: true },
-  keyhole: { width: [62, 78], depth: [21, 28], cornerBuffer: 7, lean: 0.05, smooth: true },
+  keyhole: { width: [62, 78], depth: [20, 27], cornerBuffer: 7, lean: 0.05, smooth: true },
   dovetail: { width: [66, 84], depth: [22, 28], cornerBuffer: 7, lean: 0.05, smooth: false },
   "t-lock": { width: [64, 82], depth: [20, 27], cornerBuffer: 7, lean: 0.04, smooth: false },
-  bottle: { width: [70, 88], depth: [21, 28], cornerBuffer: 6, lean: 0.12, smooth: true },
-  hook: { width: [72, 90], depth: [22, 29], cornerBuffer: 5, lean: 0.14, smooth: true },
-  teardrop: { width: [68, 86], depth: [20, 27], cornerBuffer: 6, lean: 0.12, smooth: true },
-  "double-lobe": { width: [74, 90], depth: [21, 28], cornerBuffer: 5, lean: 0.05, smooth: true },
-  crescent: { width: [74, 90], depth: [21, 28], cornerBuffer: 5, lean: 0.1, smooth: true },
-  "s-lock": { width: [76, 90], depth: [26, 34], cornerBuffer: 5, lean: 0.1, smooth: true },
-  lightning: { width: [68, 86], depth: [21, 28], cornerBuffer: 6, lean: 0.08, smooth: false },
-  castle: { width: [70, 88], depth: [23, 31], cornerBuffer: 6, lean: 0, smooth: false },
-  arrowhead: { width: [66, 84], depth: [21, 28], cornerBuffer: 7, lean: 0.05, smooth: false },
+  bottle: { width: [70, 88], depth: [20, 27], cornerBuffer: 6, lean: 0.12, smooth: true },
+  hook: { width: [72, 90], depth: [20, 26], cornerBuffer: 5, lean: 0.14, smooth: true },
+  teardrop: { width: [68, 86], depth: [19, 26], cornerBuffer: 6, lean: 0.12, smooth: true },
+  "double-lobe": { width: [74, 90], depth: [20, 27], cornerBuffer: 5, lean: 0.05, smooth: true },
+  crescent: { width: [74, 90], depth: [20, 27], cornerBuffer: 5, lean: 0.1, smooth: true },
+  "s-lock": { width: [76, 90], depth: [24, 30], cornerBuffer: 5, lean: 0.1, smooth: true },
+  lightning: { width: [68, 86], depth: [20, 27], cornerBuffer: 6, lean: 0.08, smooth: false },
+  castle: { width: [70, 88], depth: [21, 27], cornerBuffer: 6, lean: 0, smooth: false },
+  arrowhead: { width: [66, 84], depth: [20, 27], cornerBuffer: 7, lean: 0.05, smooth: false },
 } as const satisfies Record<JigsawEdgePathFamily, EdgeFamilyGeometry>;
 
 export const jigsawEdgeMaximumDepth = 32;
