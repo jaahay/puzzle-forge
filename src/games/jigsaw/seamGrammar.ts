@@ -13,6 +13,7 @@ export type JigsawSeamGrammarDefinition = {
   description: string;
   production: string;
   renderMode: "smooth" | "angular";
+  curveTension: number;
   mirrorable: boolean;
   width: Range;
   depth: Range;
@@ -119,6 +120,13 @@ export const jigsawSeamGrammarCatalog = {
     description: "A single smooth lobe with no neck, reversal, saddle, or baseline crossing.",
     production: "lobe",
     renderMode: "smooth",
+    curveTension: 0.12,
+    curveTension: 0.04,
+    curveTension: 0.12,
+    curveTension: 0.09,
+    curveTension: 0.12,
+    curveTension: 0.12,
+    curveTension: 0.12,
     mirrorable: false,
     width: [64, 82],
     depth: [18, 26],
@@ -191,6 +199,8 @@ export const jigsawSeamGrammarCatalog = {
     description: "Repeated orthogonal rises and plateaus build a stepped skyline.",
     production: "repeat(step > plateau){2..4}",
     renderMode: "angular",
+    curveTension: 0.12,
+    curveTension: 0.12,
     mirrorable: false,
     width: [68, 84],
     depth: [18, 25],
