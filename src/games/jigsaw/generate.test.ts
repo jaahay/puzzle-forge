@@ -94,25 +94,20 @@ describe("generateJigsaw", () => {
   it("provides a complete, explicitly ordered edge profile repository", () => {
     expect(jigsawEdgeProfileIds).toEqual([
       "classic-bulb",
-      "mushroom",
-      "keyhole",
-      "dovetail",
-      "t-lock",
-      "bottle",
-      "hook",
-      "teardrop",
-      "double-lobe",
-      "crescent",
-      "s-lock",
-      "lightning",
-      "castle",
-      "arrowhead",
+      "necked-head",
+      "multi-lobe",
+      "scoop",
+      "serpentine",
+      "curl",
+      "terrace",
+      "zigzag",
+      "stacked-lock",
     ]);
 
     for (const profileId of jigsawEdgeProfileIds) {
       const profile = getJigsawEdgeProfile(profileId);
       expect(profile.id).toBe(profileId);
-      expect(profile.pathFamily).toBe(profileId);
+      expect(profile.grammarId).toBe(profileId);
       expect(profile.description.length).toBeGreaterThan(0);
       expect(profile.selectionWeight).toBeGreaterThan(0);
       expect(profile.difficultyWeight).toBeGreaterThan(0);
