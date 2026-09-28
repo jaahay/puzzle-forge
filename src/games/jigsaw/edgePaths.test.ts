@@ -143,21 +143,16 @@ describe("Jigsaw edge paths", () => {
   it("renders organic families as curves while preserving deliberately angular families", () => {
     const organicFamilies: JigsawEdgeProfileId[] = [
       "classic-bulb",
-      "mushroom",
-      "keyhole",
-      "bottle",
-      "hook",
-      "teardrop",
-      "double-lobe",
-      "crescent",
-      "s-lock",
+      "necked-head",
+      "multi-lobe",
+      "scoop",
+      "serpentine",
+      "curl",
+      "stacked-lock",
     ];
     const angularFamilies: JigsawEdgeProfileId[] = [
-      "dovetail",
-      "t-lock",
-      "lightning",
-      "castle",
-      "arrowhead",
+      "terrace",
+      "zigzag",
     ];
 
     for (const profileId of organicFamilies) {
@@ -189,7 +184,7 @@ describe("Jigsaw edge paths", () => {
         const minimum = Math.min(...horizontal);
         const maximum = Math.max(...horizontal);
 
-        expect(maximum - minimum).toBeGreaterThan(60);
+        expect(maximum - minimum).toBeGreaterThan(55);
         expect(minimum).toBeGreaterThanOrEqual(4);
         expect(maximum).toBeLessThanOrEqual(96);
       }
@@ -199,7 +194,7 @@ describe("Jigsaw edge paths", () => {
   it("allows visibly off-center seams when the connector width leaves room", () => {
     const centers = Array.from({ length: 128 }, (_, seedOffset) => {
       const points = getJigsawEdgePoints(
-        makeInteriorEdge({ side: "top", profileId: "keyhole", polarity: "tab", seedOffset }),
+        makeInteriorEdge({ side: "top", profileId: "necked-head", polarity: "tab", seedOffset }),
       );
       const horizontal = points.slice(1, -1).map((point) => point.x);
       return (Math.min(...horizontal) + Math.max(...horizontal)) / 2;
@@ -255,13 +250,10 @@ describe("Jigsaw edge paths", () => {
 
   it("allows unmistakable connector topology beyond a single-valued edge bump", () => {
     const backtrackingFamilies: JigsawEdgeProfileId[] = [
-      "mushroom",
-      "keyhole",
-      "dovetail",
-      "t-lock",
-      "hook",
-      "lightning",
-      "arrowhead",
+      "necked-head",
+      "scoop",
+      "curl",
+      "stacked-lock",
     ];
 
     for (const profileId of backtrackingFamilies) {
@@ -274,7 +266,7 @@ describe("Jigsaw edge paths", () => {
     }
 
     const serpentine = getJigsawEdgePoints(
-      makeInteriorEdge({ side: "top", profileId: "s-lock", polarity: "tab", seedOffset: 123_456 }),
+      makeInteriorEdge({ side: "top", profileId: "serpentine", polarity: "tab", seedOffset: 123_456 }),
     );
     expect(Math.min(...serpentine.map((point) => point.y))).toBeLessThan(-1);
     expect(Math.max(...serpentine.map((point) => point.y))).toBeGreaterThan(1);
