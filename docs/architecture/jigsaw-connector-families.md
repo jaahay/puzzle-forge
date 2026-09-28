@@ -86,7 +86,7 @@ The connector is not required to be centered. Its legal center interval is deriv
 
 Broad geometry should not become visually stumpy. Every ordinary family is expected to retain a substantial vertical-to-horizontal proportion.
 
-The global safety envelope permits geometry up to 32% of a piece side, but each family has a smaller family-specific range chosen to keep complete pieces non-self-intersecting.
+The per-family `depth` range is a **scale parameter**, not necessarily the exact rendered maximum: each family's normalized anchors may peak above or below `1.0`, and S-lock uses both positive and negative depth. The global safety envelope permits rendered geometry up to 32% of a piece side, while each family keeps a smaller topology-specific scale range chosen to keep complete pieces non-self-intersecting.
 
 ### Smooth versus angular rendering
 
@@ -125,7 +125,7 @@ This distinction is part of the family identity, not merely a renderer implement
 **Current tuning:**
 
 - span: 64–82%;
-- depth: 18–26%;
+- depth scale: 18–26%;
 - corner buffer: 7%;
 - smooth: yes;
 - directional mirror: no.
@@ -145,7 +145,7 @@ This distinction is part of the family identity, not merely a renderer implement
 **Current tuning:**
 
 - span: 72–88%;
-- depth: 20–26%;
+- depth scale: 20–26%;
 - corner buffer: 6%;
 - smooth: yes;
 - directional mirror: no.
@@ -165,7 +165,7 @@ This distinction is part of the family identity, not merely a renderer implement
 **Current tuning:**
 
 - span: 62–78%;
-- depth: 20–27%;
+- depth scale: 20–27%;
 - corner buffer: 7%;
 - smooth: yes;
 - directional mirror: no.
@@ -185,7 +185,7 @@ This distinction is part of the family identity, not merely a renderer implement
 **Current tuning:**
 
 - span: 66–84%;
-- depth: 22–28%;
+- depth scale: 22–28%;
 - corner buffer: 7%;
 - smooth: no;
 - directional mirror: no.
@@ -205,7 +205,7 @@ This distinction is part of the family identity, not merely a renderer implement
 **Current tuning:**
 
 - span: 64–82%;
-- depth: 20–27%;
+- depth scale: 20–27%;
 - corner buffer: 7%;
 - smooth: no;
 - directional mirror: no.
@@ -225,7 +225,7 @@ This distinction is part of the family identity, not merely a renderer implement
 **Current tuning:**
 
 - span: 70–88%;
-- depth: 20–27%;
+- depth scale: 20–27%;
 - corner buffer: 6%;
 - smooth: yes;
 - directional mirror: yes.
@@ -245,7 +245,7 @@ This distinction is part of the family identity, not merely a renderer implement
 **Current tuning:**
 
 - span: 64–80%;
-- depth: 18–23%;
+- depth scale: 18–23%;
 - corner buffer: 10%;
 - smooth: yes;
 - directional mirror: yes.
@@ -267,7 +267,7 @@ This distinction is part of the family identity, not merely a renderer implement
 **Current tuning:**
 
 - span: 68–86%;
-- depth: 19–26%;
+- depth scale: 19–26%;
 - corner buffer: 6%;
 - smooth: yes;
 - directional mirror: yes.
@@ -287,7 +287,7 @@ This distinction is part of the family identity, not merely a renderer implement
 **Current tuning:**
 
 - span: 74–90%;
-- depth: 20–27%;
+- depth scale: 20–27%;
 - corner buffer: 5%;
 - smooth: yes;
 - directional mirror: no.
@@ -307,7 +307,7 @@ This distinction is part of the family identity, not merely a renderer implement
 **Current tuning:**
 
 - span: 74–90%;
-- depth: 20–27%;
+- depth scale: 20–27%;
 - corner buffer: 5%;
 - smooth: yes;
 - directional mirror: yes.
@@ -347,7 +347,7 @@ This distinction is part of the family identity, not merely a renderer implement
 **Current tuning:**
 
 - span: 68–86%;
-- depth: 20–27%;
+- depth scale: 20–27%;
 - corner buffer: 6%;
 - smooth: no;
 - directional mirror: yes.
@@ -367,7 +367,7 @@ This distinction is part of the family identity, not merely a renderer implement
 **Current tuning:**
 
 - span: 70–88%;
-- depth: 21–27%;
+- depth scale: 21–27%;
 - corner buffer: 6%;
 - smooth: no;
 - directional mirror: no.
@@ -387,7 +387,7 @@ This distinction is part of the family identity, not merely a renderer implement
 **Current tuning:**
 
 - span: 66–84%;
-- depth: 20–27%;
+- depth scale: 20–27%;
 - corner buffer: 7%;
 - smooth: no;
 - directional mirror: no.
@@ -405,8 +405,8 @@ This distinction is part of the family identity, not merely a renderer implement
 | T-lock |  | ✓ |  |  |  | ✓ |
 | Bottle | ✓ | ✓ |  | ✓ |  |  |
 | Hook | ✓ | ✓ |  | ✓ | ✓ |  |
-| Teardrop | ✓ |  |  | ✓ |  |  |
-| Double lobe | ✓ |  |  |  | ✓ |  |
+| Teardrop | ✓ | ✓ |  | ✓ |  |  |
+| Double lobe | ✓ | ✓ |  |  | ✓ |  |
 | Crescent | ✓ | ✓ |  | ✓ |  |  |
 | S-lock | ✓ | ✓ | ✓ | ✓ | ✓ |  |
 | Lightning |  | ✓ |  | ✓ | ✓ | ✓ |
