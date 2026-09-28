@@ -115,7 +115,6 @@ type JigsawEdgeCubicSegment = {
 
 type JigsawEdgeSegment = JigsawEdgeLineSegment | JigsawEdgeCubicSegment;
 
-const curveTension = 0.12;
 const curveSampleCount = 6;
 
 const lineSegmentsFromPoints = (points: readonly JigsawEdgePoint[]): JigsawEdgeSegment[] =>
@@ -130,10 +129,12 @@ const getCanonicalEdgeSegments = (
   seedOffset: number,
 ): JigsawEdgeSegment[] => {
   const points = getCanonicalConnectorPoints(profileId, seedOffset);
-  if (getJigsawSeamGrammarDefinition(profileId).renderMode === "angular") {
+  const grammar = getJigsawSeamGrammarDefinition(profileId);
+  if (grammar.renderMode === "angular") {
     return lineSegmentsFromPoints(points);
   }
 
+  const curveTension = grammar.curveTension;
   const connector = points.slice(1, -1);
   const segments: JigsawEdgeSegment[] = [
     {
