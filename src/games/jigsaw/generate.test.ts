@@ -98,7 +98,6 @@ describe("generateJigsaw", () => {
       "multi-lobe",
       "scoop",
       "serpentine",
-      "curl",
       "terrace",
       "zigzag",
       "stacked-lock",
