@@ -206,7 +206,7 @@ describe("Jigsaw edge paths", () => {
     expect(Math.max(...centers)).toBeGreaterThan(60);
   });
 
-  it("allows selected organic families to use the deeper expressive envelope", () => {
+  it("gives Mushroom connectors a distinctly taller stem and crown", () => {
     const depths = Array.from({ length: 64 }, (_, seedOffset) => {
       const points = getJigsawEdgePoints(
         makeInteriorEdge({ side: "top", profileId: "mushroom", polarity: "tab", seedOffset }),
@@ -214,7 +214,8 @@ describe("Jigsaw edge paths", () => {
       return -Math.min(...points.map((point) => point.y));
     });
 
-    expect(Math.max(...depths)).toBeGreaterThan(22);
+    expect(Math.min(...depths)).toBeGreaterThan(22);
+    expect(Math.max(...depths)).toBeGreaterThan(28);
     expect(Math.max(...depths)).toBeLessThanOrEqual(jigsawEdgeMaximumDepth);
   });
 
