@@ -126,6 +126,8 @@ type JigsawPiece = {
 
 ### Edge-shape repository
 
+See [Jigsaw Connector Family Design](./jigsaw-connector-families.md) for the visual identification guide, family-by-family design intent, tuning snapshot, and safety distinctions.
+
 The edge repository now models a weighted generative connector vocabulary rather than several cosmetic names backed by only a few path families. For the initial rollout, the generator chooses one connector family once per puzzle; selection weights therefore shape variety across games, not within one board. Individual seams still vary substantially through their seeded geometry parameters.
 
 ```ts
