@@ -99,7 +99,10 @@ const segmentsProperlyIntersect = (
   return firstSideA * firstSideB < -1e-6 && secondSideA * secondSideB < -1e-6;
 };
 
-const expectNoSelfIntersection = (points: Array<{ x: number; y: number }>) => {
+const expectNoSelfIntersection = (
+  points: Array<{ x: number; y: number }>,
+  context = "Jigsaw outline",
+) => {
   for (let first = 0; first < points.length - 1; first += 1) {
     for (let second = first + 2; second < points.length - 1; second += 1) {
       if (
@@ -110,7 +113,7 @@ const expectNoSelfIntersection = (points: Array<{ x: number; y: number }>) => {
           points[second + 1],
         )
       ) {
-        throw new Error(`Segments ${first} and ${second} intersect.`);
+        throw new Error(`${context}: segments ${first} and ${second} intersect.`);
       }
     }
   }
@@ -325,7 +328,10 @@ describe("Jigsaw edge paths", () => {
             makeInteriorEdge({ side: "left", profileId, polarity: polarities[3], seedOffset: seedOffset + 3 }),
           ]);
 
-          expectNoSelfIntersection(getJigsawPieceOutlinePoints(piece));
+          expectNoSelfIntersection(
+            getJigsawPieceOutlinePoints(piece),
+            `${profileId} seed ${seedOffset} polarities ${polarities.join("/")}`,
+          );
         }
       }
     }
@@ -342,7 +348,10 @@ describe("Jigsaw edge paths", () => {
       });
 
       for (const tile of puzzle.tiles) {
-        expectNoSelfIntersection(getJigsawPieceOutlinePoints(tile));
+        expectNoSelfIntersection(
+          getJigsawPieceOutlinePoints(tile),
+          `generated ${seed} ${tile.id} ${tile.edges.find((edge) => !edge.boundary)?.profileId ?? "boundary-only"}`,
+        );
       }
     }
   });
