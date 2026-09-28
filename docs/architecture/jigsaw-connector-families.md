@@ -1,496 +1,478 @@
-# Jigsaw Connector Family Design
+# Jigsaw Seam Grammar Design
 
-This document is the visual and geometric reference for Puzzle Forge's ordinary Jigsaw connector families.
+Puzzle Forge's ordinary Jigsaw connector system is **grammar-first**.
 
-Its primary purpose is identification: given a rendered seam, a contributor should be able to answer **which family is this?** without reading the path generator. It also records the design intent behind each family so future tuning preserves genuinely different silhouettes instead of collapsing the catalog back into variations of the same rounded bump.
+A connector family is not a named preset inside one universal bump formula. It is a distinct structural production: a different sequence of geometric events that cannot become another family merely by changing width, depth, lean, roundness, or other continuous parameters.
 
 The implementation lives in:
 
-- `src/games/jigsaw/edgeProfiles.ts` — family names, descriptions, and selection weights.
-- `src/games/jigsaw/edgePaths.ts` — canonical geometry, seeded variation, rendering mode, and safety envelope.
+- `src/games/jigsaw/seamGrammar.ts` — structural grammar definitions, seeded program derivation, and normalized realization;
+- `src/games/jigsaw/edgeProfiles.ts` — puzzle-level selection weights for the grammar catalog;
+- `src/games/jigsaw/edgePaths.ts` — shared placement, polarity, complementarity, curve rendering, orientation, and validation sampling.
 
-The numeric ranges below are a tuning snapshot, not a compatibility or versioning contract.
+The current grammar catalog is deliberately small. **Eight strong grammars are preferable to fourteen labels that collapse into the same geometry.**
+
+The numeric ranges in this document are a tuning snapshot, not a compatibility or versioning contract.
+
+## Core rule: structure before parameters
+
+A family earns a catalog entry only when it has a different structural derivation.
+
+Two proposed families are the same family if one can be continuously transformed into the other by changing ordinary parameters without adding or removing a structural event such as:
+
+- a lobe;
+- saddle;
+- undercut;
+- backtrack;
+- scoop;
+- baseline crossing;
+- chamber/waist cycle;
+- orthogonal step/plateau;
+- angular zig/zag turn.
+
+This is the distinction that invalidated several earlier families.
+
+For example, the previous **Mushroom**, **Keyhole**, and **Bottle** labels all reduced to the same essential production:
+
+```text
+neck -> undercut -> head -> undercut -> neck
+```
+
+Stem length, cap width, asymmetry, and roundness were parameter differences, not family differences.
+
+The same scrutiny removed **Dovetail**, **T-lock**, and **Arrowhead** as separate ordinary families. A different head angle or rendering style is not sufficient reason to mint a new structural family.
+
+## Generation pipeline
+
+The ordinary system is intentionally layered:
+
+```text
+puzzle RNG
+   |
+   v
+choose one grammar for the puzzle
+   |
+   v
+derive a seeded SeamProgram for each shared seam
+   |
+   v
+realize the program into normalized 2D geometry
+   |
+   v
+seeded width / depth / placement / lean / handedness
+   |
+   v
+shared polarity + reciprocal-edge transforms
+   |
+   v
+line / cubic rendering
+   |
+   v
+bounds + self-intersection + whole-piece safety
+```
+
+The renderer is shared. The grammar is not.
+
+This matters: shared Bézier machinery does not make two grammars equivalent any more than a shared SVG renderer makes two drawings the same drawing.
 
 ## Rollout model
 
-For the initial rollout, a generated Jigsaw chooses **one ordinary connector family for the entire puzzle**.
+For the initial rollout, a generated puzzle chooses **one ordinary grammar for the entire game**.
 
-Individual seams still vary by seed:
+Individual seams still vary deterministically by seed:
 
-- width/span;
-- depth/height;
-- left/right placement;
+- continuous dimensions;
+- placement along the edge;
 - lean;
-- family-specific character;
-- handedness for directional families;
+- handedness for directional grammars;
+- family-specific program parameters;
+- bounded repeat counts where the production permits them;
 - tab/blank polarity.
 
-This gives each puzzle a coherent cut personality while making the differences between families obvious from game to game.
+So one puzzle has a coherent cut personality without stamping exact clones around the board.
 
-Rare one-off anomalies are a separate future direction in #190. Non-grid/special piece topology belongs to #191.
+## Current grammar catalog
 
-## How to identify a family
-
-Ignore whether the seam is a tab or a blank. Polarity flips the same family inward or outward.
-
-Also ignore exact size and placement. A family can be wide or narrow within its tuning range and may sit left or right of the edge midpoint.
-
-Instead, identify the family by its **structural cue**:
-
-| Family | Fastest recognition cue |
-| --- | --- |
-| Classic bulb | Familiar smooth single rounded knob |
-| Mushroom | Narrow neck under a broad overhanging cap |
-| Keyhole | Thin stem opening into a compact round head |
-| Dovetail | Straight-sided trapezoidal flare |
-| T-lock | Narrow stem ending in a horizontal crossbar |
-| Bottle | Long neck flowing into an offset rounded body |
-| Hook | Sideways curl / hooked return |
-| Teardrop | Asymmetric rounded body with a pointed tip |
-| Double lobe | Two visible rounded humps |
-| Crescent | Broad sweep interrupted by a deep inward scoop |
-| S-lock | Serpentine seam that crosses the edge baseline |
-| Lightning | Sharp directional zig-zag |
-| Castle | Rectilinear stepped / crenellated profile |
-| Arrowhead | Narrow stem flaring into a pointed head |
-
-A useful rule of thumb:
-
-- **Classic bulb** is the baseline conventional jigsaw connector.
-- **Mushroom, keyhole, dovetail, T-lock, and arrowhead** are primarily identified by the relationship between a narrow root and a wider head.
-- **Bottle, hook, teardrop, crescent, S-lock, and lightning** are directional and may mirror left/right.
-- **Double lobe** is identified by multiplicity: two rounded crowns.
-- **Castle** is identified by steps rather than a single crown.
+| Grammar | Structural production | Fastest recognition cue |
+| --- | --- | --- |
+| Classic bulb | `lobe` | One ordinary smooth crown, no reversal or secondary event |
+| Necked head | `neck > undercut > head > undercut > neck` | Narrow shaft opens into one overhanging chamber |
+| Multi-lobe | `repeat(lobe > saddle){2..4}` | Several side-by-side crowns separated by saddles |
+| Scoop | `outer-sweep > scoop > return` | Broad sweep doubles back into a deep one-sided bite |
+| Serpentine | `lobe > cross-baseline > opposed-lobe` | Seam deliberately occupies both sides of the baseline |
+| Terrace | `repeat(step > plateau){2..4}` | Orthogonal staircase / skyline |
+| Zigzag | `repeat(zig > zag){2..4}` | Repeated diagonal angular turns |
+| Stacked lock | `chamber > waist > chamber` | Two chambers stacked outward from the edge with a narrow waist |
 
 ## Graphical atlas
 
-The atlas below is generated from the same canonical geometry used by the renderer, rather than redrawn by hand.
+The atlas below is generated from the canonical seam geometry rather than illustrated by hand.
 
-![High-fidelity Jigsaw connector family atlas](./assets/jigsaw-connector-family-atlas.svg)
+![High-fidelity Jigsaw seam grammar atlas](./assets/jigsaw-connector-family-atlas.svg)
 
-Each family shows:
+Each grammar should show:
 
 - **TAB** — one representative outward seam;
-- **BLANK** — the exact same seeded family specimen with inverse polarity;
-- **LEFT / CENTER / RIGHT** — seeded specimens selected to show the family under visibly different legal placements along the edge.
+- **BLANK** — the same seeded seam with inverse polarity;
+- **LEFT / CENTER / RIGHT** — seeded variants chosen to expose legal placement variation.
 
-The dashed horizontal line is the nominal uncut edge. It is especially useful for recognizing families such as S-lock that deliberately cross the baseline.
+The dashed horizontal line is the nominal uncut edge.
 
-The atlas is a high-fidelity **design snapshot**, not a compatibility contract. If family geometry is tuned, regenerate the atlas from the current connector definitions rather than hand-editing its paths.
+The atlas is the fastest practical test of the catalog rule: if two rows look like the same construction with different measurements, the catalog is wrong even if their names and descriptions sound different.
 
 [Open the atlas directly](./assets/jigsaw-connector-family-atlas.svg)
 
-## Geometry conventions
-
-All ordinary seams begin from a canonical two-dimensional path.
-
-The model is intentionally not restricted to a height function such as `y = f(x)`. A connector may:
-
-- backtrack along the edge axis;
-- create a true neck or overhang;
-- cross the nominal baseline;
-- contain rectilinear steps;
-- lean or sweep to one side.
-
-The neighboring piece receives the exact reversed/complementary seam.
-
-### Span
-
-The current catalog uses a large portion of the available edge. Typical family span ranges are roughly 62–90% of one side.
-
-The connector is not required to be centered. Its legal center interval is derived from its actual seeded horizontal extent plus a family-specific corner buffer.
-
-### Height
-
-Broad geometry should not become visually stumpy. Every ordinary family is expected to retain a substantial vertical-to-horizontal proportion.
-
-The per-family `depth` range is a **scale parameter**, not necessarily the exact rendered maximum: each family's normalized anchors may peak above or below `1.0`, and S-lock uses both positive and negative depth. The global safety envelope permits rendered geometry up to 32% of a piece side, while each family keeps a smaller topology-specific scale range chosen to keep complete pieces non-self-intersecting.
-
-### Smooth versus angular rendering
-
-Organic families render with cubic Bézier curves:
-
-- Classic bulb
-- Mushroom
-- Keyhole
-- Bottle
-- Hook
-- Teardrop
-- Double lobe
-- Crescent
-- S-lock
-
-Mechanical/angular families deliberately retain straight segments:
-
-- Dovetail
-- T-lock
-- Lightning
-- Castle
-- Arrowhead
-
-This distinction is part of the family identity, not merely a renderer implementation detail.
-
-## Family catalog
+## Structural grammar details
 
 ### 1. Classic bulb
 
-**Identity:** the familiar conventional jigsaw knob.
+**Production**
 
-**Look for:** one smooth, symmetric rounded crown with gently rising shoulders. There is no dramatic neck, crossbar, scoop, or secondary lobe.
+```text
+lobe
+```
 
-**Why it exists:** it is the visual baseline against which the more unusual families should read as meaningfully different.
+**Identity:** the conventional baseline. One smooth rise, one crown, one fall.
+
+**Must not contain:** a neck, true undercut, saddle, baseline crossing, repeated chamber, or internal scoop.
+
+**Seeded variation:** crown height, shoulder position, overall span/depth, edge placement, and slight lean.
+
+**Rendering:** smooth cubic.
 
 **Current tuning:**
 
-- span: 64–82%;
+- span scale: 64–82%;
 - depth scale: 18–26%;
 - corner buffer: 7%;
-- smooth: yes;
-- directional mirror: no.
+- curve tension: 0.12.
 
-**Do not let it become:** Mushroom-lite. The shoulders should transition continuously into the crown rather than pinching into an obvious neck.
-
----
-
-### 2. Mushroom
-
-**Identity:** broad cap over a visibly narrower throat.
-
-**Look for:** the seam narrows first, then widens again into an overhanging rounded cap. The undercut is the defining feature.
-
-**Why it is distinct from Keyhole:** Mushroom's head is broad and cap-like, with wide overhangs. Keyhole has a more compact, rounded head on a thinner stem.
-
-**Current tuning:**
-
-- span: 72–88%;
-- depth scale: 20–26%;
-- corner buffer: 6%;
-- smooth: yes;
-- directional mirror: no.
-
-**Do not let it become:** a wide Classic bulb. If the neck/undercut is not obvious at play scale, it has lost its identity.
+This family exists partly as a control specimen: if another grammar cannot be distinguished from Classic bulb immediately, the other grammar is not doing enough.
 
 ---
 
-### 3. Keyhole
+### 2. Necked head
 
-**Identity:** thin stem leading into a compact round head.
+**Production**
 
-**Look for:** a comparatively narrow shaft, a sudden transition into a near-circular crown, and then a return through the same narrow throat.
+```text
+neck > undercut > head > undercut > neck
+```
 
-**Why it is distinct from Mushroom:** the head feels like a discrete round chamber rather than a broad cap.
+**Identity:** a narrow shaft reaches a wider chamber that overhangs the shaft on both sides.
+
+This is the honest home of the old Mushroom / Keyhole / Bottle neighborhood. Those silhouettes may still occur as seeded *variants*, but they are no longer separate family identities.
+
+**Structural requirement:** the path must reverse laterally at each side of the head, creating a real neck/undercut.
+
+**Seeded variation:** neck thickness, shaft height, head width, crown height, span/depth, placement, and lean.
+
+**Rendering:** smooth cubic.
 
 **Current tuning:**
 
-- span: 62–78%;
+- span scale: 60–76%;
 - depth scale: 20–27%;
-- corner buffer: 7%;
-- smooth: yes;
-- directional mirror: no.
-
-**Do not let it become:** a generic lollipop. The transition between stem and head should retain a true geometric neck.
+- corner buffer: 8%;
+- curve tension: 0.10.
 
 ---
 
-### 4. Dovetail
+### 3. Multi-lobe
 
-**Identity:** mechanical trapezoidal flare.
+**Production**
 
-**Look for:** straight lines widening from a narrow root into a broad, flat-topped or nearly flat-topped lock.
+```text
+repeat(lobe > saddle){2..4}
+```
 
-**Why it is distinct:** it reads as joinery rather than an organic knob.
+**Identity:** multiple lateral crowns. The repeated lobe/saddle structure is the family, not a particular lobe count.
+
+This absorbs the old Double-lobe concept and generalizes it structurally rather than creating separate Double / Triple / Quad labels.
+
+**Structural requirement:** at least two lobe events separated by actual saddles.
+
+**Seeded variation:**
+
+- 2–4 lobes;
+- saddle depth;
+- slight alternating asymmetry;
+- span/depth and placement.
+
+**Rendering:** smooth cubic.
 
 **Current tuning:**
 
-- span: 66–84%;
+- span scale: 72–90%;
+- depth scale: 18–25%;
+- corner buffer: 5%;
+- curve tension: 0.10.
+
+---
+
+### 4. Scoop
+
+**Production**
+
+```text
+outer-sweep > scoop > return
+```
+
+**Identity:** one large outward sweep followed by a conspicuous lateral backtrack into an interior bite.
+
+This is the surviving structural idea behind the earlier Crescent experiments.
+
+**Structural requirement:** the scoop is not just a dent in the crown. The path must substantially double back along the edge axis before returning.
+
+**Seeded variation:** sweep extent, bite depth, handedness, span/depth, placement, and lean.
+
+**Rendering:** smooth cubic.
+
+**Current tuning:**
+
+- span scale: 76–90%;
+- depth scale: 18–24%;
+- corner buffer: 5%;
+- curve tension: 0.09.
+
+---
+
+### 5. Serpentine
+
+**Production**
+
+```text
+lobe > cross-baseline > opposed-lobe
+```
+
+**Identity:** the seam deliberately crosses the nominal edge and creates meaningful geometry on both sides.
+
+This is structurally different from every ordinary one-sided connector. No amount of width or crown tuning can turn a one-sided lobe into Serpentine without adding the baseline-crossing event.
+
+**Seeded variation:** opposed-lobe depth, skew, handedness, width/depth, and placement.
+
+**Rendering:** smooth cubic.
+
+**Current tuning:**
+
+- span scale: 74–88%;
 - depth scale: 22–28%;
-- corner buffer: 7%;
-- smooth: no;
-- directional mirror: no.
-
-**Safety note:** very deep all-blank Dovetails can collide across a piece corner, so its depth ceiling is intentionally topology-specific.
-
----
-
-### 5. T-lock
-
-**Identity:** stem plus crossbar.
-
-**Look for:** a narrow vertical stem that reaches a conspicuously wider horizontal rectangular crown.
-
-**Why it is distinct from Dovetail:** Dovetail flares continuously; T-lock changes width abruptly into a crossbar.
-
-**Current tuning:**
-
-- span: 64–82%;
-- depth scale: 20–27%;
-- corner buffer: 7%;
-- smooth: no;
-- directional mirror: no.
-
-**Do not let it become:** a stepped Castle. T-lock should remain one stem and one dominant bar.
-
----
-
-### 6. Bottle
-
-**Identity:** narrow neck flowing into an offset rounded body.
-
-**Look for:** a long neck and a fuller body that leans or bulges more strongly to one side.
-
-**Why it is distinct:** its silhouette is organic but clearly directional.
-
-**Current tuning:**
-
-- span: 70–88%;
-- depth scale: 20–27%;
 - corner buffer: 6%;
-- smooth: yes;
-- directional mirror: yes.
-
-**Do not let it become:** a symmetric Keyhole. Some imbalance between the two sides is essential.
+- curve tension: 0.10.
 
 ---
 
-### 7. Hook
+### 6. Terrace
 
-**Identity:** sideways curl.
+**Production**
 
-**Look for:** the seam rises, sweeps sideways, curls back inward, and then escapes toward the edge. It should have a visibly hooked or curled gesture rather than a single crown.
+```text
+repeat(step > plateau){2..4}
+```
 
-**Why it is distinct:** it is the strongest organic directional family.
+**Identity:** an orthogonal staircase that rises through discrete levels and descends again.
+
+Terrace replaces the earlier Castle/T-lock style distinction with a grammar that is actually about repeated right-angle events.
+
+**Structural requirement:** repeated vertical transitions separated by horizontal plateaus.
+
+**Seeded variation:** 2–4 levels, crown height, width/depth, and placement.
+
+**Rendering:** angular line segments.
 
 **Current tuning:**
 
-- span: 64–80%;
-- depth scale: 18–23%;
-- corner buffer: 10%;
-- smooth: yes;
-- directional mirror: yes.
-
-**Safety note:** Hook's curl reaches laterally as well as vertically, so it uses more corner room and a lower depth ceiling than most broad families.
-
-**Do not let it become:** merely a leaning bulb. The curl/return is the identifier.
+- span scale: 68–84%;
+- depth scale: 18–25%;
+- corner buffer: 7%.
 
 ---
 
-### 8. Teardrop
+### 7. Zigzag
 
-**Identity:** rounded asymmetric body terminating in a point.
+**Production**
 
-**Look for:** one side swells into a rounded body while the crown converges toward an offset pointed tip.
+```text
+repeat(zig > zag){2..4}
+```
 
-**Why it is distinct:** the point is organic rather than angular; it should feel like a droplet, leaf, or flame.
+**Identity:** repeated diagonal direction changes between high and low levels.
+
+This replaces Lightning as a specific drawing with a bounded angular grammar.
+
+**Structural requirement:** multiple non-orthogonal alternating turns.
+
+**Seeded variation:** 2–4 turn pairs, low/high amplitudes, handedness, width/depth, and placement.
+
+**Rendering:** angular line segments.
 
 **Current tuning:**
 
-- span: 68–86%;
-- depth scale: 19–26%;
-- corner buffer: 6%;
-- smooth: yes;
-- directional mirror: yes.
-
-**Do not let it become:** Arrowhead. Teardrop's shoulders/body remain curved.
+- span scale: 68–86%;
+- depth scale: 18–25%;
+- corner buffer: 7%.
 
 ---
 
-### 9. Double lobe
+### 8. Stacked lock
 
-**Identity:** two rounded crowns.
+**Production**
 
-**Look for:** two distinct humps separated by a central saddle.
+```text
+chamber > waist > chamber
+```
 
-**Why it is distinct:** it is the only ordinary family whose primary cue is a repeated crown.
+**Identity:** two widening cycles occur **serially outward from the edge**, separated by a narrow waist.
 
-**Current tuning:**
+This is a new grammar discovered during the grammar-first redesign. It is intentionally unlike Multi-lobe: Multi-lobe repeats features laterally along the edge, while Stacked lock repeats widening/narrowing events radially away from the edge.
 
-- span: 74–90%;
-- depth scale: 20–27%;
-- corner buffer: 5%;
-- smooth: yes;
-- directional mirror: no.
+**Structural requirement:** two distinct chambers at different outward depths with a narrower waist between them.
 
-**Do not let it become:** one broad crown with surface wiggle. The two lobes should remain individually legible.
+**Seeded variation:** lower chamber width, waist width, upper chamber width, crown height, overall span/depth, and placement.
 
----
-
-### 10. Crescent
-
-**Identity:** broad outward sweep with a pronounced inward bite.
-
-**Look for:** a large rounded bulge followed by a scoop that cuts back toward the edge before the seam returns.
-
-**Why it is distinct:** the concave scoop is as important as the outward crown.
+**Rendering:** smooth cubic.
 
 **Current tuning:**
 
-- span: 74–90%;
-- depth scale: 20–27%;
-- corner buffer: 5%;
-- smooth: yes;
-- directional mirror: yes.
+- span scale: 58–74%;
+- depth scale: 20–26%;
+- corner buffer: 9%;
+- curve tension: 0.09.
 
-**Do not let it become:** an asymmetric bulb. The inward scoop must remain unmistakable.
+## Rejected and collapsed families
 
----
+The grammar model is deliberately willing to delete ideas.
 
-### 11. S-lock
+### Collapsed into Necked head
 
-**Identity:** baseline-crossing serpentine seam.
+- Mushroom
+- Keyhole
+- Bottle
+- Dovetail
+- T-lock
+- Arrowhead
 
-**Look for:** part of the connector protrudes to one side of the nominal edge and another part crosses through to the opposite side, producing an S-like interlock.
+Their previous implementations differed substantially in appearance parameters, but not enough in structural derivation to justify independent ordinary families.
 
-**Why it is distinct:** this is the clearest demonstration that connector geometry is truly two-dimensional and not a one-sided bump function.
+Angular versus smooth rendering alone is not a structural family boundary.
 
-**Current tuning:**
+### Collapsed into broader grammars
 
-- span: 76–90%;
-- depth scale: 24–30%;
-- corner buffer: 5%;
-- smooth: yes;
-- directional mirror: yes.
+- Double lobe -> Multi-lobe
+- Crescent -> Scoop
+- S-lock -> Serpentine
+- Lightning -> Zigzag
+- Castle -> Terrace
 
-**Important:** because S-lock crosses the baseline, its visual height is split across both sides of the nominal edge rather than represented by one outward crown.
+### Removed rather than forced
 
----
+**Curl / Hook** was explored as:
 
-### 12. Lightning
+```text
+sweep > backtrack > curl > return
+```
 
-**Identity:** sharp zig-zag bolt.
+A convincing inward curl repeatedly produced self-intersections under the current open-seam and smooth-curve constraints. The implementation was removed rather than weakened into a shape that no longer deserved the name.
 
-**Look for:** abrupt diagonal changes, offsets, and a strongly directional angular path.
+That is expected behavior for the grammar process: validation can reject a structurally interesting production that is not safe enough for the ordinary catalog.
 
-**Why it is distinct:** it has neither a rounded crown nor a mechanical rectangular lock; it reads as a jagged stroke.
+## Why this is a grammar and not another parameter catalog
 
-**Current tuning:**
+Several productions can themselves derive structurally varied programs.
 
-- span: 68–86%;
-- depth scale: 20–27%;
-- corner buffer: 6%;
-- smooth: no;
-- directional mirror: yes.
+For example:
 
-**Do not let it become:** Arrowhead. Lightning should remain multi-turn and zig-zagged rather than converging on one dominant point.
+```text
+Multi-lobe(seed)
+    -> lobe saddle lobe
+    -> lobe saddle lobe saddle lobe
+    -> lobe saddle lobe saddle lobe saddle lobe
+```
 
----
+The lobe count is a bounded grammar decision, not merely a floating-point knob.
 
-### 13. Castle
+The same is true of Terrace levels and Zigzag turn counts.
 
-**Identity:** stepped crenellation.
+Tests explicitly verify that:
 
-**Look for:** horizontal shelves and vertical rises resembling battlements or a blocky skyline.
+- every catalog grammar has a unique production string;
+- fixed-structure grammars preserve their event signature across continuous RNG variation;
+- bounded-repeat grammars derive multiple event counts;
+- the retired cosmetic families do not remain in the profile catalog.
 
-**Why it is distinct:** its identity comes from multiple rectilinear levels rather than a stem-and-head structure.
+## Shared geometry machinery
 
-**Current tuning:**
+Grammar-specific structure ends at normalized seam realization.
 
-- span: 70–88%;
-- depth scale: 21–27%;
-- corner buffer: 6%;
-- smooth: no;
-- directional mirror: no.
+After that, all grammars intentionally share:
 
-**Do not let it become:** T-lock. Castle needs multiple steps/levels.
+- seeded width/depth scaling;
+- corner-aware left/right placement;
+- optional lean;
+- optional handedness;
+- tab/blank polarity;
+- reciprocal orientation;
+- cubic or line rendering;
+- validation sampling;
+- bounds checking;
+- individual self-intersection checks;
+- whole-piece self-intersection checks.
 
----
-
-### 14. Arrowhead
-
-**Identity:** narrow stem flaring into a pointed head.
-
-**Look for:** straight shoulders that widen into an unmistakable triangular point, with clear undercuts where the head meets the stem.
-
-**Why it is distinct:** it combines the narrow-root family with a sharp pointed crown.
-
-**Current tuning:**
-
-- span: 66–84%;
-- depth scale: 20–27%;
-- corner buffer: 7%;
-- smooth: no;
-- directional mirror: no.
-
-**Do not let it become:** Teardrop. Arrowhead should remain explicitly straight-edged and geometric.
-
-## Family comparison by structural feature
-
-| Family | Smooth | Undercut / backtrack | Baseline crossing | Directional / mirrorable | Multiple crown features | Strongly rectilinear |
-| --- | :---: | :---: | :---: | :---: | :---: | :---: |
-| Classic bulb | ✓ |  |  |  |  |  |
-| Mushroom | ✓ | ✓ |  |  |  |  |
-| Keyhole | ✓ | ✓ |  |  |  |  |
-| Dovetail |  | ✓ |  |  |  | ✓ |
-| T-lock |  | ✓ |  |  |  | ✓ |
-| Bottle | ✓ | ✓ |  | ✓ |  |  |
-| Hook | ✓ | ✓ |  | ✓ | ✓ |  |
-| Teardrop | ✓ | ✓ |  | ✓ |  |  |
-| Double lobe | ✓ | ✓ |  |  | ✓ |  |
-| Crescent | ✓ | ✓ |  | ✓ |  |  |
-| S-lock | ✓ | ✓ | ✓ | ✓ | ✓ |  |
-| Lightning |  | ✓ |  | ✓ | ✓ | ✓ |
-| Castle |  |  |  |  | ✓ | ✓ |
-| Arrowhead |  | ✓ |  |  |  | ✓ |
-
-## Seeded variation versus family identity
-
-Seeded variation should make repeated seams within one puzzle feel handmade/generative, but it must not obscure which family the puzzle uses.
-
-Variation is healthy when it changes:
-
-- overall size;
-- depth;
-- position along the edge;
-- lean;
-- handedness;
-- relative lobe/cap proportions.
-
-Variation is unhealthy when it erases the family's recognition cue.
-
-Examples:
-
-- a Mushroom may have a narrower or wider cap, but it must still have a visible neck and overhang;
-- a Hook may curl left or right, but it must still curl;
-- a Double lobe may have unequal humps, but both lobes must remain legible;
-- a Castle may vary step heights, but it must remain stepped;
-- an S-lock may change handedness and amplitude, but it must still cross the baseline.
+Sharing this machinery is desirable. It provides one safety model without forcing every connector through one structural formula.
 
 ## Safety invariants
 
-Expressiveness is bounded by piece validity.
+Expressiveness remains subordinate to valid pieces.
 
-The generator and tests enforce:
+The system validates:
 
-- boundary edges remain flat;
-- reciprocal neighboring seams match exactly;
-- individual seams do not self-intersect;
-- complete piece outlines do not self-intersect;
-- complete-piece safety is exercised across all-tab, all-blank, and alternating polarity patterns;
-- generated one-family boards remain valid;
-- geometry remains inside the declared visual/hit-test envelope;
-- every family retains a substantial vertical-to-horizontal proportion.
+- flat boundaries remain flat;
+- reciprocal neighbors use exactly complementary geometry;
+- individual seams do not properly self-intersect;
+- complete piece outlines do not properly self-intersect;
+- all-tab, all-blank, and alternating polarity combinations are exercised;
+- generated one-grammar boards remain valid;
+- geometry remains inside the declared visual/hit envelope;
+- ordinary connectors retain substantial edge span and height.
 
-Family-specific limits are intentional. A topology such as Hook can become unsafe from lateral curl before another family with the same nominal depth does. Safety should therefore be tuned per family rather than by forcing all families into one identical numeric range.
+The global rendered depth envelope remains 32% of a piece side; actual grammar-specific ranges are narrower.
 
-## Future directions
+## Toward a meta-grammar
 
-The ordinary catalog should remain coherent rather than absorbing every unusual idea.
+The current implementation stops deliberately short of:
 
-### Rare anomalies — #190
+```text
+RNG -> arbitrary grammar -> arbitrary valid seam
+```
 
-Examples:
+That direction remains attractive, but mathematical validity is much easier than aesthetic quality.
 
-- a single bizarre connector in an otherwise conventional-family puzzle;
-- an intentionally oversized or surprising local interlock;
-- special geometry whose product value depends on rarity.
+A future explorer could compose a bounded vocabulary of structural events, generate many candidate derivations, reject invalid or visually degenerate seams, and surface the interesting survivors.
 
-### Non-grid topology — #191
+A plausible workflow would be:
 
-Examples:
+```text
+generate many derivations
+        |
+        v
+validate geometry + structural signature
+        |
+        v
+gallery / visual inspection
+        |
+        v
+promote compelling recurring derivations
+```
 
-- a literal circular center piece;
-- neighboring pieces that collectively encircle that circle;
-- pieces with other than four nominal sides;
-- arbitrary neighbor counts;
-- special piece graphs not representable as a rectangular four-edge cell.
+That would make the grammar an **idea generator for future families**, rather than immediately turning ordinary puzzles into unconstrained procedural geometry.
 
-Those ideas may share rendering primitives with the ordinary connector system, but they are not additional ordinary connector families.
+## Separate future topology
+
+The seam grammar still assumes an ordinary shared boundary between rectangular-grid neighbors.
+
+That is separate from:
+
+- #190 — rare one-off surprise/anomaly geometry;
+- #191 — non-grid topology such as circular center pieces, arbitrary neighbor counts, and pieces that cannot be represented as four rectangular sides.
+
+Those directions may reuse the same rendering and validation primitives, but they are not ordinary seam grammar productions.
