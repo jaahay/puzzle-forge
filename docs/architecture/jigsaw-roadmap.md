@@ -163,7 +163,7 @@ Organic families render the canonical seam with cubic Bézier segments so their 
 
 Connector placement should use a substantial portion of the available edge rather than concentrating every silhouette near the midpoint. Family-specific span ranges now occupy roughly two-thirds to nine-tenths of an ordinary edge. The generated connector is allowed to bias left or right when its width leaves room; its legal center interval is derived from the actual seeded horizontal envelope plus a family-specific corner buffer. The bias distribution intentionally favors more visible displacement while still allowing centered seams when the geometry is broad enough to consume most of the usable edge.
 
-Selected organic families may also use a deeper outward envelope, up to 25% of a piece side, where that depth strengthens the silhouette without violating whole-piece self-intersection or hit-test safety.
+Vertical proportion is a family-wide aesthetic constraint, not an exception reserved for a few organic profiles. The ordinary catalog should avoid broad-but-stumpy seams: sampled connector height remains meaningfully substantial relative to horizontal span across every family. The geometry safety envelope allows up to 32% of a piece side where a family needs that depth, while individual ranges stay family-specific to avoid adjacent-edge collisions.
 
 ### Edge invariants
 
@@ -174,6 +174,7 @@ Selected organic families may also use a deeper outward envelope, up to 25% of a
 - Neighboring interior edges have inverse polarity: `tab` against `blank`.
 - Connector geometry may be non-monotonic along the owning edge; generated seams are instead required to remain non-self-intersecting.
 - Generated connector points stay inside the declared visual/hit-test depth bound.
+- Every ordinary connector family maintains a substantial vertical-to-horizontal seam proportion rather than becoming broad and visually stumpy.
 - Connector placement preserves explicit corner room while allowing safe left/right bias when the seeded width leaves available edge space.
 - Distinct families should remain visually distinguishable at ordinary play scale rather than differing only through small width/depth perturbations.
 - Within the current generator implementation, the same seed, dimensions, and image id produce the same edge graph.
