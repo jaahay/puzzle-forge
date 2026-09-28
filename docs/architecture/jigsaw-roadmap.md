@@ -161,7 +161,9 @@ This deliberately avoids treating every connector as a single-valued height func
 
 Organic families render the canonical seam with cubic Bézier segments so their rounded forms are genuinely curved rather than subdivided straight polylines. Deliberately mechanical families such as dovetail, T-lock, lightning, castle, and arrowhead retain straight segments. Curve sampling exists for geometry validation and hit-safety checks; it is not the rendered shape itself.
 
-Connector placement should use a substantial portion of the available edge rather than concentrating every silhouette near the midpoint. Family-specific span ranges now occupy more than half of an ordinary edge, with broader families reaching roughly four-fifths. The generated connector is allowed to bias left or right when its width leaves room; its legal center interval is derived from the actual seeded horizontal envelope plus a family-specific corner buffer. Bias is weighted toward moderate placement with occasional stronger offsets rather than forcing every seam away from center.
+Connector placement should use a substantial portion of the available edge rather than concentrating every silhouette near the midpoint. Family-specific span ranges now occupy roughly two-thirds to nine-tenths of an ordinary edge. The generated connector is allowed to bias left or right when its width leaves room; its legal center interval is derived from the actual seeded horizontal envelope plus a family-specific corner buffer. The bias distribution intentionally favors more visible displacement while still allowing centered seams when the geometry is broad enough to consume most of the usable edge.
+
+Selected organic families may also use a deeper outward envelope, up to 25% of a piece side, where that depth strengthens the silhouette without violating whole-piece self-intersection or hit-test safety.
 
 ### Edge invariants
 
