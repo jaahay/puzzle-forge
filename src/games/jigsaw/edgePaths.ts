@@ -37,7 +37,7 @@ const edgeFamilyGeometry = {
   dovetail: { width: [66, 84], depth: [22, 28], cornerBuffer: 7, lean: 0.05, smooth: false },
   "t-lock": { width: [64, 82], depth: [20, 27], cornerBuffer: 7, lean: 0.04, smooth: false },
   bottle: { width: [70, 88], depth: [20, 27], cornerBuffer: 6, lean: 0.12, smooth: true },
-  hook: { width: [64, 80], depth: [20, 26], cornerBuffer: 10, lean: 0.14, smooth: true },
+  hook: { width: [64, 80], depth: [18, 23], cornerBuffer: 10, lean: 0.14, smooth: true },
   teardrop: { width: [68, 86], depth: [19, 26], cornerBuffer: 6, lean: 0.12, smooth: true },
   "double-lobe": { width: [74, 90], depth: [20, 27], cornerBuffer: 5, lean: 0.05, smooth: true },
   crescent: { width: [74, 90], depth: [20, 27], cornerBuffer: 5, lean: 0.1, smooth: true },
