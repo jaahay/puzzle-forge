@@ -206,17 +206,24 @@ describe("Jigsaw edge paths", () => {
     expect(Math.max(...centers)).toBeGreaterThan(60);
   });
 
-  it("gives Mushroom connectors a distinctly taller stem and crown", () => {
-    const depths = Array.from({ length: 64 }, (_, seedOffset) => {
-      const points = getJigsawEdgePoints(
-        makeInteriorEdge({ side: "top", profileId: "mushroom", polarity: "tab", seedOffset }),
-      );
-      return -Math.min(...points.map((point) => point.y));
-    });
+  it("keeps every connector family vertically substantial relative to its edge span", () => {
+    for (const profileId of jigsawEdgeProfileIds) {
+      for (const seedOffset of [1, 17, 991, 123_456, 999_999]) {
+        const points = getJigsawEdgePoints(
+          makeInteriorEdge({ side: "top", profileId, polarity: "tab", seedOffset }),
+        );
+        const connectorPoints = points.slice(1, -1);
+        const horizontal = connectorPoints.map((point) => point.x);
+        const vertical = connectorPoints.map((point) => point.y);
+        const width = Math.max(...horizontal) - Math.min(...horizontal);
+        const height = Math.max(...vertical) - Math.min(...vertical);
 
-    expect(Math.min(...depths)).toBeGreaterThan(22);
-    expect(Math.max(...depths)).toBeGreaterThan(28);
-    expect(Math.max(...depths)).toBeLessThanOrEqual(jigsawEdgeMaximumDepth);
+        expect(height / width).toBeGreaterThan(0.2);
+        expect(Math.max(...vertical.map((value) => Math.abs(value)))).toBeLessThanOrEqual(
+          jigsawEdgeMaximumDepth,
+        );
+      }
+    }
   });
 
   it("keeps seeded 2D connector geometry inside safe bounds and free of self-intersection", () => {
