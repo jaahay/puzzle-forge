@@ -25,26 +25,26 @@ type Range = readonly [minimum: number, maximum: number];
 type EdgeFamilyGeometry = {
   width: Range;
   depth: Range;
-  centerShift: number;
+  cornerBuffer: number;
   lean: number;
   smooth: boolean;
 };
 
 const edgeFamilyGeometry = {
-  "classic-bulb": { width: [40, 52], depth: [11, 17], centerShift: 4, lean: 0.04, smooth: true },
-  mushroom: { width: [44, 56], depth: [15, 21], centerShift: 5, lean: 0.05, smooth: true },
-  keyhole: { width: [38, 48], depth: [14, 20], centerShift: 5, lean: 0.04, smooth: true },
-  dovetail: { width: [40, 52], depth: [12, 18], centerShift: 5, lean: 0.04, smooth: false },
-  "t-lock": { width: [40, 50], depth: [14, 20], centerShift: 5, lean: 0.03, smooth: false },
-  bottle: { width: [44, 56], depth: [14, 20], centerShift: 6, lean: 0.1, smooth: true },
-  hook: { width: [48, 60], depth: [15, 21], centerShift: 6, lean: 0.12, smooth: true },
-  teardrop: { width: [42, 54], depth: [13, 19], centerShift: 6, lean: 0.1, smooth: true },
-  "double-lobe": { width: [52, 64], depth: [12, 18], centerShift: 5, lean: 0.04, smooth: true },
-  crescent: { width: [50, 62], depth: [12, 18], centerShift: 6, lean: 0.08, smooth: true },
-  "s-lock": { width: [52, 64], depth: [11, 17], centerShift: 6, lean: 0.08, smooth: true },
-  lightning: { width: [44, 56], depth: [12, 18], centerShift: 5, lean: 0.06, smooth: false },
-  castle: { width: [46, 58], depth: [12, 18], centerShift: 4, lean: 0, smooth: false },
-  arrowhead: { width: [42, 54], depth: [14, 20], centerShift: 5, lean: 0.04, smooth: false },
+  "classic-bulb": { width: [56, 72], depth: [11, 17], cornerBuffer: 10, lean: 0.04, smooth: true },
+  mushroom: { width: [64, 80], depth: [15, 21], cornerBuffer: 8, lean: 0.05, smooth: true },
+  keyhole: { width: [52, 68], depth: [14, 20], cornerBuffer: 10, lean: 0.04, smooth: true },
+  dovetail: { width: [58, 74], depth: [12, 18], cornerBuffer: 9, lean: 0.04, smooth: false },
+  "t-lock": { width: [56, 72], depth: [14, 20], cornerBuffer: 9, lean: 0.03, smooth: false },
+  bottle: { width: [60, 78], depth: [14, 20], cornerBuffer: 8, lean: 0.1, smooth: true },
+  hook: { width: [62, 80], depth: [15, 21], cornerBuffer: 8, lean: 0.12, smooth: true },
+  teardrop: { width: [58, 76], depth: [13, 19], cornerBuffer: 9, lean: 0.1, smooth: true },
+  "double-lobe": { width: [66, 82], depth: [12, 18], cornerBuffer: 8, lean: 0.04, smooth: true },
+  crescent: { width: [66, 82], depth: [12, 18], cornerBuffer: 8, lean: 0.08, smooth: true },
+  "s-lock": { width: [68, 82], depth: [11, 17], cornerBuffer: 8, lean: 0.08, smooth: true },
+  lightning: { width: [60, 76], depth: [12, 18], cornerBuffer: 9, lean: 0.06, smooth: false },
+  castle: { width: [62, 80], depth: [12, 18], cornerBuffer: 8, lean: 0, smooth: false },
+  arrowhead: { width: [58, 74], depth: [14, 20], cornerBuffer: 9, lean: 0.04, smooth: false },
 } as const satisfies Record<JigsawEdgePathFamily, EdgeFamilyGeometry>;
 
 export const jigsawEdgeMaximumDepth = 22;
@@ -336,9 +336,6 @@ const getCanonicalConnectorPoints = (
   seedOffset: number,
 ): JigsawEdgePoint[] => {
   const geometry = edgeFamilyGeometry[profileId];
-  const center =
-    50 +
-    (seededUnit(seedOffset, 0x9e37) - 0.5) * geometry.centerShift * 2;
   const width = seededRange(seedOffset, 0x51ed, geometry.width);
   const depth = seededRange(seedOffset, 0x7f4a, geometry.depth);
   const character = seededUnit(seedOffset, 0xa511);
@@ -350,9 +347,23 @@ const getCanonicalConnectorPoints = (
   let anchors = getFamilyAnchors(profileId, character);
   if (shouldMirror) anchors = mirrorAnchors(anchors);
 
-  const connector = anchors.map((anchor) =>
+  const horizontalOffsets = anchors.map(
+    (anchor) => (anchor.x + lean * anchor.y) * (width / 2),
+  );
+  const minimumCenter =
+    geometry.cornerBuffer - Math.min(...horizontalOffsets);
+  const maximumCenter =
+    100 - geometry.cornerBuffer - Math.max(...horizontalOffsets);
+  const centerUnit = seededUnit(seedOffset, 0x9e37) * 2 - 1;
+  const centerBias =
+    Math.sign(centerUnit) * Math.pow(Math.abs(centerUnit), 1.7);
+  const center =
+    minimumCenter +
+    ((centerBias + 1) / 2) * (maximumCenter - minimumCenter);
+
+  const connector = anchors.map((anchor, index) =>
     point(
-      center + (anchor.x + lean * anchor.y) * (width / 2),
+      center + horizontalOffsets[index],
       anchor.y * depth,
     ),
   );
