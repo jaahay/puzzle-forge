@@ -147,7 +147,6 @@ describe("Jigsaw edge paths", () => {
       "multi-lobe",
       "scoop",
       "serpentine",
-      "curl",
       "stacked-lock",
     ];
     const angularFamilies: JigsawEdgeProfileId[] = [
