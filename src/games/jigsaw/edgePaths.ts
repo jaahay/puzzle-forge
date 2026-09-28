@@ -1,15 +1,17 @@
 import type {
-  JigsawEdgePathFamily,
   JigsawEdgeProfileId,
   JigsawEdgeSide,
   JigsawPiece,
   JigsawPieceEdge,
 } from "../../catalog/types";
+import {
+  deriveJigsawSeamProgram,
+  getJigsawSeamGrammarDefinition,
+  realizeJigsawSeamProgram,
+  type JigsawSeamPoint,
+} from "./seamGrammar";
 
-export type JigsawEdgePoint = {
-  x: number;
-  y: number;
-};
+export type JigsawEdgePoint = JigsawSeamPoint;
 
 export type JigsawPieceSeamPath = {
   edgeId: string;
@@ -21,31 +23,6 @@ export type JigsawPieceSeamPath = {
 };
 
 type Range = readonly [minimum: number, maximum: number];
-
-type EdgeFamilyGeometry = {
-  width: Range;
-  depth: Range;
-  cornerBuffer: number;
-  lean: number;
-  smooth: boolean;
-};
-
-const edgeFamilyGeometry = {
-  "classic-bulb": { width: [64, 82], depth: [18, 26], cornerBuffer: 7, lean: 0.05, smooth: true },
-  mushroom: { width: [78, 92], depth: [19, 25], cornerBuffer: 4, lean: 0.04, smooth: true },
-  keyhole: { width: [56, 70], depth: [22, 29], cornerBuffer: 9, lean: 0.03, smooth: true },
-  dovetail: { width: [66, 84], depth: [22, 28], cornerBuffer: 7, lean: 0.05, smooth: false },
-  "t-lock": { width: [64, 82], depth: [20, 27], cornerBuffer: 7, lean: 0.04, smooth: false },
-  bottle: { width: [72, 90], depth: [20, 27], cornerBuffer: 5, lean: 0.18, smooth: true },
-  hook: { width: [60, 76], depth: [20, 25], cornerBuffer: 12, lean: 0.16, smooth: true },
-  teardrop: { width: [68, 86], depth: [19, 26], cornerBuffer: 6, lean: 0.12, smooth: true },
-  "double-lobe": { width: [74, 90], depth: [20, 27], cornerBuffer: 5, lean: 0.05, smooth: true },
-  crescent: { width: [80, 94], depth: [18, 24], cornerBuffer: 3, lean: 0.06, smooth: true },
-  "s-lock": { width: [76, 90], depth: [24, 30], cornerBuffer: 5, lean: 0.1, smooth: true },
-  lightning: { width: [68, 86], depth: [20, 27], cornerBuffer: 6, lean: 0.08, smooth: false },
-  castle: { width: [70, 88], depth: [21, 27], cornerBuffer: 6, lean: 0, smooth: false },
-  arrowhead: { width: [66, 84], depth: [20, 27], cornerBuffer: 7, lean: 0.05, smooth: false },
-} as const satisfies Record<JigsawEdgePathFamily, EdgeFamilyGeometry>;
 
 export const jigsawEdgeMaximumDepth = 32;
 const pieceEdgeOrder: readonly JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
@@ -63,9 +40,9 @@ const roundCoordinate = (value: number) => {
   return Object.is(rounded, -0) ? 0 : rounded;
 };
 
-const normalizePoint = (point: JigsawEdgePoint): JigsawEdgePoint => ({
-  x: roundCoordinate(point.x),
-  y: roundCoordinate(point.y),
+const normalizePoint = (candidate: JigsawEdgePoint): JigsawEdgePoint => ({
+  x: roundCoordinate(candidate.x),
+  y: roundCoordinate(candidate.y),
 });
 
 const normalizeSignedZeroPoint = (candidate: JigsawEdgePoint): JigsawEdgePoint => ({
@@ -78,300 +55,29 @@ const point = (x: number, y: number): JigsawEdgePoint => ({ x, y });
 const mirrorAnchors = (points: readonly JigsawEdgePoint[]) =>
   [...points].reverse().map((candidate) => point(-candidate.x, candidate.y));
 
-const getFamilyAnchors = (
-  family: JigsawEdgePathFamily,
-  character: number,
-): JigsawEdgePoint[] => {
-  switch (family) {
-    case "classic-bulb": {
-      const crown = 0.96 + character * 0.08;
-      return [
-        point(-1, 0),
-        point(-0.56, 0.04),
-        point(-0.42, 0.34),
-        point(-0.28, 0.72),
-        point(0, crown),
-        point(0.28, 0.72),
-        point(0.42, 0.34),
-        point(0.56, 0.04),
-        point(1, 0),
-      ];
-    }
-    case "mushroom": {
-      const neck = 0.14 + character * 0.05;
-      const cap = 0.68 + character * 0.06;
-      return [
-        point(-1, 0),
-        point(-0.3, 0.02),
-        point(-neck, 0.32),
-        point(-neck, 0.5),
-        point(-cap, 0.56),
-        point(-cap - 0.04, 0.7),
-        point(-0.5, 0.9),
-        point(-0.28, 1.0),
-        point(0, 1.04),
-        point(0.28, 1.0),
-        point(0.5, 0.9),
-        point(cap + 0.04, 0.7),
-        point(cap, 0.56),
-        point(neck, 0.5),
-        point(neck, 0.32),
-        point(0.3, 0.02),
-        point(1, 0),
-      ];
-    }
-    case "keyhole": {
-      const stem = 0.1 + character * 0.035;
-      const head = 0.38 + character * 0.05;
-      return [
-        point(-1, 0),
-        point(-0.2, 0),
-        point(-stem, 0.18),
-        point(-stem, 0.5),
-        point(-head * 0.72, 0.54),
-        point(-head, 0.68),
-        point(-head, 0.86),
-        point(-head * 0.72, 1.02),
-        point(-0.18, 1.12),
-        point(0, 1.15),
-        point(0.18, 1.12),
-        point(head * 0.72, 1.02),
-        point(head, 0.86),
-        point(head, 0.68),
-        point(head * 0.72, 0.54),
-        point(stem, 0.5),
-        point(stem, 0.18),
-        point(0.2, 0),
-        point(1, 0),
-      ];
-    }
-    case "dovetail": {
-      const crown = 0.54 + character * 0.08;
-      return [
-        point(-1, 0),
-        point(-0.26, 0),
-        point(-crown, 0.82),
-        point(crown, 0.82),
-        point(0.26, 0),
-        point(1, 0),
-      ];
-    }
-    case "t-lock": {
-      const bar = 0.58 + character * 0.08;
-      const stem = 0.18 + character * 0.05;
-      return [
-        point(-1, 0),
-        point(-stem, 0),
-        point(-stem, 0.54),
-        point(-bar, 0.54),
-        point(-bar, 0.86),
-        point(bar, 0.86),
-        point(bar, 0.54),
-        point(stem, 0.54),
-        point(stem, 0),
-        point(1, 0),
-      ];
-    }
-    case "bottle": {
-      const body = 0.5 + character * 0.08;
-      return [
-        point(-1, 0),
-        point(-0.24, 0),
-        point(-0.16, 0.28),
-        point(-0.14, 0.56),
-        point(-0.34, 0.64),
-        point(-body, 0.82),
-        point(-0.44, 1.04),
-        point(-0.12, 1.16),
-        point(0.18, 1.12),
-        point(body * 0.88, 0.94),
-        point(body, 0.72),
-        point(0.28, 0.58),
-        point(0.16, 0.5),
-        point(0.2, 0),
-        point(1, 0),
-      ];
-    }
-    case "hook": {
-      const curl = 0.5 + character * 0.08;
-      return [
-        point(-1, 0),
-        point(-0.3, 0),
-        point(-0.26, 0.38),
-        point(-0.14, 0.74),
-        point(0.06, 1.02),
-        point(0.34, 1.12),
-        point(curl, 1.04),
-        point(curl + 0.08, 0.84),
-        point(curl + 0.02, 0.62),
-        point(0.32, 0.48),
-        point(0.12, 0.5),
-        point(0.08, 0.66),
-        point(0.24, 0.74),
-        point(0.34, 0.64),
-        point(0.24, 0.54),
-        point(0.02, 0.4),
-        point(-0.04, 0.2),
-        point(0.3, 0.16),
-        point(0.4, 0),
-        point(1, 0),
-      ];
-    }
-    case "teardrop": {
-      const pointOffset = 0.2 + character * 0.12;
-      return [
-        point(-1, 0),
-        point(-0.36, 0.02),
-        point(-0.48, 0.34),
-        point(-0.42, 0.6),
-        point(-0.16, 0.82),
-        point(pointOffset, 1.12),
-        point(0.12, 0.74),
-        point(0.42, 0.5),
-        point(0.48, 0.24),
-        point(0.32, 0.02),
-        point(1, 0),
-      ];
-    }
-    case "double-lobe": {
-      const split = 0.12 + character * 0.08;
-      return [
-        point(-1, 0),
-        point(-0.48, 0.04),
-        point(-0.54, 0.34),
-        point(-0.42, 0.68),
-        point(-0.18, 0.94),
-        point(-split, 0.78),
-        point(0, 0.7),
-        point(split, 0.8),
-        point(0.2, 0.96),
-        point(0.44, 0.7),
-        point(0.54, 0.36),
-        point(0.46, 0.04),
-        point(1, 0),
-      ];
-    }
-    case "crescent": {
-      const scoop = 0.18 + character * 0.08;
-      return [
-        point(-1, 0),
-        point(-0.56, 0.02),
-        point(-0.64, 0.3),
-        point(-0.54, 0.62),
-        point(-0.3, 0.9),
-        point(0.04, 1.08),
-        point(0.4, 0.94),
-        point(0.62, 0.68),
-        point(0.58, 0.44),
-        point(0.34, 0.26),
-        point(0.02, 0.18),
-        point(-scoop, 0.26),
-        point(0.08, 0.34),
-        point(0.36, 0.26),
-        point(0.58, 0.12),
-        point(0.5, 0.02),
-        point(1, 0),
-      ];
-    }
-    case "s-lock": {
-      const reverseDepth = 0.32 + character * 0.12;
-      return [
-        point(-1, 0),
-        point(-0.58, 0),
-        point(-0.46, 0.34),
-        point(-0.2, 0.56),
-        point(0.06, 0.48),
-        point(0.18, 0.18),
-        point(-0.02, -reverseDepth),
-        point(0.18, -reverseDepth - 0.1),
-        point(0.46, -0.3),
-        point(0.58, -0.05),
-        point(1, 0),
-      ];
-    }
-    case "lightning": {
-      const offset = (character - 0.5) * 0.08;
-      return [
-        point(-1, 0),
-        point(-0.46, 0),
-        point(-0.2 + offset, 0.34),
-        point(-0.38 + offset, 0.34),
-        point(0.06 + offset, 1.02),
-        point(-0.04 + offset, 0.58),
-        point(0.4 + offset, 0.58),
-        point(0.14 + offset, 0.24),
-        point(0.48, 0.24),
-        point(0.36, 0),
-        point(1, 0),
-      ];
-    }
-    case "castle": {
-      const crown = 0.82 + character * 0.08;
-      return [
-        point(-1, 0),
-        point(-0.58, 0),
-        point(-0.58, 0.34),
-        point(-0.32, 0.34),
-        point(-0.32, crown),
-        point(-0.08, crown),
-        point(-0.08, 0.5),
-        point(0.12, 0.5),
-        point(0.12, crown + 0.06),
-        point(0.38, crown + 0.06),
-        point(0.38, 0.34),
-        point(0.58, 0.34),
-        point(0.58, 0),
-        point(1, 0),
-      ];
-    }
-    case "arrowhead": {
-      const head = 0.56 + character * 0.08;
-      return [
-        point(-1, 0),
-        point(-0.28, 0),
-        point(-0.28, 0.46),
-        point(-head, 0.46),
-        point(0, 1.1),
-        point(head, 0.46),
-        point(0.28, 0.46),
-        point(0.28, 0),
-        point(1, 0),
-      ];
-    }
-  }
-};
-
-const familyCanMirror = (family: JigsawEdgePathFamily) =>
-  family === "bottle" ||
-  family === "hook" ||
-  family === "teardrop" ||
-  family === "crescent" ||
-  family === "s-lock" ||
-  family === "lightning";
-
 const getCanonicalConnectorPoints = (
   profileId: JigsawEdgeProfileId,
   seedOffset: number,
 ): JigsawEdgePoint[] => {
-  const geometry = edgeFamilyGeometry[profileId];
-  const width = seededRange(seedOffset, 0x51ed, geometry.width);
-  const depth = seededRange(seedOffset, 0x7f4a, geometry.depth);
-  const character = seededUnit(seedOffset, 0xa511);
+  const grammar = getJigsawSeamGrammarDefinition(profileId);
+  const program = deriveJigsawSeamProgram(profileId, seedOffset);
+  const width = seededRange(seedOffset, 0x51ed, grammar.width);
+  const depth = seededRange(seedOffset, 0x7f4a, grammar.depth);
   const lean =
-    (seededUnit(seedOffset, 0x2c1b) - 0.5) * geometry.lean * 2;
+    (seededUnit(seedOffset, 0x2c1b) - 0.5) * grammar.lean * 2;
   const shouldMirror =
-    familyCanMirror(profileId) && seededUnit(seedOffset, 0x65d3) < 0.5;
+    grammar.mirrorable && seededUnit(seedOffset, 0x65d3) < 0.5;
 
-  let anchors = getFamilyAnchors(profileId, character);
+  let anchors = realizeJigsawSeamProgram(program);
   if (shouldMirror) anchors = mirrorAnchors(anchors);
 
   const horizontalOffsets = anchors.map(
     (anchor) => (anchor.x + lean * anchor.y) * (width / 2),
   );
   const minimumCenter =
-    geometry.cornerBuffer - Math.min(...horizontalOffsets);
+    grammar.cornerBuffer - Math.min(...horizontalOffsets);
   const maximumCenter =
-    100 - geometry.cornerBuffer - Math.max(...horizontalOffsets);
+    100 - grammar.cornerBuffer - Math.max(...horizontalOffsets);
   const centerUnit = seededUnit(seedOffset, 0x9e37) * 2 - 1;
   const centerBias =
     Math.sign(centerUnit) * Math.pow(Math.abs(centerUnit), 0.7);
@@ -424,7 +130,9 @@ const getCanonicalEdgeSegments = (
   seedOffset: number,
 ): JigsawEdgeSegment[] => {
   const points = getCanonicalConnectorPoints(profileId, seedOffset);
-  if (!edgeFamilyGeometry[profileId].smooth) return lineSegmentsFromPoints(points);
+  if (getJigsawSeamGrammarDefinition(profileId).renderMode === "angular") {
+    return lineSegmentsFromPoints(points);
+  }
 
   const connector = points.slice(1, -1);
   const segments: JigsawEdgeSegment[] = [
