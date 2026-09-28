@@ -31,23 +31,23 @@ type EdgeFamilyGeometry = {
 };
 
 const edgeFamilyGeometry = {
-  "classic-bulb": { width: [56, 72], depth: [11, 17], cornerBuffer: 10, lean: 0.04, smooth: true },
-  mushroom: { width: [64, 80], depth: [15, 21], cornerBuffer: 8, lean: 0.05, smooth: true },
-  keyhole: { width: [52, 68], depth: [14, 20], cornerBuffer: 10, lean: 0.04, smooth: true },
-  dovetail: { width: [58, 74], depth: [12, 18], cornerBuffer: 9, lean: 0.04, smooth: false },
-  "t-lock": { width: [56, 72], depth: [14, 20], cornerBuffer: 9, lean: 0.03, smooth: false },
-  bottle: { width: [60, 78], depth: [14, 20], cornerBuffer: 8, lean: 0.1, smooth: true },
-  hook: { width: [62, 80], depth: [15, 21], cornerBuffer: 8, lean: 0.12, smooth: true },
-  teardrop: { width: [58, 76], depth: [13, 19], cornerBuffer: 9, lean: 0.1, smooth: true },
-  "double-lobe": { width: [66, 82], depth: [12, 18], cornerBuffer: 8, lean: 0.04, smooth: true },
-  crescent: { width: [66, 82], depth: [12, 18], cornerBuffer: 8, lean: 0.08, smooth: true },
-  "s-lock": { width: [68, 82], depth: [11, 17], cornerBuffer: 8, lean: 0.08, smooth: true },
-  lightning: { width: [60, 76], depth: [12, 18], cornerBuffer: 9, lean: 0.06, smooth: false },
-  castle: { width: [62, 80], depth: [12, 18], cornerBuffer: 8, lean: 0, smooth: false },
-  arrowhead: { width: [58, 74], depth: [14, 20], cornerBuffer: 9, lean: 0.04, smooth: false },
+  "classic-bulb": { width: [64, 82], depth: [12, 19], cornerBuffer: 7, lean: 0.05, smooth: true },
+  mushroom: { width: [72, 88], depth: [17, 23], cornerBuffer: 6, lean: 0.06, smooth: true },
+  keyhole: { width: [62, 78], depth: [16, 22], cornerBuffer: 7, lean: 0.05, smooth: true },
+  dovetail: { width: [66, 84], depth: [14, 20], cornerBuffer: 7, lean: 0.05, smooth: false },
+  "t-lock": { width: [64, 82], depth: [16, 22], cornerBuffer: 7, lean: 0.04, smooth: false },
+  bottle: { width: [70, 88], depth: [16, 22], cornerBuffer: 6, lean: 0.12, smooth: true },
+  hook: { width: [72, 90], depth: [17, 23], cornerBuffer: 5, lean: 0.14, smooth: true },
+  teardrop: { width: [68, 86], depth: [15, 21], cornerBuffer: 6, lean: 0.12, smooth: true },
+  "double-lobe": { width: [74, 90], depth: [14, 20], cornerBuffer: 5, lean: 0.05, smooth: true },
+  crescent: { width: [74, 90], depth: [14, 20], cornerBuffer: 5, lean: 0.1, smooth: true },
+  "s-lock": { width: [76, 90], depth: [13, 19], cornerBuffer: 5, lean: 0.1, smooth: true },
+  lightning: { width: [68, 86], depth: [14, 20], cornerBuffer: 6, lean: 0.08, smooth: false },
+  castle: { width: [70, 88], depth: [14, 20], cornerBuffer: 6, lean: 0, smooth: false },
+  arrowhead: { width: [66, 84], depth: [16, 22], cornerBuffer: 7, lean: 0.05, smooth: false },
 } as const satisfies Record<JigsawEdgePathFamily, EdgeFamilyGeometry>;
 
-export const jigsawEdgeMaximumDepth = 22;
+export const jigsawEdgeMaximumDepth = 25;
 const pieceEdgeOrder: readonly JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
 
 const seededUnit = (seedOffset: number, salt: number) => {
@@ -356,7 +356,7 @@ const getCanonicalConnectorPoints = (
     100 - geometry.cornerBuffer - Math.max(...horizontalOffsets);
   const centerUnit = seededUnit(seedOffset, 0x9e37) * 2 - 1;
   const centerBias =
-    Math.sign(centerUnit) * Math.pow(Math.abs(centerUnit), 1.7);
+    Math.sign(centerUnit) * Math.pow(Math.abs(centerUnit), 0.7);
   const center =
     minimumCenter +
     ((centerBias + 1) / 2) * (maximumCenter - minimumCenter);
