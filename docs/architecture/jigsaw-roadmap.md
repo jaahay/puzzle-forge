@@ -161,6 +161,8 @@ This deliberately avoids treating every connector as a single-valued height func
 
 Organic families render the canonical seam with cubic Bézier segments so their rounded forms are genuinely curved rather than subdivided straight polylines. Deliberately mechanical families such as dovetail, T-lock, lightning, castle, and arrowhead retain straight segments. Curve sampling exists for geometry validation and hit-safety checks; it is not the rendered shape itself.
 
+Connector placement should use a substantial portion of the available edge rather than concentrating every silhouette near the midpoint. Family-specific span ranges now occupy more than half of an ordinary edge, with broader families reaching roughly four-fifths. The generated connector is allowed to bias left or right when its width leaves room; its legal center interval is derived from the actual seeded horizontal envelope plus a family-specific corner buffer. Bias is weighted toward moderate placement with occasional stronger offsets rather than forcing every seam away from center.
+
 ### Edge invariants
 
 - Every border edge is flat and has no neighbor.
@@ -170,6 +172,7 @@ Organic families render the canonical seam with cubic Bézier segments so their 
 - Neighboring interior edges have inverse polarity: `tab` against `blank`.
 - Connector geometry may be non-monotonic along the owning edge; generated seams are instead required to remain non-self-intersecting.
 - Generated connector points stay inside the declared visual/hit-test depth bound.
+- Connector placement preserves explicit corner room while allowing safe left/right bias when the seeded width leaves available edge space.
 - Distinct families should remain visually distinguishable at ordinary play scale rather than differing only through small width/depth perturbations.
 - Within the current generator implementation, the same seed, dimensions, and image id produce the same edge graph.
 
