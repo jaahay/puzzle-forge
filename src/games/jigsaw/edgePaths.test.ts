@@ -175,6 +175,37 @@ describe("Jigsaw edge paths", () => {
     }
   });
 
+  it("uses substantially more edge span while preserving a corner buffer", () => {
+    for (const profileId of jigsawEdgeProfileIds) {
+      for (const seedOffset of [1, 17, 991, 123_456, 999_999]) {
+        const points = getJigsawEdgePoints(
+          makeInteriorEdge({ side: "top", profileId, polarity: "tab", seedOffset }),
+        );
+        const connectorPoints = points.slice(1, -1);
+        const horizontal = connectorPoints.map((point) => point.x);
+        const minimum = Math.min(...horizontal);
+        const maximum = Math.max(...horizontal);
+
+        expect(maximum - minimum).toBeGreaterThan(50);
+        expect(minimum).toBeGreaterThanOrEqual(7.5);
+        expect(maximum).toBeLessThanOrEqual(92.5);
+      }
+    }
+  });
+
+  it("allows visibly off-center seams when the connector width leaves room", () => {
+    const centers = Array.from({ length: 128 }, (_, seedOffset) => {
+      const points = getJigsawEdgePoints(
+        makeInteriorEdge({ side: "top", profileId: "keyhole", polarity: "tab", seedOffset }),
+      );
+      const horizontal = points.slice(1, -1).map((point) => point.x);
+      return (Math.min(...horizontal) + Math.max(...horizontal)) / 2;
+    });
+
+    expect(Math.min(...centers)).toBeLessThan(42);
+    expect(Math.max(...centers)).toBeGreaterThan(58);
+  });
+
   it("keeps seeded 2D connector geometry inside safe bounds and free of self-intersection", () => {
     const sides: JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
     const polarities: JigsawInteriorEdge["polarity"][] = ["tab", "blank"];
