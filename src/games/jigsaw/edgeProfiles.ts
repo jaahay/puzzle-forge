@@ -24,7 +24,6 @@ export const jigsawEdgeProfileCatalog = {
   "multi-lobe": makeProfile("multi-lobe", 1, 1.15),
   scoop: makeProfile("scoop", 0.9, 1.15),
   serpentine: makeProfile("serpentine", 0.9, 1.2),
-  curl: makeProfile("curl", 0.8, 1.2),
   terrace: makeProfile("terrace", 0.75, 1.15),
   zigzag: makeProfile("zigzag", 0.75, 1.2),
   "stacked-lock": makeProfile("stacked-lock", 0.85, 1.2),
