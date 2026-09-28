@@ -160,7 +160,6 @@ export type JigsawSeamGrammarId =
   | "multi-lobe"
   | "scoop"
   | "serpentine"
-  | "curl"
   | "terrace"
   | "zigzag"
   | "stacked-lock";
