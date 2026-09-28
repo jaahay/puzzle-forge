@@ -32,15 +32,15 @@ type EdgeFamilyGeometry = {
 
 const edgeFamilyGeometry = {
   "classic-bulb": { width: [64, 82], depth: [18, 26], cornerBuffer: 7, lean: 0.05, smooth: true },
-  mushroom: { width: [72, 88], depth: [20, 26], cornerBuffer: 6, lean: 0.06, smooth: true },
-  keyhole: { width: [62, 78], depth: [20, 27], cornerBuffer: 7, lean: 0.05, smooth: true },
+  mushroom: { width: [78, 92], depth: [19, 25], cornerBuffer: 4, lean: 0.04, smooth: true },
+  keyhole: { width: [56, 70], depth: [22, 29], cornerBuffer: 9, lean: 0.03, smooth: true },
   dovetail: { width: [66, 84], depth: [22, 28], cornerBuffer: 7, lean: 0.05, smooth: false },
   "t-lock": { width: [64, 82], depth: [20, 27], cornerBuffer: 7, lean: 0.04, smooth: false },
-  bottle: { width: [70, 88], depth: [20, 27], cornerBuffer: 6, lean: 0.12, smooth: true },
-  hook: { width: [64, 80], depth: [18, 23], cornerBuffer: 10, lean: 0.14, smooth: true },
+  bottle: { width: [72, 90], depth: [20, 27], cornerBuffer: 5, lean: 0.18, smooth: true },
+  hook: { width: [60, 76], depth: [20, 25], cornerBuffer: 12, lean: 0.16, smooth: true },
   teardrop: { width: [68, 86], depth: [19, 26], cornerBuffer: 6, lean: 0.12, smooth: true },
   "double-lobe": { width: [74, 90], depth: [20, 27], cornerBuffer: 5, lean: 0.05, smooth: true },
-  crescent: { width: [74, 90], depth: [20, 27], cornerBuffer: 5, lean: 0.1, smooth: true },
+  crescent: { width: [80, 94], depth: [18, 24], cornerBuffer: 3, lean: 0.06, smooth: true },
   "s-lock": { width: [76, 90], depth: [24, 30], cornerBuffer: 5, lean: 0.1, smooth: true },
   lightning: { width: [68, 86], depth: [20, 27], cornerBuffer: 6, lean: 0.08, smooth: false },
   castle: { width: [70, 88], depth: [21, 27], cornerBuffer: 6, lean: 0, smooth: false },
@@ -98,42 +98,50 @@ const getFamilyAnchors = (
       ];
     }
     case "mushroom": {
-      const neck = 0.22 + character * 0.06;
-      const cap = 0.58 + character * 0.08;
+      const neck = 0.14 + character * 0.05;
+      const cap = 0.68 + character * 0.06;
       return [
         point(-1, 0),
-        point(-0.36, 0.02),
-        point(-neck, 0.34),
-        point(-cap, 0.54),
-        point(-cap - 0.03, 0.76),
-        point(-0.34, 0.96),
+        point(-0.3, 0.02),
+        point(-neck, 0.32),
+        point(-neck, 0.5),
+        point(-cap, 0.56),
+        point(-cap - 0.04, 0.7),
+        point(-0.5, 0.9),
+        point(-0.28, 1.0),
         point(0, 1.04),
-        point(0.34, 0.96),
-        point(cap + 0.03, 0.76),
-        point(cap, 0.54),
-        point(neck, 0.34),
-        point(0.36, 0.02),
+        point(0.28, 1.0),
+        point(0.5, 0.9),
+        point(cap + 0.04, 0.7),
+        point(cap, 0.56),
+        point(neck, 0.5),
+        point(neck, 0.32),
+        point(0.3, 0.02),
         point(1, 0),
       ];
     }
     case "keyhole": {
-      const stem = 0.16 + character * 0.05;
-      const head = 0.5 + character * 0.07;
+      const stem = 0.1 + character * 0.035;
+      const head = 0.38 + character * 0.05;
       return [
         point(-1, 0),
-        point(-0.28, 0),
-        point(-stem, 0.46),
-        point(-head * 0.72, 0.5),
+        point(-0.2, 0),
+        point(-stem, 0.18),
+        point(-stem, 0.5),
+        point(-head * 0.72, 0.54),
         point(-head, 0.68),
-        point(-head * 0.88, 0.88),
-        point(-0.28, 1.04),
-        point(0, 1.1),
-        point(0.28, 1.04),
-        point(head * 0.88, 0.88),
+        point(-head, 0.86),
+        point(-head * 0.72, 1.02),
+        point(-0.18, 1.12),
+        point(0, 1.15),
+        point(0.18, 1.12),
+        point(head * 0.72, 1.02),
+        point(head, 0.86),
         point(head, 0.68),
-        point(head * 0.72, 0.5),
-        point(stem, 0.46),
-        point(0.28, 0),
+        point(head * 0.72, 0.54),
+        point(stem, 0.5),
+        point(stem, 0.18),
+        point(0.2, 0),
         point(1, 0),
       ];
     }
@@ -165,41 +173,47 @@ const getFamilyAnchors = (
       ];
     }
     case "bottle": {
-      const body = 0.48 + character * 0.08;
+      const body = 0.5 + character * 0.08;
       return [
         point(-1, 0),
-        point(-0.3, 0),
-        point(-0.23, 0.48),
-        point(-0.42, 0.6),
-        point(-body, 0.8),
-        point(-0.4, 1.0),
-        point(-0.04, 1.1),
-        point(body * 0.82, 0.98),
+        point(-0.24, 0),
+        point(-0.16, 0.28),
+        point(-0.14, 0.56),
+        point(-0.34, 0.64),
+        point(-body, 0.82),
+        point(-0.44, 1.04),
+        point(-0.12, 1.16),
+        point(0.18, 1.12),
+        point(body * 0.88, 0.94),
         point(body, 0.72),
-        point(0.4, 0.5),
-        point(0.22, 0.42),
-        point(0.28, 0),
+        point(0.28, 0.58),
+        point(0.16, 0.5),
+        point(0.2, 0),
         point(1, 0),
       ];
     }
     case "hook": {
-      const curl = 0.5 + character * 0.1;
+      const curl = 0.5 + character * 0.08;
       return [
         point(-1, 0),
-        point(-0.34, 0),
-        point(-0.28, 0.42),
-        point(-0.14, 0.76),
-        point(0.12, 1.02),
-        point(curl, 1.0),
-        point(curl + 0.08, 0.8),
-        point(curl - 0.06, 0.62),
-        point(0.16, 0.64),
-        point(0.3, 0.8),
-        point(0.08, 0.84),
-        point(-0.1, 0.7),
-        point(-0.16, 0.48),
-        point(0.3, 0.34),
-        point(0.38, 0),
+        point(-0.3, 0),
+        point(-0.26, 0.38),
+        point(-0.14, 0.74),
+        point(0.06, 1.02),
+        point(0.34, 1.12),
+        point(curl, 1.04),
+        point(curl + 0.08, 0.84),
+        point(curl + 0.02, 0.62),
+        point(0.32, 0.48),
+        point(0.12, 0.5),
+        point(0.08, 0.66),
+        point(0.24, 0.74),
+        point(0.34, 0.64),
+        point(0.24, 0.54),
+        point(0.02, 0.4),
+        point(-0.04, 0.2),
+        point(0.3, 0.16),
+        point(0.4, 0),
         point(1, 0),
       ];
     }
@@ -238,20 +252,24 @@ const getFamilyAnchors = (
       ];
     }
     case "crescent": {
-      const scoop = 0.08 + character * 0.1;
+      const scoop = 0.18 + character * 0.08;
       return [
         point(-1, 0),
-        point(-0.5, 0.04),
-        point(-0.56, 0.38),
-        point(-0.36, 0.78),
-        point(0, 1.02),
-        point(0.42, 0.84),
-        point(0.52, 0.56),
-        point(0.16, 0.54),
-        point(-scoop, 0.44),
-        point(0.22, 0.3),
-        point(0.48, 0.16),
-        point(0.44, 0.03),
+        point(-0.56, 0.02),
+        point(-0.64, 0.3),
+        point(-0.54, 0.62),
+        point(-0.3, 0.9),
+        point(0.04, 1.08),
+        point(0.4, 0.94),
+        point(0.62, 0.68),
+        point(0.58, 0.44),
+        point(0.34, 0.26),
+        point(0.02, 0.18),
+        point(-scoop, 0.26),
+        point(0.08, 0.34),
+        point(0.36, 0.26),
+        point(0.58, 0.12),
+        point(0.5, 0.02),
         point(1, 0),
       ];
     }
