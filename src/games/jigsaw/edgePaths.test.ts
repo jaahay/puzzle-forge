@@ -308,16 +308,25 @@ describe("Jigsaw edge paths", () => {
   });
 
   it("keeps complete expressive piece outlines free of proper self-intersection", () => {
+    const polarityPatterns: Array<readonly JigsawInteriorEdge["polarity"][]> = [
+      ["tab", "tab", "tab", "tab"],
+      ["blank", "blank", "blank", "blank"],
+      ["tab", "blank", "tab", "blank"],
+      ["blank", "tab", "blank", "tab"],
+    ];
+
     for (const profileId of jigsawEdgeProfileIds) {
       for (const seedOffset of [7, 123, 8_001, 456_789]) {
-        const piece = makePiece([
-          makeInteriorEdge({ side: "top", profileId, polarity: "tab", seedOffset }),
-          makeInteriorEdge({ side: "right", profileId, polarity: "blank", seedOffset: seedOffset + 1 }),
-          makeInteriorEdge({ side: "bottom", profileId, polarity: "tab", seedOffset: seedOffset + 2 }),
-          makeInteriorEdge({ side: "left", profileId, polarity: "blank", seedOffset: seedOffset + 3 }),
-        ]);
+        for (const polarities of polarityPatterns) {
+          const piece = makePiece([
+            makeInteriorEdge({ side: "top", profileId, polarity: polarities[0], seedOffset }),
+            makeInteriorEdge({ side: "right", profileId, polarity: polarities[1], seedOffset: seedOffset + 1 }),
+            makeInteriorEdge({ side: "bottom", profileId, polarity: polarities[2], seedOffset: seedOffset + 2 }),
+            makeInteriorEdge({ side: "left", profileId, polarity: polarities[3], seedOffset: seedOffset + 3 }),
+          ]);
 
-        expectNoSelfIntersection(getJigsawPieceOutlinePoints(piece));
+          expectNoSelfIntersection(getJigsawPieceOutlinePoints(piece));
+        }
       }
     }
   });
