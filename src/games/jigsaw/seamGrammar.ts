@@ -59,13 +59,6 @@ type SerpentineProgram = {
   skew: number;
 };
 
-type CurlProgram = {
-  grammarId: "curl";
-  events: readonly ["sweep", "backtrack", "curl", "return"];
-  curl: number;
-  throat: number;
-};
-
 type TerraceProgram = {
   grammarId: "terrace";
   events: readonly string[];
@@ -96,7 +89,6 @@ export type JigsawSeamProgram =
   | MultiLobeProgram
   | ScoopProgram
   | SerpentineProgram
-  | CurlProgram
   | TerraceProgram
   | ZigzagProgram
   | StackedLockProgram;
@@ -107,7 +99,6 @@ export const jigsawSeamGrammarIds = [
   "multi-lobe",
   "scoop",
   "serpentine",
-  "curl",
   "terrace",
   "zigzag",
   "stacked-lock",
@@ -178,19 +169,6 @@ export const jigsawSeamGrammarCatalog = {
     depth: [22, 28],
     cornerBuffer: 6,
     lean: 0.08,
-  },
-  curl: {
-    id: "curl",
-    label: "Curl",
-    description: "A directional sweep backtracks into a genuine inward curl before escaping to the edge.",
-    production: "sweep > backtrack > curl > return",
-    renderMode: "smooth",
-    curveTension: 0.02,
-    mirrorable: true,
-    width: [58, 72],
-    depth: [17, 22],
-    cornerBuffer: 12,
-    lean: 0.12,
   },
   terrace: {
     id: "terrace",
@@ -296,13 +274,6 @@ export const deriveJigsawSeamProgram = (
         events: ["lobe", "cross-baseline", "opposed-lobe"],
         reverseDepth: range(seedOffset, 0x5e71, 0.3, 0.44),
         skew: range(seedOffset, 0x5e72, -0.08, 0.08),
-      };
-    case "curl":
-      return {
-        grammarId,
-        events: ["sweep", "backtrack", "curl", "return"],
-        curl: range(seedOffset, 0x6f81, 0.46, 0.58),
-        throat: range(seedOffset, 0x6f82, 0.08, 0.16),
       };
     case "terrace": {
       const levels = 2 + Math.floor(seededUnit(seedOffset, 0x7091) * 3);
@@ -423,29 +394,6 @@ export const realizeJigsawSeamProgram = (
         point(0.2 + program.skew, -program.reverseDepth - 0.1),
         point(0.48, -0.3),
         point(0.6, -0.05),
-        point(1, 0),
-      ];
-    case "curl":
-      return [
-        point(-1, 0),
-        point(-0.4, 0),
-        point(-0.3, 0.34),
-        point(-0.12, 0.72),
-        point(0.16, 1.0),
-        point(0.42, 1.04),
-        point(program.curl, 0.9),
-        point(program.curl + 0.02, 0.68),
-        point(program.curl - 0.08, 0.5),
-        point(0.28, 0.38),
-        point(program.throat, 0.34),
-        point(-0.06, 0.44),
-        point(0.02, 0.56),
-        point(0.16, 0.56),
-        point(0.26, 0.48),
-        point(0.2, 0.38),
-        point(0.06, 0.28),
-        point(0.28, 0.16),
-        point(0.44, 0),
         point(1, 0),
       ];
     case "terrace": {
