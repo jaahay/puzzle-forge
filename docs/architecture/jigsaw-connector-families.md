@@ -62,6 +62,24 @@ A useful rule of thumb:
 - **Double lobe** is identified by multiplicity: two rounded crowns.
 - **Castle** is identified by steps rather than a single crown.
 
+## Graphical atlas
+
+The atlas below is generated from the same canonical geometry used by the renderer, rather than redrawn by hand.
+
+![High-fidelity Jigsaw connector family atlas](./assets/jigsaw-connector-family-atlas.svg)
+
+Each family shows:
+
+- **TAB** — one representative outward seam;
+- **BLANK** — the exact same seeded family specimen with inverse polarity;
+- **LEFT / CENTER / RIGHT** — seeded specimens selected to show the family under visibly different legal placements along the edge.
+
+The dashed horizontal line is the nominal uncut edge. It is especially useful for recognizing families such as S-lock that deliberately cross the baseline.
+
+The atlas is a high-fidelity **design snapshot**, not a compatibility contract. If family geometry is tuned, regenerate the atlas from the current connector definitions rather than hand-editing its paths.
+
+[Open the atlas directly](./assets/jigsaw-connector-family-atlas.svg)
+
 ## Geometry conventions
 
 All ordinary seams begin from a canonical two-dimensional path.
