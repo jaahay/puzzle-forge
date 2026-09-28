@@ -186,9 +186,9 @@ describe("Jigsaw edge paths", () => {
         const minimum = Math.min(...horizontal);
         const maximum = Math.max(...horizontal);
 
-        expect(maximum - minimum).toBeGreaterThan(50);
-        expect(minimum).toBeGreaterThanOrEqual(7.5);
-        expect(maximum).toBeLessThanOrEqual(92.5);
+        expect(maximum - minimum).toBeGreaterThan(60);
+        expect(minimum).toBeGreaterThanOrEqual(4);
+        expect(maximum).toBeLessThanOrEqual(96);
       }
     }
   });
@@ -202,8 +202,20 @@ describe("Jigsaw edge paths", () => {
       return (Math.min(...horizontal) + Math.max(...horizontal)) / 2;
     });
 
-    expect(Math.min(...centers)).toBeLessThan(42);
-    expect(Math.max(...centers)).toBeGreaterThan(58);
+    expect(Math.min(...centers)).toBeLessThan(40);
+    expect(Math.max(...centers)).toBeGreaterThan(60);
+  });
+
+  it("allows selected organic families to use the deeper expressive envelope", () => {
+    const depths = Array.from({ length: 64 }, (_, seedOffset) => {
+      const points = getJigsawEdgePoints(
+        makeInteriorEdge({ side: "top", profileId: "mushroom", polarity: "tab", seedOffset }),
+      );
+      return -Math.min(...points.map((point) => point.y));
+    });
+
+    expect(Math.max(...depths)).toBeGreaterThan(22);
+    expect(Math.max(...depths)).toBeLessThanOrEqual(jigsawEdgeMaximumDepth);
   });
 
   it("keeps seeded 2D connector geometry inside safe bounds and free of self-intersection", () => {
