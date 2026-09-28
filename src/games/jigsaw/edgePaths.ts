@@ -32,7 +32,7 @@ type EdgeFamilyGeometry = {
 
 const edgeFamilyGeometry = {
   "classic-bulb": { width: [64, 82], depth: [19, 27], cornerBuffer: 7, lean: 0.05, smooth: true },
-  mushroom: { width: [72, 88], depth: [22, 29], cornerBuffer: 6, lean: 0.06, smooth: true },
+  mushroom: { width: [72, 88], depth: [20, 26], cornerBuffer: 6, lean: 0.06, smooth: true },
   keyhole: { width: [62, 78], depth: [21, 28], cornerBuffer: 7, lean: 0.05, smooth: true },
   dovetail: { width: [66, 84], depth: [22, 28], cornerBuffer: 7, lean: 0.05, smooth: false },
   "t-lock": { width: [64, 82], depth: [23, 31], cornerBuffer: 7, lean: 0.04, smooth: false },
