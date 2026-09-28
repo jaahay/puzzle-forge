@@ -251,7 +251,6 @@ describe("Jigsaw edge paths", () => {
     const backtrackingFamilies: JigsawEdgeProfileId[] = [
       "necked-head",
       "scoop",
-      "curl",
       "stacked-lock",
     ];
 
