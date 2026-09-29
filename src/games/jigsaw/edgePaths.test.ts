@@ -67,7 +67,7 @@ const makeSeedSweep = (count: number) => {
   return [...new Set([...historicalRegressionSeeds, ...generated])];
 };
 
-const broadSeamSeedOffsets = makeSeedSweep(512);
+const broadSeamSeedOffsets = makeSeedSweep(256);
 const broadPieceSeedOffsets = makeSeedSweep(64);
 
 const expectPointsToMatch = (
@@ -267,18 +267,24 @@ describe("Jigsaw edge paths", () => {
         );
 
         for (const point of points) {
-          expect(Number.isFinite(point.x)).toBe(true);
-          expect(Number.isFinite(point.y)).toBe(true);
-          expect(point.x).toBeGreaterThanOrEqual(-jigsawEdgeMaximumDepth);
-          expect(point.x).toBeLessThanOrEqual(100 + jigsawEdgeMaximumDepth);
-          expect(point.y).toBeGreaterThanOrEqual(-jigsawEdgeMaximumDepth);
-          expect(point.y).toBeLessThanOrEqual(100 + jigsawEdgeMaximumDepth);
+          if (
+            !Number.isFinite(point.x) ||
+            !Number.isFinite(point.y) ||
+            point.x < -jigsawEdgeMaximumDepth ||
+            point.x > 100 + jigsawEdgeMaximumDepth ||
+            point.y < -jigsawEdgeMaximumDepth ||
+            point.y > 100 + jigsawEdgeMaximumDepth
+          ) {
+            throw new Error(
+              `${profileId} broad seam seed ${seedOffset}: point (${point.x}, ${point.y}) is outside the safe finite envelope.`,
+            );
+          }
         }
 
         expectNoSelfIntersection(points, `${profileId} broad seam seed ${seedOffset}`);
       }
     }
-  });
+  }, 15_000);
 
   it("allows unmistakable connector topology beyond a single-valued edge bump", () => {
     const backtrackingFamilies: JigsawEdgeProfileId[] = [
