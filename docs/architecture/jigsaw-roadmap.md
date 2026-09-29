@@ -1,6 +1,6 @@
 # Jigsaw Roadmap
 
-This document scopes Jigsaw as a first-class Puzzle Forge engine. The current implementation is a useful square-tile prototype: it generates seeded shuffled tiles, renders a generated color-field asset, supports click-to-swap interaction, detects solved state, and persists tile order locally. The product direction below extends that base without turning the first implementation slice into a broad rendering research project.
+This document records the staged architecture that brought Jigsaw from a square-tile prototype to picture-backed custom-edge play, and scopes the remaining directions. Phases 1–3 below are implemented in the current codebase; they are retained as design rationale and validation guidance rather than as pending work.
 
 ## Product requirements
 
