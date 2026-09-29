@@ -58,6 +58,18 @@ const makePiece = (edges: JigsawPiece["edges"]): JigsawPiece => ({
   edges,
 });
 
+const makeSeedSweep = (count: number) => {
+  const historicalRegressionSeeds = [1, 17, 991, 8_001, 123_456, 456_789, 999_999];
+  const generated = Array.from(
+    { length: count },
+    (_, index) => (index * 48_271 + 12_345) % 1_000_000,
+  );
+  return [...new Set([...historicalRegressionSeeds, ...generated])];
+};
+
+const broadSeamSeedOffsets = makeSeedSweep(512);
+const broadPieceSeedOffsets = makeSeedSweep(64);
+
 const expectPointsToMatch = (
   first: Array<{ x: number; y: number }>,
   second: Array<{ x: number; y: number }>,
@@ -247,6 +259,27 @@ describe("Jigsaw edge paths", () => {
     }
   });
 
+  it("survives a broad deterministic seed sweep for every grammar", () => {
+    for (const profileId of jigsawEdgeProfileIds) {
+      for (const seedOffset of broadSeamSeedOffsets) {
+        const points = getJigsawEdgePoints(
+          makeInteriorEdge({ side: "top", profileId, polarity: "tab", seedOffset }),
+        );
+
+        for (const point of points) {
+          expect(Number.isFinite(point.x)).toBe(true);
+          expect(Number.isFinite(point.y)).toBe(true);
+          expect(point.x).toBeGreaterThanOrEqual(-jigsawEdgeMaximumDepth);
+          expect(point.x).toBeLessThanOrEqual(100 + jigsawEdgeMaximumDepth);
+          expect(point.y).toBeGreaterThanOrEqual(-jigsawEdgeMaximumDepth);
+          expect(point.y).toBeLessThanOrEqual(100 + jigsawEdgeMaximumDepth);
+        }
+
+        expectNoSelfIntersection(points, `${profileId} broad seam seed ${seedOffset}`);
+      }
+    }
+  });
+
   it("allows unmistakable connector topology beyond a single-valued edge bump", () => {
     const backtrackingFamilies: JigsawEdgeProfileId[] = [
       "necked-head",
@@ -321,6 +354,31 @@ describe("Jigsaw edge paths", () => {
           expectNoSelfIntersection(
             getJigsawPieceOutlinePoints(piece),
             `${profileId} seed ${seedOffset} polarities ${polarities.join("/")}`,
+          );
+        }
+      }
+    }
+  });
+
+  it("survives broad whole-piece seed sweeps for the collision-prone polarity extremes", () => {
+    const polarityPatterns: Array<readonly JigsawInteriorEdge["polarity"][]> = [
+      ["tab", "tab", "tab", "tab"],
+      ["blank", "blank", "blank", "blank"],
+    ];
+
+    for (const profileId of jigsawEdgeProfileIds) {
+      for (const seedOffset of broadPieceSeedOffsets) {
+        for (const polarities of polarityPatterns) {
+          const piece = makePiece([
+            makeInteriorEdge({ side: "top", profileId, polarity: polarities[0], seedOffset }),
+            makeInteriorEdge({ side: "right", profileId, polarity: polarities[1], seedOffset: seedOffset + 1 }),
+            makeInteriorEdge({ side: "bottom", profileId, polarity: polarities[2], seedOffset: seedOffset + 2 }),
+            makeInteriorEdge({ side: "left", profileId, polarity: polarities[3], seedOffset: seedOffset + 3 }),
+          ]);
+
+          expectNoSelfIntersection(
+            getJigsawPieceOutlinePoints(piece),
+            `${profileId} broad piece seed ${seedOffset} polarities ${polarities.join("/")}`,
           );
         }
       }
