@@ -1,4 +1,4 @@
-# Jigsaw Seam Grammar Design
+# Jigsaw Connector Grammar Design
 
 Puzzle Forge's ordinary Jigsaw connector system is **grammar-first**.
 
@@ -6,7 +6,7 @@ A connector family is not a named preset inside one universal bump formula. It i
 
 The implementation lives in:
 
-- `src/games/jigsaw/seamGrammar.ts` — structural grammar definitions, seeded program derivation, and normalized realization;
+- `src/games/jigsaw/connectorGrammar.ts` — structural grammar definitions, seeded program derivation, and normalized realization;
 - `src/games/jigsaw/edgeProfiles.ts` — puzzle-level selection weights for the grammar catalog;
 - `src/games/jigsaw/edgePaths.ts` — shared placement, polarity, complementarity, curve rendering, orientation, and validation sampling.
 
@@ -108,7 +108,7 @@ So one puzzle has a coherent cut personality without stamping exact clones aroun
 
 The atlas below is generated from the canonical seam geometry rather than illustrated by hand.
 
-![High-fidelity Jigsaw seam grammar atlas](./assets/jigsaw-connector-family-atlas.svg)
+![High-fidelity Jigsaw connector grammar atlas](./assets/jigsaw-connector-family-atlas.svg)
 
 Each grammar should show:
 
@@ -468,11 +468,11 @@ That would make the grammar an **idea generator for future families**, rather th
 
 ## Separate future topology
 
-The seam grammar still assumes an ordinary shared boundary between rectangular-grid neighbors.
+The connector grammar still assumes an ordinary shared boundary between rectangular-grid neighbors.
 
 That is separate from:
 
 - #190 — rare one-off surprise/anomaly geometry;
 - #191 — non-grid topology such as circular center pieces, arbitrary neighbor counts, and pieces that cannot be represented as four rectangular sides.
 
-Those directions may reuse the same rendering and validation primitives, but they are not ordinary seam grammar productions.
+Those directions may reuse the same rendering and validation primitives, but they are not ordinary connector grammar productions.

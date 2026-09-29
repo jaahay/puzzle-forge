@@ -1,14 +1,14 @@
-import type { JigsawSeamGrammarId } from "../../catalog/types";
+import type { JigsawConnectorGrammarId } from "../../catalog/types";
 
-export type JigsawSeamPoint = {
+export type JigsawConnectorPoint = {
   x: number;
   y: number;
 };
 
 type Range = readonly [minimum: number, maximum: number];
 
-export type JigsawSeamGrammarDefinition = {
-  id: JigsawSeamGrammarId;
+export type JigsawConnectorGrammarDefinition = {
+  id: JigsawConnectorGrammarId;
   label: string;
   description: string;
   production: string;
@@ -22,14 +22,14 @@ export type JigsawSeamGrammarDefinition = {
 };
 
 type ClassicBulbProgram = {
-  grammarId: "classic-bulb";
+  connectorGrammarId: "classic-bulb";
   events: readonly ["lobe"];
   crown: number;
   shoulder: number;
 };
 
 type NeckedHeadProgram = {
-  grammarId: "necked-head";
+  connectorGrammarId: "necked-head";
   events: readonly ["neck", "undercut", "head", "undercut", "neck"];
   stem: number;
   head: number;
@@ -38,7 +38,7 @@ type NeckedHeadProgram = {
 };
 
 type MultiLobeProgram = {
-  grammarId: "multi-lobe";
+  connectorGrammarId: "multi-lobe";
   events: readonly string[];
   lobeCount: number;
   saddleDepth: number;
@@ -46,28 +46,28 @@ type MultiLobeProgram = {
 };
 
 type ScoopProgram = {
-  grammarId: "scoop";
+  connectorGrammarId: "scoop";
   events: readonly ["outer-sweep", "scoop", "return"];
   bite: number;
   sweep: number;
 };
 
 type SerpentineProgram = {
-  grammarId: "serpentine";
+  connectorGrammarId: "serpentine";
   events: readonly ["lobe", "cross-baseline", "opposed-lobe"];
   reverseDepth: number;
   skew: number;
 };
 
 type TerraceProgram = {
-  grammarId: "terrace";
+  connectorGrammarId: "terrace";
   events: readonly string[];
   levels: number;
   crown: number;
 };
 
 type ZigzagProgram = {
-  grammarId: "zigzag";
+  connectorGrammarId: "zigzag";
   events: readonly string[];
   turns: number;
   low: number;
@@ -75,7 +75,7 @@ type ZigzagProgram = {
 };
 
 type StackedLockProgram = {
-  grammarId: "stacked-lock";
+  connectorGrammarId: "stacked-lock";
   events: readonly ["chamber", "waist", "chamber"];
   lowerChamber: number;
   waist: number;
@@ -83,7 +83,7 @@ type StackedLockProgram = {
   crown: number;
 };
 
-export type JigsawSeamProgram =
+export type JigsawConnectorProgram =
   | ClassicBulbProgram
   | NeckedHeadProgram
   | MultiLobeProgram
@@ -93,7 +93,7 @@ export type JigsawSeamProgram =
   | ZigzagProgram
   | StackedLockProgram;
 
-export const jigsawSeamGrammarIds = [
+export const jigsawConnectorGrammarIds = [
   "classic-bulb",
   "necked-head",
   "multi-lobe",
@@ -102,9 +102,9 @@ export const jigsawSeamGrammarIds = [
   "terrace",
   "zigzag",
   "stacked-lock",
-] as const satisfies readonly JigsawSeamGrammarId[];
+] as const satisfies readonly JigsawConnectorGrammarId[];
 
-export const jigsawSeamGrammarCatalog = {
+export const jigsawConnectorGrammarCatalog = {
   "classic-bulb": {
     id: "classic-bulb",
     label: "Classic bulb",
@@ -209,7 +209,7 @@ export const jigsawSeamGrammarCatalog = {
     cornerBuffer: 9,
     lean: 0.03,
   },
-} as const satisfies Record<JigsawSeamGrammarId, JigsawSeamGrammarDefinition>;
+} as const satisfies Record<JigsawConnectorGrammarId, JigsawConnectorGrammarDefinition>;
 
 const seededUnit = (seedOffset: number, salt: number) => {
   const mixed = Math.imul((seedOffset ^ salt) >>> 0, 2_654_435_761) >>> 0;
@@ -219,7 +219,7 @@ const seededUnit = (seedOffset: number, salt: number) => {
 const range = (seedOffset: number, salt: number, minimum: number, maximum: number) =>
   minimum + seededUnit(seedOffset, salt) * (maximum - minimum);
 
-const point = (x: number, y: number): JigsawSeamPoint => ({ x, y });
+const point = (x: number, y: number): JigsawConnectorPoint => ({ x, y });
 
 const repeatedEvents = (
   count: number,
@@ -230,21 +230,21 @@ const repeatedEvents = (
     index === count - 1 ? [first] : [first, second],
   ).flat();
 
-export const deriveJigsawSeamProgram = (
-  grammarId: JigsawSeamGrammarId,
+export const deriveJigsawConnectorProgram = (
+  connectorGrammarId: JigsawConnectorGrammarId,
   seedOffset: number,
-): JigsawSeamProgram => {
+): JigsawConnectorProgram => {
   switch (grammarId) {
     case "classic-bulb":
       return {
-        grammarId,
+        connectorGrammarId: grammarId,
         events: ["lobe"],
         crown: range(seedOffset, 0x1a31, 0.96, 1.08),
         shoulder: range(seedOffset, 0x1a32, 0.38, 0.48),
       };
     case "necked-head":
       return {
-        grammarId,
+        connectorGrammarId: grammarId,
         events: ["neck", "undercut", "head", "undercut", "neck"],
         stem: range(seedOffset, 0x2b41, 0.1, 0.17),
         head: range(seedOffset, 0x2b42, 0.48, 0.64),
@@ -254,7 +254,7 @@ export const deriveJigsawSeamProgram = (
     case "multi-lobe": {
       const lobeCount = 2 + Math.floor(seededUnit(seedOffset, 0x3c51) * 3);
       return {
-        grammarId,
+        connectorGrammarId: grammarId,
         events: repeatedEvents(lobeCount, "lobe", "saddle"),
         lobeCount,
         saddleDepth: range(seedOffset, 0x3c52, 0.36, 0.56),
@@ -263,14 +263,14 @@ export const deriveJigsawSeamProgram = (
     }
     case "scoop":
       return {
-        grammarId,
+        connectorGrammarId: grammarId,
         events: ["outer-sweep", "scoop", "return"],
         bite: range(seedOffset, 0x4d61, 0.12, 0.28),
         sweep: range(seedOffset, 0x4d62, 0.54, 0.66),
       };
     case "serpentine":
       return {
-        grammarId,
+        connectorGrammarId: grammarId,
         events: ["lobe", "cross-baseline", "opposed-lobe"],
         reverseDepth: range(seedOffset, 0x5e71, 0.3, 0.44),
         skew: range(seedOffset, 0x5e72, -0.08, 0.08),
@@ -278,7 +278,7 @@ export const deriveJigsawSeamProgram = (
     case "terrace": {
       const levels = 2 + Math.floor(seededUnit(seedOffset, 0x7091) * 3);
       return {
-        grammarId,
+        connectorGrammarId: grammarId,
         events: repeatedEvents(levels, "step", "plateau"),
         levels,
         crown: range(seedOffset, 0x7092, 0.82, 0.96),
@@ -287,7 +287,7 @@ export const deriveJigsawSeamProgram = (
     case "zigzag": {
       const turns = 2 + Math.floor(seededUnit(seedOffset, 0x81a1) * 3);
       return {
-        grammarId,
+        connectorGrammarId: grammarId,
         events: repeatedEvents(turns, "zig", "zag"),
         turns,
         low: range(seedOffset, 0x81a2, 0.18, 0.3),
@@ -296,7 +296,7 @@ export const deriveJigsawSeamProgram = (
     }
     case "stacked-lock":
       return {
-        grammarId,
+        connectorGrammarId: grammarId,
         events: ["chamber", "waist", "chamber"],
         lowerChamber: range(seedOffset, 0x92b1, 0.44, 0.54),
         waist: range(seedOffset, 0x92b2, 0.16, 0.24),
@@ -306,10 +306,10 @@ export const deriveJigsawSeamProgram = (
   }
 };
 
-export const realizeJigsawSeamProgram = (
-  program: JigsawSeamProgram,
-): JigsawSeamPoint[] => {
-  switch (program.grammarId) {
+export const realizeJigsawConnectorProgram = (
+  program: JigsawConnectorProgram,
+): JigsawConnectorPoint[] => {
+  switch (program.connectorGrammarId) {
     case "classic-bulb":
       return [
         point(-1, 0),
@@ -343,7 +343,7 @@ export const realizeJigsawSeamProgram = (
         point(1, 0),
       ];
     case "multi-lobe": {
-      const points: JigsawSeamPoint[] = [point(-1, 0), point(-0.66, 0.02)];
+      const points: JigsawConnectorPoint[] = [point(-1, 0), point(-0.66, 0.02)];
       const left = -0.6;
       const right = 0.6;
       const cell = (right - left) / program.lobeCount;
@@ -397,7 +397,7 @@ export const realizeJigsawSeamProgram = (
         point(1, 0),
       ];
     case "terrace": {
-      const points: JigsawSeamPoint[] = [point(-1, 0), point(-0.66, 0)];
+      const points: JigsawConnectorPoint[] = [point(-1, 0), point(-0.66, 0)];
       const steps = program.levels * 2;
       const left = -0.62;
       const right = 0.62;
@@ -416,7 +416,7 @@ export const realizeJigsawSeamProgram = (
       return points;
     }
     case "zigzag": {
-      const points: JigsawSeamPoint[] = [point(-1, 0), point(-0.64, 0)];
+      const points: JigsawConnectorPoint[] = [point(-1, 0), point(-0.64, 0)];
       const vertices = program.turns * 2 + 1;
       for (let index = 0; index < vertices; index += 1) {
         const x = -0.56 + (1.12 * index) / Math.max(1, vertices - 1);
@@ -453,10 +453,10 @@ export const realizeJigsawSeamProgram = (
   }
 };
 
-export const getJigsawSeamGrammarDefinition = (
-  grammarId: JigsawSeamGrammarId,
-): JigsawSeamGrammarDefinition => jigsawSeamGrammarCatalog[grammarId];
+export const getJigsawConnectorGrammarDefinition = (
+  connectorGrammarId: JigsawConnectorGrammarId,
+): JigsawConnectorGrammarDefinition => jigsawConnectorGrammarCatalog[grammarId];
 
-export const getJigsawSeamProgramSignature = (
-  program: JigsawSeamProgram,
+export const getJigsawConnectorProgramSignature = (
+  program: JigsawConnectorProgram,
 ): string => program.events.join(" > ");

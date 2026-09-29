@@ -5,13 +5,13 @@ import type {
   JigsawPieceEdge,
 } from "../../catalog/types";
 import {
-  deriveJigsawSeamProgram,
-  getJigsawSeamGrammarDefinition,
-  realizeJigsawSeamProgram,
-  type JigsawSeamPoint,
-} from "./seamGrammar";
+  deriveJigsawConnectorProgram,
+  getJigsawConnectorGrammarDefinition,
+  realizeJigsawConnectorProgram,
+  type JigsawConnectorPoint,
+} from "./connectorGrammar";
 
-export type JigsawEdgePoint = JigsawSeamPoint;
+export type JigsawEdgePoint = JigsawConnectorPoint;
 
 export type JigsawPieceSeamPath = {
   edgeId: string;
@@ -59,8 +59,8 @@ const getCanonicalConnectorPoints = (
   profileId: JigsawEdgeProfileId,
   seedOffset: number,
 ): JigsawEdgePoint[] => {
-  const grammar = getJigsawSeamGrammarDefinition(profileId);
-  const program = deriveJigsawSeamProgram(profileId, seedOffset);
+  const grammar = getJigsawConnectorGrammarDefinition(profileId);
+  const program = deriveJigsawConnectorProgram(profileId, seedOffset);
   const width = seededRange(seedOffset, 0x51ed, grammar.width);
   const depth = seededRange(seedOffset, 0x7f4a, grammar.depth);
   const lean =
@@ -68,7 +68,7 @@ const getCanonicalConnectorPoints = (
   const shouldMirror =
     grammar.mirrorable && seededUnit(seedOffset, 0x65d3) < 0.5;
 
-  let anchors = realizeJigsawSeamProgram(program);
+  let anchors = realizeJigsawConnectorProgram(program);
   if (shouldMirror) anchors = mirrorAnchors(anchors);
 
   const horizontalOffsets = anchors.map(
@@ -129,7 +129,7 @@ const getCanonicalEdgeSegments = (
   seedOffset: number,
 ): JigsawEdgeSegment[] => {
   const points = getCanonicalConnectorPoints(profileId, seedOffset);
-  const grammar = getJigsawSeamGrammarDefinition(profileId);
+  const grammar = getJigsawConnectorGrammarDefinition(profileId);
   if (grammar.renderMode === "angular") {
     return lineSegmentsFromPoints(points);
   }

@@ -106,7 +106,7 @@ describe("generateJigsaw", () => {
     for (const profileId of jigsawEdgeProfileIds) {
       const profile = getJigsawEdgeProfile(profileId);
       expect(profile.id).toBe(profileId);
-      expect(profile.grammarId).toBe(profileId);
+      expect(profile.connectorGrammarId).toBe(profileId);
       expect(profile.description.length).toBeGreaterThan(0);
       expect(profile.selectionWeight).toBeGreaterThan(0);
       expect(profile.difficultyWeight).toBeGreaterThan(0);

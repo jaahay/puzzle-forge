@@ -1,9 +1,9 @@
 import type { JigsawEdgeProfile, JigsawEdgeProfileId } from "../../catalog/types";
-import { jigsawSeamGrammarCatalog, jigsawSeamGrammarIds } from "./seamGrammar";
+import { jigsawConnectorGrammarCatalog, jigsawConnectorGrammarIds } from "./connectorGrammar";
 
 export const jigsawEdgeProfileCatalogRevision = 1;
 
-export const jigsawEdgeProfileIds = jigsawSeamGrammarIds;
+export const jigsawEdgeProfileIds = jigsawConnectorGrammarIds;
 
 const makeProfile = (
   id: JigsawEdgeProfileId,
@@ -11,9 +11,9 @@ const makeProfile = (
   difficultyWeight: number,
 ): JigsawEdgeProfile => ({
   id,
-  label: jigsawSeamGrammarCatalog[id].label,
-  description: jigsawSeamGrammarCatalog[id].description,
-  grammarId: id,
+  label: jigsawConnectorGrammarCatalog[id].label,
+  description: jigsawConnectorGrammarCatalog[id].description,
+  connectorGrammarId: id,
   selectionWeight,
   difficultyWeight,
 });

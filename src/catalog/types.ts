@@ -154,7 +154,7 @@ export type TilePuzzleAsset = GeneratedTilePuzzleAsset | PuzzleImageAsset;
 
 export type JigsawEdgeSide = "top" | "right" | "bottom" | "left";
 export type JigsawEdgePolarity = "flat" | "tab" | "blank";
-export type JigsawSeamGrammarId =
+export type JigsawConnectorGrammarId =
   | "classic-bulb"
   | "necked-head"
   | "multi-lobe"
@@ -163,13 +163,13 @@ export type JigsawSeamGrammarId =
   | "terrace"
   | "zigzag"
   | "stacked-lock";
-export type JigsawEdgeProfileId = JigsawSeamGrammarId;
+export type JigsawEdgeProfileId = JigsawConnectorGrammarId;
 
 export type JigsawEdgeProfile = {
   id: JigsawEdgeProfileId;
   label: string;
   description: string;
-  grammarId: JigsawSeamGrammarId;
+  connectorGrammarId: JigsawConnectorGrammarId;
   selectionWeight: number;
   difficultyWeight: number;
 };
