@@ -131,6 +131,27 @@ const expectNoSelfIntersection = (
   }
 };
 
+const expectPointsSafe = (
+  points: Array<{ x: number; y: number }>,
+  context: string,
+) => {
+  for (const candidate of points) {
+    if (!Number.isFinite(candidate.x) || !Number.isFinite(candidate.y)) {
+      throw new Error(`${context}: non-finite point ${candidate.x},${candidate.y}.`);
+    }
+    if (
+      candidate.x < -jigsawEdgeMaximumDepth ||
+      candidate.x > 100 + jigsawEdgeMaximumDepth ||
+      candidate.y < -jigsawEdgeMaximumDepth ||
+      candidate.y > 100 + jigsawEdgeMaximumDepth
+    ) {
+      throw new Error(`${context}: point ${candidate.x},${candidate.y} exceeds geometry bounds.`);
+    }
+  }
+
+  expectNoSelfIntersection(points, context);
+};
+
 describe("Jigsaw edge paths", () => {
   it("keeps all boundary edges flat", () => {
     expect(getJigsawEdgePath(makeBoundaryEdge("top"))).toBe("M 0 0 L 100 0");
@@ -266,22 +287,7 @@ describe("Jigsaw edge paths", () => {
           makeInteriorEdge({ side: "top", profileId, polarity: "tab", seedOffset }),
         );
 
-        for (const point of points) {
-          if (
-            !Number.isFinite(point.x) ||
-            !Number.isFinite(point.y) ||
-            point.x < -jigsawEdgeMaximumDepth ||
-            point.x > 100 + jigsawEdgeMaximumDepth ||
-            point.y < -jigsawEdgeMaximumDepth ||
-            point.y > 100 + jigsawEdgeMaximumDepth
-          ) {
-            throw new Error(
-              `${profileId} broad seam seed ${seedOffset}: point (${point.x}, ${point.y}) is outside the safe finite envelope.`,
-            );
-          }
-        }
-
-        expectNoSelfIntersection(points, `${profileId} broad seam seed ${seedOffset}`);
+        expectPointsSafe(points, `${profileId} broad seam seed ${seedOffset}`);
       }
     }
   }, 15_000);
