@@ -126,7 +126,7 @@ type JigsawPiece = {
 
 ### Edge-shape repository
 
-See [Jigsaw Connector Family Design](./jigsaw-connector-grammars.md) for the visual identification guide, grammar-by-grammar design intent, tuning snapshot, generated atlas, and rejected/collapsed productions.
+See [Jigsaw Seam Grammar Design](./jigsaw-connector-families.md) for the visual identification guide, grammar-by-grammar design intent, tuning snapshot, generated atlas, and rejected/collapsed productions.
 
 The edge repository is now **grammar-first**. Ordinary connector entries are distinct structural productions rather than cosmetic names backed by one shared formula. For the initial rollout, the generator chooses one grammar once per puzzle; selection weights therefore shape variety across games, not within one board. Individual seams then vary deterministically within that grammar.
 
