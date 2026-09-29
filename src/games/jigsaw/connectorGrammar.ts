@@ -234,17 +234,17 @@ export const deriveJigsawConnectorProgram = (
   connectorGrammarId: JigsawConnectorGrammarId,
   seedOffset: number,
 ): JigsawConnectorProgram => {
-  switch (grammarId) {
+  switch (connectorGrammarId) {
     case "classic-bulb":
       return {
-        connectorGrammarId: grammarId,
+        connectorGrammarId,
         events: ["lobe"],
         crown: range(seedOffset, 0x1a31, 0.96, 1.08),
         shoulder: range(seedOffset, 0x1a32, 0.38, 0.48),
       };
     case "necked-head":
       return {
-        connectorGrammarId: grammarId,
+        connectorGrammarId,
         events: ["neck", "undercut", "head", "undercut", "neck"],
         stem: range(seedOffset, 0x2b41, 0.1, 0.17),
         head: range(seedOffset, 0x2b42, 0.48, 0.64),
@@ -254,7 +254,7 @@ export const deriveJigsawConnectorProgram = (
     case "multi-lobe": {
       const lobeCount = 2 + Math.floor(seededUnit(seedOffset, 0x3c51) * 3);
       return {
-        connectorGrammarId: grammarId,
+        connectorGrammarId,
         events: repeatedEvents(lobeCount, "lobe", "saddle"),
         lobeCount,
         saddleDepth: range(seedOffset, 0x3c52, 0.36, 0.56),
@@ -263,14 +263,14 @@ export const deriveJigsawConnectorProgram = (
     }
     case "scoop":
       return {
-        connectorGrammarId: grammarId,
+        connectorGrammarId,
         events: ["outer-sweep", "scoop", "return"],
         bite: range(seedOffset, 0x4d61, 0.12, 0.28),
         sweep: range(seedOffset, 0x4d62, 0.54, 0.66),
       };
     case "serpentine":
       return {
-        connectorGrammarId: grammarId,
+        connectorGrammarId,
         events: ["lobe", "cross-baseline", "opposed-lobe"],
         reverseDepth: range(seedOffset, 0x5e71, 0.3, 0.44),
         skew: range(seedOffset, 0x5e72, -0.08, 0.08),
@@ -278,7 +278,7 @@ export const deriveJigsawConnectorProgram = (
     case "terrace": {
       const levels = 2 + Math.floor(seededUnit(seedOffset, 0x7091) * 3);
       return {
-        connectorGrammarId: grammarId,
+        connectorGrammarId,
         events: repeatedEvents(levels, "step", "plateau"),
         levels,
         crown: range(seedOffset, 0x7092, 0.82, 0.96),
@@ -287,7 +287,7 @@ export const deriveJigsawConnectorProgram = (
     case "zigzag": {
       const turns = 2 + Math.floor(seededUnit(seedOffset, 0x81a1) * 3);
       return {
-        connectorGrammarId: grammarId,
+        connectorGrammarId,
         events: repeatedEvents(turns, "zig", "zag"),
         turns,
         low: range(seedOffset, 0x81a2, 0.18, 0.3),
@@ -296,7 +296,7 @@ export const deriveJigsawConnectorProgram = (
     }
     case "stacked-lock":
       return {
-        connectorGrammarId: grammarId,
+        connectorGrammarId,
         events: ["chamber", "waist", "chamber"],
         lowerChamber: range(seedOffset, 0x92b1, 0.44, 0.54),
         waist: range(seedOffset, 0x92b2, 0.16, 0.24),
@@ -455,7 +455,7 @@ export const realizeJigsawConnectorProgram = (
 
 export const getJigsawConnectorGrammarDefinition = (
   connectorGrammarId: JigsawConnectorGrammarId,
-): JigsawConnectorGrammarDefinition => jigsawConnectorGrammarCatalog[grammarId];
+): JigsawConnectorGrammarDefinition => jigsawConnectorGrammarCatalog[connectorGrammarId];
 
 export const getJigsawConnectorProgramSignature = (
   program: JigsawConnectorProgram,
