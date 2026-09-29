@@ -126,76 +126,96 @@ type JigsawPiece = {
 
 ### Edge-shape repository
 
-See [Jigsaw Connector Family Design](./jigsaw-connector-families.md) for the visual identification guide, family-by-family design intent, tuning snapshot, and safety distinctions.
+See [Jigsaw Connector Family Design](./jigsaw-connector-grammars.md) for the visual identification guide, grammar-by-grammar design intent, tuning snapshot, generated atlas, and rejected/collapsed productions.
 
-The edge repository now models a weighted generative connector vocabulary rather than several cosmetic names backed by only a few path families. For the initial rollout, the generator chooses one connector family once per puzzle; selection weights therefore shape variety across games, not within one board. Individual seams still vary substantially through their seeded geometry parameters.
+The edge repository is now **grammar-first**. Ordinary connector entries are distinct structural productions rather than cosmetic names backed by one shared formula. For the initial rollout, the generator chooses one grammar once per puzzle; selection weights therefore shape variety across games, not within one board. Individual seams then vary deterministically within that grammar.
 
 ```ts
-type JigsawEdgeProfileId =
+type JigsawSeamGrammarId =
   | "classic-bulb"
-  | "mushroom"
-  | "keyhole"
-  | "dovetail"
-  | "t-lock"
-  | "bottle"
-  | "hook"
-  | "teardrop"
-  | "double-lobe"
-  | "crescent"
-  | "s-lock"
-  | "lightning"
-  | "castle"
-  | "arrowhead";
+  | "necked-head"
+  | "multi-lobe"
+  | "scoop"
+  | "serpentine"
+  | "terrace"
+  | "zigzag"
+  | "stacked-lock";
 
 type JigsawEdgeProfile = {
-  id: JigsawEdgeProfileId;
+  id: JigsawSeamGrammarId;
   label: string;
   description: string;
-  pathFamily: JigsawEdgeProfileId;
+  grammarId: JigsawSeamGrammarId;
   selectionWeight: number;
   difficultyWeight: number;
 };
 ```
 
-Each interior edge still stores only `profileId + seedOffset`. Those values deterministically expand into one canonical two-dimensional seam path. A family is free to backtrack along the nominal edge axis, cross the baseline, form undercuts, or use rectilinear geometry; the neighboring piece receives the exact reversed/complementary seam. Renderer-derived control points are not persisted.
+The current ordinary productions are:
 
-This deliberately avoids treating every connector as a single-valued height function over a rectangular side. Mushroom/keyhole/T-lock/arrowhead families can have true necks and overhangs, while S-lock and similarly expressive families can use both sides of the nominal baseline.
+- **Classic bulb** — `lobe`
+- **Necked head** — `neck > undercut > head > undercut > neck`
+- **Multi-lobe** — `repeat(lobe > saddle){2..4}`
+- **Scoop** — `outer-sweep > scoop > return`
+- **Serpentine** — `lobe > cross-baseline > opposed-lobe`
+- **Terrace** — `repeat(step > plateau){2..4}`
+- **Zigzag** — `repeat(zig > zag){2..4}`
+- **Stacked lock** — `chamber > waist > chamber`
 
-Organic families render the canonical seam with cubic Bézier segments so their rounded forms are genuinely curved rather than subdivided straight polylines. Deliberately mechanical families such as dovetail, T-lock, lightning, castle, and arrowhead retain straight segments. Curve sampling exists for geometry validation and hit-safety checks; it is not the rendered shape itself.
+This catalog intentionally collapses earlier labels that differed only by continuous tuning. Mushroom, Keyhole, and Bottle all reduced to the same necked-head production. Dovetail, T-lock, and Arrowhead likewise did not justify separate structural identities merely through head shape or angular treatment. The experimental Curl/Hook production was removed when a convincing inward curl repeatedly violated self-intersection safety; it was not diluted into a cosmetic variant of Scoop.
 
-Connector placement should use a substantial portion of the available edge rather than concentrating every silhouette near the midpoint. Family-specific span ranges now occupy roughly two-thirds to nine-tenths of an ordinary edge. The generated connector is allowed to bias left or right when its width leaves room; its legal center interval is derived from the actual seeded horizontal envelope plus a family-specific corner buffer. The bias distribution intentionally favors more visible displacement while still allowing centered seams when the geometry is broad enough to consume most of the usable edge.
+Each interior edge still stores only `profileId + seedOffset`. Those values deterministically derive a grammar program, realize that program into normalized two-dimensional geometry, and then apply seeded width, depth, placement, lean, optional handedness, polarity, and side orientation. Renderer-derived control points are not persisted.
 
-Vertical proportion is a family-wide aesthetic constraint, not an exception reserved for a few organic profiles. The ordinary catalog should avoid broad-but-stumpy seams: sampled connector height remains meaningfully substantial relative to horizontal span across every family. The geometry safety envelope allows up to 32% of a piece side where a family needs that depth, while individual ranges stay family-specific to avoid adjacent-edge collisions.
+The shared geometry engine deliberately remains separate from grammar identity:
+
+1. grammar derivation determines structural events;
+2. grammar realization produces canonical normalized anchors;
+3. common placement expands those anchors into the edge coordinate system;
+4. common polarity/orientation logic produces reciprocal neighboring seams;
+5. common rendering converts organic grammars to cubic Bézier segments and angular grammars to line segments;
+6. common validation checks bounds and self-intersection.
+
+This allows bounded-repeat grammars such as Multi-lobe, Terrace, and Zigzag to make discrete structural RNG decisions in addition to continuous dimension changes, without requiring one universal connector formula.
+
+Connector placement should use a substantial portion of the available edge rather than concentrating every silhouette near the midpoint. Grammar-specific span ranges occupy much of an ordinary edge. The generated connector may bias left or right when its width leaves room; its legal center interval is derived from the actual seeded horizontal envelope plus a grammar-specific corner buffer.
+
+Vertical proportion is a catalog-wide aesthetic constraint. Broad seams should not become visually stumpy: sampled connector height remains meaningfully substantial relative to horizontal span across every grammar. The geometry safety envelope allows up to 32% of a piece side where needed, while individual grammar ranges stay topology-specific to avoid adjacent-edge collisions.
+
+No generator/resource versioning or compatibility machinery is introduced here. Puzzle Forge remains explicitly pre-versioning; changes to grammar or geometry may intentionally change seeded Jigsaw output until that policy is changed.
 
 ### Edge invariants
 
 - Every border edge is flat and has no neighbor.
 - Every interior edge has a neighbor edge.
-- All interior edges in one generated puzzle share the puzzle's selected connector family during the initial rollout.
+- All interior edges in one generated puzzle share the puzzle's selected connector grammar during the initial rollout.
 - Neighboring interior edges share the same profile id and seed offset.
 - Neighboring interior edges have inverse polarity: `tab` against `blank`.
 - Connector geometry may be non-monotonic along the owning edge; generated seams are instead required to remain non-self-intersecting.
 - Generated connector points stay inside the declared visual/hit-test depth bound.
-- Every ordinary connector family maintains a substantial vertical-to-horizontal seam proportion rather than becoming broad and visually stumpy.
+- Every ordinary connector grammar maintains a substantial vertical-to-horizontal seam proportion rather than becoming broad and visually stumpy.
 - Connector placement preserves explicit corner room while allowing safe left/right bias when the seeded width leaves available edge space.
-- Distinct families should remain visually distinguishable at ordinary play scale rather than differing only through small width/depth perturbations.
+- Distinct grammars should remain visually distinguishable at ordinary play scale rather than differing only through small width/depth perturbations.
 - Within the current generator implementation, the same seed, dimensions, and image id produce the same edge graph.
 
 ### Validation
 
-Add generator tests for:
+Generator and geometry tests cover:
 
 - border edges are flat;
 - right/left adjacent edges are compatible;
 - bottom/top adjacent edges are compatible;
 - generated edges are deterministic;
-- each generated puzzle uses exactly one connector family while different puzzle seeds can select across the catalog;
-- organic families render with curves and intentionally angular families remain angular;
+- each generated puzzle uses exactly one connector grammar while different puzzle seeds can select across the catalog;
+- each grammar has a distinct structural production;
+- bounded-repeat grammars can derive different event counts from different seeds;
+- organic grammars render with curves and intentionally angular grammars remain angular;
+- generated seam geometry remains finite, bounded, and non-self-intersecting across a broad deterministic seed sweep;
+- complete four-edge piece outlines remain non-self-intersecting across broad seed and polarity coverage;
 - every interior edge has exactly one neighbor edge.
 
 ### Follow-on geometry directions
 
-Two separate future directions are intentionally outside the ordinary connector-family work:
+Two separate future directions are intentionally outside the ordinary connector-grammar work:
 
 - #190 explores rare surprise/anomaly geometry whose value depends on being exceptional rather than part of the everyday distribution.
 - #191 explores non-grid piece topology such as circular medallion pieces, arbitrary neighbor counts, and piece boundaries that are not four rectangular sides.
