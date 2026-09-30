@@ -919,8 +919,6 @@ export const TilePuzzlePreview = ({
     <section class="tile-puzzle-preview" aria-label={`${puzzle.title} jigsaw puzzle`}>
       <div class="tile-puzzle-summary">
         <span>{isSolved ? "Solved" : `${solvedCount}/${puzzle.tiles.length} placed`}</span>
-        <span>{puzzle.asset.title}</span>
-        <span>{puzzle.width} x {puzzle.height}</span>
       </div>
 
       <div class={`tile-puzzle-tools ${isSolved ? "is-solved" : ""}`}>
@@ -950,7 +948,7 @@ export const TilePuzzlePreview = ({
         </button>
         <button type="button" onClick={() => zoomView("in")} aria-label="Zoom in">+</button>
         <button type="button" onClick={() => fitView("board")}>Fit board</button>
-        <button type="button" onClick={() => fitView("workspace")}>Fit workspace</button>
+        <button type="button" onClick={() => fitView("all")}>Show all</button>
         {!displayMode.isExpanded ? (
           <button
             class="jigsaw-expand-workspace"
