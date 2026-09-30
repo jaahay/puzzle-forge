@@ -76,7 +76,10 @@ export const App = () => {
     () => resolveStartupRoute(getCurrentAppRoute(), initialPersistedSessions),
     [initialPersistedSessions],
   );
-  const storedPuzzleId = useMemo(() => getInitialSelectedPuzzleId(), []);
+  const storedPuzzleId = useMemo(
+    () => getInitialSelectedPuzzleId("sudoku", initialPersistedSessions),
+    [initialPersistedSessions],
+  );
   const initialSelectedPuzzleId = initialRoute.kind === "puzzle" || initialRoute.kind === "resource"
     ? initialRoute.puzzleId
     : storedPuzzleId;
@@ -104,7 +107,7 @@ export const App = () => {
   };
 
   const generation = usePuzzleGeneration();
-  const sessions = usePuzzleSessions();
+  const sessions = usePuzzleSessions(initialPersistedSessions?.sessions);
   const grid = useGridController();
   const solitaire = useSolitaireController({ statusMessage, onStatusMessage: setStatusMessage, solitaireVariation: activeSolitaireVariation });
   const {
@@ -492,8 +495,6 @@ export const App = () => {
       },
     );
     generation.worker.addEventListener("message", handleMessage);
-
-    if (initialPersistedSessions) sessions.initializePersistedSessions(initialPersistedSessions.sessions);
 
     if (initialRoute.kind === "puzzle") {
       selectPuzzle(initialRoute.puzzleId, { pushHistory: false });
