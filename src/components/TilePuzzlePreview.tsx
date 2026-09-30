@@ -17,6 +17,7 @@ import { getJigsawPinchCamera, type JigsawPinchPair, type JigsawPinchPoint } fro
 import {
   createInitialJigsawPlacements,
   createJigsawFitCamera,
+  createJigsawOccupiedFitCamera,
   createJigsawWorldLayout,
   getJigsawCameraTransform,
   getJigsawPlacementPosition,
@@ -138,7 +139,12 @@ export const initializeOrPreserveJigsawCamera = (
   layout: JigsawWorldLayout,
   viewport: JigsawViewport,
   currentCamera: JigsawCamera | null,
-) => currentCamera ?? createJigsawFitCamera(layout, viewport, "workspace");
+  placements: readonly JigsawPlacement[] | null = null,
+) => currentCamera ?? (
+  placements
+    ? createJigsawOccupiedFitCamera(layout, viewport, placements)
+    : createJigsawFitCamera(layout, viewport, "workspace")
+);
 
 export const getMeasuredJigsawViewport = (
   stage: Pick<HTMLElement, "clientWidth" | "clientHeight"> | null,
@@ -297,9 +303,12 @@ export const TilePuzzlePreview = ({
   }, []);
 
   const renderViewport = isUsableJigsawViewport(viewport) ? viewport : fallbackViewport;
+  const activePlacements = placementState?.puzzleId === puzzle.id ? placementState.placements : null;
   const activeCamera = cameraState?.puzzleId === puzzle.id
     ? cameraState.camera
-    : createJigsawFitCamera(layout, renderViewport, "workspace");
+    : activePlacements
+      ? createJigsawOccupiedFitCamera(layout, renderViewport, activePlacements)
+      : createJigsawFitCamera(layout, renderViewport, "workspace");
   const wheelStateRef = useRef({
     puzzleId: puzzle.id,
     camera: activeCamera,
@@ -370,25 +379,31 @@ export const TilePuzzlePreview = ({
   }, [initialSnappedPieceIds, layout, puzzle.id, puzzle.tiles, updatePlacementState, viewport.height, viewport.width]);
 
   useEffect(() => {
-    if (!isUsableJigsawViewport(viewport)) return;
-    setCameraState((current) => ({
-      puzzleId: puzzle.id,
-      camera: initializeOrPreserveJigsawCamera(
-        layout,
-        viewport,
-        current?.puzzleId === puzzle.id ? current.camera : null,
-      ),
-    }));
-  }, [layout, puzzle.id, viewport.height, viewport.width]);
+    if (!isUsableJigsawViewport(viewport) || !activePlacements) return;
+    setCameraState((current) => {
+      if (current?.puzzleId === puzzle.id) return current;
+      return {
+        puzzleId: puzzle.id,
+        camera: initializeOrPreserveJigsawCamera(layout, viewport, null, activePlacements),
+      };
+    });
+  }, [activePlacements, layout, puzzle.id, viewport.height, viewport.width]);
 
   const setCamera = (camera: JigsawCamera) => {
     wheelStateRef.current = { ...wheelStateRef.current, puzzleId: puzzle.id, camera };
     setCameraState({ puzzleId: puzzle.id, camera });
   };
 
-  const fitView = (target: "workspace" | "board") => {
+  const fitView = (target: "all" | "board") => {
     if (!isUsableJigsawViewport(viewport)) return;
-    setCamera(createJigsawFitCamera(layout, viewport, target));
+    if (target === "board") {
+      setCamera(createJigsawFitCamera(layout, viewport, "board"));
+      return;
+    }
+
+    const current = placementStateRef.current;
+    if (!current || current.puzzleId !== puzzle.id) return;
+    setCamera(createJigsawOccupiedFitCamera(layout, viewport, current.placements));
   };
 
   const scatterPieces = () => {
@@ -421,7 +436,7 @@ export const TilePuzzlePreview = ({
         nextPlacements,
       ));
     }
-    setCamera(createJigsawFitCamera(layout, stagingViewport, "workspace"));
+    setCamera(createJigsawOccupiedFitCamera(layout, stagingViewport, nextPlacements));
     return true;
   };
 
@@ -431,7 +446,7 @@ export const TilePuzzlePreview = ({
     lastResetVersion.current = resetVersion;
   }, [layout, puzzle.id, puzzle.tiles, resetVersion, viewport.height, viewport.width]);
 
-  const placements = placementState?.puzzleId === puzzle.id ? placementState.placements : [];
+  const placements = activePlacements ?? [];
   const placementById = new Map(placements.map((placement) => [placement.id, placement] as const));
   const solvedCount = placements.filter((placement) => placement.snapped).length;
   const isSolved = areJigsawPlacementsSolved(placements, puzzle.tiles.length);
