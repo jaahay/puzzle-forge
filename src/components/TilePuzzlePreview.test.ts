@@ -9,6 +9,7 @@ import {
 } from "../games/jigsaw/placement";
 import {
   areJigsawPlacementsSolved,
+  getJigsawFitInsetsForOverlays,
   getJigsawZoomStep,
   getMeasuredJigsawViewport,
   getPieceHitTargetProps,
@@ -140,6 +141,22 @@ describe("TilePuzzlePreview camera controls", () => {
     expect(initializeOrPreserveJigsawCamera(layout, viewport, null, placements)).toEqual(
       createJigsawOccupiedFitCamera(layout, viewport, placements),
     );
+  });
+});
+
+describe("TilePuzzlePreview fit safe areas", () => {
+  it("reserves the nearest stage edge for immersive overlay chrome", () => {
+    const stage = { left: 0, top: 0, right: 1000, bottom: 700, width: 1000, height: 700 };
+    const insets = getJigsawFitInsetsForOverlays(stage, [
+      { left: 12, top: 12, right: 312, bottom: 60, width: 300, height: 48 },
+      { left: 300, top: 642, right: 700, bottom: 690, width: 400, height: 48 },
+      { left: 10, top: 120, right: 90, bottom: 520, width: 80, height: 400 },
+    ]);
+
+    expect(insets.top).toBe(68);
+    expect(insets.bottom).toBe(66);
+    expect(insets.left).toBe(98);
+    expect(insets.right).toBe(0);
   });
 });
 
