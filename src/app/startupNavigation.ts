@@ -1,19 +1,9 @@
-import type { PuzzleId } from "../catalog/types";
 import type { AppRoute } from "./routes";
-
-type StartupPersistedSession = {
-  puzzleId: PuzzleId;
-  generationId: string;
-};
-
-export type StartupPersistedSessions = {
-  activeResourceKey: string;
-  sessions: Record<string, StartupPersistedSession | undefined>;
-};
+import type { PersistedPuzzleSessions } from "./session";
 
 export const resolveStartupRoute = (
   initialRoute: AppRoute,
-  persisted: StartupPersistedSessions | null,
+  persisted: PersistedPuzzleSessions | null,
 ): AppRoute => {
   if (initialRoute.kind !== "puzzle" || !persisted) return initialRoute;
 
