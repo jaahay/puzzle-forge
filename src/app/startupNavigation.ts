@@ -1,18 +1,43 @@
+import type { PuzzleId } from "../catalog/types";
 import type { AppRoute } from "./routes";
-import type { PersistedPuzzleSessions } from "./session";
+import type { PersistedPuzzleSession, PersistedPuzzleSessions } from "./session";
+
+const persistedSessionTimestamp = (session: PersistedPuzzleSession) => {
+  const timestamp = Date.parse(session.updatedAt);
+  return Number.isFinite(timestamp) ? timestamp : Number.NEGATIVE_INFINITY;
+};
+
+export const getMostRecentPersistedPuzzleSession = (
+  puzzleId: PuzzleId,
+  persisted: PersistedPuzzleSessions | null,
+): PersistedPuzzleSession | null => {
+  if (!persisted) return null;
+
+  const activeSession = persisted.sessions[persisted.activeResourceKey];
+  if (activeSession?.puzzleId === puzzleId) return activeSession;
+
+  let mostRecent: PersistedPuzzleSession | null = null;
+  for (const session of Object.values(persisted.sessions)) {
+    if (!session || session.puzzleId !== puzzleId) continue;
+    if (!mostRecent || persistedSessionTimestamp(session) > persistedSessionTimestamp(mostRecent)) {
+      mostRecent = session;
+    }
+  }
+  return mostRecent;
+};
 
 export const resolveStartupRoute = (
   initialRoute: AppRoute,
   persisted: PersistedPuzzleSessions | null,
 ): AppRoute => {
-  if (initialRoute.kind !== "puzzle" || !persisted) return initialRoute;
+  if (initialRoute.kind !== "puzzle") return initialRoute;
 
-  const activeSession = persisted.sessions[persisted.activeResourceKey];
-  if (!activeSession || activeSession.puzzleId !== initialRoute.puzzleId) return initialRoute;
+  const session = getMostRecentPersistedPuzzleSession(initialRoute.puzzleId, persisted);
+  if (!session) return initialRoute;
 
   return {
     kind: "resource",
-    puzzleId: activeSession.puzzleId,
-    generationId: activeSession.generationId,
+    puzzleId: session.puzzleId,
+    generationId: session.generationId,
   };
 };
