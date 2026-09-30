@@ -3,7 +3,9 @@ import type { JigsawPiece } from "../../catalog/types";
 import {
   createInitialJigsawPlacements,
   createJigsawFitCamera,
+  createJigsawOccupiedFitCamera,
   createJigsawWorldLayout,
+  getJigsawOccupiedBounds,
   getJigsawCameraTransform,
   getJigsawPlacementPosition,
   getJigsawSolvedPosition,
@@ -281,6 +283,29 @@ describe("Jigsaw camera", () => {
     const transform = getJigsawCameraTransform(workspaceCamera, viewport);
     expect(layout.worldWidth / 2 * transform.scale + transform.translateX).toBeCloseTo(viewport.width / 2);
     expect(layout.worldHeight / 2 * transform.scale + transform.translateY).toBeCloseTo(viewport.height / 2);
+  });
+
+  it("fits occupied board and loose-piece bounds instead of unused world space", () => {
+    const compactLayout = createJigsawWorldLayout({
+      imageWidth: 1200,
+      imageHeight: 900,
+      puzzleWidth: 4,
+      puzzleHeight: 4,
+    });
+    const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index));
+    const compactViewport = { width: 1000, height: 650 };
+    const placements = createInitialJigsawPlacements(compactLayout, pieces, compactViewport);
+    const bounds = getJigsawOccupiedBounds(compactLayout, placements);
+    const occupiedCamera = createJigsawOccupiedFitCamera(compactLayout, compactViewport, placements);
+    const workspaceCamera = createJigsawFitCamera(compactLayout, compactViewport, "workspace");
+
+    expect(bounds.x).toBeGreaterThanOrEqual(0);
+    expect(bounds.y).toBeGreaterThanOrEqual(0);
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(compactLayout.worldWidth);
+    expect(bounds.y + bounds.height).toBeLessThanOrEqual(compactLayout.worldHeight);
+    expect(bounds.width < compactLayout.worldWidth || bounds.height < compactLayout.worldHeight).toBe(true);
+    expect(occupiedCamera.zoom).toBeGreaterThan(workspaceCamera.zoom);
+    expect(occupiedCamera.zoom).toBeLessThanOrEqual(1.25);
   });
 
   it("keeps the world point under the pointer stable while zooming", () => {
