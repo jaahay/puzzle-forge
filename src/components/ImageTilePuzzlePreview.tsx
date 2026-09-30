@@ -19,6 +19,7 @@ import {
   isImageTileSolved,
 } from "../games/imageTiles/state";
 import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
+import { usePuzzleViewportSize } from "./usePuzzleViewportSize";
 
 export type ImageTileHistoryController = {
   puzzleInstanceId: string;
@@ -110,16 +111,33 @@ const restoreImageTileActionRuntime = (
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-export const getImageTileBoardStyle = (width: number, height: number): JSX.CSSProperties => {
+export const getImageTileBoardStyle = (
+  width: number,
+  height: number,
+  availableInlineSize = 0,
+  availableBlockSize = 0,
+): JSX.CSSProperties => {
   const safeWidth = Math.max(1, Math.floor(width));
   const safeHeight = Math.max(1, Math.floor(height));
-  const viewportWidthCap = (72 * safeWidth) / safeHeight;
+  const maximumBoardWidth = 42 * 16;
+  const measuredInlineSize = Math.max(0, availableInlineSize);
+  const measuredBlockSize = Math.max(0, availableBlockSize);
+  const widthFromHeight = measuredBlockSize > 0
+    ? measuredBlockSize * safeWidth / safeHeight
+    : maximumBoardWidth;
+  const measuredBoardWidth = Math.min(
+    maximumBoardWidth,
+    measuredInlineSize || maximumBoardWidth,
+    widthFromHeight,
+  );
 
   return {
     gridTemplateColumns: `repeat(${safeWidth}, minmax(0, 1fr))`,
     gridTemplateRows: `repeat(${safeHeight}, minmax(0, 1fr))`,
     aspectRatio: `${safeWidth} / ${safeHeight}`,
-    width: `min(100%, 42rem, ${viewportWidthCap}vh)`,
+    width: measuredInlineSize > 0 || measuredBlockSize > 0
+      ? `${Math.round(measuredBoardWidth * 100) / 100}px`
+      : "min(100%, 42rem)",
   };
 };
 
@@ -360,7 +378,17 @@ export const ImageTilePuzzlePreview = ({
   };
 
   const tileByCurrentIndex = new Map(progress.tiles.map((tile) => [tile.currentIndex, tile] as const));
-  const boardStyle = getImageTileBoardStyle(puzzle.width, puzzle.height);
+  const {
+    ref: boardViewportRef,
+    inlineSize: availableBoardWidth,
+    blockSize: availableBoardHeight,
+  } = usePuzzleViewportSize<HTMLDivElement>();
+  const boardStyle = getImageTileBoardStyle(
+    puzzle.width,
+    puzzle.height,
+    availableBoardWidth,
+    availableBoardHeight,
+  );
   const frameStyle = {
     aspectRatio: boardStyle.aspectRatio,
     width: boardStyle.width,
@@ -400,9 +428,10 @@ export const ImageTilePuzzlePreview = ({
         </div>
       ) : null}
 
-      <div
-        class={`image-tile-board ${showSolvedPresentation ? "solved" : ""} ${showCompletionEffect ? "just-solved" : ""}`}
-        style={boardStyle}
+      <div class="image-tile-board-viewport" ref={boardViewportRef}>
+        <div
+          class={`image-tile-board ${showSolvedPresentation ? "solved" : ""} ${showCompletionEffect ? "just-solved" : ""}`}
+          style={boardStyle}
         aria-label={`${puzzle.title}, ${puzzle.width} by ${puzzle.height}`}
         onAnimationEnd={(event) => {
           if (showCompletionEffect && event.target === event.currentTarget) onCompletionAnimationEnd?.();
@@ -472,7 +501,8 @@ export const ImageTilePuzzlePreview = ({
               />
             </button>
           );
-        })}
+          })}
+        </div>
       </div>
     </section>
   );

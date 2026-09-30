@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getBoardViewportNaturalWidth, makeBoardViewportMetrics } from "./BoardViewport";
+import { measurePuzzleViewportSize } from "./usePuzzleViewportSize";
 
 describe("board viewport sizing", () => {
   it("sizes Sudoku from available inline width", () => {
@@ -13,6 +14,51 @@ describe("board viewport sizing", () => {
     expect(metrics.boardWidth).toBeLessThanOrEqual(328);
     expect(metrics.boardHeight).toBe(metrics.boardWidth);
     expect(metrics.cellSize).toBeCloseTo(36.44, 2);
+  });
+
+  it("caps a wide Sudoku by the measured play height", () => {
+    const metrics = makeBoardViewportMetrics({
+      kind: "square-grid",
+      availableInlineSize: 900,
+      availableBlockSize: 420,
+      columns: 9,
+      rows: 9,
+    });
+
+    expect(metrics.boardWidth).toBeLessThanOrEqual(420);
+    expect(metrics.boardHeight).toBeLessThanOrEqual(420);
+    expect(metrics.cellSize).toBeCloseTo(46.67, 2);
+  });
+
+  it("caps a tall Nonogram by the measured play height when useful cells still fit", () => {
+    const metrics = makeBoardViewportMetrics({
+      kind: "nonogram",
+      availableInlineSize: 800,
+      availableBlockSize: 420,
+      columns: 8,
+      rows: 12,
+      rowClueSlots: 4,
+      columnClueSlots: 4,
+    });
+
+    expect(metrics.boardHeight).toBeLessThanOrEqual(420);
+    expect(metrics.cellSize).toBeGreaterThanOrEqual(20);
+    expect(metrics.boardWidth).toBeLessThan(800);
+  });
+
+  it("preserves the Nonogram interaction floor when the height budget is too small", () => {
+    const metrics = makeBoardViewportMetrics({
+      kind: "nonogram",
+      availableInlineSize: 800,
+      availableBlockSize: 240,
+      columns: 12,
+      rows: 12,
+      rowClueSlots: 5,
+      columnClueSlots: 5,
+    });
+
+    expect(metrics.cellSize).toBe(20);
+    expect(metrics.boardHeight).toBeGreaterThan(240);
   });
 
   it("reports the natural desktop width for a default Nonogram", () => {
@@ -79,5 +125,29 @@ describe("board viewport sizing", () => {
 
     expect(metrics.cellSize).toBe(20);
     expect(metrics.boardWidth).toBeGreaterThan(328);
+  });
+});
+
+describe("puzzle viewport measurement", () => {
+  it("measures remaining visible block space from the actual puzzle surface position", () => {
+    expect(measurePuzzleViewportSize(
+      { width: 640, top: 120 },
+      900,
+      24,
+    )).toEqual({
+      inlineSize: 640,
+      blockSize: 756,
+    });
+  });
+
+  it("does not create negative space when the puzzle surface begins below the viewport", () => {
+    expect(measurePuzzleViewportSize(
+      { width: 360, top: 920 },
+      800,
+      24,
+    )).toEqual({
+      inlineSize: 360,
+      blockSize: 0,
+    });
   });
 });

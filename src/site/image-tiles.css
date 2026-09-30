@@ -134,6 +134,13 @@
   outline: none;
 }
 
+.image-tile-board-viewport {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  justify-items: center;
+}
+
 .image-tile-reference,
 .image-tile-board {
   width: min(100%, 42rem);

@@ -14,13 +14,24 @@ const imageTilePreviewSource = readFileSync(new URL("./ImageTilePuzzlePreview.ts
 const imageTileCss = readFileSync(new URL("../site/image-tiles.css", import.meta.url), "utf8");
 
 describe("ImageTilePuzzlePreview layout", () => {
-  it("defines both grid axes and caps tall boards by viewport height", () => {
-    expect(getImageTileBoardStyle(2, 8)).toMatchObject({
+  it("defines both grid axes and uses measured play height for tall boards", () => {
+    expect(getImageTileBoardStyle(2, 8, 640, 360)).toMatchObject({
       gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
       gridTemplateRows: "repeat(8, minmax(0, 1fr))",
       aspectRatio: "2 / 8",
-      width: "min(100%, 42rem, 18vh)",
+      width: "90px",
     });
+  });
+
+  it("uses measured width for wide boards without exceeding the desktop cap", () => {
+    expect(getImageTileBoardStyle(8, 2, 500, 600).width).toBe("500px");
+    expect(getImageTileBoardStyle(8, 2, 900, 600).width).toBe("672px");
+  });
+
+  it("falls back to the responsive width cap until the play surface is measured", () => {
+    expect(getImageTileBoardStyle(4, 4).width).toBe("min(100%, 42rem)");
+    expect(imageTilePreviewSource).toContain('class="image-tile-board-viewport"');
+    expect(imageTileCss).toMatch(/\.image-tile-board-viewport\s*\{[^}]*width:\s*100%;/);
   });
 
   it("replaces active move instructions with stable completion copy after solve", () => {

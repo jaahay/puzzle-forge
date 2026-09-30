@@ -17,6 +17,7 @@ import { getJigsawPinchCamera, type JigsawPinchPair, type JigsawPinchPoint } fro
 import {
   createInitialJigsawPlacements,
   createJigsawFitCamera,
+  createJigsawOccupiedFitCamera,
   createJigsawWorldLayout,
   getJigsawCameraTransform,
   getJigsawPlacementPosition,
@@ -31,6 +32,7 @@ import {
   type JigsawCamera,
   type JigsawPlacement,
   type JigsawViewport,
+  type JigsawViewportInsets,
   type JigsawWorldLayout,
 } from "../games/jigsaw/placement";
 import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
@@ -138,7 +140,12 @@ export const initializeOrPreserveJigsawCamera = (
   layout: JigsawWorldLayout,
   viewport: JigsawViewport,
   currentCamera: JigsawCamera | null,
-) => currentCamera ?? createJigsawFitCamera(layout, viewport, "workspace");
+  placements: readonly JigsawPlacement[] | null = null,
+) => currentCamera ?? (
+  placements
+    ? createJigsawOccupiedFitCamera(layout, viewport, placements)
+    : createJigsawFitCamera(layout, viewport, "workspace")
+);
 
 export const getMeasuredJigsawViewport = (
   stage: Pick<HTMLElement, "clientWidth" | "clientHeight"> | null,
@@ -149,6 +156,49 @@ export const getMeasuredJigsawViewport = (
     height: stage.clientHeight,
   };
   return isUsableJigsawViewport(viewport) ? viewport : null;
+};
+
+type JigsawOverlayRect = Pick<DOMRect, "left" | "top" | "right" | "bottom" | "width" | "height">;
+
+export const getJigsawFitInsetsForOverlays = (
+  stageRect: JigsawOverlayRect,
+  overlayRects: readonly JigsawOverlayRect[],
+): JigsawViewportInsets => {
+  const insets: JigsawViewportInsets = { top: 0, right: 0, bottom: 0, left: 0 };
+  const stageWidth = Math.max(1, stageRect.width);
+  const stageHeight = Math.max(1, stageRect.height);
+
+  for (const rect of overlayRects) {
+    const overlaps = rect.right > stageRect.left && rect.left < stageRect.right &&
+      rect.bottom > stageRect.top && rect.top < stageRect.bottom;
+    if (!overlaps || rect.width <= 0 || rect.height <= 0) continue;
+
+    const horizontal = rect.width >= rect.height * 1.35;
+    if (horizontal) {
+      const topDistance = Math.abs(rect.top - stageRect.top);
+      const bottomDistance = Math.abs(stageRect.bottom - rect.bottom);
+      if (topDistance <= bottomDistance) {
+        insets.top = Math.max(insets.top, rect.bottom - stageRect.top + 8);
+      } else {
+        insets.bottom = Math.max(insets.bottom, stageRect.bottom - rect.top + 8);
+      }
+    } else {
+      const leftDistance = Math.abs(rect.left - stageRect.left);
+      const rightDistance = Math.abs(stageRect.right - rect.right);
+      if (leftDistance <= rightDistance) {
+        insets.left = Math.max(insets.left, rect.right - stageRect.left + 8);
+      } else {
+        insets.right = Math.max(insets.right, stageRect.right - rect.left + 8);
+      }
+    }
+  }
+
+  return {
+    top: Math.min(insets.top, stageHeight * 0.45),
+    right: Math.min(insets.right, stageWidth * 0.45),
+    bottom: Math.min(insets.bottom, stageHeight * 0.45),
+    left: Math.min(insets.left, stageWidth * 0.45),
+  };
 };
 
 export const resolveInitialJigsawPlacements = (
@@ -297,9 +347,12 @@ export const TilePuzzlePreview = ({
   }, []);
 
   const renderViewport = isUsableJigsawViewport(viewport) ? viewport : fallbackViewport;
+  const activePlacements = placementState?.puzzleId === puzzle.id ? placementState.placements : null;
   const activeCamera = cameraState?.puzzleId === puzzle.id
     ? cameraState.camera
-    : createJigsawFitCamera(layout, renderViewport, "workspace");
+    : activePlacements
+      ? createJigsawOccupiedFitCamera(layout, renderViewport, activePlacements)
+      : createJigsawFitCamera(layout, renderViewport, "workspace");
   const wheelStateRef = useRef({
     puzzleId: puzzle.id,
     camera: activeCamera,
@@ -370,25 +423,43 @@ export const TilePuzzlePreview = ({
   }, [initialSnappedPieceIds, layout, puzzle.id, puzzle.tiles, updatePlacementState, viewport.height, viewport.width]);
 
   useEffect(() => {
-    if (!isUsableJigsawViewport(viewport)) return;
-    setCameraState((current) => ({
-      puzzleId: puzzle.id,
-      camera: initializeOrPreserveJigsawCamera(
-        layout,
-        viewport,
-        current?.puzzleId === puzzle.id ? current.camera : null,
-      ),
-    }));
-  }, [layout, puzzle.id, viewport.height, viewport.width]);
+    if (!isUsableJigsawViewport(viewport) || !activePlacements) return;
+    setCameraState((current) => {
+      if (current?.puzzleId === puzzle.id) return current;
+      return {
+        puzzleId: puzzle.id,
+        camera: initializeOrPreserveJigsawCamera(layout, viewport, null, activePlacements),
+      };
+    });
+  }, [activePlacements, layout, puzzle.id, viewport.height, viewport.width]);
 
   const setCamera = (camera: JigsawCamera) => {
     wheelStateRef.current = { ...wheelStateRef.current, puzzleId: puzzle.id, camera };
     setCameraState({ puzzleId: puzzle.id, camera });
   };
 
-  const fitView = (target: "workspace" | "board") => {
+  const getCurrentFitInsets = (): JigsawViewportInsets => {
+    const stage = stageRef.current;
+    const workspace = stage?.closest<HTMLElement>(".jigsaw-workspace.is-immersive");
+    if (!stage || !workspace) return { top: 0, right: 0, bottom: 0, left: 0 };
+
+    const overlayRects = Array.from(workspace.querySelectorAll<HTMLElement>(
+      ".tile-puzzle-tools, .jigsaw-camera-tools, .puzzle-workspace-display-tools",
+    )).map((element) => element.getBoundingClientRect());
+    return getJigsawFitInsetsForOverlays(stage.getBoundingClientRect(), overlayRects);
+  };
+
+  const fitView = (target: "all" | "board") => {
     if (!isUsableJigsawViewport(viewport)) return;
-    setCamera(createJigsawFitCamera(layout, viewport, target));
+    const insets = getCurrentFitInsets();
+    if (target === "board") {
+      setCamera(createJigsawFitCamera(layout, viewport, "board", 32, insets));
+      return;
+    }
+
+    const current = placementStateRef.current;
+    if (!current || current.puzzleId !== puzzle.id) return;
+    setCamera(createJigsawOccupiedFitCamera(layout, viewport, current.placements, 28, insets));
   };
 
   const scatterPieces = () => {
@@ -421,7 +492,13 @@ export const TilePuzzlePreview = ({
         nextPlacements,
       ));
     }
-    setCamera(createJigsawFitCamera(layout, stagingViewport, "workspace"));
+    setCamera(createJigsawOccupiedFitCamera(
+      layout,
+      stagingViewport,
+      nextPlacements,
+      28,
+      getCurrentFitInsets(),
+    ));
     return true;
   };
 
@@ -431,7 +508,7 @@ export const TilePuzzlePreview = ({
     lastResetVersion.current = resetVersion;
   }, [layout, puzzle.id, puzzle.tiles, resetVersion, viewport.height, viewport.width]);
 
-  const placements = placementState?.puzzleId === puzzle.id ? placementState.placements : [];
+  const placements = activePlacements ?? [];
   const placementById = new Map(placements.map((placement) => [placement.id, placement] as const));
   const solvedCount = placements.filter((placement) => placement.snapped).length;
   const isSolved = areJigsawPlacementsSolved(placements, puzzle.tiles.length);
@@ -904,8 +981,6 @@ export const TilePuzzlePreview = ({
     <section class="tile-puzzle-preview" aria-label={`${puzzle.title} jigsaw puzzle`}>
       <div class="tile-puzzle-summary">
         <span>{isSolved ? "Solved" : `${solvedCount}/${puzzle.tiles.length} placed`}</span>
-        <span>{puzzle.asset.title}</span>
-        <span>{puzzle.width} x {puzzle.height}</span>
       </div>
 
       <div class={`tile-puzzle-tools ${isSolved ? "is-solved" : ""}`}>
@@ -935,7 +1010,7 @@ export const TilePuzzlePreview = ({
         </button>
         <button type="button" onClick={() => zoomView("in")} aria-label="Zoom in">+</button>
         <button type="button" onClick={() => fitView("board")}>Fit board</button>
-        <button type="button" onClick={() => fitView("workspace")}>Fit workspace</button>
+        <button type="button" onClick={() => fitView("all")}>Show all</button>
         {!displayMode.isExpanded ? (
           <button
             class="jigsaw-expand-workspace"
