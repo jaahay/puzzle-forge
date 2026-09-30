@@ -32,6 +32,7 @@ import {
   type JigsawCamera,
   type JigsawPlacement,
   type JigsawViewport,
+  type JigsawViewportInsets,
   type JigsawWorldLayout,
 } from "../games/jigsaw/placement";
 import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
@@ -155,6 +156,49 @@ export const getMeasuredJigsawViewport = (
     height: stage.clientHeight,
   };
   return isUsableJigsawViewport(viewport) ? viewport : null;
+};
+
+type JigsawOverlayRect = Pick<DOMRect, "left" | "top" | "right" | "bottom" | "width" | "height">;
+
+export const getJigsawFitInsetsForOverlays = (
+  stageRect: JigsawOverlayRect,
+  overlayRects: readonly JigsawOverlayRect[],
+): JigsawViewportInsets => {
+  const insets: JigsawViewportInsets = { top: 0, right: 0, bottom: 0, left: 0 };
+  const stageWidth = Math.max(1, stageRect.width);
+  const stageHeight = Math.max(1, stageRect.height);
+
+  for (const rect of overlayRects) {
+    const overlaps = rect.right > stageRect.left && rect.left < stageRect.right &&
+      rect.bottom > stageRect.top && rect.top < stageRect.bottom;
+    if (!overlaps || rect.width <= 0 || rect.height <= 0) continue;
+
+    const horizontal = rect.width >= rect.height * 1.35;
+    if (horizontal) {
+      const topDistance = Math.abs(rect.top - stageRect.top);
+      const bottomDistance = Math.abs(stageRect.bottom - rect.bottom);
+      if (topDistance <= bottomDistance) {
+        insets.top = Math.max(insets.top, rect.bottom - stageRect.top + 8);
+      } else {
+        insets.bottom = Math.max(insets.bottom, stageRect.bottom - rect.top + 8);
+      }
+    } else {
+      const leftDistance = Math.abs(rect.left - stageRect.left);
+      const rightDistance = Math.abs(stageRect.right - rect.right);
+      if (leftDistance <= rightDistance) {
+        insets.left = Math.max(insets.left, rect.right - stageRect.left + 8);
+      } else {
+        insets.right = Math.max(insets.right, stageRect.right - rect.left + 8);
+      }
+    }
+  }
+
+  return {
+    top: Math.min(insets.top, stageHeight * 0.45),
+    right: Math.min(insets.right, stageWidth * 0.45),
+    bottom: Math.min(insets.bottom, stageHeight * 0.45),
+    left: Math.min(insets.left, stageWidth * 0.45),
+  };
 };
 
 export const resolveInitialJigsawPlacements = (
@@ -394,16 +438,28 @@ export const TilePuzzlePreview = ({
     setCameraState({ puzzleId: puzzle.id, camera });
   };
 
+  const getCurrentFitInsets = (): JigsawViewportInsets => {
+    const stage = stageRef.current;
+    const workspace = stage?.closest<HTMLElement>(".jigsaw-workspace.is-immersive");
+    if (!stage || !workspace) return { top: 0, right: 0, bottom: 0, left: 0 };
+
+    const overlayRects = Array.from(workspace.querySelectorAll<HTMLElement>(
+      ".tile-puzzle-tools, .jigsaw-camera-tools, .puzzle-workspace-display-tools",
+    )).map((element) => element.getBoundingClientRect());
+    return getJigsawFitInsetsForOverlays(stage.getBoundingClientRect(), overlayRects);
+  };
+
   const fitView = (target: "all" | "board") => {
     if (!isUsableJigsawViewport(viewport)) return;
+    const insets = getCurrentFitInsets();
     if (target === "board") {
-      setCamera(createJigsawFitCamera(layout, viewport, "board"));
+      setCamera(createJigsawFitCamera(layout, viewport, "board", 32, insets));
       return;
     }
 
     const current = placementStateRef.current;
     if (!current || current.puzzleId !== puzzle.id) return;
-    setCamera(createJigsawOccupiedFitCamera(layout, viewport, current.placements));
+    setCamera(createJigsawOccupiedFitCamera(layout, viewport, current.placements, 28, insets));
   };
 
   const scatterPieces = () => {
@@ -436,7 +492,13 @@ export const TilePuzzlePreview = ({
         nextPlacements,
       ));
     }
-    setCamera(createJigsawOccupiedFitCamera(layout, stagingViewport, nextPlacements));
+    setCamera(createJigsawOccupiedFitCamera(
+      layout,
+      stagingViewport,
+      nextPlacements,
+      28,
+      getCurrentFitInsets(),
+    ));
     return true;
   };
 
