@@ -237,8 +237,8 @@ export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPu
   };
 };
 
-export const usePuzzleSessions = () => {
-  const persistedSessionCache = useRef<PersistedPuzzleSessionCache>({});
+export const usePuzzleSessions = (initialPersistedSessions: PersistedPuzzleSessionCache = {}) => {
+  const persistedSessionCache = useRef<PersistedPuzzleSessionCache>({ ...initialPersistedSessions });
   const sessionCache = useRef<RuntimePuzzleSessionCache>({});
 
   const saveSession = (resource: PuzzleResourceIdentity, session: PuzzleSession) => {
@@ -253,9 +253,6 @@ export const usePuzzleSessions = () => {
     return session ? clonePuzzleSession(session) : null;
   };
 
-  const initializePersistedSessions = (sessions: PersistedPuzzleSessionCache) => {
-    persistedSessionCache.current = { ...sessions };
-  };
 
   const restorePersistedSession = (resource: PuzzleResourceIdentity, generatedPuzzle: GeneratedPuzzle) => {
     const resourceKey = makePuzzleResourceKey(resource.puzzleId, resource.generationId);
@@ -270,7 +267,6 @@ export const usePuzzleSessions = () => {
   return {
     saveSession,
     getCachedSession,
-    initializePersistedSessions,
     restorePersistedSession,
   };
 };
