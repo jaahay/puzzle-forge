@@ -1,16 +1,29 @@
 import { describe, expect, it } from "vitest";
+import { makePuzzleResourceKey } from "./puzzleResourceIdentity";
 import type { AppRoute } from "./routes";
-import { resolveStartupRoute, type StartupPersistedSessions } from "./startupNavigation";
+import type { PersistedPuzzleSessions, PersistedPuzzleProgress } from "./session";
+import { resolveStartupRoute } from "./startupNavigation";
 
 const makePersisted = (
   puzzleId: "sudoku" | "jigsaw",
   generationId = "generation-a",
-): StartupPersistedSessions => {
-  const activeResourceKey = `${puzzleId}/${generationId}`;
+): PersistedPuzzleSessions => {
+  const activeResourceKey = makePuzzleResourceKey(puzzleId, generationId);
+  const progress: PersistedPuzzleProgress = puzzleId === "jigsaw"
+    ? { kind: "tiles", tileOrder: [], selectedTileId: null, jigsawSnappedPieceIds: [] }
+    : { kind: "grid", cells: [], selectedCell: null };
+
   return {
     activeResourceKey,
     sessions: {
-      [activeResourceKey]: { puzzleId, generationId },
+      [activeResourceKey]: {
+        puzzleId,
+        generationId,
+        baselineChecksum: "checksum",
+        progress,
+        statusMessage: "",
+        updatedAt: "2026-09-29T00:00:00.000Z",
+      },
     },
   };
 };
@@ -48,7 +61,7 @@ describe("startup navigation", () => {
 
     expect(resolveStartupRoute(route, null)).toEqual(route);
     expect(resolveStartupRoute(route, {
-      activeResourceKey: "sudoku/missing",
+      activeResourceKey: makePuzzleResourceKey("sudoku", "missing"),
       sessions: {},
     })).toEqual(route);
   });
