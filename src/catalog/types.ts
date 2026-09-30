@@ -154,14 +154,23 @@ export type TilePuzzleAsset = GeneratedTilePuzzleAsset | PuzzleImageAsset;
 
 export type JigsawEdgeSide = "top" | "right" | "bottom" | "left";
 export type JigsawEdgePolarity = "flat" | "tab" | "blank";
-export type JigsawEdgePathFamily = "round-tab" | "angular-tab" | "wave-tab";
-export type JigsawEdgeProfileId = "classic-round" | "soft-round" | "angular" | "wave" | "simple-lock";
+export type JigsawConnectorGrammarId =
+  | "classic-bulb"
+  | "necked-head"
+  | "multi-lobe"
+  | "scoop"
+  | "serpentine"
+  | "terrace"
+  | "zigzag"
+  | "stacked-lock";
+export type JigsawEdgeProfileId = JigsawConnectorGrammarId;
 
 export type JigsawEdgeProfile = {
   id: JigsawEdgeProfileId;
   label: string;
   description: string;
-  pathFamily: JigsawEdgePathFamily;
+  connectorGrammarId: JigsawConnectorGrammarId;
+  selectionWeight: number;
   difficultyWeight: number;
 };
 

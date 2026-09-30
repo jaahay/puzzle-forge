@@ -4,11 +4,14 @@ import type {
   JigsawPiece,
   JigsawPieceEdge,
 } from "../../catalog/types";
+import {
+  deriveJigsawConnectorProgram,
+  getJigsawConnectorGrammarDefinition,
+  realizeJigsawConnectorProgram,
+  type JigsawConnectorPoint,
+} from "./connectorGrammar";
 
-export type JigsawEdgePoint = {
-  x: number;
-  y: number;
-};
+export type JigsawEdgePoint = JigsawConnectorPoint;
 
 export type JigsawPieceSeamPath = {
   edgeId: string;
@@ -19,21 +22,9 @@ export type JigsawPieceSeamPath = {
   d: string;
 };
 
-type EdgeProfileGeometry = {
-  depth: number;
-  width: number;
-  shape: "round" | "soft" | "angular" | "wave" | "lock";
-};
+type Range = readonly [minimum: number, maximum: number];
 
-const edgeProfileGeometry = {
-  "classic-round": { depth: 16, width: 42, shape: "round" },
-  "soft-round": { depth: 10, width: 52, shape: "soft" },
-  angular: { depth: 14, width: 38, shape: "angular" },
-  wave: { depth: 13, width: 50, shape: "wave" },
-  "simple-lock": { depth: 9, width: 32, shape: "lock" },
-} as const satisfies Record<JigsawEdgeProfileId, EdgeProfileGeometry>;
-
-const edgeSampleCount = 32;
+export const jigsawEdgeMaximumDepth = 32;
 const pieceEdgeOrder: readonly JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
 
 const seededUnit = (seedOffset: number, salt: number) => {
@@ -41,36 +32,146 @@ const seededUnit = (seedOffset: number, salt: number) => {
   return mixed / 0xffff_ffff;
 };
 
+const seededRange = (seedOffset: number, salt: number, range: Range) =>
+  range[0] + seededUnit(seedOffset, salt) * (range[1] - range[0]);
+
 const roundCoordinate = (value: number) => {
   const rounded = Math.round(value * 1_000) / 1_000;
   return Object.is(rounded, -0) ? 0 : rounded;
 };
 
-const normalizePoint = (point: JigsawEdgePoint): JigsawEdgePoint => ({
-  x: roundCoordinate(point.x),
-  y: roundCoordinate(point.y),
+const normalizePoint = (candidate: JigsawEdgePoint): JigsawEdgePoint => ({
+  x: roundCoordinate(candidate.x),
+  y: roundCoordinate(candidate.y),
 });
 
-const shapeAt = (
-  shape: EdgeProfileGeometry["shape"],
-  distance: number,
-  asymmetry: number,
-) => {
-  const absoluteDistance = Math.abs(distance);
-  if (absoluteDistance >= 1) return 0;
+const normalizeSignedZeroPoint = (candidate: JigsawEdgePoint): JigsawEdgePoint => ({
+  x: Object.is(candidate.x, -0) ? 0 : candidate.x,
+  y: Object.is(candidate.y, -0) ? 0 : candidate.y,
+});
 
-  if (shape === "angular") return 1 - absoluteDistance;
-  if (shape === "lock") {
-    if (absoluteDistance <= 0.42) return 1;
-    return (1 - absoluteDistance) / 0.58;
+const point = (x: number, y: number): JigsawEdgePoint => ({ x, y });
+
+const mirrorAnchors = (points: readonly JigsawEdgePoint[]) =>
+  [...points].reverse().map((candidate) => point(-candidate.x, candidate.y));
+
+const getCanonicalConnectorPoints = (
+  profileId: JigsawEdgeProfileId,
+  seedOffset: number,
+): JigsawEdgePoint[] => {
+  const grammar = getJigsawConnectorGrammarDefinition(profileId);
+  const program = deriveJigsawConnectorProgram(profileId, seedOffset);
+  const width = seededRange(seedOffset, 0x51ed, grammar.width);
+  const depth = seededRange(seedOffset, 0x7f4a, grammar.depth);
+  const lean =
+    (seededUnit(seedOffset, 0x2c1b) - 0.5) * grammar.lean * 2;
+  const shouldMirror =
+    grammar.mirrorable && seededUnit(seedOffset, 0x65d3) < 0.5;
+
+  let anchors = realizeJigsawConnectorProgram(program);
+  if (shouldMirror) anchors = mirrorAnchors(anchors);
+
+  const horizontalOffsets = anchors.map(
+    (anchor) => (anchor.x + lean * anchor.y) * (width / 2),
+  );
+  const minimumCenter =
+    grammar.cornerBuffer - Math.min(...horizontalOffsets);
+  const maximumCenter =
+    100 - grammar.cornerBuffer - Math.max(...horizontalOffsets);
+  const centerUnit = seededUnit(seedOffset, 0x9e37) * 2 - 1;
+  const centerBias =
+    Math.sign(centerUnit) * Math.pow(Math.abs(centerUnit), 0.7);
+  const center =
+    minimumCenter +
+    ((centerBias + 1) / 2) * (maximumCenter - minimumCenter);
+
+  const connector = anchors.map((anchor, index) =>
+    point(
+      center + horizontalOffsets[index],
+      anchor.y * depth,
+    ),
+  );
+
+  return [
+    point(0, 0),
+    ...connector,
+    point(100, 0),
+  ];
+};
+
+type JigsawEdgeLineSegment = {
+  kind: "line";
+  start: JigsawEdgePoint;
+  end: JigsawEdgePoint;
+};
+
+type JigsawEdgeCubicSegment = {
+  kind: "cubic";
+  start: JigsawEdgePoint;
+  control1: JigsawEdgePoint;
+  control2: JigsawEdgePoint;
+  end: JigsawEdgePoint;
+};
+
+type JigsawEdgeSegment = JigsawEdgeLineSegment | JigsawEdgeCubicSegment;
+
+const curveSampleCount = 6;
+
+const lineSegmentsFromPoints = (points: readonly JigsawEdgePoint[]): JigsawEdgeSegment[] =>
+  points.slice(1).map((end, index) => ({
+    kind: "line",
+    start: points[index],
+    end,
+  }));
+
+const getCanonicalEdgeSegments = (
+  profileId: JigsawEdgeProfileId,
+  seedOffset: number,
+): JigsawEdgeSegment[] => {
+  const points = getCanonicalConnectorPoints(profileId, seedOffset);
+  const grammar = getJigsawConnectorGrammarDefinition(profileId);
+  if (grammar.renderMode === "angular") {
+    return lineSegmentsFromPoints(points);
   }
 
-  const roundedBase = Math.cos((distance * Math.PI) / 2) ** 2;
-  if (shape === "soft") return roundedBase ** 0.72;
-  if (shape === "wave") {
-    return roundedBase * (0.82 + 0.18 * Math.sin((distance + asymmetry) * Math.PI));
+  const curveTension = grammar.curveTension;
+  const connector = points.slice(1, -1);
+  const segments: JigsawEdgeSegment[] = [
+    {
+      kind: "line",
+      start: points[0],
+      end: connector[0],
+    },
+  ];
+
+  for (let index = 0; index < connector.length - 1; index += 1) {
+    const previous = connector[Math.max(0, index - 1)];
+    const start = connector[index];
+    const end = connector[index + 1];
+    const following = connector[Math.min(connector.length - 1, index + 2)];
+
+    segments.push({
+      kind: "cubic",
+      start,
+      control1: point(
+        start.x + (end.x - previous.x) * curveTension,
+        start.y + (end.y - previous.y) * curveTension,
+      ),
+      control2: point(
+        end.x - (following.x - start.x) * curveTension,
+        end.y - (following.y - start.y) * curveTension,
+      ),
+      end,
+    });
   }
-  return roundedBase;
+
+  segments.push({
+    kind: "line",
+    start: connector[connector.length - 1],
+    end: points[points.length - 1],
+  });
+
+  return segments;
 };
 
 const transformPoint = (
@@ -84,32 +185,140 @@ const transformPoint = (
   return { x: -v, y: 100 - u };
 };
 
-export const getJigsawEdgePoints = (edge: JigsawPieceEdge): JigsawEdgePoint[] => {
-  if (edge.boundary) {
-    return [normalizePoint(transformPoint(edge.side, 0, 0)), normalizePoint(transformPoint(edge.side, 100, 0))];
+const mirrorAcrossEdgeAxis = (candidate: JigsawEdgePoint) =>
+  point(100 - candidate.x, candidate.y);
+
+const reverseSegment = (segment: JigsawEdgeSegment): JigsawEdgeSegment => {
+  if (segment.kind === "line") {
+    return {
+      kind: "line",
+      start: segment.end,
+      end: segment.start,
+    };
   }
 
-  const geometry = edgeProfileGeometry[edge.profileId];
-  const center = 50 + (seededUnit(edge.seedOffset, 0x9e37) - 0.5) * 10;
-  const width = geometry.width * (0.92 + seededUnit(edge.seedOffset, 0x51ed) * 0.16);
-  const depth = geometry.depth * (0.9 + seededUnit(edge.seedOffset, 0x7f4a) * 0.2);
-  const asymmetry = (seededUnit(edge.seedOffset, 0x2c1b) - 0.5) * 0.5;
-  const direction = edge.polarity === "tab" ? 1 : -1;
-  const reversesCanonicalDirection = edge.side === "left" || edge.side === "bottom";
-
-  return Array.from({ length: edgeSampleCount + 1 }, (_, index) => {
-    const u = (index / edgeSampleCount) * 100;
-    const profileU = reversesCanonicalDirection ? 100 - u : u;
-    const distance = (profileU - center) / (width / 2);
-    const v = direction * depth * shapeAt(geometry.shape, distance, asymmetry);
-    return normalizePoint(transformPoint(edge.side, u, v));
-  });
+  return {
+    kind: "cubic",
+    start: segment.end,
+    control1: segment.control2,
+    control2: segment.control1,
+    end: segment.start,
+  };
 };
 
+const mapSegmentPoints = (
+  segment: JigsawEdgeSegment,
+  mapPoint: (candidate: JigsawEdgePoint) => JigsawEdgePoint,
+): JigsawEdgeSegment => {
+  if (segment.kind === "line") {
+    return {
+      kind: "line",
+      start: mapPoint(segment.start),
+      end: mapPoint(segment.end),
+    };
+  }
+
+  return {
+    kind: "cubic",
+    start: mapPoint(segment.start),
+    control1: mapPoint(segment.control1),
+    control2: mapPoint(segment.control2),
+    end: mapPoint(segment.end),
+  };
+};
+
+const orientCanonicalSegments = (
+  segments: readonly JigsawEdgeSegment[],
+  side: JigsawEdgeSide,
+): JigsawEdgeSegment[] => {
+  if (side === "top" || side === "right") return [...segments];
+
+  return [...segments]
+    .reverse()
+    .map(reverseSegment)
+    .map((segment) => mapSegmentPoints(segment, mirrorAcrossEdgeAxis));
+};
+
+const getJigsawEdgeSegments = (edge: JigsawPieceEdge): JigsawEdgeSegment[] => {
+  const canonical = edge.boundary
+    ? lineSegmentsFromPoints([point(0, 0), point(100, 0)])
+    : getCanonicalEdgeSegments(edge.profileId, edge.seedOffset);
+  const oriented = orientCanonicalSegments(canonical, edge.side);
+  const polarity = !edge.boundary && edge.polarity === "blank" ? -1 : 1;
+
+  return oriented.map((segment) =>
+    mapSegmentPoints(segment, (candidate) => {
+      const local = normalizePoint(
+        point(
+          candidate.x,
+          candidate.y * polarity,
+        ),
+      );
+      return transformPoint(edge.side, local.x, local.y);
+    }),
+  );
+};
+
+const cubicPointAt = (
+  segment: JigsawEdgeCubicSegment,
+  t: number,
+): JigsawEdgePoint => {
+  const inverse = 1 - t;
+  const inverseSquared = inverse * inverse;
+  const tSquared = t * t;
+
+  return point(
+    inverseSquared * inverse * segment.start.x +
+      3 * inverseSquared * t * segment.control1.x +
+      3 * inverse * tSquared * segment.control2.x +
+      tSquared * t * segment.end.x,
+    inverseSquared * inverse * segment.start.y +
+      3 * inverseSquared * t * segment.control1.y +
+      3 * inverse * tSquared * segment.control2.y +
+      tSquared * t * segment.end.y,
+  );
+};
+
+const sampleSegments = (segments: readonly JigsawEdgeSegment[]): JigsawEdgePoint[] => {
+  if (segments.length === 0) return [];
+  const points = [segments[0].start];
+
+  for (const segment of segments) {
+    if (segment.kind === "line") {
+      points.push(segment.end);
+      continue;
+    }
+
+    for (let sample = 1; sample <= curveSampleCount; sample += 1) {
+      points.push(cubicPointAt(segment, sample / curveSampleCount));
+    }
+  }
+
+  return points.map(normalizeSignedZeroPoint);
+};
+
+const segmentCommand = (segment: JigsawEdgeSegment) =>
+  segment.kind === "line"
+    ? `L ${segment.end.x} ${segment.end.y}`
+    : `C ${segment.control1.x} ${segment.control1.y} ${segment.control2.x} ${segment.control2.y} ${segment.end.x} ${segment.end.y}`;
+
+const segmentsToPath = (
+  segments: readonly JigsawEdgeSegment[],
+  includeMove = true,
+) => {
+  if (segments.length === 0) return "";
+  const commands = segments.map(segmentCommand);
+  if (includeMove) {
+    commands.unshift(`M ${segments[0].start.x} ${segments[0].start.y}`);
+  }
+  return commands.join(" ");
+};
+
+export const getJigsawEdgePoints = (edge: JigsawPieceEdge): JigsawEdgePoint[] =>
+  sampleSegments(getJigsawEdgeSegments(edge));
+
 export const getJigsawEdgePath = (edge: JigsawPieceEdge) =>
-  getJigsawEdgePoints(edge)
-    .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
-    .join(" ");
+  segmentsToPath(getJigsawEdgeSegments(edge));
 
 export const getJigsawPieceOutlinePoints = (piece: JigsawPiece): JigsawEdgePoint[] =>
   pieceEdgeOrder.flatMap((side, edgeIndex) => {
@@ -119,10 +328,20 @@ export const getJigsawPieceOutlinePoints = (piece: JigsawPiece): JigsawEdgePoint
     return edgeIndex === 0 ? points : points.slice(1);
   });
 
-export const getJigsawPieceOutlinePath = (piece: JigsawPiece) =>
-  `${getJigsawPieceOutlinePoints(piece)
-    .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
-    .join(" ")} Z`;
+export const getJigsawPieceOutlinePath = (piece: JigsawPiece) => {
+  const edgeSegments = pieceEdgeOrder.map((side) => {
+    const edge = piece.edges.find((candidate) => candidate.side === side);
+    if (!edge) throw new Error(`Jigsaw piece ${piece.id} is missing its ${side} edge.`);
+    return getJigsawEdgeSegments(edge);
+  });
+
+  const commands = edgeSegments.flatMap((segments, edgeIndex) => {
+    const path = segmentsToPath(segments, edgeIndex === 0);
+    return path ? [path] : [];
+  });
+
+  return `${commands.join(" ")} Z`;
+};
 
 export const getJigsawPieceSeamPaths = (piece: JigsawPiece): JigsawPieceSeamPath[] =>
   piece.edges.map((edge) => ({
