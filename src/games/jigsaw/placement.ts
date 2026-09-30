@@ -30,6 +30,13 @@ export type JigsawWorldBounds = {
   height: number;
 };
 
+export type JigsawViewportInsets = {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+};
+
 export type JigsawCamera = {
   centerX: number;
   centerY: number;
@@ -412,18 +419,27 @@ export const createJigsawBoundsFitCamera = (
   bounds: JigsawWorldBounds,
   padding = 32,
   maximumZoom = jigsawCameraMaximumZoom,
+  insets: Partial<JigsawViewportInsets> = {},
 ): JigsawCamera => {
-  const safeViewportWidth = Math.max(1, viewport.width - padding * 2);
-  const safeViewportHeight = Math.max(1, viewport.height - padding * 2);
+  const top = Math.max(0, insets.top ?? 0);
+  const right = Math.max(0, insets.right ?? 0);
+  const bottom = Math.max(0, insets.bottom ?? 0);
+  const left = Math.max(0, insets.left ?? 0);
+  const safeViewportWidth = Math.max(1, viewport.width - left - right - padding * 2);
+  const safeViewportHeight = Math.max(1, viewport.height - top - bottom - padding * 2);
   const zoom = clamp(
     Math.min(safeViewportWidth / Math.max(1, bounds.width), safeViewportHeight / Math.max(1, bounds.height)),
     jigsawCameraMinimumZoom,
     Math.min(jigsawCameraMaximumZoom, Math.max(jigsawCameraMinimumZoom, maximumZoom)),
   );
+  const safeCenterX = left + padding + safeViewportWidth / 2;
+  const safeCenterY = top + padding + safeViewportHeight / 2;
+  const viewportCenterX = viewport.width / 2;
+  const viewportCenterY = viewport.height / 2;
 
   return clampJigsawCamera(layout, viewport, {
-    centerX: bounds.x + bounds.width / 2,
-    centerY: bounds.y + bounds.height / 2,
+    centerX: bounds.x + bounds.width / 2 - (safeCenterX - viewportCenterX) / zoom,
+    centerY: bounds.y + bounds.height / 2 - (safeCenterY - viewportCenterY) / zoom,
     zoom,
   });
 };
@@ -433,6 +449,7 @@ export const createJigsawFitCamera = (
   viewport: JigsawViewport,
   target: JigsawFitTarget = "workspace",
   padding = 32,
+  insets: Partial<JigsawViewportInsets> = {},
 ): JigsawCamera => createJigsawBoundsFitCamera(
   layout,
   viewport,
@@ -440,6 +457,8 @@ export const createJigsawFitCamera = (
     ? { x: layout.boardX, y: layout.boardY, width: layout.boardWidth, height: layout.boardHeight }
     : { x: 0, y: 0, width: layout.worldWidth, height: layout.worldHeight },
   padding,
+  jigsawCameraMaximumZoom,
+  insets,
 );
 
 export const createJigsawOccupiedFitCamera = (
@@ -447,12 +466,14 @@ export const createJigsawOccupiedFitCamera = (
   viewport: JigsawViewport,
   placements: readonly JigsawPlacement[],
   padding = 28,
+  insets: Partial<JigsawViewportInsets> = {},
 ): JigsawCamera => createJigsawBoundsFitCamera(
   layout,
   viewport,
   getJigsawOccupiedBounds(layout, placements),
   padding,
   1.25,
+  insets,
 );
 
 export const screenToJigsawWorld = (
