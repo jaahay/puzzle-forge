@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useLayoutEffect, useRef, useState } from "preact/hooks";
 
 export type PuzzleViewportSize = {
   inlineSize: number;
@@ -23,8 +23,8 @@ export const measurePuzzleViewportSize = (
 });
 
 const getViewportHeight = () =>
-  window.visualViewport?.height ??
-  document.documentElement.clientHeight ??
+  window.visualViewport?.height ||
+  document.documentElement.clientHeight ||
   window.innerHeight;
 
 export const usePuzzleViewportSize = <T extends HTMLElement>(
@@ -33,7 +33,7 @@ export const usePuzzleViewportSize = <T extends HTMLElement>(
   const ref = useRef<T>(null);
   const [size, setSize] = useState<PuzzleViewportSize>({ inlineSize: 0, blockSize: 0 });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const element = ref.current;
     if (!element) return;
 
