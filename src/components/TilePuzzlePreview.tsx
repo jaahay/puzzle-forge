@@ -917,49 +917,49 @@ export const TilePuzzlePreview = ({
 
   return (
     <section class="tile-puzzle-preview" aria-label={`${puzzle.title} jigsaw puzzle`}>
-      <div class="jigsaw-control-strip">
-        <div class="tile-puzzle-summary">
-          <span>{isSolved ? "Solved" : `${solvedCount}/${puzzle.tiles.length} placed`}</span>
-        </div>
+      <div class="tile-puzzle-summary">
+        <span>{isSolved ? "Solved" : `${solvedCount}/${puzzle.tiles.length} placed`}</span>
+        <span>{puzzle.asset.title}</span>
+        <span>{puzzle.width} x {puzzle.height}</span>
+      </div>
 
-        <div class={`tile-puzzle-tools ${isSolved ? "is-solved" : ""}`}>
-          <button type="button" onClick={() => setShowPreview((current) => !current)}>{showPreview ? "Hide preview" : "Preview image"}</button>
-          <button type="button" onClick={scatterPieces} disabled={isSolved}>Scatter pieces</button>
-          <button
-            type="button"
-            aria-pressed={showEdgeSeams}
-            onClick={() => setShowEdgeSeams((current) => !current)}
-            disabled={isSolved}
-          >
-            {isSolved
-              ? (showEdgeSeams ? "Edge guides hidden" : "Edge guides off")
-              : (showEdgeSeams ? "Hide edge guides" : "Show edge guides")}
-          </button>
-        </div>
+      <div class={`tile-puzzle-tools ${isSolved ? "is-solved" : ""}`}>
+        <button type="button" onClick={() => setShowPreview((current) => !current)}>{showPreview ? "Hide preview" : "Preview image"}</button>
+        <button type="button" onClick={scatterPieces} disabled={isSolved}>Scatter pieces</button>
+        <button
+          type="button"
+          aria-pressed={showEdgeSeams}
+          onClick={() => setShowEdgeSeams((current) => !current)}
+          disabled={isSolved}
+        >
+          {isSolved
+            ? (showEdgeSeams ? "Edge guides hidden" : "Edge guides off")
+            : (showEdgeSeams ? "Hide edge guides" : "Show edge guides")}
+        </button>
+      </div>
 
-        <div class="jigsaw-camera-tools" aria-label="Jigsaw view controls">
-          <button type="button" onClick={() => zoomView("out")} aria-label="Zoom out">−</button>
+      <div class="jigsaw-camera-tools" aria-label="Jigsaw view controls">
+        <button type="button" onClick={() => zoomView("out")} aria-label="Zoom out">−</button>
+        <button
+          type="button"
+          onClick={() => setZoomAtCenter(1)}
+          aria-label={`Reset zoom to 100 percent. Current zoom ${Math.round(activeCamera.zoom * 100)} percent`}
+          title="Reset zoom to 100%"
+        >
+          {Math.round(activeCamera.zoom * 100)}%
+        </button>
+        <button type="button" onClick={() => zoomView("in")} aria-label="Zoom in">+</button>
+        <button type="button" onClick={() => fitView("board")}>Fit board</button>
+        <button type="button" onClick={() => fitView("workspace")}>Fit workspace</button>
+        {!displayMode.isExpanded ? (
           <button
+            class="jigsaw-expand-workspace"
             type="button"
-            onClick={() => setZoomAtCenter(1)}
-            aria-label={`Reset zoom to 100 percent. Current zoom ${Math.round(activeCamera.zoom * 100)"} percent`}
-            title="Reset zoom to 100%"
+            onClick={displayMode.enterExpanded}
           >
-            {Math.round(activeCamera.zoom * 100)}%
+            Expand workspace
           </button>
-          <button type="button" onClick={() => zoomView("in")} aria-label="Zoom in">+</button>
-          <button type="button" onClick={() => fitView("board")}>Fit board</button>
-          <button type="button" onClick={() => fitView("all")}>Show all</button>
-          {!displayMode.isExpanded ? (
-            <button
-              class="jigsaw-expand-workspace"
-              type="button"
-              onClick={displayMode.enterExpanded}
-            >
-              Expand workspace
-            </button>
-          ) : null}
-        </div>
+        ) : null}
       </div>
 
       {shouldRenderJigsawReferencePreview(showPreview, isSolved) ? (
