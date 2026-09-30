@@ -43,6 +43,7 @@ export const JigsawWorkspace = ({
   const puzzleArrivalIdentity = jigsawPuzzle ? getPuzzleArrivalIdentity(jigsawPuzzle) : null;
   const isPuzzleArriving = usePuzzleArrival(puzzleArrivalIdentity);
   const gameplayNotes = jigsawPuzzle ? getJigsawGameplayNotes(jigsawPuzzle.notes, jigsawPuzzle.asset.title) : [];
+  const showStatus = !jigsawPuzzle || statusMessage !== `${jigsawPuzzle.title} ready.`;
   const isSolved = Boolean(
     puzzleInstanceId &&
     completionState?.puzzleInstanceId === puzzleInstanceId &&
@@ -194,7 +195,7 @@ export const JigsawWorkspace = ({
     <PuzzleWorkspaceLayout
       className="jigsaw-workspace"
       crown={crown}
-      status={<p class="status-line" aria-live="polite">{statusMessage}</p>}
+      status={showStatus ? <p class="status-line" aria-live="polite">{statusMessage}</p> : null}
       board={board}
       gameplay={gameplay}
       enableImmersive
