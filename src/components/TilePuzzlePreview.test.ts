@@ -3,6 +3,7 @@ import type { JigsawPiece } from "../catalog/types";
 import {
   clampJigsawCamera,
   createJigsawFitCamera,
+  createJigsawOccupiedFitCamera,
   createJigsawWorldLayout,
   getJigsawStagingMode,
 } from "../games/jigsaw/placement";
@@ -123,7 +124,7 @@ describe("TilePuzzlePreview camera controls", () => {
     expect(initializeOrPreserveJigsawCamera(layout, compactViewport, camera)).toBe(camera);
   });
 
-  it("fits the workspace when a puzzle camera has not initialized yet", () => {
+  it("fits occupied puzzle content when a puzzle camera has not initialized yet", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 2048,
       imageHeight: 1536,
@@ -131,9 +132,13 @@ describe("TilePuzzlePreview camera controls", () => {
       puzzleHeight: 8,
     });
     const viewport = { width: 1200, height: 800 };
+    const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index));
+    const placements = resolveInitialJigsawPlacements([], layout, pieces, viewport);
+    expect(placements).not.toBeNull();
+    if (!placements) return;
 
-    expect(initializeOrPreserveJigsawCamera(layout, viewport, null)).toEqual(
-      createJigsawFitCamera(layout, viewport, "workspace"),
+    expect(initializeOrPreserveJigsawCamera(layout, viewport, null, placements)).toEqual(
+      createJigsawOccupiedFitCamera(layout, viewport, placements),
     );
   });
 });
