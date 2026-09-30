@@ -1,4 +1,5 @@
 import type { JigsawPiece } from "../../catalog/types";
+import { jigsawEdgeMaximumDepth } from "./edgePaths";
 
 export type JigsawPlacement = {
   id: string;
@@ -71,6 +72,7 @@ const basePieceSize = 96;
 const worldPadding = 48;
 const worldScale = 1.55;
 const minimumStagingPiecesPerAxis = 5;
+const jigsawPieceVisualOverhangRatio = jigsawEdgeMaximumDepth / 100;
 
 export const jigsawCameraMinimumZoom = 0.05;
 export const jigsawCameraMaximumZoom = 4;
@@ -329,13 +331,15 @@ export const getJigsawOccupiedBounds = (
   let top = layout.boardY;
   let right = layout.boardX + layout.boardWidth;
   let bottom = layout.boardY + layout.boardHeight;
+  const horizontalOverhang = layout.pieceWidth * jigsawPieceVisualOverhangRatio;
+  const verticalOverhang = layout.pieceHeight * jigsawPieceVisualOverhangRatio;
 
   for (const placement of placements) {
     if (placement.snapped) continue;
-    left = Math.min(left, placement.worldX);
-    top = Math.min(top, placement.worldY);
-    right = Math.max(right, placement.worldX + layout.pieceWidth);
-    bottom = Math.max(bottom, placement.worldY + layout.pieceHeight);
+    left = Math.min(left, placement.worldX - horizontalOverhang);
+    top = Math.min(top, placement.worldY - verticalOverhang);
+    right = Math.max(right, placement.worldX + layout.pieceWidth + horizontalOverhang);
+    bottom = Math.max(bottom, placement.worldY + layout.pieceHeight + verticalOverhang);
   }
 
   return {
@@ -393,22 +397,77 @@ const clampCameraAxis = (center: number, worldSize: number, visibleSize: number)
   const overscroll = Math.min(worldSize * 0.12, visibleSize * 0.2);
   const minimumCenter = halfVisible - overscroll;
   const maximumCenter = worldSize - halfVisible + overscroll;
-  if (minimumCenter > maximumCenter) return worldSize / 2;
+  if (minimumCenter > maximumCenter) {
+    return clamp(center, worldSize - halfVisible, halfVisible);
+  }
   return clamp(center, minimumCenter, maximumCenter);
+};
+
+const normalizeViewportInsets = (
+  viewport: JigsawViewport,
+  insets: Partial<JigsawViewportInsets>,
+): JigsawViewportInsets => ({
+  top: clamp(Math.max(0, insets.top ?? 0), 0, viewport.height * 0.49),
+  right: clamp(Math.max(0, insets.right ?? 0), 0, viewport.width * 0.49),
+  bottom: clamp(Math.max(0, insets.bottom ?? 0), 0, viewport.height * 0.49),
+  left: clamp(Math.max(0, insets.left ?? 0), 0, viewport.width * 0.49),
+});
+
+const clampCameraAxisForViewport = (
+  center: number,
+  worldSize: number,
+  viewportSize: number,
+  leadingInset: number,
+  trailingInset: number,
+  zoom: number,
+  visualOverhang: number,
+) => {
+  const safeViewportSize = Math.max(1, viewportSize - leadingInset - trailingInset);
+  const safeViewportCenter = leadingInset + safeViewportSize / 2;
+  const viewportCenter = viewportSize / 2;
+  const screenOffset = safeViewportCenter - viewportCenter;
+  const safeWorldCenter = center + screenOffset / zoom;
+  const extendedWorldSize = worldSize + visualOverhang * 2;
+  const clampedSafeWorldCenter =
+    clampCameraAxis(
+      safeWorldCenter + visualOverhang,
+      extendedWorldSize,
+      safeViewportSize / zoom,
+    ) - visualOverhang;
+
+  return clampedSafeWorldCenter - screenOffset / zoom;
 };
 
 export const clampJigsawCamera = (
   layout: JigsawWorldLayout,
   viewport: JigsawViewport,
   camera: JigsawCamera,
+  insets: Partial<JigsawViewportInsets> = {},
 ): JigsawCamera => {
   const zoom = clamp(camera.zoom, jigsawCameraMinimumZoom, jigsawCameraMaximumZoom);
-  const safeViewportWidth = Math.max(1, viewport.width);
-  const safeViewportHeight = Math.max(1, viewport.height);
+  const normalizedInsets = normalizeViewportInsets(viewport, insets);
+  const horizontalOverhang = layout.pieceWidth * jigsawPieceVisualOverhangRatio;
+  const verticalOverhang = layout.pieceHeight * jigsawPieceVisualOverhangRatio;
 
   return {
-    centerX: clampCameraAxis(camera.centerX, layout.worldWidth, safeViewportWidth / zoom),
-    centerY: clampCameraAxis(camera.centerY, layout.worldHeight, safeViewportHeight / zoom),
+    centerX: clampCameraAxisForViewport(
+      camera.centerX,
+      layout.worldWidth,
+      Math.max(1, viewport.width),
+      normalizedInsets.left,
+      normalizedInsets.right,
+      zoom,
+      horizontalOverhang,
+    ),
+    centerY: clampCameraAxisForViewport(
+      camera.centerY,
+      layout.worldHeight,
+      Math.max(1, viewport.height),
+      normalizedInsets.top,
+      normalizedInsets.bottom,
+      zoom,
+      verticalOverhang,
+    ),
     zoom,
   };
 };
@@ -441,7 +500,7 @@ export const createJigsawBoundsFitCamera = (
     centerX: bounds.x + bounds.width / 2 - (safeCenterX - viewportCenterX) / zoom,
     centerY: bounds.y + bounds.height / 2 - (safeCenterY - viewportCenterY) / zoom,
     zoom,
-  });
+  }, { top, right, bottom, left });
 };
 
 export const createJigsawFitCamera = (
