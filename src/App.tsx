@@ -25,6 +25,7 @@ import { encodeGenerationId, resolvePuzzleResourceSegment } from "./app/puzzleRe
 import { defaultPuzzleDifficulty, makeRandomSeed } from "./app/runtime";
 import { getCurrentAppRoute, parseAppRoute, pushAppRoute, replaceAppRoute, type AppRoute } from "./app/routes";
 import { initialSolitaireStats, loadPersistedPuzzleSessions } from "./app/session";
+import { resolveStartupRoute } from "./app/startupNavigation";
 import { useGridController } from "./app/useGridController";
 import { useNextPuzzleDrafts } from "./app/useNextPuzzleDrafts";
 import { makeInitialPuzzleGenerationOptions, makeMissingPuzzleGenerationOptions, shouldRecoverMissingPuzzleSurface, usePuzzleGeneration, type BeginGenerationOptions } from "./app/usePuzzleGeneration";
@@ -70,7 +71,11 @@ const generatedBaselinesMatch = (left: GeneratedPuzzle, right: GeneratedPuzzle) 
   left.checksum === right.checksum;
 
 export const App = () => {
-  const initialRoute = useMemo(getCurrentAppRoute, []);
+  const initialPersistedSessions = useMemo(loadPersistedPuzzleSessions, []);
+  const initialRoute = useMemo(
+    () => resolveStartupRoute(getCurrentAppRoute(), initialPersistedSessions),
+    [initialPersistedSessions],
+  );
   const storedPuzzleId = useMemo(() => getInitialSelectedPuzzleId(), []);
   const initialSelectedPuzzleId = initialRoute.kind === "puzzle" || initialRoute.kind === "resource"
     ? initialRoute.puzzleId
@@ -488,8 +493,7 @@ export const App = () => {
     );
     generation.worker.addEventListener("message", handleMessage);
 
-    const persisted = loadPersistedPuzzleSessions();
-    if (persisted) sessions.initializePersistedSessions(persisted.sessions);
+    if (initialPersistedSessions) sessions.initializePersistedSessions(initialPersistedSessions.sessions);
 
     if (initialRoute.kind === "puzzle") {
       selectPuzzle(initialRoute.puzzleId, { pushHistory: false });
