@@ -1,5 +1,5 @@
 import type { PuzzleId } from "../catalog/types";
-import { loadPersistedPuzzleSessions } from "./session";
+import { loadPersistedPuzzleSessions, type PersistedPuzzleSessions } from "./session";
 import { puzzleIds } from "./sessionConstants";
 
 const selectedPuzzleIdStorageKey = "puzzle-forge.selected-puzzle-id";
@@ -15,12 +15,17 @@ const getStoredSelectedPuzzleId = () => {
   }
 };
 
-export const getInitialSelectedPuzzleId = (fallback: PuzzleId = "sudoku") => {
+export const getInitialSelectedPuzzleId = (
+  fallback: PuzzleId = "sudoku",
+  persistedSnapshot?: PersistedPuzzleSessions | null,
+) => {
   if (typeof window === "undefined") {
     return fallback;
   }
 
-  const persisted = loadPersistedPuzzleSessions();
+  const persisted = persistedSnapshot === undefined
+    ? loadPersistedPuzzleSessions()
+    : persistedSnapshot;
   const activePersistedSession = persisted?.sessions[persisted.activeResourceKey];
   return activePersistedSession?.puzzleId ?? getStoredSelectedPuzzleId() ?? fallback;
 };
