@@ -123,7 +123,7 @@
 }
 
 .puzzle-actions button,
-.tile-puzzle-tools button:first-child,
+.jigsaw-workspace:not(.is-immersive) .tile-puzzle-tools button:first-child,
 .word-guess-actions button:first-child {
   min-height: 2.55rem;
   min-width: 7rem;
@@ -140,7 +140,7 @@
 .control-panel button,
 .puzzle-settings-actions button,
 .solitaire-settings-actions button,
-.tile-puzzle-tools button:nth-child(n + 2),
+.jigsaw-workspace:not(.is-immersive) .tile-puzzle-tools button:nth-child(n + 2),
 .word-guess-actions button:nth-child(n + 2),
 .seed-control button {
   min-height: 2.55rem;
