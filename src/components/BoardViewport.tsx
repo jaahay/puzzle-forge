@@ -1,5 +1,6 @@
 import type { ComponentChildren, JSX } from "preact";
-import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useMemo } from "preact/hooks";
+import { usePuzzleViewportSize } from "./usePuzzleViewportSize";
 
 export type BoardViewportKind = "square-grid" | "nonogram";
 
@@ -15,6 +16,7 @@ type BoardViewportProps = {
 export type BoardViewportMetricsInput = {
   kind: BoardViewportKind;
   availableInlineSize: number;
+  availableBlockSize?: number;
   columns: number;
   rows: number;
   rowClueSlots?: number;
@@ -61,6 +63,7 @@ export const getBoardViewportNaturalWidth = ({
 export const makeBoardViewportMetrics = ({
   kind,
   availableInlineSize,
+  availableBlockSize = 0,
   columns,
   rows,
   rowClueSlots = 1,
@@ -69,18 +72,26 @@ export const makeBoardViewportMetrics = ({
   const safeColumns = normalizeCount(columns);
   const safeRows = normalizeCount(rows);
   const availableWidth = Math.max(0, availableInlineSize);
+  const availableHeight = Math.max(0, availableBlockSize);
 
   if (kind === "square-grid") {
     const targetBoardWidth = Math.min(availableWidth || squareGridMaxBoardSize, squareGridMaxBoardSize);
-    const cellSize = clamp(targetBoardWidth / safeColumns, squareGridMinCellSize, squareGridMaxBoardSize / safeColumns);
-    const boardSize = roundMetric(cellSize * safeColumns);
+    const targetBoardHeight = Math.min(availableHeight || squareGridMaxBoardSize, squareGridMaxBoardSize);
+    const maximumCellSize = squareGridMaxBoardSize / Math.max(safeColumns, safeRows);
+    const cellSize = clamp(
+      Math.min(targetBoardWidth / safeColumns, targetBoardHeight / safeRows),
+      squareGridMinCellSize,
+      maximumCellSize,
+    );
+    const gridWidth = roundMetric(cellSize * safeColumns);
+    const gridHeight = roundMetric(cellSize * safeRows);
 
     return {
       cellSize: roundMetric(cellSize),
-      gridWidth: boardSize,
-      gridHeight: boardSize,
-      boardWidth: boardSize,
-      boardHeight: boardSize,
+      gridWidth,
+      gridHeight,
+      boardWidth: gridWidth,
+      boardHeight: gridHeight,
       rowClueWidth: 0,
       columnClueHeight: 0,
     };
@@ -90,7 +101,14 @@ export const makeBoardViewportMetrics = ({
   const columnClueHeight = getClueTrackSize(columnClueSlots, 42, 104);
   const targetBoardWidth = availableWidth || rowClueWidth + nonogramMaxCellSize * safeColumns + nonogramFrameWidth;
   const availableCellWidth = Math.max(0, targetBoardWidth - rowClueWidth - nonogramFrameWidth);
-  const cellSize = clamp(availableCellWidth / safeColumns, nonogramMinCellSize, nonogramMaxCellSize);
+  const availableCellHeight = availableHeight > 0
+    ? Math.max(0, availableHeight - columnClueHeight - nonogramFrameWidth)
+    : Number.POSITIVE_INFINITY;
+  const cellSize = clamp(
+    Math.min(availableCellWidth / safeColumns, availableCellHeight / safeRows),
+    nonogramMinCellSize,
+    nonogramMaxCellSize,
+  );
   const gridWidth = roundMetric(cellSize * safeColumns);
   const gridHeight = roundMetric(cellSize * safeRows);
 
@@ -105,16 +123,12 @@ export const makeBoardViewportMetrics = ({
   };
 };
 
-const getObservedInlineSize = (entry: ResizeObserverEntry, fallback: HTMLElement) => {
-  const contentBoxSize = entry.contentBoxSize as ResizeObserverSize | readonly ResizeObserverSize[] | undefined;
-  const contentBox = Array.isArray(contentBoxSize) ? contentBoxSize[0] : contentBoxSize;
-
-  return contentBox?.inlineSize ?? fallback.getBoundingClientRect().width;
-};
-
 export const BoardViewport = ({ kind, columns, rows, rowClueSlots, columnClueSlots, children }: BoardViewportProps) => {
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const [availableInlineSize, setAvailableInlineSize] = useState(0);
+  const {
+    ref: viewportRef,
+    inlineSize: availableInlineSize,
+    blockSize: availableBlockSize,
+  } = usePuzzleViewportSize<HTMLDivElement>();
   const safeColumns = normalizeCount(columns);
   const safeRows = normalizeCount(rows);
   const metrics = useMemo(
@@ -122,12 +136,13 @@ export const BoardViewport = ({ kind, columns, rows, rowClueSlots, columnClueSlo
       makeBoardViewportMetrics({
         kind,
         availableInlineSize,
+        availableBlockSize,
         columns,
         rows,
         rowClueSlots,
         columnClueSlots,
       }),
-    [availableInlineSize, columnClueSlots, columns, kind, rowClueSlots, rows],
+    [availableBlockSize, availableInlineSize, columnClueSlots, columns, kind, rowClueSlots, rows],
   );
   const viewportStyle = {
     "--board-columns": String(safeColumns),
@@ -143,46 +158,6 @@ export const BoardViewport = ({ kind, columns, rows, rowClueSlots, columnClueSlo
     "--nonogram-column-clue-height": `${metrics.columnClueHeight}px`,
   } as JSX.CSSProperties;
   const viewportKindClass = kind === "square-grid" ? "square-grid-board-viewport" : "nonogram-board-viewport";
-
-  useEffect(() => {
-    const viewport = viewportRef.current;
-
-    if (!viewport) {
-      return;
-    }
-
-    const updateAvailableInlineSize = (nextWidth = viewport.getBoundingClientRect().width) => {
-      setAvailableInlineSize(roundMetric(nextWidth));
-    };
-
-    updateAvailableInlineSize();
-
-    if (typeof ResizeObserver === "undefined") {
-      const handleResize = () => updateAvailableInlineSize();
-
-      window.addEventListener("resize", handleResize);
-
-      return () => {
-        window.removeEventListener("resize", handleResize);
-      };
-    }
-
-    const observer = new ResizeObserver((entries) => {
-      const [entry] = entries;
-
-      if (!entry) {
-        return;
-      }
-
-      updateAvailableInlineSize(getObservedInlineSize(entry, viewport));
-    });
-
-    observer.observe(viewport);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
 
   return (
     <div class={`board-viewport ${viewportKindClass}`} ref={viewportRef} style={viewportStyle}>
