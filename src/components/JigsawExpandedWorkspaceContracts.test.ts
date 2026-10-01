@@ -7,7 +7,6 @@ const imageTileWorkspaceSource = readFileSync(new URL("./ImageTilePuzzleWorkspac
 const jigsawPreviewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", import.meta.url), "utf8");
 const immersiveCss = readFileSync(new URL("../site/immersive.css", import.meta.url), "utf8");
 const jigsawCss = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
-const workspaceCss = readFileSync(new URL("../site/workspace.css", import.meta.url), "utf8");
 
 const cssRule = (source: string, selector: string) => {
   const start = source.indexOf(selector);
@@ -21,13 +20,16 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(layoutSource).toContain("usePuzzleWorkspaceDisplayMode");
     expect(layoutSource).toContain('immersiveEntry?: "workspace" | "descendant"');
     expect(layoutSource).toContain('enableImmersive && (isExpanded || immersiveEntry === "workspace")');
-    expect(layoutSource).toContain("Exit expanded");
-    expect(layoutSource).toContain("Fullscreen");
+    expect(layoutSource).toContain('aria-label="Exit expanded workspace"');
+    expect(layoutSource).toContain('"Exit fullscreen" : "Enter fullscreen"');
+    expect(layoutSource).toContain("FullscreenIcon");
+    expect(layoutSource).toContain("ExitExpandedIcon");
 
     expect(jigsawWorkspaceSource).toContain('immersiveEntry="descendant"');
     expect(jigsawPreviewSource).toContain("usePuzzleWorkspaceDisplayMode");
     expect(jigsawPreviewSource).toContain("displayMode.enterExpanded");
-    expect(jigsawPreviewSource).toContain("Expand workspace");
+    expect(jigsawPreviewSource).toContain('aria-label="Expand workspace"');
+    expect(jigsawPreviewSource).toContain("JigsawExpandIcon");
     expect(jigsawPreviewSource).toContain('class="jigsaw-expand-workspace"');
     expect(jigsawCss).toContain(".jigsaw-camera-tools .jigsaw-expand-workspace");
     expect(jigsawPreviewSource).not.toContain("displayMode.exitExpanded");
@@ -80,6 +82,8 @@ describe("Jigsaw expanded workspace contracts", () => {
     const mobileCameraButtonRule = cssRule(mobileCss, ".jigsaw-workspace.is-immersive .jigsaw-camera-tools button {");
 
     expect(jigsawPreviewSource).toContain('class="jigsaw-tools-toggle"');
+    expect(jigsawPreviewSource).toContain('aria-label="Jigsaw tools"');
+    expect(jigsawPreviewSource).toContain("<JigsawToolsIcon />");
     expect(jigsawPreviewSource).toContain("aria-expanded={showCompactTools}");
     expect(jigsawPreviewSource).toContain("if (!isSolved) return;");
     expect(jigsawPreviewSource).toContain("setShowCompactTools(false);");
@@ -88,21 +92,26 @@ describe("Jigsaw expanded workspace contracts", () => {
       'usesToolsDisclosure && element.classList.contains("tile-puzzle-tools")',
     );
     expect(jigsawPreviewSource).toContain('class="jigsaw-fit-toggle"');
+    expect(jigsawPreviewSource).toContain('aria-label="Fit view"');
+    expect(jigsawPreviewSource).toContain("<JigsawFitIcon />");
     expect(jigsawPreviewSource).toContain("aria-expanded={showFitMenu}");
     expect(jigsawPreviewSource).toContain("Restage pieces");
     expect(jigsawPreviewSource).toContain("restageLoosePieces();");
     expect(jigsawPreviewSource).not.toContain("Scatter pieces");
 
-    expect(immersiveToggleRule).toContain("display: block;");
+    expect(immersiveToggleRule).toContain("display: grid;");
     expect(immersiveToolRule).toContain("display: none;");
     expect(immersiveToolRule).toContain("flex-direction: column;");
     expect(immersiveOpenRule).toContain("display: flex;");
-    expect(immersiveFitRule).toContain("display: none;");
+    expect(immersiveFitRule).toContain("bottom: calc(100% + 0.4rem);");
+    expect(immersiveFitRule).not.toContain("display:");
 
     expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .jigsaw-tools-toggle");
     expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .tile-puzzle-tools.is-open");
-    expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .jigsaw-fit-menu.is-open");
+    expect(jigsawCss).toContain(".jigsaw-fit-menu.is-open");
+    expect(jigsawCss).toContain(".jigsaw-tools-toggle svg,");
     expect(jigsawCss).toContain("flex-wrap: nowrap;");
+    expect(layoutSource).toContain("ExpandWorkspaceIcon");
     expect(mobileToolButtonRule).toContain("min-height: 2.75rem;");
     expect(mobileToolButtonRule).toContain("max-width: 10.5rem;");
     expect(mobileCameraRule).toContain("bottom: 0.45rem;");
