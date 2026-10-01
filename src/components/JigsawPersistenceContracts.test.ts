@@ -50,12 +50,12 @@ describe("Jigsaw resource-session persistence integration", () => {
   });
 
   it("publishes only committed snapped progress across the session boundary", () => {
-    const scatter = sourceBetween(previewSource, "const scatterPieces =", "useEffect(() => {\n    if (lastResetVersion");
+    const staging = sourceBetween(previewSource, "const applyStagedPlacements =", "const resetPieces =");
     const history = sourceBetween(previewSource, "const dispatchHistoryAction =", "useEffect(() => {\n    if (!onHistoryControllerChange)");
     const moveDrag = sourceBetween(previewSource, "const moveDrag =", "const finishDrag =");
     const finishDrag = sourceBetween(previewSource, "const finishDrag =", "const cancelDrag =");
 
-    expect(scatter).toContain("publishSnappedProgress(nextPlacements);");
+    expect(staging).toContain("publishSnappedProgress(nextPlacements);");
     expect(history).toContain("publishSnappedProgress(transition.placements);");
     expect(moveDrag).not.toContain("publishSnappedProgress");
     expect(finishDrag).toContain("publishSnappedProgress(nextState.placements);");
