@@ -21,6 +21,7 @@ import {
   createJigsawWorldLayout,
   getJigsawCameraTransform,
   getJigsawPlacementPosition,
+  getJigsawSolvedPosition,
   isUsableJigsawViewport,
   normalizeJigsawWorldPosition,
   panJigsawCamera,
@@ -220,11 +221,28 @@ export const resolveInitialJigsawPlacements = (
   stagingViewport: JigsawViewport | null,
 ) => {
   if (!isUsableJigsawViewport(stagingViewport)) return null;
+
   const snappedIds = new Set(snappedPieceIds);
-  return createInitialJigsawPlacements(layout, pieces, stagingViewport).map((placement) => ({
-    ...placement,
-    snapped: snappedIds.has(placement.id),
-  }));
+  const orderedPieces = [...pieces].sort((left, right) => left.currentIndex - right.currentIndex);
+  const loosePieces = orderedPieces.filter((piece) => !snappedIds.has(piece.id));
+  const stagedLooseById = new Map(
+    createInitialJigsawPlacements(layout, loosePieces, stagingViewport)
+      .map((placement) => [placement.id, placement] as const),
+  );
+
+  return orderedPieces.map((piece) => {
+    if (snappedIds.has(piece.id)) {
+      const solved = getJigsawSolvedPosition(layout, piece);
+      return {
+        id: piece.id,
+        worldX: solved.left,
+        worldY: solved.top,
+        snapped: true,
+      };
+    }
+
+    return stagedLooseById.get(piece.id)!;
+  });
 };
 
 const getPieceClipPathId = (puzzle: JigsawGeneratedPuzzle, tile: JigsawPiece) =>
