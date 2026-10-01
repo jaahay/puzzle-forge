@@ -18,6 +18,7 @@ import {
   createInitialJigsawPlacements,
   createJigsawFitCamera,
   createJigsawOccupiedFitCamera,
+  createJigsawWorkingFitCamera,
   createJigsawWorldLayout,
   getJigsawCameraTransform,
   getJigsawPlacementPosition,
@@ -146,7 +147,7 @@ export const initializeOrPreserveJigsawCamera = (
   placements: readonly JigsawPlacement[] | null = null,
 ) => currentCamera ?? (
   placements
-    ? createJigsawOccupiedFitCamera(layout, viewport, placements)
+    ? createJigsawWorkingFitCamera(layout, viewport, placements)
     : createJigsawFitCamera(layout, viewport, "workspace")
 );
 
@@ -159,7 +160,7 @@ export const resolveJigsawCameraForViewportResize = (
   insets: Partial<JigsawViewportInsets> = {},
 ) => userAdjusted
   ? currentCamera
-  : createJigsawOccupiedFitCamera(layout, viewport, placements, 28, insets);
+  : createJigsawWorkingFitCamera(layout, viewport, placements, 28, insets);
 
 export const getMeasuredJigsawViewport = (
   stage: Pick<HTMLElement, "clientWidth" | "clientHeight"> | null,
@@ -327,12 +328,14 @@ export const TilePuzzlePreview = ({
   const [isPanning, setIsPanning] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showEdgeSeams, setShowEdgeSeams] = useState(false);
-  const [showMobileImmersiveTools, setShowMobileImmersiveTools] = useState(false);
+  const [showCompactTools, setShowCompactTools] = useState(false);
+  const [showFitMenu, setShowFitMenu] = useState(false);
   const cameraWasUserAdjustedRef = useRef(false);
   const displayMode = usePuzzleWorkspaceDisplayMode();
 
   useEffect(() => {
-    setShowMobileImmersiveTools(false);
+    setShowCompactTools(false);
+    setShowFitMenu(false);
   }, [displayMode.isExpanded, puzzle.id]);
 
   useEffect(() => () => {
@@ -381,7 +384,7 @@ export const TilePuzzlePreview = ({
   const activeCamera = cameraState?.puzzleId === puzzle.id
     ? cameraState.camera
     : activePlacements
-      ? createJigsawOccupiedFitCamera(layout, renderViewport, activePlacements)
+      ? createJigsawWorkingFitCamera(layout, renderViewport, activePlacements)
       : createJigsawFitCamera(layout, renderViewport, "workspace");
   const wheelStateRef = useRef({
     puzzleId: puzzle.id,
@@ -475,7 +478,7 @@ export const TilePuzzlePreview = ({
     if (!stage || !workspace) return { top: 0, right: 0, bottom: 0, left: 0 };
 
     const overlayElements = Array.from(workspace.querySelectorAll<HTMLElement>(
-      ".jigsaw-mobile-tools-toggle, .tile-puzzle-tools, .jigsaw-camera-tools, .puzzle-workspace-display-tools",
+      ".jigsaw-tools-toggle, .tile-puzzle-tools, .jigsaw-camera-tools, .puzzle-workspace-display-tools",
     ));
     const view = stage.ownerDocument.defaultView;
     const isVisible = (element: HTMLElement) => {
@@ -484,12 +487,12 @@ export const TilePuzzlePreview = ({
         ? style.display !== "none" && style.visibility !== "hidden"
         : element.getClientRects().length > 0;
     };
-    const mobileToolsToggle = workspace.querySelector<HTMLElement>(".jigsaw-mobile-tools-toggle");
-    const usesMobileToolsDisclosure = Boolean(mobileToolsToggle && isVisible(mobileToolsToggle));
+    const toolsToggle = workspace.querySelector<HTMLElement>(".jigsaw-tools-toggle");
+    const usesToolsDisclosure = Boolean(toolsToggle && isVisible(toolsToggle));
     const overlayRects = overlayElements
       .filter((element) =>
         isVisible(element) &&
-        !(usesMobileToolsDisclosure && element.classList.contains("tile-puzzle-tools")))
+        !(usesToolsDisclosure && element.classList.contains("tile-puzzle-tools")))
       .map((element) => element.getBoundingClientRect());
     return getJigsawFitInsetsForOverlays(stage.getBoundingClientRect(), overlayRects);
   };
@@ -559,7 +562,7 @@ export const TilePuzzlePreview = ({
       ));
     }
     cameraWasUserAdjustedRef.current = false;
-    setCamera(createJigsawOccupiedFitCamera(
+    setCamera(createJigsawWorkingFitCamera(
       layout,
       stagingViewport,
       nextPlacements,
@@ -604,7 +607,9 @@ export const TilePuzzlePreview = ({
   const isSolved = areJigsawPlacementsSolved(placements, puzzle.tiles.length);
 
   useEffect(() => {
-    if (isSolved) setShowMobileImmersiveTools(false);
+    if (!isSolved) return;
+    setShowCompactTools(false);
+    setShowFitMenu(false);
   }, [isSolved, puzzle.id]);
 
   useEffect(() => {
@@ -1060,7 +1065,8 @@ export const TilePuzzlePreview = ({
     event.preventDefault();
   };
 
-  const mobileToolsId = `jigsaw-tools-${puzzle.id}`.replace(/[^a-zA-Z0-9_-]/g, "-");
+  const toolsId = `jigsaw-tools-${puzzle.id}`.replace(/[^a-zA-Z0-9_-]/g, "-");
+  const fitMenuId = `jigsaw-fit-${puzzle.id}`.replace(/[^a-zA-Z0-9_-]/g, "-");
   const previewStyle = {
     backgroundImage: `url(${puzzle.asset.files.preview})`,
     aspectRatio: `${puzzle.asset.intrinsicWidth} / ${puzzle.asset.intrinsicHeight}`,
@@ -1086,25 +1092,25 @@ export const TilePuzzlePreview = ({
 
       {!isSolved ? (
         <button
-          class="jigsaw-mobile-tools-toggle"
+          class="jigsaw-tools-toggle"
           type="button"
-          aria-expanded={showMobileImmersiveTools}
-          aria-controls={mobileToolsId}
-          onClick={() => setShowMobileImmersiveTools((current) => !current)}
+          aria-expanded={showCompactTools}
+          aria-controls={toolsId}
+          onClick={() => setShowCompactTools((current) => !current)}
         >
           Tools
         </button>
       ) : null}
 
       <div
-        id={mobileToolsId}
-        class={`tile-puzzle-tools ${isSolved ? "is-solved" : ""} ${showMobileImmersiveTools ? "is-mobile-open" : ""}`}
+        id={toolsId}
+        class={`tile-puzzle-tools ${isSolved ? "is-solved" : ""} ${showCompactTools ? "is-open" : ""}`}
       >
         <button
           type="button"
           onClick={() => {
             setShowPreview((current) => !current);
-            setShowMobileImmersiveTools(false);
+            setShowCompactTools(false);
           }}
         >
           {showPreview ? "Hide preview" : "Preview image"}
@@ -1113,7 +1119,7 @@ export const TilePuzzlePreview = ({
           type="button"
           onClick={() => {
             restageLoosePieces();
-            setShowMobileImmersiveTools(false);
+            setShowCompactTools(false);
           }}
           disabled={isSolved}
         >
@@ -1124,7 +1130,7 @@ export const TilePuzzlePreview = ({
           aria-pressed={showEdgeSeams}
           onClick={() => {
             setShowEdgeSeams((current) => !current);
-            setShowMobileImmersiveTools(false);
+            setShowCompactTools(false);
           }}
           disabled={isSolved}
         >
@@ -1145,8 +1151,37 @@ export const TilePuzzlePreview = ({
           {Math.round(activeCamera.zoom * 100)}%
         </button>
         <button type="button" onClick={() => zoomView("in")} aria-label="Zoom in">+</button>
-        <button type="button" onClick={() => fitView("board")}>Fit board</button>
-        <button type="button" onClick={() => fitView("all")}>Show all</button>
+        <div class="jigsaw-fit-control">
+          <button
+            class="jigsaw-fit-toggle"
+            type="button"
+            aria-expanded={showFitMenu}
+            aria-controls={fitMenuId}
+            onClick={() => setShowFitMenu((current) => !current)}
+          >
+            Fit
+          </button>
+          <div id={fitMenuId} class={`jigsaw-fit-menu ${showFitMenu ? "is-open" : ""}`}>
+            <button
+              type="button"
+              onClick={() => {
+                fitView("board");
+                setShowFitMenu(false);
+              }}
+            >
+              Fit board
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                fitView("all");
+                setShowFitMenu(false);
+              }}
+            >
+              Show all
+            </button>
+          </div>
+        </div>
         {!displayMode.isExpanded ? (
           <button
             class="jigsaw-expand-workspace"
