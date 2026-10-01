@@ -87,11 +87,6 @@
   text-transform: uppercase;
 }
 
-.tile-puzzle-tools.is-solved {
-  visibility: hidden;
-  pointer-events: none;
-}
-
 .tile-puzzle-tools button,
 .jigsaw-camera-tools button {
   border-radius: 999px;
