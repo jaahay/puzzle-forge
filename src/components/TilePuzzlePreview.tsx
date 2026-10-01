@@ -27,6 +27,7 @@ import {
   panJigsawCamera,
   restageLooseJigsawPlacements,
   screenToJigsawWorld,
+  stageLooseJigsawPlacements,
   shouldSnapJigsawPlacement,
   zoomJigsawCameraAtPoint,
   jigsawCameraMaximumZoom,
@@ -223,15 +224,9 @@ export const resolveInitialJigsawPlacements = (
   if (!isUsableJigsawViewport(stagingViewport)) return null;
 
   const snappedIds = new Set(snappedPieceIds);
-  const orderedPieces = [...pieces].sort((left, right) => left.currentIndex - right.currentIndex);
-  const loosePieces = orderedPieces.filter((piece) => !snappedIds.has(piece.id));
-  const stagedLooseById = new Map(
-    createInitialJigsawPlacements(layout, loosePieces, stagingViewport)
-      .map((placement) => [placement.id, placement] as const),
-  );
-
-  return orderedPieces.map((piece) => {
-    if (snappedIds.has(piece.id)) {
+  const fixedPlacements = pieces
+    .filter((piece) => snappedIds.has(piece.id))
+    .map((piece) => {
       const solved = getJigsawSolvedPosition(layout, piece);
       return {
         id: piece.id,
@@ -239,10 +234,9 @@ export const resolveInitialJigsawPlacements = (
         worldY: solved.top,
         snapped: true,
       };
-    }
+    });
 
-    return stagedLooseById.get(piece.id)!;
-  });
+  return stageLooseJigsawPlacements(layout, pieces, fixedPlacements, stagingViewport);
 };
 
 const getPieceClipPathId = (puzzle: JigsawGeneratedPuzzle, tile: JigsawPiece) =>
@@ -480,9 +474,23 @@ export const TilePuzzlePreview = ({
     const workspace = stage?.closest<HTMLElement>(".jigsaw-workspace.is-immersive");
     if (!stage || !workspace) return { top: 0, right: 0, bottom: 0, left: 0 };
 
-    const overlayRects = Array.from(workspace.querySelectorAll<HTMLElement>(
+    const overlayElements = Array.from(workspace.querySelectorAll<HTMLElement>(
       ".jigsaw-mobile-tools-toggle, .tile-puzzle-tools, .jigsaw-camera-tools, .puzzle-workspace-display-tools",
-    )).map((element) => element.getBoundingClientRect());
+    ));
+    const view = stage.ownerDocument.defaultView;
+    const isVisible = (element: HTMLElement) => {
+      const style = view?.getComputedStyle(element);
+      return style
+        ? style.display !== "none" && style.visibility !== "hidden"
+        : element.getClientRects().length > 0;
+    };
+    const mobileToolsToggle = workspace.querySelector<HTMLElement>(".jigsaw-mobile-tools-toggle");
+    const usesMobileToolsDisclosure = Boolean(mobileToolsToggle && isVisible(mobileToolsToggle));
+    const overlayRects = overlayElements
+      .filter((element) =>
+        isVisible(element) &&
+        !(usesMobileToolsDisclosure && element.classList.contains("tile-puzzle-tools")))
+      .map((element) => element.getBoundingClientRect());
     return getJigsawFitInsetsForOverlays(stage.getBoundingClientRect(), overlayRects);
   };
 
@@ -594,6 +602,10 @@ export const TilePuzzlePreview = ({
   const placementById = new Map(placements.map((placement) => [placement.id, placement] as const));
   const solvedCount = placements.filter((placement) => placement.snapped).length;
   const isSolved = areJigsawPlacementsSolved(placements, puzzle.tiles.length);
+
+  useEffect(() => {
+    if (isSolved) setShowMobileImmersiveTools(false);
+  }, [isSolved, puzzle.id]);
 
   useEffect(() => {
     onSolvedChange?.(isSolved);
@@ -1072,15 +1084,17 @@ export const TilePuzzlePreview = ({
         <span>{isSolved ? "Solved" : `${solvedCount}/${puzzle.tiles.length} placed`}</span>
       </div>
 
-      <button
-        class="jigsaw-mobile-tools-toggle"
-        type="button"
-        aria-expanded={showMobileImmersiveTools}
-        aria-controls={mobileToolsId}
-        onClick={() => setShowMobileImmersiveTools((current) => !current)}
-      >
-        Tools
-      </button>
+      {!isSolved ? (
+        <button
+          class="jigsaw-mobile-tools-toggle"
+          type="button"
+          aria-expanded={showMobileImmersiveTools}
+          aria-controls={mobileToolsId}
+          onClick={() => setShowMobileImmersiveTools((current) => !current)}
+        >
+          Tools
+        </button>
+      ) : null}
 
       <div
         id={mobileToolsId}
