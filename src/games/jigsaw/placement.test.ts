@@ -71,6 +71,20 @@ const isBoardAlignedTopBottomSlot = (
   return centerX >= layout.boardX && centerX <= layout.boardX + layout.boardWidth;
 };
 
+const getSideStagingGap = (
+  layout: ReturnType<typeof createJigsawWorldLayout>,
+  worldX: number,
+) => worldX < layout.boardX
+  ? layout.boardX - (worldX + layout.pieceWidth)
+  : worldX - (layout.boardX + layout.boardWidth);
+
+const getTopBottomStagingGap = (
+  layout: ReturnType<typeof createJigsawWorldLayout>,
+  worldY: number,
+) => worldY < layout.boardY
+  ? layout.boardY - (worldY + layout.pieceHeight)
+  : worldY - (layout.boardY + layout.boardHeight);
+
 const getScreenBounds = (
   bounds: ReturnType<typeof getJigsawOccupiedBounds>,
   camera: ReturnType<typeof createJigsawOccupiedFitCamera>,
@@ -171,6 +185,8 @@ describe("Jigsaw world layout", () => {
     expect(placements.slice(0, 24).every((placement) => isBoardAlignedSideSlot(layout, placement.worldY))).toBe(true);
     expect(placements.some((placement) => placement.worldX < layout.boardX)).toBe(true);
     expect(placements.some((placement) => placement.worldX > layout.boardX + layout.boardWidth)).toBe(true);
+    expect(Math.max(...placements.map((placement) => getSideStagingGap(layout, placement.worldX))))
+      .toBeLessThan(layout.pieceWidth * 2.75);
   });
 
   it("prefers balanced, board-aligned top and bottom trays for a panoramic puzzle on a tall display", () => {
@@ -189,6 +205,8 @@ describe("Jigsaw world layout", () => {
     expect(placements.slice(0, 24).every((placement) => isBoardAlignedTopBottomSlot(layout, placement.worldX))).toBe(true);
     expect(placements.some((placement) => placement.worldY < layout.boardY)).toBe(true);
     expect(placements.some((placement) => placement.worldY > layout.boardY + layout.boardHeight)).toBe(true);
+    expect(Math.max(...placements.map((placement) => getTopBottomStagingGap(layout, placement.worldY))))
+      .toBeLessThan(layout.pieceHeight * 2.75);
   });
 
   it("uses piece count to decide when moderate extra side space should become trays", () => {
