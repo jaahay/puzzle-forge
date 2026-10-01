@@ -802,16 +802,16 @@
     font-size: 0.68rem;
   }
 
-  .tile-puzzle-tools,
-  .jigsaw-camera-tools {
+  :where(.jigsaw-workspace:not(.is-immersive)) .tile-puzzle-tools,
+  :where(.jigsaw-workspace:not(.is-immersive)) .jigsaw-camera-tools {
     width: 100%;
   }
 
-  .tile-puzzle-tools button {
+  :where(.jigsaw-workspace:not(.is-immersive)) .tile-puzzle-tools button {
     flex: 1 1 8rem;
   }
 
-  .jigsaw-camera-tools button {
+  :where(.jigsaw-workspace:not(.is-immersive)) .jigsaw-camera-tools button {
     flex: 1 1 auto;
   }
 }

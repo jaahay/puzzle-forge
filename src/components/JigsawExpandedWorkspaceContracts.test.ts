@@ -7,6 +7,7 @@ const imageTileWorkspaceSource = readFileSync(new URL("./ImageTilePuzzleWorkspac
 const jigsawPreviewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", import.meta.url), "utf8");
 const immersiveCss = readFileSync(new URL("../site/immersive.css", import.meta.url), "utf8");
 const jigsawCss = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
+const workspaceCss = readFileSync(new URL("../site/workspace.css", import.meta.url), "utf8");
 
 const cssRule = (source: string, selector: string) => {
   const start = source.indexOf(selector);
@@ -62,15 +63,34 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(stageRule).toContain("min-height: 0;");
   });
 
-  it("keeps narrow expanded controls separated instead of stacking competing full-width rows", () => {
+  it("keeps narrow expanded controls compact instead of inheriting normal-flow flex growth", () => {
     const mobileCss = immersiveCss.slice(immersiveCss.indexOf("@media (max-width: 700px)"));
     const mobileToolRule = cssRule(mobileCss, ".jigsaw-workspace.is-immersive .tile-puzzle-tools {");
+    const mobileToolButtonRule = cssRule(mobileCss, ".jigsaw-workspace.is-immersive .tile-puzzle-tools button {");
     const mobileCameraRule = cssRule(mobileCss, ".jigsaw-workspace.is-immersive .jigsaw-camera-tools {");
+    const mobileCameraButtonRule = cssRule(mobileCss, ".jigsaw-workspace.is-immersive .jigsaw-camera-tools button {");
 
+    expect(jigsawCss).toContain(":where(.jigsaw-workspace:not(.is-immersive)) .tile-puzzle-tools button");
+    expect(jigsawCss).toContain("flex: 1 1 8rem;");
+    expect(workspaceCss).toContain(":where(.jigsaw-workspace:not(.is-immersive)) .tile-puzzle-tools button:first-child");
+    expect(workspaceCss).toContain(":where(.jigsaw-workspace:not(.is-immersive)) .tile-puzzle-tools button:nth-child(n + 2)");
+    expect(workspaceCss).toContain(".tile-puzzle-tools button:first-child,\n.word-guess-actions button:first-child");
+    expect(workspaceCss).toContain(".tile-puzzle-tools button:nth-child(n + 2),\n.word-guess-actions button:nth-child(n + 2)");
+    expect(jigsawCss).toContain('.tile-puzzle-tools button:nth-child(2)');
+    expect(jigsawCss).toContain('.tile-puzzle-tools button[aria-pressed="true"]');
     expect(mobileToolRule).toContain("top: 50%;");
     expect(mobileToolRule).toContain("flex-direction: column;");
     expect(mobileToolRule).toContain("transform: translateY(-50%);");
+    expect(mobileToolButtonRule).toContain("min-height: 2.75rem;");
+    expect(mobileToolButtonRule).toContain("max-width: 10.5rem;");
+    expect(mobileToolButtonRule).not.toContain("flex: 0 0 auto;");
+    expect(mobileToolButtonRule).not.toContain("width: auto;");
     expect(mobileCameraRule).toContain("bottom: 0.45rem;");
+    expect(mobileCameraRule).toContain("flex-wrap: wrap;");
+    expect(mobileCameraButtonRule).toContain("min-width: 2.75rem;");
+    expect(mobileCameraButtonRule).toContain("min-height: 2.75rem;");
+    expect(mobileCameraButtonRule).not.toContain("flex: 0 0 auto;");
+    expect(immersiveCss).not.toContain("width: max-content;");
   });
 
   it("does not introduce an orientation-specific expanded-workspace breakpoint", () => {
