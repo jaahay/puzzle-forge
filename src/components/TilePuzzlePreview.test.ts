@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { JigsawPiece } from "../catalog/types";
 import {
   clampJigsawCamera,
+  createInitialJigsawPlacements,
   createJigsawFitCamera,
   createJigsawOccupiedFitCamera,
   createJigsawWorldLayout,
@@ -205,24 +206,29 @@ describe("TilePuzzlePreview placement initialization", () => {
     });
   });
 
-  it("restores snapped progress onto fresh staging for the current play surface", () => {
+  it("restores snapped progress while staging only the remaining loose pieces", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1200,
       imageHeight: 900,
       puzzleWidth: 4,
       puzzleHeight: 4,
     });
-    const pieces = [makePiece(0), makePiece(1)];
+    const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index));
+    const snappedPieceIds = pieces.slice(0, 12).map((piece) => piece.id);
+    const viewport = { width: 600, height: 1200 };
     const placements = resolveInitialJigsawPlacements(
-      ["tile-0"],
+      snappedPieceIds,
       layout,
       pieces,
-      { width: 900, height: 600 },
+      viewport,
     );
+    const loosePieces = pieces.slice(12);
+    const expectedLoose = createInitialJigsawPlacements(layout, loosePieces, viewport);
 
     expect(placements).not.toBeNull();
-    expect(placements?.find((placement) => placement.id === "tile-0")?.snapped).toBe(true);
-    expect(placements?.find((placement) => placement.id === "tile-1")?.snapped).toBe(false);
+    expect(placements?.filter((placement) => placement.snapped).map((placement) => placement.id))
+      .toEqual(snappedPieceIds);
+    expect(placements?.filter((placement) => !placement.snapped)).toEqual(expectedLoose);
   });
 
   it("waits for a real play-surface measurement before staging a fresh puzzle", () => {
