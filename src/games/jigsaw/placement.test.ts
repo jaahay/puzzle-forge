@@ -257,7 +257,8 @@ describe("Jigsaw world layout", () => {
     );
 
     expect(getJigsawStagingMode(layout, pieces.length, { width: 600, height: 1200 })).toBe("top-bottom");
-    expect(restaged.find((placement) => placement.id === withSnappedPiece[0].id)?.snapped).toBe(true);
+    expect(restaged.find((placement) => placement.id === withSnappedPiece[0].id))
+      .toEqual(withSnappedPiece[0]);
     expect(restaged.filter((placement) => !placement.snapped).every((placement) =>
       isTopBottomStaged(layout, placement.worldY))).toBe(true);
   });
