@@ -13,6 +13,40 @@ const defaultDisplayMode: PuzzleWorkspaceDisplayMode = {
 
 const PuzzleWorkspaceDisplayModeContext = createContext<PuzzleWorkspaceDisplayMode>(defaultDisplayMode);
 
+const ExpandWorkspaceIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M9 4H4v5" />
+    <path d="m4 4 6 6" />
+    <path d="M15 20h5v-5" />
+    <path d="m20 20-6-6" />
+  </svg>
+);
+
+const FullscreenIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M8 3H3v5" />
+    <path d="M16 3h5v5" />
+    <path d="M21 16v5h-5" />
+    <path d="M3 16v5h5" />
+  </svg>
+);
+
+const ExitFullscreenIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M8 3v5H3" />
+    <path d="M16 3v5h5" />
+    <path d="M21 16h-5v5" />
+    <path d="M3 16h5v5" />
+  </svg>
+);
+
+const ExitExpandedIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="m7 7 10 10" />
+    <path d="M17 7 7 17" />
+  </svg>
+);
+
 export const usePuzzleWorkspaceDisplayMode = () => useContext(PuzzleWorkspaceDisplayModeContext);
 
 type PuzzleWorkspaceLayoutProps = {
@@ -121,14 +155,33 @@ export const PuzzleWorkspaceLayout = ({
           {isExpanded ? (
             <>
               {fullscreenAvailable ? (
-                <button type="button" onClick={() => void toggleBrowserFullscreen()}>
-                  {isBrowserFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                <button
+                  type="button"
+                  onClick={() => void toggleBrowserFullscreen()}
+                  aria-label={isBrowserFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                  title={isBrowserFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                >
+                  {isBrowserFullscreen ? <ExitFullscreenIcon /> : <FullscreenIcon />}
                 </button>
               ) : null}
-              <button type="button" onClick={() => void exitExpanded()}>Exit expanded</button>
+              <button
+                type="button"
+                onClick={() => void exitExpanded()}
+                aria-label="Exit expanded workspace"
+                title="Exit expanded workspace"
+              >
+                <ExitExpandedIcon />
+              </button>
             </>
           ) : (
-            <button type="button" onClick={enterExpanded}>Expand workspace</button>
+            <button
+              type="button"
+              onClick={enterExpanded}
+              aria-label="Expand workspace"
+              title="Expand workspace"
+            >
+              <ExpandWorkspaceIcon />
+            </button>
           )}
         </div>
       ) : null}
