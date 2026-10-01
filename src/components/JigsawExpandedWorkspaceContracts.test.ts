@@ -49,6 +49,10 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .tile-puzzle-summary");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .tile-puzzle-art-preview");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .workspace-layout-play-surface");
+    const previewRule = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive .tile-puzzle-art-preview {");
+    expect(previewRule).toContain("position: absolute;");
+    expect(previewRule).toContain("background-size: contain;");
+    expect(previewRule).not.toContain("display: none;");
     const panelRule = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive .jigsaw-puzzle-panel {");
     expect(panelRule).toContain("box-sizing: border-box;");
     expect(panelRule).toContain("padding: 0;");
@@ -84,7 +88,13 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawCss).toContain('.tile-puzzle-tools button[aria-pressed="true"]');
     expect(jigsawPreviewSource).toContain('class="jigsaw-mobile-tools-toggle"');
     expect(jigsawPreviewSource).toContain("aria-expanded={showMobileImmersiveTools}");
+    expect(jigsawPreviewSource).toContain("{!isSolved ? (");
+    expect(jigsawPreviewSource).toContain("if (isSolved) setShowMobileImmersiveTools(false);");
     expect(jigsawPreviewSource).toContain(".jigsaw-mobile-tools-toggle, .tile-puzzle-tools");
+    expect(jigsawPreviewSource).toContain('style.visibility !== "hidden"');
+    expect(jigsawPreviewSource).toContain(
+      'usesMobileToolsDisclosure && element.classList.contains("tile-puzzle-tools")',
+    );
     expect(jigsawPreviewSource).toContain("Restage pieces");
     expect(jigsawPreviewSource).toContain("restageLoosePieces();");
     expect(jigsawPreviewSource).not.toContain("Scatter pieces");
