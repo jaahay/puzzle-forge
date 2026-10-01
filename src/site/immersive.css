@@ -111,9 +111,21 @@
   gap: 0;
 }
 
-.jigsaw-workspace.is-immersive .tile-puzzle-summary,
-.jigsaw-workspace.is-immersive .tile-puzzle-art-preview {
+.jigsaw-workspace.is-immersive .tile-puzzle-summary {
   display: none;
+}
+
+.jigsaw-workspace.is-immersive .tile-puzzle-art-preview {
+  position: absolute;
+  top: 4rem;
+  right: 0.75rem;
+  z-index: 25;
+  width: min(30vw, 15rem);
+  max-width: calc(100% - 1.5rem);
+  max-height: min(42vh, 22rem);
+  background-color: rgba(8, 15, 30, 0.92);
+  background-size: contain;
+  pointer-events: none;
 }
 
 .jigsaw-workspace.is-immersive .tile-puzzle-tools,
@@ -174,6 +186,14 @@
     top: 0.45rem;
     left: 0.45rem;
     z-index: 31;
+  }
+
+  .jigsaw-workspace.is-immersive .tile-puzzle-art-preview {
+    top: 3.65rem;
+    right: 0.45rem;
+    width: min(42vw, 10rem);
+    max-width: calc(100% - 0.9rem);
+    max-height: 38vh;
   }
 
   .jigsaw-workspace.is-immersive .tile-puzzle-tools {
