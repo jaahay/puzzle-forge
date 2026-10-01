@@ -53,14 +53,19 @@ describe("Jigsaw history integration", () => {
     expect(cancelDrag).not.toContain("commitJigsawPlacementAction");
   });
 
-  it("treats Scatter/Reset as one reversible action from the last committed drag state", () => {
-    const scatter = sourceBetween(previewSource, "const scatterPieces =", "useEffect(() => {");
-    expect(scatter).toContain(
+  it("keeps Reset destructive while Restage preserves snapped progress and both remain reversible", () => {
+    const baseline = sourceBetween(previewSource, "const getStagingActionBaseline =", "const applyStagedPlacements =");
+    const staging = sourceBetween(previewSource, "const applyStagedPlacements =", "const resetPieces =");
+    const reset = sourceBetween(previewSource, "const resetPieces =", "const restageLoosePieces =");
+    const restage = sourceBetween(previewSource, "const restageLoosePieces =", "useEffect(() => {");
+
+    expect(baseline).toContain(
       "resolveJigsawActionBaseline(current.placements, activeDrag?.startPlacements ?? null)",
     );
-    expect(scatter).toContain("commitJigsawPlacementAction");
-    expect(scatter).toContain("baseline");
-    expect(scatter).toContain("nextPlacements");
+    expect(staging).toContain("commitJigsawPlacementAction");
+    expect(reset).toContain("createInitialJigsawPlacements");
+    expect(restage).toContain("restageLooseJigsawPlacements");
+    expect(restage).toContain("baseline");
   });
 
   it("disables rendered history controls throughout drag and pinch gestures", () => {
