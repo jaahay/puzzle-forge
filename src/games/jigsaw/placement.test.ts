@@ -237,7 +237,7 @@ describe("Jigsaw world layout", () => {
     );
   });
 
-  it("uses an explicit viewport when intentionally restaging while preserving snapped pieces", () => {
+  it("restages only loose pieces and leaves snapped placements untouched", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1200,
       imageHeight: 1200,
@@ -246,19 +246,23 @@ describe("Jigsaw world layout", () => {
     });
     const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index));
     const initial = createInitialJigsawPlacements(layout, pieces, { width: 1200, height: 600 });
-    const withSnappedPiece = initial.map((placement, index) => index === 0
+    const withMostlySnapped = initial.map((placement, index) => index < 12
       ? { ...placement, snapped: true }
       : placement);
+    const viewport = { width: 600, height: 1200 };
     const restaged = restageLooseJigsawPlacements(
       layout,
       pieces,
-      withSnappedPiece,
-      { width: 600, height: 1200 },
+      withMostlySnapped,
+      viewport,
     );
+    const loosePieces = pieces.slice(12);
+    const expectedLoose = createInitialJigsawPlacements(layout, loosePieces, viewport);
 
-    expect(getJigsawStagingMode(layout, pieces.length, { width: 600, height: 1200 })).toBe("top-bottom");
-    expect(restaged.find((placement) => placement.id === withSnappedPiece[0].id))
-      .toEqual(withSnappedPiece[0]);
+    expect(getJigsawStagingMode(layout, loosePieces.length, viewport)).toBe("top-bottom");
+    expect(restaged.filter((placement) => placement.snapped))
+      .toEqual(withMostlySnapped.filter((placement) => placement.snapped));
+    expect(restaged.filter((placement) => !placement.snapped)).toEqual(expectedLoose);
     expect(restaged.filter((placement) => !placement.snapped).every((placement) =>
       isTopBottomStaged(layout, placement.worldY))).toBe(true);
   });
