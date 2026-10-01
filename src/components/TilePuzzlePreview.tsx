@@ -1139,7 +1139,8 @@ export const TilePuzzlePreview = ({
 
       <div
         id={toolsId}
-        class={`tile-puzzle-tools ${isSolved ? "is-solved" : ""} ${showCompactTools ? "is-open" : ""}`}
+        class={`tile-puzzle-tools ${showCompactTools ? "is-open" : ""}`}
+        hidden={isSolved}
       >
         <button
           type="button"
@@ -1156,7 +1157,6 @@ export const TilePuzzlePreview = ({
             restageLoosePieces();
             setShowCompactTools(false);
           }}
-          disabled={isSolved}
         >
           Restage pieces
         </button>
@@ -1167,11 +1167,8 @@ export const TilePuzzlePreview = ({
             setShowEdgeSeams((current) => !current);
             setShowCompactTools(false);
           }}
-          disabled={isSolved}
         >
-          {isSolved
-            ? (showEdgeSeams ? "Edge guides hidden" : "Edge guides off")
-            : (showEdgeSeams ? "Hide edge guides" : "Show edge guides")}
+          {showEdgeSeams ? "Hide edge guides" : "Show edge guides"}
         </button>
       </div>
 
