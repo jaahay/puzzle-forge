@@ -183,7 +183,6 @@
     flex-direction: column;
     flex-wrap: nowrap;
     align-items: stretch;
-    transform: none;
   }
 
   .jigsaw-workspace.is-immersive .tile-puzzle-tools.is-mobile-open {
