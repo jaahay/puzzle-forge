@@ -4,8 +4,10 @@ import {
   createInitialJigsawPlacements,
   createJigsawFitCamera,
   createJigsawOccupiedFitCamera,
+  createJigsawWorkingFitCamera,
   createJigsawWorldLayout,
   getJigsawOccupiedBounds,
+  getJigsawWorkingBounds,
   getJigsawCameraTransform,
   getJigsawPlacementPosition,
   getJigsawSolvedPosition,
@@ -320,6 +322,28 @@ describe("Jigsaw camera", () => {
     const transform = getJigsawCameraTransform(workspaceCamera, viewport);
     expect(layout.worldWidth / 2 * transform.scale + transform.translateX).toBeCloseTo(viewport.width / 2);
     expect(layout.worldHeight / 2 * transform.scale + transform.translateY).toBeCloseTo(viewport.height / 2);
+  });
+
+  it("uses a board-first working fit instead of shrinking to every loose piece", () => {
+    const compactLayout = createJigsawWorldLayout({
+      imageWidth: 1200,
+      imageHeight: 900,
+      puzzleWidth: 7,
+      puzzleHeight: 5,
+    });
+    const pieces = Array.from({ length: 35 }, (_, index) => makePiece(index, 7));
+    const portraitViewport = { width: 390, height: 844 };
+    const placements = createInitialJigsawPlacements(compactLayout, pieces, portraitViewport);
+    const occupiedBounds = getJigsawOccupiedBounds(compactLayout, placements);
+    const workingBounds = getJigsawWorkingBounds(compactLayout, placements);
+    const occupiedCamera = createJigsawOccupiedFitCamera(compactLayout, portraitViewport, placements);
+    const workingCamera = createJigsawWorkingFitCamera(compactLayout, portraitViewport, placements);
+
+    expect(workingBounds.width).toBeLessThanOrEqual(occupiedBounds.width);
+    expect(workingBounds.height).toBeLessThan(occupiedBounds.height);
+    expect(workingBounds.height).toBeGreaterThanOrEqual(compactLayout.boardHeight);
+    expect(workingCamera.zoom).toBeGreaterThan(occupiedCamera.zoom);
+    expect(workingCamera.zoom).toBeLessThanOrEqual(1.25);
   });
 
   it("fits occupied board and loose-piece bounds instead of unused world space", () => {
