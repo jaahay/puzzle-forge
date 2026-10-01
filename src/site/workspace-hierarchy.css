@@ -53,7 +53,6 @@
 .nonogram-workspace .nonogram-board-viewport,
 .sudoku-workspace .sudoku-validation-message,
 .gameplay-control-stack,
-.new-puzzle-command,
 .current-puzzle-header {
   width: min(100%, var(--play-column-max));
 }
@@ -95,10 +94,6 @@
 .current-puzzle-new-action {
   flex: 0 0 auto;
   margin-left: auto;
-}
-
-.current-puzzle-new-action .new-puzzle-command {
-  width: auto;
 }
 
 /* In the crown, New is a quiet split workspace utility: the primary hit area
@@ -317,12 +312,6 @@
   width: 100%;
 }
 
-/* Variable-size Nonograms keep their current-puzzle actions compact on wide
-   screens; the surrounding play column still tracks the natural board width. */
-.nonogram-current-actions {
-  width: auto;
-}
-
 .sudoku-current-actions button,
 .nonogram-current-actions button {
   min-width: 6.5rem;
@@ -338,7 +327,6 @@
 
 .sudoku-play-controls .numeric-grid-digit-pad {
   width: 100%;
-  max-width: none;
   margin: 0;
 }
 

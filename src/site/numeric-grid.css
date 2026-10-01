@@ -53,9 +53,12 @@
   display: none;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.38rem;
+  margin: 0 0 0.8rem;
+}
+
+.board-viewport-inner > .numeric-grid-digit-pad {
   width: var(--board-width);
   max-width: 100%;
-  margin: 0 0 0.8rem;
 }
 
 .numeric-grid-digit-pad button {

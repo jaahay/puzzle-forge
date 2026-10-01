@@ -355,9 +355,6 @@
 .jigsaw-freeform-stage {
   position: relative;
   isolation: isolate;
-  width: min(100%, 72rem);
-  height: clamp(34rem, 68vh, 50rem);
-  min-height: 34rem;
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 1.15rem;
   background:
@@ -370,6 +367,12 @@
   overscroll-behavior: contain;
   user-select: none;
   -webkit-user-select: none;
+}
+
+:where(.jigsaw-workspace:not(.is-immersive)) .jigsaw-freeform-stage {
+  width: min(100%, 72rem);
+  height: clamp(34rem, 68vh, 50rem);
+  min-height: 34rem;
 }
 
 .jigsaw-freeform-stage.panning {
@@ -775,10 +778,13 @@
   }
 
   .jigsaw-freeform-stage {
+    border-radius: 0.95rem;
+  }
+
+  :where(.jigsaw-workspace:not(.is-immersive)) .jigsaw-freeform-stage {
     width: 100%;
     height: min(70vh, 40rem);
     min-height: 28rem;
-    border-radius: 0.95rem;
   }
 
   .jigsaw-image-library-grid {

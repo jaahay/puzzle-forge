@@ -60,7 +60,9 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .jigsaw-freeform-stage");
     const stageRule = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive .jigsaw-freeform-stage {");
     expect(stageRule).toContain("height: 100%;");
-    expect(stageRule).toContain("min-height: 0;");
+    expect(stageRule).not.toContain("min-height:");
+    expect(stageRule).not.toContain("max-height:");
+    expect(jigsawCss).toContain(":where(.jigsaw-workspace:not(.is-immersive)) .jigsaw-freeform-stage");
   });
 
   it("keeps narrow expanded controls compact instead of inheriting normal-flow flex growth", () => {
