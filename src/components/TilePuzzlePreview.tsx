@@ -897,7 +897,6 @@ export const TilePuzzlePreview = ({
     if (target?.closest(".tile-puzzle-piece")) return;
     if (event.pointerType === "mouse" && event.button !== 0 && event.button !== 1) return;
 
-    cameraWasUserAdjustedRef.current = true;
     panRef.current = {
       pointerId: event.pointerId,
       lastClientX: event.clientX,
@@ -917,6 +916,7 @@ export const TilePuzzlePreview = ({
     const deltaY = event.clientY - pan.lastClientY;
     pan.lastClientX = event.clientX;
     pan.lastClientY = event.clientY;
+    if (deltaX !== 0 || deltaY !== 0) cameraWasUserAdjustedRef.current = true;
     setCamera(panJigsawCamera(layout, renderViewport, activeCamera, -deltaX, -deltaY));
     event.preventDefault();
   };
