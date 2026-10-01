@@ -561,7 +561,6 @@
 }
 
 .current-seed-field-text-copy .seed-control button {
-  width: auto;
   min-width: 4.25rem;
   padding-inline: 0.75rem;
 }
@@ -570,11 +569,6 @@
 .puzzle-settings-panel > .generation-actions,
 .puzzle-settings-panel > .seed-actions {
   min-width: 0;
-}
-
-.solitaire-control-panel > label,
-.solitaire-settings {
-  order: initial;
 }
 
 .solitaire-settings {
