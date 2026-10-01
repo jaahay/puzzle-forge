@@ -70,10 +70,14 @@ describe("Jigsaw expanded workspace contracts", () => {
     const mobileCameraRule = cssRule(mobileCss, ".jigsaw-workspace.is-immersive .jigsaw-camera-tools {");
     const mobileCameraButtonRule = cssRule(mobileCss, ".jigsaw-workspace.is-immersive .jigsaw-camera-tools button {");
 
-    expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .tile-puzzle-tools button");
+    expect(jigsawCss).toContain(":where(.jigsaw-workspace:not(.is-immersive)) .tile-puzzle-tools button");
     expect(jigsawCss).toContain("flex: 1 1 8rem;");
-    expect(workspaceCss).toContain(".jigsaw-workspace:not(.is-immersive) .tile-puzzle-tools button:first-child");
-    expect(workspaceCss).toContain(".jigsaw-workspace:not(.is-immersive) .tile-puzzle-tools button:nth-child(n + 2)");
+    expect(workspaceCss).toContain(":where(.jigsaw-workspace:not(.is-immersive)) .tile-puzzle-tools button:first-child");
+    expect(workspaceCss).toContain(":where(.jigsaw-workspace:not(.is-immersive)) .tile-puzzle-tools button:nth-child(n + 2)");
+    expect(workspaceCss).toContain(".tile-puzzle-tools button:first-child,\n.word-guess-actions button:first-child");
+    expect(workspaceCss).toContain(".tile-puzzle-tools button:nth-child(n + 2),\n.word-guess-actions button:nth-child(n + 2)");
+    expect(jigsawCss).toContain('.tile-puzzle-tools button:nth-child(2)');
+    expect(jigsawCss).toContain('.tile-puzzle-tools button[aria-pressed="true"]');
     expect(mobileToolRule).toContain("top: 50%;");
     expect(mobileToolRule).toContain("flex-direction: column;");
     expect(mobileToolRule).toContain("transform: translateY(-50%);");
