@@ -93,7 +93,7 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(mobileToolRule).toContain("display: none;");
     expect(mobileToolRule).toContain("top: 3.65rem;");
     expect(mobileToolRule).toContain("flex-direction: column;");
-    expect(mobileToolRule).toContain("transform: none;");
+    expect(mobileToolRule).not.toContain("transform:");
     expect(mobileOpenRule).toContain("display: flex;");
     expect(mobileToolButtonRule).toContain("min-height: 2.75rem;");
     expect(mobileToolButtonRule).toContain("max-width: 10.5rem;");
