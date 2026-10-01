@@ -123,13 +123,18 @@
 }
 
 .puzzle-actions button,
-.jigsaw-workspace:not(.is-immersive) .tile-puzzle-tools button:first-child,
+:where(.jigsaw-workspace:not(.is-immersive)) .tile-puzzle-tools button:first-child,
 .word-guess-actions button:first-child {
   min-height: 2.55rem;
   min-width: 7rem;
+  padding: 0.66rem 0.95rem;
+}
+
+.puzzle-actions button,
+.tile-puzzle-tools button:first-child,
+.word-guess-actions button:first-child {
   border: 1px solid rgba(125, 211, 252, 0.55);
   border-radius: 999px;
-  padding: 0.66rem 0.95rem;
   color: #082f49;
   background: linear-gradient(180deg, #bae6fd, #7dd3fc);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38), 0 10px 24px rgba(2, 6, 23, 0.2);
@@ -140,14 +145,22 @@
 .control-panel button,
 .puzzle-settings-actions button,
 .solitaire-settings-actions button,
-.jigsaw-workspace:not(.is-immersive) .tile-puzzle-tools button:nth-child(n + 2),
+:where(.jigsaw-workspace:not(.is-immersive)) .tile-puzzle-tools button:nth-child(n + 2),
 .word-guess-actions button:nth-child(n + 2),
 .seed-control button {
   min-height: 2.55rem;
   min-width: 7rem;
+  padding: 0.66rem 0.95rem;
+}
+
+.control-panel button,
+.puzzle-settings-actions button,
+.solitaire-settings-actions button,
+.tile-puzzle-tools button:nth-child(n + 2),
+.word-guess-actions button:nth-child(n + 2),
+.seed-control button {
   border: 1px solid rgba(96, 165, 250, 0.38);
   border-radius: 999px;
-  padding: 0.66rem 0.95rem;
   color: #dbeafe;
   background: linear-gradient(180deg, #365f8c, #254569);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 10px 24px rgba(2, 6, 23, 0.22);
