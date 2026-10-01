@@ -130,6 +130,36 @@ const jigsawZoomStops = [
 ];
 const zoomStepEpsilon = 0.001;
 
+const JigsawToolsIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M4 7h10" />
+    <path d="M18 7h2" />
+    <path d="M4 17h2" />
+    <path d="M10 17h10" />
+    <circle cx="16" cy="7" r="2" />
+    <circle cx="8" cy="17" r="2" />
+  </svg>
+);
+
+const JigsawFitIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M8 4H4v4" />
+    <path d="M16 4h4v4" />
+    <path d="M20 16v4h-4" />
+    <path d="M4 16v4h4" />
+    <circle cx="12" cy="12" r="2.5" />
+  </svg>
+);
+
+const JigsawExpandIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M9 4H4v5" />
+    <path d="m4 4 6 6" />
+    <path d="M15 20h5v-5" />
+    <path d="m20 20-6-6" />
+  </svg>
+);
+
 export const getJigsawZoomStep = (currentZoom: number, direction: "in" | "out") => {
   if (direction === "in") {
     return jigsawZoomStops.find((stop) => stop > currentZoom + zoomStepEpsilon) ?? jigsawCameraMaximumZoom;
@@ -1094,11 +1124,16 @@ export const TilePuzzlePreview = ({
         <button
           class="jigsaw-tools-toggle"
           type="button"
+          aria-label="Jigsaw tools"
+          title="Jigsaw tools"
           aria-expanded={showCompactTools}
           aria-controls={toolsId}
-          onClick={() => setShowCompactTools((current) => !current)}
+          onClick={() => {
+            setShowCompactTools((current) => !current);
+            setShowFitMenu(false);
+          }}
         >
-          Tools
+          <JigsawToolsIcon />
         </button>
       ) : null}
 
@@ -1155,11 +1190,16 @@ export const TilePuzzlePreview = ({
           <button
             class="jigsaw-fit-toggle"
             type="button"
+            aria-label="Fit view"
+            title="Fit view"
             aria-expanded={showFitMenu}
             aria-controls={fitMenuId}
-            onClick={() => setShowFitMenu((current) => !current)}
+            onClick={() => {
+              setShowFitMenu((current) => !current);
+              setShowCompactTools(false);
+            }}
           >
-            Fit
+            <JigsawFitIcon />
           </button>
           <div id={fitMenuId} class={`jigsaw-fit-menu ${showFitMenu ? "is-open" : ""}`}>
             <button
@@ -1187,8 +1227,10 @@ export const TilePuzzlePreview = ({
             class="jigsaw-expand-workspace"
             type="button"
             onClick={displayMode.enterExpanded}
+            aria-label="Expand workspace"
+            title="Expand workspace"
           >
-            Expand workspace
+            <JigsawExpandIcon />
           </button>
         ) : null}
       </div>
