@@ -79,16 +79,16 @@ describe("Jigsaw auto-pan controller boundary", () => {
       "const cancelDrag =",
       "const beginPan =",
     );
-    const scatter = sourceBetween(
+    const staging = sourceBetween(
       previewSource,
-      "const scatterPieces =",
-      "useEffect(() => {",
+      "const applyStagedPlacements =",
+      "const resetPieces =",
     );
 
     expect(pinchStart).toContain("setActiveTileId(null)");
     expect(finishDrag).toContain("setActiveTileId(null)");
     expect(cancelDrag).toContain("setActiveTileId(null)");
-    expect(scatter).toContain("setActiveTileId(null)");
+    expect(staging).toContain("setActiveTileId(null)");
   });
 
   it("quarantines transient drag work to the originating puzzle instance", () => {
@@ -102,14 +102,14 @@ describe("Jigsaw auto-pan controller boundary", () => {
       "const runDragAnimationFrame =",
       "const beginPan =",
     );
-    const scatter = sourceBetween(
+    const stagingBaseline = sourceBetween(
       previewSource,
-      "const scatterPieces =",
-      "useEffect(() => {",
+      "const getStagingActionBaseline =",
+      "const applyStagedPlacements =",
     );
 
     expect(previewSource).toContain("dragRef.current?.puzzleId === puzzle.id");
-    expect(scatter).toContain("dragRef.current?.puzzleId === puzzle.id ? dragRef.current : null");
+    expect(stagingBaseline).toContain("dragRef.current?.puzzleId === puzzle.id ? dragRef.current : null");
     expect(pinchStart).toContain("dragRef.current?.puzzleId === puzzle.id ? dragRef.current : null");
     expect(dragLoop).toContain("drag.puzzleId !== current.puzzleId");
     expect(dragLoop).toContain("drag.puzzleId !== puzzle.id");

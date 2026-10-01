@@ -176,6 +176,36 @@ const sortScatterSlots = (slots: readonly ScatterSlot[], salt = 0) =>
   [...slots].sort((left, right) =>
     mixSlotIndex(left.index + 1 + salt) - mixSlotIndex(right.index + 1 + salt));
 
+const getScatterSlotDistanceFromBoard = (
+  layout: JigsawWorldLayout,
+  slot: ScatterSlot,
+  stagingMode: Exclude<JigsawStagingMode, "perimeter">,
+) => {
+  if (stagingMode === "sides") {
+    return slot.left + layout.pieceWidth <= layout.boardX
+      ? layout.boardX - (slot.left + layout.pieceWidth)
+      : slot.left - (layout.boardX + layout.boardWidth);
+  }
+
+  return slot.top + layout.pieceHeight <= layout.boardY
+    ? layout.boardY - (slot.top + layout.pieceHeight)
+    : slot.top - (layout.boardY + layout.boardHeight);
+};
+
+const sortPreferredScatterSlots = (
+  layout: JigsawWorldLayout,
+  slots: readonly ScatterSlot[],
+  stagingMode: Exclude<JigsawStagingMode, "perimeter">,
+  salt: number,
+) => [...slots].sort((left, right) => {
+  const distanceDelta =
+    getScatterSlotDistanceFromBoard(layout, left, stagingMode) -
+    getScatterSlotDistanceFromBoard(layout, right, stagingMode);
+  if (Math.abs(distanceDelta) > 0.5) return distanceDelta;
+
+  return mixSlotIndex(left.index + 1 + salt) - mixSlotIndex(right.index + 1 + salt);
+});
+
 const interleaveScatterSlots = (
   first: readonly ScatterSlot[],
   second: readonly ScatterSlot[],
@@ -225,20 +255,28 @@ const createPreferredScatterSlots = (
     : slots.filter((slot) => slot.top >= boardBottom);
   const firstSalt = stagingMode === "sides" ? 17 : 29;
   const secondSalt = stagingMode === "sides" ? 53 : 71;
-  const alignedFirst = sortScatterSlots(
+  const alignedFirst = sortPreferredScatterSlots(
+    layout,
     firstSide.filter((slot) => isBoardAlignedScatterSlot(layout, slot, stagingMode)),
+    stagingMode,
     firstSalt,
   );
-  const alignedSecond = sortScatterSlots(
+  const alignedSecond = sortPreferredScatterSlots(
+    layout,
     secondSide.filter((slot) => isBoardAlignedScatterSlot(layout, slot, stagingMode)),
+    stagingMode,
     secondSalt,
   );
-  const overflowFirst = sortScatterSlots(
+  const overflowFirst = sortPreferredScatterSlots(
+    layout,
     firstSide.filter((slot) => !isBoardAlignedScatterSlot(layout, slot, stagingMode)),
+    stagingMode,
     firstSalt + 101,
   );
-  const overflowSecond = sortScatterSlots(
+  const overflowSecond = sortPreferredScatterSlots(
+    layout,
     secondSide.filter((slot) => !isBoardAlignedScatterSlot(layout, slot, stagingMode)),
+    stagingMode,
     secondSalt + 101,
   );
 
@@ -368,18 +406,48 @@ export const createInitialJigsawPlacements = (
   });
 };
 
+export const stageLooseJigsawPlacements = (
+  layout: JigsawWorldLayout,
+  pieces: readonly JigsawPiece[],
+  fixedPlacements: readonly JigsawPlacement[],
+  viewport: JigsawViewport | null = null,
+): JigsawPlacement[] => {
+  const fixedById = new Map(
+    fixedPlacements
+      .filter((placement) => placement.snapped)
+      .map((placement) => [placement.id, placement] as const),
+  );
+  const orderedPieces = [...pieces].sort((left, right) => left.currentIndex - right.currentIndex);
+  const loosePieces = orderedPieces.filter((piece) => !fixedById.has(piece.id));
+  const stagedLooseById = new Map(
+    createInitialJigsawPlacements(layout, loosePieces, viewport)
+      .map((placement) => [placement.id, placement] as const),
+  );
+
+  return orderedPieces.map((piece) => {
+    const fixed = fixedById.get(piece.id);
+    if (fixed) return fixed;
+
+    const staged = stagedLooseById.get(piece.id);
+    return staged ?? {
+      id: piece.id,
+      ...normalizeJigsawWorldPosition(layout, worldPadding, worldPadding),
+      snapped: false,
+    };
+  });
+};
+
 export const restageLooseJigsawPlacements = (
   layout: JigsawWorldLayout,
   pieces: readonly JigsawPiece[],
   placements: readonly JigsawPlacement[],
   viewport: JigsawViewport | null = null,
-): JigsawPlacement[] => {
-  const snappedIds = new Set(placements.filter((placement) => placement.snapped).map((placement) => placement.id));
-  return createInitialJigsawPlacements(layout, pieces, viewport).map((placement) => ({
-    ...placement,
-    snapped: snappedIds.has(placement.id),
-  }));
-};
+): JigsawPlacement[] => stageLooseJigsawPlacements(
+  layout,
+  pieces,
+  placements,
+  viewport,
+);
 
 export const shouldSnapJigsawPlacement = (
   layout: JigsawWorldLayout,

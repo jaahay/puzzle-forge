@@ -21,10 +21,13 @@ import {
   createJigsawWorldLayout,
   getJigsawCameraTransform,
   getJigsawPlacementPosition,
+  getJigsawSolvedPosition,
   isUsableJigsawViewport,
   normalizeJigsawWorldPosition,
   panJigsawCamera,
+  restageLooseJigsawPlacements,
   screenToJigsawWorld,
+  stageLooseJigsawPlacements,
   shouldSnapJigsawPlacement,
   zoomJigsawCameraAtPoint,
   jigsawCameraMaximumZoom,
@@ -147,6 +150,17 @@ export const initializeOrPreserveJigsawCamera = (
     : createJigsawFitCamera(layout, viewport, "workspace")
 );
 
+export const resolveJigsawCameraForViewportResize = (
+  layout: JigsawWorldLayout,
+  viewport: JigsawViewport,
+  placements: readonly JigsawPlacement[],
+  currentCamera: JigsawCamera,
+  userAdjusted: boolean,
+  insets: Partial<JigsawViewportInsets> = {},
+) => userAdjusted
+  ? currentCamera
+  : createJigsawOccupiedFitCamera(layout, viewport, placements, 28, insets);
+
 export const getMeasuredJigsawViewport = (
   stage: Pick<HTMLElement, "clientWidth" | "clientHeight"> | null,
 ): JigsawViewport | null => {
@@ -208,11 +222,21 @@ export const resolveInitialJigsawPlacements = (
   stagingViewport: JigsawViewport | null,
 ) => {
   if (!isUsableJigsawViewport(stagingViewport)) return null;
+
   const snappedIds = new Set(snappedPieceIds);
-  return createInitialJigsawPlacements(layout, pieces, stagingViewport).map((placement) => ({
-    ...placement,
-    snapped: snappedIds.has(placement.id),
-  }));
+  const fixedPlacements = pieces
+    .filter((piece) => snappedIds.has(piece.id))
+    .map((piece) => {
+      const solved = getJigsawSolvedPosition(layout, piece);
+      return {
+        id: piece.id,
+        worldX: solved.left,
+        worldY: solved.top,
+        snapped: true,
+      };
+    });
+
+  return stageLooseJigsawPlacements(layout, pieces, fixedPlacements, stagingViewport);
 };
 
 const getPieceClipPathId = (puzzle: JigsawGeneratedPuzzle, tile: JigsawPiece) =>
@@ -303,7 +327,13 @@ export const TilePuzzlePreview = ({
   const [isPanning, setIsPanning] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showEdgeSeams, setShowEdgeSeams] = useState(false);
+  const [showMobileImmersiveTools, setShowMobileImmersiveTools] = useState(false);
+  const cameraWasUserAdjustedRef = useRef(false);
   const displayMode = usePuzzleWorkspaceDisplayMode();
+
+  useEffect(() => {
+    setShowMobileImmersiveTools(false);
+  }, [displayMode.isExpanded, puzzle.id]);
 
   useEffect(() => () => {
     stopDragAnimation();
@@ -406,6 +436,7 @@ export const TilePuzzlePreview = ({
     setActiveTileId(null);
     setRaisedTileId(null);
     setIsPanning(false);
+    cameraWasUserAdjustedRef.current = false;
   }, [puzzle.id, replaceHistory]);
 
   useEffect(() => {
@@ -443,13 +474,46 @@ export const TilePuzzlePreview = ({
     const workspace = stage?.closest<HTMLElement>(".jigsaw-workspace.is-immersive");
     if (!stage || !workspace) return { top: 0, right: 0, bottom: 0, left: 0 };
 
-    const overlayRects = Array.from(workspace.querySelectorAll<HTMLElement>(
-      ".tile-puzzle-tools, .jigsaw-camera-tools, .puzzle-workspace-display-tools",
-    )).map((element) => element.getBoundingClientRect());
+    const overlayElements = Array.from(workspace.querySelectorAll<HTMLElement>(
+      ".jigsaw-mobile-tools-toggle, .tile-puzzle-tools, .jigsaw-camera-tools, .puzzle-workspace-display-tools",
+    ));
+    const view = stage.ownerDocument.defaultView;
+    const isVisible = (element: HTMLElement) => {
+      const style = view?.getComputedStyle(element);
+      return style
+        ? style.display !== "none" && style.visibility !== "hidden"
+        : element.getClientRects().length > 0;
+    };
+    const mobileToolsToggle = workspace.querySelector<HTMLElement>(".jigsaw-mobile-tools-toggle");
+    const usesMobileToolsDisclosure = Boolean(mobileToolsToggle && isVisible(mobileToolsToggle));
+    const overlayRects = overlayElements
+      .filter((element) =>
+        isVisible(element) &&
+        !(usesMobileToolsDisclosure && element.classList.contains("tile-puzzle-tools")))
+      .map((element) => element.getBoundingClientRect());
     return getJigsawFitInsetsForOverlays(stage.getBoundingClientRect(), overlayRects);
   };
 
+  useEffect(() => {
+    if (!isUsableJigsawViewport(viewport)) return;
+    const currentPlacementState = placementStateRef.current;
+    const currentCameraState = cameraState?.puzzleId === puzzle.id ? cameraState.camera : null;
+    if (!currentPlacementState || currentPlacementState.puzzleId !== puzzle.id || !currentCameraState) return;
+
+    const nextCamera = resolveJigsawCameraForViewportResize(
+      layout,
+      viewport,
+      currentPlacementState.placements,
+      currentCameraState,
+      cameraWasUserAdjustedRef.current,
+      getCurrentFitInsets(),
+    );
+    if (nextCamera === currentCameraState) return;
+    setCamera(nextCamera);
+  }, [layout, puzzle.id, viewport.height, viewport.width]);
+
   const fitView = (target: "all" | "board") => {
+    cameraWasUserAdjustedRef.current = true;
     if (!isUsableJigsawViewport(viewport)) return;
     const insets = getCurrentFitInsets();
     if (target === "board") {
@@ -462,16 +526,18 @@ export const TilePuzzlePreview = ({
     setCamera(createJigsawOccupiedFitCamera(layout, viewport, current.placements, 28, insets));
   };
 
-  const scatterPieces = () => {
-    const stagingViewport = getMeasuredJigsawViewport(stageRef.current);
-    if (!stagingViewport) return false;
-
+  const getStagingActionBaseline = () => {
     const current = placementStateRef.current;
+    if (!current || current.puzzleId !== puzzle.id) return null;
     const activeDrag = dragRef.current?.puzzleId === puzzle.id ? dragRef.current : null;
-    const baseline = current?.puzzleId === puzzle.id
-      ? resolveJigsawActionBaseline(current.placements, activeDrag?.startPlacements ?? null)
-      : null;
-    const nextPlacements = createInitialJigsawPlacements(layout, puzzle.tiles, stagingViewport);
+    return resolveJigsawActionBaseline(current.placements, activeDrag?.startPlacements ?? null);
+  };
+
+  const applyStagedPlacements = (
+    nextPlacements: JigsawPlacement[],
+    baseline: JigsawPlacement[] | null,
+    stagingViewport: JigsawViewport,
+  ) => {
     stopDragAnimation();
     updatePlacementState(() => ({
       puzzleId: puzzle.id,
@@ -492,6 +558,7 @@ export const TilePuzzlePreview = ({
         nextPlacements,
       ));
     }
+    cameraWasUserAdjustedRef.current = false;
     setCamera(createJigsawOccupiedFitCamera(
       layout,
       stagingViewport,
@@ -502,9 +569,32 @@ export const TilePuzzlePreview = ({
     return true;
   };
 
+  const resetPieces = () => {
+    const stagingViewport = getMeasuredJigsawViewport(stageRef.current);
+    if (!stagingViewport) return false;
+
+    return applyStagedPlacements(
+      createInitialJigsawPlacements(layout, puzzle.tiles, stagingViewport),
+      getStagingActionBaseline(),
+      stagingViewport,
+    );
+  };
+
+  const restageLoosePieces = () => {
+    const stagingViewport = getMeasuredJigsawViewport(stageRef.current);
+    const baseline = getStagingActionBaseline();
+    if (!stagingViewport || !baseline) return false;
+
+    return applyStagedPlacements(
+      restageLooseJigsawPlacements(layout, puzzle.tiles, baseline, stagingViewport),
+      baseline,
+      stagingViewport,
+    );
+  };
+
   useEffect(() => {
     if (lastResetVersion.current === resetVersion) return;
-    if (!scatterPieces()) return;
+    if (!resetPieces()) return;
     lastResetVersion.current = resetVersion;
   }, [layout, puzzle.id, puzzle.tiles, resetVersion, viewport.height, viewport.width]);
 
@@ -512,6 +602,10 @@ export const TilePuzzlePreview = ({
   const placementById = new Map(placements.map((placement) => [placement.id, placement] as const));
   const solvedCount = placements.filter((placement) => placement.snapped).length;
   const isSolved = areJigsawPlacementsSolved(placements, puzzle.tiles.length);
+
+  useEffect(() => {
+    if (isSolved) setShowMobileImmersiveTools(false);
+  }, [isSolved, puzzle.id]);
 
   useEffect(() => {
     onSolvedChange?.(isSolved);
@@ -588,6 +682,7 @@ export const TilePuzzlePreview = ({
       const pointerIds = Array.from(touchPointsRef.current.keys()).slice(0, 2) as [number, number];
       const startPoints = getPinchPair(pointerIds);
       if (startPoints) {
+        cameraWasUserAdjustedRef.current = true;
         pinchRef.current = {
           pointerIds,
           startPoints,
@@ -716,6 +811,7 @@ export const TilePuzzlePreview = ({
         nextCamera.centerY !== current.camera.centerY ||
         nextCamera.zoom !== current.camera.zoom
       ) {
+        cameraWasUserAdjustedRef.current = true;
         wheelStateRef.current = { ...current, camera: nextCamera };
         renderCameraImmediately(wheelStateRef.current);
       }
@@ -876,6 +972,7 @@ export const TilePuzzlePreview = ({
     const deltaY = event.clientY - pan.lastClientY;
     pan.lastClientX = event.clientX;
     pan.lastClientY = event.clientY;
+    if (deltaX !== 0 || deltaY !== 0) cameraWasUserAdjustedRef.current = true;
     setCamera(panJigsawCamera(layout, renderViewport, activeCamera, -deltaX, -deltaY));
     event.preventDefault();
   };
@@ -895,6 +992,7 @@ export const TilePuzzlePreview = ({
     const stagePoint = getStagePoint(event.clientX, event.clientY);
     if (!stagePoint) return;
     const current = wheelStateRef.current;
+    cameraWasUserAdjustedRef.current = true;
 
     const nextCamera = event.ctrlKey || event.metaKey
       ? zoomJigsawCameraAtPoint(
@@ -928,6 +1026,7 @@ export const TilePuzzlePreview = ({
 
   const setZoomAtCenter = (zoom: number) => {
     const current = wheelStateRef.current;
+    cameraWasUserAdjustedRef.current = true;
     setCamera(zoomJigsawCameraAtPoint(
       current.layout,
       current.viewport,
@@ -956,10 +1055,12 @@ export const TilePuzzlePreview = ({
     const deltaX = direction === "ArrowRight" ? step : direction === "ArrowLeft" ? -step : 0;
     const deltaY = direction === "ArrowDown" ? step : direction === "ArrowUp" ? -step : 0;
     const current = wheelStateRef.current;
+    cameraWasUserAdjustedRef.current = true;
     setCamera(panJigsawCamera(current.layout, current.viewport, current.camera, deltaX, deltaY));
     event.preventDefault();
   };
 
+  const mobileToolsId = `jigsaw-tools-${puzzle.id}`.replace(/[^a-zA-Z0-9_-]/g, "-");
   const previewStyle = {
     backgroundImage: `url(${puzzle.asset.files.preview})`,
     aspectRatio: `${puzzle.asset.intrinsicWidth} / ${puzzle.asset.intrinsicHeight}`,
@@ -983,13 +1084,48 @@ export const TilePuzzlePreview = ({
         <span>{isSolved ? "Solved" : `${solvedCount}/${puzzle.tiles.length} placed`}</span>
       </div>
 
-      <div class={`tile-puzzle-tools ${isSolved ? "is-solved" : ""}`}>
-        <button type="button" onClick={() => setShowPreview((current) => !current)}>{showPreview ? "Hide preview" : "Preview image"}</button>
-        <button type="button" onClick={scatterPieces} disabled={isSolved}>Scatter pieces</button>
+      {!isSolved ? (
+        <button
+          class="jigsaw-mobile-tools-toggle"
+          type="button"
+          aria-expanded={showMobileImmersiveTools}
+          aria-controls={mobileToolsId}
+          onClick={() => setShowMobileImmersiveTools((current) => !current)}
+        >
+          Tools
+        </button>
+      ) : null}
+
+      <div
+        id={mobileToolsId}
+        class={`tile-puzzle-tools ${isSolved ? "is-solved" : ""} ${showMobileImmersiveTools ? "is-mobile-open" : ""}`}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setShowPreview((current) => !current);
+            setShowMobileImmersiveTools(false);
+          }}
+        >
+          {showPreview ? "Hide preview" : "Preview image"}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            restageLoosePieces();
+            setShowMobileImmersiveTools(false);
+          }}
+          disabled={isSolved}
+        >
+          Restage pieces
+        </button>
         <button
           type="button"
           aria-pressed={showEdgeSeams}
-          onClick={() => setShowEdgeSeams((current) => !current)}
+          onClick={() => {
+            setShowEdgeSeams((current) => !current);
+            setShowMobileImmersiveTools(false);
+          }}
           disabled={isSolved}
         >
           {isSolved

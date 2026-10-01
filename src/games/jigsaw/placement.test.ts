@@ -71,6 +71,20 @@ const isBoardAlignedTopBottomSlot = (
   return centerX >= layout.boardX && centerX <= layout.boardX + layout.boardWidth;
 };
 
+const getSideStagingGap = (
+  layout: ReturnType<typeof createJigsawWorldLayout>,
+  worldX: number,
+) => worldX < layout.boardX
+  ? layout.boardX - (worldX + layout.pieceWidth)
+  : worldX - (layout.boardX + layout.boardWidth);
+
+const getTopBottomStagingGap = (
+  layout: ReturnType<typeof createJigsawWorldLayout>,
+  worldY: number,
+) => worldY < layout.boardY
+  ? layout.boardY - (worldY + layout.pieceHeight)
+  : worldY - (layout.boardY + layout.boardHeight);
+
 const getScreenBounds = (
   bounds: ReturnType<typeof getJigsawOccupiedBounds>,
   camera: ReturnType<typeof createJigsawOccupiedFitCamera>,
@@ -171,6 +185,8 @@ describe("Jigsaw world layout", () => {
     expect(placements.slice(0, 24).every((placement) => isBoardAlignedSideSlot(layout, placement.worldY))).toBe(true);
     expect(placements.some((placement) => placement.worldX < layout.boardX)).toBe(true);
     expect(placements.some((placement) => placement.worldX > layout.boardX + layout.boardWidth)).toBe(true);
+    expect(Math.max(...placements.map((placement) => getSideStagingGap(layout, placement.worldX))))
+      .toBeLessThan(layout.pieceWidth * 2.75);
   });
 
   it("prefers balanced, board-aligned top and bottom trays for a panoramic puzzle on a tall display", () => {
@@ -189,6 +205,8 @@ describe("Jigsaw world layout", () => {
     expect(placements.slice(0, 24).every((placement) => isBoardAlignedTopBottomSlot(layout, placement.worldX))).toBe(true);
     expect(placements.some((placement) => placement.worldY < layout.boardY)).toBe(true);
     expect(placements.some((placement) => placement.worldY > layout.boardY + layout.boardHeight)).toBe(true);
+    expect(Math.max(...placements.map((placement) => getTopBottomStagingGap(layout, placement.worldY))))
+      .toBeLessThan(layout.pieceHeight * 2.75);
   });
 
   it("uses piece count to decide when moderate extra side space should become trays", () => {
@@ -219,7 +237,7 @@ describe("Jigsaw world layout", () => {
     );
   });
 
-  it("uses an explicit viewport when intentionally restaging while preserving snapped pieces", () => {
+  it("restages only loose pieces and leaves snapped placements untouched", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1200,
       imageHeight: 1200,
@@ -228,18 +246,23 @@ describe("Jigsaw world layout", () => {
     });
     const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index));
     const initial = createInitialJigsawPlacements(layout, pieces, { width: 1200, height: 600 });
-    const withSnappedPiece = initial.map((placement, index) => index === 0
+    const withMostlySnapped = initial.map((placement, index) => index < 12
       ? { ...placement, snapped: true }
       : placement);
+    const viewport = { width: 600, height: 1200 };
     const restaged = restageLooseJigsawPlacements(
       layout,
       pieces,
-      withSnappedPiece,
-      { width: 600, height: 1200 },
+      withMostlySnapped,
+      viewport,
     );
+    const loosePieces = pieces.slice(12);
+    const expectedLoose = createInitialJigsawPlacements(layout, loosePieces, viewport);
 
-    expect(getJigsawStagingMode(layout, pieces.length, { width: 600, height: 1200 })).toBe("top-bottom");
-    expect(restaged.find((placement) => placement.id === withSnappedPiece[0].id)?.snapped).toBe(true);
+    expect(getJigsawStagingMode(layout, loosePieces.length, viewport)).toBe("top-bottom");
+    expect(restaged.filter((placement) => placement.snapped))
+      .toEqual(withMostlySnapped.filter((placement) => placement.snapped));
+    expect(restaged.filter((placement) => !placement.snapped)).toEqual(expectedLoose);
     expect(restaged.filter((placement) => !placement.snapped).every((placement) =>
       isTopBottomStaged(layout, placement.worldY))).toBe(true);
   });
