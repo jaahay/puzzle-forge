@@ -412,11 +412,11 @@ export const restageLooseJigsawPlacements = (
   placements: readonly JigsawPlacement[],
   viewport: JigsawViewport | null = null,
 ): JigsawPlacement[] => {
-  const snappedIds = new Set(placements.filter((placement) => placement.snapped).map((placement) => placement.id));
-  return createInitialJigsawPlacements(layout, pieces, viewport).map((placement) => ({
-    ...placement,
-    snapped: snappedIds.has(placement.id),
-  }));
+  const placementById = new Map(placements.map((placement) => [placement.id, placement] as const));
+  return createInitialJigsawPlacements(layout, pieces, viewport).map((placement) => {
+    const current = placementById.get(placement.id);
+    return current?.snapped ? current : placement;
+  });
 };
 
 export const shouldSnapJigsawPlacement = (
