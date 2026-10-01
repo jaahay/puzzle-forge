@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
+const globalCss = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
 const workspaceCss = readFileSync(new URL("../site/workspace.css", import.meta.url), "utf8");
 const nextPuzzleCss = readFileSync(new URL("../site/next-puzzle.css", import.meta.url), "utf8");
 const workspaceHierarchyCss = readFileSync(new URL("../site/workspace-hierarchy.css", import.meta.url), "utf8");
@@ -61,6 +62,11 @@ describe("CSS rule ownership contracts", () => {
     expect(nextPuzzleCss).not.toContain("order: initial;");
   });
 
+  it("does not cap then uncap the only page-level h1", () => {
+    expect(cssRule(globalCss, "h1 {")).not.toContain("max-width:");
+    expect(cssRule(appShellCss, ".puzzle-start-panel h1 {")).not.toContain("max-width: none;");
+  });
+
   it("does not rely on specificity escape hatches for the catalog", () => {
     expect(appShellCss).not.toContain("!important");
   });
@@ -69,6 +75,15 @@ describe("CSS rule ownership contracts", () => {
     expect(jigsawCss).toContain(
       ":where(.jigsaw-workspace:not(.is-immersive)) .tile-puzzle-tools button",
     );
+    expect(jigsawCss).toContain(
+      ":where(.jigsaw-workspace:not(.is-immersive)) .jigsaw-freeform-stage",
+    );
+    const immersiveStage = cssRule(
+      immersiveCss,
+      ".jigsaw-workspace.is-immersive .jigsaw-freeform-stage {",
+    );
+    expect(immersiveStage).not.toContain("min-height:");
+    expect(immersiveStage).not.toContain("max-height:");
     expect(immersiveCss).not.toContain("width: auto;");
     expect(immersiveCss).not.toContain("flex: 0 0 auto;");
   });
