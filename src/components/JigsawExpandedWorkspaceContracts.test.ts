@@ -69,51 +69,46 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawCss).toContain(":where(.jigsaw-workspace:not(.is-immersive)) .jigsaw-freeform-stage");
   });
 
-  it("keeps narrow expanded controls compact and collapses secondary puzzle actions", () => {
+  it("keeps secondary Jigsaw actions disclosed while persistent view chrome stays compact", () => {
     const mobileCss = immersiveCss.slice(immersiveCss.indexOf("@media (max-width: 700px)"));
-    const mobileToggleRule = cssRule(mobileCss, ".jigsaw-workspace.is-immersive .jigsaw-mobile-tools-toggle {");
-    const mobileToolRule = cssRule(mobileCss, ".jigsaw-workspace.is-immersive .tile-puzzle-tools {");
-    const mobileOpenRule = cssRule(mobileCss, ".jigsaw-workspace.is-immersive .tile-puzzle-tools.is-mobile-open {");
+    const immersiveToggleRule = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive .jigsaw-tools-toggle {");
+    const immersiveToolRule = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive .tile-puzzle-tools {");
+    const immersiveOpenRule = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive .tile-puzzle-tools.is-open {");
+    const immersiveFitRule = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive .jigsaw-fit-menu {");
     const mobileToolButtonRule = cssRule(mobileCss, ".jigsaw-workspace.is-immersive .tile-puzzle-tools button {");
     const mobileCameraRule = cssRule(mobileCss, ".jigsaw-workspace.is-immersive .jigsaw-camera-tools {");
     const mobileCameraButtonRule = cssRule(mobileCss, ".jigsaw-workspace.is-immersive .jigsaw-camera-tools button {");
 
-    expect(jigsawCss).toContain(":where(.jigsaw-workspace:not(.is-immersive)) .tile-puzzle-tools button");
-    expect(jigsawCss).toContain("flex: 1 1 8rem;");
-    expect(workspaceCss).toContain(":where(.jigsaw-workspace:not(.is-immersive)) .tile-puzzle-tools button:first-child");
-    expect(workspaceCss).toContain(":where(.jigsaw-workspace:not(.is-immersive)) .tile-puzzle-tools button:nth-child(n + 2)");
-    expect(workspaceCss).toContain(".tile-puzzle-tools button:first-child,\n.word-guess-actions button:first-child");
-    expect(workspaceCss).toContain(".tile-puzzle-tools button:nth-child(n + 2),\n.word-guess-actions button:nth-child(n + 2)");
-    expect(jigsawCss).toContain('.tile-puzzle-tools button:nth-child(2)');
-    expect(jigsawCss).toContain('.tile-puzzle-tools button[aria-pressed="true"]');
-    expect(jigsawPreviewSource).toContain('class="jigsaw-mobile-tools-toggle"');
-    expect(jigsawPreviewSource).toContain("aria-expanded={showMobileImmersiveTools}");
-    expect(jigsawPreviewSource).toContain("{!isSolved ? (");
-    expect(jigsawPreviewSource).toContain("if (isSolved) setShowMobileImmersiveTools(false);");
-    expect(jigsawPreviewSource).toContain(".jigsaw-mobile-tools-toggle, .tile-puzzle-tools");
-    expect(jigsawPreviewSource).toContain('style.visibility !== "hidden"');
+    expect(jigsawPreviewSource).toContain('class="jigsaw-tools-toggle"');
+    expect(jigsawPreviewSource).toContain("aria-expanded={showCompactTools}");
+    expect(jigsawPreviewSource).toContain("if (!isSolved) return;");
+    expect(jigsawPreviewSource).toContain("setShowCompactTools(false);");
+    expect(jigsawPreviewSource).toContain(".jigsaw-tools-toggle, .tile-puzzle-tools");
     expect(jigsawPreviewSource).toContain(
-      'usesMobileToolsDisclosure && element.classList.contains("tile-puzzle-tools")',
+      'usesToolsDisclosure && element.classList.contains("tile-puzzle-tools")',
     );
+    expect(jigsawPreviewSource).toContain('class="jigsaw-fit-toggle"');
+    expect(jigsawPreviewSource).toContain("aria-expanded={showFitMenu}");
     expect(jigsawPreviewSource).toContain("Restage pieces");
     expect(jigsawPreviewSource).toContain("restageLoosePieces();");
     expect(jigsawPreviewSource).not.toContain("Scatter pieces");
-    expect(mobileToggleRule).toContain("display: block;");
-    expect(mobileToggleRule).toContain("top: 0.45rem;");
-    expect(mobileToolRule).toContain("display: none;");
-    expect(mobileToolRule).toContain("top: 3.65rem;");
-    expect(mobileToolRule).toContain("flex-direction: column;");
-    expect(mobileToolRule).not.toContain("transform:");
-    expect(mobileOpenRule).toContain("display: flex;");
+
+    expect(immersiveToggleRule).toContain("display: block;");
+    expect(immersiveToolRule).toContain("display: none;");
+    expect(immersiveToolRule).toContain("flex-direction: column;");
+    expect(immersiveOpenRule).toContain("display: flex;");
+    expect(immersiveFitRule).toContain("display: none;");
+
+    expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .jigsaw-tools-toggle");
+    expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .tile-puzzle-tools.is-open");
+    expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .jigsaw-fit-menu.is-open");
+    expect(jigsawCss).toContain("flex-wrap: nowrap;");
     expect(mobileToolButtonRule).toContain("min-height: 2.75rem;");
     expect(mobileToolButtonRule).toContain("max-width: 10.5rem;");
-    expect(mobileToolButtonRule).not.toContain("flex: 0 0 auto;");
-    expect(mobileToolButtonRule).not.toContain("width: auto;");
     expect(mobileCameraRule).toContain("bottom: 0.45rem;");
-    expect(mobileCameraRule).toContain("flex-wrap: wrap;");
+    expect(mobileCameraRule).toContain("flex-wrap: nowrap;");
     expect(mobileCameraButtonRule).toContain("min-width: 2.75rem;");
     expect(mobileCameraButtonRule).toContain("min-height: 2.75rem;");
-    expect(mobileCameraButtonRule).not.toContain("flex: 0 0 auto;");
     expect(immersiveCss).not.toContain("width: max-content;");
   });
 
