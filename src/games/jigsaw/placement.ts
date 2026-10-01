@@ -176,6 +176,36 @@ const sortScatterSlots = (slots: readonly ScatterSlot[], salt = 0) =>
   [...slots].sort((left, right) =>
     mixSlotIndex(left.index + 1 + salt) - mixSlotIndex(right.index + 1 + salt));
 
+const getScatterSlotDistanceFromBoard = (
+  layout: JigsawWorldLayout,
+  slot: ScatterSlot,
+  stagingMode: Exclude<JigsawStagingMode, "perimeter">,
+) => {
+  if (stagingMode === "sides") {
+    return slot.left + layout.pieceWidth <= layout.boardX
+      ? layout.boardX - (slot.left + layout.pieceWidth)
+      : slot.left - (layout.boardX + layout.boardWidth);
+  }
+
+  return slot.top + layout.pieceHeight <= layout.boardY
+    ? layout.boardY - (slot.top + layout.pieceHeight)
+    : slot.top - (layout.boardY + layout.boardHeight);
+};
+
+const sortPreferredScatterSlots = (
+  layout: JigsawWorldLayout,
+  slots: readonly ScatterSlot[],
+  stagingMode: Exclude<JigsawStagingMode, "perimeter">,
+  salt: number,
+) => [...slots].sort((left, right) => {
+  const distanceDelta =
+    getScatterSlotDistanceFromBoard(layout, left, stagingMode) -
+    getScatterSlotDistanceFromBoard(layout, right, stagingMode);
+  if (Math.abs(distanceDelta) > 0.5) return distanceDelta;
+
+  return mixSlotIndex(left.index + 1 + salt) - mixSlotIndex(right.index + 1 + salt);
+});
+
 const interleaveScatterSlots = (
   first: readonly ScatterSlot[],
   second: readonly ScatterSlot[],
@@ -225,20 +255,28 @@ const createPreferredScatterSlots = (
     : slots.filter((slot) => slot.top >= boardBottom);
   const firstSalt = stagingMode === "sides" ? 17 : 29;
   const secondSalt = stagingMode === "sides" ? 53 : 71;
-  const alignedFirst = sortScatterSlots(
+  const alignedFirst = sortPreferredScatterSlots(
+    layout,
     firstSide.filter((slot) => isBoardAlignedScatterSlot(layout, slot, stagingMode)),
+    stagingMode,
     firstSalt,
   );
-  const alignedSecond = sortScatterSlots(
+  const alignedSecond = sortPreferredScatterSlots(
+    layout,
     secondSide.filter((slot) => isBoardAlignedScatterSlot(layout, slot, stagingMode)),
+    stagingMode,
     secondSalt,
   );
-  const overflowFirst = sortScatterSlots(
+  const overflowFirst = sortPreferredScatterSlots(
+    layout,
     firstSide.filter((slot) => !isBoardAlignedScatterSlot(layout, slot, stagingMode)),
+    stagingMode,
     firstSalt + 101,
   );
-  const overflowSecond = sortScatterSlots(
+  const overflowSecond = sortPreferredScatterSlots(
+    layout,
     secondSide.filter((slot) => !isBoardAlignedScatterSlot(layout, slot, stagingMode)),
+    stagingMode,
     secondSalt + 101,
   );
 
