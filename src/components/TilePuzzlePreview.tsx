@@ -147,6 +147,17 @@ export const initializeOrPreserveJigsawCamera = (
     : createJigsawFitCamera(layout, viewport, "workspace")
 );
 
+export const resolveJigsawCameraForViewportResize = (
+  layout: JigsawWorldLayout,
+  viewport: JigsawViewport,
+  placements: readonly JigsawPlacement[],
+  currentCamera: JigsawCamera,
+  userAdjusted: boolean,
+  insets: Partial<JigsawViewportInsets> = {},
+) => userAdjusted
+  ? currentCamera
+  : createJigsawOccupiedFitCamera(layout, viewport, placements, 28, insets);
+
 export const getMeasuredJigsawViewport = (
   stage: Pick<HTMLElement, "clientWidth" | "clientHeight"> | null,
 ): JigsawViewport | null => {
@@ -304,6 +315,7 @@ export const TilePuzzlePreview = ({
   const [showPreview, setShowPreview] = useState(false);
   const [showEdgeSeams, setShowEdgeSeams] = useState(false);
   const [showMobileImmersiveTools, setShowMobileImmersiveTools] = useState(false);
+  const cameraWasUserAdjustedRef = useRef(false);
   const displayMode = usePuzzleWorkspaceDisplayMode();
 
   useEffect(() => {
@@ -411,6 +423,7 @@ export const TilePuzzlePreview = ({
     setActiveTileId(null);
     setRaisedTileId(null);
     setIsPanning(false);
+    cameraWasUserAdjustedRef.current = false;
   }, [puzzle.id, replaceHistory]);
 
   useEffect(() => {
@@ -454,7 +467,26 @@ export const TilePuzzlePreview = ({
     return getJigsawFitInsetsForOverlays(stage.getBoundingClientRect(), overlayRects);
   };
 
+  useEffect(() => {
+    if (!isUsableJigsawViewport(viewport)) return;
+    const currentPlacementState = placementStateRef.current;
+    const currentCameraState = cameraState?.puzzleId === puzzle.id ? cameraState.camera : null;
+    if (!currentPlacementState || currentPlacementState.puzzleId !== puzzle.id || !currentCameraState) return;
+
+    const nextCamera = resolveJigsawCameraForViewportResize(
+      layout,
+      viewport,
+      currentPlacementState.placements,
+      currentCameraState,
+      cameraWasUserAdjustedRef.current,
+      getCurrentFitInsets(),
+    );
+    if (nextCamera === currentCameraState) return;
+    setCamera(nextCamera);
+  }, [layout, puzzle.id, viewport.height, viewport.width]);
+
   const fitView = (target: "all" | "board") => {
+    cameraWasUserAdjustedRef.current = true;
     if (!isUsableJigsawViewport(viewport)) return;
     const insets = getCurrentFitInsets();
     if (target === "board") {
@@ -497,6 +529,7 @@ export const TilePuzzlePreview = ({
         nextPlacements,
       ));
     }
+    cameraWasUserAdjustedRef.current = false;
     setCamera(createJigsawOccupiedFitCamera(
       layout,
       stagingViewport,
@@ -593,6 +626,7 @@ export const TilePuzzlePreview = ({
       const pointerIds = Array.from(touchPointsRef.current.keys()).slice(0, 2) as [number, number];
       const startPoints = getPinchPair(pointerIds);
       if (startPoints) {
+        cameraWasUserAdjustedRef.current = true;
         pinchRef.current = {
           pointerIds,
           startPoints,
@@ -721,6 +755,7 @@ export const TilePuzzlePreview = ({
         nextCamera.centerY !== current.camera.centerY ||
         nextCamera.zoom !== current.camera.zoom
       ) {
+        cameraWasUserAdjustedRef.current = true;
         wheelStateRef.current = { ...current, camera: nextCamera };
         renderCameraImmediately(wheelStateRef.current);
       }
@@ -862,6 +897,7 @@ export const TilePuzzlePreview = ({
     if (target?.closest(".tile-puzzle-piece")) return;
     if (event.pointerType === "mouse" && event.button !== 0 && event.button !== 1) return;
 
+    cameraWasUserAdjustedRef.current = true;
     panRef.current = {
       pointerId: event.pointerId,
       lastClientX: event.clientX,
@@ -900,6 +936,7 @@ export const TilePuzzlePreview = ({
     const stagePoint = getStagePoint(event.clientX, event.clientY);
     if (!stagePoint) return;
     const current = wheelStateRef.current;
+    cameraWasUserAdjustedRef.current = true;
 
     const nextCamera = event.ctrlKey || event.metaKey
       ? zoomJigsawCameraAtPoint(
@@ -933,6 +970,7 @@ export const TilePuzzlePreview = ({
 
   const setZoomAtCenter = (zoom: number) => {
     const current = wheelStateRef.current;
+    cameraWasUserAdjustedRef.current = true;
     setCamera(zoomJigsawCameraAtPoint(
       current.layout,
       current.viewport,
@@ -961,6 +999,7 @@ export const TilePuzzlePreview = ({
     const deltaX = direction === "ArrowRight" ? step : direction === "ArrowLeft" ? -step : 0;
     const deltaY = direction === "ArrowDown" ? step : direction === "ArrowUp" ? -step : 0;
     const current = wheelStateRef.current;
+    cameraWasUserAdjustedRef.current = true;
     setCamera(panJigsawCamera(current.layout, current.viewport, current.camera, deltaX, deltaY));
     event.preventDefault();
   };
