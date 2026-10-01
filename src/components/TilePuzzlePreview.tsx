@@ -24,6 +24,7 @@ import {
   isUsableJigsawViewport,
   normalizeJigsawWorldPosition,
   panJigsawCamera,
+  restageLooseJigsawPlacements,
   screenToJigsawWorld,
   shouldSnapJigsawPlacement,
   zoomJigsawCameraAtPoint,
@@ -499,16 +500,18 @@ export const TilePuzzlePreview = ({
     setCamera(createJigsawOccupiedFitCamera(layout, viewport, current.placements, 28, insets));
   };
 
-  const scatterPieces = () => {
-    const stagingViewport = getMeasuredJigsawViewport(stageRef.current);
-    if (!stagingViewport) return false;
-
+  const getStagingActionBaseline = () => {
     const current = placementStateRef.current;
+    if (!current || current.puzzleId !== puzzle.id) return null;
     const activeDrag = dragRef.current?.puzzleId === puzzle.id ? dragRef.current : null;
-    const baseline = current?.puzzleId === puzzle.id
-      ? resolveJigsawActionBaseline(current.placements, activeDrag?.startPlacements ?? null)
-      : null;
-    const nextPlacements = createInitialJigsawPlacements(layout, puzzle.tiles, stagingViewport);
+    return resolveJigsawActionBaseline(current.placements, activeDrag?.startPlacements ?? null);
+  };
+
+  const applyStagedPlacements = (
+    nextPlacements: JigsawPlacement[],
+    baseline: JigsawPlacement[] | null,
+    stagingViewport: JigsawViewport,
+  ) => {
     stopDragAnimation();
     updatePlacementState(() => ({
       puzzleId: puzzle.id,
@@ -540,9 +543,32 @@ export const TilePuzzlePreview = ({
     return true;
   };
 
+  const resetPieces = () => {
+    const stagingViewport = getMeasuredJigsawViewport(stageRef.current);
+    if (!stagingViewport) return false;
+
+    return applyStagedPlacements(
+      createInitialJigsawPlacements(layout, puzzle.tiles, stagingViewport),
+      getStagingActionBaseline(),
+      stagingViewport,
+    );
+  };
+
+  const restageLoosePieces = () => {
+    const stagingViewport = getMeasuredJigsawViewport(stageRef.current);
+    const baseline = getStagingActionBaseline();
+    if (!stagingViewport || !baseline) return false;
+
+    return applyStagedPlacements(
+      restageLooseJigsawPlacements(layout, puzzle.tiles, baseline, stagingViewport),
+      baseline,
+      stagingViewport,
+    );
+  };
+
   useEffect(() => {
     if (lastResetVersion.current === resetVersion) return;
-    if (!scatterPieces()) return;
+    if (!resetPieces()) return;
     lastResetVersion.current = resetVersion;
   }, [layout, puzzle.id, puzzle.tiles, resetVersion, viewport.height, viewport.width]);
 
@@ -1054,12 +1080,12 @@ export const TilePuzzlePreview = ({
         <button
           type="button"
           onClick={() => {
-            scatterPieces();
+            restageLoosePieces();
             setShowMobileImmersiveTools(false);
           }}
           disabled={isSolved}
         >
-          Scatter pieces
+          Restage pieces
         </button>
         <button
           type="button"
