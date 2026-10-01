@@ -406,35 +406,48 @@ export const createInitialJigsawPlacements = (
   });
 };
 
+export const stageLooseJigsawPlacements = (
+  layout: JigsawWorldLayout,
+  pieces: readonly JigsawPiece[],
+  fixedPlacements: readonly JigsawPlacement[],
+  viewport: JigsawViewport | null = null,
+): JigsawPlacement[] => {
+  const fixedById = new Map(
+    fixedPlacements
+      .filter((placement) => placement.snapped)
+      .map((placement) => [placement.id, placement] as const),
+  );
+  const orderedPieces = [...pieces].sort((left, right) => left.currentIndex - right.currentIndex);
+  const loosePieces = orderedPieces.filter((piece) => !fixedById.has(piece.id));
+  const stagedLooseById = new Map(
+    createInitialJigsawPlacements(layout, loosePieces, viewport)
+      .map((placement) => [placement.id, placement] as const),
+  );
+
+  return orderedPieces.map((piece) => {
+    const fixed = fixedById.get(piece.id);
+    if (fixed) return fixed;
+
+    const staged = stagedLooseById.get(piece.id);
+    return staged ?? {
+      id: piece.id,
+      ...normalizeJigsawWorldPosition(layout, worldPadding, worldPadding),
+      snapped: false,
+    };
+  });
+};
+
 export const restageLooseJigsawPlacements = (
   layout: JigsawWorldLayout,
   pieces: readonly JigsawPiece[],
   placements: readonly JigsawPlacement[],
   viewport: JigsawViewport | null = null,
-): JigsawPlacement[] => {
-  const placementById = new Map(placements.map((placement) => [placement.id, placement] as const));
-  const loosePieces = pieces.filter((piece) => !placementById.get(piece.id)?.snapped);
-  const restagedLooseById = new Map(
-    createInitialJigsawPlacements(layout, loosePieces, viewport)
-      .map((placement) => [placement.id, placement] as const),
-  );
-
-  return [...pieces]
-    .sort((left, right) => left.currentIndex - right.currentIndex)
-    .map((piece) => {
-      const current = placementById.get(piece.id);
-      if (current?.snapped) return current;
-
-      const restaged = restagedLooseById.get(piece.id);
-      if (restaged) return restaged;
-
-      return current ?? {
-        id: piece.id,
-        ...normalizeJigsawWorldPosition(layout, worldPadding, worldPadding),
-        snapped: false,
-      };
-    });
-};
+): JigsawPlacement[] => stageLooseJigsawPlacements(
+  layout,
+  pieces,
+  placements,
+  viewport,
+);
 
 export const shouldSnapJigsawPlacement = (
   layout: JigsawWorldLayout,
