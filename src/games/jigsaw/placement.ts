@@ -413,10 +413,27 @@ export const restageLooseJigsawPlacements = (
   viewport: JigsawViewport | null = null,
 ): JigsawPlacement[] => {
   const placementById = new Map(placements.map((placement) => [placement.id, placement] as const));
-  return createInitialJigsawPlacements(layout, pieces, viewport).map((placement) => {
-    const current = placementById.get(placement.id);
-    return current?.snapped ? current : placement;
-  });
+  const loosePieces = pieces.filter((piece) => !placementById.get(piece.id)?.snapped);
+  const restagedLooseById = new Map(
+    createInitialJigsawPlacements(layout, loosePieces, viewport)
+      .map((placement) => [placement.id, placement] as const),
+  );
+
+  return [...pieces]
+    .sort((left, right) => left.currentIndex - right.currentIndex)
+    .map((piece) => {
+      const current = placementById.get(piece.id);
+      if (current?.snapped) return current;
+
+      const restaged = restagedLooseById.get(piece.id);
+      if (restaged) return restaged;
+
+      return current ?? {
+        id: piece.id,
+        ...normalizeJigsawWorldPosition(layout, worldPadding, worldPadding),
+        snapped: false,
+      };
+    });
 };
 
 export const shouldSnapJigsawPlacement = (
