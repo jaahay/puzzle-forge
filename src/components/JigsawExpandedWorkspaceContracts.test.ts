@@ -85,6 +85,9 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).toContain('class="jigsaw-mobile-tools-toggle"');
     expect(jigsawPreviewSource).toContain("aria-expanded={showMobileImmersiveTools}");
     expect(jigsawPreviewSource).toContain(".jigsaw-mobile-tools-toggle, .tile-puzzle-tools");
+    expect(jigsawPreviewSource).toContain("Restage pieces");
+    expect(jigsawPreviewSource).toContain("restageLoosePieces();");
+    expect(jigsawPreviewSource).not.toContain("Scatter pieces");
     expect(mobileToggleRule).toContain("display: block;");
     expect(mobileToggleRule).toContain("top: 0.45rem;");
     expect(mobileToolRule).toContain("display: none;");
