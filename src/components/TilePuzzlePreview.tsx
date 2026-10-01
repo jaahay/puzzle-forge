@@ -303,7 +303,12 @@ export const TilePuzzlePreview = ({
   const [isPanning, setIsPanning] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showEdgeSeams, setShowEdgeSeams] = useState(false);
+  const [showMobileImmersiveTools, setShowMobileImmersiveTools] = useState(false);
   const displayMode = usePuzzleWorkspaceDisplayMode();
+
+  useEffect(() => {
+    setShowMobileImmersiveTools(false);
+  }, [displayMode.isExpanded, puzzle.id]);
 
   useEffect(() => () => {
     stopDragAnimation();
@@ -444,7 +449,7 @@ export const TilePuzzlePreview = ({
     if (!stage || !workspace) return { top: 0, right: 0, bottom: 0, left: 0 };
 
     const overlayRects = Array.from(workspace.querySelectorAll<HTMLElement>(
-      ".tile-puzzle-tools, .jigsaw-camera-tools, .puzzle-workspace-display-tools",
+      ".jigsaw-mobile-tools-toggle, .tile-puzzle-tools, .jigsaw-camera-tools, .puzzle-workspace-display-tools",
     )).map((element) => element.getBoundingClientRect());
     return getJigsawFitInsetsForOverlays(stage.getBoundingClientRect(), overlayRects);
   };
@@ -960,6 +965,7 @@ export const TilePuzzlePreview = ({
     event.preventDefault();
   };
 
+  const mobileToolsId = `jigsaw-tools-${puzzle.id}`.replace(/[^a-zA-Z0-9_-]/g, "-");
   const previewStyle = {
     backgroundImage: `url(${puzzle.asset.files.preview})`,
     aspectRatio: `${puzzle.asset.intrinsicWidth} / ${puzzle.asset.intrinsicHeight}`,
@@ -983,13 +989,46 @@ export const TilePuzzlePreview = ({
         <span>{isSolved ? "Solved" : `${solvedCount}/${puzzle.tiles.length} placed`}</span>
       </div>
 
-      <div class={`tile-puzzle-tools ${isSolved ? "is-solved" : ""}`}>
-        <button type="button" onClick={() => setShowPreview((current) => !current)}>{showPreview ? "Hide preview" : "Preview image"}</button>
-        <button type="button" onClick={scatterPieces} disabled={isSolved}>Scatter pieces</button>
+      <button
+        class="jigsaw-mobile-tools-toggle"
+        type="button"
+        aria-expanded={showMobileImmersiveTools}
+        aria-controls={mobileToolsId}
+        onClick={() => setShowMobileImmersiveTools((current) => !current)}
+      >
+        Tools
+      </button>
+
+      <div
+        id={mobileToolsId}
+        class={`tile-puzzle-tools ${isSolved ? "is-solved" : ""} ${showMobileImmersiveTools ? "is-mobile-open" : ""}`}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setShowPreview((current) => !current);
+            setShowMobileImmersiveTools(false);
+          }}
+        >
+          {showPreview ? "Hide preview" : "Preview image"}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            scatterPieces();
+            setShowMobileImmersiveTools(false);
+          }}
+          disabled={isSolved}
+        >
+          Scatter pieces
+        </button>
         <button
           type="button"
           aria-pressed={showEdgeSeams}
-          onClick={() => setShowEdgeSeams((current) => !current)}
+          onClick={() => {
+            setShowEdgeSeams((current) => !current);
+            setShowMobileImmersiveTools(false);
+          }}
           disabled={isSolved}
         >
           {isSolved
