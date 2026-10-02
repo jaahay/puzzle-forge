@@ -21,33 +21,12 @@ const seededUnit = (seedOffset: number, salt: number) => {
   return mixed / 0xffff_ffff;
 };
 
-export const jigsawDefaultBaselineSelectionWeights = {
-  straight: 3,
-  bow: 2,
-  inflection: 1.2,
-  "angled-course": 1.1,
-  dogleg: 0.9,
-  wave: 0.45,
-  "stepped-course": 0.3,
-} as const satisfies Record<JigsawBaselineGrammarId, number>;
-
-const baselineSelectionWeightTotal = jigsawBaselineGrammarIds.reduce(
-  (total, grammarId) => total + jigsawDefaultBaselineSelectionWeights[grammarId],
-  0,
-);
-
 export const selectJigsawBaselineGrammar = (
   randomUnit: number,
 ): JigsawBaselineGrammarId => {
   const normalized = Math.min(1 - Number.EPSILON, Math.max(0, randomUnit));
-  let cursor = normalized * baselineSelectionWeightTotal;
-
-  for (const grammarId of jigsawBaselineGrammarIds) {
-    cursor -= jigsawDefaultBaselineSelectionWeights[grammarId];
-    if (cursor < 0) return grammarId;
-  }
-
-  return jigsawBaselineGrammarIds[jigsawBaselineGrammarIds.length - 1];
+  const index = Math.floor(normalized * jigsawBaselineGrammarIds.length);
+  return jigsawBaselineGrammarIds[index];
 };
 
 const selectBaselineGrammarId = (
