@@ -31,7 +31,7 @@ export type PuzzleGenerationDefaults = {
   difficulty: PuzzleDifficulty;
   requireUniqueSolution: boolean;
   sudokuVariation?: SudokuVariation;
-  jigsawCutStyle: JigsawCutStyle;
+  jigsawCutStyle?: JigsawCutStyle;
 };
 
 type MissingPuzzleSurfaceState = {
@@ -53,7 +53,7 @@ type MissingPuzzleGenerationInput = {
   requireUniqueSolution: boolean;
   sudokuVariation: SudokuVariation;
   solitaireVariation: SolitaireVariation;
-  jigsawCutStyle: JigsawCutStyle;
+  jigsawCutStyle?: JigsawCutStyle;
   makeSeed: () => string;
 };
 
