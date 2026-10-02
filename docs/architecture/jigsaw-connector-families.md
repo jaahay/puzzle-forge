@@ -52,10 +52,11 @@ The ordinary system is intentionally layered:
 puzzle RNG
    |
    v
-choose one grammar for the puzzle
+choose one connector grammar for the puzzle
    |
    v
-derive a seeded SeamProgram for each shared seam
+derive independently weighted baseline roles + connector
+for each shared SeamProgram
    |
    v
 realize the program into normalized 2D geometry
@@ -437,11 +438,17 @@ Approach and departure are roles, not separate grammar systems. Both select from
 
 The current baseline productions are:
 
+- **Straight** — `straight`
 - **Bow** — `bow`
 - **Inflection** — `sweep > cross-baseline > counter-sweep`
-- **Wave** — `crest > trough > crest`
 - **Angled course** — `ramp > course > return`
+- **Dogleg** — `depart-angle > bend > counter-bend > return-angle`
+- **Wave** — `crest > trough > crest`
 - **Stepped course** — `step > run > step > run > step`
+
+Straight is the identity case for the non-connector span: it does not create a straight connector or remove the interlocking event. The connector remains a ConnectorGrammar program between independently derived approach and departure roles.
+
+The catalog is intended to be representative of inherited jigsaw cut language without becoming an imitation catalog. Straight and Bow form the quiet center; Inflection, Angled course, and Dogleg extend familiar irregular-cut ideas; Wave and Stepped course push the same vocabulary farther into intentionally authored geometry. These are not separate type systems or mode-specific catalogs.
 
 ### Baseline graphical atlas
 
@@ -449,11 +456,13 @@ The atlas below renders representative and seeded approach-role specimens from t
 
 ![High-fidelity Jigsaw baseline grammar atlas](./assets/jigsaw-baseline-grammar-atlas.svg)
 
-The rows are visually distinct for structural reasons: Bow is one smooth same-side arc; Inflection crosses once into an opposed sweep; Wave repeats alternating smooth excursions; Angled course has one offset linear course; Stepped course changes level through orthogonal steps.
+The rows are ordered as a legible continuum rather than a ranking or mode boundary. Straight is the quiet identity case; Bow introduces one smooth excursion; Inflection crosses once into an opposed sweep; Angled course introduces one offset linear course; Dogleg adds heading changes without orthogonal steps; Wave repeats alternating smooth excursions; Stepped course changes level through orthogonal runs.
 
 [Open the baseline atlas directly](./assets/jigsaw-baseline-grammar-atlas.svg)
 
-Baseline geometry is deliberately shallower than the connector event. It shapes the course from the corner to the connector and back without becoming a second interlock vocabulary.
+Baseline geometry is deliberately subordinate to the connector event. Straight contributes no displacement; the other grammars remain shallow enough to shape the course from the corner to the connector and back without becoming a second interlock vocabulary.
+
+The default composition policy is intentionally familiar-first rather than uniform. Straight is weighted most heavily, followed by Bow; Inflection, Angled course, and Dogleg remain regular possibilities; Wave and Stepped course are uncommon but fully reachable. The current relative weights are `3 / 2 / 1.2 / 1.1 / 0.9 / 0.45 / 0.3` in that catalog order. This is a default generation policy, not a semantic classification of the grammars and not the future Traditional / Unconventional control.
 
 The composition boundary is `JigsawSeamProgram` in `src/games/jigsaw/seamProgram.ts`. Connector programs continue to derive exactly through ConnectorGrammar; the seam program adds independently seeded baseline programs around that unchanged connector component.
 
