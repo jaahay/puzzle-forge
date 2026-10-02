@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { getPuzzleDefinition, isGeneratable } from "../catalog/puzzleCatalog";
 import type {
   GeneratedPuzzle,
+  JigsawCutStyle,
   PuzzleDefinition,
   PuzzleDifficulty,
   PuzzleGenerationRequest,
@@ -11,6 +12,7 @@ import type {
   SudokuVariation,
 } from "../catalog/types";
 import { isImageBackedPuzzleId } from "../games/imageAssets";
+import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
 import type { NextPuzzleDraft } from "./generationSettings";
@@ -29,6 +31,7 @@ export type PuzzleGenerationDefaults = {
   difficulty: PuzzleDifficulty;
   requireUniqueSolution: boolean;
   sudokuVariation?: SudokuVariation;
+  jigsawCutStyle: JigsawCutStyle;
 };
 
 type MissingPuzzleSurfaceState = {
@@ -50,6 +53,7 @@ type MissingPuzzleGenerationInput = {
   requireUniqueSolution: boolean;
   sudokuVariation: SudokuVariation;
   solitaireVariation: SolitaireVariation;
+  jigsawCutStyle: JigsawCutStyle;
   makeSeed: () => string;
 };
 
@@ -115,6 +119,9 @@ export const makeInitialPuzzleGenerationOptions = ({
       ? rememberedDraft?.solitaireVariation ?? defaultSolitaireVariation
       : undefined,
     imageId: isImageBackedPuzzleId(puzzleId) ? rememberedDraft?.imageId : undefined,
+    jigsawCutStyle: puzzleId === "jigsaw"
+      ? rememberedDraft?.jigsawCutStyle ?? defaultJigsawCutStyle
+      : undefined,
   };
 };
 
@@ -128,6 +135,7 @@ export const makeMissingPuzzleGenerationOptions = ({
   requireUniqueSolution,
   sudokuVariation,
   solitaireVariation,
+  jigsawCutStyle,
   makeSeed,
 }: MissingPuzzleGenerationInput): BeginGenerationOptions => ({
   puzzleId: selectedPuzzleId,
@@ -138,6 +146,7 @@ export const makeMissingPuzzleGenerationOptions = ({
   requireUniqueSolution,
   sudokuVariation: selectedPuzzleId === "sudoku" ? sudokuVariation : undefined,
   solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? solitaireVariation : undefined,
+  jigsawCutStyle: selectedPuzzleId === "jigsaw" ? jigsawCutStyle : undefined,
 });
 
 export const usePuzzleGeneration = () => {
@@ -188,6 +197,9 @@ export const usePuzzleGeneration = () => {
       sudokuVariation,
       solitaireVariation: options.solitaireVariation,
       imageId: isImageBackedPuzzleId(puzzleId) ? options.imageId : undefined,
+      jigsawCutStyle: puzzleId === "jigsaw"
+        ? options.jigsawCutStyle ?? defaults.jigsawCutStyle ?? defaultJigsawCutStyle
+        : undefined,
     };
 
     activeRequestId.current = request.requestId;
