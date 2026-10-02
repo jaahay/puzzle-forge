@@ -12,6 +12,7 @@ import { deriveJigsawSeamProgram } from "./seamProgram";
 import { generateJigsaw } from "./generate";
 import { defaultJigsawImageAsset } from "./imageAssets";
 import {
+  getJigsawCanonicalConnectorPoints,
   getJigsawEdgePath,
   getJigsawEdgePoints,
   getJigsawPieceOutlinePath,
@@ -258,10 +259,10 @@ describe("Jigsaw edge paths", () => {
   it("uses substantially more edge span while preserving a corner buffer", () => {
     for (const profileId of jigsawEdgeProfileIds) {
       for (const seedOffset of [1, 17, 991, 123_456, 999_999]) {
-        const points = getJigsawEdgePoints(
-          makeInteriorEdge({ side: "top", profileId, polarity: "tab", seedOffset }),
+        const connectorPoints = getJigsawCanonicalConnectorPoints(
+          profileId,
+          seedOffset,
         );
-        const connectorPoints = points.slice(1, -1);
         const horizontal = connectorPoints.map((point) => point.x);
         const minimum = Math.min(...horizontal);
         const maximum = Math.max(...horizontal);
@@ -275,10 +276,11 @@ describe("Jigsaw edge paths", () => {
 
   it("allows visibly off-center seams when the connector width leaves room", () => {
     const centers = Array.from({ length: 128 }, (_, seedOffset) => {
-      const points = getJigsawEdgePoints(
-        makeInteriorEdge({ side: "top", profileId: "necked-head", polarity: "tab", seedOffset }),
+      const points = getJigsawCanonicalConnectorPoints(
+        "necked-head",
+        seedOffset,
       );
-      const horizontal = points.slice(1, -1).map((point) => point.x);
+      const horizontal = points.map((point) => point.x);
       return (Math.min(...horizontal) + Math.max(...horizontal)) / 2;
     });
 
