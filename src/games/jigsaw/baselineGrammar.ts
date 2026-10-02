@@ -1,3 +1,4 @@
+import type { JigsawBaselineGrammarId } from "../../catalog/types";
 import {
   baselineMirror,
   baselineOppose,
@@ -16,15 +17,6 @@ export type JigsawBaselinePoint = {
 };
 
 type Range = readonly [minimum: number, maximum: number];
-
-export type JigsawBaselineGrammarId =
-  | "straight"
-  | "bow"
-  | "inflection"
-  | "angled-course"
-  | "dogleg"
-  | "wave"
-  | "stepped-course";
 
 export type JigsawBaselineGrammarDefinition = {
   id: JigsawBaselineGrammarId;
