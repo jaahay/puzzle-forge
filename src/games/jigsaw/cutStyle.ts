@@ -36,7 +36,7 @@ type JigsawCutStyleDefinition = {
   baselinePaletteSize: number;
 };
 
-const jigsawCutStyleDefinitions = {
+const jigsawCutStyleDefinitions: Record<JigsawCutStyle, JigsawCutStyleDefinition> = {
   traditional: {
     connectorWeights: {
       "classic-bulb": 4,
@@ -74,12 +74,7 @@ const jigsawCutStyleDefinitions = {
     requiredBaselineGrammarIds: ["bow"],
     baselinePaletteSize: 4,
   },
-} as const satisfies Record<JigsawCutStyle, JigsawCutStyleDefinition>;
-
-const weightFor = <T extends string>(
-  weights: WeightMap<T>,
-  id: T,
-) => Math.max(0, weights[id] ?? 0);
+};
 
 const selectWeightedId = <T extends string>(
   ids: readonly T[],
@@ -87,7 +82,7 @@ const selectWeightedId = <T extends string>(
   randomUnit: number,
 ): T => {
   const weighted = ids
-    .map((id) => ({ id, weight: weightFor(weights, id) }))
+    .map((id) => ({ id, weight: Math.max(0, weights[id] ?? 0) }))
     .filter(({ weight }) => weight > 0);
   if (weighted.length === 0) {
     throw new Error("Jigsaw cut-style policy has no selectable grammar.");
@@ -110,18 +105,13 @@ export const normalizeJigsawCutStyle = (
 ): JigsawCutStyle =>
   value === "unconventional" ? "unconventional" : defaultJigsawCutStyle;
 
-const getJigsawCutStyleDefinition = (
-  cutStyle: JigsawCutStyle,
-): JigsawCutStyleDefinition =>
-  jigsawCutStyleDefinitions[cutStyle];
-
 export const selectJigsawConnectorGrammarForCutStyle = (
   cutStyle: JigsawCutStyle,
   randomUnit: number,
 ): JigsawConnectorGrammarId =>
   selectWeightedId(
     jigsawConnectorGrammarIds,
-    getJigsawCutStyleDefinition(cutStyle).connectorWeights,
+    jigsawCutStyleDefinitions[cutStyle].connectorWeights,
     randomUnit,
   );
 
@@ -129,12 +119,12 @@ export const deriveJigsawBaselinePalette = (
   cutStyle: JigsawCutStyle,
   seed: string,
 ): readonly JigsawBaselineGrammarId[] => {
-  const definition = getJigsawCutStyleDefinition(cutStyle);
+  const definition = jigsawCutStyleDefinitions[cutStyle];
   const selected = [...definition.requiredBaselineGrammarIds];
   const available = jigsawBaselineGrammarIds.filter(
     (grammarId) =>
       !selected.includes(grammarId) &&
-      weightFor(definition.baselineWeights, grammarId) > 0,
+      (definition.baselineWeights[grammarId] ?? 0) > 0,
   );
   const random = createRandom(`${seed}:baseline-palette`);
 
@@ -165,7 +155,7 @@ export const sampleJigsawBaselineGrammarForCutStyle = (
 
   return selectWeightedId(
     baselineGrammarIds,
-    getJigsawCutStyleDefinition(cutStyle).baselineWeights,
+    jigsawCutStyleDefinitions[cutStyle].baselineWeights,
     randomUnit,
   );
 };
