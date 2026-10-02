@@ -102,44 +102,43 @@ export const jigsawBaselineGrammarIds = [
 ] as const satisfies readonly JigsawBaselineGrammarId[];
 
 const identity = baselinePrimitive("identity");
-const sweep = baselinePrimitive("sweep");
+const deflect = baselinePrimitive("deflect");
 const cross = baselinePrimitive("cross");
 const course = baselinePrimitive("course");
-const turn = baselinePrimitive("turn");
 
 export const jigsawBaselineCanonicalProductions = {
   straight: identity,
   bow: baselineSequence(
-    sweep,
-    baselineMirror(sweep),
+    deflect,
+    baselineMirror(deflect),
   ),
   inflection: baselineSequence(
-    sweep,
+    deflect,
     cross,
-    baselineOppose(baselineMirror(sweep)),
+    baselineOppose(baselineMirror(deflect)),
   ),
   "angled-course": baselineSequence(
-    turn,
+    deflect,
     course,
-    baselineMirror(turn),
+    baselineMirror(deflect),
   ),
   dogleg: baselineSequence(
-    baselineRepeat(turn, 2),
-    baselineMirror(baselineRepeat(turn, 2)),
+    baselineRepeat(deflect, 2),
+    baselineMirror(baselineRepeat(deflect, 2)),
   ),
   wave: baselineSequence(
-    sweep,
+    deflect,
     cross,
-    baselineOppose(sweep),
+    baselineOppose(deflect),
     cross,
-    sweep,
+    deflect,
   ),
   "stepped-course": baselineSequence(
     baselineRepeat(
-      baselineSequence(turn, course),
+      baselineSequence(deflect, course),
       2,
     ),
-    baselineMirror(turn),
+    baselineMirror(deflect),
   ),
 } as const satisfies Record<JigsawBaselineGrammarId, JigsawBaselineProduction>;
 
@@ -165,7 +164,7 @@ export const jigsawBaselineGrammarCatalog = {
   inflection: {
     id: "inflection",
     label: "Inflection",
-    description: "A smooth sweep crosses the nominal edge once and resolves with an opposed counter-sweep.",
+    description: "A smooth deflect crosses the nominal edge once and resolves with an opposed counter-deflect.",
     production: jigsawBaselineCanonicalProductions.inflection,
     renderMode: "smooth",
     curveTension: 0.11,
@@ -183,7 +182,7 @@ export const jigsawBaselineGrammarCatalog = {
   "angled-course": {
     id: "angled-course",
     label: "Angled course",
-    description: "A diagonal turn enters one offset course before returning diagonally to the nominal edge.",
+    description: "A diagonal deflect enters one offset course before returning diagonally to the nominal edge.",
     production: jigsawBaselineCanonicalProductions["angled-course"],
     renderMode: "angular",
     curveTension: 0,
