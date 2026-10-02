@@ -239,7 +239,7 @@ seeded family parameters
 realization
 ```
 
-The primitive vocabulary is `identity / sweep / cross / course / turn`. Current canonical productions are Straight, Bow, Inflection, Angled course, Dogleg, Wave, and Stepped course. Straight is the non-connector identity case; it does not replace or flatten the ConnectorGrammar event.
+The primitive vocabulary is `identity / deflect / cross / course`. Smooth, diagonal, and orthogonal motion remain realization choices rather than grammar primitives. Current canonical productions are Straight, Bow, Inflection, Angled course, Dogleg, Wave, and Stepped course. Straight is the non-connector identity case; it does not replace or flatten the ConnectorGrammar event.
 
 Named baseline families are therefore canonical sentences, not primitive atoms. Every non-identity primitive participates in multiple canonical families, and the production API can compose structures outside the named catalog. This leaves a direct path to a later meta-grammar without requiring current generation to become unconstrained.
 
