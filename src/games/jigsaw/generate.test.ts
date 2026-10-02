@@ -328,7 +328,10 @@ describe("generateJigsaw", () => {
       asset: puzzle.asset,
       edgeModel: {
         ...puzzle.edgeModel,
-        baselineGrammarIds: [...puzzle.edgeModel.baselineGrammarIds].reverse(),
+        cutStyle:
+          puzzle.edgeModel.cutStyle === "traditional"
+            ? "unconventional"
+            : "traditional",
       },
       notes: puzzle.notes,
     });
