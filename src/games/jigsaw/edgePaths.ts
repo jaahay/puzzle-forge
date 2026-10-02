@@ -135,10 +135,7 @@ const getCanonicalSeamParts = (
   seedOffset: number,
   edgeModel: JigsawEdgeModel,
 ): CanonicalSeamParts => {
-  const program = deriveJigsawSeamProgram(profileId, seedOffset, {
-    cutStyle: edgeModel.cutStyle,
-    baselineGrammarIds: edgeModel.baselineGrammarIds,
-  });
+  const program = deriveJigsawSeamProgram(profileId, seedOffset, edgeModel);
   const connector = getCanonicalConnectorPoints(profileId, seedOffset);
   const connectorStart = connector[0].x;
   const connectorEnd = connector[connector.length - 1].x;
