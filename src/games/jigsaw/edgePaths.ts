@@ -253,6 +253,7 @@ const getCanonicalEdgeSegments = (
       seam.connector,
       connectorGrammar.renderMode,
       connectorGrammar.curveTension,
+      connectorGrammar.renderMode === "smooth",
     ),
     ...segmentsFromPoints(
       seam.departure,
