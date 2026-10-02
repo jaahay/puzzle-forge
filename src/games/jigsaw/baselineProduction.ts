@@ -85,11 +85,6 @@ export const baselineMirror = (
   term,
 });
 
-const parenthesize = (production: JigsawBaselineProduction): string =>
-  production.kind === "primitive"
-    ? formatJigsawBaselineProduction(production)
-    : `(${formatJigsawBaselineProduction(production)})`;
-
 export const formatJigsawBaselineProduction = (
   production: JigsawBaselineProduction,
 ): string => {
