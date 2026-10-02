@@ -260,7 +260,7 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
     let requireUniqueSolution = true;
     let sudokuVariation: SudokuVariation = defaultSudokuVariation;
     let solitaireVariation: SolitaireVariation = defaultSolitaireVariation;
-    let jigsawCutStyle: JigsawCutStyle = defaultJigsawCutStyle;
+    let jigsawCutStyle: JigsawCutStyle | undefined;
     let imageId: string | undefined;
 
     switch (puzzleId) {
@@ -355,7 +355,7 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
       requireUniqueSolution,
       sudokuVariation,
       solitaireVariation,
-      jigsawCutStyle,
+      ...(jigsawCutStyle ? { jigsawCutStyle } : {}),
       ...(imageId ? { imageId } : {}),
       ...(provenance ? { provenance } : {}),
     };
