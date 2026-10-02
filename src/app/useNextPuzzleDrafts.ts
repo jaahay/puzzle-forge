@@ -46,7 +46,7 @@ export const buildNextPuzzleDraft = ({
     : undefined;
   const jigsawCutStyle = puzzleId === "jigsaw"
     ? normalizeJigsawCutStyle(
-        puzzle?.puzzleId === "jigsaw"
+        puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw"
           ? puzzle.cutStyle
           : useRuntimeFallback
             ? runtimeSettings.jigsawCutStyle
