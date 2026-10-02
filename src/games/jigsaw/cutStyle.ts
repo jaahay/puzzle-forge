@@ -43,14 +43,12 @@ const jigsawCutStyleDefinitions = {
     connectorWeights: {
       "classic-bulb": 4,
       "necked-head": 2,
-      "multi-lobe": 0.6,
     },
     baselineWeights: {
       straight: 4,
       bow: 3,
       inflection: 1.2,
       "angled-course": 0.8,
-      dogleg: 0.35,
     },
     requiredBaselineGrammarIds: ["straight", "bow"],
     baselinePaletteSize: 3,
