@@ -6,10 +6,12 @@ export type JigsawBaselinePoint = {
 type Range = readonly [minimum: number, maximum: number];
 
 export type JigsawBaselineGrammarId =
+  | "straight"
   | "bow"
   | "inflection"
-  | "wave"
   | "angled-course"
+  | "dogleg"
+  | "wave"
   | "stepped-course";
 
 export type JigsawBaselineGrammarDefinition = {
@@ -27,6 +29,13 @@ type BaselineProgramBase = {
   events: readonly string[];
   depth: number;
   direction: -1 | 1;
+};
+
+type StraightProgram = BaselineProgramBase & {
+  baselineGrammarId: "straight";
+  events: readonly ["straight"];
+  depth: 0;
+  direction: 1;
 };
 
 type BowProgram = BaselineProgramBase & {
@@ -54,6 +63,14 @@ type AngledCourseProgram = BaselineProgramBase & {
   courseEnd: number;
 };
 
+type DoglegProgram = BaselineProgramBase & {
+  baselineGrammarId: "dogleg";
+  events: readonly ["depart-angle", "bend", "counter-bend", "return-angle"];
+  firstBend: number;
+  secondBend: number;
+  middleLevel: number;
+};
+
 type SteppedCourseProgram = BaselineProgramBase & {
   baselineGrammarId: "stepped-course";
   events: readonly ["step", "run", "step", "run", "step"];
@@ -61,21 +78,34 @@ type SteppedCourseProgram = BaselineProgramBase & {
 };
 
 export type JigsawBaselineProgram =
+  | StraightProgram
   | BowProgram
   | InflectionProgram
-  | WaveProgram
   | AngledCourseProgram
+  | DoglegProgram
+  | WaveProgram
   | SteppedCourseProgram;
 
 export const jigsawBaselineGrammarIds = [
+  "straight",
   "bow",
   "inflection",
-  "wave",
   "angled-course",
+  "dogleg",
+  "wave",
   "stepped-course",
 ] as const satisfies readonly JigsawBaselineGrammarId[];
 
 export const jigsawBaselineGrammarCatalog = {
+  straight: {
+    id: "straight",
+    label: "Straight",
+    description: "The nominal edge remains quiet outside the connector event.",
+    production: "straight",
+    renderMode: "angular",
+    curveTension: 0,
+    depth: [0, 0],
+  },
   bow: {
     id: "bow",
     label: "Bow",
@@ -112,6 +142,15 @@ export const jigsawBaselineGrammarCatalog = {
     curveTension: 0,
     depth: [3, 5.5],
   },
+  dogleg: {
+    id: "dogleg",
+    label: "Dogleg",
+    description: "A broken diagonal course changes heading twice before returning to the nominal edge.",
+    production: "depart-angle > bend > counter-bend > return-angle",
+    renderMode: "angular",
+    curveTension: 0,
+    depth: [3, 5.5],
+  },
   "stepped-course": {
     id: "stepped-course",
     label: "Stepped course",
@@ -140,6 +179,15 @@ export const deriveJigsawBaselineProgram = (
   baselineGrammarId: JigsawBaselineGrammarId,
   seedOffset: number,
 ): JigsawBaselineProgram => {
+  if (baselineGrammarId === "straight") {
+    return {
+      baselineGrammarId,
+      events: ["straight"],
+      depth: 0,
+      direction: 1,
+    };
+  }
+
   const definition = jigsawBaselineGrammarCatalog[baselineGrammarId];
   const depth = range(seedOffset, 0xb101, definition.depth[0], definition.depth[1]);
   const signedDirection = direction(seedOffset, 0xb102);
@@ -178,6 +226,16 @@ export const deriveJigsawBaselineProgram = (
         courseStart: range(seedOffset, 0xb141, 0.3, 0.38),
         courseEnd: range(seedOffset, 0xb142, 0.62, 0.7),
       };
+    case "dogleg":
+      return {
+        baselineGrammarId,
+        events: ["depart-angle", "bend", "counter-bend", "return-angle"],
+        depth,
+        direction: signedDirection,
+        firstBend: range(seedOffset, 0xb161, 0.28, 0.34),
+        secondBend: range(seedOffset, 0xb162, 0.66, 0.72),
+        middleLevel: range(seedOffset, 0xb163, 0.42, 0.62),
+      };
     case "stepped-course":
       return {
         baselineGrammarId,
@@ -195,6 +253,11 @@ export const realizeJigsawBaselineProgram = (
   const signedDepth = program.direction * program.depth;
 
   switch (program.baselineGrammarId) {
+    case "straight":
+      return [
+        point(0, 0),
+        point(1, 0),
+      ];
     case "bow":
       return [
         point(0, 0),
@@ -235,6 +298,16 @@ export const realizeJigsawBaselineProgram = (
         point(program.courseStart, signedDepth),
         point(program.courseEnd, signedDepth),
         point(0.84, 0),
+        point(1, 0),
+      ];
+    case "dogleg":
+      return [
+        point(0, 0),
+        point(0.14, 0),
+        point(program.firstBend, signedDepth * program.middleLevel),
+        point(0.5, signedDepth),
+        point(program.secondBend, signedDepth * program.middleLevel),
+        point(0.86, 0),
         point(1, 0),
       ];
     case "stepped-course": {
