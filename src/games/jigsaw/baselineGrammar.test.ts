@@ -111,6 +111,53 @@ describe("Jigsaw baseline grammar", () => {
     }
   });
 
+  it("keeps canonical production events aligned with realized distinctive geometry", () => {
+    const signCrossings = (points: readonly { y: number }[]) => {
+      const signs = points
+        .map((point) => Math.sign(point.y))
+        .filter((sign) => sign !== 0);
+      const compressed = signs.filter(
+        (sign, index) => index === 0 || sign !== signs[index - 1],
+      );
+      return Math.max(0, compressed.length - 1);
+    };
+
+    for (const grammarId of ["inflection", "wave"] as const) {
+      const program = deriveJigsawBaselineProgram(grammarId, 123_456);
+      const points = realizeJigsawBaselineProgram(program);
+
+      expect(signCrossings(points)).toBe(
+        program.events.filter((event) => event === "cross").length,
+      );
+    }
+
+    const steppedProgram = deriveJigsawBaselineProgram(
+      "stepped-course",
+      123_456,
+    );
+    const steppedPoints = realizeJigsawBaselineProgram(steppedProgram);
+    const verticalSegments = steppedPoints
+      .slice(1)
+      .filter((point, index) => point.x === steppedPoints[index].x)
+      .length;
+    const offsetCourses = steppedPoints
+      .slice(1)
+      .filter(
+        (point, index) =>
+          point.y === steppedPoints[index].y &&
+          point.y !== 0 &&
+          point.x !== steppedPoints[index].x,
+      )
+      .length;
+
+    expect(verticalSegments).toBe(
+      steppedProgram.events.filter((event) => event === "deflect").length,
+    );
+    expect(offsetCourses).toBe(
+      steppedProgram.events.filter((event) => event === "course").length,
+    );
+  });
+
   it("keeps dogleg structurally between an offset course and a stepped course", () => {
     const seedOffset = 123_456;
     const angled = realizeJigsawBaselineProgram(
