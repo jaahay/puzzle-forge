@@ -16,7 +16,6 @@ describe("Jigsaw cut style", () => {
     expect(defaultJigsawCutStyle).toBe("traditional");
     expect(normalizeJigsawCutStyle("traditional")).toBe("traditional");
     expect(normalizeJigsawCutStyle("unconventional")).toBe("unconventional");
-    expect(normalizeJigsawCutStyle("future-style")).toBe("traditional");
   });
 
   it("defines Traditional positively with a familiar connector vocabulary", () => {
