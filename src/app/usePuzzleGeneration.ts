@@ -31,7 +31,6 @@ export type PuzzleGenerationDefaults = {
   difficulty: PuzzleDifficulty;
   requireUniqueSolution: boolean;
   sudokuVariation?: SudokuVariation;
-  jigsawCutStyle?: JigsawCutStyle;
 };
 
 type MissingPuzzleSurfaceState = {
@@ -198,7 +197,7 @@ export const usePuzzleGeneration = () => {
       solitaireVariation: options.solitaireVariation,
       imageId: isImageBackedPuzzleId(puzzleId) ? options.imageId : undefined,
       jigsawCutStyle: puzzleId === "jigsaw"
-        ? options.jigsawCutStyle ?? defaults.jigsawCutStyle ?? defaultJigsawCutStyle
+        ? options.jigsawCutStyle ?? defaultJigsawCutStyle
         : undefined,
     };
 
