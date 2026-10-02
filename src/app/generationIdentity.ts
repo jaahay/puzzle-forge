@@ -1,11 +1,13 @@
 import type {
   GeneratedPuzzle,
+  JigsawCutStyle,
   PuzzleDifficulty,
   PuzzleId,
   SolitaireVariation,
   SudokuVariation,
 } from "../catalog/types";
 import { isImageBackedPuzzleId } from "../games/imageAssets";
+import { normalizeJigsawCutStyle } from "../games/jigsaw/cutStyle";
 import { normalizeSolitaireVariation, solitaireVariationsEqual } from "../games/solitaire/variation";
 import { normalizeSudokuVariation } from "../games/sudoku/variation";
 import { puzzleProvenanceMatches, type PuzzleProvenance } from "./puzzleProvenance";
@@ -18,6 +20,7 @@ export type GenerationRuntimeSettings = {
   requireUniqueSolution: boolean;
   sudokuVariation: SudokuVariation;
   solitaireVariation: SolitaireVariation;
+  jigsawCutStyle: JigsawCutStyle;
 };
 
 export type GenerationIdentity = GenerationRuntimeSettings & {
@@ -43,6 +46,10 @@ export const getGeneratedPuzzleRuntimeSettings = (
     puzzle.kind === "cards"
       ? normalizeSolitaireVariation(puzzle.solitaireVariation)
       : fallback.solitaireVariation,
+  jigsawCutStyle:
+    puzzle.puzzleId === "jigsaw"
+      ? normalizeJigsawCutStyle(puzzle.cutStyle)
+      : fallback.jigsawCutStyle,
 });
 
 export const generatedPuzzleMatchesIdentity = (
@@ -90,6 +97,17 @@ export const generatedPuzzleMatchesIdentity = (
       ))
   ) {
     return false;
+  }
+
+  if (puzzle.puzzleId === "jigsaw") {
+    return (
+      puzzle.kind === "tiles" &&
+      puzzle.width === identity.width &&
+      puzzle.height === identity.height &&
+      puzzle.asset.id === identity.imageId &&
+      normalizeJigsawCutStyle(puzzle.cutStyle) ===
+        normalizeJigsawCutStyle(identity.jigsawCutStyle)
+    );
   }
 
   if (isImageBackedPuzzleId(puzzle.puzzleId)) {
