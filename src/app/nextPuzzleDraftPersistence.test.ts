@@ -28,6 +28,7 @@ describe("persisted next-puzzle preferences", () => {
       height: 5,
       imageId: "great-wave",
       jigsawSizeSelection: "Custom" as const,
+      jigsawCutStyle: "unconventional" as const,
     };
     const drafts = parseNextPuzzleDraftCache({
       schemaVersion: 1,
@@ -41,7 +42,13 @@ describe("persisted next-puzzle preferences", () => {
     const drafts = parseNextPuzzleDraftCache({
       schemaVersion: 1,
       drafts: {
-        jigsaw: { ...zeroKillerDraft, width: 6, height: 5, imageId: "great-wave" },
+        jigsaw: {
+          ...zeroKillerDraft,
+          width: 6,
+          height: 5,
+          imageId: "great-wave",
+          jigsawCutStyle: "traditional",
+        },
       },
     });
 
@@ -58,6 +65,25 @@ describe("persisted next-puzzle preferences", () => {
           height: 5,
           imageId: "great-wave",
           jigsawSizeSelection: "Huge",
+          jigsawCutStyle: "traditional",
+        },
+      },
+    });
+
+    expect(drafts).toEqual({});
+  });
+
+  it("rejects missing or unknown Jigsaw cut style", () => {
+    const drafts = parseNextPuzzleDraftCache({
+      schemaVersion: 1,
+      drafts: {
+        jigsaw: {
+          ...zeroKillerDraft,
+          width: 6,
+          height: 5,
+          imageId: "great-wave",
+          jigsawSizeSelection: "Custom",
+          jigsawCutStyle: "expressive",
         },
       },
     });
@@ -69,7 +95,14 @@ describe("persisted next-puzzle preferences", () => {
     const drafts = parseNextPuzzleDraftCache({
       schemaVersion: 1,
       drafts: {
-        jigsaw: { ...zeroKillerDraft, width: 6, height: 5, imageId: "not-an-asset" },
+        jigsaw: {
+          ...zeroKillerDraft,
+          width: 6,
+          height: 5,
+          imageId: "not-an-asset",
+          jigsawSizeSelection: "Custom",
+          jigsawCutStyle: "traditional",
+        },
         sudoku: { ...zeroKillerDraft, imageId: "great-wave" },
       },
     });
