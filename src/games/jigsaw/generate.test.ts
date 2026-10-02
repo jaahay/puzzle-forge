@@ -11,10 +11,7 @@ import {
   defaultJigsawCutStyle,
   deriveJigsawBaselinePalette,
 } from "./cutStyle";
-import {
-  jigsawConnectorGrammarCatalogRevision,
-  jigsawConnectorGrammarIds,
-} from "./connectorGrammar";
+import { jigsawConnectorGrammarIds } from "./connectorGrammar";
 import { generateJigsaw } from "./generate";
 import { defaultJigsawImageAsset } from "./imageAssets";
 
@@ -63,17 +60,14 @@ describe("generateJigsaw", () => {
     expect(puzzle.asset.kind).toBe("image");
     expect(puzzle.edgeModel.cutStyle).toBe(defaultJigsawCutStyle);
     expect(puzzle.edgeModel).toEqual({
-      catalogRevision: jigsawConnectorGrammarCatalogRevision,
       cutStyle: defaultJigsawCutStyle,
       baselineGrammarIds: deriveJigsawBaselinePalette(
         defaultJigsawCutStyle,
-        `jigsaw:phase-one-seed:4x3:${defaultJigsawImageAsset.id}:edges@${jigsawConnectorGrammarCatalogRevision}:${defaultJigsawCutStyle}`,
+        `jigsaw:phase-one-seed:4x3:${defaultJigsawImageAsset.id}:edges:${defaultJigsawCutStyle}`,
       ),
     });
     expect(puzzle.id).toContain(defaultJigsawImageAsset.id);
-    expect(puzzle.id).toContain(
-      `edges@${jigsawConnectorGrammarCatalogRevision}:${defaultJigsawCutStyle}`,
-    );
+    expect(puzzle.id).toContain(`edges:${defaultJigsawCutStyle}`);
   });
 
   it("makes cut style part of deterministic puzzle identity", () => {
@@ -334,7 +328,7 @@ describe("generateJigsaw", () => {
       asset: puzzle.asset,
       edgeModel: {
         ...puzzle.edgeModel,
-        catalogRevision: puzzle.edgeModel.catalogRevision + 1,
+        baselineGrammarIds: [...puzzle.edgeModel.baselineGrammarIds].reverse(),
       },
       notes: puzzle.notes,
     });
