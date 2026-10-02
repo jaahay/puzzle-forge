@@ -425,7 +425,7 @@ Sharing this machinery is desirable. It provides one safety model without forcin
 
 ## Baseline grammar composition
 
-Ordinary interior seams are now composed from three structural programs:
+Ordinary interior seams are composed from three programs:
 
 ```text
 seam
@@ -434,51 +434,104 @@ seam
  > departure: BaselineGrammar
 ```
 
-Approach and departure are roles, not separate grammar systems. Both select from the same baseline catalog, and both receive independent seeded derivations from the shared seam seed.
+Approach and departure are roles, not separate grammar systems. Both use the same baseline language and receive independent seeded derivations from the shared seam seed.
 
-The current baseline productions are:
+### Baseline language
 
-- **Straight** — `straight`
-- **Bow** — `bow`
-- **Inflection** — `sweep > cross-baseline > counter-sweep`
-- **Angled course** — `ramp > course > return`
-- **Dogleg** — `depart-angle > bend > counter-bend > return-angle`
-- **Wave** — `crest > trough > crest`
-- **Stepped course** — `step > run > step > run > step`
+BaselineGrammar is deliberately hierarchical:
 
-Straight is the identity case for the non-connector span: it does not create a straight connector or remove the interlocking event. The connector remains a ConnectorGrammar program between independently derived approach and departure roles.
+```text
+irreducible primitives
+        ↓
+combinators
+        ↓
+canonical productions
+        ↓
+named BaselineGrammar families
+        ↓
+approach / departure realization
+        ↓
+SeamProgram
+```
 
-The catalog is intended to be representative of inherited jigsaw cut language without becoming an imitation catalog. Straight and Bow form the quiet center; Inflection, Angled course, and Dogleg extend familiar irregular-cut ideas; Wave and Stepped course push the same vocabulary farther into intentionally authored geometry. These are not separate type systems or mode-specific catalogs.
+The irreducible primitive vocabulary is intentionally small:
+
+- **identity** — no deformation of the nominal baseline;
+- **sweep** — smooth progression through changing normal displacement;
+- **cross** — a topological crossing of the nominal baseline;
+- **course** — progression while holding an offset course;
+- **turn** — an angular heading change.
+
+The production language composes those primitives with:
+
+- **sequence** — ordered composition;
+- **repeat** — bounded repetition of a sub-production;
+- **oppose** — use the same sub-production on the opposite normal side;
+- **mirror** — use the same structural gesture in reflected form.
+
+These operators preserve the primitive vocabulary rather than minting new family-specific events. Rendering details such as smooth interpolation, diagonal travel, or orthogonal stepping remain realization concerns unless they introduce genuinely different structure.
+
+### Canonical baseline productions
+
+The current named families are canonical sentences in that language:
+
+- **Straight** — `identity`
+- **Bow** — `sweep > mirror(sweep)`
+- **Inflection** — `sweep > cross > oppose(mirror(sweep))`
+- **Angled course** — `turn > course > mirror(turn)`
+- **Dogleg** — `repeat(turn){2} > mirror(repeat(turn){2})`
+- **Wave** — `sweep > cross > oppose(sweep) > cross > sweep`
+- **Stepped course** — `repeat(turn > course){2} > mirror(turn)`
+
+Straight is the identity case for the non-connector span. It does not create a straight connector or remove the interlocking event; ConnectorGrammar still owns the actual interlock.
+
+The important distinction is that these seven names are not the alphabet. They are recognizable canonical productions built from a smaller reusable alphabet. A future meta-grammar can therefore compose new candidate productions without depending on the historical family names, while named families can still serve as useful higher-level nonterminals when appropriate.
+
+The current catalog also exercises the reusable vocabulary rather than introducing one-off primitives: every non-identity primitive appears in multiple canonical families. Tests additionally construct a valid production that is not one of the seven named families, proving that the composition machinery is not closed over the current catalog.
 
 ### Baseline graphical atlas
 
-The atlas below renders representative and seeded approach-role specimens from the baseline grammar definitions using the production corner-safety envelope.
+The atlas below renders representative and seeded approach-role specimens from the canonical families using the production corner-safety envelope.
 
 ![High-fidelity Jigsaw baseline grammar atlas](./assets/jigsaw-baseline-grammar-atlas.svg)
 
-The rows are ordered as a legible continuum rather than a ranking or mode boundary. Straight is the quiet identity case; Bow introduces one smooth excursion; Inflection crosses once into an opposed sweep; Angled course introduces one offset linear course; Dogleg adds heading changes without orthogonal steps; Wave repeats alternating smooth excursions; Stepped course changes level through orthogonal runs.
+The rows remain useful as a perceptual continuum from quiet to expressive, but that ordering is not encoded into BaselineGrammar semantics. Straight is the quiet identity case; Bow introduces smooth displacement; Inflection adds a crossing; Angled course introduces an offset course; Dogleg compounds angular turns; Wave composes multiple sweeps and crossings; Stepped course realizes repeated turn/course structure orthogonally.
 
 [Open the baseline atlas directly](./assets/jigsaw-baseline-grammar-atlas.svg)
 
-Baseline geometry is deliberately subordinate to the connector event. Straight contributes no displacement; the other grammars remain shallow enough to shape the course from the corner to the connector and back without becoming a second interlock vocabulary.
+### Grammar versus generation policy
 
-The default composition policy is intentionally familiar-first rather than uniform. Straight is weighted most heavily, followed by Bow; Inflection, Angled course, and Dogleg remain regular possibilities; Wave and Stepped course are uncommon but fully reachable. The current relative weights are `3 / 2 / 1.2 / 1.1 / 0.9 / 0.45 / 0.3` in that catalog order. This is a default generation policy, not a semantic classification of the grammars and not the future Traditional / Unconventional control.
+BaselineGrammar defines what can be expressed and how canonical productions are realized safely. It does **not** decide which productions should feel traditional, adventurous, common, or rare.
 
-The composition boundary is `JigsawSeamProgram` in `src/games/jigsaw/seamProgram.ts`. Connector programs continue to derive exactly through ConnectorGrammar; the seam program adds independently seeded baseline programs around that unchanged connector component.
+The grammar-layer selector is intentionally neutral across the current catalog. Product-level palette admission, weighting, parameter restraint, and coherent puzzle personality belong to #213, where Traditional / Unconventional behavior can operate over both BaselineGrammar and ConnectorGrammar without creating parallel geometry systems.
 
-Placement remains connector-led. The connector first receives its existing seeded width, depth, lean, handedness, and legal center placement. The approach and departure baselines are then mapped into the actual remaining spans. Baseline amplitude attenuates with short spans and is additionally constrained by a corner wedge whose permitted normal depth grows with distance from the true piece corner. This keeps adjacent edges out of one another's corner neighborhoods without globally shrinking connectors or adding seed-specific exceptions.
+This separation is intentional:
 
-Rendering remains compositional as well:
+```text
+BaselineGrammar + ConnectorGrammar
+            ↓
+     generation policy (#213)
+            ↓
+       seeded SeamProgram
+            ↓
+ shared realization / polarity / safety
+```
 
-- each baseline grammar declares smooth or angular rendering independently;
+The composition boundary remains `JigsawSeamProgram` in `src/games/jigsaw/seamProgram.ts`. Connector programs continue to derive through ConnectorGrammar; the seam program adds independently seeded baseline programs around that unchanged connector component.
+
+Placement remains connector-led. The connector first receives its seeded width, depth, lean, handedness, and legal center placement. Approach and departure baselines are then mapped into the actual remaining spans. Baseline amplitude attenuates with short spans and is additionally constrained by a corner wedge whose permitted normal depth grows with distance from the true piece corner. This keeps adjacent edges out of one another's corner neighborhoods without globally shrinking connectors or adding seed-specific exceptions.
+
+Rendering remains compositional:
+
+- each baseline family declares smooth or angular realization independently;
 - connector rendering remains owned by ConnectorGrammar;
 - each composed part enters and leaves on the nominal baseline;
 - smooth parts use horizontal endpoint tangents so adjoining parts meet without a cusp;
 - polarity, reciprocal orientation, bounds sampling, and whole-piece validation remain shared downstream machinery.
 
-A smooth baseline may therefore surround an angular connector, or vice versa. “Angular connector” no longer means “the entire seam contains no curves.”
+A smooth baseline may therefore surround an angular connector, or vice versa.
 
-As with connector grammars, baseline grammar identities must represent genuinely different structural productions. Cosmetic parameter presets should not acquire separate names merely to increase catalog count.
+As with connector grammars, named baseline families must represent genuinely different canonical productions. Cosmetic parameter presets should not acquire separate names merely to increase catalog count.
 
 ## Safety invariants
 
