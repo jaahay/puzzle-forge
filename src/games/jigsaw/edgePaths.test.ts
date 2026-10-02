@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type {
   JigsawBoundaryEdge,
+  JigsawCutStyle,
+  JigsawEdgeModel,
   JigsawEdgeProfileId,
   JigsawEdgeSide,
   JigsawInteriorEdge,
@@ -10,7 +12,11 @@ import {
   getJigsawBaselineGrammarDefinition,
   jigsawBaselineGrammarIds,
 } from "./baselineGrammar";
-import { jigsawEdgeProfileIds } from "./edgeProfiles";
+import { deriveJigsawBaselinePalette } from "./cutStyle";
+import {
+  jigsawEdgeProfileCatalogRevision,
+  jigsawEdgeProfileIds,
+} from "./edgeProfiles";
 import { deriveJigsawSeamProgram } from "./seamProgram";
 import { generateJigsaw } from "./generate";
 import { defaultJigsawImageAsset } from "./imageAssets";
@@ -75,6 +81,19 @@ const makeSeedSweep = (count: number) => {
 
 const broadSeamSeedOffsets = makeSeedSweep(256);
 const broadPieceSeedOffsets = makeSeedSweep(64);
+
+const makeEdgeModel = (
+  cutStyle: JigsawCutStyle = "unconventional",
+): JigsawEdgeModel => ({
+  catalogRevision: jigsawEdgeProfileCatalogRevision,
+  profileIds: [...jigsawEdgeProfileIds],
+  cutStyle,
+  baselineGrammarIds: [
+    ...deriveJigsawBaselinePalette(cutStyle, `edge-path-test:${cutStyle}`),
+  ],
+});
+
+const expressiveEdgeModel = makeEdgeModel("unconventional");
 
 const expectPointsToMatch = (
   first: Array<{ x: number; y: number }>,
@@ -160,19 +179,19 @@ const expectPointsSafe = (
 
 describe("Jigsaw edge paths", () => {
   it("keeps all boundary edges flat", () => {
-    expect(getJigsawEdgePath(makeBoundaryEdge("top"))).toBe("M 0 0 L 100 0");
-    expect(getJigsawEdgePath(makeBoundaryEdge("right"))).toBe("M 100 0 L 100 100");
-    expect(getJigsawEdgePath(makeBoundaryEdge("bottom"))).toBe("M 100 100 L 0 100");
-    expect(getJigsawEdgePath(makeBoundaryEdge("left"))).toBe("M 0 100 L 0 0");
+    expect(getJigsawEdgePath(makeBoundaryEdge("top"), expressiveEdgeModel)).toBe("M 0 0 L 100 0");
+    expect(getJigsawEdgePath(makeBoundaryEdge("right"), expressiveEdgeModel)).toBe("M 100 0 L 100 100");
+    expect(getJigsawEdgePath(makeBoundaryEdge("bottom"), expressiveEdgeModel)).toBe("M 100 100 L 0 100");
+    expect(getJigsawEdgePath(makeBoundaryEdge("left"), expressiveEdgeModel)).toBe("M 0 100 L 0 0");
   });
 
   it("is deterministic while giving every profile a distinct silhouette", () => {
     const paths = jigsawEdgeProfileIds.map((profileId) =>
-      getJigsawEdgePath(makeInteriorEdge({ side: "top", profileId })),
+      getJigsawEdgePath(makeInteriorEdge({ side: "top", profileId }), expressiveEdgeModel),
     );
 
     expect(new Set(paths).size).toBe(jigsawEdgeProfileIds.length);
-    expect(paths[0]).toBe(getJigsawEdgePath(makeInteriorEdge({ side: "top" })));
+    expect(paths[0]).toBe(getJigsawEdgePath(makeInteriorEdge({ side: "top" }), expressiveEdgeModel));
     paths.forEach((path) => {
       expect(path.startsWith("M ")).toBe(true);
       expect(path).not.toMatch(/NaN|Infinity/);
@@ -194,13 +213,16 @@ describe("Jigsaw edge paths", () => {
     ];
 
     for (const profileId of organicFamilies) {
-      expect(getJigsawEdgePath(makeInteriorEdge({ side: "top", profileId }))).toContain(" C ");
+      expect(getJigsawEdgePath(makeInteriorEdge({ side: "top", profileId }), expressiveEdgeModel)).toContain(" C ");
     }
 
     for (const profileId of angularFamilies) {
       const fullyAngularSeed = Array.from({ length: 4_096 }, (_, seedOffset) => seedOffset).find(
         (seedOffset) => {
-          const seam = deriveJigsawSeamProgram(profileId, seedOffset);
+          const seam = deriveJigsawSeamProgram(profileId, seedOffset, {
+            cutStyle: expressiveEdgeModel.cutStyle,
+            baselineGrammarIds: expressiveEdgeModel.baselineGrammarIds,
+          });
           return (
             getJigsawBaselineGrammarDefinition(
               seam.approach.baselineGrammarId,
@@ -253,7 +275,7 @@ describe("Jigsaw edge paths", () => {
   it("changes materially within each family when the shared seed offset changes", () => {
     for (const profileId of jigsawEdgeProfileIds) {
       const paths = Array.from({ length: 8 }, (_, seedOffset) =>
-        getJigsawEdgePath(makeInteriorEdge({ side: "top", profileId, seedOffset })),
+        getJigsawEdgePath(makeInteriorEdge({ side: "top", profileId, seedOffset }), expressiveEdgeModel),
       );
       expect(new Set(paths).size).toBeGreaterThanOrEqual(6);
     }
@@ -319,7 +341,7 @@ describe("Jigsaw edge paths", () => {
       for (const side of sides) {
         for (const polarity of polarities) {
           for (const seedOffset of [1, 17, 991, 123_456, 999_999]) {
-            const points = getJigsawEdgePoints(makeInteriorEdge({ side, profileId, polarity, seedOffset }));
+            const points = getJigsawEdgePoints(makeInteriorEdge({ side, profileId, polarity, seedOffset }), expressiveEdgeModel);
 
             for (const point of points) {
               expect(point.x).toBeGreaterThanOrEqual(-jigsawEdgeMaximumDepth);
@@ -342,7 +364,10 @@ describe("Jigsaw edge paths", () => {
       const departureGrammarIds = new Set<string>();
 
       for (const seedOffset of broadSeamSeedOffsets) {
-        const seam = deriveJigsawSeamProgram(profileId, seedOffset);
+        const seam = deriveJigsawSeamProgram(profileId, seedOffset, {
+            cutStyle: expressiveEdgeModel.cutStyle,
+            baselineGrammarIds: expressiveEdgeModel.baselineGrammarIds,
+          });
         approachGrammarIds.add(seam.approach.baselineGrammarId);
         departureGrammarIds.add(seam.departure.baselineGrammarId);
         baselinePairs.add(
@@ -388,8 +413,8 @@ describe("Jigsaw edge paths", () => {
 
   it("maps reciprocal right and left edges onto the same world-space seam for every family", () => {
     for (const profileId of jigsawEdgeProfileIds) {
-      const right = getJigsawEdgePoints(makeInteriorEdge({ side: "right", profileId, polarity: "tab" }));
-      const left = getJigsawEdgePoints(makeInteriorEdge({ side: "left", profileId, polarity: "blank" }))
+      const right = getJigsawEdgePoints(makeInteriorEdge({ side: "right", profileId, polarity: "tab" }), expressiveEdgeModel);
+      const left = getJigsawEdgePoints(makeInteriorEdge({ side: "left", profileId, polarity: "blank" }), expressiveEdgeModel)
         .map((point) => ({ x: point.x + 100, y: point.y }))
         .reverse();
 
@@ -399,8 +424,8 @@ describe("Jigsaw edge paths", () => {
 
   it("maps reciprocal bottom and top edges onto the same world-space seam for every family", () => {
     for (const profileId of jigsawEdgeProfileIds) {
-      const bottom = getJigsawEdgePoints(makeInteriorEdge({ side: "bottom", profileId, polarity: "tab" }));
-      const top = getJigsawEdgePoints(makeInteriorEdge({ side: "top", profileId, polarity: "blank" }))
+      const bottom = getJigsawEdgePoints(makeInteriorEdge({ side: "bottom", profileId, polarity: "tab" }), expressiveEdgeModel);
+      const top = getJigsawEdgePoints(makeInteriorEdge({ side: "top", profileId, polarity: "blank" }), expressiveEdgeModel)
         .map((point) => ({ x: point.x, y: point.y + 100 }))
         .reverse();
 
@@ -409,8 +434,8 @@ describe("Jigsaw edge paths", () => {
   });
 
   it("draws tabs outside and blanks inside the owning square", () => {
-    const tab = getJigsawEdgePoints(makeInteriorEdge({ side: "right", polarity: "tab" }));
-    const blank = getJigsawEdgePoints(makeInteriorEdge({ side: "right", polarity: "blank" }));
+    const tab = getJigsawEdgePoints(makeInteriorEdge({ side: "right", polarity: "tab" }), expressiveEdgeModel);
+    const blank = getJigsawEdgePoints(makeInteriorEdge({ side: "right", polarity: "blank" }), expressiveEdgeModel);
 
     expect(Math.max(...tab.map((point) => point.x))).toBeGreaterThan(100);
     expect(Math.min(...blank.map((point) => point.x))).toBeLessThan(100);
@@ -435,7 +460,7 @@ describe("Jigsaw edge paths", () => {
           ]);
 
           expectNoSelfIntersection(
-            getJigsawPieceOutlinePoints(piece),
+            getJigsawPieceOutlinePoints(piece, expressiveEdgeModel),
             `${profileId} seed ${seedOffset} polarities ${polarities.join("/")}`,
           );
         }
@@ -460,7 +485,7 @@ describe("Jigsaw edge paths", () => {
           ]);
 
           expectNoSelfIntersection(
-            getJigsawPieceOutlinePoints(piece),
+            getJigsawPieceOutlinePoints(piece, expressiveEdgeModel),
             `${profileId} broad piece seed ${seedOffset} polarities ${polarities.join("/")}`,
           );
         }
@@ -494,8 +519,8 @@ describe("Jigsaw edge paths", () => {
       makeInteriorEdge({ side: "bottom", polarity: "blank", seedOffset: 20 }),
       makeBoundaryEdge("left"),
     ]);
-    const points = getJigsawPieceOutlinePoints(piece);
-    const path = getJigsawPieceOutlinePath(piece);
+    const points = getJigsawPieceOutlinePoints(piece, expressiveEdgeModel);
+    const path = getJigsawPieceOutlinePath(piece, expressiveEdgeModel);
 
     expect(points[0]).toEqual({ x: 0, y: 0 });
     expect(points.at(-1)).toEqual({ x: 0, y: 0 });
