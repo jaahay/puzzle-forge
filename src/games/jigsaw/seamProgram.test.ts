@@ -4,7 +4,7 @@ import { deriveJigsawConnectorProgram } from "./connectorGrammar";
 import { jigsawEdgeProfileIds } from "./edgeProfiles";
 import {
   deriveJigsawSeamProgram,
-  selectJigsawBaselineGrammar,
+  sampleJigsawBaselineGrammarUniformly,
 } from "./seamProgram";
 
 describe("Jigsaw seam program", () => {
@@ -25,19 +25,19 @@ describe("Jigsaw seam program", () => {
     }
   });
 
-  it("keeps grammar-layer catalog selection policy-neutral", () => {
+  it("samples the grammar-layer catalog uniformly", () => {
     for (const [index, grammarId] of jigsawBaselineGrammarIds.entries()) {
       expect(
-        selectJigsawBaselineGrammar(
+        sampleJigsawBaselineGrammarUniformly(
           (index + 0.5) / jigsawBaselineGrammarIds.length,
         ),
       ).toBe(grammarId);
     }
 
-    expect(selectJigsawBaselineGrammar(0)).toBe(
+    expect(sampleJigsawBaselineGrammarUniformly(0)).toBe(
       jigsawBaselineGrammarIds[0],
     );
-    expect(selectJigsawBaselineGrammar(1)).toBe(
+    expect(sampleJigsawBaselineGrammarUniformly(1)).toBe(
       jigsawBaselineGrammarIds[jigsawBaselineGrammarIds.length - 1],
     );
   });
