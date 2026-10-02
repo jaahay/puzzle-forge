@@ -122,6 +122,43 @@ describe("Jigsaw baseline production language", () => {
     );
   });
 
+  it("normalizes algebraically reducible production forms", () => {
+    const identity = baselinePrimitive("identity");
+    const sweep = baselinePrimitive("sweep");
+    const turn = baselinePrimitive("turn");
+
+    expect(
+      getJigsawBaselineProductionStructure(
+        baselineSequence(identity, sweep),
+      ),
+    ).toBe("sweep");
+    expect(
+      getJigsawBaselineProductionStructure(
+        baselineSequence(),
+      ),
+    ).toBe("identity");
+    expect(
+      getJigsawBaselineProductionStructure(
+        baselineRepeat(sweep, 1),
+      ),
+    ).toBe("sweep");
+    expect(
+      getJigsawBaselineProductionStructure(
+        baselineRepeat(baselineRepeat(turn, 2), 3),
+      ),
+    ).toBe("repeat(turn){6}");
+    expect(
+      getJigsawBaselineProductionStructure(
+        baselineOppose(baselineOppose(sweep)),
+      ),
+    ).toBe("sweep");
+    expect(
+      getJigsawBaselineProductionStructure(
+        baselineMirror(baselineMirror(sweep)),
+      ),
+    ).toBe("sweep");
+  });
+
   it("rejects non-positive or fractional repetition counts", () => {
     expect(() => baselineRepeat(baselinePrimitive("turn"), 0)).toThrow();
     expect(() => baselineRepeat(baselinePrimitive("turn"), -1)).toThrow();
