@@ -213,6 +213,26 @@ Generator and geometry tests cover:
 - complete four-edge piece outlines remain non-self-intersecting across broad seed and polarity coverage;
 - every interior edge has exactly one neighbor edge.
 
+### Baseline grammar seam composition
+
+Ordinary interior seams no longer assume that the geometry outside the connector event is permanently straight.
+
+The current canonical seam model is:
+
+```text
+approach: BaselineGrammar
+> connector: ConnectorGrammar
+> departure: BaselineGrammar
+```
+
+Approach and departure share one baseline grammar catalog but select and realize their programs independently from the shared seam seed. Current baseline productions include Bow, Inflection, Wave, Angled course, and Stepped course.
+
+Connector identity remains separate from baseline identity. A connector grammar still determines the interlocking event; baseline grammars determine the structural course of the non-connector spans. Common polarity, reciprocal orientation, rendering, sampling, bounds, and whole-piece safety remain downstream concerns.
+
+The composed seam, not each part in isolation, is the validation boundary. Broad deterministic sweeps cover connector grammars across the complete approach/departure baseline pair space, reciprocal neighbor geometry, seam bounds/self-intersection, and whole-piece safety.
+
+No baseline choice is persisted separately. It is deterministically derived from the existing shared interior-edge seed, consistent with the project's explicit pre-versioning policy.
+
 ### Follow-on geometry directions
 
 Two separate future directions are intentionally outside the ordinary connector-grammar work:
