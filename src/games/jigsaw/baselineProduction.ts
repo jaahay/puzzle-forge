@@ -85,25 +85,6 @@ export const baselineMirror = (
   term,
 });
 
-export const formatJigsawBaselineProduction = (
-  production: JigsawBaselineProduction,
-): string => {
-  switch (production.kind) {
-    case "primitive":
-      return production.primitive;
-    case "sequence":
-      return production.terms
-        .map((term) => formatJigsawBaselineProduction(term))
-        .join(" > ");
-    case "repeat":
-      return `repeat(${formatJigsawBaselineProduction(production.term)}){${production.count}}`;
-    case "oppose":
-      return `oppose(${formatJigsawBaselineProduction(production.term)})`;
-    case "mirror":
-      return `mirror(${formatJigsawBaselineProduction(production.term)})`;
-  }
-};
-
 export const expandJigsawBaselineProduction = (
   production: JigsawBaselineProduction,
 ): readonly JigsawBaselinePrimitive[] => {
