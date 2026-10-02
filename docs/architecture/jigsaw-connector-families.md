@@ -10,7 +10,6 @@ The implementation lives in:
 - `src/games/jigsaw/baselineGrammar.ts` — structural baseline grammar definitions, seeded program derivation, and normalized realization;
 - `src/games/jigsaw/seamProgram.ts` — seeded approach / connector / departure composition;
 - `src/games/jigsaw/cutStyle.ts` — Traditional / Unconventional palette admission, weighting, and puzzle-level baseline sub-palette policy;
-- `src/games/jigsaw/edgeProfiles.ts` — connector profile metadata and difficulty weighting, with product-style selection policy intentionally removed;
 - `src/games/jigsaw/edgePaths.ts` — shared placement, polarity, complementarity, curve rendering, orientation, and validation sampling.
 
 The current grammar catalog is deliberately small. **Eight strong grammars are preferable to fourteen labels that collapse into the same geometry.**
