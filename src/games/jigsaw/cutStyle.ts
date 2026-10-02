@@ -14,6 +14,9 @@ export const jigsawCutStyles = [
 
 export const defaultJigsawCutStyle: JigsawCutStyle = "traditional";
 
+export const isJigsawCutStyle = (value: unknown): value is JigsawCutStyle =>
+  value === "traditional" || value === "unconventional";
+
 export const jigsawCutStyleLabels = {
   traditional: "Traditional",
   unconventional: "Unconventional",
