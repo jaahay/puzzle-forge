@@ -8,7 +8,7 @@ import {
   sampleJigsawBaselineGrammarForCutStyle,
   selectJigsawConnectorGrammarForCutStyle,
 } from "./cutStyle";
-import { jigsawEdgeProfileIds } from "./edgeProfiles";
+import { jigsawConnectorGrammarIds } from "./connectorGrammar";
 
 describe("Jigsaw cut style", () => {
   it("is an intentional closed binary product axis", () => {
@@ -44,7 +44,7 @@ describe("Jigsaw cut style", () => {
       ),
     );
 
-    expect(selected).toEqual(new Set(jigsawEdgeProfileIds));
+    expect(selected).toEqual(new Set(jigsawConnectorGrammarIds));
   });
 
   it("derives a restrained, coherent Traditional baseline palette", () => {
