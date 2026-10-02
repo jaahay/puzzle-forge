@@ -25,7 +25,25 @@ describe("Jigsaw baseline grammar", () => {
       const variants = Array.from({ length: 16 }, (_, seedOffset) =>
         JSON.stringify(deriveJigsawBaselineProgram(grammarId, seedOffset)),
       );
-      expect(new Set(variants).size).toBeGreaterThan(8);
+
+      if (grammarId === "straight") {
+        expect(new Set(variants).size).toBe(1);
+      } else {
+        expect(new Set(variants).size).toBeGreaterThan(8);
+      }
+    }
+  });
+
+  it("keeps straight as the exact identity baseline for every seed", () => {
+    for (const seedOffset of [0, 1, 17, 991, 123_456, 999_999]) {
+      expect(
+        realizeJigsawBaselineProgram(
+          deriveJigsawBaselineProgram("straight", seedOffset),
+        ),
+      ).toEqual([
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+      ]);
     }
   });
 
@@ -73,9 +91,38 @@ describe("Jigsaw baseline grammar", () => {
         expect(program.depth).toBeGreaterThanOrEqual(definition.depth[0]);
         expect(program.depth).toBeLessThanOrEqual(definition.depth[1]);
         expect(maximumDepth).toBeLessThanOrEqual(definition.depth[1]);
-        expect(maximumDepth).toBeGreaterThan(definition.depth[0] * 0.5);
+        if (grammarId === "straight") {
+          expect(maximumDepth).toBe(0);
+        } else {
+          expect(maximumDepth).toBeGreaterThan(definition.depth[0] * 0.5);
+        }
       }
     }
+  });
+
+  it("keeps dogleg structurally between an offset course and a stepped course", () => {
+    const seedOffset = 123_456;
+    const angled = realizeJigsawBaselineProgram(
+      deriveJigsawBaselineProgram("angled-course", seedOffset),
+    );
+    const dogleg = realizeJigsawBaselineProgram(
+      deriveJigsawBaselineProgram("dogleg", seedOffset),
+    );
+    const stepped = realizeJigsawBaselineProgram(
+      deriveJigsawBaselineProgram("stepped-course", seedOffset),
+    );
+
+    const maximumCount = (points: readonly { y: number }[]) => {
+      const maximum = Math.max(...points.map((point) => Math.abs(point.y)));
+      return points.filter((point) => Math.abs(point.y) === maximum).length;
+    };
+    const verticalSegmentCount = (points: readonly { x: number }[]) =>
+      points.slice(1).filter((point, index) => point.x === points[index].x).length;
+
+    expect(maximumCount(angled)).toBe(2);
+    expect(maximumCount(dogleg)).toBe(1);
+    expect(verticalSegmentCount(dogleg)).toBe(0);
+    expect(verticalSegmentCount(stepped)).toBeGreaterThan(0);
   });
 
   it("preserves the defining topology of crossing and non-crossing productions", () => {
