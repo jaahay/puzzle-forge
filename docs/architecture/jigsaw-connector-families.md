@@ -420,6 +420,45 @@ After that, all grammars intentionally share:
 
 Sharing this machinery is desirable. It provides one safety model without forcing every connector through one structural formula.
 
+## Baseline grammar composition
+
+Ordinary interior seams are now composed from three structural programs:
+
+```text
+seam
+:= approach: BaselineGrammar
+ > connector: ConnectorGrammar
+ > departure: BaselineGrammar
+```
+
+Approach and departure are roles, not separate grammar systems. Both select from the same baseline catalog, and both receive independent seeded derivations from the shared seam seed.
+
+The current baseline productions are:
+
+- **Bow** — `bow`
+- **Inflection** — `sweep > cross-baseline > counter-sweep`
+- **Wave** — `crest > trough > crest`
+- **Angled course** — `ramp > course > return`
+- **Stepped course** — `step > run > step > run > step`
+
+Baseline geometry is deliberately shallower than the connector event. It shapes the course from the corner to the connector and back without becoming a second interlock vocabulary.
+
+The composition boundary is `JigsawSeamProgram` in `src/games/jigsaw/seamProgram.ts`. Connector programs continue to derive exactly through ConnectorGrammar; the seam program adds independently seeded baseline programs around that unchanged connector component.
+
+Placement remains connector-led. The connector first receives its existing seeded width, depth, lean, handedness, and legal center placement. The approach and departure baselines are then mapped into the actual remaining spans. When a connector lands near a corner, baseline amplitude attenuates with the available span rather than globally shrinking the connector or introducing special-case placement branches.
+
+Rendering remains compositional as well:
+
+- each baseline grammar declares smooth or angular rendering independently;
+- connector rendering remains owned by ConnectorGrammar;
+- each composed part enters and leaves on the nominal baseline;
+- smooth parts use horizontal endpoint tangents so adjoining parts meet without a cusp;
+- polarity, reciprocal orientation, bounds sampling, and whole-piece validation remain shared downstream machinery.
+
+A smooth baseline may therefore surround an angular connector, or vice versa. “Angular connector” no longer means “the entire seam contains no curves.”
+
+As with connector grammars, baseline grammar identities must represent genuinely different structural productions. Cosmetic parameter presets should not acquire separate names merely to increase catalog count.
+
 ## Safety invariants
 
 Expressiveness remains subordinate to valid pieces.
