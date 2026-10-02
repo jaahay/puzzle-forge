@@ -70,6 +70,29 @@ describe("Daily resource semantics", () => {
     expect(parsed).toMatchObject({ ok: true, query: "" });
   });
 
+  it("round-trips Jigsaw cut style through the semantic Daily locator", () => {
+    const resolved = resolveDailyResource(
+      "jigsaw",
+      "2026-09-15",
+      "cut=unconventional",
+    );
+    expect(resolved.ok).toBe(true);
+    if (!resolved.ok) return;
+
+    expect(resolved.query).toBe("cut=unconventional");
+    expect(resolved.identity.jigsawCutStyle).toBe("unconventional");
+    expect(makeDailyResourceLocatorPath(resolved.identity))
+      .toBe("/jigsaw/daily/2026-09-15?cut=unconventional");
+
+    const traditional = resolveDailyResource(
+      "jigsaw",
+      "2026-09-15",
+      "cut=traditional",
+    );
+    expect(traditional.ok).toBe(true);
+    if (traditional.ok) expect(traditional.query).toBe("");
+  });
+
   it("round-trips material qualifiers for other Daily puzzle families", () => {
     const solitaire = resolveDailyResource(
       "klondike-solitaire",
@@ -104,5 +127,7 @@ describe("Daily resource semantics", () => {
     expect(resolveDailyResource("klondike-solitaire", "2026-09-15", "redeals=").ok).toBe(false);
     expect(resolveDailyResource("klondike-solitaire", "2026-09-15", "redeals=01").ok).toBe(false);
     expect(resolveDailyResource("jigsaw", "2026-09-15", "image=").ok).toBe(false);
+    expect(resolveDailyResource("jigsaw", "2026-09-15", "cut=expressive").ok).toBe(false);
+    expect(resolveDailyResource("tile-swap", "2026-09-15", "cut=unconventional").ok).toBe(false);
   });
 });
