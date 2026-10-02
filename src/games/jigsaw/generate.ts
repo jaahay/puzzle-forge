@@ -134,16 +134,16 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
   const imageIdentity = asset.id;
   const cutStyle = normalizeJigsawCutStyle(jigsawCutStyle);
   const edgeIdentity = `edges@${jigsawEdgeProfileCatalogRevision}:${cutStyle}`;
-  const baselineGrammarIds = deriveJigsawBaselinePalette(cutStyle, edgeIdentity);
+  const solvedIndexes = Array.from({ length: boundedWidth * boundedHeight }, (_, index) => index);
+  const shuffleSeed = `jigsaw:${normalizedSeed}:${boundedWidth}x${boundedHeight}:${imageIdentity}`;
+  const edgeSeed = `${shuffleSeed}:${edgeIdentity}`;
+  const baselineGrammarIds = deriveJigsawBaselinePalette(cutStyle, edgeSeed);
   const edgeModel = {
     catalogRevision: jigsawEdgeProfileCatalogRevision,
     profileIds: [...jigsawEdgeProfileIds],
     cutStyle,
     baselineGrammarIds: [...baselineGrammarIds],
   };
-  const solvedIndexes = Array.from({ length: boundedWidth * boundedHeight }, (_, index) => index);
-  const shuffleSeed = `jigsaw:${normalizedSeed}:${boundedWidth}x${boundedHeight}:${imageIdentity}`;
-  const edgeSeed = `${shuffleSeed}:${edgeIdentity}`;
   const profileRandom = createRandom(`${edgeSeed}:profile`);
   profileRandom();
   const profileId = selectJigsawConnectorGrammarForCutStyle(
