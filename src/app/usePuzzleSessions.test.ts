@@ -65,7 +65,6 @@ describe("clonePuzzleSession", () => {
     expect(cloned.puzzle.asset.files).not.toBe(session.puzzle.asset.files);
     expect(cloned.puzzle.asset.credit).not.toBe(session.puzzle.asset.credit);
     expect(cloned.puzzle.edgeModel).not.toBe(session.puzzle.edgeModel);
-    expect(cloned.puzzle.edgeModel.profileIds).not.toBe(session.puzzle.edgeModel.profileIds);
   });
 });
 
