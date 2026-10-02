@@ -5,7 +5,7 @@ import type {
 } from "../../catalog/types";
 import { createRandom } from "../shared";
 import { jigsawBaselineGrammarIds } from "./baselineGrammar";
-import { jigsawEdgeProfileIds } from "./edgeProfiles";
+import { jigsawConnectorGrammarIds } from "./connectorGrammar";
 
 export const jigsawCutStyles = [
   "traditional",
@@ -30,7 +30,6 @@ export const jigsawCutStyleDescriptions = {
 type WeightMap<T extends string> = Partial<Record<T, number>>;
 
 type JigsawCutStyleDefinition = {
-  id: JigsawCutStyle;
   connectorWeights: WeightMap<JigsawConnectorGrammarId>;
   baselineWeights: WeightMap<JigsawBaselineGrammarId>;
   requiredBaselineGrammarIds: readonly JigsawBaselineGrammarId[];
@@ -39,7 +38,6 @@ type JigsawCutStyleDefinition = {
 
 const jigsawCutStyleDefinitions = {
   traditional: {
-    id: "traditional",
     connectorWeights: {
       "classic-bulb": 4,
       "necked-head": 2,
@@ -54,7 +52,6 @@ const jigsawCutStyleDefinitions = {
     baselinePaletteSize: 3,
   },
   unconventional: {
-    id: "unconventional",
     connectorWeights: {
       "classic-bulb": 0.35,
       "necked-head": 0.6,
@@ -113,17 +110,17 @@ export const normalizeJigsawCutStyle = (
 ): JigsawCutStyle =>
   value === "unconventional" ? "unconventional" : defaultJigsawCutStyle;
 
-export const getJigsawCutStyleDefinition = (
+const getJigsawCutStyleDefinition = (
   cutStyle: JigsawCutStyle,
 ): JigsawCutStyleDefinition =>
-  jigsawCutStyleDefinitions[normalizeJigsawCutStyle(cutStyle)];
+  jigsawCutStyleDefinitions[cutStyle];
 
 export const selectJigsawConnectorGrammarForCutStyle = (
   cutStyle: JigsawCutStyle,
   randomUnit: number,
 ): JigsawConnectorGrammarId =>
   selectWeightedId(
-    jigsawEdgeProfileIds,
+    jigsawConnectorGrammarIds,
     getJigsawCutStyleDefinition(cutStyle).connectorWeights,
     randomUnit,
   );
