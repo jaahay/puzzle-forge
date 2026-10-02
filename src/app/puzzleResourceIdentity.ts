@@ -1,11 +1,17 @@
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type {
+  JigsawCutStyle,
   PuzzleDifficulty,
   PuzzleId,
   SolitaireVariation,
   SudokuVariation,
 } from "../catalog/types";
 import { getPuzzleImageAsset } from "../games/imageAssets";
+import {
+  defaultJigsawCutStyle,
+  jigsawCutStyles,
+  normalizeJigsawCutStyle,
+} from "../games/jigsaw/cutStyle";
 import { normalizeSeed } from "../games/shared";
 import { isDailyDateStamp } from "../games/shared/daily";
 import {
@@ -172,7 +178,15 @@ const pushPuzzlePayload = (bytes: number[], identity: GenerationIdentity) => {
     case "logic-grid":
       pushDimensions(bytes, identity);
       return;
-    case "jigsaw":
+    case "jigsaw": {
+      pushDimensions(bytes, identity);
+      pushText(bytes, getPuzzleImageAsset(identity.imageId, identity.puzzleId).id);
+      const cutStyle = normalizeJigsawCutStyle(identity.jigsawCutStyle);
+      const cutStyleIndex = jigsawCutStyles.indexOf(cutStyle);
+      if (cutStyleIndex < 0) throw new Error(`Unsupported Jigsaw cut style: ${cutStyle}`);
+      pushByte(bytes, cutStyleIndex);
+      return;
+    }
     case "tile-swap":
     case "sliding-puzzle": {
       pushDimensions(bytes, identity);
@@ -246,6 +260,7 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
     let requireUniqueSolution = true;
     let sudokuVariation: SudokuVariation = defaultSudokuVariation;
     let solitaireVariation: SolitaireVariation = defaultSolitaireVariation;
+    let jigsawCutStyle: JigsawCutStyle = defaultJigsawCutStyle;
     let imageId: string | undefined;
 
     switch (puzzleId) {
@@ -275,7 +290,15 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
         width = reader.readByte();
         height = reader.readByte();
         break;
-      case "jigsaw":
+      case "jigsaw": {
+        width = reader.readByte();
+        height = reader.readByte();
+        imageId = getPuzzleImageAsset(reader.readText(), puzzleId).id;
+        const decodedCutStyle = jigsawCutStyles[reader.readByte()];
+        if (!decodedCutStyle) return { ok: false, reason: "invalid-identity" };
+        jigsawCutStyle = decodedCutStyle;
+        break;
+      }
       case "tile-swap":
       case "sliding-puzzle":
         width = reader.readByte();
@@ -332,6 +355,7 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
       requireUniqueSolution,
       sudokuVariation,
       solitaireVariation,
+      jigsawCutStyle,
       ...(imageId ? { imageId } : {}),
       ...(provenance ? { provenance } : {}),
     };
