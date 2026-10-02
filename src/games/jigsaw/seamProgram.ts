@@ -1,4 +1,5 @@
 import type {
+  JigsawBaselineGrammarId,
   JigsawEdgeModel,
   JigsawEdgeProfileId,
 } from "../../catalog/types";
