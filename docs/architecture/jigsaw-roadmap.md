@@ -208,7 +208,7 @@ Generator and geometry tests cover:
 - each generated puzzle uses exactly one connector grammar while different puzzle seeds can select across the catalog;
 - each grammar has a distinct structural production;
 - bounded-repeat grammars can derive different event counts from different seeds;
-- organic grammars render with curves and intentionally angular grammars remain angular;
+- organic connector segments render with curves and intentionally angular connector segments remain angular, while baseline rendering is independently smooth or angular;
 - generated seam geometry remains finite, bounded, and non-self-intersecting across a broad deterministic seed sweep;
 - complete four-edge piece outlines remain non-self-intersecting across broad seed and polarity coverage;
 - every interior edge has exactly one neighbor edge.
