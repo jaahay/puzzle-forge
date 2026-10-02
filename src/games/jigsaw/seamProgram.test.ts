@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { jigsawBaselineGrammarIds } from "./baselineGrammar";
 import { deriveJigsawConnectorProgram } from "./connectorGrammar";
 import { jigsawEdgeProfileIds } from "./edgeProfiles";
-import { deriveJigsawSeamProgram } from "./seamProgram";
+import {
+  deriveJigsawSeamProgram,
+  jigsawDefaultBaselineSelectionWeights,
+  selectJigsawBaselineGrammar,
+} from "./seamProgram";
 
 describe("Jigsaw seam program", () => {
   it("is deterministic for a connector grammar and shared seam seed", () => {
@@ -21,8 +26,30 @@ describe("Jigsaw seam program", () => {
     }
   });
 
+  it("anchors the default distribution in familiar forms without hiding extended forms", () => {
+    expect(jigsawDefaultBaselineSelectionWeights.straight).toBeGreaterThan(
+      jigsawDefaultBaselineSelectionWeights.bow,
+    );
+    expect(jigsawDefaultBaselineSelectionWeights.bow).toBeGreaterThan(
+      jigsawDefaultBaselineSelectionWeights.inflection,
+    );
+    expect(jigsawDefaultBaselineSelectionWeights.dogleg).toBeGreaterThan(
+      jigsawDefaultBaselineSelectionWeights.wave,
+    );
+    expect(jigsawDefaultBaselineSelectionWeights.wave).toBeGreaterThan(
+      jigsawDefaultBaselineSelectionWeights["stepped-course"],
+    );
+
+    const selected = new Set(
+      Array.from({ length: 10_000 }, (_, index) =>
+        selectJigsawBaselineGrammar((index + 0.5) / 10_000),
+      ),
+    );
+    expect(selected).toEqual(new Set(jigsawBaselineGrammarIds));
+  });
+
   it("uses one baseline grammar vocabulary for both seam roles while selecting them independently", () => {
-    const rolePairs = Array.from({ length: 512 }, (_, seedOffset) => {
+    const rolePairs = Array.from({ length: 4_096 }, (_, seedOffset) => {
       const seam = deriveJigsawSeamProgram("classic-bulb", seedOffset);
       return [
         seam.approach.baselineGrammarId,
@@ -39,8 +66,8 @@ describe("Jigsaw seam program", () => {
 
     const approachIds = new Set(rolePairs.map(([approach]) => approach));
     const departureIds = new Set(rolePairs.map(([, departure]) => departure));
-    expect(approachIds.size).toBeGreaterThan(1);
-    expect(departureIds.size).toBeGreaterThan(1);
+    expect(approachIds).toEqual(new Set(jigsawBaselineGrammarIds));
+    expect(departureIds).toEqual(new Set(jigsawBaselineGrammarIds));
   });
 
   it("realizes approach and departure independently even when they select the same grammar", () => {
