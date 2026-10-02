@@ -14,9 +14,9 @@ import {
 } from "./baselineGrammar";
 import { deriveJigsawBaselinePalette } from "./cutStyle";
 import {
-  jigsawEdgeProfileCatalogRevision,
-  jigsawEdgeProfileIds,
-} from "./edgeProfiles";
+  jigsawConnectorGrammarCatalogRevision,
+  jigsawConnectorGrammarIds,
+} from "./connectorGrammar";
 import { deriveJigsawSeamProgram } from "./seamProgram";
 import { generateJigsaw } from "./generate";
 import { defaultJigsawImageAsset } from "./imageAssets";
@@ -85,8 +85,7 @@ const broadPieceSeedOffsets = makeSeedSweep(64);
 const makeEdgeModel = (
   cutStyle: JigsawCutStyle = "unconventional",
 ): JigsawEdgeModel => ({
-  catalogRevision: jigsawEdgeProfileCatalogRevision,
-  profileIds: [...jigsawEdgeProfileIds],
+  catalogRevision: jigsawConnectorGrammarCatalogRevision,
   cutStyle,
   baselineGrammarIds: [
     ...deriveJigsawBaselinePalette(cutStyle, `edge-path-test:${cutStyle}`),
@@ -186,11 +185,11 @@ describe("Jigsaw edge paths", () => {
   });
 
   it("is deterministic while giving every profile a distinct silhouette", () => {
-    const paths = jigsawEdgeProfileIds.map((profileId) =>
+    const paths = jigsawConnectorGrammarIds.map((profileId) =>
       getJigsawEdgePath(makeInteriorEdge({ side: "top", profileId }), expressiveEdgeModel),
     );
 
-    expect(new Set(paths).size).toBe(jigsawEdgeProfileIds.length);
+    expect(new Set(paths).size).toBe(jigsawConnectorGrammarIds.length);
     expect(paths[0]).toBe(getJigsawEdgePath(makeInteriorEdge({ side: "top" }), expressiveEdgeModel));
     paths.forEach((path) => {
       expect(path.startsWith("M ")).toBe(true);
@@ -278,7 +277,7 @@ describe("Jigsaw edge paths", () => {
   });
 
   it("changes materially within each family when the shared seed offset changes", () => {
-    for (const profileId of jigsawEdgeProfileIds) {
+    for (const profileId of jigsawConnectorGrammarIds) {
       const paths = Array.from({ length: 8 }, (_, seedOffset) =>
         getJigsawEdgePath(makeInteriorEdge({ side: "top", profileId, seedOffset }), expressiveEdgeModel),
       );
@@ -287,7 +286,7 @@ describe("Jigsaw edge paths", () => {
   });
 
   it("uses substantially more edge span while preserving a corner buffer", () => {
-    for (const profileId of jigsawEdgeProfileIds) {
+    for (const profileId of jigsawConnectorGrammarIds) {
       for (const seedOffset of [1, 17, 991, 123_456, 999_999]) {
         const connectorPoints = getJigsawCanonicalConnectorPoints(
           profileId,
@@ -319,7 +318,7 @@ describe("Jigsaw edge paths", () => {
   });
 
   it("keeps every connector family vertically substantial relative to its edge span", () => {
-    for (const profileId of jigsawEdgeProfileIds) {
+    for (const profileId of jigsawConnectorGrammarIds) {
       for (const seedOffset of [1, 17, 991, 123_456, 999_999]) {
         const points = getJigsawEdgePoints(
           makeInteriorEdge({ side: "top", profileId, polarity: "tab", seedOffset }),
@@ -343,7 +342,7 @@ describe("Jigsaw edge paths", () => {
     const sides: JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
     const polarities: JigsawInteriorEdge["polarity"][] = ["tab", "blank"];
 
-    for (const profileId of jigsawEdgeProfileIds) {
+    for (const profileId of jigsawConnectorGrammarIds) {
       for (const side of sides) {
         for (const polarity of polarities) {
           for (const seedOffset of [1, 17, 991, 123_456, 999_999]) {
@@ -367,7 +366,7 @@ describe("Jigsaw edge paths", () => {
     for (const cutStyle of ["traditional", "unconventional"] as const) {
       const edgeModel = makeEdgeModel(cutStyle);
 
-      for (const profileId of jigsawEdgeProfileIds) {
+      for (const profileId of jigsawConnectorGrammarIds) {
         const baselinePairs = new Set<string>();
         const approachGrammarIds = new Set<string>();
         const departureGrammarIds = new Set<string>();
@@ -432,7 +431,7 @@ describe("Jigsaw edge paths", () => {
   });
 
   it("maps reciprocal right and left edges onto the same world-space seam for every family", () => {
-    for (const profileId of jigsawEdgeProfileIds) {
+    for (const profileId of jigsawConnectorGrammarIds) {
       const right = getJigsawEdgePoints(makeInteriorEdge({ side: "right", profileId, polarity: "tab" }), expressiveEdgeModel);
       const left = getJigsawEdgePoints(makeInteriorEdge({ side: "left", profileId, polarity: "blank" }), expressiveEdgeModel)
         .map((point) => ({ x: point.x + 100, y: point.y }))
@@ -443,7 +442,7 @@ describe("Jigsaw edge paths", () => {
   });
 
   it("maps reciprocal bottom and top edges onto the same world-space seam for every family", () => {
-    for (const profileId of jigsawEdgeProfileIds) {
+    for (const profileId of jigsawConnectorGrammarIds) {
       const bottom = getJigsawEdgePoints(makeInteriorEdge({ side: "bottom", profileId, polarity: "tab" }), expressiveEdgeModel);
       const top = getJigsawEdgePoints(makeInteriorEdge({ side: "top", profileId, polarity: "blank" }), expressiveEdgeModel)
         .map((point) => ({ x: point.x, y: point.y + 100 }))
@@ -469,7 +468,7 @@ describe("Jigsaw edge paths", () => {
       ["blank", "tab", "blank", "tab"],
     ];
 
-    for (const profileId of jigsawEdgeProfileIds) {
+    for (const profileId of jigsawConnectorGrammarIds) {
       for (const seedOffset of [7, 123, 8_001, 456_789]) {
         for (const polarities of polarityPatterns) {
           const piece = makePiece([
@@ -494,7 +493,7 @@ describe("Jigsaw edge paths", () => {
       ["blank", "blank", "blank", "blank"],
     ];
 
-    for (const profileId of jigsawEdgeProfileIds) {
+    for (const profileId of jigsawConnectorGrammarIds) {
       for (const seedOffset of broadPieceSeedOffsets) {
         for (const polarities of polarityPatterns) {
           const piece = makePiece([
