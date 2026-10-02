@@ -267,7 +267,6 @@ export type JigsawGeneratedPuzzle = Omit<TileGeneratedPuzzle, "puzzleId" | "tile
   puzzleId: "jigsaw";
   tiles: JigsawPiece[];
   asset: PuzzleImageAsset;
-  cutStyle: JigsawCutStyle;
   edgeModel: JigsawEdgeModel;
 };
 
