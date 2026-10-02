@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { GeneratedPuzzle } from "../catalog/types";
 import { getPuzzleImageAsset } from "../games/imageAssets";
+import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
+import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
+import { generateJigsaw } from "../games/jigsaw/generate";
 import { getDailyPuzzleSeedForProfile } from "../games/shared/daily";
 import { generateSlidingPuzzle } from "../games/slidingPuzzle/generate";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
@@ -20,6 +23,7 @@ const runtimeSettings: GenerationRuntimeSettings = {
   requireUniqueSolution: true,
   sudokuVariation: defaultSudokuVariation,
   solitaireVariation: defaultSolitaireVariation,
+  jigsawCutStyle: defaultJigsawCutStyle,
 };
 
 const cardPuzzle: GeneratedPuzzle = {
@@ -204,6 +208,34 @@ describe("resolveGenerationIdentity", () => {
       runtimeSettings,
       makeSeed: () => "fallback",
     }).solitaireVariation.drawMode).toBe("draw-3");
+  });
+
+  it("uses current Jigsaw cut style unless another style is explicitly requested", () => {
+    const currentPuzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "current-jigsaw",
+      width: 4,
+      height: 4,
+      imageId: defaultJigsawImageAsset.id,
+      jigsawCutStyle: "unconventional",
+    });
+
+    const inherited = resolveGenerationIdentity({
+      puzzleId: "jigsaw",
+      currentPuzzle,
+      runtimeSettings,
+      makeSeed: () => "fallback",
+    });
+    const changed = resolveGenerationIdentity({
+      puzzleId: "jigsaw",
+      currentPuzzle,
+      runtimeSettings,
+      settings: { jigsawCutStyle: "traditional" },
+      makeSeed: () => "fallback",
+    });
+
+    expect(inherited.jigsawCutStyle).toBe("unconventional");
+    expect(changed.jigsawCutStyle).toBe("traditional");
   });
 
   it("resolves implicit default artwork before Tile Swap and Sliding Puzzle generation", () => {
