@@ -55,8 +55,8 @@ puzzle RNG
 choose one connector grammar for the puzzle
    |
    v
-derive independently weighted baseline roles + connector
-for each shared SeamProgram
+sample approach / departure uniformly from the baseline catalog
+and derive the connector for each shared SeamProgram
    |
    v
 realize the program into normalized 2D geometry
@@ -467,8 +467,8 @@ The production language composes those primitives with:
 
 - **sequence** — ordered composition;
 - **repeat** — bounded repetition of a sub-production;
-- **oppose** — use the same sub-production on the opposite normal side;
-- **mirror** — use the same structural gesture in reflected form.
+- **oppose** — reflect a sub-production across the nominal baseline, flipping its normal side without changing traversal direction;
+- **mirror** — reflect a sub-production across the midpoint of its local traversal span, preserving its normal side while reversing the gesture longitudinally.
 
 These operators preserve the primitive vocabulary rather than minting new family-specific events. Rendering details such as smooth interpolation, diagonal travel, or orthogonal stepping remain realization concerns unless they introduce genuinely different structure.
 
@@ -506,7 +506,7 @@ The rows remain useful as a perceptual continuum from quiet to expressive, but t
 
 BaselineGrammar defines what can be expressed and how canonical productions are realized safely. It does **not** decide which productions should feel traditional, adventurous, common, or rare.
 
-The grammar-layer selector is intentionally neutral across the current catalog. Product-level palette admission, weighting, parameter restraint, and coherent puzzle personality belong to #213, where Traditional / Unconventional behavior can operate over both BaselineGrammar and ConnectorGrammar without creating parallel geometry systems.
+The grammar layer currently samples the baseline catalog uniformly: every canonical family receives equal weight. That is a simple grammar-layer default, not a claim that equal weighting is the desired product experience. Product-level palette admission, weighting, parameter restraint, and coherent puzzle personality belong to #213, where Traditional / Unconventional behavior can operate over both BaselineGrammar and ConnectorGrammar without creating parallel geometry systems.
 
 This separation is intentional:
 
