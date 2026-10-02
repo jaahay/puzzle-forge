@@ -388,6 +388,55 @@ export const getJigsawOccupiedBounds = (
   };
 };
 
+export const getJigsawWorkingBounds = (
+  layout: JigsawWorldLayout,
+  placements: readonly JigsawPlacement[],
+): JigsawWorldBounds => {
+  let left = layout.boardX;
+  let top = layout.boardY;
+  let right = layout.boardX + layout.boardWidth;
+  let bottom = layout.boardY + layout.boardHeight;
+  const horizontalOverhang = layout.pieceWidth * jigsawPieceVisualOverhangRatio;
+  const verticalOverhang = layout.pieceHeight * jigsawPieceVisualOverhangRatio;
+  const maximumHorizontalGap = layout.pieceWidth * 0.45;
+  const maximumVerticalGap = layout.pieceHeight * 0.45;
+  const boardRight = layout.boardX + layout.boardWidth;
+  const boardBottom = layout.boardY + layout.boardHeight;
+
+  for (const placement of placements) {
+    if (placement.snapped) continue;
+
+    const pieceLeft = placement.worldX - horizontalOverhang;
+    const pieceTop = placement.worldY - verticalOverhang;
+    const pieceRight = placement.worldX + layout.pieceWidth + horizontalOverhang;
+    const pieceBottom = placement.worldY + layout.pieceHeight + verticalOverhang;
+    const horizontalGap = pieceRight < layout.boardX
+      ? layout.boardX - pieceRight
+      : pieceLeft > boardRight
+        ? pieceLeft - boardRight
+        : 0;
+    const verticalGap = pieceBottom < layout.boardY
+      ? layout.boardY - pieceBottom
+      : pieceTop > boardBottom
+        ? pieceTop - boardBottom
+        : 0;
+
+    if (horizontalGap > maximumHorizontalGap || verticalGap > maximumVerticalGap) continue;
+
+    left = Math.min(left, pieceLeft);
+    top = Math.min(top, pieceTop);
+    right = Math.max(right, pieceRight);
+    bottom = Math.max(bottom, pieceBottom);
+  }
+
+  return {
+    x: left,
+    y: top,
+    width: Math.max(1, right - left),
+    height: Math.max(1, bottom - top),
+  };
+};
+
 export const createInitialJigsawPlacements = (
   layout: JigsawWorldLayout,
   pieces: readonly JigsawPiece[],
@@ -598,6 +647,21 @@ export const createJigsawOccupiedFitCamera = (
   layout,
   viewport,
   getJigsawOccupiedBounds(layout, placements),
+  padding,
+  1.25,
+  insets,
+);
+
+export const createJigsawWorkingFitCamera = (
+  layout: JigsawWorldLayout,
+  viewport: JigsawViewport,
+  placements: readonly JigsawPlacement[],
+  padding = 28,
+  insets: Partial<JigsawViewportInsets> = {},
+): JigsawCamera => createJigsawBoundsFitCamera(
+  layout,
+  viewport,
+  getJigsawWorkingBounds(layout, placements),
   padding,
   1.25,
   insets,

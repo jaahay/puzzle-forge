@@ -5,29 +5,37 @@
   gap: 0.5rem;
 }
 
-.puzzle-workspace-display-tools button,
-.jigsaw-mobile-tools-toggle {
-  min-height: 2.35rem;
+.puzzle-workspace-display-tools button {
+  box-sizing: border-box;
+  display: grid;
+  width: 2.6rem;
+  min-width: 2.6rem;
+  min-height: 2.6rem;
+  place-items: center;
   border: 1px solid rgba(96, 165, 250, 0.38);
   border-radius: 999px;
-  padding: 0.55rem 0.85rem;
+  padding: 0;
   color: #dbeafe;
   background: linear-gradient(180deg, #365f8c, #254569);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 10px 24px rgba(2, 6, 23, 0.22);
   cursor: pointer;
-  font-weight: 900;
+}
+
+.puzzle-workspace-display-tools svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
 }
 
 .puzzle-workspace-display-tools button:hover,
-.puzzle-workspace-display-tools button:focus-visible,
-.jigsaw-mobile-tools-toggle:hover,
-.jigsaw-mobile-tools-toggle:focus-visible {
+.puzzle-workspace-display-tools button:focus-visible {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 0 0 3px rgba(125, 211, 252, 0.22), 0 12px 28px rgba(2, 6, 23, 0.28);
   outline: none;
-}
-
-.jigsaw-mobile-tools-toggle {
-  display: none;
 }
 
 .puzzle-workspace-layout.is-immersive {
@@ -141,15 +149,37 @@
   backdrop-filter: blur(10px);
 }
 
-.jigsaw-workspace.is-immersive .tile-puzzle-tools {
+.jigsaw-workspace.is-immersive .jigsaw-tools-toggle {
+  display: grid;
+  position: absolute;
   top: 0.75rem;
   left: 0.75rem;
+  z-index: 31;
+  place-items: center;
+}
+
+.jigsaw-workspace.is-immersive .tile-puzzle-tools {
+  display: none;
+  top: 3.7rem;
+  left: 0.75rem;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+}
+
+.jigsaw-workspace.is-immersive .tile-puzzle-tools.is-open {
+  display: flex;
 }
 
 .jigsaw-workspace.is-immersive .jigsaw-camera-tools {
   left: 50%;
   bottom: 0.75rem;
   transform: translateX(-50%);
+}
+
+.jigsaw-workspace.is-immersive .jigsaw-fit-menu {
+  right: 0;
+  bottom: calc(100% + 0.4rem);
 }
 
 .jigsaw-workspace.is-immersive .jigsaw-solved-presentation.is-completed {
@@ -166,11 +196,10 @@
     padding: 0.45rem;
   }
 
-  .puzzle-workspace-display-tools button,
-  .jigsaw-mobile-tools-toggle {
-    min-width: 0;
+  .puzzle-workspace-display-tools button {
+    width: 2.75rem;
+    min-width: 2.75rem;
     min-height: 2.75rem;
-    padding: 0.55rem 0.75rem;
   }
 
   .jigsaw-workspace.is-immersive .tile-puzzle-tools,
@@ -180,12 +209,12 @@
     padding: 0.3rem;
   }
 
-  .jigsaw-workspace.is-immersive .jigsaw-mobile-tools-toggle {
-    display: block;
-    position: absolute;
+  .jigsaw-workspace.is-immersive .jigsaw-tools-toggle {
     top: 0.45rem;
     left: 0.45rem;
-    z-index: 31;
+    width: 2.75rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
   }
 
   .jigsaw-workspace.is-immersive .tile-puzzle-art-preview {
@@ -197,16 +226,8 @@
   }
 
   .jigsaw-workspace.is-immersive .tile-puzzle-tools {
-    display: none;
     top: 3.65rem;
     left: 0.45rem;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    align-items: stretch;
-  }
-
-  .jigsaw-workspace.is-immersive .tile-puzzle-tools.is-mobile-open {
-    display: flex;
   }
 
   .jigsaw-workspace.is-immersive .tile-puzzle-tools button {
@@ -220,7 +241,7 @@
 
   .jigsaw-workspace.is-immersive .jigsaw-camera-tools {
     bottom: 0.45rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
 
   .jigsaw-workspace.is-immersive .jigsaw-camera-tools button {

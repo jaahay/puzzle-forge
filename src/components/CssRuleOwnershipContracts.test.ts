@@ -73,7 +73,10 @@ describe("CSS rule ownership contracts", () => {
 
   it("keeps immersive Jigsaw sizing independent from normal-flow sizing", () => {
     expect(jigsawCss).toContain(
-      ":where(.jigsaw-workspace:not(.is-immersive)) .tile-puzzle-tools button",
+      ".jigsaw-workspace:not(.is-immersive) .tile-puzzle-tools {",
+    );
+    expect(jigsawCss).toContain(
+      ".jigsaw-workspace:not(.is-immersive) .tile-puzzle-tools.is-open {",
     );
     expect(jigsawCss).toContain(
       ":where(.jigsaw-workspace:not(.is-immersive)) .jigsaw-freeform-stage",
