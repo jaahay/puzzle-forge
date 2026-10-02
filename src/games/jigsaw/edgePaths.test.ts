@@ -13,10 +13,7 @@ import {
   jigsawBaselineGrammarIds,
 } from "./baselineGrammar";
 import { deriveJigsawBaselinePalette } from "./cutStyle";
-import {
-  jigsawConnectorGrammarCatalogRevision,
-  jigsawConnectorGrammarIds,
-} from "./connectorGrammar";
+import { jigsawConnectorGrammarIds } from "./connectorGrammar";
 import { deriveJigsawSeamProgram } from "./seamProgram";
 import { generateJigsaw } from "./generate";
 import { defaultJigsawImageAsset } from "./imageAssets";
@@ -85,7 +82,6 @@ const broadPieceSeedOffsets = makeSeedSweep(64);
 const makeEdgeModel = (
   cutStyle: JigsawCutStyle = "unconventional",
 ): JigsawEdgeModel => ({
-  catalogRevision: jigsawConnectorGrammarCatalogRevision,
   cutStyle,
   baselineGrammarIds: [
     ...deriveJigsawBaselinePalette(cutStyle, `edge-path-test:${cutStyle}`),
