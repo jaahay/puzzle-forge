@@ -1,80 +1,91 @@
 import { describe, expect, it } from "vitest";
-import { jigsawBaselineGrammarIds } from "./baselineGrammar";
+import type { JigsawCutStyle } from "../../catalog/types";
 import { deriveJigsawConnectorProgram } from "./connectorGrammar";
+import { deriveJigsawBaselinePalette, jigsawCutStyles } from "./cutStyle";
 import { jigsawEdgeProfileIds } from "./edgeProfiles";
-import {
-  deriveJigsawSeamProgram,
-  sampleJigsawBaselineGrammarUniformly,
-} from "./seamProgram";
+import { deriveJigsawSeamProgram, type JigsawSeamCutPolicy } from "./seamProgram";
+
+const makePolicy = (
+  cutStyle: JigsawCutStyle,
+  seed = `seam-policy:${cutStyle}`,
+): JigsawSeamCutPolicy => ({
+  cutStyle,
+  baselineGrammarIds: deriveJigsawBaselinePalette(cutStyle, seed),
+});
 
 describe("Jigsaw seam program", () => {
-  it("is deterministic for a connector grammar and shared seam seed", () => {
-    for (const profileId of jigsawEdgeProfileIds) {
-      const first = deriveJigsawSeamProgram(profileId, 123_456);
-      expect(deriveJigsawSeamProgram(profileId, 123_456)).toEqual(first);
-    }
-  });
-
-  it("preserves ConnectorGrammar derivation as the seam's connector component", () => {
-    for (const profileId of jigsawEdgeProfileIds) {
-      for (const seedOffset of [1, 17, 991, 123_456, 999_999]) {
-        expect(deriveJigsawSeamProgram(profileId, seedOffset).connector).toEqual(
-          deriveJigsawConnectorProgram(profileId, seedOffset),
-        );
+  it("is deterministic for connector grammar, shared seam seed, and cut policy", () => {
+    for (const cutStyle of jigsawCutStyles) {
+      const policy = makePolicy(cutStyle);
+      for (const profileId of jigsawEdgeProfileIds) {
+        const first = deriveJigsawSeamProgram(profileId, 123_456, policy);
+        expect(deriveJigsawSeamProgram(profileId, 123_456, policy)).toEqual(first);
       }
     }
   });
 
-  it("samples the grammar-layer catalog uniformly", () => {
-    for (const [index, grammarId] of jigsawBaselineGrammarIds.entries()) {
-      expect(
-        sampleJigsawBaselineGrammarUniformly(
-          (index + 0.5) / jigsawBaselineGrammarIds.length,
-        ),
-      ).toBe(grammarId);
+  it("preserves ConnectorGrammar derivation as the seam's connector component", () => {
+    for (const cutStyle of jigsawCutStyles) {
+      const policy = makePolicy(cutStyle);
+      for (const profileId of jigsawEdgeProfileIds) {
+        for (const seedOffset of [1, 17, 991, 123_456, 999_999]) {
+          expect(
+            deriveJigsawSeamProgram(profileId, seedOffset, policy).connector,
+          ).toEqual(deriveJigsawConnectorProgram(profileId, seedOffset));
+        }
+      }
     }
-
-    expect(sampleJigsawBaselineGrammarUniformly(0)).toBe(
-      jigsawBaselineGrammarIds[0],
-    );
-    expect(sampleJigsawBaselineGrammarUniformly(1)).toBe(
-      jigsawBaselineGrammarIds[jigsawBaselineGrammarIds.length - 1],
-    );
   });
 
-  it("uses one baseline grammar vocabulary for both seam roles while selecting them independently", () => {
-    const rolePairs = Array.from({ length: 4_096 }, (_, seedOffset) => {
-      const seam = deriveJigsawSeamProgram("classic-bulb", seedOffset);
-      return [
-        seam.approach.baselineGrammarId,
-        seam.departure.baselineGrammarId,
-      ] as const;
-    });
+  it("uses the puzzle baseline sub-palette for both seam roles while selecting them independently", () => {
+    for (const cutStyle of jigsawCutStyles) {
+      const policy = makePolicy(cutStyle);
+      const rolePairs = Array.from({ length: 4_096 }, (_, seedOffset) => {
+        const seam = deriveJigsawSeamProgram(
+          "classic-bulb",
+          seedOffset,
+          policy,
+        );
+        return [
+          seam.approach.baselineGrammarId,
+          seam.departure.baselineGrammarId,
+        ] as const;
+      });
 
-    expect(
-      rolePairs.some(([approach, departure]) => approach !== departure),
-    ).toBe(true);
-    expect(
-      rolePairs.some(([approach, departure]) => approach === departure),
-    ).toBe(true);
+      expect(
+        rolePairs.some(([approach, departure]) => approach !== departure),
+      ).toBe(true);
+      expect(
+        rolePairs.some(([approach, departure]) => approach === departure),
+      ).toBe(true);
 
-    const approachIds = new Set(rolePairs.map(([approach]) => approach));
-    const departureIds = new Set(rolePairs.map(([, departure]) => departure));
-    expect(approachIds).toEqual(new Set(jigsawBaselineGrammarIds));
-    expect(departureIds).toEqual(new Set(jigsawBaselineGrammarIds));
+      const approachIds = new Set(rolePairs.map(([approach]) => approach));
+      const departureIds = new Set(rolePairs.map(([, departure]) => departure));
+      expect(approachIds).toEqual(new Set(policy.baselineGrammarIds));
+      expect(departureIds).toEqual(new Set(policy.baselineGrammarIds));
+    }
   });
 
   it("realizes approach and departure independently even when they select the same grammar", () => {
-    const matchingSeed = Array.from({ length: 2_048 }, (_, seedOffset) => seedOffset).find(
-      (seedOffset) => {
-        const seam = deriveJigsawSeamProgram("classic-bulb", seedOffset);
+    for (const cutStyle of jigsawCutStyles) {
+      const policy = makePolicy(cutStyle);
+      const matchingSeed = Array.from(
+        { length: 4_096 },
+        (_, seedOffset) => seedOffset,
+      ).find((seedOffset) => {
+        const seam = deriveJigsawSeamProgram(
+          "classic-bulb",
+          seedOffset,
+          policy,
+        );
         return (
-          seam.approach.baselineGrammarId === seam.departure.baselineGrammarId &&
+          seam.approach.baselineGrammarId ===
+            seam.departure.baselineGrammarId &&
           JSON.stringify(seam.approach) !== JSON.stringify(seam.departure)
         );
-      },
-    );
+      });
 
-    expect(matchingSeed).toBeDefined();
+      expect(matchingSeed).toBeDefined();
+    }
   });
 });
