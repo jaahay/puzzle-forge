@@ -48,7 +48,7 @@ export const getGeneratedPuzzleRuntimeSettings = (
       : fallback.solitaireVariation,
   jigsawCutStyle:
     puzzle.kind === "tiles" && puzzle.puzzleId === "jigsaw"
-      ? normalizeJigsawCutStyle(puzzle.cutStyle)
+      ? normalizeJigsawCutStyle(puzzle.edgeModel.cutStyle)
       : fallback.jigsawCutStyle,
 });
 
@@ -105,7 +105,7 @@ export const generatedPuzzleMatchesIdentity = (
       puzzle.width === identity.width &&
       puzzle.height === identity.height &&
       puzzle.asset.id === identity.imageId &&
-      normalizeJigsawCutStyle(puzzle.cutStyle) ===
+      normalizeJigsawCutStyle(puzzle.edgeModel.cutStyle) ===
         normalizeJigsawCutStyle(identity.jigsawCutStyle)
     );
   }
