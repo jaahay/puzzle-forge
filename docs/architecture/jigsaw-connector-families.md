@@ -481,8 +481,8 @@ The current named families are canonical sentences in that language:
 - **Inflection** — `deflect > cross > oppose(mirror(deflect))`
 - **Angled course** — `deflect > course > mirror(deflect)`
 - **Dogleg** — `repeat(deflect){2} > mirror(repeat(deflect){2})`
-- **Wave** — `deflect > cross > oppose(deflect) > cross > deflect`
-- **Stepped course** — `repeat(deflect > course){2} > mirror(deflect)`
+- **Wave** — `deflect > repeat(cross){2} > mirror(deflect)`
+- **Stepped course** — `repeat(deflect > course){3} > mirror(deflect)`
 
 Straight is the identity case for the non-connector span. It does not create a straight connector or remove the interlocking event; ConnectorGrammar still owns the actual interlock.
 
