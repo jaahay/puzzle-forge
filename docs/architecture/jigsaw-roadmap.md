@@ -250,12 +250,12 @@ For each puzzle, that policy:
 
 - selects one connector grammar for the whole puzzle;
 - derives a small deterministic baseline sub-palette for the whole puzzle;
-- records the selected cut style and baseline sub-palette in the generated puzzle's `edgeModel`;
+- represents the selected cut style and baseline sub-palette in the generated puzzle's runtime `edgeModel`;
 - lets each seam independently derive its approach/departure baseline family and seeded parameters from the shared interior-edge seed within that sub-palette.
 
 The composed seam, not each part in isolation, remains the safety boundary. Broad deterministic sweeps cover both cut styles, all connector grammars where policy admits them, reciprocal neighbor geometry, seam bounds/self-intersection, and whole-piece safety.
 
-Only the puzzle-level cut-style snapshot is stored. Individual seam baseline choices and renderer control points are not persisted separately; they remain deterministic derived state from the shared interior-edge seed. No generator-version migration/compatibility machinery is introduced.
+The generated puzzle carries the puzzle-level cut-style policy result in its runtime `edgeModel`, but persisted sessions continue to store canonical generation identity plus progress and regenerate the baseline puzzle on restore. Individual seam baseline choices, baseline parameters, and renderer control points are not persisted separately; they remain deterministic derived state. No generator-version migration/compatibility machinery is introduced.
 
 ### Traditional / Unconventional cut-style policy
 
