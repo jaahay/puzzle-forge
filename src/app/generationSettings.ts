@@ -46,7 +46,7 @@ export type NextPuzzleDraft = {
   solitaireVariation: SolitaireVariation;
   imageId?: string;
   jigsawSizeSelection?: JigsawSizeSelection;
-  jigsawCutStyle: GenerationIdentity["jigsawCutStyle"];
+  jigsawCutStyle?: GenerationIdentity["jigsawCutStyle"];
 };
 
 type ResolveGenerationIdentityInput = {
