@@ -1,6 +1,5 @@
 import type {
-  JigsawBaselineGrammarId,
-  JigsawCutStyle,
+  JigsawEdgeModel,
   JigsawEdgeProfileId,
 } from "../../catalog/types";
 import {
@@ -19,10 +18,10 @@ export type JigsawSeamProgram = {
   departure: JigsawBaselineProgram;
 };
 
-export type JigsawSeamCutPolicy = {
-  cutStyle: JigsawCutStyle;
-  baselineGrammarIds: readonly JigsawBaselineGrammarId[];
-};
+export type JigsawSeamCutPolicy = Pick<
+  JigsawEdgeModel,
+  "cutStyle" | "baselineGrammarIds"
+>;
 
 const seededUnit = (seedOffset: number, salt: number) => {
   let mixed = (seedOffset ^ salt) >>> 0;
