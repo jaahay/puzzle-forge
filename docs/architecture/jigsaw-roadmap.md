@@ -245,7 +245,7 @@ Named baseline families are therefore canonical sentences, not primitive atoms. 
 
 Connector identity remains separate from baseline identity. A connector grammar determines the interlocking event; baseline productions determine the structural course of the non-connector spans. Common polarity, reciprocal orientation, rendering, sampling, bounds, and whole-piece safety remain downstream concerns.
 
-The grammar layer deliberately does not encode Traditional / Unconventional admission or weighting. The current catalog selector is neutral. Product-level palette selection, weighting, parameter restraint, and coherent cut personality belong to #213, operating over both BaselineGrammar and ConnectorGrammar through the same seam-generation pipeline.
+The grammar layer deliberately does not encode Traditional / Unconventional admission or weighting. Its current baseline sampler is uniform across the canonical catalog: equal weighting is only the grammar-layer default, not the intended product distribution. Product-level palette selection, weighting, parameter restraint, and coherent cut personality belong to #213, operating over both BaselineGrammar and ConnectorGrammar through the same seam-generation pipeline.
 
 The composed seam, not each part in isolation, remains the safety boundary. Broad deterministic sweeps cover every baseline family in both approach and departure roles, many role pairings across every connector grammar, reciprocal neighbor geometry, seam bounds/self-intersection, and whole-piece safety.
 
