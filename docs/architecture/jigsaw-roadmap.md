@@ -128,7 +128,7 @@ type JigsawPiece = {
 
 See [Jigsaw Connector Grammar Design](./jigsaw-connector-families.md) for the visual identification guide, grammar-by-grammar design intent, tuning snapshot, generated atlas, and rejected/collapsed productions.
 
-The edge repository is now **grammar-first**. Ordinary connector entries are distinct structural productions rather than cosmetic names backed by one shared formula. For the initial rollout, the generator chooses one grammar once per puzzle; selection weights therefore shape variety across games, not within one board. Individual seams then vary deterministically within that grammar.
+The edge repository is now **grammar-first**. Ordinary connector entries are distinct structural productions rather than cosmetic names backed by one shared formula. Connector selection weights no longer belong to the edge-profile catalog; Traditional / Unconventional product policy owns those weights in `cutStyle.ts`. The generator still chooses one connector grammar once per puzzle, so cut-style weights shape variety across games rather than within one board. Individual seams then vary deterministically within that grammar.
 
 ```ts
 type JigsawConnectorGrammarId =
@@ -146,7 +146,6 @@ type JigsawEdgeProfile = {
   label: string;
   description: string;
   connectorGrammarId: JigsawConnectorGrammarId;
-  selectionWeight: number;
   difficultyWeight: number;
 };
 ```
@@ -195,7 +194,7 @@ No generator/resource versioning or compatibility machinery is introduced here. 
 - Every ordinary connector grammar maintains a substantial vertical-to-horizontal seam proportion rather than becoming broad and visually stumpy.
 - Connector placement preserves explicit corner room while allowing safe left/right bias when the seeded width leaves available edge space.
 - Distinct grammars should remain visually distinguishable at ordinary play scale rather than differing only through small width/depth perturbations.
-- Within the current generator implementation, the same seed, dimensions, and image id produce the same edge graph.
+- Within the current generator implementation, the same seed, dimensions, image id, and cut style produce the same edge graph.
 
 ### Validation
 
@@ -245,11 +244,46 @@ Named baseline families are therefore canonical sentences, not primitive atoms. 
 
 Connector identity remains separate from baseline identity. A connector grammar determines the interlocking event; baseline productions determine the structural course of the non-connector spans. Common polarity, reciprocal orientation, rendering, sampling, bounds, and whole-piece safety remain downstream concerns.
 
-The grammar layer deliberately does not encode Traditional / Unconventional admission or weighting. Its current baseline sampler is uniform across the canonical catalog: equal weighting is only the grammar-layer default, not the intended product distribution. Product-level palette selection, weighting, parameter restraint, and coherent cut personality belong to #213, operating over both BaselineGrammar and ConnectorGrammar through the same seam-generation pipeline.
+The grammar layer deliberately does not encode Traditional / Unconventional admission or weighting. Product-level policy in `cutStyle.ts` now operates over both BaselineGrammar and ConnectorGrammar through the same seam-generation pipeline.
 
-The composed seam, not each part in isolation, remains the safety boundary. Broad deterministic sweeps cover every baseline family in both approach and departure roles, many role pairings across every connector grammar, reciprocal neighbor geometry, seam bounds/self-intersection, and whole-piece safety.
+For each puzzle, that policy:
 
-No baseline choice is persisted separately. It is deterministically derived from the existing shared interior-edge seed, consistent with the project's explicit pre-versioning policy.
+- selects one connector grammar for the whole puzzle;
+- derives a small deterministic baseline sub-palette for the whole puzzle;
+- records the selected cut style and baseline sub-palette in the generated puzzle's `edgeModel`;
+- lets each seam independently derive its approach/departure baseline family and seeded parameters from the shared interior-edge seed within that sub-palette.
+
+The composed seam, not each part in isolation, remains the safety boundary. Broad deterministic sweeps cover both cut styles, all connector grammars where policy admits them, reciprocal neighbor geometry, seam bounds/self-intersection, and whole-piece safety.
+
+Only the puzzle-level cut-style snapshot is stored. Individual seam baseline choices and renderer control points are not persisted separately; they remain deterministic derived state from the shared interior-edge seed. No generator-version migration/compatibility machinery is introduced.
+
+### Traditional / Unconventional cut-style policy
+
+Cut style is intentionally a closed binary product axis in the current design rather than the first two values of a speculative open taxonomy.
+
+```text
+Traditional <-> Unconventional
+```
+
+The two modes share all grammar definitions, seam composition, reciprocal-edge transforms, rendering, and safety validation.
+
+**Traditional**
+
+- connector palette: Classic bulb, Necked head;
+- required baseline anchors: Straight, Bow;
+- one additional baseline family per puzzle from Inflection / Angled course;
+- weighted seam sampling keeps Straight and Bow dominant.
+
+**Unconventional**
+
+- connector palette: the complete connector grammar catalog;
+- required baseline anchor: Bow;
+- three additional baseline families per puzzle from the full weighted baseline catalog;
+- weighting favors the more expressive families while preserving a familiar anchor.
+
+The source-controlled connector and baseline atlases remain the visual reference for policy review. Traditional intentionally occupies the familiar subset of those atlases, while Unconventional can reach the catalog's baseline-crossing, repeated, angular, and multi-event structures. This makes the two modes perceptibly different without introducing a second renderer or duplicate geometry system.
+
+Cut style is part of canonical generation identity. The same seed, artwork, and grid under different cut styles are intentionally different generated puzzles. The style also round-trips through compact resource identity and Daily Jigsaw locators.
 
 ### Follow-on geometry directions
 
