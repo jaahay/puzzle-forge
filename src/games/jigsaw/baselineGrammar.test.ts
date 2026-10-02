@@ -7,14 +7,21 @@ import {
   jigsawBaselineGrammarIds,
   realizeJigsawBaselineProgram,
 } from "./baselineGrammar";
+import {
+  expandJigsawBaselineProduction,
+  getJigsawBaselineProductionStructure,
+} from "./baselineProduction";
 
 describe("Jigsaw baseline grammar", () => {
-  it("gives every baseline grammar a unique structural production", () => {
-    const productions = jigsawBaselineGrammarIds.map(
-      (grammarId) => jigsawBaselineGrammarCatalog[grammarId].production,
-    );
-
-    expect(new Set(productions).size).toBe(jigsawBaselineGrammarIds.length);
+  it("derives program events from the canonical production tree", () => {
+    for (const grammarId of jigsawBaselineGrammarIds) {
+      const program = deriveJigsawBaselineProgram(grammarId, 123_456);
+      expect(program.events).toEqual(
+        expandJigsawBaselineProduction(
+          jigsawBaselineGrammarCatalog[grammarId].production,
+        ),
+      );
+    }
   });
 
   it("derives deterministic programs with seeded variation", () => {
@@ -56,7 +63,11 @@ describe("Jigsaw baseline grammar", () => {
       );
 
       expect(new Set(signatures)).toEqual(
-        new Set([jigsawBaselineGrammarCatalog[grammarId].production]),
+        new Set([
+          getJigsawBaselineProductionStructure(
+            jigsawBaselineGrammarCatalog[grammarId].production,
+          ),
+        ]),
       );
     }
   });
