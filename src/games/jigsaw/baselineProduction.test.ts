@@ -59,27 +59,27 @@ describe("Jigsaw baseline production language", () => {
   });
 
   it("preserves semantic modifiers in structure without inventing new primitives", () => {
-    const sweep = baselinePrimitive("sweep");
-    const opposed = baselineOppose(sweep);
-    const mirrored = baselineMirror(sweep);
+    const deflect = baselinePrimitive("deflect");
+    const opposed = baselineOppose(deflect);
+    const mirrored = baselineMirror(deflect);
 
-    expect(expandJigsawBaselineProduction(opposed)).toEqual(["sweep"]);
-    expect(expandJigsawBaselineProduction(mirrored)).toEqual(["sweep"]);
+    expect(expandJigsawBaselineProduction(opposed)).toEqual(["deflect"]);
+    expect(expandJigsawBaselineProduction(mirrored)).toEqual(["deflect"]);
     expect(getJigsawBaselineProductionStructure(opposed)).toBe(
-      "oppose(sweep)",
+      "oppose(deflect)",
     );
     expect(getJigsawBaselineProductionStructure(mirrored)).toBe(
-      "mirror(sweep)",
+      "mirror(deflect)",
     );
   });
 
   it("can compose a structurally new production from the shared vocabulary", () => {
     const novel = baselineSequence(
-      baselinePrimitive("sweep"),
+      baselinePrimitive("deflect"),
       baselinePrimitive("course"),
-      baselineOppose(baselinePrimitive("sweep")),
+      baselineOppose(baselinePrimitive("deflect")),
       baselinePrimitive("cross"),
-      baselineMirror(baselinePrimitive("turn")),
+      baselineMirror(baselinePrimitive("deflect")),
     );
     const novelStructure = getJigsawBaselineProductionStructure(novel);
     const canonicalStructures = new Set(
@@ -92,46 +92,46 @@ describe("Jigsaw baseline production language", () => {
 
     expect(canonicalStructures.has(novelStructure)).toBe(false);
     expect(expandJigsawBaselineProduction(novel)).toEqual([
-      "sweep",
+      "deflect",
       "course",
-      "sweep",
+      "deflect",
       "cross",
-      "turn",
+      "deflect",
     ]);
   });
 
   it("expands repeated sub-productions compositionally", () => {
     const repeated = baselineRepeat(
       baselineSequence(
-        baselinePrimitive("turn"),
+        baselinePrimitive("deflect"),
         baselinePrimitive("course"),
       ),
       3,
     );
 
     expect(expandJigsawBaselineProduction(repeated)).toEqual([
-      "turn",
+      "deflect",
       "course",
-      "turn",
+      "deflect",
       "course",
-      "turn",
+      "deflect",
       "course",
     ]);
     expect(getJigsawBaselineProductionStructure(repeated)).toBe(
-      "repeat(turn > course){3}",
+      "repeat(deflect > course){3}",
     );
   });
 
   it("normalizes algebraically reducible production forms", () => {
     const identity = baselinePrimitive("identity");
-    const sweep = baselinePrimitive("sweep");
-    const turn = baselinePrimitive("turn");
+    const deflect = baselinePrimitive("deflect");
+    const deflect = baselinePrimitive("deflect");
 
     expect(
       getJigsawBaselineProductionStructure(
-        baselineSequence(identity, sweep),
+        baselineSequence(identity, deflect),
       ),
-    ).toBe("sweep");
+    ).toBe("deflect");
     expect(
       getJigsawBaselineProductionStructure(
         baselineSequence(),
@@ -139,29 +139,29 @@ describe("Jigsaw baseline production language", () => {
     ).toBe("identity");
     expect(
       getJigsawBaselineProductionStructure(
-        baselineRepeat(sweep, 1),
+        baselineRepeat(deflect, 1),
       ),
-    ).toBe("sweep");
+    ).toBe("deflect");
     expect(
       getJigsawBaselineProductionStructure(
-        baselineRepeat(baselineRepeat(turn, 2), 3),
+        baselineRepeat(baselineRepeat(deflect, 2), 3),
       ),
-    ).toBe("repeat(turn){6}");
+    ).toBe("repeat(deflect){6}");
     expect(
       getJigsawBaselineProductionStructure(
-        baselineOppose(baselineOppose(sweep)),
+        baselineOppose(baselineOppose(deflect)),
       ),
-    ).toBe("sweep");
+    ).toBe("deflect");
     expect(
       getJigsawBaselineProductionStructure(
-        baselineMirror(baselineMirror(sweep)),
+        baselineMirror(baselineMirror(deflect)),
       ),
-    ).toBe("sweep");
+    ).toBe("deflect");
   });
 
   it("rejects non-positive or fractional repetition counts", () => {
-    expect(() => baselineRepeat(baselinePrimitive("turn"), 0)).toThrow();
-    expect(() => baselineRepeat(baselinePrimitive("turn"), -1)).toThrow();
-    expect(() => baselineRepeat(baselinePrimitive("turn"), 1.5)).toThrow();
+    expect(() => baselineRepeat(baselinePrimitive("deflect"), 0)).toThrow();
+    expect(() => baselineRepeat(baselinePrimitive("deflect"), -1)).toThrow();
+    expect(() => baselineRepeat(baselinePrimitive("deflect"), 1.5)).toThrow();
   });
 });
