@@ -1,19 +1,27 @@
-import type { JigsawEdgeProfileId } from "../../catalog/types";
+import type {
+  JigsawBaselineGrammarId,
+  JigsawCutStyle,
+  JigsawEdgeProfileId,
+} from "../../catalog/types";
 import {
   deriveJigsawBaselineProgram,
-  jigsawBaselineGrammarIds,
-  type JigsawBaselineGrammarId,
   type JigsawBaselineProgram,
 } from "./baselineGrammar";
 import {
   deriveJigsawConnectorProgram,
   type JigsawConnectorProgram,
 } from "./connectorGrammar";
+import { sampleJigsawBaselineGrammarForCutStyle } from "./cutStyle";
 
 export type JigsawSeamProgram = {
   approach: JigsawBaselineProgram;
   connector: JigsawConnectorProgram;
   departure: JigsawBaselineProgram;
+};
+
+export type JigsawSeamCutPolicy = {
+  cutStyle: JigsawCutStyle;
+  baselineGrammarIds: readonly JigsawBaselineGrammarId[];
 };
 
 const seededUnit = (seedOffset: number, salt: number) => {
@@ -26,19 +34,16 @@ const seededUnit = (seedOffset: number, salt: number) => {
   return (mixed >>> 0) / 0xffff_ffff;
 };
 
-export const sampleJigsawBaselineGrammarUniformly = (
-  randomUnit: number,
-): JigsawBaselineGrammarId => {
-  const normalized = Math.min(1 - Number.EPSILON, Math.max(0, randomUnit));
-  const index = Math.floor(normalized * jigsawBaselineGrammarIds.length);
-  return jigsawBaselineGrammarIds[index];
-};
-
 const sampleBaselineGrammarId = (
   seedOffset: number,
   salt: number,
+  policy: JigsawSeamCutPolicy,
 ): JigsawBaselineGrammarId =>
-  sampleJigsawBaselineGrammarUniformly(seededUnit(seedOffset, salt));
+  sampleJigsawBaselineGrammarForCutStyle(
+    policy.cutStyle,
+    policy.baselineGrammarIds,
+    seededUnit(seedOffset, salt),
+  );
 
 const deriveRoleSeed = (seedOffset: number, salt: number) =>
   Math.imul((seedOffset ^ salt) >>> 0, 1_597_334_677) >>> 0;
@@ -46,9 +51,10 @@ const deriveRoleSeed = (seedOffset: number, salt: number) =>
 export const deriveJigsawSeamProgram = (
   connectorGrammarId: JigsawEdgeProfileId,
   seedOffset: number,
+  policy: JigsawSeamCutPolicy,
 ): JigsawSeamProgram => {
-  const approachGrammarId = sampleBaselineGrammarId(seedOffset, 0xc201);
-  const departureGrammarId = sampleBaselineGrammarId(seedOffset, 0xc202);
+  const approachGrammarId = sampleBaselineGrammarId(seedOffset, 0xc201, policy);
+  const departureGrammarId = sampleBaselineGrammarId(seedOffset, 0xc202, policy);
 
   return {
     approach: deriveJigsawBaselineProgram(
