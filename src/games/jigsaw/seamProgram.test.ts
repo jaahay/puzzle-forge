@@ -40,12 +40,24 @@ describe("Jigsaw seam program", () => {
       jigsawDefaultBaselineSelectionWeights["stepped-course"],
     );
 
-    const selected = new Set(
-      Array.from({ length: 10_000 }, (_, index) =>
-        selectJigsawBaselineGrammar((index + 0.5) / 10_000),
-      ),
+    const selections = Array.from({ length: 10_000 }, (_, index) =>
+      selectJigsawBaselineGrammar((index + 0.5) / 10_000),
     );
-    expect(selected).toEqual(new Set(jigsawBaselineGrammarIds));
+    expect(new Set(selections)).toEqual(new Set(jigsawBaselineGrammarIds));
+
+    const counts = Object.fromEntries(
+      jigsawBaselineGrammarIds.map((grammarId) => [
+        grammarId,
+        selections.filter((selected) => selected === grammarId).length,
+      ]),
+    ) as Record<(typeof jigsawBaselineGrammarIds)[number], number>;
+
+    expect(counts.straight).toBeGreaterThan(counts.bow);
+    expect(counts.bow).toBeGreaterThan(counts.inflection);
+    expect(counts.inflection).toBeGreaterThan(counts["angled-course"]);
+    expect(counts["angled-course"]).toBeGreaterThan(counts.dogleg);
+    expect(counts.dogleg).toBeGreaterThan(counts.wave);
+    expect(counts.wave).toBeGreaterThan(counts["stepped-course"]);
   });
 
   it("uses one baseline grammar vocabulary for both seam roles while selecting them independently", () => {
