@@ -173,17 +173,30 @@ const curvedSegmentsFromPoints = (
     const end = points[index + 1];
     const following = points[Math.min(points.length - 1, index + 2)];
 
+    const firstSegment = index === 0;
+    const lastSegment = index === points.length - 2;
+
     return {
       kind: "cubic",
       start,
-      control1: point(
-        start.x + (end.x - previous.x) * curveTension,
-        start.y + (end.y - previous.y) * curveTension,
-      ),
-      control2: point(
-        end.x - (following.x - start.x) * curveTension,
-        end.y - (following.y - start.y) * curveTension,
-      ),
+      control1: firstSegment
+        ? point(
+            start.x + (end.x - start.x) * curveTension,
+            start.y,
+          )
+        : point(
+            start.x + (end.x - previous.x) * curveTension,
+            start.y + (end.y - previous.y) * curveTension,
+          ),
+      control2: lastSegment
+        ? point(
+            end.x - (end.x - start.x) * curveTension,
+            end.y,
+          )
+        : point(
+            end.x - (following.x - start.x) * curveTension,
+            end.y - (following.y - start.y) * curveTension,
+          ),
       end,
     };
   });
