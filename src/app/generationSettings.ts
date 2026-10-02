@@ -8,10 +8,7 @@ import type {
   SudokuVariation,
 } from "../catalog/types";
 import { getPuzzleImageAsset, isImageBackedPuzzleId } from "../games/imageAssets";
-import {
-  defaultJigsawCutStyle,
-  normalizeJigsawCutStyle,
-} from "../games/jigsaw/cutStyle";
+import { normalizeJigsawCutStyle } from "../games/jigsaw/cutStyle";
 import type { JigsawSizeSelection } from "../games/jigsaw/size";
 import { getDailyPuzzleSeedForProfile } from "../games/shared/daily";
 import { normalizeSolitaireVariation } from "../games/solitaire/variation";
@@ -107,7 +104,7 @@ export const resolveGenerationIdentity = ({
     ? getPuzzleImageAsset(requestedImageId, puzzleId).id
     : requestedImageId;
   const currentJigsawCutStyle =
-    currentPuzzle?.puzzleId === "jigsaw"
+    currentPuzzle?.kind === "tiles" && currentPuzzle.puzzleId === "jigsaw"
       ? currentPuzzle.cutStyle
       : undefined;
   const jigsawCutStyle = puzzleId === "jigsaw"
@@ -116,9 +113,7 @@ export const resolveGenerationIdentity = ({
           currentJigsawCutStyle ??
           runtimeSettings.jigsawCutStyle,
       )
-    : normalizeJigsawCutStyle(
-        runtimeSettings.jigsawCutStyle ?? defaultJigsawCutStyle,
-      );
+    : undefined;
   const provenance = settings.provenance === null ? undefined : settings.provenance;
   const seed = provenance?.source === "daily" && explicitSeed === null
     ? getDailyPuzzleSeedForProfile(puzzleId, provenance.dateStamp, {
