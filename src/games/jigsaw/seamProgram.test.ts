@@ -44,7 +44,7 @@ describe("Jigsaw seam program", () => {
         const seam = deriveJigsawSeamProgram(
           "classic-bulb",
           seedOffset,
-          policy,
+          edgeModel,
         );
         return [
           seam.approach.baselineGrammarId,
@@ -76,7 +76,7 @@ describe("Jigsaw seam program", () => {
         const seam = deriveJigsawSeamProgram(
           "classic-bulb",
           seedOffset,
-          policy,
+          edgeModel,
         );
         return (
           seam.approach.baselineGrammarId ===
