@@ -101,9 +101,8 @@ const selectWeightedId = <T extends string>(
 };
 
 export const normalizeJigsawCutStyle = (
-  value: JigsawCutStyle | string | undefined,
-): JigsawCutStyle =>
-  value === "unconventional" ? "unconventional" : defaultJigsawCutStyle;
+  value: JigsawCutStyle | undefined,
+): JigsawCutStyle => value ?? defaultJigsawCutStyle;
 
 export const selectJigsawConnectorGrammarForCutStyle = (
   cutStyle: JigsawCutStyle,
