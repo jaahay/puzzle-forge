@@ -6,8 +6,10 @@ A connector family is not a named preset inside one universal bump formula. It i
 
 The implementation lives in:
 
-- `src/games/jigsaw/connectorGrammar.ts` — structural grammar definitions, seeded program derivation, and normalized realization;
-- `src/games/jigsaw/edgeProfiles.ts` — puzzle-level selection weights for the grammar catalog;
+- `src/games/jigsaw/connectorGrammar.ts` — structural connector grammar definitions, seeded program derivation, and normalized realization;
+- `src/games/jigsaw/baselineGrammar.ts` — structural baseline grammar definitions, seeded program derivation, and normalized realization;
+- `src/games/jigsaw/seamProgram.ts` — seeded approach / connector / departure composition;
+- `src/games/jigsaw/edgeProfiles.ts` — puzzle-level selection weights for the connector grammar catalog;
 - `src/games/jigsaw/edgePaths.ts` — shared placement, polarity, complementarity, curve rendering, orientation, and validation sampling.
 
 The current grammar catalog is deliberately small. **Eight strong grammars are preferable to fourteen labels that collapse into the same geometry.**
@@ -77,7 +79,7 @@ This matters: shared Bézier machinery does not make two grammars equivalent any
 
 ## Rollout model
 
-For the initial rollout, a generated puzzle chooses **one ordinary grammar for the entire game**.
+For the initial rollout, a generated puzzle chooses **one ordinary connector grammar for the entire game**. Baseline grammars are then selected independently for each seam's approach and departure roles.
 
 Individual seams still vary deterministically by seed:
 
@@ -440,6 +442,16 @@ The current baseline productions are:
 - **Wave** — `crest > trough > crest`
 - **Angled course** — `ramp > course > return`
 - **Stepped course** — `step > run > step > run > step`
+
+### Baseline graphical atlas
+
+The atlas below renders representative and seeded approach-role specimens from the baseline grammar definitions using the production corner-safety envelope.
+
+![High-fidelity Jigsaw baseline grammar atlas](./assets/jigsaw-baseline-grammar-atlas.svg)
+
+The rows are visually distinct for structural reasons: Bow is one smooth same-side arc; Inflection crosses once into an opposed sweep; Wave repeats alternating smooth excursions; Angled course has one offset linear course; Stepped course changes level through orthogonal steps.
+
+[Open the baseline atlas directly](./assets/jigsaw-baseline-grammar-atlas.svg)
 
 Baseline geometry is deliberately shallower than the connector event. It shapes the course from the corner to the connector and back without becoming a second interlock vocabulary.
 
