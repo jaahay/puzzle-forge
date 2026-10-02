@@ -93,6 +93,8 @@ export type JigsawConnectorProgram =
   | ZigzagProgram
   | StackedLockProgram;
 
+export const jigsawConnectorGrammarCatalogRevision = 1;
+
 export const jigsawConnectorGrammarIds = [
   "classic-bulb",
   "necked-head",
