@@ -215,9 +215,9 @@ Generator and geometry tests cover:
 
 ### Baseline grammar seam composition
 
-Ordinary interior seams no longer assume that the geometry outside the connector event is permanently straight.
+Ordinary interior seams no longer assume that geometry outside the connector event is permanently straight.
 
-The current canonical seam model is:
+The canonical seam model is:
 
 ```text
 approach: BaselineGrammar
@@ -225,11 +225,29 @@ approach: BaselineGrammar
 > departure: BaselineGrammar
 ```
 
-Approach and departure share one baseline grammar catalog but select and realize their programs independently from the shared seam seed. The catalog now spans Straight, Bow, Inflection, Angled course, Dogleg, Wave, and Stepped course. Straight is the non-connector identity case; it does not replace or flatten the ConnectorGrammar event.
+BaselineGrammar is itself compositional. The current implementation separates:
 
-Connector identity remains separate from baseline identity. A connector grammar still determines the interlocking event; baseline grammars determine the structural course of the non-connector spans. The default baseline selection is intentionally familiar-first: Straight and Bow are most common, Inflection / Angled course / Dogleg remain regular possibilities, and Wave / Stepped course are rarer extensions of the same vocabulary. This weighting is a generation policy rather than a hard Traditional / Unconventional taxonomy. Common polarity, reciprocal orientation, rendering, sampling, bounds, and whole-piece safety remain downstream concerns.
+```text
+primitive vocabulary
+    ↓
+sequence / repeat / oppose / mirror
+    ↓
+canonical named productions
+    ↓
+seeded family parameters
+    ↓
+realization
+```
 
-The composed seam, not each part in isolation, is the validation boundary. Broad deterministic sweeps cover every baseline grammar in both approach and departure roles, many weighted pairings across every connector grammar, reciprocal neighbor geometry, seam bounds/self-intersection, and whole-piece safety.
+The primitive vocabulary is `identity / sweep / cross / course / turn`. Current canonical productions are Straight, Bow, Inflection, Angled course, Dogleg, Wave, and Stepped course. Straight is the non-connector identity case; it does not replace or flatten the ConnectorGrammar event.
+
+Named baseline families are therefore canonical sentences, not primitive atoms. Every non-identity primitive participates in multiple canonical families, and the production API can compose structures outside the named catalog. This leaves a direct path to a later meta-grammar without requiring current generation to become unconstrained.
+
+Connector identity remains separate from baseline identity. A connector grammar determines the interlocking event; baseline productions determine the structural course of the non-connector spans. Common polarity, reciprocal orientation, rendering, sampling, bounds, and whole-piece safety remain downstream concerns.
+
+The grammar layer deliberately does not encode Traditional / Unconventional admission or weighting. The current catalog selector is neutral. Product-level palette selection, weighting, parameter restraint, and coherent cut personality belong to #213, operating over both BaselineGrammar and ConnectorGrammar through the same seam-generation pipeline.
+
+The composed seam, not each part in isolation, remains the safety boundary. Broad deterministic sweeps cover every baseline family in both approach and departure roles, many role pairings across every connector grammar, reciprocal neighbor geometry, seam bounds/self-intersection, and whole-piece safety.
 
 No baseline choice is persisted separately. It is deterministically derived from the existing shared interior-edge seed, consistent with the project's explicit pre-versioning policy.
 
