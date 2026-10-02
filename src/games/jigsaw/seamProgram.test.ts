@@ -4,7 +4,6 @@ import { deriveJigsawConnectorProgram } from "./connectorGrammar";
 import { jigsawEdgeProfileIds } from "./edgeProfiles";
 import {
   deriveJigsawSeamProgram,
-  jigsawDefaultBaselineSelectionWeights,
   selectJigsawBaselineGrammar,
 } from "./seamProgram";
 
@@ -26,38 +25,21 @@ describe("Jigsaw seam program", () => {
     }
   });
 
-  it("anchors the default distribution in familiar forms without hiding extended forms", () => {
-    expect(jigsawDefaultBaselineSelectionWeights.straight).toBeGreaterThan(
-      jigsawDefaultBaselineSelectionWeights.bow,
-    );
-    expect(jigsawDefaultBaselineSelectionWeights.bow).toBeGreaterThan(
-      jigsawDefaultBaselineSelectionWeights.inflection,
-    );
-    expect(jigsawDefaultBaselineSelectionWeights.dogleg).toBeGreaterThan(
-      jigsawDefaultBaselineSelectionWeights.wave,
-    );
-    expect(jigsawDefaultBaselineSelectionWeights.wave).toBeGreaterThan(
-      jigsawDefaultBaselineSelectionWeights["stepped-course"],
-    );
+  it("keeps grammar-layer catalog selection policy-neutral", () => {
+    for (const [index, grammarId] of jigsawBaselineGrammarIds.entries()) {
+      expect(
+        selectJigsawBaselineGrammar(
+          (index + 0.5) / jigsawBaselineGrammarIds.length,
+        ),
+      ).toBe(grammarId);
+    }
 
-    const selections = Array.from({ length: 10_000 }, (_, index) =>
-      selectJigsawBaselineGrammar((index + 0.5) / 10_000),
+    expect(selectJigsawBaselineGrammar(0)).toBe(
+      jigsawBaselineGrammarIds[0],
     );
-    expect(new Set(selections)).toEqual(new Set(jigsawBaselineGrammarIds));
-
-    const counts = Object.fromEntries(
-      jigsawBaselineGrammarIds.map((grammarId) => [
-        grammarId,
-        selections.filter((selected) => selected === grammarId).length,
-      ]),
-    ) as Record<(typeof jigsawBaselineGrammarIds)[number], number>;
-
-    expect(counts.straight).toBeGreaterThan(counts.bow);
-    expect(counts.bow).toBeGreaterThan(counts.inflection);
-    expect(counts.inflection).toBeGreaterThan(counts["angled-course"]);
-    expect(counts["angled-course"]).toBeGreaterThan(counts.dogleg);
-    expect(counts.dogleg).toBeGreaterThan(counts.wave);
-    expect(counts.wave).toBeGreaterThan(counts["stepped-course"]);
+    expect(selectJigsawBaselineGrammar(1)).toBe(
+      jigsawBaselineGrammarIds[jigsawBaselineGrammarIds.length - 1],
+    );
   });
 
   it("uses one baseline grammar vocabulary for both seam roles while selecting them independently", () => {
