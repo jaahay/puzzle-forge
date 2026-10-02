@@ -105,7 +105,7 @@ export const resolveGenerationIdentity = ({
     : requestedImageId;
   const currentJigsawCutStyle =
     currentPuzzle?.kind === "tiles" && currentPuzzle.puzzleId === "jigsaw"
-      ? currentPuzzle.cutStyle
+      ? currentPuzzle.edgeModel.cutStyle
       : undefined;
   const jigsawCutStyle = puzzleId === "jigsaw"
     ? normalizeJigsawCutStyle(
