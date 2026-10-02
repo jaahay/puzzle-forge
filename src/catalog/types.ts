@@ -201,7 +201,6 @@ export type JigsawInteriorEdge = JigsawPieceEdgeBase & {
 export type JigsawPieceEdge = JigsawBoundaryEdge | JigsawInteriorEdge;
 
 export type JigsawEdgeModel = {
-  catalogRevision: number;
   cutStyle: JigsawCutStyle;
   baselineGrammarIds: readonly JigsawBaselineGrammarId[];
 };
