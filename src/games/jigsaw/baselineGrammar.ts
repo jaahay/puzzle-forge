@@ -192,7 +192,7 @@ export const deriveJigsawBaselineProgram = (
 export const realizeJigsawBaselineProgram = (
   program: JigsawBaselineProgram,
 ): JigsawBaselinePoint[] => {
-  const signedDepth = program.direction;
+  const signedDepth = program.direction * program.depth;
 
   switch (program.baselineGrammarId) {
     case "bow":
