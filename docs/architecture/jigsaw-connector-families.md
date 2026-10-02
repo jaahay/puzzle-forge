@@ -445,7 +445,7 @@ Baseline geometry is deliberately shallower than the connector event. It shapes 
 
 The composition boundary is `JigsawSeamProgram` in `src/games/jigsaw/seamProgram.ts`. Connector programs continue to derive exactly through ConnectorGrammar; the seam program adds independently seeded baseline programs around that unchanged connector component.
 
-Placement remains connector-led. The connector first receives its existing seeded width, depth, lean, handedness, and legal center placement. The approach and departure baselines are then mapped into the actual remaining spans. When a connector lands near a corner, baseline amplitude attenuates with the available span rather than globally shrinking the connector or introducing special-case placement branches.
+Placement remains connector-led. The connector first receives its existing seeded width, depth, lean, handedness, and legal center placement. The approach and departure baselines are then mapped into the actual remaining spans. Baseline amplitude attenuates with short spans and is additionally constrained by a corner wedge whose permitted normal depth grows with distance from the true piece corner. This keeps adjacent edges out of one another's corner neighborhoods without globally shrinking connectors or adding seed-specific exceptions.
 
 Rendering remains compositional as well:
 
