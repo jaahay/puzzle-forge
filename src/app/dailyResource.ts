@@ -7,6 +7,10 @@ import type {
   SudokuVariation,
 } from "../catalog/types";
 import { getPuzzleImageAsset, isImageBackedPuzzleId } from "../games/imageAssets";
+import {
+  defaultJigsawCutStyle,
+  isJigsawCutStyle,
+} from "../games/jigsaw/cutStyle";
 import { isDailyDateStamp } from "../games/shared/daily";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import {
@@ -46,6 +50,7 @@ const queryKeyOrder = [
   "variation",
   "unique",
   "image",
+  "cut",
   "draw",
   "redeals",
   "waste",
@@ -64,6 +69,7 @@ const makeDefaultRuntimeSettings = (puzzleId: PuzzleId): GenerationRuntimeSettin
     requireUniqueSolution: true,
     sudokuVariation: defaultSudokuVariation,
     solitaireVariation: defaultSolitaireVariation,
+    jigsawCutStyle: defaultJigsawCutStyle,
   };
 };
 
@@ -95,6 +101,7 @@ const allowedQueryKeys = (puzzleId: PuzzleId): ReadonlySet<string> => {
     case "logic-grid":
       return new Set(["size"]);
     case "jigsaw":
+      return new Set(["size", "image", "cut"]);
     case "tile-swap":
     case "sliding-puzzle":
       return new Set(["size", "image"]);
@@ -133,7 +140,18 @@ const appendCanonicalQuery = (identity: GenerationIdentity) => {
         values.set("size", `${identity.width}x${identity.height}`);
       }
       break;
-    case "jigsaw":
+    case "jigsaw": {
+      if (identity.width !== definition.defaultWidth || identity.height !== definition.defaultHeight) {
+        values.set("size", `${identity.width}x${identity.height}`);
+      }
+      const defaultImageId = getPuzzleImageAsset(undefined, identity.puzzleId).id;
+      const imageId = getPuzzleImageAsset(identity.imageId, identity.puzzleId).id;
+      if (imageId !== defaultImageId) values.set("image", imageId);
+      if (identity.jigsawCutStyle !== defaultJigsawCutStyle) {
+        values.set("cut", identity.jigsawCutStyle);
+      }
+      break;
+    }
     case "tile-swap":
     case "sliding-puzzle": {
       if (identity.width !== definition.defaultWidth || identity.height !== definition.defaultHeight) {
@@ -222,6 +240,13 @@ export const canonicalizeDailyResourceQuery = (
     const unique = parseBoolean(params.get("unique") ?? "");
     if (unique === null) return { ok: false, reason: "invalid-query" };
     settings.requireUniqueSolution = unique;
+  }
+
+  if (params.has("cut")) {
+    if (puzzleId !== "jigsaw") return { ok: false, reason: "invalid-query" };
+    const cutStyle = params.get("cut");
+    if (!isJigsawCutStyle(cutStyle)) return { ok: false, reason: "invalid-query" };
+    settings.jigsawCutStyle = cutStyle;
   }
 
   if (params.has("image")) {
