@@ -11,6 +11,7 @@ import {
   type JigsawBaselinePoint,
 } from "./baselineGrammar";
 import {
+  deriveJigsawConnectorProgram,
   getJigsawConnectorGrammarDefinition,
   realizeJigsawConnectorProgram,
   type JigsawConnectorPoint,
