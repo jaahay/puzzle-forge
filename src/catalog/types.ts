@@ -180,7 +180,6 @@ export type JigsawEdgeProfile = {
   label: string;
   description: string;
   connectorGrammarId: JigsawConnectorGrammarId;
-  selectionWeight: number;
   difficultyWeight: number;
 };
 
