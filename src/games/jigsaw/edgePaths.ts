@@ -5,11 +5,16 @@ import type {
   JigsawPieceEdge,
 } from "../../catalog/types";
 import {
-  deriveJigsawConnectorProgram,
+  getJigsawBaselineGrammarDefinition,
+  realizeJigsawBaselineProgram,
+  type JigsawBaselinePoint,
+} from "./baselineGrammar";
+import {
   getJigsawConnectorGrammarDefinition,
   realizeJigsawConnectorProgram,
   type JigsawConnectorPoint,
 } from "./connectorGrammar";
+import { deriveJigsawSeamProgram } from "./seamProgram";
 
 export type JigsawEdgePoint = JigsawConnectorPoint;
 
@@ -55,12 +60,42 @@ const point = (x: number, y: number): JigsawEdgePoint => ({ x, y });
 const mirrorAnchors = (points: readonly JigsawEdgePoint[]) =>
   [...points].reverse().map((candidate) => point(-candidate.x, candidate.y));
 
-const getCanonicalConnectorPoints = (
+type CanonicalSeamParts = {
+  program: ReturnType<typeof deriveJigsawSeamProgram>;
+  approach: JigsawEdgePoint[];
+  connector: JigsawEdgePoint[];
+  departure: JigsawEdgePoint[];
+};
+
+const baselineCornerSlope = 0.4;
+
+const placeBaselinePoints = (
+  points: readonly JigsawBaselinePoint[],
+  startX: number,
+  endX: number,
+  corner: "start" | "end",
+): JigsawEdgePoint[] => {
+  const span = Math.max(0, endX - startX);
+  const depthScale = Math.min(1, span / 18);
+
+  return points.map((candidate) => {
+    const x = startX + candidate.x * span;
+    const rawY = candidate.y * depthScale;
+    const cornerDistance = corner === "start" ? x : 100 - x;
+    const maximumDepth = Math.max(0, cornerDistance * baselineCornerSlope);
+    const y =
+      Math.sign(rawY) * Math.min(Math.abs(rawY), maximumDepth);
+
+    return point(x, y);
+  });
+};
+
+const getCanonicalSeamParts = (
   profileId: JigsawEdgeProfileId,
   seedOffset: number,
-): JigsawEdgePoint[] => {
+): CanonicalSeamParts => {
   const grammar = getJigsawConnectorGrammarDefinition(profileId);
-  const program = deriveJigsawConnectorProgram(profileId, seedOffset);
+  const program = deriveJigsawSeamProgram(profileId, seedOffset);
   const width = seededRange(seedOffset, 0x51ed, grammar.width);
   const depth = seededRange(seedOffset, 0x7f4a, grammar.depth);
   const lean =
@@ -68,7 +103,7 @@ const getCanonicalConnectorPoints = (
   const shouldMirror =
     grammar.mirrorable && seededUnit(seedOffset, 0x65d3) < 0.5;
 
-  let anchors = realizeJigsawConnectorProgram(program);
+  let anchors = realizeJigsawConnectorProgram(program.connector);
   if (shouldMirror) anchors = mirrorAnchors(anchors);
 
   const horizontalOffsets = anchors.map(
@@ -91,12 +126,25 @@ const getCanonicalConnectorPoints = (
       anchor.y * depth,
     ),
   );
+  const connectorStart = connector[0].x;
+  const connectorEnd = connector[connector.length - 1].x;
 
-  return [
-    point(0, 0),
-    ...connector,
-    point(100, 0),
-  ];
+  return {
+    program,
+    approach: placeBaselinePoints(
+      realizeJigsawBaselineProgram(program.approach),
+      0,
+      connectorStart,
+      "start",
+    ),
+    connector,
+    departure: placeBaselinePoints(
+      realizeJigsawBaselineProgram(program.departure),
+      connectorEnd,
+      100,
+      "end",
+    ),
+  };
 };
 
 type JigsawEdgeLineSegment = {
@@ -124,54 +172,96 @@ const lineSegmentsFromPoints = (points: readonly JigsawEdgePoint[]): JigsawEdgeS
     end,
   }));
 
+const curvedSegmentsFromPoints = (
+  points: readonly JigsawEdgePoint[],
+  curveTension: number,
+  horizontalEndpoints = false,
+): JigsawEdgeSegment[] => {
+  if (points.length < 2) return [];
+
+  return points.slice(0, -1).map((start, index) => {
+    const previous = points[Math.max(0, index - 1)];
+    const end = points[index + 1];
+    const following = points[Math.min(points.length - 1, index + 2)];
+
+    const firstSegment = index === 0;
+    const lastSegment = index === points.length - 2;
+
+    return {
+      kind: "cubic",
+      start,
+      control1: horizontalEndpoints && firstSegment
+        ? point(
+            start.x + (end.x - start.x) * curveTension,
+            start.y,
+          )
+        : point(
+            start.x + (end.x - previous.x) * curveTension,
+            start.y + (end.y - previous.y) * curveTension,
+          ),
+      control2: horizontalEndpoints && lastSegment
+        ? point(
+            end.x - (end.x - start.x) * curveTension,
+            end.y,
+          )
+        : point(
+            end.x - (following.x - start.x) * curveTension,
+            end.y - (following.y - start.y) * curveTension,
+          ),
+      end,
+    };
+  });
+};
+
+const segmentsFromPoints = (
+  points: readonly JigsawEdgePoint[],
+  renderMode: "smooth" | "angular",
+  curveTension: number,
+  horizontalEndpoints = false,
+): JigsawEdgeSegment[] =>
+  renderMode === "angular"
+    ? lineSegmentsFromPoints(points)
+    : curvedSegmentsFromPoints(points, curveTension, horizontalEndpoints);
+
+export const getJigsawCanonicalConnectorPoints = (
+  profileId: JigsawEdgeProfileId,
+  seedOffset: number,
+): JigsawEdgePoint[] =>
+  getCanonicalSeamParts(profileId, seedOffset).connector.map(normalizePoint);
+
 const getCanonicalEdgeSegments = (
   profileId: JigsawEdgeProfileId,
   seedOffset: number,
 ): JigsawEdgeSegment[] => {
-  const points = getCanonicalConnectorPoints(profileId, seedOffset);
-  const grammar = getJigsawConnectorGrammarDefinition(profileId);
-  if (grammar.renderMode === "angular") {
-    return lineSegmentsFromPoints(points);
-  }
+  const seam = getCanonicalSeamParts(profileId, seedOffset);
+  const connectorGrammar = getJigsawConnectorGrammarDefinition(profileId);
+  const approachGrammar = getJigsawBaselineGrammarDefinition(
+    seam.program.approach.baselineGrammarId,
+  );
+  const departureGrammar = getJigsawBaselineGrammarDefinition(
+    seam.program.departure.baselineGrammarId,
+  );
 
-  const curveTension = grammar.curveTension;
-  const connector = points.slice(1, -1);
-  const segments: JigsawEdgeSegment[] = [
-    {
-      kind: "line",
-      start: points[0],
-      end: connector[0],
-    },
+  return [
+    ...segmentsFromPoints(
+      seam.approach,
+      approachGrammar.renderMode,
+      approachGrammar.curveTension,
+      true,
+    ),
+    ...segmentsFromPoints(
+      seam.connector,
+      connectorGrammar.renderMode,
+      connectorGrammar.curveTension,
+      connectorGrammar.renderMode === "smooth",
+    ),
+    ...segmentsFromPoints(
+      seam.departure,
+      departureGrammar.renderMode,
+      departureGrammar.curveTension,
+      true,
+    ),
   ];
-
-  for (let index = 0; index < connector.length - 1; index += 1) {
-    const previous = connector[Math.max(0, index - 1)];
-    const start = connector[index];
-    const end = connector[index + 1];
-    const following = connector[Math.min(connector.length - 1, index + 2)];
-
-    segments.push({
-      kind: "cubic",
-      start,
-      control1: point(
-        start.x + (end.x - previous.x) * curveTension,
-        start.y + (end.y - previous.y) * curveTension,
-      ),
-      control2: point(
-        end.x - (following.x - start.x) * curveTension,
-        end.y - (following.y - start.y) * curveTension,
-      ),
-      end,
-    });
-  }
-
-  segments.push({
-    kind: "line",
-    start: connector[connector.length - 1],
-    end: points[points.length - 1],
-  });
-
-  return segments;
 };
 
 const transformPoint = (

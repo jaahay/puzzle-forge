@@ -208,10 +208,48 @@ Generator and geometry tests cover:
 - each generated puzzle uses exactly one connector grammar while different puzzle seeds can select across the catalog;
 - each grammar has a distinct structural production;
 - bounded-repeat grammars can derive different event counts from different seeds;
-- organic grammars render with curves and intentionally angular grammars remain angular;
+- organic connector segments render with curves and intentionally angular connector segments remain angular, while baseline rendering is independently smooth or angular;
 - generated seam geometry remains finite, bounded, and non-self-intersecting across a broad deterministic seed sweep;
 - complete four-edge piece outlines remain non-self-intersecting across broad seed and polarity coverage;
 - every interior edge has exactly one neighbor edge.
+
+### Baseline grammar seam composition
+
+Ordinary interior seams no longer assume that geometry outside the connector event is permanently straight.
+
+The canonical seam model is:
+
+```text
+approach: BaselineGrammar
+> connector: ConnectorGrammar
+> departure: BaselineGrammar
+```
+
+BaselineGrammar is itself compositional. The current implementation separates:
+
+```text
+primitive vocabulary
+    ↓
+sequence / repeat / oppose / mirror
+    ↓
+canonical named productions
+    ↓
+seeded family parameters
+    ↓
+realization
+```
+
+The primitive vocabulary is `identity / deflect / cross / course`. Smooth, diagonal, and orthogonal motion remain realization choices rather than grammar primitives. Current canonical productions are Straight, Bow, Inflection, Angled course, Dogleg, Wave, and Stepped course. Straight is the non-connector identity case; it does not replace or flatten the ConnectorGrammar event.
+
+Named baseline families are therefore canonical sentences, not primitive atoms. Every non-identity primitive participates in multiple canonical families, and the production API can compose structures outside the named catalog. This leaves a direct path to a later meta-grammar without requiring current generation to become unconstrained.
+
+Connector identity remains separate from baseline identity. A connector grammar determines the interlocking event; baseline productions determine the structural course of the non-connector spans. Common polarity, reciprocal orientation, rendering, sampling, bounds, and whole-piece safety remain downstream concerns.
+
+The grammar layer deliberately does not encode Traditional / Unconventional admission or weighting. Its current baseline sampler is uniform across the canonical catalog: equal weighting is only the grammar-layer default, not the intended product distribution. Product-level palette selection, weighting, parameter restraint, and coherent cut personality belong to #213, operating over both BaselineGrammar and ConnectorGrammar through the same seam-generation pipeline.
+
+The composed seam, not each part in isolation, remains the safety boundary. Broad deterministic sweeps cover every baseline family in both approach and departure roles, many role pairings across every connector grammar, reciprocal neighbor geometry, seam bounds/self-intersection, and whole-piece safety.
+
+No baseline choice is persisted separately. It is deterministically derived from the existing shared interior-edge seed, consistent with the project's explicit pre-versioning policy.
 
 ### Follow-on geometry directions
 
