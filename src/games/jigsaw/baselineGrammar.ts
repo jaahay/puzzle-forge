@@ -1,3 +1,15 @@
+import {
+  baselineMirror,
+  baselineOppose,
+  baselinePrimitive,
+  baselineRepeat,
+  baselineSequence,
+  expandJigsawBaselineProduction,
+  getJigsawBaselineProductionStructure,
+  type JigsawBaselinePrimitive,
+  type JigsawBaselineProduction,
+} from "./baselineProduction";
+
 export type JigsawBaselinePoint = {
   x: number;
   y: number;
@@ -18,7 +30,7 @@ export type JigsawBaselineGrammarDefinition = {
   id: JigsawBaselineGrammarId;
   label: string;
   description: string;
-  production: string;
+  production: JigsawBaselineProduction;
   renderMode: "smooth" | "angular";
   curveTension: number;
   depth: Range;
@@ -26,46 +38,40 @@ export type JigsawBaselineGrammarDefinition = {
 
 type BaselineProgramBase = {
   baselineGrammarId: JigsawBaselineGrammarId;
-  events: readonly string[];
+  events: readonly JigsawBaselinePrimitive[];
   depth: number;
   direction: -1 | 1;
 };
 
 type StraightProgram = BaselineProgramBase & {
   baselineGrammarId: "straight";
-  events: readonly ["straight"];
   depth: 0;
   direction: 1;
 };
 
 type BowProgram = BaselineProgramBase & {
   baselineGrammarId: "bow";
-  events: readonly ["bow"];
   peak: number;
 };
 
 type InflectionProgram = BaselineProgramBase & {
   baselineGrammarId: "inflection";
-  events: readonly ["sweep", "cross-baseline", "counter-sweep"];
   crossover: number;
 };
 
 type WaveProgram = BaselineProgramBase & {
   baselineGrammarId: "wave";
-  events: readonly ["crest", "trough", "crest"];
   middleDepth: number;
 };
 
 type AngledCourseProgram = BaselineProgramBase & {
   baselineGrammarId: "angled-course";
-  events: readonly ["ramp", "course", "return"];
   courseStart: number;
   courseEnd: number;
 };
 
 type DoglegProgram = BaselineProgramBase & {
   baselineGrammarId: "dogleg";
-  events: readonly ["depart-angle", "bend", "counter-bend", "return-angle"];
   firstBend: number;
   secondBend: number;
   middleLevel: number;
@@ -73,7 +79,6 @@ type DoglegProgram = BaselineProgramBase & {
 
 type SteppedCourseProgram = BaselineProgramBase & {
   baselineGrammarId: "stepped-course";
-  events: readonly ["step", "run", "step", "run", "step"];
   middleLevel: number;
 };
 
@@ -96,12 +101,54 @@ export const jigsawBaselineGrammarIds = [
   "stepped-course",
 ] as const satisfies readonly JigsawBaselineGrammarId[];
 
+const identity = baselinePrimitive("identity");
+const sweep = baselinePrimitive("sweep");
+const cross = baselinePrimitive("cross");
+const course = baselinePrimitive("course");
+const turn = baselinePrimitive("turn");
+
+export const jigsawBaselineCanonicalProductions = {
+  straight: identity,
+  bow: baselineSequence(
+    sweep,
+    baselineMirror(sweep),
+  ),
+  inflection: baselineSequence(
+    sweep,
+    cross,
+    baselineOppose(baselineMirror(sweep)),
+  ),
+  "angled-course": baselineSequence(
+    turn,
+    course,
+    baselineMirror(turn),
+  ),
+  dogleg: baselineSequence(
+    baselineRepeat(turn, 2),
+    baselineMirror(baselineRepeat(turn, 2)),
+  ),
+  wave: baselineSequence(
+    sweep,
+    cross,
+    baselineOppose(sweep),
+    cross,
+    sweep,
+  ),
+  "stepped-course": baselineSequence(
+    baselineRepeat(
+      baselineSequence(turn, course),
+      2,
+    ),
+    baselineMirror(turn),
+  ),
+} as const satisfies Record<JigsawBaselineGrammarId, JigsawBaselineProduction>;
+
 export const jigsawBaselineGrammarCatalog = {
   straight: {
     id: "straight",
     label: "Straight",
     description: "The nominal edge remains quiet outside the connector event.",
-    production: "straight",
+    production: jigsawBaselineCanonicalProductions.straight,
     renderMode: "angular",
     curveTension: 0,
     depth: [0, 0],
@@ -110,7 +157,7 @@ export const jigsawBaselineGrammarCatalog = {
     id: "bow",
     label: "Bow",
     description: "One shallow same-side arc rises from and returns to the nominal edge.",
-    production: "bow",
+    production: jigsawBaselineCanonicalProductions.bow,
     renderMode: "smooth",
     curveTension: 0.12,
     depth: [3.5, 6.5],
@@ -119,7 +166,7 @@ export const jigsawBaselineGrammarCatalog = {
     id: "inflection",
     label: "Inflection",
     description: "A smooth sweep crosses the nominal edge once and resolves with an opposed counter-sweep.",
-    production: "sweep > cross-baseline > counter-sweep",
+    production: jigsawBaselineCanonicalProductions.inflection,
     renderMode: "smooth",
     curveTension: 0.11,
     depth: [3.5, 6.5],
@@ -127,8 +174,8 @@ export const jigsawBaselineGrammarCatalog = {
   wave: {
     id: "wave",
     label: "Wave",
-    description: "Three alternating smooth lobes create repeated baseline crossings without becoming an interlock.",
-    production: "crest > trough > crest",
+    description: "Alternating sweeps cross the nominal edge repeatedly without becoming an interlock.",
+    production: jigsawBaselineCanonicalProductions.wave,
     renderMode: "smooth",
     curveTension: 0.1,
     depth: [3, 5.75],
@@ -136,8 +183,8 @@ export const jigsawBaselineGrammarCatalog = {
   "angled-course": {
     id: "angled-course",
     label: "Angled course",
-    description: "A diagonal ramp enters one offset course before returning diagonally to the nominal edge.",
-    production: "ramp > course > return",
+    description: "A diagonal turn enters one offset course before returning diagonally to the nominal edge.",
+    production: jigsawBaselineCanonicalProductions["angled-course"],
     renderMode: "angular",
     curveTension: 0,
     depth: [3, 5.5],
@@ -145,8 +192,8 @@ export const jigsawBaselineGrammarCatalog = {
   dogleg: {
     id: "dogleg",
     label: "Dogleg",
-    description: "A broken diagonal course changes heading twice before returning to the nominal edge.",
-    production: "depart-angle > bend > counter-bend > return-angle",
+    description: "Repeated angular turns change heading before mirroring back to the nominal edge.",
+    production: jigsawBaselineCanonicalProductions.dogleg,
     renderMode: "angular",
     curveTension: 0,
     depth: [3, 5.5],
@@ -154,8 +201,8 @@ export const jigsawBaselineGrammarCatalog = {
   "stepped-course": {
     id: "stepped-course",
     label: "Stepped course",
-    description: "Orthogonal steps move through two offset runs before returning to the nominal edge.",
-    production: "step > run > step > run > step",
+    description: "Repeated angular turns and courses form an orthogonal stepped path before returning.",
+    production: jigsawBaselineCanonicalProductions["stepped-course"],
     renderMode: "angular",
     curveTension: 0,
     depth: [3, 5.5],
@@ -179,16 +226,18 @@ export const deriveJigsawBaselineProgram = (
   baselineGrammarId: JigsawBaselineGrammarId,
   seedOffset: number,
 ): JigsawBaselineProgram => {
+  const definition = jigsawBaselineGrammarCatalog[baselineGrammarId];
+  const events = expandJigsawBaselineProduction(definition.production);
+
   if (baselineGrammarId === "straight") {
     return {
       baselineGrammarId,
-      events: ["straight"],
+      events,
       depth: 0,
       direction: 1,
     };
   }
 
-  const definition = jigsawBaselineGrammarCatalog[baselineGrammarId];
   const depth = range(seedOffset, 0xb101, definition.depth[0], definition.depth[1]);
   const signedDirection = direction(seedOffset, 0xb102);
 
@@ -196,7 +245,7 @@ export const deriveJigsawBaselineProgram = (
     case "bow":
       return {
         baselineGrammarId,
-        events: ["bow"],
+        events,
         depth,
         direction: signedDirection,
         peak: range(seedOffset, 0xb111, 0.44, 0.56),
@@ -204,7 +253,7 @@ export const deriveJigsawBaselineProgram = (
     case "inflection":
       return {
         baselineGrammarId,
-        events: ["sweep", "cross-baseline", "counter-sweep"],
+        events,
         depth,
         direction: signedDirection,
         crossover: range(seedOffset, 0xb121, 0.46, 0.54),
@@ -212,7 +261,7 @@ export const deriveJigsawBaselineProgram = (
     case "wave":
       return {
         baselineGrammarId,
-        events: ["crest", "trough", "crest"],
+        events,
         depth,
         direction: signedDirection,
         middleDepth: range(seedOffset, 0xb131, 0.68, 0.86),
@@ -220,7 +269,7 @@ export const deriveJigsawBaselineProgram = (
     case "angled-course":
       return {
         baselineGrammarId,
-        events: ["ramp", "course", "return"],
+        events,
         depth,
         direction: signedDirection,
         courseStart: range(seedOffset, 0xb141, 0.3, 0.38),
@@ -229,7 +278,7 @@ export const deriveJigsawBaselineProgram = (
     case "dogleg":
       return {
         baselineGrammarId,
-        events: ["depart-angle", "bend", "counter-bend", "return-angle"],
+        events,
         depth,
         direction: signedDirection,
         firstBend: range(seedOffset, 0xb161, 0.28, 0.34),
@@ -239,7 +288,7 @@ export const deriveJigsawBaselineProgram = (
     case "stepped-course":
       return {
         baselineGrammarId,
-        events: ["step", "run", "step", "run", "step"],
+        events,
         depth,
         direction: signedDirection,
         middleLevel: range(seedOffset, 0xb151, 0.38, 0.58),
@@ -334,4 +383,7 @@ export const getJigsawBaselineGrammarDefinition = (
 
 export const getJigsawBaselineProgramSignature = (
   program: JigsawBaselineProgram,
-): string => program.events.join(" > ");
+): string =>
+  getJigsawBaselineProductionStructure(
+    jigsawBaselineGrammarCatalog[program.baselineGrammarId].production,
+  );
