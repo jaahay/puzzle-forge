@@ -1,5 +1,4 @@
 import type {
-  JigsawBaselineGrammarId,
   JigsawEdgeModel,
   JigsawEdgeProfileId,
 } from "../../catalog/types";
@@ -19,11 +18,6 @@ export type JigsawSeamProgram = {
   departure: JigsawBaselineProgram;
 };
 
-export type JigsawSeamCutPolicy = Pick<
-  JigsawEdgeModel,
-  "cutStyle" | "baselineGrammarIds"
->;
-
 const seededUnit = (seedOffset: number, salt: number) => {
   let mixed = (seedOffset ^ salt) >>> 0;
   mixed ^= mixed >>> 16;
@@ -34,27 +28,24 @@ const seededUnit = (seedOffset: number, salt: number) => {
   return (mixed >>> 0) / 0xffff_ffff;
 };
 
-const sampleBaselineGrammarId = (
-  seedOffset: number,
-  salt: number,
-  policy: JigsawSeamCutPolicy,
-): JigsawBaselineGrammarId =>
-  sampleJigsawBaselineGrammarForCutStyle(
-    policy.cutStyle,
-    policy.baselineGrammarIds,
-    seededUnit(seedOffset, salt),
-  );
-
 const deriveRoleSeed = (seedOffset: number, salt: number) =>
   Math.imul((seedOffset ^ salt) >>> 0, 1_597_334_677) >>> 0;
 
 export const deriveJigsawSeamProgram = (
   connectorGrammarId: JigsawEdgeProfileId,
   seedOffset: number,
-  policy: JigsawSeamCutPolicy,
+  edgeModel: JigsawEdgeModel,
 ): JigsawSeamProgram => {
-  const approachGrammarId = sampleBaselineGrammarId(seedOffset, 0xc201, policy);
-  const departureGrammarId = sampleBaselineGrammarId(seedOffset, 0xc202, policy);
+  const approachGrammarId = sampleJigsawBaselineGrammarForCutStyle(
+    edgeModel.cutStyle,
+    edgeModel.baselineGrammarIds,
+    seededUnit(seedOffset, 0xc201),
+  );
+  const departureGrammarId = sampleJigsawBaselineGrammarForCutStyle(
+    edgeModel.cutStyle,
+    edgeModel.baselineGrammarIds,
+    seededUnit(seedOffset, 0xc202),
+  );
 
   return {
     approach: deriveJigsawBaselineProgram(
