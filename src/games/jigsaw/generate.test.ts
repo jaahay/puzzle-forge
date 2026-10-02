@@ -188,7 +188,7 @@ describe("generateJigsaw", () => {
     }
 
     expect(selected).toEqual(
-      new Set(["classic-bulb", "necked-head", "multi-lobe"]),
+      new Set(["classic-bulb", "necked-head"]),
     );
   });
 
