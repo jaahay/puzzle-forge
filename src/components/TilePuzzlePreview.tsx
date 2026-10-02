@@ -1266,7 +1266,7 @@ export const TilePuzzlePreview = ({
               activeDrag?.puzzleId === puzzle.id &&
               activeDrag.tileId === tile.id;
             const raised = tile.id === raisedTileId;
-            const outlinePath = getJigsawPieceOutlinePath(tile);
+            const outlinePath = getJigsawPieceOutlinePath(tile, puzzle.edgeModel);
             const clipPathId = getPieceClipPathId(puzzle, tile);
             const pieceStyle = {
               width: `${layout.pieceWidth}px`,
@@ -1313,7 +1313,7 @@ export const TilePuzzlePreview = ({
                   />
                   <path class="tile-puzzle-piece-hit-target" d={outlinePath} {...getPieceHitTargetProps()} />
                   <path class="tile-puzzle-piece-outline" d={outlinePath} />
-                  {shouldRenderJigsawEdgeSeams(showEdgeSeams, isSolved) ? getJigsawPieceSeamPaths(tile).map((seam) => (
+                  {shouldRenderJigsawEdgeSeams(showEdgeSeams, isSolved) ? getJigsawPieceSeamPaths(tile, puzzle.edgeModel).map((seam) => (
                     <path
                       class={`tile-puzzle-edge-seam ${seam.boundary ? "boundary" : "interior"} ${seam.polarity}`}
                       d={seam.d}
