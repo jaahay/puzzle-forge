@@ -164,7 +164,7 @@ export const jigsawBaselineGrammarCatalog = {
   inflection: {
     id: "inflection",
     label: "Inflection",
-    description: "A smooth deflect crosses the nominal edge once and resolves with an opposed counter-deflect.",
+    description: "A smooth deflection crosses the nominal edge once and resolves with an opposed counter-sweep.",
     production: jigsawBaselineCanonicalProductions.inflection,
     renderMode: "smooth",
     curveTension: 0.11,
@@ -191,7 +191,7 @@ export const jigsawBaselineGrammarCatalog = {
   dogleg: {
     id: "dogleg",
     label: "Dogleg",
-    description: "Repeated angular turns change heading before mirroring back to the nominal edge.",
+    description: "A broken diagonal path changes heading through paired deflections before mirroring back to the nominal edge.",
     production: jigsawBaselineCanonicalProductions.dogleg,
     renderMode: "angular",
     curveTension: 0,
@@ -200,7 +200,7 @@ export const jigsawBaselineGrammarCatalog = {
   "stepped-course": {
     id: "stepped-course",
     label: "Stepped course",
-    description: "Repeated angular turns and courses form an orthogonal stepped path before returning.",
+    description: "Repeated deflections and courses form an orthogonal stepped path before returning.",
     production: jigsawBaselineCanonicalProductions["stepped-course"],
     renderMode: "angular",
     curveTension: 0,
