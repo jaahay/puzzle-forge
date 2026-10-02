@@ -69,7 +69,7 @@ describe("generateJigsaw", () => {
       cutStyle: defaultJigsawCutStyle,
       baselineGrammarIds: deriveJigsawBaselinePalette(
         defaultJigsawCutStyle,
-        `edges@${jigsawEdgeProfileCatalogRevision}:${defaultJigsawCutStyle}`,
+        `jigsaw:phase-one-seed:4x3:${defaultJigsawImageAsset.id}:edges@${jigsawEdgeProfileCatalogRevision}:${defaultJigsawCutStyle}`,
       ),
     });
     expect(puzzle.id).toContain(defaultJigsawImageAsset.id);
@@ -212,6 +212,38 @@ describe("generateJigsaw", () => {
     }
 
     expect(selected).toEqual(new Set(jigsawEdgeProfileIds));
+  });
+
+  it("varies the coherent baseline sub-palette across puzzle identities", () => {
+    const traditionalPalettes = new Set<string>();
+    const unconventionalPalettes = new Set<string>();
+
+    for (let index = 0; index < 96; index += 1) {
+      const seed = `palette-sample-${index}`;
+      traditionalPalettes.add(
+        generateJigsaw({
+          puzzleId: "jigsaw",
+          seed,
+          width: 6,
+          height: 6,
+          imageId: defaultJigsawImageAsset.id,
+          jigsawCutStyle: "traditional",
+        }).edgeModel.baselineGrammarIds.join("|"),
+      );
+      unconventionalPalettes.add(
+        generateJigsaw({
+          puzzleId: "jigsaw",
+          seed,
+          width: 6,
+          height: 6,
+          imageId: defaultJigsawImageAsset.id,
+          jigsawCutStyle: "unconventional",
+        }).edgeModel.baselineGrammarIds.join("|"),
+      );
+    }
+
+    expect(traditionalPalettes.size).toBeGreaterThan(1);
+    expect(unconventionalPalettes.size).toBeGreaterThan(4);
   });
 
   it("makes every border edge flat, unpaired, and profile-free", () => {
