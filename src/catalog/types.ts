@@ -175,14 +175,6 @@ export type JigsawConnectorGrammarId =
   | "stacked-lock";
 export type JigsawEdgeProfileId = JigsawConnectorGrammarId;
 
-export type JigsawEdgeProfile = {
-  id: JigsawEdgeProfileId;
-  label: string;
-  description: string;
-  connectorGrammarId: JigsawConnectorGrammarId;
-  difficultyWeight: number;
-};
-
 type JigsawPieceEdgeBase = {
   edgeId: string;
   side: JigsawEdgeSide;
@@ -210,7 +202,6 @@ export type JigsawPieceEdge = JigsawBoundaryEdge | JigsawInteriorEdge;
 
 export type JigsawEdgeModel = {
   catalogRevision: number;
-  profileIds: readonly JigsawEdgeProfileId[];
   cutStyle: JigsawCutStyle;
   baselineGrammarIds: readonly JigsawBaselineGrammarId[];
 };
