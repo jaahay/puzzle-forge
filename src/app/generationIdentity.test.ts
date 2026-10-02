@@ -3,9 +3,6 @@ import type { GeneratedPuzzle, PuzzleDifficulty, SolitaireVariation, SudokuVaria
 import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
 import { generateJigsaw } from "../games/jigsaw/generate";
 import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
-import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
-import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
-import { generateJigsaw } from "../games/jigsaw/generate";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation } from "../games/sudoku/variation";
 import {
@@ -171,32 +168,6 @@ describe("generated puzzle identity matching", () => {
       generatedPuzzleMatchesIdentity(puzzle, {
         ...identity,
         jigsawCutStyle: "unconventional",
-      }),
-    ).toBe(false);
-  });
-
-  it("includes Jigsaw cut style in generated identity", () => {
-    const puzzle = generateJigsaw({
-      puzzleId: "jigsaw",
-      seed: "seed-1",
-      width: 4,
-      height: 4,
-      imageId: defaultJigsawImageAsset.id,
-      jigsawCutStyle: "unconventional",
-    });
-    const identity = {
-      ...baseIdentity("jigsaw"),
-      width: 4,
-      height: 4,
-      imageId: defaultJigsawImageAsset.id,
-      jigsawCutStyle: "unconventional" as const,
-    };
-
-    expect(generatedPuzzleMatchesIdentity(puzzle, identity)).toBe(true);
-    expect(
-      generatedPuzzleMatchesIdentity(puzzle, {
-        ...identity,
-        jigsawCutStyle: "traditional",
       }),
     ).toBe(false);
   });
