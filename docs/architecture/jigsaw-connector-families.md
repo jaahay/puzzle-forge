@@ -457,10 +457,11 @@ SeamProgram
 The irreducible primitive vocabulary is intentionally small:
 
 - **identity** — no deformation of the nominal baseline;
-- **sweep** — smooth progression through changing normal displacement;
+- **deflect** — change normal displacement without crossing the nominal baseline;
 - **cross** — a topological crossing of the nominal baseline;
-- **course** — progression while holding an offset course;
-- **turn** — an angular heading change.
+- **course** — progression while holding an offset course.
+
+Smooth, diagonal, and orthogonal motion are realization choices for these structures, not separate primitives. This keeps the grammar alphabet about path structure rather than rendering style.
 
 The production language composes those primitives with:
 
@@ -476,12 +477,12 @@ These operators preserve the primitive vocabulary rather than minting new family
 The current named families are canonical sentences in that language:
 
 - **Straight** — `identity`
-- **Bow** — `sweep > mirror(sweep)`
-- **Inflection** — `sweep > cross > oppose(mirror(sweep))`
-- **Angled course** — `turn > course > mirror(turn)`
-- **Dogleg** — `repeat(turn){2} > mirror(repeat(turn){2})`
-- **Wave** — `sweep > cross > oppose(sweep) > cross > sweep`
-- **Stepped course** — `repeat(turn > course){2} > mirror(turn)`
+- **Bow** — `deflect > mirror(deflect)`
+- **Inflection** — `deflect > cross > oppose(mirror(deflect))`
+- **Angled course** — `deflect > course > mirror(deflect)`
+- **Dogleg** — `repeat(deflect){2} > mirror(repeat(deflect){2})`
+- **Wave** — `deflect > cross > oppose(deflect) > cross > deflect`
+- **Stepped course** — `repeat(deflect > course){2} > mirror(deflect)`
 
 Straight is the identity case for the non-connector span. It does not create a straight connector or remove the interlocking event; ConnectorGrammar still owns the actual interlock.
 
@@ -495,7 +496,7 @@ The atlas below renders representative and seeded approach-role specimens from t
 
 ![High-fidelity Jigsaw baseline grammar atlas](./assets/jigsaw-baseline-grammar-atlas.svg)
 
-The rows remain useful as a perceptual continuum from quiet to expressive, but that ordering is not encoded into BaselineGrammar semantics. Straight is the quiet identity case; Bow introduces smooth displacement; Inflection adds a crossing; Angled course introduces an offset course; Dogleg compounds angular turns; Wave composes multiple sweeps and crossings; Stepped course realizes repeated turn/course structure orthogonally.
+The rows remain useful as a perceptual continuum from quiet to expressive, but that ordering is not encoded into BaselineGrammar semantics. Straight is the quiet identity case; Bow realizes paired deflections smoothly; Inflection adds a crossing; Angled course inserts an offset course between deflections; Dogleg compounds deflections into a broken diagonal path; Wave composes deflections and crossings; Stepped course realizes repeated deflection/course structure orthogonally.
 
 [Open the baseline atlas directly](./assets/jigsaw-baseline-grammar-atlas.svg)
 
