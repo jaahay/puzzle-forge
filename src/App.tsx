@@ -278,7 +278,6 @@ export const App = () => {
         difficulty,
         requireUniqueSolution,
         sudokuVariation,
-        jigsawCutStyle,
       },
       {
         puzzleId: identity.puzzleId,
