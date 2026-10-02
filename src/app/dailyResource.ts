@@ -147,7 +147,10 @@ const appendCanonicalQuery = (identity: GenerationIdentity) => {
       const defaultImageId = getPuzzleImageAsset(undefined, identity.puzzleId).id;
       const imageId = getPuzzleImageAsset(identity.imageId, identity.puzzleId).id;
       if (imageId !== defaultImageId) values.set("image", imageId);
-      if (identity.jigsawCutStyle !== defaultJigsawCutStyle) {
+      if (
+        identity.jigsawCutStyle &&
+        identity.jigsawCutStyle !== defaultJigsawCutStyle
+      ) {
         values.set("cut", identity.jigsawCutStyle);
       }
       break;
