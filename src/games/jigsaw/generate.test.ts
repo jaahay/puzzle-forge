@@ -12,10 +12,9 @@ import {
   deriveJigsawBaselinePalette,
 } from "./cutStyle";
 import {
-  getJigsawEdgeProfile,
-  jigsawEdgeProfileCatalogRevision,
-  jigsawEdgeProfileIds,
-} from "./edgeProfiles";
+  jigsawConnectorGrammarCatalogRevision,
+  jigsawConnectorGrammarIds,
+} from "./connectorGrammar";
 import { generateJigsaw } from "./generate";
 import { defaultJigsawImageAsset } from "./imageAssets";
 
@@ -64,17 +63,16 @@ describe("generateJigsaw", () => {
     expect(puzzle.asset.kind).toBe("image");
     expect(puzzle.edgeModel.cutStyle).toBe(defaultJigsawCutStyle);
     expect(puzzle.edgeModel).toEqual({
-      catalogRevision: jigsawEdgeProfileCatalogRevision,
-      profileIds: [...jigsawEdgeProfileIds],
+      catalogRevision: jigsawConnectorGrammarCatalogRevision,
       cutStyle: defaultJigsawCutStyle,
       baselineGrammarIds: deriveJigsawBaselinePalette(
         defaultJigsawCutStyle,
-        `jigsaw:phase-one-seed:4x3:${defaultJigsawImageAsset.id}:edges@${jigsawEdgeProfileCatalogRevision}:${defaultJigsawCutStyle}`,
+        `jigsaw:phase-one-seed:4x3:${defaultJigsawImageAsset.id}:edges@${jigsawConnectorGrammarCatalogRevision}:${defaultJigsawCutStyle}`,
       ),
     });
     expect(puzzle.id).toContain(defaultJigsawImageAsset.id);
     expect(puzzle.id).toContain(
-      `edges@${jigsawEdgeProfileCatalogRevision}:${defaultJigsawCutStyle}`,
+      `edges@${jigsawConnectorGrammarCatalogRevision}:${defaultJigsawCutStyle}`,
     );
   });
 
@@ -126,27 +124,6 @@ describe("generateJigsaw", () => {
     expect(puzzle.width).toBe(32);
     expect(puzzle.height).toBe(32);
     expect(puzzle.tiles).toHaveLength(1024);
-  });
-
-  it("provides a complete, explicitly ordered edge profile repository", () => {
-    expect(jigsawEdgeProfileIds).toEqual([
-      "classic-bulb",
-      "necked-head",
-      "multi-lobe",
-      "scoop",
-      "serpentine",
-      "terrace",
-      "zigzag",
-      "stacked-lock",
-    ]);
-
-    for (const profileId of jigsawEdgeProfileIds) {
-      const profile = getJigsawEdgeProfile(profileId);
-      expect(profile.id).toBe(profileId);
-      expect(profile.connectorGrammarId).toBe(profileId);
-      expect(profile.description.length).toBeGreaterThan(0);
-      expect(profile.difficultyWeight).toBeGreaterThan(0);
-    }
   });
 
   it("uses exactly one connector family throughout each generated game", () => {
@@ -211,7 +188,7 @@ describe("generateJigsaw", () => {
       selected.add(firstInteriorEdge.profileId);
     }
 
-    expect(selected).toEqual(new Set(jigsawEdgeProfileIds));
+    expect(selected).toEqual(new Set(jigsawConnectorGrammarIds));
   });
 
   it("varies the coherent baseline sub-palette across puzzle identities", () => {
