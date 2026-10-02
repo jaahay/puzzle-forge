@@ -186,7 +186,6 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
     height: boundedHeight,
     tiles,
     asset,
-    cutStyle,
     edgeModel,
     notes: [`Jigsaw using the bundled ${asset.title} image.`],
   });
