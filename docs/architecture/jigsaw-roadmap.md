@@ -128,7 +128,7 @@ type JigsawPiece = {
 
 See [Jigsaw Connector Grammar Design](./jigsaw-connector-families.md) for the visual identification guide, grammar-by-grammar design intent, tuning snapshot, generated atlas, and rejected/collapsed productions.
 
-The edge repository is now **grammar-first**. Ordinary connector entries are distinct structural productions rather than cosmetic names backed by one shared formula. Connector selection weights no longer belong to the edge-profile catalog; Traditional / Unconventional product policy owns those weights in `cutStyle.ts`. The generator still chooses one connector grammar once per puzzle, so cut-style weights shape variety across games rather than within one board. Individual seams then vary deterministically within that grammar.
+The edge repository is now **grammar-first**. Ordinary connector entries are distinct structural productions rather than cosmetic names backed by one shared formula. Traditional / Unconventional product policy owns connector selection weights in `cutStyle.ts`; connector metadata stays with the grammar definitions themselves. The generator chooses one connector grammar once per puzzle, so cut-style weights shape variety across games rather than within one board. Individual seams then vary deterministically within that grammar.
 
 ```ts
 type JigsawConnectorGrammarId =
@@ -140,14 +140,6 @@ type JigsawConnectorGrammarId =
   | "terrace"
   | "zigzag"
   | "stacked-lock";
-
-type JigsawEdgeProfile = {
-  id: JigsawConnectorGrammarId;
-  label: string;
-  description: string;
-  connectorGrammarId: JigsawConnectorGrammarId;
-  difficultyWeight: number;
-};
 ```
 
 The current ordinary productions are:
