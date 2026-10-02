@@ -490,6 +490,8 @@ The important distinction is that these seven names are not the alphabet. They a
 
 The current catalog also exercises the reusable vocabulary rather than introducing one-off primitives: every non-identity primitive appears in multiple canonical families. Tests additionally construct a valid production that is not one of the seven named families, proving that the composition machinery is not closed over the current catalog.
 
+Only the canonical named families have tuned geometry realizers in #192. The production AST can represent additional structural candidates, but arbitrary AST-to-geometry realization is intentionally deferred to the future meta-grammar work; this PR establishes the language and its invariants without claiming that compiler already exists.
+
 ### Baseline graphical atlas
 
 The atlas below renders representative and seeded approach-role specimens from the canonical families using the production corner-safety envelope.
