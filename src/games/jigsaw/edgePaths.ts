@@ -165,6 +165,7 @@ const lineSegmentsFromPoints = (points: readonly JigsawEdgePoint[]): JigsawEdgeS
 const curvedSegmentsFromPoints = (
   points: readonly JigsawEdgePoint[],
   curveTension: number,
+  horizontalEndpoints = false,
 ): JigsawEdgeSegment[] => {
   if (points.length < 2) return [];
 
@@ -179,7 +180,7 @@ const curvedSegmentsFromPoints = (
     return {
       kind: "cubic",
       start,
-      control1: firstSegment
+      control1: horizontalEndpoints && firstSegment
         ? point(
             start.x + (end.x - start.x) * curveTension,
             start.y,
@@ -188,7 +189,7 @@ const curvedSegmentsFromPoints = (
             start.x + (end.x - previous.x) * curveTension,
             start.y + (end.y - previous.y) * curveTension,
           ),
-      control2: lastSegment
+      control2: horizontalEndpoints && lastSegment
         ? point(
             end.x - (end.x - start.x) * curveTension,
             end.y,
@@ -206,10 +207,17 @@ const segmentsFromPoints = (
   points: readonly JigsawEdgePoint[],
   renderMode: "smooth" | "angular",
   curveTension: number,
+  horizontalEndpoints = false,
 ): JigsawEdgeSegment[] =>
   renderMode === "angular"
     ? lineSegmentsFromPoints(points)
-    : curvedSegmentsFromPoints(points, curveTension);
+    : curvedSegmentsFromPoints(points, curveTension, horizontalEndpoints);
+
+export const getJigsawCanonicalConnectorPoints = (
+  profileId: JigsawEdgeProfileId,
+  seedOffset: number,
+): JigsawEdgePoint[] =>
+  getCanonicalSeamParts(profileId, seedOffset).connector.map(normalizePoint);
 
 const getCanonicalEdgeSegments = (
   profileId: JigsawEdgeProfileId,
@@ -229,6 +237,7 @@ const getCanonicalEdgeSegments = (
       seam.approach,
       approachGrammar.renderMode,
       approachGrammar.curveTension,
+      true,
     ),
     ...segmentsFromPoints(
       seam.connector,
@@ -239,6 +248,7 @@ const getCanonicalEdgeSegments = (
       seam.departure,
       departureGrammar.renderMode,
       departureGrammar.curveTension,
+      true,
     ),
   ];
 };
