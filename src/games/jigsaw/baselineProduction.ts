@@ -49,12 +49,24 @@ export const baselinePrimitive = (
   primitive,
 });
 
+const isIdentity = (production: JigsawBaselineProduction) =>
+  production.kind === "primitive" && production.primitive === "identity";
+
 export const baselineSequence = (
   ...terms: readonly JigsawBaselineProduction[]
-): JigsawBaselineProduction => ({
-  kind: "sequence",
-  terms,
-});
+): JigsawBaselineProduction => {
+  const flattened = terms
+    .flatMap((term) => (term.kind === "sequence" ? term.terms : [term]))
+    .filter((term) => !isIdentity(term));
+
+  if (flattened.length === 0) return baselinePrimitive("identity");
+  if (flattened.length === 1) return flattened[0];
+
+  return {
+    kind: "sequence",
+    terms: flattened,
+  };
+};
 
 export const baselineRepeat = (
   term: JigsawBaselineProduction,
@@ -62,6 +74,16 @@ export const baselineRepeat = (
 ): JigsawBaselineProduction => {
   if (!Number.isInteger(count) || count < 1) {
     throw new Error("Baseline production repeat count must be a positive integer.");
+  }
+
+  if (isIdentity(term) || count === 1) return term;
+
+  if (term.kind === "repeat") {
+    return {
+      kind: "repeat",
+      term: term.term,
+      count: term.count * count,
+    };
   }
 
   return {
@@ -73,17 +95,27 @@ export const baselineRepeat = (
 
 export const baselineOppose = (
   term: JigsawBaselineProduction,
-): JigsawBaselineProduction => ({
-  kind: "oppose",
-  term,
-});
+): JigsawBaselineProduction => {
+  if (isIdentity(term)) return term;
+  if (term.kind === "oppose") return term.term;
+
+  return {
+    kind: "oppose",
+    term,
+  };
+};
 
 export const baselineMirror = (
   term: JigsawBaselineProduction,
-): JigsawBaselineProduction => ({
-  kind: "mirror",
-  term,
-});
+): JigsawBaselineProduction => {
+  if (isIdentity(term)) return term;
+  if (term.kind === "mirror") return term.term;
+
+  return {
+    kind: "mirror",
+    term,
+  };
+};
 
 export const expandJigsawBaselineProduction = (
   production: JigsawBaselineProduction,
