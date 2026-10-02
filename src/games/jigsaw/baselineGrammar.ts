@@ -128,15 +128,13 @@ export const jigsawBaselineCanonicalProductions = {
   ),
   wave: baselineSequence(
     deflect,
-    cross,
-    baselineOppose(deflect),
-    cross,
-    deflect,
+    baselineRepeat(cross, 2),
+    baselineMirror(deflect),
   ),
   "stepped-course": baselineSequence(
     baselineRepeat(
       baselineSequence(deflect, course),
-      2,
+      3,
     ),
     baselineMirror(deflect),
   ),
