@@ -20,7 +20,7 @@ export type GenerationRuntimeSettings = {
   requireUniqueSolution: boolean;
   sudokuVariation: SudokuVariation;
   solitaireVariation: SolitaireVariation;
-  jigsawCutStyle: JigsawCutStyle;
+  jigsawCutStyle?: JigsawCutStyle;
 };
 
 export type GenerationIdentity = GenerationRuntimeSettings & {
@@ -47,7 +47,7 @@ export const getGeneratedPuzzleRuntimeSettings = (
       ? normalizeSolitaireVariation(puzzle.solitaireVariation)
       : fallback.solitaireVariation,
   jigsawCutStyle:
-    puzzle.puzzleId === "jigsaw"
+    puzzle.kind === "tiles" && puzzle.puzzleId === "jigsaw"
       ? normalizeJigsawCutStyle(puzzle.cutStyle)
       : fallback.jigsawCutStyle,
 });
