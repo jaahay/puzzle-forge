@@ -92,6 +92,10 @@ export const baselineRepeat = (
   };
 };
 
+/**
+ * Reflect a production across the nominal baseline, changing its normal side
+ * without changing traversal direction.
+ */
 export const baselineOppose = (
   term: JigsawBaselineProduction,
 ): JigsawBaselineProduction => {
@@ -104,6 +108,10 @@ export const baselineOppose = (
   };
 };
 
+/**
+ * Reflect a production across the midpoint of its local traversal span,
+ * preserving its normal side while reversing the gesture's longitudinal shape.
+ */
 export const baselineMirror = (
   term: JigsawBaselineProduction,
 ): JigsawBaselineProduction => {
