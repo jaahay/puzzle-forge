@@ -67,36 +67,27 @@ type CanonicalSeamParts = {
   departure: JigsawEdgePoint[];
 };
 
-const baselineCornerQuietSpan = 8;
+const baselineCornerSlope = 0.4;
 
 const placeBaselinePoints = (
   points: readonly JigsawBaselinePoint[],
   startX: number,
   endX: number,
-  quietAtStart: number,
-  quietAtEnd: number,
+  corner: "start" | "end",
 ): JigsawEdgePoint[] => {
-  const activeStart = Math.min(endX, startX + quietAtStart);
-  const activeEnd = Math.max(activeStart, endX - quietAtEnd);
-  const activeSpan = activeEnd - activeStart;
+  const span = Math.max(0, endX - startX);
+  const depthScale = Math.min(1, span / 18);
 
-  if (activeSpan <= 0) {
-    return [point(startX, 0), point(endX, 0)];
-  }
+  return points.map((candidate) => {
+    const x = startX + candidate.x * span;
+    const rawY = candidate.y * depthScale;
+    const cornerDistance = corner === "start" ? x : 100 - x;
+    const maximumDepth = Math.max(0, cornerDistance * baselineCornerSlope);
+    const y =
+      Math.sign(rawY) * Math.min(Math.abs(rawY), maximumDepth);
 
-  const depthScale = Math.min(1, activeSpan / 18);
-  const activePoints = points.map((candidate) =>
-    point(
-      activeStart + candidate.x * activeSpan,
-      candidate.y * depthScale,
-    ),
-  );
-
-  return [
-    ...(activeStart > startX ? [point(startX, 0)] : []),
-    ...activePoints,
-    ...(activeEnd < endX ? [point(endX, 0)] : []),
-  ];
+    return point(x, y);
+  });
 };
 
 const getCanonicalSeamParts = (
@@ -144,16 +135,14 @@ const getCanonicalSeamParts = (
       realizeJigsawBaselineProgram(program.approach),
       0,
       connectorStart,
-      baselineCornerQuietSpan,
-      0,
+      "start",
     ),
     connector,
     departure: placeBaselinePoints(
       realizeJigsawBaselineProgram(program.departure),
       connectorEnd,
       100,
-      0,
-      baselineCornerQuietSpan,
+      "end",
     ),
   };
 };
