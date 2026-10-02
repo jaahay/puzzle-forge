@@ -225,11 +225,11 @@ approach: BaselineGrammar
 > departure: BaselineGrammar
 ```
 
-Approach and departure share one baseline grammar catalog but select and realize their programs independently from the shared seam seed. Current baseline productions include Bow, Inflection, Wave, Angled course, and Stepped course.
+Approach and departure share one baseline grammar catalog but select and realize their programs independently from the shared seam seed. The catalog now spans Straight, Bow, Inflection, Angled course, Dogleg, Wave, and Stepped course. Straight is the non-connector identity case; it does not replace or flatten the ConnectorGrammar event.
 
-Connector identity remains separate from baseline identity. A connector grammar still determines the interlocking event; baseline grammars determine the structural course of the non-connector spans. Common polarity, reciprocal orientation, rendering, sampling, bounds, and whole-piece safety remain downstream concerns.
+Connector identity remains separate from baseline identity. A connector grammar still determines the interlocking event; baseline grammars determine the structural course of the non-connector spans. The default baseline selection is intentionally familiar-first: Straight and Bow are most common, Inflection / Angled course / Dogleg remain regular possibilities, and Wave / Stepped course are rarer extensions of the same vocabulary. This weighting is a generation policy rather than a hard Traditional / Unconventional taxonomy. Common polarity, reciprocal orientation, rendering, sampling, bounds, and whole-piece safety remain downstream concerns.
 
-The composed seam, not each part in isolation, is the validation boundary. Broad deterministic sweeps cover connector grammars across the complete approach/departure baseline pair space, reciprocal neighbor geometry, seam bounds/self-intersection, and whole-piece safety.
+The composed seam, not each part in isolation, is the validation boundary. Broad deterministic sweeps cover every baseline grammar in both approach and departure roles, many weighted pairings across every connector grammar, reciprocal neighbor geometry, seam bounds/self-intersection, and whole-piece safety.
 
 No baseline choice is persisted separately. It is deterministically derived from the existing shared interior-edge seed, consistent with the project's explicit pre-versioning policy.
 
