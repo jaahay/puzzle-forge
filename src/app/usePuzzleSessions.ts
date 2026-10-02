@@ -76,7 +76,11 @@ const cloneTilePuzzle = (puzzle: Exclude<GeneratedPuzzle, CardGeneratedPuzzle | 
       ...puzzle,
       tiles: puzzle.tiles.map((tile) => ({ ...tile, edges: tile.edges.map((edge) => ({ ...edge })) })),
       asset: { ...puzzle.asset, files: { ...puzzle.asset.files }, credit: { ...puzzle.asset.credit } },
-      edgeModel: { ...puzzle.edgeModel, profileIds: [...puzzle.edgeModel.profileIds] },
+      edgeModel: {
+        ...puzzle.edgeModel,
+        profileIds: [...puzzle.edgeModel.profileIds],
+        baselineGrammarIds: [...puzzle.edgeModel.baselineGrammarIds],
+      },
     };
   }
 
