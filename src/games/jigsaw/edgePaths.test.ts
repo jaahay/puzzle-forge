@@ -6,7 +6,10 @@ import type {
   JigsawInteriorEdge,
   JigsawPiece,
 } from "../../catalog/types";
-import { getJigsawBaselineGrammarDefinition } from "./baselineGrammar";
+import {
+  getJigsawBaselineGrammarDefinition,
+  jigsawBaselineGrammarIds,
+} from "./baselineGrammar";
 import { jigsawEdgeProfileIds } from "./edgeProfiles";
 import { deriveJigsawSeamProgram } from "./seamProgram";
 import { generateJigsaw } from "./generate";
@@ -335,9 +338,13 @@ describe("Jigsaw edge paths", () => {
   it("survives a broad deterministic seed sweep across baseline × connector composition", () => {
     for (const profileId of jigsawEdgeProfileIds) {
       const baselinePairs = new Set<string>();
+      const approachGrammarIds = new Set<string>();
+      const departureGrammarIds = new Set<string>();
 
       for (const seedOffset of broadSeamSeedOffsets) {
         const seam = deriveJigsawSeamProgram(profileId, seedOffset);
+        approachGrammarIds.add(seam.approach.baselineGrammarId);
+        departureGrammarIds.add(seam.departure.baselineGrammarId);
         baselinePairs.add(
           `${seam.approach.baselineGrammarId}>${seam.departure.baselineGrammarId}`,
         );
@@ -348,7 +355,11 @@ describe("Jigsaw edge paths", () => {
         expectPointsSafe(points, `${profileId} broad seam seed ${seedOffset}`);
       }
 
-      expect(baselinePairs.size).toBe(25);
+      expect(approachGrammarIds).toEqual(new Set(jigsawBaselineGrammarIds));
+      expect(departureGrammarIds).toEqual(new Set(jigsawBaselineGrammarIds));
+      expect(baselinePairs.size).toBeGreaterThanOrEqual(
+        jigsawBaselineGrammarIds.length * 5,
+      );
     }
   }, 15_000);
 
