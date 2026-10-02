@@ -3,6 +3,10 @@ import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { GeneratedPuzzle, PuzzleId } from "../catalog/types";
 import { getPuzzleImageAsset } from "../games/imageAssets";
 import {
+  defaultJigsawCutStyle,
+  normalizeJigsawCutStyle,
+} from "../games/jigsaw/cutStyle";
+import {
   getJigsawSizePresetForDimensions,
   jigsawCustomSizeSelection,
 } from "../games/jigsaw/size";
@@ -40,6 +44,15 @@ export const buildNextPuzzleDraft = ({
   const jigsawSizeSelection = puzzleId === "jigsaw"
     ? getJigsawSizePresetForDimensions(getPuzzleImageAsset(imageId, "jigsaw"), width, height) ?? jigsawCustomSizeSelection
     : undefined;
+  const jigsawCutStyle = puzzleId === "jigsaw"
+    ? normalizeJigsawCutStyle(
+        puzzle?.puzzleId === "jigsaw"
+          ? puzzle.cutStyle
+          : useRuntimeFallback
+            ? runtimeSettings.jigsawCutStyle
+            : defaultJigsawCutStyle,
+      )
+    : undefined;
 
   return {
     width,
@@ -60,6 +73,7 @@ export const buildNextPuzzleDraft = ({
           : defaultSolitaireVariation,
     ...(imageId ? { imageId } : {}),
     ...(jigsawSizeSelection ? { jigsawSizeSelection } : {}),
+    ...(jigsawCutStyle ? { jigsawCutStyle } : {}),
   };
 };
 
@@ -82,6 +96,7 @@ export const applyNextPuzzleDraftSettings = (
     : base.solitaireVariation,
   imageId: settings.imageId ?? base.imageId,
   jigsawSizeSelection: settings.jigsawSizeSelection ?? base.jigsawSizeSelection,
+  jigsawCutStyle: settings.jigsawCutStyle ?? base.jigsawCutStyle,
 });
 
 type UseNextPuzzleDraftsInput = {
