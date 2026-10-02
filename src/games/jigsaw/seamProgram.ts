@@ -17,8 +17,13 @@ export type JigsawSeamProgram = {
 };
 
 const seededUnit = (seedOffset: number, salt: number) => {
-  const mixed = Math.imul((seedOffset ^ salt) >>> 0, 2_654_435_761) >>> 0;
-  return mixed / 0xffff_ffff;
+  let mixed = (seedOffset ^ salt) >>> 0;
+  mixed ^= mixed >>> 16;
+  mixed = Math.imul(mixed, 0x7feb352d) >>> 0;
+  mixed ^= mixed >>> 15;
+  mixed = Math.imul(mixed, 0x846ca68b) >>> 0;
+  mixed ^= mixed >>> 16;
+  return (mixed >>> 0) / 0xffff_ffff;
 };
 
 export const selectJigsawBaselineGrammar = (
