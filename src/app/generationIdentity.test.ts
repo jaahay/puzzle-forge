@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { GeneratedPuzzle, PuzzleDifficulty, SolitaireVariation, SudokuVariation } from "../catalog/types";
+import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
+import { generateJigsaw } from "../games/jigsaw/generate";
+import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation } from "../games/sudoku/variation";
 import {
@@ -18,6 +21,7 @@ const baseRuntimeSettings: GenerationRuntimeSettings = {
   requireUniqueSolution: true,
   sudokuVariation: defaultSudokuVariation,
   solitaireVariation: defaultSolitaireVariation,
+  jigsawCutStyle: defaultJigsawCutStyle,
 };
 
 const baseIdentity = (puzzleId: GenerationIdentity["puzzleId"]): GenerationIdentity => ({
@@ -95,6 +99,7 @@ describe("generated puzzle runtime identity", () => {
       requireUniqueSolution: false,
       sudokuVariation: "diagonal",
       solitaireVariation: defaultSolitaireVariation,
+      jigsawCutStyle: defaultJigsawCutStyle,
     });
   });
 });
@@ -138,6 +143,33 @@ describe("generated puzzle identity matching", () => {
       ...identity,
       solitaireVariation: { ...defaultSolitaireVariation, drawMode: "draw-3" },
     })).toBe(false);
+  });
+
+  it("includes Jigsaw cut style in generated identity matching", () => {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "jigsaw-style",
+      width: 6,
+      height: 5,
+      imageId: defaultJigsawImageAsset.id,
+      jigsawCutStyle: "traditional",
+    });
+    const identity: GenerationIdentity = {
+      ...baseIdentity("jigsaw"),
+      seed: puzzle.seed,
+      width: puzzle.width,
+      height: puzzle.height,
+      imageId: puzzle.asset.id,
+      jigsawCutStyle: "traditional",
+    };
+
+    expect(generatedPuzzleMatchesIdentity(puzzle, identity)).toBe(true);
+    expect(
+      generatedPuzzleMatchesIdentity(puzzle, {
+        ...identity,
+        jigsawCutStyle: "unconventional",
+      }),
+    ).toBe(false);
   });
 
   it("includes image identity and dimensions for image-backed puzzles", () => {
