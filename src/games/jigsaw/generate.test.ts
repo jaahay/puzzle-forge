@@ -62,7 +62,7 @@ describe("generateJigsaw", () => {
 
     expect(puzzle.asset).toEqual(defaultJigsawImageAsset);
     expect(puzzle.asset.kind).toBe("image");
-    expect(puzzle.cutStyle).toBe(defaultJigsawCutStyle);
+    expect(puzzle.edgeModel.cutStyle).toBe(defaultJigsawCutStyle);
     expect(puzzle.edgeModel).toEqual({
       catalogRevision: jigsawEdgeProfileCatalogRevision,
       profileIds: [...jigsawEdgeProfileIds],
@@ -84,8 +84,8 @@ describe("generateJigsaw", () => {
 
     expect(traditional.seed).toBe(unconventional.seed);
     expect(traditional.asset.id).toBe(unconventional.asset.id);
-    expect(traditional.cutStyle).toBe("traditional");
-    expect(unconventional.cutStyle).toBe("unconventional");
+    expect(traditional.edgeModel.cutStyle).toBe("traditional");
+    expect(unconventional.edgeModel.cutStyle).toBe("unconventional");
     expect(traditional.id).not.toBe(unconventional.id);
     expect(traditional.checksum).not.toBe(unconventional.checksum);
     expect(traditional.edgeModel.baselineGrammarIds).not.toEqual(
@@ -344,7 +344,6 @@ describe("generateJigsaw", () => {
       height: puzzle.height,
       tiles: changedTiles,
       asset: puzzle.asset,
-      cutStyle: puzzle.cutStyle,
       edgeModel: puzzle.edgeModel,
       notes: puzzle.notes,
     });
@@ -356,7 +355,6 @@ describe("generateJigsaw", () => {
       height: puzzle.height,
       tiles: puzzle.tiles,
       asset: puzzle.asset,
-      cutStyle: puzzle.cutStyle,
       edgeModel: {
         ...puzzle.edgeModel,
         catalogRevision: puzzle.edgeModel.catalogRevision + 1,
