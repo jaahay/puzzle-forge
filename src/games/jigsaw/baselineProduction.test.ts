@@ -125,7 +125,6 @@ describe("Jigsaw baseline production language", () => {
   it("normalizes algebraically reducible production forms", () => {
     const identity = baselinePrimitive("identity");
     const deflect = baselinePrimitive("deflect");
-    const deflect = baselinePrimitive("deflect");
 
     expect(
       getJigsawBaselineProductionStructure(
