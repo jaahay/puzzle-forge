@@ -1,9 +1,8 @@
 export const jigsawBaselinePrimitives = [
   "identity",
-  "sweep",
+  "deflect",
   "cross",
   "course",
-  "turn",
 ] as const;
 
 export type JigsawBaselinePrimitive =
