@@ -30,7 +30,7 @@ describe("Jigsaw cut style", () => {
     );
 
     expect(selected).toEqual(
-      new Set(["classic-bulb", "necked-head", "multi-lobe"]),
+      new Set(["classic-bulb", "necked-head"]),
     );
   });
 
@@ -65,7 +65,6 @@ describe("Jigsaw cut style", () => {
             "bow",
             "inflection",
             "angled-course",
-            "dogleg",
           ].includes(grammarId),
         ),
       ).toBe(true);
