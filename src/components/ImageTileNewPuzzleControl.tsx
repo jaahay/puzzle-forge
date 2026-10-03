@@ -49,12 +49,14 @@ export const ImageTileNewPuzzleControl = ({
 }: ImageTileNewPuzzleControlProps) => {
   const selectedAsset = getPuzzleImageAsset(imageId, puzzleId);
   const configurationSummary = `${selectedAsset.title} · ${width}×${height}`;
+  const randomConfigurationSummary = `${width}×${height}`;
 
   return (
     <NewPuzzleCommand
       puzzleTitle={puzzleTitle}
       currentSeed={currentSeed}
       configurationSummary={configurationSummary}
+      randomConfigurationSummary={randomConfigurationSummary}
       seedLoadInput={seedLoadInput}
       disabled={disabled}
       panelClassName="image-new-puzzle-options-panel"
@@ -64,8 +66,7 @@ export const ImageTileNewPuzzleControl = ({
       onLoadSeed={onLoadSeed}
       info={(
         <>
-          <p>Artwork and board dimensions configure the next puzzle only. Changing them here does not rebuild the puzzle currently being played.</p>
-          <p>Random, Today, and ordinary seed loads all use the selected artwork and size.</p>
+          <p>Board dimensions configure the next puzzle. New and Surprise Me choose a different eligible artwork; Today and seed loads use the selected artwork.</p>
         </>
       )}
       settings={(
