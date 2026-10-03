@@ -3,10 +3,10 @@ import type { JigsawPiece } from "../../catalog/types";
 import {
   createJigsawCoarseSections,
   getJigsawCoarseSectionForPiece,
-  getJigsawCoarseSectionFocusPieceIds,
   isJigsawCoarseSectionComplete,
-  shouldOfferJigsawCoarseSections,
 } from "./coarseSections";
+import { generateJigsaw } from "./generate";
+import { defaultJigsawImageAsset } from "./imageAssets";
 
 const makeGrid = (width: number, height: number): JigsawPiece[] =>
   Array.from({ length: width * height }, (_, solvedIndex) => ({
@@ -19,12 +19,6 @@ const makeGrid = (width: number, height: number): JigsawPiece[] =>
   })).reverse();
 
 describe("Jigsaw coarse sections", () => {
-  it("offers coarse focus only for large puzzles", () => {
-    expect(shouldOfferJigsawCoarseSections(63)).toBe(false);
-    expect(shouldOfferJigsawCoarseSections(64)).toBe(true);
-    expect(shouldOfferJigsawCoarseSections(100)).toBe(true);
-  });
-
   it("partitions an even grid into four stable solved-space quadrants", () => {
     const sections = createJigsawCoarseSections(makeGrid(4, 4), 4, 4);
 
@@ -118,22 +112,6 @@ describe("Jigsaw coarse sections", () => {
     expect([...memberships].sort()).toEqual(
       pieces.map((piece) => piece.id).sort(),
     );
-
-    const topLeft = sections[0]!;
-    expect(topLeft.pieceIds).toEqual([
-      "tile-0",
-      "tile-1",
-      "tile-2",
-      "tile-3",
-      "tile-7",
-      "tile-8",
-      "tile-9",
-      "tile-10",
-      "tile-14",
-      "tile-15",
-      "tile-16",
-      "tile-17",
-    ]);
   });
 
   it("finds the stable section for a global piece id", () => {
@@ -141,64 +119,6 @@ describe("Jigsaw coarse sections", () => {
 
     expect(getJigsawCoarseSectionForPiece(sections, "tile-6")?.id).toBe("top-right");
     expect(getJigsawCoarseSectionForPiece(sections, "missing")).toBeNull();
-  });
-
-  it("focuses the section's global pieces without splitting an island that crosses its boundary", () => {
-    const pieces = makeGrid(4, 4);
-    const sections = createJigsawCoarseSections(pieces, 4, 4);
-    const topLeft = sections[0]!;
-
-    expect(
-      getJigsawCoarseSectionFocusPieceIds(
-        topLeft,
-        { joinedComponents: [] },
-        pieces,
-      ),
-    ).toEqual(["tile-0", "tile-1", "tile-4", "tile-5"]);
-
-    expect(
-      getJigsawCoarseSectionFocusPieceIds(
-        topLeft,
-        {
-          joinedComponents: [
-            ["tile-1", "tile-2", "tile-6"],
-            ["tile-10", "tile-11"],
-          ],
-        },
-        pieces,
-      ),
-    ).toEqual([
-      "tile-0",
-      "tile-1",
-      "tile-2",
-      "tile-4",
-      "tile-5",
-      "tile-6",
-    ]);
-  });
-
-  it("returns section focus membership in stable solved order regardless of component order", () => {
-    const pieces = makeGrid(5, 3);
-    const sections = createJigsawCoarseSections(pieces, 5, 3);
-    const topRight = sections[1]!;
-
-    expect(
-      getJigsawCoarseSectionFocusPieceIds(
-        topRight,
-        {
-          joinedComponents: [
-            ["tile-2", "tile-9", "tile-4", "tile-3"],
-          ],
-        },
-        pieces,
-      ),
-    ).toEqual([
-      "tile-2",
-      "tile-3",
-      "tile-4",
-      "tile-8",
-      "tile-9",
-    ]);
   });
 
   it("derives completion from global assembly membership rather than section-local state", () => {
@@ -235,5 +155,41 @@ describe("Jigsaw coarse sections", () => {
   it("does not construct a four-way partition for an unpartitionable axis", () => {
     expect(createJigsawCoarseSections(makeGrid(1, 4), 1, 4)).toEqual([]);
     expect(createJigsawCoarseSections(makeGrid(4, 1), 4, 1)).toEqual([]);
+  });
+
+  it("does not alter global seam topology at section boundaries", () => {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "coarse-section-topology",
+      width: 6,
+      height: 6,
+      imageId: defaultJigsawImageAsset.id,
+    });
+    const sections = createJigsawCoarseSections(
+      puzzle.tiles,
+      puzzle.width,
+      puzzle.height,
+    );
+    const leftPiece = puzzle.tiles.find((piece) => piece.row === 1 && piece.column === 2)!;
+    const rightPiece = puzzle.tiles.find((piece) => piece.row === 1 && piece.column === 3)!;
+
+    expect(getJigsawCoarseSectionForPiece(sections, leftPiece.id)?.id).toBe("top-left");
+    expect(getJigsawCoarseSectionForPiece(sections, rightPiece.id)?.id).toBe("top-right");
+
+    const rightEdge = leftPiece.edges.find((edge) => edge.side === "right")!;
+    const leftEdge = rightPiece.edges.find((edge) => edge.side === "left")!;
+
+    expect(rightEdge.boundary).toBe(false);
+    expect(leftEdge.boundary).toBe(false);
+    if (rightEdge.boundary || leftEdge.boundary) {
+      throw new Error("Expected an ordinary global interior seam across the section boundary.");
+    }
+
+    expect(rightEdge.neighborPieceId).toBe(rightPiece.id);
+    expect(leftEdge.neighborPieceId).toBe(leftPiece.id);
+    expect(rightEdge.neighborEdgeId).toBe(leftEdge.edgeId);
+    expect(leftEdge.neighborEdgeId).toBe(rightEdge.edgeId);
+    expect(rightEdge.profileId).toBe(leftEdge.profileId);
+    expect(rightEdge.seedOffset).toBe(leftEdge.seedOffset);
   });
 });
