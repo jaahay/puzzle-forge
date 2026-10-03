@@ -620,7 +620,7 @@ export const TilePuzzlePreview = ({
     );
   };
 
-  const restageLoosePieces = () => {
+  const restagePieces = () => {
     const stagingViewport = getMeasuredJigsawViewport(stageRef.current);
     const baseline = getStagingActionBaseline();
     if (!stagingViewport || !baseline) return false;
@@ -643,6 +643,11 @@ export const TilePuzzlePreview = ({
   const placementById = new Map(placements.map((placement) => [placement.id, placement] as const));
   const connectedCount = getJigsawConnectedPieceCount(activeAssembly);
   const isSolved = areJigsawPlacementsSolved(activeAssembly, puzzle.tiles.length);
+  const assemblySummary = isSolved
+    ? "Solved"
+    : connectedCount === 0
+      ? "No joins yet"
+      : `${connectedCount} joined`;
 
   useEffect(() => {
     if (!isSolved) return;
@@ -1145,7 +1150,7 @@ export const TilePuzzlePreview = ({
   return (
     <section class="tile-puzzle-preview" aria-label={`${puzzle.title} jigsaw puzzle`}>
       <div class="tile-puzzle-summary">
-        <span>{isSolved ? "Solved" : `${connectedCount}/${puzzle.tiles.length} connected`}</span>
+        <span>{assemblySummary}</span>
       </div>
 
       {!isSolved ? (
@@ -1182,7 +1187,7 @@ export const TilePuzzlePreview = ({
         <button
           type="button"
           onClick={() => {
-            restageLoosePieces();
+            restagePieces();
             setShowCompactTools(false);
           }}
         >

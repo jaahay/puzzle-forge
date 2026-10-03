@@ -54,8 +54,8 @@ describe("Jigsaw history integration", () => {
   it("keeps Reset destructive while Restage preserves island membership and both remain reversible", () => {
     const baseline = sourceBetween(previewSource, "const getStagingActionBaseline =", "const applyStagedPlacements =");
     const staging = sourceBetween(previewSource, "const applyStagedPlacements =", "const resetPieces =");
-    const reset = sourceBetween(previewSource, "const resetPieces =", "const restageLoosePieces =");
-    const restage = sourceBetween(previewSource, "const restageLoosePieces =", "useEffect(() => {");
+    const reset = sourceBetween(previewSource, "const resetPieces =", "const restagePieces =");
+    const restage = sourceBetween(previewSource, "const restagePieces =", "useEffect(() => {");
 
     expect(baseline).toContain(
       "resolveJigsawActionBaseline(current, activeDrag?.startSnapshot ?? null)",
