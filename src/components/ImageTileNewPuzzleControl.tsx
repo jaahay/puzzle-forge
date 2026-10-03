@@ -103,6 +103,7 @@ export const ImageTileNewPuzzleControl = ({
             selectedAsset={selectedAsset}
             disabled={disabled}
             onSelectAsset={(asset) => onImageChange(asset.id)}
+            onSurprise={onNewPuzzle}
           />
         </>
       )}
