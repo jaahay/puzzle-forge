@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { JigsawPiece } from "../catalog/types";
+import { isJigsawAssemblySolved } from "../games/jigsaw/assembly";
 import {
   clampJigsawCamera,
   createInitialJigsawPlacements,
@@ -9,7 +10,6 @@ import {
   getJigsawStagingMode,
 } from "../games/jigsaw/placement";
 import {
-  areJigsawPlacementsSolved,
   getJigsawFitInsetsForOverlays,
   getJigsawZoomStep,
   getMeasuredJigsawViewport,
@@ -51,13 +51,13 @@ describe("TilePuzzlePreview SVG clipping", () => {
 
 describe("TilePuzzlePreview completion", () => {
   it("is solved only when every piece belongs to one assembled component", () => {
-    expect(areJigsawPlacementsSolved({
+    expect(isJigsawAssemblySolved({
       joinedComponents: [["tile-0", "tile-1"]],
     }, 2)).toBe(true);
-    expect(areJigsawPlacementsSolved({
+    expect(isJigsawAssemblySolved({
       joinedComponents: [["tile-0", "tile-1"], ["tile-2", "tile-3"]],
     }, 4)).toBe(false);
-    expect(areJigsawPlacementsSolved({ joinedComponents: [] }, 2)).toBe(false);
+    expect(isJigsawAssemblySolved({ joinedComponents: [] }, 2)).toBe(false);
   });
   it("suppresses solved edge guides without changing the stored preference", () => {
     expect(shouldRenderJigsawEdgeSeams(false, false)).toBe(false);

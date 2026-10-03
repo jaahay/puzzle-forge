@@ -72,7 +72,7 @@ describe("terminal interaction contracts", () => {
 
   it("celebrates only the causative final drop and keeps solved artwork visually quiet afterward", () => {
     expect(jigsawPreviewSource).toMatch(
-      /if \(areJigsawPlacementsSolved\(nextState\.assembly, puzzle\.tiles\.length\)\) onCausativeInput\(\);/,
+      /if \(isJigsawAssemblySolved\(nextState\.assembly, puzzle\.tiles\.length\)\) onCausativeInput\(\);/,
     );
     expect(jigsawPreviewSource).toContain("shouldRenderJigsawEdgeSeams(showEdgeSeams, isSolved)");
     expect(jigsawPreviewSource).toContain("hidden={isSolved}");
