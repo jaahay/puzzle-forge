@@ -8,6 +8,11 @@ export const jigsawCoarseSectionIds = [
   "bottom-right",
 ] as const;
 
+export const jigsawCoarseSectionMinimumPieceCount = 64;
+
+export const shouldOfferJigsawCoarseSections = (pieceCount: number) =>
+  pieceCount >= jigsawCoarseSectionMinimumPieceCount;
+
 export type JigsawCoarseSectionId = (typeof jigsawCoarseSectionIds)[number];
 
 export type JigsawCoarseSection = {

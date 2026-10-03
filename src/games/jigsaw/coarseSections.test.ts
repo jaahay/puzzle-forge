@@ -5,6 +5,7 @@ import {
   getJigsawCoarseSectionForPiece,
   getJigsawCoarseSectionFocusPieceIds,
   isJigsawCoarseSectionComplete,
+  shouldOfferJigsawCoarseSections,
 } from "./coarseSections";
 
 const makeGrid = (width: number, height: number): JigsawPiece[] =>
@@ -18,6 +19,12 @@ const makeGrid = (width: number, height: number): JigsawPiece[] =>
   })).reverse();
 
 describe("Jigsaw coarse sections", () => {
+  it("offers coarse focus only for large puzzles", () => {
+    expect(shouldOfferJigsawCoarseSections(63)).toBe(false);
+    expect(shouldOfferJigsawCoarseSections(64)).toBe(true);
+    expect(shouldOfferJigsawCoarseSections(100)).toBe(true);
+  });
+
   it("partitions an even grid into four stable solved-space quadrants", () => {
     const sections = createJigsawCoarseSections(makeGrid(4, 4), 4, 4);
 

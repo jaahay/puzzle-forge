@@ -97,7 +97,7 @@
   font-weight: 800;
 }
 
-.tile-puzzle-tools button:nth-child(2) {
+.tile-puzzle-tools .jigsaw-restage-action {
   color: #e5e7eb;
   background: #334155;
 }
@@ -105,6 +105,62 @@
 .tile-puzzle-tools button[aria-pressed="true"] {
   color: #172554;
   background: #bfdbfe;
+}
+
+.jigsaw-section-tools {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 0.5rem;
+  align-items: center;
+  margin-top: 0.15rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+  padding-top: 0.45rem;
+}
+
+.jigsaw-section-tools-label {
+  color: #cbd5e1;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tile-puzzle-tools .jigsaw-section-all {
+  min-height: 2rem;
+  padding: 0.35rem 0.6rem;
+}
+
+.jigsaw-section-grid {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.3rem;
+}
+
+.tile-puzzle-tools .jigsaw-section-grid button {
+  position: relative;
+  min-height: 2.25rem;
+  padding: 0.35rem;
+  font-size: 1rem;
+}
+
+.tile-puzzle-tools .jigsaw-section-grid button.is-complete {
+  border-color: rgba(110, 231, 183, 0.58);
+}
+
+.jigsaw-section-complete {
+  position: absolute;
+  right: 0.38rem;
+  top: 0.18rem;
+  color: #065f46;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.tile-puzzle-summary .jigsaw-section-summary {
+  border-color: rgba(147, 197, 253, 0.28);
+  color: #dbeafe;
+  background: rgba(30, 64, 175, 0.36);
 }
 
 .jigsaw-camera-tools {
