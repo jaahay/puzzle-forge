@@ -13,17 +13,6 @@ import {
 } from "./baselineProduction";
 
 describe("Jigsaw baseline grammar", () => {
-  it("derives program events from the canonical production tree", () => {
-    for (const grammarId of jigsawBaselineGrammarIds) {
-      const program = deriveJigsawBaselineProgram(grammarId, 123_456);
-      expect(program.events).toEqual(
-        expandJigsawBaselineProduction(
-          jigsawBaselineGrammarCatalog[grammarId].production,
-        ),
-      );
-    }
-  });
-
   it("derives deterministic programs with seeded variation", () => {
     for (const grammarId of jigsawBaselineGrammarIds) {
       const first = deriveJigsawBaselineProgram(grammarId, 123_456);
@@ -126,8 +115,11 @@ describe("Jigsaw baseline grammar", () => {
       const program = deriveJigsawBaselineProgram(grammarId, 123_456);
       const points = realizeJigsawBaselineProgram(program);
 
+      const events = expandJigsawBaselineProduction(
+        jigsawBaselineGrammarCatalog[grammarId].production,
+      );
       expect(signCrossings(points)).toBe(
-        program.events.filter((event) => event === "cross").length,
+        events.filter((event) => event === "cross").length,
       );
     }
 
@@ -150,11 +142,14 @@ describe("Jigsaw baseline grammar", () => {
       )
       .length;
 
+    const steppedEvents = expandJigsawBaselineProduction(
+      jigsawBaselineGrammarCatalog["stepped-course"].production,
+    );
     expect(verticalSegments).toBe(
-      steppedProgram.events.filter((event) => event === "deflect").length,
+      steppedEvents.filter((event) => event === "deflect").length,
     );
     expect(offsetCourses).toBe(
-      steppedProgram.events.filter((event) => event === "course").length,
+      steppedEvents.filter((event) => event === "course").length,
     );
   });
 
