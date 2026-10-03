@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 const appSource = readFileSync(new URL("../App.tsx", import.meta.url), "utf8");
 const previewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", import.meta.url), "utf8");
 const sessionsSource = readFileSync(new URL("../app/usePuzzleSessions.ts", import.meta.url), "utf8");
+const persistenceSource = readFileSync(new URL("../app/sessionPersistence.ts", import.meta.url), "utf8");
 const workspaceSource = readFileSync(new URL("./JigsawWorkspace.tsx", import.meta.url), "utf8");
 
 const sourceBetween = (source: string, start: string, end: string) => {
@@ -15,29 +16,36 @@ const sourceBetween = (source: string, start: string, end: string) => {
 };
 
 describe("Jigsaw resource-session persistence integration", () => {
-  it("keeps snapped Jigsaw progress in the canonical app session state", () => {
+  it("keeps canonical assembly progress in the app-owned resource session", () => {
     expect(appSource).toContain("const [jigsawProgress, setJigsawProgress]");
-    expect(appSource).toContain("session.progress.jigsawSnappedPieceIds");
+    expect(appSource).toContain("session.progress.jigsawAssembly");
     expect(appSource).toContain('puzzle.puzzleId === "jigsaw" && jigsawProgress?.puzzleInstanceId === puzzle.id');
-    expect(appSource).toContain("jigsawSnappedPieceIds:");
+    expect(appSource).toContain("jigsawAssembly:");
     expect(appSource).toContain("jigsaw={workspaceJigsaw}");
   });
 
-  it("keeps zero snapped pieces as an explicit bound state", () => {
+  it("keeps an empty assembly as explicit bound zero progress", () => {
     const reset = sourceBetween(appSource, "const resetCurrentPuzzle =", "const commitGenerationSettings =");
     const jigsawBinding = sourceBetween(appSource, "const workspaceJigsaw =", "const workspaceSolitaire =");
 
-    expect(sessionsSource).toContain(
-      'generatedPuzzle.puzzleId === "jigsaw" ? { jigsawSnappedPieceIds: [] } : {}',
-    );
-    expect(reset).toContain("setJigsawProgress({ puzzleInstanceId: puzzle.id, snappedPieceIds: [] });");
-    expect(jigsawBinding).not.toContain("if (!current && pieceIds.length === 0) return current;");
+    expect(sessionsSource).toContain("makeEmptyJigsawAssemblyProgress()");
+    expect(reset).toContain("assembly: makeEmptyJigsawAssemblyProgress()");
+    expect(jigsawBinding).toContain("sameJigsawAssemblyProgress(current.assembly, assembly)");
   });
 
-  it("routes snapped progress through the Jigsaw workspace before staging", () => {
-    expect(workspaceSource).toContain("initialSnappedPieceIds={jigsawSnappedPieceIds}");
-    expect(workspaceSource).toContain("onSnappedPieceIdsChange={onJigsawSnappedPieceIdsChange}");
-    expect(previewSource).toContain("if (initialSnappedPieceIds === null) return;");
+  it("routes assembly progress through the Jigsaw workspace before staging", () => {
+    expect(workspaceSource).toContain("initialAssembly={jigsawAssembly}");
+    expect(workspaceSource).toContain("onAssemblyChange={onJigsawAssemblyChange}");
+    expect(previewSource).toContain("if (initialAssembly === null) return;");
+    expect(previewSource).toContain("resolveInitialJigsawState(");
+  });
+
+  it("keeps persistence semantic and canonical rather than coordinate-based", () => {
+    expect(persistenceSource).toContain("normalizeJigsawAssemblyProgress(session.progress.jigsawAssembly)");
+    expect(persistenceSource).toContain("parseJigsawAssemblyProgress");
+    expect(persistenceSource).not.toContain("jigsawSnappedPieceIds");
+    expect(persistenceSource).not.toContain("jigsawPlacements");
+    expect(persistenceSource).not.toContain("componentTranslations");
   });
 
   it("has no component-local persistence or migration fallback", () => {
@@ -49,15 +57,19 @@ describe("Jigsaw resource-session persistence integration", () => {
     expect(previewSource).not.toContain("initialPlacements");
   });
 
-  it("publishes only committed snapped progress across the session boundary", () => {
+  it("publishes semantic assembly only at committed interaction boundaries", () => {
     const staging = sourceBetween(previewSource, "const applyStagedPlacements =", "const resetPieces =");
-    const history = sourceBetween(previewSource, "const dispatchHistoryAction =", "useEffect(() => {\n    if (!onHistoryControllerChange)");
+    const history = sourceBetween(
+      previewSource,
+      "const dispatchHistoryAction =",
+      "useEffect(() => {\n    if (!onHistoryControllerChange)",
+    );
     const moveDrag = sourceBetween(previewSource, "const moveDrag =", "const finishDrag =");
     const finishDrag = sourceBetween(previewSource, "const finishDrag =", "const cancelDrag =");
 
-    expect(staging).toContain("publishSnappedProgress(nextPlacements);");
-    expect(history).toContain("publishSnappedProgress(transition.placements);");
-    expect(moveDrag).not.toContain("publishSnappedProgress");
-    expect(finishDrag).toContain("publishSnappedProgress(nextState.placements);");
+    expect(staging).toContain("publishAssemblyProgress(nextAssembly);");
+    expect(history).toContain("publishAssemblyProgress(transition.snapshot.assembly);");
+    expect(moveDrag).not.toContain("publishAssemblyProgress");
+    expect(finishDrag).toContain("publishAssemblyProgress(nextState.assembly);");
   });
 });
