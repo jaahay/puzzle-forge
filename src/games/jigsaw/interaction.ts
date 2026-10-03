@@ -103,8 +103,16 @@ export const resolveJigsawComponentDrop = (
   placements: readonly JigsawPlacement[],
   assembly: JigsawAssemblyProgress,
   draggedPieceId: string,
+  eligiblePieceIds?: ReadonlySet<string>,
 ): JigsawDropResult => {
   const draggedIds = getJigsawComponentPieceIds(assembly, draggedPieceId);
+  if (eligiblePieceIds && draggedIds.some((pieceId) => !eligiblePieceIds.has(pieceId))) {
+    return {
+      placements: placements.map((placement) => ({ ...placement })),
+      assembly,
+      joined: false,
+    };
+  }
   const draggedIdSet = new Set(draggedIds);
   const piecesById = getPieceById(pieces);
   const placementsById = getPlacementById(placements);
@@ -138,6 +146,10 @@ export const resolveJigsawComponentDrop = (
     for (const edge of piece.edges) {
       if (edge.boundary || !edge.neighborPieceId || draggedIdSet.has(edge.neighborPieceId)) continue;
       const targetPieceIds = getJigsawComponentPieceIds(assembly, edge.neighborPieceId);
+      if (
+        eligiblePieceIds &&
+        targetPieceIds.some((pieceId) => !eligiblePieceIds.has(pieceId))
+      ) continue;
       const componentKey = [...targetPieceIds].sort((left, right) => left.localeCompare(right)).join("\u0000");
       const targetTranslation = getComponentTranslation(
         layout,
