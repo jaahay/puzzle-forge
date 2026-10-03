@@ -96,7 +96,7 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).toContain("<JigsawFitIcon />");
     expect(jigsawPreviewSource).toContain("aria-expanded={showFitMenu}");
     expect(jigsawPreviewSource).toContain("Restage pieces");
-    expect(jigsawPreviewSource).toContain("restageLoosePieces();");
+    expect(jigsawPreviewSource).toContain("restagePieces();");
     expect(jigsawPreviewSource).not.toContain("Scatter pieces");
 
     expect(immersiveToggleRule).toContain("display: grid;");
