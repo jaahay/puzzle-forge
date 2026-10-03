@@ -20,6 +20,7 @@ const makeJigsawDraft = (overrides: Partial<NextPuzzleDraft> = {}): NextPuzzleDr
   solitaireVariation: defaultSolitaireVariation,
   imageId: defaultJigsawImageAsset.id,
   jigsawSizeSelection: jigsawCustomSizeSelection,
+  jigsawCutStyle: "traditional",
   ...overrides,
 });
 
@@ -113,6 +114,21 @@ describe("Jigsaw image library", () => {
       width: 6,
       height: 17,
       jigsawSizeSelection: "Extra large",
+    });
+  });
+
+  it("updates cut style without changing size or artwork draft intent", () => {
+    const draft = makeJigsawDraft();
+    const updated = applyNextPuzzleDraftSettings(draft, {
+      jigsawCutStyle: "unconventional",
+    });
+
+    expect(updated).toMatchObject({
+      imageId: draft.imageId,
+      width: draft.width,
+      height: draft.height,
+      jigsawSizeSelection: draft.jigsawSizeSelection,
+      jigsawCutStyle: "unconventional",
     });
   });
 

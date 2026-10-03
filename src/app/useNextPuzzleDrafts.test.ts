@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { GeneratedPuzzle } from "../catalog/types";
+import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
 import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
 import { resolveJigsawSizeDimensions } from "../games/jigsaw/size";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
@@ -14,6 +15,7 @@ const runtimeSettings: GenerationRuntimeSettings = {
   requireUniqueSolution: false,
   sudokuVariation: "diagonal",
   solitaireVariation: { ...defaultSolitaireVariation, drawMode: "draw-3" },
+  jigsawCutStyle: defaultJigsawCutStyle,
 };
 
 const sudokuPuzzle: GeneratedPuzzle = {
@@ -66,6 +68,7 @@ describe("buildNextPuzzleDraft", () => {
       width: small.width,
       height: small.height,
       jigsawSizeSelection: "Small",
+      jigsawCutStyle: defaultJigsawCutStyle,
     });
   });
 

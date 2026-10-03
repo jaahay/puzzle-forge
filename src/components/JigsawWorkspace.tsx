@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "preact/hooks";
 import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
+import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
 import type { JigsawHistoryAction } from "../games/jigsaw/history";
 import { jigsawCustomSizeSelection } from "../games/jigsaw/size";
 import { JigsawNewPuzzleControl } from "./JigsawNewPuzzleControl";
@@ -112,6 +113,7 @@ export const JigsawWorkspace = ({
       width={nextPuzzleDraft.width}
       height={nextPuzzleDraft.height}
       sizeSelection={nextPuzzleDraft.jigsawSizeSelection ?? jigsawCustomSizeSelection}
+      cutStyle={nextPuzzleDraft.jigsawCutStyle ?? defaultJigsawCutStyle}
       minWidth={selectedDefinition.minWidth}
       maxWidth={selectedDefinition.maxWidth}
       minHeight={selectedDefinition.minHeight}

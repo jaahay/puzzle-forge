@@ -1,6 +1,7 @@
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { PuzzleDifficulty, PuzzleId, SolitaireRedealLimit, SolitaireVariation, SudokuVariation } from "../catalog/types";
 import { getPuzzleImageAssetsFor, isImageBackedPuzzleId } from "../games/imageAssets";
+import { isJigsawCutStyle } from "../games/jigsaw/cutStyle";
 import { isJigsawSizeSelection } from "../games/jigsaw/size";
 import { solitaireRedealLimits } from "../games/solitaire/variation";
 import { puzzleIds } from "./sessionConstants";
@@ -53,6 +54,9 @@ const isImageIdForPuzzle = (puzzleId: PuzzleId, value: unknown) => {
 const isJigsawSizeSelectionForPuzzle = (puzzleId: PuzzleId, value: unknown) =>
   puzzleId === "jigsaw" ? isJigsawSizeSelection(value) : value === undefined;
 
+const isJigsawCutStyleForPuzzle = (puzzleId: PuzzleId, value: unknown) =>
+  puzzleId === "jigsaw" ? isJigsawCutStyle(value) : value === undefined;
+
 const parseDraft = (puzzleId: PuzzleId, value: unknown): NextPuzzleDraft | null => {
   if (
     !isRecord(value) ||
@@ -63,7 +67,8 @@ const parseDraft = (puzzleId: PuzzleId, value: unknown): NextPuzzleDraft | null 
     !isSudokuVariation(value.sudokuVariation) ||
     !isSolitaireVariation(value.solitaireVariation) ||
     !isImageIdForPuzzle(puzzleId, value.imageId) ||
-    !isJigsawSizeSelectionForPuzzle(puzzleId, value.jigsawSizeSelection)
+    !isJigsawSizeSelectionForPuzzle(puzzleId, value.jigsawSizeSelection) ||
+    !isJigsawCutStyleForPuzzle(puzzleId, value.jigsawCutStyle)
   ) {
     return null;
   }
@@ -77,7 +82,10 @@ const parseDraft = (puzzleId: PuzzleId, value: unknown): NextPuzzleDraft | null 
     solitaireVariation: { ...value.solitaireVariation },
     ...(typeof value.imageId === "string" ? { imageId: value.imageId } : {}),
     ...(puzzleId === "jigsaw"
-      ? { jigsawSizeSelection: value.jigsawSizeSelection as NextPuzzleDraft["jigsawSizeSelection"] }
+      ? {
+          jigsawSizeSelection: value.jigsawSizeSelection as NextPuzzleDraft["jigsawSizeSelection"],
+          jigsawCutStyle: value.jigsawCutStyle as NextPuzzleDraft["jigsawCutStyle"],
+        }
       : {}),
   };
 };

@@ -45,6 +45,7 @@ describe("initial puzzle generation", () => {
       sudokuVariation: undefined,
       solitaireVariation: undefined,
       imageId: undefined,
+      jigsawCutStyle: undefined,
     });
   });
 
@@ -93,6 +94,7 @@ describe("initial puzzle generation", () => {
       sudokuVariation: "classic" as const,
       solitaireVariation: defaultSolitaireVariation,
       imageId: "great-wave",
+      jigsawCutStyle: "unconventional" as const,
     };
 
     expect(makeInitialPuzzleGenerationOptions({
@@ -104,6 +106,7 @@ describe("initial puzzle generation", () => {
       width: 6,
       height: 5,
       imageId: "great-wave",
+      jigsawCutStyle: "unconventional",
     });
   });
 

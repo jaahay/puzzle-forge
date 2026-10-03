@@ -1,21 +1,31 @@
 import { describe, expect, it } from "vitest";
-import type { JigsawEdgeSide, JigsawGeneratedPuzzle, JigsawPiece, JigsawPieceEdge } from "../../catalog/types";
+import type {
+  JigsawCutStyle,
+  JigsawEdgeSide,
+  JigsawGeneratedPuzzle,
+  JigsawPiece,
+  JigsawPieceEdge,
+} from "../../catalog/types";
 import { createGeneratedJigsawPuzzle } from "../shared";
 import {
-  getJigsawEdgeProfile,
-  jigsawEdgeProfileCatalogRevision,
-  jigsawEdgeProfileIds,
-} from "./edgeProfiles";
+  defaultJigsawCutStyle,
+  deriveJigsawBaselinePalette,
+} from "./cutStyle";
+import { jigsawConnectorGrammarIds } from "./connectorGrammar";
 import { generateJigsaw } from "./generate";
 import { defaultJigsawImageAsset } from "./imageAssets";
 
-const makeJigsaw = (imageId: string = defaultJigsawImageAsset.id) =>
+const makeJigsaw = (
+  imageId: string = defaultJigsawImageAsset.id,
+  jigsawCutStyle: JigsawCutStyle = defaultJigsawCutStyle,
+) =>
   generateJigsaw({
     puzzleId: "jigsaw",
     seed: "phase-one-seed",
     width: 4,
     height: 3,
     imageId,
+    jigsawCutStyle,
   });
 
 const getTile = (puzzle: JigsawGeneratedPuzzle, row: number, column: number) => {
@@ -33,7 +43,7 @@ const getEdge = (tile: JigsawPiece, side: JigsawEdgeSide): JigsawPieceEdge => {
 const getAllEdges = (puzzle: JigsawGeneratedPuzzle) => puzzle.tiles.flatMap((tile) => tile.edges);
 
 describe("generateJigsaw", () => {
-  it("is deterministic for seed, dimensions, image id, and edge model", () => {
+  it("is deterministic for seed, dimensions, image id, cut style, and edge model", () => {
     const first = makeJigsaw();
     const second = makeJigsaw();
 
@@ -48,12 +58,31 @@ describe("generateJigsaw", () => {
 
     expect(puzzle.asset).toEqual(defaultJigsawImageAsset);
     expect(puzzle.asset.kind).toBe("image");
+    expect(puzzle.edgeModel.cutStyle).toBe(defaultJigsawCutStyle);
     expect(puzzle.edgeModel).toEqual({
-      catalogRevision: jigsawEdgeProfileCatalogRevision,
-      profileIds: [...jigsawEdgeProfileIds],
+      cutStyle: defaultJigsawCutStyle,
+      baselineGrammarIds: deriveJigsawBaselinePalette(
+        defaultJigsawCutStyle,
+        `jigsaw:phase-one-seed:4x3:${defaultJigsawImageAsset.id}:edges:${defaultJigsawCutStyle}`,
+      ),
     });
     expect(puzzle.id).toContain(defaultJigsawImageAsset.id);
-    expect(puzzle.id).toContain(`edges@${jigsawEdgeProfileCatalogRevision}`);
+    expect(puzzle.id).toContain(`edges:${defaultJigsawCutStyle}`);
+  });
+
+  it("makes cut style part of deterministic puzzle identity", () => {
+    const traditional = makeJigsaw(defaultJigsawImageAsset.id, "traditional");
+    const unconventional = makeJigsaw(defaultJigsawImageAsset.id, "unconventional");
+
+    expect(traditional.seed).toBe(unconventional.seed);
+    expect(traditional.asset.id).toBe(unconventional.asset.id);
+    expect(traditional.edgeModel.cutStyle).toBe("traditional");
+    expect(unconventional.edgeModel.cutStyle).toBe("unconventional");
+    expect(traditional.id).not.toBe(unconventional.id);
+    expect(traditional.checksum).not.toBe(unconventional.checksum);
+    expect(traditional.edgeModel.baselineGrammarIds).not.toEqual(
+      unconventional.edgeModel.baselineGrammarIds,
+    );
   });
 
   it("creates one correctly indexed piece with four required semantic edges for every grid position", () => {
@@ -91,28 +120,6 @@ describe("generateJigsaw", () => {
     expect(puzzle.tiles).toHaveLength(1024);
   });
 
-  it("provides a complete, explicitly ordered edge profile repository", () => {
-    expect(jigsawEdgeProfileIds).toEqual([
-      "classic-bulb",
-      "necked-head",
-      "multi-lobe",
-      "scoop",
-      "serpentine",
-      "terrace",
-      "zigzag",
-      "stacked-lock",
-    ]);
-
-    for (const profileId of jigsawEdgeProfileIds) {
-      const profile = getJigsawEdgeProfile(profileId);
-      expect(profile.id).toBe(profileId);
-      expect(profile.connectorGrammarId).toBe(profileId);
-      expect(profile.description.length).toBeGreaterThan(0);
-      expect(profile.selectionWeight).toBeGreaterThan(0);
-      expect(profile.difficultyWeight).toBeGreaterThan(0);
-    }
-  });
-
   it("uses exactly one connector family throughout each generated game", () => {
     for (const seed of ["one-family-a", "one-family-b", "one-family-c"]) {
       const puzzle = generateJigsaw({
@@ -132,28 +139,82 @@ describe("generateJigsaw", () => {
     }
   });
 
-  it("selects the full weighted connector vocabulary across different games", () => {
-    const counts = new Map<string, number>();
-    const sampleCount = 160;
+  it("keeps Traditional connector generation inside its familiar palette", () => {
+    const selected = new Set<string>();
 
-    for (let index = 0; index < sampleCount; index += 1) {
+    for (let index = 0; index < 160; index += 1) {
       const puzzle = generateJigsaw({
         puzzleId: "jigsaw",
-        seed: `family-sample-${index}`,
+        seed: `traditional-family-${index}`,
         width: 4,
         height: 4,
         imageId: defaultJigsawImageAsset.id,
+        jigsawCutStyle: "traditional",
       });
       const firstInteriorEdge = getAllEdges(puzzle).find((edge) => !edge.boundary);
       if (!firstInteriorEdge || firstInteriorEdge.boundary) {
         throw new Error("Expected an interior Jigsaw edge.");
       }
-
-      counts.set(firstInteriorEdge.profileId, (counts.get(firstInteriorEdge.profileId) ?? 0) + 1);
+      selected.add(firstInteriorEdge.profileId);
     }
 
-    expect([...counts.keys()].sort()).toEqual([...jigsawEdgeProfileIds].sort());
-    expect(Math.max(...counts.values()) / sampleCount).toBeLessThan(0.25);
+    expect(selected).toEqual(
+      new Set(["classic-bulb", "necked-head"]),
+    );
+  });
+
+  it("lets Unconventional connector generation reach the full vocabulary", () => {
+    const selected = new Set<string>();
+
+    for (let index = 0; index < 320; index += 1) {
+      const puzzle = generateJigsaw({
+        puzzleId: "jigsaw",
+        seed: `unconventional-family-${index}`,
+        width: 4,
+        height: 4,
+        imageId: defaultJigsawImageAsset.id,
+        jigsawCutStyle: "unconventional",
+      });
+      const firstInteriorEdge = getAllEdges(puzzle).find((edge) => !edge.boundary);
+      if (!firstInteriorEdge || firstInteriorEdge.boundary) {
+        throw new Error("Expected an interior Jigsaw edge.");
+      }
+      selected.add(firstInteriorEdge.profileId);
+    }
+
+    expect(selected).toEqual(new Set(jigsawConnectorGrammarIds));
+  });
+
+  it("varies the coherent baseline sub-palette across puzzle identities", () => {
+    const traditionalPalettes = new Set<string>();
+    const unconventionalPalettes = new Set<string>();
+
+    for (let index = 0; index < 96; index += 1) {
+      const seed = `palette-sample-${index}`;
+      traditionalPalettes.add(
+        generateJigsaw({
+          puzzleId: "jigsaw",
+          seed,
+          width: 6,
+          height: 6,
+          imageId: defaultJigsawImageAsset.id,
+          jigsawCutStyle: "traditional",
+        }).edgeModel.baselineGrammarIds.join("|"),
+      );
+      unconventionalPalettes.add(
+        generateJigsaw({
+          puzzleId: "jigsaw",
+          seed,
+          width: 6,
+          height: 6,
+          imageId: defaultJigsawImageAsset.id,
+          jigsawCutStyle: "unconventional",
+        }).edgeModel.baselineGrammarIds.join("|"),
+      );
+    }
+
+    expect(traditionalPalettes.size).toBeGreaterThan(1);
+    expect(unconventionalPalettes.size).toBeGreaterThan(4);
   });
 
   it("makes every border edge flat, unpaired, and profile-free", () => {
@@ -267,7 +328,10 @@ describe("generateJigsaw", () => {
       asset: puzzle.asset,
       edgeModel: {
         ...puzzle.edgeModel,
-        catalogRevision: puzzle.edgeModel.catalogRevision + 1,
+        cutStyle:
+          puzzle.edgeModel.cutStyle === "traditional"
+            ? "unconventional"
+            : "traditional",
       },
       notes: puzzle.notes,
     });

@@ -11,6 +11,7 @@ import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
 import { StartView } from "./components/StartView";
 import { getLocalDateStamp } from "./games/shared/daily";
 import { isImageBackedPuzzleId } from "./games/imageAssets";
+import { defaultJigsawCutStyle } from "./games/jigsaw/cutStyle";
 import { defaultSolitaireVariation, normalizeSolitaireVariation } from "./games/solitaire/variation";
 import { defaultSudokuVariation } from "./games/sudoku/variation";
 import {
@@ -54,6 +55,7 @@ const makeInitialGenerationDefaults = (): GenerationRuntimeSettings => ({
   requireUniqueSolution: true,
   sudokuVariation: defaultSudokuVariation,
   solitaireVariation: defaultSolitaireVariation,
+  jigsawCutStyle: defaultJigsawCutStyle,
 });
 
 const viewForRoute = (route: AppRoute): AppView | null => {
@@ -99,7 +101,16 @@ export const App = () => {
   const generatedPuzzleHandlerRef = useRef<(generatedPuzzle: GeneratedPuzzle) => void>(() => undefined);
   const routeNavigationHandlerRef = useRef<(route: AppRoute) => void>(() => undefined);
   const saveCurrentSessionRef = useRef<() => void>(() => undefined);
-  const { seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation } = generationDefaults;
+  const {
+    seed,
+    width,
+    height,
+    difficulty,
+    requireUniqueSolution,
+    sudokuVariation,
+    solitaireVariation,
+    jigsawCutStyle,
+  } = generationDefaults;
   const activeSolitaireVariation = puzzle?.kind === "cards" ? puzzle.solitaireVariation : solitaireVariation;
 
   const updateGenerationDefaults = (settings: Partial<GenerationRuntimeSettings>) => {
@@ -259,7 +270,15 @@ export const App = () => {
       makeSeed: makeRandomSeed,
     });
     const result = generation.beginGeneration(
-      { selectedPuzzleId, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation },
+      {
+        selectedPuzzleId,
+        seed,
+        width,
+        height,
+        difficulty,
+        requireUniqueSolution,
+        sudokuVariation,
+      },
       {
         puzzleId: identity.puzzleId,
         seed: identity.seed,
@@ -270,6 +289,7 @@ export const App = () => {
         sudokuVariation: identity.puzzleId === "sudoku" ? identity.sudokuVariation : undefined,
         solitaireVariation: identity.puzzleId === "klondike-solitaire" ? identity.solitaireVariation : undefined,
         imageId: isImageBackedPuzzleId(identity.puzzleId) ? identity.imageId : undefined,
+        jigsawCutStyle: identity.puzzleId === "jigsaw" ? identity.jigsawCutStyle : undefined,
         provenance: identity.provenance,
       },
     );
@@ -307,6 +327,7 @@ export const App = () => {
       requireUniqueSolution: identity.requireUniqueSolution,
       sudokuVariation: identity.sudokuVariation,
       solitaireVariation: identity.solitaireVariation,
+      jigsawCutStyle: identity.jigsawCutStyle,
     });
     if (puzzle?.puzzleId !== request.puzzleId) resetRuntimePuzzleState();
     setStatusMessage(`Generating ${title}...`);
@@ -422,6 +443,7 @@ export const App = () => {
       requireUniqueSolution: identity.requireUniqueSolution,
       sudokuVariation: identity.sudokuVariation,
       solitaireVariation: identity.solitaireVariation,
+      jigsawCutStyle: identity.jigsawCutStyle,
     });
     beginGeneration(
       {
@@ -434,6 +456,7 @@ export const App = () => {
         sudokuVariation: identity.sudokuVariation,
         solitaireVariation: identity.solitaireVariation,
         imageId: identity.imageId,
+        jigsawCutStyle: identity.puzzleId === "jigsaw" ? identity.jigsawCutStyle : undefined,
         provenance: identity.provenance,
       },
       { resourceHistory: "replace" },
@@ -526,9 +549,10 @@ export const App = () => {
       requireUniqueSolution,
       sudokuVariation,
       solitaireVariation,
+      jigsawCutStyle,
       makeSeed: makeRandomSeed,
     }), { resourceHistory: "replace" });
-  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, puzzle, puzzleLinkError, selectedPuzzleId, selectedPuzzleIsGeneratable, selectedDefinition, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation]);
+  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, puzzle, puzzleLinkError, selectedPuzzleId, selectedPuzzleIsGeneratable, selectedDefinition, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation, jigsawCutStyle]);
 
   useEffect(() => {
     if (!hasSelectedPuzzle || generation.isGenerating || isHomeSelected || !puzzle) return;
@@ -571,6 +595,7 @@ export const App = () => {
       requireUniqueSolution: identity.requireUniqueSolution,
       sudokuVariation: identity.sudokuVariation,
       solitaireVariation: identity.solitaireVariation,
+      jigsawCutStyle: identity.jigsawCutStyle,
     });
     if (settingsAreCurrent) return;
 
@@ -583,6 +608,7 @@ export const App = () => {
       sudokuVariation: selectedPuzzleId === "sudoku" ? identity.sudokuVariation : undefined,
       solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? identity.solitaireVariation : undefined,
       imageId: isImageBackedPuzzleId(selectedPuzzleId) ? identity.imageId : undefined,
+      jigsawCutStyle: selectedPuzzleId === "jigsaw" ? identity.jigsawCutStyle : undefined,
       provenance: identity.provenance,
     }, { preserveScroll: true, resourceHistory: "push" });
   };

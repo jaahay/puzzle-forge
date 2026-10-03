@@ -119,6 +119,7 @@ export type PuzzleVariationSettings = {
   sudokuVariation?: SudokuVariation;
   solitaireVariation?: SolitaireVariation;
   imageId?: string;
+  jigsawCutStyle?: JigsawCutStyle;
 };
 
 export type GeneratedTilePuzzleAsset = {
@@ -154,6 +155,15 @@ export type TilePuzzleAsset = GeneratedTilePuzzleAsset | PuzzleImageAsset;
 
 export type JigsawEdgeSide = "top" | "right" | "bottom" | "left";
 export type JigsawEdgePolarity = "flat" | "tab" | "blank";
+export type JigsawCutStyle = "traditional" | "unconventional";
+export type JigsawBaselineGrammarId =
+  | "straight"
+  | "bow"
+  | "inflection"
+  | "angled-course"
+  | "dogleg"
+  | "wave"
+  | "stepped-course";
 export type JigsawConnectorGrammarId =
   | "classic-bulb"
   | "necked-head"
@@ -164,15 +174,6 @@ export type JigsawConnectorGrammarId =
   | "zigzag"
   | "stacked-lock";
 export type JigsawEdgeProfileId = JigsawConnectorGrammarId;
-
-export type JigsawEdgeProfile = {
-  id: JigsawEdgeProfileId;
-  label: string;
-  description: string;
-  connectorGrammarId: JigsawConnectorGrammarId;
-  selectionWeight: number;
-  difficultyWeight: number;
-};
 
 type JigsawPieceEdgeBase = {
   edgeId: string;
@@ -200,8 +201,8 @@ export type JigsawInteriorEdge = JigsawPieceEdgeBase & {
 export type JigsawPieceEdge = JigsawBoundaryEdge | JigsawInteriorEdge;
 
 export type JigsawEdgeModel = {
-  catalogRevision: number;
-  profileIds: readonly JigsawEdgeProfileId[];
+  cutStyle: JigsawCutStyle;
+  baselineGrammarIds: readonly JigsawBaselineGrammarId[];
 };
 
 export type TilePuzzlePiece = {

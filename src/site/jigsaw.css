@@ -230,9 +230,21 @@
   gap: 0.8rem;
 }
 
+.jigsaw-cut-style-settings,
 .jigsaw-size-settings {
   display: grid;
   gap: 0.55rem;
+}
+
+.jigsaw-cut-style-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.jigsaw-cut-style-option span {
+  line-height: 1.3;
+  white-space: normal;
 }
 
 .jigsaw-size-heading {

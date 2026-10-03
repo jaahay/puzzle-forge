@@ -10,10 +10,11 @@ import { getPuzzleImageAsset } from "../imageAssets";
 import { createGeneratedJigsawPuzzle, createRandom, normalizeDimension, normalizeSeed } from "../shared";
 import { jigsawMaximumAxis, jigsawMinimumAxis } from "./size";
 import {
-  jigsawEdgeProfileCatalogRevision,
-  jigsawEdgeProfileIds,
-  selectJigsawEdgeProfile,
-} from "./edgeProfiles";
+  defaultJigsawCutStyle,
+  deriveJigsawBaselinePalette,
+  normalizeJigsawCutStyle,
+  selectJigsawConnectorGrammarForCutStyle,
+} from "./cutStyle";
 
 const edgeSides: readonly JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
 const oppositeSide: Record<JigsawEdgeSide, JigsawEdgeSide> = {
@@ -115,23 +116,34 @@ const makePieceEdges = ({
     };
   });
 
-export const generateJigsaw: JigsawPuzzleGenerator = ({ seed, width, height, imageId }) => {
+export const generateJigsaw: JigsawPuzzleGenerator = ({
+  seed,
+  width,
+  height,
+  imageId,
+  jigsawCutStyle = defaultJigsawCutStyle,
+}) => {
   const normalizedSeed = normalizeSeed(seed);
   const boundedWidth = normalizeDimension(width, 4, jigsawMinimumAxis, jigsawMaximumAxis);
   const boundedHeight = normalizeDimension(height, 4, jigsawMinimumAxis, jigsawMaximumAxis);
   const asset = getPuzzleImageAsset(imageId, "jigsaw");
   const imageIdentity = asset.id;
-  const edgeIdentity = `edges@${jigsawEdgeProfileCatalogRevision}`;
-  const edgeModel = {
-    catalogRevision: jigsawEdgeProfileCatalogRevision,
-    profileIds: [...jigsawEdgeProfileIds],
-  };
+  const cutStyle = normalizeJigsawCutStyle(jigsawCutStyle);
+  const edgeIdentity = `edges:${cutStyle}`;
   const solvedIndexes = Array.from({ length: boundedWidth * boundedHeight }, (_, index) => index);
   const shuffleSeed = `jigsaw:${normalizedSeed}:${boundedWidth}x${boundedHeight}:${imageIdentity}`;
   const edgeSeed = `${shuffleSeed}:${edgeIdentity}`;
+  const baselineGrammarIds = deriveJigsawBaselinePalette(cutStyle, edgeSeed);
+  const edgeModel = {
+    cutStyle,
+    baselineGrammarIds: [...baselineGrammarIds],
+  };
   const profileRandom = createRandom(`${edgeSeed}:profile`);
   profileRandom();
-  const profileId = selectJigsawEdgeProfile(profileRandom());
+  const profileId = selectJigsawConnectorGrammarForCutStyle(
+    cutStyle,
+    profileRandom(),
+  );
   const piecesBySolvedIndex = solvedIndexes.map((solvedIndex): JigsawPiece => {
     const row = Math.floor(solvedIndex / boundedWidth);
     const column = solvedIndex % boundedWidth;

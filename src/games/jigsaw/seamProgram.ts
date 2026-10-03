@@ -1,14 +1,16 @@
-import type { JigsawEdgeProfileId } from "../../catalog/types";
+import type {
+  JigsawEdgeModel,
+  JigsawEdgeProfileId,
+} from "../../catalog/types";
 import {
   deriveJigsawBaselineProgram,
-  jigsawBaselineGrammarIds,
-  type JigsawBaselineGrammarId,
   type JigsawBaselineProgram,
 } from "./baselineGrammar";
 import {
   deriveJigsawConnectorProgram,
   type JigsawConnectorProgram,
 } from "./connectorGrammar";
+import { sampleJigsawBaselineGrammarForCutStyle } from "./cutStyle";
 
 export type JigsawSeamProgram = {
   approach: JigsawBaselineProgram;
@@ -26,29 +28,24 @@ const seededUnit = (seedOffset: number, salt: number) => {
   return (mixed >>> 0) / 0xffff_ffff;
 };
 
-export const sampleJigsawBaselineGrammarUniformly = (
-  randomUnit: number,
-): JigsawBaselineGrammarId => {
-  const normalized = Math.min(1 - Number.EPSILON, Math.max(0, randomUnit));
-  const index = Math.floor(normalized * jigsawBaselineGrammarIds.length);
-  return jigsawBaselineGrammarIds[index];
-};
-
-const sampleBaselineGrammarId = (
-  seedOffset: number,
-  salt: number,
-): JigsawBaselineGrammarId =>
-  sampleJigsawBaselineGrammarUniformly(seededUnit(seedOffset, salt));
-
 const deriveRoleSeed = (seedOffset: number, salt: number) =>
   Math.imul((seedOffset ^ salt) >>> 0, 1_597_334_677) >>> 0;
 
 export const deriveJigsawSeamProgram = (
   connectorGrammarId: JigsawEdgeProfileId,
   seedOffset: number,
+  edgeModel: JigsawEdgeModel,
 ): JigsawSeamProgram => {
-  const approachGrammarId = sampleBaselineGrammarId(seedOffset, 0xc201);
-  const departureGrammarId = sampleBaselineGrammarId(seedOffset, 0xc202);
+  const approachGrammarId = sampleJigsawBaselineGrammarForCutStyle(
+    edgeModel.cutStyle,
+    edgeModel.baselineGrammarIds,
+    seededUnit(seedOffset, 0xc201),
+  );
+  const departureGrammarId = sampleJigsawBaselineGrammarForCutStyle(
+    edgeModel.cutStyle,
+    edgeModel.baselineGrammarIds,
+    seededUnit(seedOffset, 0xc202),
+  );
 
   return {
     approach: deriveJigsawBaselineProgram(

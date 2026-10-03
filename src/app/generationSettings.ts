@@ -8,6 +8,7 @@ import type {
   SudokuVariation,
 } from "../catalog/types";
 import { getPuzzleImageAsset, isImageBackedPuzzleId } from "../games/imageAssets";
+import { normalizeJigsawCutStyle } from "../games/jigsaw/cutStyle";
 import type { JigsawSizeSelection } from "../games/jigsaw/size";
 import { getDailyPuzzleSeedForProfile } from "../games/shared/daily";
 import { normalizeSolitaireVariation } from "../games/solitaire/variation";
@@ -26,6 +27,7 @@ export type GenerationSettings = Partial<
     | "sudokuVariation"
     | "solitaireVariation"
     | "imageId"
+    | "jigsawCutStyle"
   >
 > & {
   jigsawSizeSelection?: JigsawSizeSelection;
@@ -41,6 +43,7 @@ export type NextPuzzleDraft = {
   solitaireVariation: SolitaireVariation;
   imageId?: string;
   jigsawSizeSelection?: JigsawSizeSelection;
+  jigsawCutStyle?: GenerationIdentity["jigsawCutStyle"];
 };
 
 type ResolveGenerationIdentityInput = {
@@ -100,6 +103,17 @@ export const resolveGenerationIdentity = ({
   const imageId = isImageBackedPuzzleId(puzzleId)
     ? getPuzzleImageAsset(requestedImageId, puzzleId).id
     : requestedImageId;
+  const currentJigsawCutStyle =
+    currentPuzzle?.kind === "tiles" && currentPuzzle.puzzleId === "jigsaw"
+      ? currentPuzzle.edgeModel.cutStyle
+      : undefined;
+  const jigsawCutStyle = puzzleId === "jigsaw"
+    ? normalizeJigsawCutStyle(
+        settings.jigsawCutStyle ??
+          currentJigsawCutStyle ??
+          runtimeSettings.jigsawCutStyle,
+      )
+    : undefined;
   const provenance = settings.provenance === null ? undefined : settings.provenance;
   const seed = provenance?.source === "daily" && explicitSeed === null
     ? getDailyPuzzleSeedForProfile(puzzleId, provenance.dateStamp, {
@@ -121,6 +135,7 @@ export const resolveGenerationIdentity = ({
     sudokuVariation,
     solitaireVariation,
     imageId,
+    jigsawCutStyle,
     provenance,
   };
 };

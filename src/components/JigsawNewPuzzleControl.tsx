@@ -1,5 +1,10 @@
-import type { JigsawImageAsset } from "../catalog/types";
+import type { JigsawCutStyle, JigsawImageAsset } from "../catalog/types";
 import { getPuzzleImageAsset } from "../games/imageAssets";
+import {
+  jigsawCutStyleDescriptions,
+  jigsawCutStyleLabels,
+  jigsawCutStyles,
+} from "../games/jigsaw/cutStyle";
 import {
   getJigsawGridAdaptation,
   getJigsawPieceAspectRatio,
@@ -35,6 +40,7 @@ type JigsawNewPuzzleControlProps = {
   width: number;
   height: number;
   sizeSelection: JigsawSizeSelection;
+  cutStyle: JigsawCutStyle;
   minWidth: number;
   maxWidth: number;
   minHeight: number;
@@ -46,6 +52,7 @@ type JigsawNewPuzzleControlProps = {
     width?: number;
     height?: number;
     jigsawSizeSelection?: JigsawSizeSelection;
+    jigsawCutStyle?: JigsawCutStyle;
   }) => void;
   onSeedLoadInputChange: (seed: string) => void;
   onNewPuzzle: () => void;
@@ -59,6 +66,7 @@ export const JigsawNewPuzzleControl = ({
   width,
   height,
   sizeSelection,
+  cutStyle,
   minWidth,
   maxWidth,
   minHeight,
@@ -79,7 +87,7 @@ export const JigsawNewPuzzleControl = ({
   const stretchedPieceDirection = gridAdaptation
     ? (getJigsawPieceAspectRatio(selectedAsset, width, height) > 1 ? "wide" : "tall")
     : null;
-  const configurationSummary = `${selectedAsset.title} · ${sizeSelection} · ${pieceCount} pieces · ${width}×${height}`;
+  const configurationSummary = `${selectedAsset.title} · ${jigsawCutStyleLabels[cutStyle]} · ${sizeSelection} · ${pieceCount} pieces · ${width}×${height}`;
 
   return (
     <NewPuzzleCommand
@@ -95,12 +103,34 @@ export const JigsawNewPuzzleControl = ({
       onLoadSeed={onLoadSeed}
       info={(
         <>
-          <p>Size preset, custom dimensions, and artwork configure the next Jigsaw only. Changing them here does not rebuild the puzzle currently being played.</p>
+          <p>Cut style, size, and artwork configure the next Jigsaw only. Changing them here does not rebuild the puzzle currently being played.</p>
           <p>Named size presets target an approximate piece count and adapt their dimensions to the selected artwork. Custom dimensions remain explicit when artwork changes; unusually stretched Custom grids can be adapted explicitly while keeping approximately the same piece count.</p>
         </>
       )}
       settings={(
         <>
+          <div class="jigsaw-cut-style-settings" role="group" aria-label="Jigsaw cut style">
+            <div class="jigsaw-size-heading">
+              <strong>Cut style</strong>
+              <span>{jigsawCutStyleLabels[cutStyle]}</span>
+            </div>
+            <div class="jigsaw-cut-style-options">
+              {jigsawCutStyles.map((style) => (
+                <button
+                  type="button"
+                  class="jigsaw-size-option jigsaw-cut-style-option"
+                  aria-pressed={cutStyle === style}
+                  disabled={disabled}
+                  onClick={() => onSettingsChange({ jigsawCutStyle: style })}
+                  key={style}
+                >
+                  <strong>{jigsawCutStyleLabels[style]}</strong>
+                  <span>{jigsawCutStyleDescriptions[style]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div class="jigsaw-size-settings" role="group" aria-label="Jigsaw size">
             <div class="jigsaw-size-heading">
               <strong>Size</strong>

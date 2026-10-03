@@ -59,7 +59,7 @@ export const makeChecksum = (cells: PuzzleCell[], cages: GridPuzzleCage[] = [], 
 };
 
 const makeJigsawEdgeModelChecksumPart = (edgeModel: JigsawEdgeModel) =>
-  `edge-model:${edgeModel.catalogRevision}:${edgeModel.profileIds.join("|")}`;
+  `edge-model:${edgeModel.cutStyle}:${edgeModel.baselineGrammarIds.join("|")}`;
 
 const makeJigsawTileChecksumPart = (tile: JigsawPiece) => {
   const edgeParts = tile.edges.map(

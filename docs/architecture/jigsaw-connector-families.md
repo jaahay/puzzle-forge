@@ -9,7 +9,7 @@ The implementation lives in:
 - `src/games/jigsaw/connectorGrammar.ts` — structural connector grammar definitions, seeded program derivation, and normalized realization;
 - `src/games/jigsaw/baselineGrammar.ts` — structural baseline grammar definitions, seeded program derivation, and normalized realization;
 - `src/games/jigsaw/seamProgram.ts` — seeded approach / connector / departure composition;
-- `src/games/jigsaw/edgeProfiles.ts` — puzzle-level selection weights for the connector grammar catalog;
+- `src/games/jigsaw/cutStyle.ts` — Traditional / Unconventional palette admission, weighting, and puzzle-level baseline sub-palette policy;
 - `src/games/jigsaw/edgePaths.ts` — shared placement, polarity, complementarity, curve rendering, orientation, and validation sampling.
 
 The current grammar catalog is deliberately small. **Eight strong grammars are preferable to fourteen labels that collapse into the same geometry.**
@@ -49,14 +49,18 @@ The same scrutiny removed **Dovetail**, **T-lock**, and **Arrowhead** as separat
 The ordinary system is intentionally layered:
 
 ```text
-puzzle RNG
+puzzle RNG + selected cut style
    |
    v
-choose one connector grammar for the puzzle
+derive one cut-style policy for the puzzle
+   |
+   +--> choose one connector grammar from the style's weighted connector palette
+   |
+   +--> derive one small deterministic baseline sub-palette for the puzzle
    |
    v
-sample approach / departure uniformly from the baseline catalog
-and derive the connector for each shared SeamProgram
+sample each seam's approach / departure from that sub-palette
+and derive the connector through the same shared SeamProgram
    |
    v
 realize the program into normalized 2D geometry
@@ -78,9 +82,35 @@ The renderer is shared. The grammar is not.
 
 This matters: shared Bézier machinery does not make two grammars equivalent any more than a shared SVG renderer makes two drawings the same drawing.
 
-## Rollout model
+## Cut-style rollout model
 
-For the initial rollout, a generated puzzle chooses **one ordinary connector grammar for the entire game**. Baseline grammars are then selected independently for each seam's approach and departure roles.
+Cut style is an intentionally closed product axis for the current implementation:
+
+- **Traditional** — familiar physical-jigsaw cut language;
+- **Unconventional** — the broader expressive Puzzle Forge language.
+
+Both modes use the same connector grammar catalog, baseline grammar catalog, seam composition, renderer, polarity, complementarity, and safety machinery. The mode changes product policy, not geometry infrastructure.
+
+For every generated puzzle:
+
+1. cut style positively defines the admissible/weighted connector and baseline vocabularies;
+2. one connector grammar is selected for the whole puzzle;
+3. one small deterministic baseline sub-palette is derived for the whole puzzle;
+4. each seam independently selects its approach and departure baseline grammar from that sub-palette.
+
+The current policy is deliberately asymmetric:
+
+| Policy | Traditional | Unconventional |
+| --- | --- | --- |
+| Connector palette | Classic bulb, Necked head | All connector grammars |
+| Required baseline anchors | Straight, Bow | Bow |
+| Baseline palette size | 3 | 4 |
+| Additional Traditional baseline candidates | Inflection, Angled course | — |
+| Expressive baseline access | Excluded | Full catalog, subject to weighted sub-palette derivation |
+
+Traditional connector weighting favors Classic bulb over Necked head. Its third baseline family is selected from Inflection / Angled course, then all three baseline families remain weighted so Straight and Bow dominate individual seams.
+
+Unconventional can reach the complete connector and baseline vocabularies across generated puzzles. Bow remains a familiar anchor in every baseline sub-palette, while the other three entries are weighted toward the more expressive families.
 
 Individual seams still vary deterministically by seed:
 
@@ -506,21 +536,21 @@ The rows remain useful as a perceptual continuum from quiet to expressive, but t
 
 BaselineGrammar defines what can be expressed and how canonical productions are realized safely. It does **not** decide which productions should feel traditional, adventurous, common, or rare.
 
-The grammar layer currently samples the baseline catalog uniformly: every canonical family receives equal weight. That is a simple grammar-layer default, not a claim that equal weighting is the desired product experience. Product-level palette admission, weighting, parameter restraint, and coherent puzzle personality belong to #213, where Traditional / Unconventional behavior can operate over both BaselineGrammar and ConnectorGrammar without creating parallel geometry systems.
+The raw BaselineGrammar catalog remains policy-free. Product generation no longer samples that catalog uniformly: #213 supplies Traditional / Unconventional admission and weighting over the shared grammar vocabulary through `cutStyle.ts`.
 
 This separation is intentional:
 
 ```text
 BaselineGrammar + ConnectorGrammar
             ↓
-     generation policy (#213)
+     cut-style policy
             ↓
        seeded SeamProgram
             ↓
  shared realization / polarity / safety
 ```
 
-The composition boundary remains `JigsawSeamProgram` in `src/games/jigsaw/seamProgram.ts`. Connector programs continue to derive through ConnectorGrammar; the seam program adds independently seeded baseline programs around that unchanged connector component.
+The composition boundary remains `JigsawSeamProgram` in `src/games/jigsaw/seamProgram.ts`. Connector programs continue to derive through ConnectorGrammar; the seam program receives the puzzle's cut style and baseline sub-palette, then adds independently seeded baseline programs around that unchanged connector component.
 
 Placement remains connector-led. The connector first receives its seeded width, depth, lean, handedness, and legal center placement. Approach and departure baselines are then mapped into the actual remaining spans. Baseline amplitude attenuates with short spans and is additionally constrained by a corner wedge whose permitted normal depth grows with distance from the true piece corner. This keeps adjacent edges out of one another's corner neighborhoods without globally shrinking connectors or adding seed-specific exceptions.
 

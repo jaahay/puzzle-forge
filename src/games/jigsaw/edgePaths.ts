@@ -1,4 +1,5 @@
 import type {
+  JigsawEdgeModel,
   JigsawEdgeProfileId,
   JigsawEdgeSide,
   JigsawPiece,
@@ -10,6 +11,7 @@ import {
   type JigsawBaselinePoint,
 } from "./baselineGrammar";
 import {
+  deriveJigsawConnectorProgram,
   getJigsawConnectorGrammarDefinition,
   realizeJigsawConnectorProgram,
   type JigsawConnectorPoint,
@@ -90,12 +92,12 @@ const placeBaselinePoints = (
   });
 };
 
-const getCanonicalSeamParts = (
+const getCanonicalConnectorPoints = (
   profileId: JigsawEdgeProfileId,
   seedOffset: number,
-): CanonicalSeamParts => {
+): JigsawEdgePoint[] => {
   const grammar = getJigsawConnectorGrammarDefinition(profileId);
-  const program = deriveJigsawSeamProgram(profileId, seedOffset);
+  const connectorProgram = deriveJigsawConnectorProgram(profileId, seedOffset);
   const width = seededRange(seedOffset, 0x51ed, grammar.width);
   const depth = seededRange(seedOffset, 0x7f4a, grammar.depth);
   const lean =
@@ -103,7 +105,7 @@ const getCanonicalSeamParts = (
   const shouldMirror =
     grammar.mirrorable && seededUnit(seedOffset, 0x65d3) < 0.5;
 
-  let anchors = realizeJigsawConnectorProgram(program.connector);
+  let anchors = realizeJigsawConnectorProgram(connectorProgram);
   if (shouldMirror) anchors = mirrorAnchors(anchors);
 
   const horizontalOffsets = anchors.map(
@@ -120,12 +122,21 @@ const getCanonicalSeamParts = (
     minimumCenter +
     ((centerBias + 1) / 2) * (maximumCenter - minimumCenter);
 
-  const connector = anchors.map((anchor, index) =>
+  return anchors.map((anchor, index) =>
     point(
       center + horizontalOffsets[index],
       anchor.y * depth,
     ),
   );
+};
+
+const getCanonicalSeamParts = (
+  profileId: JigsawEdgeProfileId,
+  seedOffset: number,
+  edgeModel: JigsawEdgeModel,
+): CanonicalSeamParts => {
+  const program = deriveJigsawSeamProgram(profileId, seedOffset, edgeModel);
+  const connector = getCanonicalConnectorPoints(profileId, seedOffset);
   const connectorStart = connector[0].x;
   const connectorEnd = connector[connector.length - 1].x;
 
@@ -227,13 +238,14 @@ export const getJigsawCanonicalConnectorPoints = (
   profileId: JigsawEdgeProfileId,
   seedOffset: number,
 ): JigsawEdgePoint[] =>
-  getCanonicalSeamParts(profileId, seedOffset).connector.map(normalizePoint);
+  getCanonicalConnectorPoints(profileId, seedOffset).map(normalizePoint);
 
 const getCanonicalEdgeSegments = (
   profileId: JigsawEdgeProfileId,
   seedOffset: number,
+  edgeModel: JigsawEdgeModel,
 ): JigsawEdgeSegment[] => {
-  const seam = getCanonicalSeamParts(profileId, seedOffset);
+  const seam = getCanonicalSeamParts(profileId, seedOffset, edgeModel);
   const connectorGrammar = getJigsawConnectorGrammarDefinition(profileId);
   const approachGrammar = getJigsawBaselineGrammarDefinition(
     seam.program.approach.baselineGrammarId,
@@ -329,10 +341,13 @@ const orientCanonicalSegments = (
     .map((segment) => mapSegmentPoints(segment, mirrorAcrossEdgeAxis));
 };
 
-const getJigsawEdgeSegments = (edge: JigsawPieceEdge): JigsawEdgeSegment[] => {
+const getJigsawEdgeSegments = (
+  edge: JigsawPieceEdge,
+  edgeModel: JigsawEdgeModel,
+): JigsawEdgeSegment[] => {
   const canonical = edge.boundary
     ? lineSegmentsFromPoints([point(0, 0), point(100, 0)])
-    : getCanonicalEdgeSegments(edge.profileId, edge.seedOffset);
+    : getCanonicalEdgeSegments(edge.profileId, edge.seedOffset, edgeModel);
   const oriented = orientCanonicalSegments(canonical, edge.side);
   const polarity = !edge.boundary && edge.polarity === "blank" ? -1 : 1;
 
@@ -404,25 +419,37 @@ const segmentsToPath = (
   return commands.join(" ");
 };
 
-export const getJigsawEdgePoints = (edge: JigsawPieceEdge): JigsawEdgePoint[] =>
-  sampleSegments(getJigsawEdgeSegments(edge));
+export const getJigsawEdgePoints = (
+  edge: JigsawPieceEdge,
+  edgeModel: JigsawEdgeModel,
+): JigsawEdgePoint[] =>
+  sampleSegments(getJigsawEdgeSegments(edge, edgeModel));
 
-export const getJigsawEdgePath = (edge: JigsawPieceEdge) =>
-  segmentsToPath(getJigsawEdgeSegments(edge));
+export const getJigsawEdgePath = (
+  edge: JigsawPieceEdge,
+  edgeModel: JigsawEdgeModel,
+) =>
+  segmentsToPath(getJigsawEdgeSegments(edge, edgeModel));
 
-export const getJigsawPieceOutlinePoints = (piece: JigsawPiece): JigsawEdgePoint[] =>
+export const getJigsawPieceOutlinePoints = (
+  piece: JigsawPiece,
+  edgeModel: JigsawEdgeModel,
+): JigsawEdgePoint[] =>
   pieceEdgeOrder.flatMap((side, edgeIndex) => {
     const edge = piece.edges.find((candidate) => candidate.side === side);
     if (!edge) throw new Error(`Jigsaw piece ${piece.id} is missing its ${side} edge.`);
-    const points = getJigsawEdgePoints(edge);
+    const points = getJigsawEdgePoints(edge, edgeModel);
     return edgeIndex === 0 ? points : points.slice(1);
   });
 
-export const getJigsawPieceOutlinePath = (piece: JigsawPiece) => {
+export const getJigsawPieceOutlinePath = (
+  piece: JigsawPiece,
+  edgeModel: JigsawEdgeModel,
+) => {
   const edgeSegments = pieceEdgeOrder.map((side) => {
     const edge = piece.edges.find((candidate) => candidate.side === side);
     if (!edge) throw new Error(`Jigsaw piece ${piece.id} is missing its ${side} edge.`);
-    return getJigsawEdgeSegments(edge);
+    return getJigsawEdgeSegments(edge, edgeModel);
   });
 
   const commands = edgeSegments.flatMap((segments, edgeIndex) => {
@@ -433,12 +460,15 @@ export const getJigsawPieceOutlinePath = (piece: JigsawPiece) => {
   return `${commands.join(" ")} Z`;
 };
 
-export const getJigsawPieceSeamPaths = (piece: JigsawPiece): JigsawPieceSeamPath[] =>
+export const getJigsawPieceSeamPaths = (
+  piece: JigsawPiece,
+  edgeModel: JigsawEdgeModel,
+): JigsawPieceSeamPath[] =>
   piece.edges.map((edge) => ({
     edgeId: edge.edgeId,
     side: edge.side,
     boundary: edge.boundary,
     profileId: edge.profileId,
     polarity: edge.polarity,
-    d: getJigsawEdgePath(edge),
+    d: getJigsawEdgePath(edge, edgeModel),
   }));
