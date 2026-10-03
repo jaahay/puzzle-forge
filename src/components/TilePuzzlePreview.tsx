@@ -29,14 +29,12 @@ import {
 } from "../games/jigsaw/history";
 import { getJigsawPinchCamera, type JigsawPinchPair, type JigsawPinchPoint } from "../games/jigsaw/pinch";
 import {
-  createInitialJigsawPlacements,
   createJigsawFitCamera,
   createJigsawOccupiedFitCamera,
   createJigsawWorkingFitCamera,
   createJigsawWorldLayout,
   getJigsawCameraTransform,
   getJigsawPlacementPosition,
-  getJigsawSolvedPosition,
   isUsableJigsawViewport,
   panJigsawCamera,
   screenToJigsawWorld,
