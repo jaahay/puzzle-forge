@@ -11,13 +11,15 @@ import {
   type JigsawAssemblyProgress,
 } from "../games/jigsaw/assembly";
 import {
-  moveJigsawComponent,
-  resolveJigsawComponentDrop,
-} from "../games/jigsaw/interaction";
+  beginJigsawDragAction,
+  cancelJigsawDragAction,
+  completeJigsawDragAction,
+  projectJigsawDragAction,
+  type JigsawDragAction,
+} from "../games/jigsaw/dragAction";
 import { getJigsawPieceOutlinePath, getJigsawPieceSeamPaths } from "../games/jigsaw/edgePaths";
 import {
   applyJigsawHistoryAction,
-  cloneJigsawSnapshot,
   commitJigsawPlacementAction,
   getJigsawHistoryAvailability,
   makeEmptyJigsawHistoryState,
@@ -36,7 +38,6 @@ import {
   getJigsawPlacementPosition,
   isUsableJigsawViewport,
   panJigsawCamera,
-  screenToJigsawWorld,
   zoomJigsawCameraAtPoint,
   type JigsawCamera,
   type JigsawPlacement,
@@ -113,18 +114,7 @@ type PiecePointerEvent = JSX.TargetedPointerEvent<HTMLButtonElement>;
 type StagePointerEvent = JSX.TargetedPointerEvent<HTMLDivElement>;
 type StageKeyboardEvent = JSX.TargetedKeyboardEvent<HTMLDivElement>;
 
-type ActiveDrag = {
-  puzzleId: string;
-  tileId: string;
-  pieceIds: string[];
-  pointerId: number;
-  offsetWorldX: number;
-  offsetWorldY: number;
-  originWorldX: number;
-  originWorldY: number;
-  startSnapshot: JigsawWorkspaceSnapshot;
-  clientX: number;
-  clientY: number;
+type ActiveDrag = JigsawDragAction & {
   pieceElements: HTMLButtonElement[];
 };
 
@@ -614,7 +604,7 @@ export const TilePuzzlePreview = ({
         if (interruptedDrag) {
           updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
             ...current,
-            ...cloneJigsawSnapshot(interruptedDrag.startSnapshot),
+            ...cancelJigsawDragAction(interruptedDrag),
           } : current);
         }
         stopDragAnimation();
@@ -674,42 +664,22 @@ export const TilePuzzlePreview = ({
     }
   };
 
-  const getPointerPlacement = (
-    clientX: number,
-    clientY: number,
-    drag: ActiveDrag,
-    state = wheelStateRef.current,
-  ) => {
-    const stagePoint = getStagePoint(clientX, clientY);
-    if (!stagePoint) return null;
-    const worldPoint = screenToJigsawWorld(state.camera, state.viewport, stagePoint.x, stagePoint.y);
-    return {
-      worldX: worldPoint.x - drag.offsetWorldX,
-      worldY: worldPoint.y - drag.offsetWorldY,
-    };
-  };
-
   const renderDraggedPieceImmediately = (drag: ActiveDrag, state = wheelStateRef.current) => {
-    const pointerPlacement = getPointerPlacement(drag.clientX, drag.clientY, drag, state);
-    if (!pointerPlacement) return null;
-    const startPlacement = drag.startSnapshot.placements.find((placement) => placement.id === drag.tileId);
-    if (!startPlacement) return null;
-
-    const movedPlacements = moveJigsawComponent(
+    const stagePoint = getStagePoint(drag.clientX, drag.clientY);
+    if (!stagePoint) return null;
+    const projection = projectJigsawDragAction(
       state.layout,
-      drag.startSnapshot.placements,
-      drag.pieceIds,
-      pointerPlacement.worldX - startPlacement.worldX,
-      pointerPlacement.worldY - startPlacement.worldY,
+      state.camera,
+      state.viewport,
+      stagePoint,
+      drag,
     );
-    const movedPlacement = movedPlacements.find((placement) => placement.id === drag.tileId);
-    if (!movedPlacement) return null;
-    const dragX = movedPlacement.worldX - drag.originWorldX;
-    const dragY = movedPlacement.worldY - drag.originWorldY;
-    applyJigsawDragOffset(drag.pieceElements, dragX, dragY);
-    return movedPlacements;
+    if (!projection) return null;
+    applyJigsawDragOffset(drag.pieceElements, projection.dragX, projection.dragY);
+    return projection.placements;
   };
 
+  const runDragAnimationFrame = (time: number) => {
   const runDragAnimationFrame = (time: number) => {
     const drag = dragRef.current;
     if (!drag) {
@@ -759,12 +729,6 @@ export const TilePuzzlePreview = ({
     const stagePoint = getStagePoint(event.clientX, event.clientY);
     if (!stagePoint) return;
     const current = wheelStateRef.current;
-    const worldPoint = screenToJigsawWorld(
-      current.camera,
-      current.viewport,
-      stagePoint.x,
-      stagePoint.y,
-    );
     const position = getJigsawPlacementPosition(current.layout, placement);
     const currentPlacementState = placementStateRef.current;
     if (!currentPlacementState || currentPlacementState.puzzleId !== puzzle.id) return;
@@ -775,23 +739,23 @@ export const TilePuzzlePreview = ({
     });
     resetJigsawDragOffset(pieceElements);
     const target = event.currentTarget as HTMLButtonElement;
-    dragRef.current = {
+    const action = beginJigsawDragAction({
       puzzleId: puzzle.id,
       tileId: tile.id,
       pieceIds,
       pointerId: event.pointerId,
-      offsetWorldX: worldPoint.x - position.left,
-      offsetWorldY: worldPoint.y - position.top,
-      originWorldX: position.left,
-      originWorldY: position.top,
-      startSnapshot: cloneJigsawSnapshot({
+      camera: current.camera,
+      viewport: current.viewport,
+      stagePoint,
+      origin: position,
+      snapshot: {
         placements: currentPlacementState.placements,
         assembly: currentPlacementState.assembly,
-      }),
+      },
       clientX: event.clientX,
       clientY: event.clientY,
-      pieceElements,
-    };
+    });
+    dragRef.current = { ...action, pieceElements };
     publishHistoryAvailability(historyRef.current, true);
     stageRef.current?.focus({ preventScroll: true });
     target.setPointerCapture(event.pointerId);
@@ -802,6 +766,7 @@ export const TilePuzzlePreview = ({
     event.preventDefault();
   };
 
+  const moveDrag = (event: PiecePointerEvent) => {
   const moveDrag = (event: PiecePointerEvent) => {
     if (pinchRef.current) return;
     const drag = dragRef.current;
@@ -827,7 +792,7 @@ export const TilePuzzlePreview = ({
     if (!movedPlacements) {
       updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
         ...current,
-        ...cloneJigsawSnapshot(drag.startSnapshot),
+        ...cancelJigsawDragAction(drag),
       } : current);
       dragRef.current = null;
       setActiveTileId(null);
@@ -835,27 +800,24 @@ export const TilePuzzlePreview = ({
       return;
     }
 
-    const dropped = resolveJigsawComponentDrop(
+    const completed = completeJigsawDragAction(
       layout,
       puzzle.tiles,
+      historyRef.current,
       movedPlacements,
-      drag.startSnapshot.assembly,
-      tile.id,
+      drag,
     );
-    const nextSnapshot: JigsawWorkspaceSnapshot = {
-      placements: dropped.placements,
-      assembly: dropped.assembly,
-    };
-    const nextState = updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
+    const nextSnapshot = completed.snapshot;
+    const nextState = updatePlacementState((current) => current?.puzzleId === puzzle.id ? {    const nextState = updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
       ...current,
       ...nextSnapshot,
     } : current);
     dragRef.current = null;
     setActiveTileId(null);
     if (nextState?.puzzleId === puzzle.id) {
-      if (isJigsawAssemblySolved(nextState.assembly, puzzle.tiles.length)) onCausativeInput();
+      if (completed.solved) onCausativeInput();
       publishAssemblyProgress(nextState.assembly);
-      replaceHistory(commitJigsawPlacementAction(historyRef.current, drag.startSnapshot, nextSnapshot));
+      replaceHistory(completed.history);
     } else {
       publishHistoryAvailability(historyRef.current);
     }
@@ -870,7 +832,7 @@ export const TilePuzzlePreview = ({
     setCamera(wheelStateRef.current.camera);
     updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
       ...current,
-      ...cloneJigsawSnapshot(drag.startSnapshot),
+      ...cancelJigsawDragAction(drag),
     } : current);
     dragRef.current = null;
     setActiveTileId(null);

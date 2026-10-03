@@ -21,15 +21,17 @@ describe("Jigsaw auto-pan controller boundary", () => {
     );
     const dragLoop = sourceBetween(
       previewSource,
-      "const getPointerPlacement =",
+      "const renderDraggedPieceImmediately =",
       "const beginPan =",
     );
 
     expect(renderCamera).toContain("state = wheelStateRef.current");
     expect(renderCamera).toContain("applyJigsawCameraTransform(worldLayer, state.camera, state.viewport)");
     expect(dragLoop).toContain("state = wheelStateRef.current");
-    expect(dragLoop).toContain("screenToJigsawWorld(state.camera, state.viewport");
+    expect(dragLoop).toContain("projectJigsawDragAction(");
     expect(dragLoop).toContain("state.layout");
+    expect(dragLoop).toContain("state.camera");
+    expect(dragLoop).toContain("state.viewport");
     expect(dragLoop).toContain("renderCameraImmediately(wheelStateRef.current)");
     expect(dragLoop).toContain("renderDraggedPieceImmediately(drag, wheelStateRef.current)");
   });
