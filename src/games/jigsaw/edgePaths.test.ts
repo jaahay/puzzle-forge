@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type {
+  JigsawBaselineGrammarId,
   JigsawBoundaryEdge,
   JigsawCutStyle,
   JigsawEdgeModel,
@@ -26,7 +27,13 @@ import {
   jigsawEdgeMaximumDepth,
 } from "./edgePaths";
 
-const makeBoundaryEdge = (side: JigsawEdgeSide): JigsawBoundaryEdge => ({
+const makeBoundaryEdge = (
+  side: JigsawEdgeSide,
+  contour?: {
+    baselineGrammarId: JigsawBaselineGrammarId;
+    seedOffset: number;
+  },
+): JigsawBoundaryEdge => ({
   edgeId: `boundary:${side}`,
   side,
   boundary: true,
@@ -35,6 +42,7 @@ const makeBoundaryEdge = (side: JigsawEdgeSide): JigsawBoundaryEdge => ({
   profileId: null,
   polarity: "flat",
   seedOffset: 0,
+  ...(contour ? { contour } : {}),
 });
 
 const makeInteriorEdge = ({
@@ -173,11 +181,93 @@ const expectPointsSafe = (
 };
 
 describe("Jigsaw edge paths", () => {
-  it("keeps all boundary edges flat", () => {
+  it("keeps boundary edges flat when no contour is assigned", () => {
     expect(getJigsawEdgePath(makeBoundaryEdge("top"), expressiveEdgeModel)).toBe("M 0 0 L 100 0");
     expect(getJigsawEdgePath(makeBoundaryEdge("right"), expressiveEdgeModel)).toBe("M 100 0 L 100 100");
     expect(getJigsawEdgePath(makeBoundaryEdge("bottom"), expressiveEdgeModel)).toBe("M 100 100 L 0 100");
     expect(getJigsawEdgePath(makeBoundaryEdge("left"), expressiveEdgeModel)).toBe("M 0 100 L 0 0");
+  });
+
+  it("realizes non-flat true boundaries from the existing BaselineGrammar vocabulary", () => {
+    for (const baselineGrammarId of jigsawBaselineGrammarIds.filter(
+      (grammarId) => grammarId !== "straight",
+    )) {
+      const edge = makeBoundaryEdge("top", {
+        baselineGrammarId,
+        seedOffset: 123_456,
+      });
+      const points = getJigsawEdgePoints(edge, expressiveEdgeModel);
+      const path = getJigsawEdgePath(edge, expressiveEdgeModel);
+
+      expect(points[0]).toEqual({ x: 0, y: 0 });
+      expect(points.at(-1)).toEqual({ x: 100, y: 0 });
+      expect(points.some((candidate) => Math.abs(candidate.y) > 0.5)).toBe(true);
+      expect(path).not.toBe("M 0 0 L 100 0");
+      expect(path).not.toMatch(/NaN|Infinity/);
+      expectPointsSafe(points, `boundary ${baselineGrammarId}`);
+    }
+  });
+
+  it("orients the same boundary contour coherently on every outer side", () => {
+    const contour = {
+      baselineGrammarId: "angled-course" as const,
+      seedOffset: 88_001,
+    };
+
+    const top = getJigsawEdgePoints(
+      makeBoundaryEdge("top", contour),
+      expressiveEdgeModel,
+    );
+    const right = getJigsawEdgePoints(
+      makeBoundaryEdge("right", contour),
+      expressiveEdgeModel,
+    );
+    const bottom = getJigsawEdgePoints(
+      makeBoundaryEdge("bottom", contour),
+      expressiveEdgeModel,
+    );
+    const left = getJigsawEdgePoints(
+      makeBoundaryEdge("left", contour),
+      expressiveEdgeModel,
+    );
+
+    expect(top[0]).toEqual({ x: 0, y: 0 });
+    expect(top.at(-1)).toEqual({ x: 100, y: 0 });
+    expect(right[0]).toEqual({ x: 100, y: 0 });
+    expect(right.at(-1)).toEqual({ x: 100, y: 100 });
+    expect(bottom[0]).toEqual({ x: 100, y: 100 });
+    expect(bottom.at(-1)).toEqual({ x: 0, y: 100 });
+    expect(left[0]).toEqual({ x: 0, y: 100 });
+    expect(left.at(-1)).toEqual({ x: 0, y: 0 });
+
+    for (const [side, points] of [
+      ["top", top],
+      ["right", right],
+      ["bottom", bottom],
+      ["left", left],
+    ] as const) {
+      expectPointsSafe(points, `${side} boundary contour`);
+    }
+  });
+
+  it("keeps contoured boundary endpoints corner-safe in a closed piece outline", () => {
+    const piece = makePiece([
+      makeBoundaryEdge("top", {
+        baselineGrammarId: "wave",
+        seedOffset: 71_003,
+      }),
+      makeInteriorEdge({ side: "right", polarity: "tab", seedOffset: 71_004 }),
+      makeInteriorEdge({ side: "bottom", polarity: "blank", seedOffset: 71_005 }),
+      makeBoundaryEdge("left", {
+        baselineGrammarId: "stepped-course",
+        seedOffset: 71_006,
+      }),
+    ]);
+    const points = getJigsawPieceOutlinePoints(piece, expressiveEdgeModel);
+
+    expect(points[0]).toEqual({ x: 0, y: 0 });
+    expect(points.at(-1)).toEqual({ x: 0, y: 0 });
+    expectPointsSafe(points, "contoured boundary piece");
   });
 
   it("is deterministic while giving every profile a distinct silhouette", () => {

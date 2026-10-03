@@ -1,4 +1,5 @@
 import type {
+  JigsawBoundaryEdge,
   JigsawEdgeModel,
   JigsawEdgeProfileId,
   JigsawEdgeSide,
@@ -6,6 +7,7 @@ import type {
   JigsawPieceEdge,
 } from "../../catalog/types";
 import {
+  deriveJigsawBaselineProgram,
   getJigsawBaselineGrammarDefinition,
   realizeJigsawBaselineProgram,
   type JigsawBaselinePoint,
@@ -91,6 +93,20 @@ const placeBaselinePoints = (
     return point(x, y);
   });
 };
+
+const placeBoundaryBaselinePoints = (
+  points: readonly JigsawBaselinePoint[],
+): JigsawEdgePoint[] =>
+  points.map((candidate) => {
+    const x = candidate.x * 100;
+    const rawY = candidate.y;
+    const cornerDistance = Math.min(x, 100 - x);
+    const maximumDepth = Math.max(0, cornerDistance * baselineCornerSlope);
+    const y =
+      Math.sign(rawY) * Math.min(Math.abs(rawY), maximumDepth);
+
+    return point(x, y);
+  });
 
 const getCanonicalConnectorPoints = (
   profileId: JigsawEdgeProfileId,
@@ -240,6 +256,32 @@ export const getJigsawCanonicalConnectorPoints = (
 ): JigsawEdgePoint[] =>
   getCanonicalConnectorPoints(profileId, seedOffset).map(normalizePoint);
 
+const getCanonicalBoundarySegments = (
+  edge: JigsawBoundaryEdge,
+): JigsawEdgeSegment[] => {
+  if (!edge.contour) {
+    return lineSegmentsFromPoints([point(0, 0), point(100, 0)]);
+  }
+
+  const grammar = getJigsawBaselineGrammarDefinition(
+    edge.contour.baselineGrammarId,
+  );
+  const program = deriveJigsawBaselineProgram(
+    edge.contour.baselineGrammarId,
+    edge.contour.seedOffset,
+  );
+  const points = placeBoundaryBaselinePoints(
+    realizeJigsawBaselineProgram(program),
+  );
+
+  return segmentsFromPoints(
+    points,
+    grammar.renderMode,
+    grammar.curveTension,
+    grammar.renderMode === "smooth",
+  );
+};
+
 const getCanonicalEdgeSegments = (
   profileId: JigsawEdgeProfileId,
   seedOffset: number,
@@ -346,7 +388,7 @@ const getJigsawEdgeSegments = (
   edgeModel: JigsawEdgeModel,
 ): JigsawEdgeSegment[] => {
   const canonical = edge.boundary
-    ? lineSegmentsFromPoints([point(0, 0), point(100, 0)])
+    ? getCanonicalBoundarySegments(edge)
     : getCanonicalEdgeSegments(edge.profileId, edge.seedOffset, edgeModel);
   const oriented = orientCanonicalSegments(canonical, edge.side);
   const polarity = !edge.boundary && edge.polarity === "blank" ? -1 : 1;
