@@ -25,7 +25,7 @@ import {
   shouldRenderJigsawReferencePreview,
   shouldShowJigsawCompletionCelebration,
   shouldShowJigsawSolvedControls,
-} from "./TilePuzzlePreview";
+} from "./JigsawPreviewModel";
 
 const makePiece = (solvedIndex: number, width = 4): JigsawPiece => ({
   id: `tile-${solvedIndex}`,
