@@ -122,13 +122,23 @@ export const resolveJigsawComponentDrop = (
     };
   }
 
-  const candidates = new Map<string, { pieceId: string; distance: number; translationX: number; translationY: number }>();
+  type SnapCandidate = {
+    componentKey: string;
+    pieceId: string;
+    pieceIds: string[];
+    distance: number;
+    translationX: number;
+    translationY: number;
+  };
+  const candidates = new Map<string, SnapCandidate>();
   for (const pieceId of draggedIds) {
     const piece = piecesById.get(pieceId);
     if (!piece) continue;
 
     for (const edge of piece.edges) {
       if (edge.boundary || !edge.neighborPieceId || draggedIdSet.has(edge.neighborPieceId)) continue;
+      const targetPieceIds = getJigsawComponentPieceIds(assembly, edge.neighborPieceId);
+      const componentKey = [...targetPieceIds].sort((left, right) => left.localeCompare(right)).join("\u0000");
       const targetTranslation = getComponentTranslation(
         layout,
         piecesById,
@@ -140,10 +150,16 @@ export const resolveJigsawComponentDrop = (
         draggedTranslation.x - targetTranslation.x,
         draggedTranslation.y - targetTranslation.y,
       );
-      const existing = candidates.get(edge.neighborPieceId);
-      if (!existing || distance < existing.distance) {
-        candidates.set(edge.neighborPieceId, {
+      const existing = candidates.get(componentKey);
+      if (
+        !existing ||
+        distance < existing.distance ||
+        (distance === existing.distance && edge.neighborPieceId.localeCompare(existing.pieceId) < 0)
+      ) {
+        candidates.set(componentKey, {
+          componentKey,
           pieceId: edge.neighborPieceId,
+          pieceIds: targetPieceIds,
           distance,
           translationX: targetTranslation.x,
           translationY: targetTranslation.y,
@@ -152,11 +168,15 @@ export const resolveJigsawComponentDrop = (
     }
   }
 
-  const candidate = [...candidates.values()]
-    .filter(({ distance }) => distance <= getSnapThreshold(layout))
-    .sort((left, right) => left.distance - right.distance || left.pieceId.localeCompare(right.pieceId))[0];
+  const snapThreshold = getSnapThreshold(layout);
+  const viableCandidates = [...candidates.values()]
+    .filter(({ distance }) => distance <= snapThreshold)
+    .sort((left, right) =>
+      left.distance - right.distance ||
+      left.componentKey.localeCompare(right.componentKey));
 
-  if (!candidate) {
+  const primaryCandidate = viableCandidates[0];
+  if (!primaryCandidate) {
     return {
       placements: placements.map((placement) => ({ ...placement })),
       assembly,
@@ -164,16 +184,31 @@ export const resolveJigsawComponentDrop = (
     };
   }
 
-  const targetIds = getJigsawComponentPieceIds(assembly, candidate.pieceId);
-  const mergedAssembly = mergeJigsawAssemblyComponents(assembly, draggedPieceId, candidate.pieceId);
-  const mergedIds = [...new Set([...draggedIds, ...targetIds])];
+  const compatibleTranslationEpsilon = 0.001;
+  const compatibleCandidates = viableCandidates.filter((candidate) =>
+    Math.hypot(
+      candidate.translationX - primaryCandidate.translationX,
+      candidate.translationY - primaryCandidate.translationY,
+    ) <= compatibleTranslationEpsilon);
+
+  let mergedAssembly = assembly;
+  const mergedIdSet = new Set(draggedIds);
+  for (const candidate of compatibleCandidates) {
+    mergedAssembly = mergeJigsawAssemblyComponents(
+      mergedAssembly,
+      draggedPieceId,
+      candidate.pieceId,
+    );
+    for (const pieceId of candidate.pieceIds) mergedIdSet.add(pieceId);
+  }
+  const mergedIds = [...mergedIdSet];
   const aligned = alignComponentToTranslation(
     layout,
     pieces,
     placements,
-    draggedIds,
-    candidate.translationX,
-    candidate.translationY,
+    mergedIds,
+    primaryCandidate.translationX,
+    primaryCandidate.translationY,
   );
 
   const alignedById = getPlacementById(aligned);
