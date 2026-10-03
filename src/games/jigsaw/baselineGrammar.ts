@@ -5,9 +5,7 @@ import {
   baselinePrimitive,
   baselineRepeat,
   baselineSequence,
-  expandJigsawBaselineProduction,
   getJigsawBaselineProductionStructure,
-  type JigsawBaselinePrimitive,
   type JigsawBaselineProduction,
 } from "./baselineProduction";
 
@@ -30,7 +28,6 @@ export type JigsawBaselineGrammarDefinition = {
 
 type BaselineProgramBase = {
   baselineGrammarId: JigsawBaselineGrammarId;
-  events: readonly JigsawBaselinePrimitive[];
   depth: number;
   direction: -1 | 1;
 };
@@ -216,12 +213,9 @@ export const deriveJigsawBaselineProgram = (
   seedOffset: number,
 ): JigsawBaselineProgram => {
   const definition = jigsawBaselineGrammarCatalog[baselineGrammarId];
-  const events = expandJigsawBaselineProduction(definition.production);
-
   if (baselineGrammarId === "straight") {
     return {
       baselineGrammarId,
-      events,
       depth: 0,
       direction: 1,
     };
@@ -234,32 +228,28 @@ export const deriveJigsawBaselineProgram = (
     case "bow":
       return {
         baselineGrammarId,
-        events,
-        depth,
+          depth,
         direction: signedDirection,
         peak: range(seedOffset, 0xb111, 0.44, 0.56),
       };
     case "inflection":
       return {
         baselineGrammarId,
-        events,
-        depth,
+          depth,
         direction: signedDirection,
         crossover: range(seedOffset, 0xb121, 0.46, 0.54),
       };
     case "wave":
       return {
         baselineGrammarId,
-        events,
-        depth,
+          depth,
         direction: signedDirection,
         middleDepth: range(seedOffset, 0xb131, 0.68, 0.86),
       };
     case "angled-course":
       return {
         baselineGrammarId,
-        events,
-        depth,
+          depth,
         direction: signedDirection,
         courseStart: range(seedOffset, 0xb141, 0.3, 0.38),
         courseEnd: range(seedOffset, 0xb142, 0.62, 0.7),
@@ -267,8 +257,7 @@ export const deriveJigsawBaselineProgram = (
     case "dogleg":
       return {
         baselineGrammarId,
-        events,
-        depth,
+          depth,
         direction: signedDirection,
         firstBend: range(seedOffset, 0xb161, 0.28, 0.34),
         secondBend: range(seedOffset, 0xb162, 0.66, 0.72),
@@ -277,8 +266,7 @@ export const deriveJigsawBaselineProgram = (
     case "stepped-course":
       return {
         baselineGrammarId,
-        events,
-        depth,
+          depth,
         direction: signedDirection,
         middleLevel: range(seedOffset, 0xb151, 0.38, 0.58),
       };
