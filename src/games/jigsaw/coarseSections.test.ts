@@ -3,6 +3,7 @@ import type { JigsawPiece } from "../../catalog/types";
 import {
   createJigsawCoarseSections,
   getJigsawCoarseSectionForPiece,
+  getJigsawCoarseSectionFocusPieceIds,
   isJigsawCoarseSectionComplete,
 } from "./coarseSections";
 
@@ -133,6 +134,64 @@ describe("Jigsaw coarse sections", () => {
 
     expect(getJigsawCoarseSectionForPiece(sections, "tile-6")?.id).toBe("top-right");
     expect(getJigsawCoarseSectionForPiece(sections, "missing")).toBeNull();
+  });
+
+  it("focuses the section's global pieces without splitting an island that crosses its boundary", () => {
+    const pieces = makeGrid(4, 4);
+    const sections = createJigsawCoarseSections(pieces, 4, 4);
+    const topLeft = sections[0]!;
+
+    expect(
+      getJigsawCoarseSectionFocusPieceIds(
+        topLeft,
+        { joinedComponents: [] },
+        pieces,
+      ),
+    ).toEqual(["tile-0", "tile-1", "tile-4", "tile-5"]);
+
+    expect(
+      getJigsawCoarseSectionFocusPieceIds(
+        topLeft,
+        {
+          joinedComponents: [
+            ["tile-1", "tile-2", "tile-6"],
+            ["tile-10", "tile-11"],
+          ],
+        },
+        pieces,
+      ),
+    ).toEqual([
+      "tile-0",
+      "tile-1",
+      "tile-2",
+      "tile-4",
+      "tile-5",
+      "tile-6",
+    ]);
+  });
+
+  it("returns section focus membership in stable solved order regardless of component order", () => {
+    const pieces = makeGrid(5, 3);
+    const sections = createJigsawCoarseSections(pieces, 5, 3);
+    const topRight = sections[1]!;
+
+    expect(
+      getJigsawCoarseSectionFocusPieceIds(
+        topRight,
+        {
+          joinedComponents: [
+            ["tile-2", "tile-9", "tile-4", "tile-3"],
+          ],
+        },
+        pieces,
+      ),
+    ).toEqual([
+      "tile-2",
+      "tile-3",
+      "tile-4",
+      "tile-8",
+      "tile-9",
+    ]);
   });
 
   it("derives completion from global assembly membership rather than section-local state", () => {
