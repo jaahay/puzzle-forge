@@ -240,7 +240,7 @@ describe("TilePuzzlePreview placement initialization", () => {
     expect(memberPlacements[2]).toEqual(memberPlacements[0]);
   });
 
-  it("waits for a real play-surface measurement before staging a fresh puzzle", () => {  it("waits for a real play-surface measurement before staging a fresh puzzle", () => {
+  it("waits for a real play-surface measurement before staging a fresh puzzle", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 721,
       imageHeight: 2048,

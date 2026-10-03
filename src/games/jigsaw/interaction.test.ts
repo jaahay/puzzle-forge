@@ -133,5 +133,3 @@ describe("Jigsaw island interaction", () => {
     expect(result.assembly).toEqual({ joinedComponents: [] });
   });
 });
-});
-});
