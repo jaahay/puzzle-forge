@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type { GeneratedPuzzle } from "../catalog/types";
+import { getPuzzleImageAsset, getPuzzleImageAssetsFor } from "../games/imageAssets";
 import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
 import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
 import { resolveJigsawSizeDimensions } from "../games/jigsaw/size";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
-import { buildNextPuzzleDraft } from "./useNextPuzzleDrafts";
+import {
+  buildNextPuzzleDraft,
+  randomizeNextPuzzleArtwork,
+} from "./useNextPuzzleDrafts";
 import type { GenerationRuntimeSettings } from "./generationIdentity";
 
 const runtimeSettings: GenerationRuntimeSettings = {
@@ -95,5 +99,91 @@ describe("buildNextPuzzleDraft", () => {
     expect(otherDraft.width).not.toBe(runtimeSettings.width);
     expect(otherDraft.height).not.toBe(runtimeSettings.height);
     expect(otherDraft.difficulty).toBe("Medium");
+  });
+});
+
+
+describe("randomizeNextPuzzleArtwork", () => {
+  it("keeps non-image puzzle drafts unchanged", () => {
+    const draft = buildNextPuzzleDraft({
+      puzzleId: "sudoku",
+      selectedPuzzleId: "sudoku",
+      currentPuzzle: sudokuPuzzle,
+      runtimeSettings,
+    });
+
+    expect(randomizeNextPuzzleArtwork("sudoku", draft, 0)).toBe(draft);
+  });
+
+  it("changes only artwork for image-tile puzzles", () => {
+    const [currentAsset] = getPuzzleImageAssetsFor("tile-swap");
+    const draft = {
+      width: 5,
+      height: 4,
+      difficulty: "Hard" as const,
+      requireUniqueSolution: false,
+      sudokuVariation: "classic" as const,
+      solitaireVariation: defaultSolitaireVariation,
+      imageId: currentAsset.id,
+    };
+
+    const randomized = randomizeNextPuzzleArtwork("tile-swap", draft, 0);
+
+    expect(randomized).toMatchObject({
+      width: 5,
+      height: 4,
+      difficulty: "Hard",
+      requireUniqueSolution: false,
+    });
+    expect(randomized.imageId).not.toBe(currentAsset.id);
+  });
+
+  it("re-adapts Jigsaw preset dimensions to the randomized artwork", () => {
+    const [currentAsset] = getPuzzleImageAssetsFor("jigsaw");
+    const currentSize = resolveJigsawSizeDimensions(currentAsset, "Small");
+    const draft = {
+      width: currentSize.width,
+      height: currentSize.height,
+      difficulty: "Medium" as const,
+      requireUniqueSolution: true,
+      sudokuVariation: "classic" as const,
+      solitaireVariation: defaultSolitaireVariation,
+      imageId: currentAsset.id,
+      jigsawSizeSelection: "Small" as const,
+      jigsawCutStyle: defaultJigsawCutStyle,
+    };
+
+    const randomized = randomizeNextPuzzleArtwork("jigsaw", draft, 0);
+    const randomizedAsset = getPuzzleImageAsset(randomized.imageId, "jigsaw");
+    const expectedSize = resolveJigsawSizeDimensions(randomizedAsset, "Small");
+
+    expect(randomized.imageId).not.toBe(currentAsset.id);
+    expect(randomized).toMatchObject({
+      width: expectedSize.width,
+      height: expectedSize.height,
+      jigsawSizeSelection: "Small",
+      jigsawCutStyle: defaultJigsawCutStyle,
+    });
+  });
+
+  it("keeps explicit Jigsaw Custom dimensions while randomizing artwork", () => {
+    const [currentAsset] = getPuzzleImageAssetsFor("jigsaw");
+    const draft = {
+      width: 11,
+      height: 7,
+      difficulty: "Medium" as const,
+      requireUniqueSolution: true,
+      sudokuVariation: "classic" as const,
+      solitaireVariation: defaultSolitaireVariation,
+      imageId: currentAsset.id,
+      jigsawSizeSelection: "Custom" as const,
+      jigsawCutStyle: defaultJigsawCutStyle,
+    };
+
+    const randomized = randomizeNextPuzzleArtwork("jigsaw", draft, 0);
+
+    expect(randomized.imageId).not.toBe(currentAsset.id);
+    expect(randomized.width).toBe(11);
+    expect(randomized.height).toBe(7);
   });
 });
