@@ -240,7 +240,6 @@ export const stageJigsawAssemblyPlacements = (
         id: piece.id,
         worldX: solved.left + translationX,
         worldY: solved.top + translationY,
-        snapped: false,
       });
     }
 
@@ -253,6 +252,5 @@ export const stageJigsawAssemblyPlacements = (
     id: piece.id,
     worldX: 0,
     worldY: 0,
-    snapped: false,
   });
 };
