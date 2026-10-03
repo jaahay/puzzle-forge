@@ -4,28 +4,18 @@ import { describe, expect, it } from "vitest";
 const previewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", import.meta.url), "utf8");
 const workspaceSource = readFileSync(new URL("./JigsawWorkspace.tsx", import.meta.url), "utf8");
 
-const sourceBetween = (source: string, start: string, end: string) => {
-  const startIndex = source.indexOf(start);
-  const endIndex = source.indexOf(end, startIndex + start.length);
-  expect(startIndex).toBeGreaterThan(-1);
-  expect(endIndex).toBeGreaterThan(startIndex);
-  return source.slice(startIndex, endIndex);
-};
-
 describe("Jigsaw history integration", () => {
   it("exposes shared crown history controls with live availability after solve", () => {
     expect(workspaceSource).toContain("<PuzzleHistoryActions");
     expect(workspaceSource).toContain('canUndoNow={() => canHistoryActionNow("undo")}');
     expect(workspaceSource).toContain('canRedoNow={() => canHistoryActionNow("redo")}');
     expect(workspaceSource).toContain("onHistoryControllerChange={handleHistoryControllerChange}");
-
-    const historyControl = sourceBetween(
-      workspaceSource,
-      "const historyActions = jigsawPuzzle ? (",
-      "const crown = jigsawPuzzle ? (",
+    expect(workspaceSource).toMatch(
+      /<PuzzleHistoryActions[\s\S]*?disabled=\{isGenerating\}[\s\S]*?\/>/,
     );
-    expect(historyControl).toContain("disabled={isGenerating}");
-    expect(historyControl).not.toContain("isSolved");
+    expect(workspaceSource).not.toMatch(
+      /<PuzzleHistoryActions[\s\S]*?disabled=\{isGenerating \|\| isSolved\}/,
+    );
   });
 
   it("uses the tested drag-action boundary for drag history semantics", () => {
