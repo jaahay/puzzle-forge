@@ -194,7 +194,11 @@ export const realizeJigsawBaselineInstructionTrace = (
   if (Math.abs(y) > epsilon) return reject("unclosed-production");
 
   const maximumDepth = Math.max(...points.map((point) => Math.abs(point.y)));
-  if (maximumDepth <= epsilon) return reject("degenerate-production");
+  if (maximumDepth <= epsilon) {
+    const validation = validateJigsawBaselineCandidate(instructions, points);
+    if (!validation.valid) return reject(validation.reason);
+    return reject("degenerate-production");
+  }
 
   const normalizedPoints = points.map((point, index) => ({
     x: index === points.length - 1 ? 1 : point.x,

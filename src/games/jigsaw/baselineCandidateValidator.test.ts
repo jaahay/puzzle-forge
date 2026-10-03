@@ -16,6 +16,16 @@ const trace = () =>
     ),
   );
 
+const instruction = (
+  primitive: "identity" | "deflect" | "cross" | "course",
+  normalDirection: -1 | 1 = 1,
+  traversalDirection: -1 | 1 = 1,
+) => ({
+  primitive,
+  normalDirection,
+  traversalDirection,
+} as const);
+
 describe("Jigsaw baseline candidate validator", () => {
   it("accepts a structurally faithful normalized candidate", () => {
     expect(
@@ -104,23 +114,32 @@ describe("Jigsaw baseline candidate validator", () => {
     });
   });
 
-  it("checks identity, course, cross, and deflect semantics directly", () => {
+  it("diagnoses identity deformation inside an otherwise anchored path", () => {
     expect(
       validateJigsawBaselineCandidate(
-        compileJigsawBaselineProduction(baselinePrimitive("identity")),
+        [
+          instruction("deflect"),
+          instruction("identity"),
+          instruction("deflect", 1, -1),
+        ],
         [
           { x: 0, y: 0 },
-          { x: 1, y: 0.2 },
+          { x: 1 / 3, y: 0.5 },
+          { x: 2 / 3, y: 0.5 },
+          { x: 1, y: 0 },
         ],
       ),
     ).toEqual({
       valid: false,
-      reason: "end-anchor-mismatch",
+      reason: "identity-deforms-baseline",
+      instructionIndex: 1,
     });
+  });
 
+  it("diagnoses course, cross, and deflect violations at their instruction", () => {
     expect(
       validateJigsawBaselineCandidate(
-        compileJigsawBaselineProduction(baselinePrimitive("course")),
+        [instruction("course")],
         [
           { x: 0, y: 0 },
           { x: 1, y: 0 },
@@ -133,24 +152,49 @@ describe("Jigsaw baseline candidate validator", () => {
     });
 
     expect(
+      validateJigsawBaselineCandidate(trace(), [
+        { x: 0, y: 0 },
+        { x: 1 / 3, y: 0.5 },
+        { x: 2 / 3, y: 0.7 },
+        { x: 1, y: 0 },
+      ]),
+    ).toEqual({
+      valid: false,
+      reason: "course-changes-offset",
+      instructionIndex: 1,
+    });
+
+    expect(
       validateJigsawBaselineCandidate(
-        compileJigsawBaselineProduction(baselinePrimitive("cross")),
+        [
+          instruction("deflect"),
+          instruction("cross"),
+          instruction("deflect", 1, -1),
+        ],
         [
           { x: 0, y: 0 },
+          { x: 1 / 3, y: 0.5 },
+          { x: 2 / 3, y: 0.2 },
           { x: 1, y: 0 },
         ],
       ),
     ).toEqual({
       valid: false,
       reason: "cross-misses-baseline",
-      instructionIndex: 0,
+      instructionIndex: 1,
     });
 
     expect(
       validateJigsawBaselineCandidate(
-        compileJigsawBaselineProduction(baselinePrimitive("deflect")),
+        [
+          instruction("deflect"),
+          instruction("course"),
+          instruction("deflect", 1, -1),
+        ],
         [
           { x: 0, y: 0 },
+          { x: 1 / 3, y: 0 },
+          { x: 2 / 3, y: 0.5 },
           { x: 1, y: 0 },
         ],
       ),
@@ -159,31 +203,25 @@ describe("Jigsaw baseline candidate validator", () => {
       reason: "deflect-does-not-deflect",
       instructionIndex: 0,
     });
-  });
-
-  it("rejects a deflect that performs a baseline crossing", () => {
-    const instructions = [
-      {
-        primitive: "deflect" as const,
-        normalDirection: 1 as const,
-        traversalDirection: 1 as const,
-      },
-      {
-        primitive: "deflect" as const,
-        normalDirection: 1 as const,
-        traversalDirection: 1 as const,
-      },
-    ];
 
     expect(
-      validateJigsawBaselineCandidate(instructions, [
-        { x: 0, y: 0 },
-        { x: 0.5, y: 0.5 },
-        { x: 1, y: -0.5 },
-      ]),
+      validateJigsawBaselineCandidate(
+        [
+          instruction("deflect"),
+          instruction("deflect"),
+          instruction("deflect", 1, -1),
+        ],
+        [
+          { x: 0, y: 0 },
+          { x: 1 / 3, y: 0.5 },
+          { x: 2 / 3, y: -0.5 },
+          { x: 1, y: 0 },
+        ],
+      ),
     ).toEqual({
       valid: false,
-      reason: "end-anchor-mismatch",
+      reason: "deflect-crosses-baseline",
+      instructionIndex: 1,
     });
   });
 });
