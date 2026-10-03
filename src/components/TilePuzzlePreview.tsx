@@ -51,6 +51,11 @@ import {
   type JigsawWorkspaceState,
 } from "../games/jigsaw/workspaceState";
 import {
+  applyJigsawCameraTransform,
+  applyJigsawDragOffset,
+  resetJigsawDragOffset,
+} from "./JigsawImperativeRenderer";
+import {
   getJigsawFitInsetsForOverlays,
   getJigsawPieceClipPathId,
   getJigsawZoomStep,
@@ -583,8 +588,7 @@ export const TilePuzzlePreview = ({
   const renderCameraImmediately = (state = wheelStateRef.current) => {
     const worldLayer = worldLayerRef.current;
     if (!worldLayer) return;
-    const transform = getJigsawCameraTransform(state.camera, state.viewport);
-    worldLayer.style.transform = `translate3d(${transform.translateX}px, ${transform.translateY}px, 0) scale(${transform.scale})`;
+    applyJigsawCameraTransform(worldLayer, state.camera, state.viewport);
   };
 
   const beginTouchPinch = (event: StagePointerEvent) => {
@@ -702,10 +706,7 @@ export const TilePuzzlePreview = ({
     if (!movedPlacement) return null;
     const dragX = movedPlacement.worldX - drag.originWorldX;
     const dragY = movedPlacement.worldY - drag.originWorldY;
-    for (const element of drag.pieceElements) {
-      element.style.setProperty("--jigsaw-drag-x", `${dragX}px`);
-      element.style.setProperty("--jigsaw-drag-y", `${dragY}px`);
-    }
+    applyJigsawDragOffset(drag.pieceElements, dragX, dragY);
     return movedPlacements;
   };
 
@@ -772,10 +773,7 @@ export const TilePuzzlePreview = ({
       const element = pieceElementsRef.current.get(pieceId);
       return element ? [element] : [];
     });
-    for (const element of pieceElements) {
-      element.style.setProperty("--jigsaw-drag-x", "0px");
-      element.style.setProperty("--jigsaw-drag-y", "0px");
-    }
+    resetJigsawDragOffset(pieceElements);
     const target = event.currentTarget as HTMLButtonElement;
     dragRef.current = {
       puzzleId: puzzle.id,

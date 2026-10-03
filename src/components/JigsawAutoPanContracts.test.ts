@@ -26,7 +26,7 @@ describe("Jigsaw auto-pan controller boundary", () => {
     );
 
     expect(renderCamera).toContain("state = wheelStateRef.current");
-    expect(renderCamera).toContain("getJigsawCameraTransform(state.camera, state.viewport)");
+    expect(renderCamera).toContain("applyJigsawCameraTransform(worldLayer, state.camera, state.viewport)");
     expect(dragLoop).toContain("state = wheelStateRef.current");
     expect(dragLoop).toContain("screenToJigsawWorld(state.camera, state.viewport");
     expect(dragLoop).toContain("state.layout");
@@ -48,12 +48,10 @@ describe("Jigsaw auto-pan controller boundary", () => {
 
     expect(previewSource).toContain('"--jigsaw-piece-x":');
     expect(previewSource).toContain('"--jigsaw-piece-y":');
-    expect(dragLoop).toContain('element.style.setProperty("--jigsaw-drag-x"');
-    expect(dragLoop).toContain('element.style.setProperty("--jigsaw-drag-y"');
+    expect(dragLoop).toContain("applyJigsawDragOffset(drag.pieceElements, dragX, dragY)");
     expect(dragLoop).not.toContain(".style.transform");
     expect(beginDrag).toContain("const pieceElements = pieceIds.flatMap");
-    expect(beginDrag).toContain('element.style.setProperty("--jigsaw-drag-x", "0px")');
-    expect(beginDrag).toContain('element.style.setProperty("--jigsaw-drag-y", "0px")');
+    expect(beginDrag).toContain("resetJigsawDragOffset(pieceElements)");
     expect(beginDrag).toContain("puzzleId: puzzle.id");
     expect(previewSource).toContain("activeDrag?.puzzleId === puzzle.id");
 
