@@ -18,6 +18,11 @@ import { cloneGridHistoryState, gridHistoryLimit, type GridHistoryEntry } from "
 import { decodeGenerationId, makePuzzleResourceKey, type PuzzleResourceIdentity, type PuzzleResourceKey } from "./puzzleResourceIdentity";
 import { puzzleIds } from "./sessionConstants";
 import type { PuzzleSession, SolitaireStats } from "./session";
+import {
+  cloneJigsawAssemblyProgress,
+  parseJigsawAssemblyProgress,
+  type JigsawAssemblyProgress,
+} from "../games/jigsaw/assembly";
 
 const persistenceMetadataStorageKey = "puzzle-forge.sessions";
 const persistenceSessionStorageKeyPrefix = "puzzle-forge.session.";
@@ -38,7 +43,7 @@ export type PersistedTileProgress = {
   kind: "tiles";
   tileOrder: Array<{ id: string; currentIndex: number }>;
   selectedTileId: string | null;
-  jigsawSnappedPieceIds?: string[];
+  jigsawAssembly?: JigsawAssemblyProgress;
 };
 
 export type PersistedCompactGridHistoryEntry = {
@@ -193,8 +198,8 @@ const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzlePr
       kind: "tiles",
       tileOrder: session.puzzle.tiles.map(({ id, currentIndex }) => ({ id, currentIndex })),
       selectedTileId: null,
-      ...(session.puzzle.puzzleId === "jigsaw" && session.progress.jigsawSnappedPieceIds
-        ? { jigsawSnappedPieceIds: [...session.progress.jigsawSnappedPieceIds] }
+      ...(session.puzzle.puzzleId === "jigsaw" && session.progress.jigsawAssembly
+        ? { jigsawAssembly: cloneJigsawAssemblyProgress(session.progress.jigsawAssembly) }
         : {}),
     };
   }
@@ -219,7 +224,7 @@ export const buildPersistedPuzzleSession = (
   if (session.puzzle.puzzleId !== resource.puzzleId || !resource.generationId) return null;
   if (
     session.puzzle.puzzleId === "jigsaw" &&
-    (session.kind !== "tiles" || session.progress.jigsawSnappedPieceIds === undefined)
+    (session.kind !== "tiles" || session.progress.jigsawAssembly === undefined)
   ) return null;
 
   return {
@@ -256,9 +261,11 @@ const isPersistedTileProgress = (value: Record<string, unknown>): value is Persi
   Array.isArray(value.tileOrder) &&
   value.tileOrder.every(isPersistedTileOrderEntry) &&
   (value.selectedTileId === null || typeof value.selectedTileId === "string") &&
-  (value.jigsawSnappedPieceIds === undefined || (
-    Array.isArray(value.jigsawSnappedPieceIds) &&
-    value.jigsawSnappedPieceIds.every((pieceId) => typeof pieceId === "string")
+  (value.jigsawAssembly === undefined || (
+    isRecord(value.jigsawAssembly) &&
+    Array.isArray(value.jigsawAssembly.joinedComponents) &&
+    value.jigsawAssembly.joinedComponents.every((component) =>
+      Array.isArray(component) && component.every((pieceId) => typeof pieceId === "string"))
   ));
 
 const isPersistedGridProgress = (value: Record<string, unknown>): value is PersistedGridProgress =>
@@ -290,8 +297,8 @@ const isPersistedPuzzleSession = (value: unknown): value is PersistedPuzzleSessi
 
   const progress = value.progress as PersistedPuzzleProgress;
   if (value.puzzleId === "jigsaw") {
-    if (progress.kind !== "tiles" || progress.jigsawSnappedPieceIds === undefined) return false;
-  } else if (progress.kind === "tiles" && progress.jigsawSnappedPieceIds !== undefined) {
+    if (progress.kind !== "tiles" || progress.jigsawAssembly === undefined) return false;
+  } else if (progress.kind === "tiles" && progress.jigsawAssembly !== undefined) {
     return false;
   }
 
@@ -331,8 +338,8 @@ const clonePersistedPuzzleProgress = (progress: PersistedPuzzleProgress): Persis
       kind: "tiles",
       tileOrder: progress.tileOrder.map(({ id, currentIndex }) => ({ id, currentIndex })),
       selectedTileId: progress.selectedTileId ?? null,
-      ...(progress.jigsawSnappedPieceIds
-        ? { jigsawSnappedPieceIds: [...progress.jigsawSnappedPieceIds] }
+      ...(progress.jigsawAssembly
+        ? { jigsawAssembly: cloneJigsawAssemblyProgress(progress.jigsawAssembly) }
         : {}),
     };
   }
@@ -453,27 +460,19 @@ const restorePersistedGridProgress = (progress: PersistedGridProgress, puzzle: G
   };
 };
 
-const restorePersistedJigsawSnappedPieceIds = (
+const restorePersistedJigsawAssembly = (
   progress: PersistedTileProgress,
   puzzle: TileGeneratedPuzzle,
-): string[] | undefined | null => {
+): JigsawAssemblyProgress | undefined | null => {
   if (puzzle.puzzleId !== "jigsaw") {
-    return progress.jigsawSnappedPieceIds === undefined ? undefined : null;
+    return progress.jigsawAssembly === undefined ? undefined : null;
   }
 
-  const snappedPieceIds = progress.jigsawSnappedPieceIds;
-  if (snappedPieceIds === undefined) return null;
-
-  const expectedIds = new Set(puzzle.tiles.map((tile) => tile.id));
-  const seenIds = new Set<string>();
-  for (const pieceId of snappedPieceIds) {
-    if (!expectedIds.has(pieceId) || seenIds.has(pieceId)) return null;
-    seenIds.add(pieceId);
-  }
-
-  return [...snappedPieceIds];
+  if (progress.jigsawAssembly === undefined) return null;
+  return parseJigsawAssemblyProgress(progress.jigsawAssembly, puzzle.tiles);
 };
 
+const restorePersistedTilePuzzle = (
 const restorePersistedTilePuzzle = (progress: PersistedTileProgress, puzzle: TileGeneratedPuzzle): TileGeneratedPuzzle | null => {
   const boardCellCount = puzzle.width * puzzle.height;
   const expectedTileCount = puzzle.puzzleId === "sliding-puzzle" ? boardCellCount - 1 : boardCellCount;
@@ -541,14 +540,14 @@ export const restorePuzzleSessionFromPersisted = (
 
   if (persisted.progress.kind === "tiles" && generatedPuzzle.kind === "tiles") {
     const restoredPuzzle = restorePersistedTilePuzzle(persisted.progress, generatedPuzzle);
-    const jigsawSnappedPieceIds = restorePersistedJigsawSnappedPieceIds(persisted.progress, generatedPuzzle);
-    if (!restoredPuzzle || jigsawSnappedPieceIds === null) return null;
+    const jigsawAssembly = restorePersistedJigsawAssembly(persisted.progress, generatedPuzzle);
+    if (!restoredPuzzle || jigsawAssembly === null) return null;
     return {
       kind: "tiles",
       puzzle: restoredPuzzle,
       progress: {
         kind: "tiles",
-        ...(jigsawSnappedPieceIds ? { jigsawSnappedPieceIds } : {}),
+        ...(jigsawAssembly ? { jigsawAssembly } : {}),
       },
       statusMessage: persisted.statusMessage,
     };

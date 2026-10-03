@@ -4,6 +4,7 @@ import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition } from ".
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCheckFeedbackTone } from "../interactions/gridChecking";
 import type { GridCellSelection } from "../interactions/gridRules";
+import type { JigsawAssemblyProgress } from "../games/jigsaw/assembly";
 
 export type { GenerationSettings, NextPuzzleDraft } from "../app/generationSettings";
 
@@ -45,8 +46,8 @@ export type GridInteractionProps = {
 };
 
 export type JigsawInteractionProps = {
-  jigsawSnappedPieceIds: string[] | null;
-  onJigsawSnappedPieceIdsChange: (pieceIds: string[]) => void;
+  jigsawAssembly: JigsawAssemblyProgress | null;
+  onJigsawAssemblyChange: (assembly: JigsawAssemblyProgress) => void;
 };
 
 export type SolitaireInteractionProps = {
