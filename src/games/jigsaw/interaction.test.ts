@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { JigsawPiece } from "../../catalog/types";
+import type { JigsawPiece, JigsawPieceEdge } from "../../catalog/types";
 import {
   moveJigsawComponent,
   resolveJigsawComponentDrop,
@@ -16,7 +16,7 @@ const edge = (
   side: "left" | "right",
   neighborPieceId: string | null,
   polarity: "tab" | "blank" = "tab",
-) => neighborPieceId === null
+): JigsawPieceEdge => neighborPieceId === null
   ? {
       edgeId,
       side,

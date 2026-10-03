@@ -202,7 +202,12 @@ describe("Jigsaw session assembly persistence", () => {
     });
     const restored = restorePuzzleSessionFromPersisted(persisted, regenerated);
     expect(restored).not.toBeNull();
-    if (!restored || restored.puzzle.kind !== "tiles" || restored.puzzle.puzzleId !== "jigsaw") return;
+    if (
+      !restored ||
+      restored.puzzle.kind !== "tiles" ||
+      restored.puzzle.puzzleId !== "jigsaw" ||
+      restored.progress.kind !== "tiles"
+    ) return;
     expect(restored.puzzle.asset.id).toBe(defaultJigsawImageAsset.id);
     expect(restored.puzzle.id).toBe(puzzle.id);
     expect(restored.puzzle.tiles).toEqual(puzzle.tiles);
