@@ -50,7 +50,7 @@ describe("Jigsaw auto-pan controller boundary", () => {
 
     expect(previewSource).toContain('"--jigsaw-piece-x":');
     expect(previewSource).toContain('"--jigsaw-piece-y":');
-    expect(dragLoop).toContain("applyJigsawDragOffset(drag.pieceElements, dragX, dragY)");
+    expect(dragLoop).toContain("applyJigsawDragOffset(drag.pieceElements, projection.dragX, projection.dragY)");
     expect(dragLoop).not.toContain(".style.transform");
     expect(beginDrag).toContain("const pieceElements = pieceIds.flatMap");
     expect(beginDrag).toContain("resetJigsawDragOffset(pieceElements)");
