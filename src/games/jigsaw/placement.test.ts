@@ -257,7 +257,7 @@ describe("Jigsaw world layout", () => {
     });
   });
 
-  it("provides unique staging positions at the 32 by 32 technical ceiling", () => {  it("provides unique staging positions at the 32 by 32 technical ceiling", () => {
+  it("provides unique staging positions at the 32 by 32 technical ceiling", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1600,
       imageHeight: 1600,
@@ -290,8 +290,6 @@ describe("Jigsaw world layout", () => {
     });
   });
 });
-
-describe("Jigsaw camera", () => {});
 
 describe("Jigsaw camera", () => {
   const layout = createJigsawWorldLayout({

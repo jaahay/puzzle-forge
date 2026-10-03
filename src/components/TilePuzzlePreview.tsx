@@ -273,7 +273,6 @@ export const resolveInitialJigsawState = (
   };
 };
 
-const getPieceClipPathId
 const getPieceClipPathId = (puzzle: JigsawGeneratedPuzzle, tile: JigsawPiece) =>
   `jigsaw-piece-${puzzle.id}-${tile.id}`.replace(/[^a-zA-Z0-9_-]/g, "-");
 
@@ -394,7 +393,6 @@ export const TilePuzzlePreview = ({
     onAssemblyChange?.(cloneJigsawAssemblyProgress(assembly));
   }, [onAssemblyChange]);
 
-  const updatePlacementState = useCallback
   const updatePlacementState = useCallback((
     updater: (current: PlacementState | null) => PlacementState | null,
   ) => {
@@ -487,7 +485,6 @@ export const TilePuzzlePreview = ({
   }, [initialAssembly, layout, puzzle.id, puzzle.tiles, updatePlacementState, viewport.height, viewport.width]);
 
   useEffect(() => {
-    if (!isUsableJigsawViewport(viewport) || !activePlacements) return;  useEffect(() => {
     if (!isUsableJigsawViewport(viewport) || !activePlacements) return;
     setCameraState((current) => {
       if (current?.puzzleId === puzzle.id) return current;
@@ -637,7 +634,6 @@ export const TilePuzzlePreview = ({
   };
 
   useEffect(() => {
-    if (lastResetVersion.current === resetVersion) return;  useEffect(() => {
     if (lastResetVersion.current === resetVersion) return;
     if (!resetPieces()) return;
     lastResetVersion.current = resetVersion;
@@ -844,7 +840,6 @@ export const TilePuzzlePreview = ({
   };
 
   const runDragAnimationFrame = (time: number) => {
-  const runDragAnimationFrame = (time: number) => {
     const drag = dragRef.current;
     if (!drag) {
       stopDragAnimation();
@@ -940,7 +935,6 @@ export const TilePuzzlePreview = ({
   };
 
   const moveDrag = (event: PiecePointerEvent) => {
-  const moveDrag = (event: PiecePointerEvent) => {
     if (pinchRef.current) return;
     const drag = dragRef.current;
     if (!drag || drag.puzzleId !== puzzle.id || drag.pointerId !== event.pointerId) return;
@@ -1016,7 +1010,6 @@ export const TilePuzzlePreview = ({
     event.stopPropagation();
   };
 
-  const beginPan = (event: StagePointerEvent) => {
   const beginPan = (event: StagePointerEvent) => {
     if (dragRef.current || pinchRef.current) return;
     const target = event.target as Element | null;
@@ -1295,6 +1288,7 @@ export const TilePuzzlePreview = ({
             const position = getJigsawPlacementPosition(layout, tile, placement);
             const activeDrag = dragRef.current;
             const active =
+              activeTileId !== null &&
               activeDrag?.puzzleId === puzzle.id &&
               activeDrag.pieceIds.includes(tile.id);
             const raised = tile.id === raisedTileId;

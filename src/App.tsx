@@ -699,7 +699,7 @@ export const App = () => {
       });
     },
   };
-  const workspaceSolitaire = {  const workspaceSolitaire = {
+  const workspaceSolitaire = {
     cardStacks: solitaire.cardStacks,
     selectedCard: solitaire.selectedCard,
     solitaireStats: solitaire.solitaireStats,
