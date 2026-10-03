@@ -153,6 +153,47 @@ describe("Jigsaw baseline production compiler", () => {
     );
   });
 
+  it("compiles distributed mirror and oppose forms to the same semantic trace", () => {
+    const deflect = baselinePrimitive("deflect");
+    const cross = baselinePrimitive("cross");
+    const course = baselinePrimitive("course");
+    const sequence = baselineSequence(deflect, cross, course);
+
+    expect(
+      compileJigsawBaselineProduction(baselineMirror(sequence)),
+    ).toEqual(
+      compileJigsawBaselineProduction(
+        baselineSequence(
+          baselineMirror(course),
+          baselineMirror(cross),
+          baselineMirror(deflect),
+        ),
+      ),
+    );
+
+    expect(
+      compileJigsawBaselineProduction(baselineOppose(sequence)),
+    ).toEqual(
+      compileJigsawBaselineProduction(
+        baselineSequence(
+          baselineOppose(deflect),
+          baselineOppose(cross),
+          baselineOppose(course),
+        ),
+      ),
+    );
+
+    expect(
+      compileJigsawBaselineProduction(
+        baselineMirror(baselineOppose(sequence)),
+      ),
+    ).toEqual(
+      compileJigsawBaselineProduction(
+        baselineOppose(baselineMirror(sequence)),
+      ),
+    );
+  });
+
   it("compiles a production outside the named BaselineGrammar catalog", () => {
     const novel = baselineSequence(
       baselinePrimitive("deflect"),
