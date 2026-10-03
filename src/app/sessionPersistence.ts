@@ -477,7 +477,6 @@ const restorePersistedJigsawAssembly = (
   return parseJigsawAssemblyProgress(progress.jigsawAssembly, puzzle.tiles);
 };
 
-const restorePersistedTilePuzzle = (
 const restorePersistedTilePuzzle = (progress: PersistedTileProgress, puzzle: TileGeneratedPuzzle): TileGeneratedPuzzle | null => {
   const boardCellCount = puzzle.width * puzzle.height;
   const expectedTileCount = puzzle.puzzleId === "sliding-puzzle" ? boardCellCount - 1 : boardCellCount;
