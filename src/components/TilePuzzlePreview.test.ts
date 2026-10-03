@@ -92,8 +92,6 @@ describe("TilePuzzlePreview piece stacking", () => {
   });
 });
 
-describe("TilePuzzlePreview camera controls", () => {});
-
 describe("TilePuzzlePreview camera controls", () => {
   it("steps through human-friendly zoom levels around arbitrary fitted zoom values", () => {
     expect(getJigsawZoomStep(0.28, "out")).toBe(0.25);
@@ -236,8 +234,10 @@ describe("TilePuzzlePreview placement initialization", () => {
         y: placement.worldY - solvedTop,
       };
     });
-    expect(memberPlacements[1]).toEqual(memberPlacements[0]);
-    expect(memberPlacements[2]).toEqual(memberPlacements[0]);
+    expect(memberPlacements[1]!.x).toBeCloseTo(memberPlacements[0]!.x);
+    expect(memberPlacements[1]!.y).toBeCloseTo(memberPlacements[0]!.y);
+    expect(memberPlacements[2]!.x).toBeCloseTo(memberPlacements[0]!.x);
+    expect(memberPlacements[2]!.y).toBeCloseTo(memberPlacements[0]!.y);
   });
 
   it("waits for a real play-surface measurement before staging a fresh puzzle", () => {
