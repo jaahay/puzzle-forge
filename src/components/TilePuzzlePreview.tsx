@@ -13,7 +13,6 @@ import {
 import {
   moveJigsawComponent,
   resolveJigsawComponentDrop,
-  stageJigsawAssemblyPlacements,
 } from "../games/jigsaw/interaction";
 import { getJigsawPieceOutlinePath, getJigsawPieceSeamPaths } from "../games/jigsaw/edgePaths";
 import {
@@ -47,6 +46,12 @@ import {
   type JigsawViewportInsets,
   type JigsawWorldLayout,
 } from "../games/jigsaw/placement";
+import {
+  resetJigsawWorkspaceState,
+  resolveInitialJigsawWorkspaceState,
+  restageJigsawWorkspaceState,
+  type JigsawWorkspaceState,
+} from "../games/jigsaw/workspaceState";
 import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
 import { usePuzzleWorkspaceDisplayMode } from "./PuzzleWorkspaceLayout";
 
@@ -77,10 +82,8 @@ type TilePuzzlePreviewProps = {
   onNewPuzzle: () => void;
 };
 
-type PlacementState = {
+type PlacementState = JigsawWorkspaceState & {
   puzzleId: string;
-  placements: JigsawPlacement[];
-  assembly: JigsawAssemblyProgress;
 };
 
 type CameraState = {
@@ -254,20 +257,6 @@ export const getJigsawFitInsetsForOverlays = (
     right: Math.min(insets.right, stageWidth * 0.45),
     bottom: Math.min(insets.bottom, stageHeight * 0.45),
     left: Math.min(insets.left, stageWidth * 0.45),
-  };
-};
-
-export const resolveInitialJigsawState = (
-  assembly: JigsawAssemblyProgress,
-  layout: JigsawWorldLayout,
-  pieces: readonly JigsawPiece[],
-  stagingViewport: JigsawViewport | null,
-) => {
-  if (!isUsableJigsawViewport(stagingViewport)) return null;
-
-  return {
-    placements: stageJigsawAssemblyPlacements(layout, pieces, assembly, stagingViewport),
-    assembly: cloneJigsawAssemblyProgress(assembly),
   };
 };
 
@@ -467,7 +456,7 @@ export const TilePuzzlePreview = ({
     if (initialAssembly === null) return;
     updatePlacementState((current) => {
       if (current?.puzzleId === puzzle.id) return current;
-      const initial = resolveInitialJigsawState(
+      const initial = resolveInitialJigsawWorkspaceState(
         initialAssembly,
         layout,
         puzzle.tiles,
@@ -604,10 +593,12 @@ export const TilePuzzlePreview = ({
   const resetPieces = () => {
     const stagingViewport = getMeasuredJigsawViewport(stageRef.current);
     if (!stagingViewport) return false;
-    const assembly = makeEmptyJigsawAssemblyProgress();
+    const next = resetJigsawWorkspaceState(layout, puzzle.tiles, stagingViewport);
+    if (!next) return false;
+
     return applyStagedPlacements(
-      stageJigsawAssemblyPlacements(layout, puzzle.tiles, assembly, stagingViewport),
-      assembly,
+      next.placements,
+      next.assembly,
       getStagingActionBaseline(),
       stagingViewport,
     );
@@ -617,10 +608,17 @@ export const TilePuzzlePreview = ({
     const stagingViewport = getMeasuredJigsawViewport(stageRef.current);
     const baseline = getStagingActionBaseline();
     if (!stagingViewport || !baseline) return false;
+    const next = restageJigsawWorkspaceState(
+      layout,
+      puzzle.tiles,
+      baseline.assembly,
+      stagingViewport,
+    );
+    if (!next) return false;
 
     return applyStagedPlacements(
-      stageJigsawAssemblyPlacements(layout, puzzle.tiles, baseline.assembly, stagingViewport),
-      baseline.assembly,
+      next.placements,
+      next.assembly,
       baseline,
       stagingViewport,
     );
