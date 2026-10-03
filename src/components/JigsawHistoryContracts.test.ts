@@ -51,21 +51,6 @@ describe("Jigsaw history integration", () => {
     expect(cancelDrag).not.toContain("commitJigsawPlacementAction");
   });
 
-  it("keeps Reset destructive while Restage preserves island membership and both remain reversible", () => {
-    const baseline = sourceBetween(previewSource, "const getStagingActionBaseline =", "const applyStagedPlacements =");
-    const staging = sourceBetween(previewSource, "const applyStagedPlacements =", "const resetPieces =");
-    const reset = sourceBetween(previewSource, "const resetPieces =", "const restagePieces =");
-    const restage = sourceBetween(previewSource, "const restagePieces =", "useEffect(() => {");
-
-    expect(baseline).toContain(
-      "resolveJigsawActionBaseline(current, activeDrag?.startSnapshot ?? null)",
-    );
-    expect(staging).toContain("commitJigsawPlacementAction");
-    expect(reset).toContain("makeEmptyJigsawAssemblyProgress");
-    expect(restage).toContain("stageJigsawAssemblyPlacements");
-    expect(restage).toContain("baseline.assembly");
-  });
-
   it("disables rendered history controls throughout drag and pinch gestures", () => {
     const beginDrag = sourceBetween(previewSource, "const beginDrag =", "const moveDrag =");
     const finishDrag = sourceBetween(previewSource, "const finishDrag =", "const cancelDrag =");

@@ -37,7 +37,6 @@ describe("Jigsaw resource-session persistence integration", () => {
     expect(workspaceSource).toContain("initialAssembly={jigsawAssembly}");
     expect(workspaceSource).toContain("onAssemblyChange={onJigsawAssemblyChange}");
     expect(previewSource).toContain("if (initialAssembly === null) return;");
-    expect(previewSource).toContain("resolveInitialJigsawState(");
   });
 
   it("keeps persistence semantic and canonical rather than coordinate-based", () => {

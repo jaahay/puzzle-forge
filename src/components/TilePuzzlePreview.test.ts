@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import type { JigsawPiece } from "../catalog/types";
 import { isJigsawAssemblySolved } from "../games/jigsaw/assembly";
 import {
+  resolveInitialJigsawWorkspaceState,
+} from "../games/jigsaw/workspaceState";
+import {
   clampJigsawCamera,
   createInitialJigsawPlacements,
   createJigsawFitCamera,
@@ -17,7 +20,6 @@ import {
   getPieceImageClipPathProps,
   getPieceZIndex,
   initializeOrPreserveJigsawCamera,
-  resolveInitialJigsawState,
   resolveJigsawCameraForViewportResize,
   shouldRenderJigsawEdgeSeams,
   shouldRenderJigsawReferencePreview,
@@ -132,7 +134,7 @@ describe("TilePuzzlePreview camera controls", () => {
     });
     const viewport = { width: 390, height: 844 };
     const pieces = Array.from({ length: 24 }, (_, index) => makePiece(index, 6));
-    const placements = resolveInitialJigsawState({ joinedComponents: [] }, layout, pieces, viewport)?.placements ?? null;
+    const placements = resolveInitialJigsawWorkspaceState({ joinedComponents: [] }, layout, pieces, viewport)?.placements ?? null;
     expect(placements).not.toBeNull();
     if (!placements) return;
 
@@ -166,7 +168,7 @@ describe("TilePuzzlePreview camera controls", () => {
     });
     const viewport = { width: 1200, height: 800 };
     const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index));
-    const placements = resolveInitialJigsawState({ joinedComponents: [] }, layout, pieces, viewport)?.placements ?? null;
+    const placements = resolveInitialJigsawWorkspaceState({ joinedComponents: [] }, layout, pieces, viewport)?.placements ?? null;
     expect(placements).not.toBeNull();
     if (!placements) return;
 
@@ -211,7 +213,7 @@ describe("TilePuzzlePreview placement initialization", () => {
     });
     const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index));
     const viewport = { width: 600, height: 1200 };
-    const state = resolveInitialJigsawState(
+    const state = resolveInitialJigsawWorkspaceState(
       { joinedComponents: [["tile-0", "tile-1", "tile-2"]] },
       layout,
       pieces,
@@ -249,8 +251,8 @@ describe("TilePuzzlePreview placement initialization", () => {
     });
     const pieces = Array.from({ length: 48 }, (_, index) => makePiece(index, 6));
 
-    expect(resolveInitialJigsawState({ joinedComponents: [] }, layout, pieces, null)).toBeNull();
-    expect(resolveInitialJigsawState({ joinedComponents: [] }, layout, pieces, { width: 0, height: 800 })).toBeNull();
+    expect(resolveInitialJigsawWorkspaceState({ joinedComponents: [] }, layout, pieces, null)).toBeNull();
+    expect(resolveInitialJigsawWorkspaceState({ joinedComponents: [] }, layout, pieces, { width: 0, height: 800 })).toBeNull();
   });
 
   it("stages a fresh puzzle from the supplied play-surface shape", () => {
@@ -264,13 +266,13 @@ describe("TilePuzzlePreview placement initialization", () => {
     const wideStage = { width: 1180, height: 640 };
     const veryTallStage = { width: 360, height: 1440 };
 
-    const widePlacements = resolveInitialJigsawState(
+    const widePlacements = resolveInitialJigsawWorkspaceState(
       { joinedComponents: [] },
       layout,
       pieces,
       wideStage,
     )?.placements ?? null;
-    const tallPlacements = resolveInitialJigsawState(
+    const tallPlacements = resolveInitialJigsawWorkspaceState(
       { joinedComponents: [] },
       layout,
       pieces,
