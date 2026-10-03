@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "view-of-toledo",
+  "assetRevision": 1,
+  "work": {
+    "title": "View of Toledo",
+    "creator": "El Greco (Domenikos Theotokopoulos)",
+    "date": "ca. 1599–1600",
+    "medium": "Oil on canvas",
+    "dimensions": "47 3/4 x 42 3/4 in. (121.3 x 108.6 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 436575,
+    "accessionNumber": "29.100.6",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/436575",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/436575",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP349564.jpg",
+    "retrievedAt": "2026-08-13T05:15:30.686714+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 3763217,
+    "sha256": "c3c374cf56e99bfbe16c45c9b152f8fc3821d2bbc1cd30655fc966e6771cc35a",
+    "width": 3496,
+    "height": 3934
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 436575.",
+    "reviewedAt": "2026-08-13"
+  },
+  "generation": {
+    "pythonVersion": "3.14.2",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "embedded ICC profile converted to sRGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/view-of-toledo/puzzle.webp",
+      "width": 1820,
+      "height": 2048,
+      "byteSize": 515310,
+      "sha256": "b8e3a79c381c5b0ca6f335e6f9d3091a7d3d4617685c049bd6018b853e7cb944",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/view-of-toledo/preview.webp",
+      "width": 910,
+      "height": 1024,
+      "byteSize": 91090,
+      "sha256": "2037a987e2f01b7c8cb3df6190b605ea9bfb170586d4f225caf9dc2b0000d734",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/view-of-toledo/thumbnail.webp",
+      "width": 341,
+      "height": 384,
+      "byteSize": 14864,
+      "sha256": "3cc4622c4b241a83c00d60540b29cf3f0adfe6f4566aecc8469c0d4420959de6",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

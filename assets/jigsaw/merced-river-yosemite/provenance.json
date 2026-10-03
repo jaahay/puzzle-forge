@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "merced-river-yosemite",
+  "assetRevision": 1,
+  "work": {
+    "title": "Merced River, Yosemite Valley",
+    "creator": "Albert Bierstadt",
+    "date": "1866",
+    "medium": "Oil on canvas",
+    "dimensions": "36 x 50 in. (91.4 x 127 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 10150,
+    "accessionNumber": "09.214.1",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/10150",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/10150",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/ad/original/DT2961.jpg",
+    "retrievedAt": "2026-08-13T05:15:30.686714+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 3301368,
+    "sha256": "9ba270ec64d18edceb7207dc1a2c30923da4974f739d3ef0d7765ad71d5e2409",
+    "width": 3811,
+    "height": 2742
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 10150.",
+    "reviewedAt": "2026-08-13"
+  },
+  "generation": {
+    "pythonVersion": "3.14.2",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; converted to RGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/merced-river-yosemite/puzzle.webp",
+      "width": 2048,
+      "height": 1474,
+      "byteSize": 838892,
+      "sha256": "b59af6a08158a61ad9f1ef3b6f0a78ef4bb2cc5cee561a61dc0b735a9e5d11c9",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/merced-river-yosemite/preview.webp",
+      "width": 1024,
+      "height": 737,
+      "byteSize": 129840,
+      "sha256": "b038ffd44bbca7afb5cfe1b99284500b50be94fad0dd2bc6918d9f8fbd8b80dd",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/merced-river-yosemite/thumbnail.webp",
+      "width": 384,
+      "height": 276,
+      "byteSize": 16762,
+      "sha256": "e162173047360881f21906bd14d99f43e982e6aeb7afd8e66b4f462b2841d010",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

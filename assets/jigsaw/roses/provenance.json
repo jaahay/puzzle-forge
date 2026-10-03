@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "roses",
+  "assetRevision": 1,
+  "work": {
+    "title": "Roses",
+    "creator": "Vincent van Gogh",
+    "date": "1890",
+    "medium": "Oil on canvas",
+    "dimensions": "36 5/8 x 29 1/8 in. (93 x 74 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 436534,
+    "accessionNumber": "1993.400.5",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/436534",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/436534",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP346475.jpg",
+    "retrievedAt": "2026-08-13T05:15:30.686714+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 5219625,
+    "sha256": "4680a3bd8eed94d21200f9d7d6410865873fac387dba5b6cd65bee75a1fe59a4",
+    "width": 3167,
+    "height": 4000
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 436534.",
+    "reviewedAt": "2026-08-13"
+  },
+  "generation": {
+    "pythonVersion": "3.14.2",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "embedded ICC profile converted to sRGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/roses/puzzle.webp",
+      "width": 1622,
+      "height": 2048,
+      "byteSize": 1351564,
+      "sha256": "76d9907af1679c12b14a3c51dbe944f7fbd93533bb170aad0b697a3419570669",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/roses/preview.webp",
+      "width": 811,
+      "height": 1024,
+      "byteSize": 226274,
+      "sha256": "55a7270d604be1097ca94ae0176fd1227173be9a1d276b3b4f52ddae1c1d8c34",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/roses/thumbnail.webp",
+      "width": 304,
+      "height": 384,
+      "byteSize": 23312,
+      "sha256": "f7b345adbedcfee7a31237f6e673d91a18938510c49bc3dbcf77a254971c2479",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "snowy-gorge",
+  "assetRevision": 1,
+  "work": {
+    "title": "Snowy Gorge",
+    "creator": "Utagawa Hiroshige",
+    "date": "",
+    "medium": "Woodblock print; ink and color on paper",
+    "dimensions": "28 3/4 x 9 1/2 in. (73 x 24.1 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 56683,
+    "accessionNumber": "JP3135",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/56683",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/56683",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/as/original/DP146846.jpg",
+    "retrievedAt": "2026-08-13T05:15:30.686714+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 1394179,
+    "sha256": "a057cb78e6b7e5f0f389cf632c2cddbe152c7c31683176109e118d996a8c812d",
+    "width": 1371,
+    "height": 3895
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 56683.",
+    "reviewedAt": "2026-08-13"
+  },
+  "generation": {
+    "pythonVersion": "3.14.2",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; converted to RGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/snowy-gorge/puzzle.webp",
+      "width": 721,
+      "height": 2048,
+      "byteSize": 375186,
+      "sha256": "e034024a21a7023e9da0d9e09f2b5bbb077b338703b0daf90bd93a54ae3cbd1c",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/snowy-gorge/preview.webp",
+      "width": 360,
+      "height": 1024,
+      "byteSize": 77796,
+      "sha256": "7dec4fbf2b2333e724740c53d0d4144c82fd38f829da47778ddd5702d3b22c12",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/snowy-gorge/thumbnail.webp",
+      "width": 135,
+      "height": 384,
+      "byteSize": 10228,
+      "sha256": "61e6a218ffdf9326ad675b7026dfbcdfafcd9d42822b9277970943d6e9473f98",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

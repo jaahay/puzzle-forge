@@ -1,0 +1,72 @@
+import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+
+const sudokuWorkspaceSource = readFileSync(new URL("./SudokuWorkspace.tsx", import.meta.url), "utf8");
+const workspaceLayoutSource = readFileSync(new URL("./PuzzleWorkspaceLayout.tsx", import.meta.url), "utf8");
+const workspaceHierarchyCss = readFileSync(new URL("../site/workspace-hierarchy.css", import.meta.url), "utf8");
+const numericGridCss = readFileSync(new URL("../site/numeric-grid.css", import.meta.url), "utf8");
+
+describe("Sudoku wide/short play composition", () => {
+  it("keeps the crown outside one Sudoku-owned board and gameplay composition", () => {
+    expect(sudokuWorkspaceSource).toContain('class="sudoku-play-composition"');
+    expect(sudokuWorkspaceSource).toContain('class="sudoku-play-board" aria-label="Puzzle board"');
+    expect(sudokuWorkspaceSource).toContain('class="sudoku-play-controls" aria-label="Gameplay controls"');
+    expect(sudokuWorkspaceSource).toContain("crown={currentPuzzleCrown}");
+    expect(sudokuWorkspaceSource).toContain("play={playComposition}");
+    expect(sudokuWorkspaceSource).toContain("board={playComposition ? null : board}");
+    expect(sudokuWorkspaceSource).not.toContain("gameplay={gameplay}");
+    expect(workspaceLayoutSource).toContain("play?: ComponentChildren");
+    expect(workspaceLayoutSource).toContain("play ?? (board ?");
+    expect(workspaceLayoutSource).toContain("!play && gameplay ?");
+  });
+
+  it("requires genuinely wide, height-constrained geometry instead of orientation", () => {
+    expect(workspaceHierarchyCss).toMatch(
+      /\.sudoku-workspace \.workspace-layout-play-surface\s*\{[^}]*container-type: inline-size;[^}]*container-name: sudoku-play-surface;/s,
+    );
+    expect(workspaceHierarchyCss).toContain(
+      "@media (max-height: 48rem) and (min-aspect-ratio: 4 / 3)",
+    );
+    expect(workspaceHierarchyCss).not.toContain("@media (max-height: 48rem) {");
+    expect(workspaceHierarchyCss).toContain("@container sudoku-play-surface (min-width: 45rem)");
+    expect(workspaceHierarchyCss).not.toContain("orientation: landscape");
+    expect(workspaceHierarchyCss).toMatch(
+      /\.sudoku-play-composition\s*\{[^}]*grid-template-columns: minmax\(0, 42rem\) minmax\(12rem, 15rem\);/s,
+    );
+  });
+
+  it("caps the square board against the short dynamic viewport only in wide play", () => {
+    expect(workspaceHierarchyCss).toMatch(
+      /@media \(max-height: 48rem\) and \(min-aspect-ratio: 4 \/ 3\)[\s\S]*@container sudoku-play-surface \(min-width: 45rem\)[\s\S]*\.sudoku-play-board \.square-grid-board-viewport\s*\{[^}]*width:\s*min\(\s*100%,\s*clamp\(15\.75rem,\s*calc\(100dvh - 4\.5rem\),\s*var\(--play-column-max\)\)\s*\);/s,
+    );
+  });
+
+  it("keeps the touch digit pad available beyond the narrow-width breakpoint", () => {
+    expect(numericGridCss).toContain("@media (any-pointer: coarse)");
+    expect(numericGridCss).toMatch(
+      /@media \(any-pointer: coarse\)\s*\{\s*\.sudoku-workspace \.numeric-grid-digit-pad\s*\{[^}]*display: grid;/s,
+    );
+    expect(workspaceHierarchyCss).toMatch(
+      /\.sudoku-play-controls \.numeric-grid-digit-pad\s*\{[^}]*display: grid;[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/s,
+    );
+  });
+
+  it("preserves the compact mobile board treatment after moving Sudoku into the play slot", () => {
+    expect(workspaceHierarchyCss).toMatch(
+      /\.sudoku-workspace \.workspace-layout-board \.puzzle-panel,\s*\.sudoku-workspace \.sudoku-play-board \.puzzle-panel\s*\{/s,
+    );
+  });
+
+  it("keeps current identity/history/New out of the side rail", () => {
+    const playComposition = sudokuWorkspaceSource.slice(
+      sudokuWorkspaceSource.indexOf('const playComposition ='),
+      sudokuWorkspaceSource.indexOf('return (\n    <PuzzleWorkspaceLayout'),
+    );
+
+    expect(playComposition).toContain("{board}");
+    expect(playComposition).toContain("{gameplay}");
+    expect(playComposition).not.toContain("currentPuzzleCrown");
+    expect(playComposition).not.toContain("historyActions");
+    expect(playComposition).not.toContain("newPuzzleControl");
+  });
+});

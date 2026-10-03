@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "artworks": [
+    { "assetId": "wheat-field-cypresses", "provider": "met", "objectId": 436535 },
+    { "assetId": "great-wave", "provider": "met", "objectId": 45434 },
+    { "assetId": "canal-in-venice", "provider": "met", "objectId": 437460 },
+    { "assetId": "gulf-stream", "provider": "met", "objectId": 11122 },
+    { "assetId": "cypresses", "provider": "met", "objectId": 437980 },
+    { "assetId": "roses", "provider": "met", "objectId": 436534 },
+    { "assetId": "view-of-toledo", "provider": "met", "objectId": 436575 },
+    { "assetId": "merced-river-yosemite", "provider": "met", "objectId": 10150 },
+    { "assetId": "canadian-rockies-lake-louise", "provider": "met", "objectId": 10149 },
+    { "assetId": "snowy-gorge", "provider": "met", "objectId": 56683 },
+    { "assetId": "carrara-marble-quarries", "provider": "met", "objectId": 12052 },
+    { "assetId": "self-portrait-dou", "provider": "met", "objectId": 436210 }
+  ]
+}

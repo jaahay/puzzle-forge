@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "self-portrait-dou",
+  "assetRevision": 1,
+  "work": {
+    "title": "Self-Portrait",
+    "creator": "Gerrit Dou",
+    "date": "ca. 1665",
+    "medium": "Oil on wood",
+    "dimensions": "19 1/4 x 15 3/8 in. (48.9 x 39.1 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 436210,
+    "accessionNumber": "14.40.607",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/436210",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/436210",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP145902.jpg",
+    "retrievedAt": "2026-08-13T05:15:30.686714+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 2398046,
+    "sha256": "2588437421140609681a05eb9e98f5f7cdb7b2f86b15924a743e99e8895da27c",
+    "width": 3071,
+    "height": 3843
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 436210.",
+    "reviewedAt": "2026-08-13"
+  },
+  "generation": {
+    "pythonVersion": "3.14.2",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; converted to RGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/self-portrait-dou/puzzle.webp",
+      "width": 1637,
+      "height": 2048,
+      "byteSize": 504336,
+      "sha256": "75bce2f2720e37ddda48073f40ab581e1890120826c94ded1c8cf403f5277880",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/self-portrait-dou/preview.webp",
+      "width": 818,
+      "height": 1024,
+      "byteSize": 75034,
+      "sha256": "d60e450cca3604d36ab9577bd749698bb846f6d6c451d554292111d0179d8686",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/self-portrait-dou/thumbnail.webp",
+      "width": 307,
+      "height": 384,
+      "byteSize": 11306,
+      "sha256": "470d7c2793cde4e6bebf9f71e11e61e09949493e91b156c6cebec79fb83de736",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

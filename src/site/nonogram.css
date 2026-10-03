@@ -1,0 +1,220 @@
+.nonogram-board {
+  display: grid;
+  grid-template-areas:
+    "corner columns"
+    "rows puzzle";
+  grid-template-columns: var(--nonogram-row-clue-width) var(--board-grid-width);
+  grid-template-rows: var(--nonogram-column-clue-height) var(--board-grid-height);
+  gap: 0;
+  align-items: stretch;
+  width: var(--board-width);
+  max-width: none;
+  min-height: var(--board-height);
+  border: 2px solid #e5e7eb;
+  border-radius: 1rem;
+  padding: 8px;
+  background: linear-gradient(135deg, #64748b, #475569);
+  box-shadow: 0 24px 80px rgba(2, 6, 23, 0.32);
+}
+
+.nonogram-corner {
+  display: grid;
+  min-width: 0;
+  place-items: end center;
+  grid-area: corner;
+  border: 1px solid #94a3b8;
+  border-right-width: 2px;
+  border-bottom-width: 2px;
+  border-radius: 0;
+  padding: 0.45rem;
+  color: #1e293b;
+  background: #e2e8f0;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.nonogram-column-clues {
+  display: grid;
+  grid-area: columns;
+  gap: 0;
+  align-items: stretch;
+  width: var(--board-grid-width);
+  background: #94a3b8;
+}
+
+.nonogram-row-clues {
+  display: grid;
+  grid-area: rows;
+  gap: 0;
+  width: var(--nonogram-row-clue-width);
+  height: var(--board-grid-height);
+  background: #94a3b8;
+}
+
+.nonogram-clue {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.16rem;
+  min-width: 0;
+  min-height: var(--board-cell-size);
+  border: 1px solid #94a3b8;
+  border-radius: 0;
+  color: #0f172a;
+  background: #f8fafc;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: clamp(0.62rem, calc(var(--board-cell-size) * 0.32), 0.84rem);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.nonogram-clue span {
+  display: inline-grid;
+  min-width: 1em;
+  place-items: center;
+}
+
+.nonogram-column-clue {
+  flex-direction: column;
+  justify-content: flex-end;
+  width: var(--board-cell-size);
+  min-height: var(--nonogram-column-clue-height);
+  border-bottom-width: 2px;
+  padding: 0.4rem 0.18rem;
+}
+
+.nonogram-row-clue {
+  justify-content: flex-end;
+  width: var(--nonogram-row-clue-width);
+  min-height: var(--board-cell-size);
+  border-right-width: 2px;
+  padding: 0.3rem 0.45rem;
+}
+
+.nonogram-board .grid.nonogram {
+  grid-area: puzzle;
+  gap: 0;
+  width: var(--board-grid-width);
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #94a3b8;
+  border-radius: 0;
+  background: #94a3b8;
+}
+
+.nonogram-board .grid.nonogram .cell {
+  width: var(--board-cell-size);
+  min-width: var(--board-cell-size);
+  min-height: var(--board-cell-size);
+  border: 1px solid #94a3b8;
+  border-radius: 0;
+  color: #0f172a;
+  background: #f8fafc;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: clamp(0.85rem, calc(var(--board-cell-size) * 0.42), 1.2rem);
+  font-weight: 900;
+}
+
+.nonogram-board .grid.nonogram .cell.interactive-cell:hover,
+.nonogram-board .grid.nonogram .cell.interactive-cell:focus-visible {
+  border-color: #0f172a;
+  box-shadow: inset 0 0 0 2px #0f172a;
+  outline: none;
+  transform: none;
+}
+
+.nonogram-board .grid.nonogram .cell.accent {
+  color: #f8fafc;
+  background: #0f172a;
+  box-shadow: inset 0 0 0 1px rgba(248, 250, 252, 0.12);
+}
+
+.nonogram-board .grid.nonogram .cell.hint {
+  color: #450a0a;
+  background: #fecaca;
+}
+
+.nonogram-workspace .puzzle-panel {
+  align-items: center;
+}
+
+.nonogram-settings-panel {
+  width: min(100%, 42rem);
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  justify-self: center;
+}
+
+.nonogram-settings-panel .check-actions,
+.nonogram-settings-panel .generation-actions,
+.nonogram-settings-panel .seed-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.nonogram-settings-panel .check-actions button,
+.nonogram-settings-panel .generation-actions button,
+.nonogram-settings-panel .seed-actions button {
+  width: 100%;
+  min-width: 0;
+}
+
+.nonogram-settings-panel > label,
+.nonogram-settings-panel .puzzle-size-control,
+.nonogram-settings-panel .puzzle-generation-options,
+.nonogram-settings-panel .puzzle-settings-actions {
+  min-width: 0;
+}
+
+.puzzle-size-control {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem 0.55rem;
+  align-items: end;
+}
+
+.puzzle-size-control .control-label {
+  grid-column: 1 / -1;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.compact-number-control {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.compact-number-control span,
+.size-separator {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.compact-number-control input {
+  min-width: 0;
+}
+
+.size-separator {
+  align-self: center;
+  padding-bottom: 0.8rem;
+}
+
+.puzzle-checkbox-control {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+  min-width: max-content;
+  padding-bottom: 0;
+}
+
+.puzzle-checkbox-control input {
+  width: 1rem;
+  height: 1rem;
+}

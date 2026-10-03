@@ -1,0 +1,293 @@
+.word-guess-game {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.word-guess-status {
+  display: grid;
+  gap: 0.2rem;
+  justify-items: center;
+  color: #cbd5e1;
+  text-align: center;
+}
+
+.word-guess-status strong {
+  color: #f8fafc;
+}
+
+.word-guess-status span {
+  max-width: 34rem;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.word-guess-board-shell {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.word-guess-board {
+  display: grid;
+  gap: 0.45rem;
+  justify-items: center;
+}
+
+.word-guess-row {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 0.35rem;
+}
+
+.word-guess-row.active .word-guess-tile.pending {
+  border-color: #a7f3d0;
+}
+
+.word-guess-tile {
+  display: grid;
+  width: clamp(2rem, 7vw, 3.5rem);
+  min-height: clamp(2.25rem, 8vw, 3.75rem);
+  place-items: center;
+  border: 1px solid #334155;
+  border-radius: 0.7rem;
+  color: #f8fafc;
+  background: #111827;
+  font-size: clamp(1rem, 3vw, 1.45rem);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.word-guess-tile.correct {
+  color: #0f172a;
+  background: #a7f3d0;
+}
+
+.word-guess-tile.present {
+  color: #0f172a;
+  background: #facc15;
+}
+
+.word-guess-tile.absent {
+  color: #e5e7eb;
+  background: #334155;
+}
+
+.word-guess-keyboard {
+  box-sizing: border-box;
+  display: grid;
+  gap: 0.45rem;
+  justify-items: center;
+  width: min(100%, 42rem);
+  margin: 0.15rem auto 0;
+  padding: 0 0.2rem;
+}
+
+.word-guess-keyboard-row {
+  display: flex;
+  width: 100%;
+  gap: clamp(0.18rem, 1.1vw, 0.35rem);
+  justify-content: center;
+}
+
+.word-guess-key {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 2.75rem;
+  min-height: 2.8rem;
+  border: 1px solid #334155;
+  border-radius: 0.65rem;
+  padding: 0.45rem 0.2rem;
+  color: #e5e7eb;
+  background: #1e293b;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.word-guess-key.wide {
+  flex-grow: 1.55;
+  max-width: 5.5rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+.word-guess-key.correct {
+  border-color: #a7f3d0;
+  color: #0f172a;
+  background: #a7f3d0;
+}
+
+.word-guess-key.present {
+  border-color: #facc15;
+  color: #0f172a;
+  background: #facc15;
+}
+
+.word-guess-key.absent {
+  border-color: #334155;
+  color: #e5e7eb;
+  background: #334155;
+}
+
+.word-guess-key:hover:not(:disabled),
+.word-guess-key:focus-visible {
+  border-color: #a7f3d0;
+  box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.28);
+  outline: none;
+}
+
+.word-guess-key:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
+.word-guess-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+.word-guess-actions button {
+  border-radius: 0.65rem;
+  padding: 0.65rem 0.85rem;
+  color: #e5e7eb;
+  background: #334155;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.word-guess-actions button:first-child {
+  color: #0f172a;
+  background: #a7f3d0;
+}
+
+.word-guess-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.word-guess-actions button:hover:not(:disabled),
+.word-guess-actions button:focus-visible,
+.word-guess-solver-details summary:hover,
+.word-guess-solver-details summary:focus-visible {
+  box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.28);
+  outline: none;
+}
+
+.word-guess-solver-details {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #1e293b;
+  border-radius: 1rem;
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, 0.42);
+}
+
+.word-guess-solver-details summary {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  color: #bfdbfe;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.word-guess-solver-details[open] summary {
+  margin-bottom: 0.75rem;
+}
+
+.word-guess-analysis-header {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.word-guess-analysis-header div {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.7rem;
+  border-radius: 0.8rem;
+  background: #111827;
+}
+
+.word-guess-analysis-header strong {
+  color: #f8fafc;
+  font-size: 1.05rem;
+}
+
+.word-guess-analysis-header span,
+.word-guess-analysis-note,
+.word-guess-hard-mode span,
+.word-guess-candidate-steps span {
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.word-guess-hard-mode {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+
+.word-guess-hard-mode input {
+  width: 1rem;
+  height: 1rem;
+}
+
+.word-guess-candidate-steps {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.word-guess-candidate-steps li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.7rem;
+  align-items: center;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.75rem;
+  background: #111827;
+}
+
+.word-guess-candidate-steps strong {
+  color: #f8fafc;
+  letter-spacing: 0.08em;
+}
+
+.word-guess-analysis-note {
+  margin: 0.75rem 0 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (min-width: 701px) {
+  .word-guess-keyboard {
+    display: none;
+  }
+}
+
+@media (max-width: 620px) {
+  .word-guess-analysis-header,
+  .word-guess-candidate-steps li {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "canadian-rockies-lake-louise",
+  "assetRevision": 1,
+  "work": {
+    "title": "Canadian Rockies (Lake Louise)",
+    "creator": "Albert Bierstadt",
+    "date": "ca. 1889",
+    "medium": "Oil on paper mounted to board",
+    "dimensions": "14 3/4 x 21in. (37.5 x 53.3cm)\r\nFramed: 25 13/16 x 34 9/16 x 3 9/16 in. (65.5 x 87.8 x 9 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 10149,
+    "accessionNumber": "1982.119.1",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/10149",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/10149",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/ad/original/DT7282.jpg",
+    "retrievedAt": "2026-08-13T05:15:30.686714+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 2266527,
+    "sha256": "ae11ca69ed6cc94da00c398876829c084a5c6d758d66d9fbfec7235c824e00fc",
+    "width": 3811,
+    "height": 2633
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 10149.",
+    "reviewedAt": "2026-08-13"
+  },
+  "generation": {
+    "pythonVersion": "3.14.2",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; converted to RGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/canadian-rockies-lake-louise/puzzle.webp",
+      "width": 2048,
+      "height": 1415,
+      "byteSize": 599746,
+      "sha256": "4ab6da1120bd2644ec085c49b5e96f95ed43e7646c885bd61693dd668adf7740",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/canadian-rockies-lake-louise/preview.webp",
+      "width": 1024,
+      "height": 707,
+      "byteSize": 110884,
+      "sha256": "3f57b0cd4a5649f4742ff69ba01ec959a77f8ae20d90b795a370ad1b89bf9a74",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/canadian-rockies-lake-louise/thumbnail.webp",
+      "width": 384,
+      "height": 265,
+      "byteSize": 13486,
+      "sha256": "1129acf3cb7d5165a0ab5d614d67af3cd1b0ec6f048327a6d82e2fe46ce6876a",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

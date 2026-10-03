@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "cypresses",
+  "assetRevision": 1,
+  "work": {
+    "title": "Cypresses",
+    "creator": "Vincent van Gogh",
+    "date": "1889",
+    "medium": "Oil on canvas",
+    "dimensions": "36 3/4 x 29 1/8 in. (93.4 x 74 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 437980,
+    "accessionNumber": "49.30",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/437980",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/437980",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP130999.jpg",
+    "retrievedAt": "2026-08-13T05:15:30.686714+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 2858568,
+    "sha256": "22b6968218ed40226d4b8ac5c0a9049985d0b5f4fd5d2d12358b89898fac6607",
+    "width": 1476,
+    "height": 1861
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 437980.",
+    "reviewedAt": "2026-08-13"
+  },
+  "generation": {
+    "pythonVersion": "3.14.2",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; converted to RGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/cypresses/puzzle.webp",
+      "width": 1476,
+      "height": 1861,
+      "byteSize": 1151630,
+      "sha256": "471eaee0e806c9d05e6d93c183722ec86da3a1d0632b5c60b0f7011325bdd7cd",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/cypresses/preview.webp",
+      "width": 812,
+      "height": 1024,
+      "byteSize": 304788,
+      "sha256": "93b970028d56bbc3057985979ba1bcebf7a2235d4f469616154a9fb135653dc6",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/cypresses/thumbnail.webp",
+      "width": 305,
+      "height": 384,
+      "byteSize": 38428,
+      "sha256": "bf2e68f99d4b883847c8b8a5d090bb6fda86e913ce93be59b10aec4ffe14d21a",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}
