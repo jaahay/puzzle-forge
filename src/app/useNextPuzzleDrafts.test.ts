@@ -115,6 +115,22 @@ describe("randomizeNextPuzzleArtwork", () => {
     expect(randomizeNextPuzzleArtwork("sudoku", draft, 0)).toBe(draft);
   });
 
+  it("excludes the resolved default artwork when the draft omits imageId", () => {
+    const defaultAsset = getPuzzleImageAsset(undefined, "tile-swap");
+    const draft = {
+      width: 5,
+      height: 4,
+      difficulty: "Medium" as const,
+      requireUniqueSolution: true,
+      sudokuVariation: "classic" as const,
+      solitaireVariation: defaultSolitaireVariation,
+    };
+
+    const randomized = randomizeNextPuzzleArtwork("tile-swap", draft, 0);
+
+    expect(randomized.imageId).not.toBe(defaultAsset.id);
+  });
+
   it("changes only artwork for image-tile puzzles", () => {
     const [currentAsset] = getPuzzleImageAssetsFor("tile-swap");
     const draft = {
