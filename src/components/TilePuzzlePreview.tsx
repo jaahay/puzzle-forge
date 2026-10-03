@@ -680,7 +680,6 @@ export const TilePuzzlePreview = ({
   };
 
   const runDragAnimationFrame = (time: number) => {
-  const runDragAnimationFrame = (time: number) => {
     const drag = dragRef.current;
     if (!drag) {
       stopDragAnimation();
@@ -767,7 +766,6 @@ export const TilePuzzlePreview = ({
   };
 
   const moveDrag = (event: PiecePointerEvent) => {
-  const moveDrag = (event: PiecePointerEvent) => {
     if (pinchRef.current) return;
     const drag = dragRef.current;
     if (!drag || drag.puzzleId !== puzzle.id || drag.pointerId !== event.pointerId) return;
@@ -808,7 +806,7 @@ export const TilePuzzlePreview = ({
       drag,
     );
     const nextSnapshot = completed.snapshot;
-    const nextState = updatePlacementState((current) => current?.puzzleId === puzzle.id ? {    const nextState = updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
+    const nextState = updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
       ...current,
       ...nextSnapshot,
     } : current);

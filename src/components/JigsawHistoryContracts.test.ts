@@ -35,12 +35,12 @@ describe("Jigsaw history integration", () => {
     expect(previewSource).toContain("cancelJigsawDragAction(");
   });
 
-  it("disables rendered history controls throughout drag and pinch gestures", () => {  it("disables rendered history controls throughout drag and pinch gestures", () => {
+  it("disables rendered history controls throughout drag and pinch gestures", () => {
     const beginDrag = sourceBetween(previewSource, "const beginDrag =", "const moveDrag =");
     const finishDrag = sourceBetween(previewSource, "const finishDrag =", "const cancelDrag =");
     const cancelDrag = sourceBetween(previewSource, "const cancelDrag =", "const beginPan =");
     const pinchStart = sourceBetween(previewSource, "const beginTouchPinch =", "const moveTouchPinch =");
-    const pinchEnd = sourceBetween(previewSource, "const endTouchPinch =", "const getPointerPlacement =");
+    const pinchEnd = sourceBetween(previewSource, "const endTouchPinch =", "const renderDraggedPieceImmediately =");
 
     expect(beginDrag).toContain("publishHistoryAvailability(historyRef.current, true)");
     expect(pinchStart).toContain("publishHistoryAvailability(historyRef.current, true)");
