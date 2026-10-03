@@ -47,6 +47,7 @@ type NewPuzzleCommandProps = {
   puzzleTitle: string;
   currentSeed: string;
   configurationSummary: string;
+  randomConfigurationSummary?: string;
   dailySummary?: string;
   seedLoadInput: string;
   disabled: boolean;
@@ -63,6 +64,7 @@ export const NewPuzzleCommand = ({
   puzzleTitle,
   currentSeed,
   configurationSummary,
+  randomConfigurationSummary = configurationSummary,
   dailySummary = configurationSummary,
   seedLoadInput,
   disabled,
@@ -129,8 +131,8 @@ export const NewPuzzleCommand = ({
           type="button"
           onClick={() => startRandomPuzzle(false)}
           disabled={disabled}
-          aria-label={`New random ${puzzleTitle}, ${configurationSummary}`}
-          title={`New random puzzle — ${configurationSummary}`}
+          aria-label={`New random ${puzzleTitle}, ${randomConfigurationSummary}`}
+          title={`New random puzzle — ${randomConfigurationSummary}`}
         >
           New
         </button>
@@ -171,8 +173,8 @@ export const NewPuzzleCommand = ({
                 type="button"
                 onClick={() => startRandomPuzzle(true)}
                 disabled={disabled}
-                aria-label={`Start a random ${puzzleTitle}, ${configurationSummary}`}
-                title={`Random puzzle — ${configurationSummary}`}
+                aria-label={`Start a random ${puzzleTitle}, ${randomConfigurationSummary}`}
+                title={`Random puzzle — ${randomConfigurationSummary}`}
               >
                 <RandomIcon />
                 <span class="new-puzzle-quick-action-copy"><strong>Random</strong></span>
