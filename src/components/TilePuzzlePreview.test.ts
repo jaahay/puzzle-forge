@@ -59,7 +59,7 @@ describe("TilePuzzlePreview completion", () => {
     }, 4)).toBe(false);
     expect(areJigsawPlacementsSolved({ joinedComponents: [] }, 2)).toBe(false);
   });
-  it("suppresses solved edge guides without changing the stored preference", () => {  it("suppresses solved edge guides without changing the stored preference", () => {
+  it("suppresses solved edge guides without changing the stored preference", () => {
     expect(shouldRenderJigsawEdgeSeams(false, false)).toBe(false);
     expect(shouldRenderJigsawEdgeSeams(true, false)).toBe(true);
     expect(shouldRenderJigsawEdgeSeams(true, true)).toBe(false);
