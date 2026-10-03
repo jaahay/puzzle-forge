@@ -48,11 +48,12 @@ describe("Jigsaw auto-pan controller boundary", () => {
 
     expect(previewSource).toContain('"--jigsaw-piece-x":');
     expect(previewSource).toContain('"--jigsaw-piece-y":');
-    expect(dragLoop).toContain('style.setProperty(\n      "--jigsaw-drag-x"');
-    expect(dragLoop).toContain('style.setProperty(\n      "--jigsaw-drag-y"');
+    expect(dragLoop).toContain('element.style.setProperty("--jigsaw-drag-x"');
+    expect(dragLoop).toContain('element.style.setProperty("--jigsaw-drag-y"');
     expect(dragLoop).not.toContain(".style.transform");
-    expect(beginDrag).toContain('target.style.setProperty("--jigsaw-drag-x", "0px")');
-    expect(beginDrag).toContain('target.style.setProperty("--jigsaw-drag-y", "0px")');
+    expect(beginDrag).toContain("const pieceElements = pieceIds.flatMap");
+    expect(beginDrag).toContain('element.style.setProperty("--jigsaw-drag-x", "0px")');
+    expect(beginDrag).toContain('element.style.setProperty("--jigsaw-drag-y", "0px")');
     expect(beginDrag).toContain("puzzleId: puzzle.id");
     expect(previewSource).toContain("activeDrag?.puzzleId === puzzle.id");
 
