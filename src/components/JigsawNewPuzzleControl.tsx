@@ -88,12 +88,16 @@ export const JigsawNewPuzzleControl = ({
     ? (getJigsawPieceAspectRatio(selectedAsset, width, height) > 1 ? "wide" : "tall")
     : null;
   const configurationSummary = `${selectedAsset.title} · ${jigsawCutStyleLabels[cutStyle]} · ${sizeSelection} · ${pieceCount} pieces · ${width}×${height}`;
+  const randomConfigurationSummary = sizeSelection === jigsawCustomSizeSelection
+    ? `${jigsawCutStyleLabels[cutStyle]} · Custom · ${pieceCount} pieces · ${width}×${height}`
+    : `${jigsawCutStyleLabels[cutStyle]} · ${sizeSelection}`;
 
   return (
     <NewPuzzleCommand
       puzzleTitle="Jigsaw"
       currentSeed={currentSeed}
       configurationSummary={configurationSummary}
+      randomConfigurationSummary={randomConfigurationSummary}
       seedLoadInput={seedLoadInput}
       disabled={disabled}
       panelClassName="image-new-puzzle-options-panel jigsaw-new-puzzle-options-panel"
@@ -103,7 +107,7 @@ export const JigsawNewPuzzleControl = ({
       onLoadSeed={onLoadSeed}
       info={(
         <>
-          <p>Cut style, size, and artwork configure the next Jigsaw only. Changing them here does not rebuild the puzzle currently being played.</p>
+          <p>Cut style and size configure the next Jigsaw. New and Surprise Me choose a different eligible artwork; Today and seed loads use the selected artwork.</p>
           <p>Named size presets target an approximate piece count and adapt their dimensions to the selected artwork. Custom dimensions remain explicit when artwork changes; unusually stretched Custom grids can be adapted explicitly while keeping approximately the same piece count.</p>
         </>
       )}
