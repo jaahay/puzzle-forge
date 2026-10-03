@@ -15,9 +15,7 @@ import {
   isUsableJigsawViewport,
   normalizeJigsawWorldPosition,
   panJigsawCamera,
-  restageLooseJigsawPlacements,
   screenToJigsawWorld,
-  shouldSnapJigsawPlacement,
   zoomJigsawCameraAtPoint,
 } from "./placement";
 
@@ -239,37 +237,27 @@ describe("Jigsaw world layout", () => {
     );
   });
 
-  it("restages only loose pieces and leaves snapped placements untouched", () => {
+  it("treats world placement as workspace organization even when it lies over the board", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1200,
-      imageHeight: 1200,
+      imageHeight: 900,
       puzzleWidth: 4,
       puzzleHeight: 4,
     });
-    const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index));
-    const initial = createInitialJigsawPlacements(layout, pieces, { width: 1200, height: 600 });
-    const withMostlySnapped = initial.map((placement, index) => index < 12
-      ? { ...placement, snapped: true }
-      : placement);
-    const viewport = { width: 600, height: 1200 };
-    const restaged = restageLooseJigsawPlacements(
-      layout,
-      pieces,
-      withMostlySnapped,
-      viewport,
-    );
-    const loosePieces = pieces.slice(12);
-    const expectedLoose = createInitialJigsawPlacements(layout, loosePieces, viewport);
+    const piece = makePiece(6);
+    const solved = getJigsawSolvedPosition(layout, piece);
+    const placement = {
+      id: piece.id,
+      ...normalizeJigsawWorldPosition(layout, solved.left + 7, solved.top - 5),
+    };
 
-    expect(getJigsawStagingMode(layout, loosePieces.length, viewport)).toBe("top-bottom");
-    expect(restaged.filter((placement) => placement.snapped))
-      .toEqual(withMostlySnapped.filter((placement) => placement.snapped));
-    expect(restaged.filter((placement) => !placement.snapped)).toEqual(expectedLoose);
-    expect(restaged.filter((placement) => !placement.snapped).every((placement) =>
-      isTopBottomStaged(layout, placement.worldY))).toBe(true);
+    expect(getJigsawPlacementPosition(layout, piece, placement)).toEqual({
+      left: placement.worldX,
+      top: placement.worldY,
+    });
   });
 
-  it("provides unique staging positions at the 32 by 32 technical ceiling", () => {
+  it("provides unique staging positions at the 32 by 32 technical ceiling", () => {  it("provides unique staging positions at the 32 by 32 technical ceiling", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1600,
       imageHeight: 1600,
@@ -283,7 +271,7 @@ describe("Jigsaw world layout", () => {
     expect(new Set(placements.map(({ worldX, worldY }) => `${worldX.toFixed(3)}:${worldY.toFixed(3)}`)).size).toBe(1024);
   });
 
-  it("maps solved pieces to exact board coordinates and snaps only near their target", () => {
+  it("keeps canonical solved coordinates as geometry without making the board a snap target", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1200,
       imageHeight: 900,
@@ -292,15 +280,18 @@ describe("Jigsaw world layout", () => {
     });
     const piece = makePiece(6);
     const target = getJigsawSolvedPosition(layout, piece);
-    const near = normalizeJigsawWorldPosition(layout, target.left + 5, target.top + 5);
-    const far = normalizeJigsawWorldPosition(layout, target.left + layout.pieceWidth, target.top + layout.pieceHeight);
+    const arbitrary = normalizeJigsawWorldPosition(layout, target.left + 5, target.top + 5);
 
     expect(target.left).toBeCloseTo(layout.boardX + layout.pieceWidth * 2);
     expect(target.top).toBeCloseTo(layout.boardY + layout.pieceHeight);
-    expect(shouldSnapJigsawPlacement(layout, piece, near)).toBe(true);
-    expect(shouldSnapJigsawPlacement(layout, piece, far)).toBe(false);
+    expect(getJigsawPlacementPosition(layout, piece, { id: piece.id, ...arbitrary })).toEqual({
+      left: arbitrary.worldX,
+      top: arbitrary.worldY,
+    });
   });
 });
+
+describe("Jigsaw camera", () => {});
 
 describe("Jigsaw camera", () => {
   const layout = createJigsawWorldLayout({

@@ -70,7 +70,6 @@ const placementAtTranslation = (piece: JigsawPiece, x: number, y: number): Jigsa
     id: piece.id,
     worldX: solved.left + x,
     worldY: solved.top + y,
-    snapped: false,
   };
 };
 
@@ -116,8 +115,12 @@ describe("Jigsaw island interaction", () => {
     });
   });
 
-  it("does not use the board as a snap target", () => {
-    const placements = pieces.map((piece) => placementAtTranslation(piece, 0, 0));
+  it("does not treat correct absolute board placement as progress", () => {
+    const placements = [
+      placementAtTranslation(pieces[0]!, 0, 0),
+      placementAtTranslation(pieces[1]!, 200, 0),
+      placementAtTranslation(pieces[2]!, 200, 0),
+    ];
     const result = resolveJigsawComponentDrop(
       layout,
       pieces,
@@ -125,7 +128,10 @@ describe("Jigsaw island interaction", () => {
       { joinedComponents: [] },
       "tile-0",
     );
-    expect(result.joined).toBe(true);
-    expect(result.assembly.joinedComponents[0]).toEqual(["tile-0", "tile-1"]);
+
+    expect(result.joined).toBe(false);
+    expect(result.assembly).toEqual({ joinedComponents: [] });
   });
+});
+});
 });
