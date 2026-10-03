@@ -105,3 +105,26 @@ export const isJigsawCoarseSectionComplete = (
   const componentIds = new Set(component);
   return section.pieceIds.every((pieceId) => componentIds.has(pieceId));
 };
+
+
+export const getJigsawCoarseSectionFocusPieceIds = (
+  section: JigsawCoarseSection,
+  assembly: JigsawAssemblyProgress,
+  pieces: readonly JigsawPiece[],
+) => {
+  const focusedIds = new Set(section.pieceIds);
+
+  for (const component of assembly.joinedComponents) {
+    if (!component.some((pieceId) => focusedIds.has(pieceId))) continue;
+    for (const pieceId of component) focusedIds.add(pieceId);
+  }
+
+  return pieces
+    .filter((piece) => focusedIds.has(piece.id))
+    .sort(
+      (left, right) =>
+        left.solvedIndex - right.solvedIndex ||
+        left.id.localeCompare(right.id),
+    )
+    .map((piece) => piece.id);
+};
