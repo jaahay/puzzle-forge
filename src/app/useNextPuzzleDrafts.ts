@@ -89,7 +89,8 @@ export const randomizeNextPuzzleArtwork = (
 ): NextPuzzleDraft => {
   if (!isImageBackedPuzzleId(puzzleId)) return draft;
 
-  const asset = getSurprisePuzzleImageAsset(puzzleId, draft.imageId, randomValue);
+  const currentImageId = getPuzzleImageAsset(draft.imageId, puzzleId).id;
+  const asset = getSurprisePuzzleImageAsset(puzzleId, currentImageId, randomValue);
   if (puzzleId !== "jigsaw") {
     return { ...draft, imageId: asset.id };
   }
