@@ -155,7 +155,7 @@ describe("Jigsaw world layout", () => {
     for (const piece of pieces) {
       const placement = placements.find((candidate) => candidate.id === piece.id);
       expect(placement).toBeDefined();
-      const position = getJigsawPlacementPosition(layout, piece, placement!);
+      const position = getJigsawPlacementPosition(layout, placement!);
       expect(overlapsBoard(
         position.left,
         position.top,
@@ -251,7 +251,7 @@ describe("Jigsaw world layout", () => {
       ...normalizeJigsawWorldPosition(layout, solved.left + 7, solved.top - 5),
     };
 
-    expect(getJigsawPlacementPosition(layout, piece, placement)).toEqual({
+    expect(getJigsawPlacementPosition(layout, placement)).toEqual({
       left: placement.worldX,
       top: placement.worldY,
     });
@@ -284,7 +284,7 @@ describe("Jigsaw world layout", () => {
 
     expect(target.left).toBeCloseTo(layout.boardX + layout.pieceWidth * 2);
     expect(target.top).toBeCloseTo(layout.boardY + layout.pieceHeight);
-    expect(getJigsawPlacementPosition(layout, piece, { id: piece.id, ...arbitrary })).toEqual({
+    expect(getJigsawPlacementPosition(layout, { id: piece.id, ...arbitrary })).toEqual({
       left: arbitrary.worldX,
       top: arbitrary.worldY,
     });

@@ -350,7 +350,6 @@ export const getJigsawSolvedPosition = (
 
 export const getJigsawPlacementPosition = (
   layout: JigsawWorldLayout,
-  _piece: Pick<JigsawPiece, "row" | "column">,
   placement: JigsawPlacement,
 ): WorldPosition => ({
   left: clamp(placement.worldX, 0, Math.max(0, layout.worldWidth - layout.pieceWidth)),

@@ -289,11 +289,6 @@ export const getPieceZIndex = (
   raised: boolean,
 ) => active ? 1000 : raised ? 900 : 10 + tile.currentIndex;
 
-export const areJigsawPlacementsSolved = (
-  assembly: JigsawAssemblyProgress,
-  pieceCount: number,
-) => isJigsawAssemblySolved(assembly, pieceCount);
-
 export const shouldRenderJigsawEdgeSeams = (showEdgeSeams: boolean, isSolved: boolean) =>
   showEdgeSeams && !isSolved;
 
@@ -640,7 +635,7 @@ export const TilePuzzlePreview = ({
   const placements = activePlacements ?? [];
   const placementById = new Map(placements.map((placement) => [placement.id, placement] as const));
   const connectedCount = getJigsawConnectedPieceCount(activeAssembly);
-  const isSolved = areJigsawPlacementsSolved(activeAssembly, puzzle.tiles.length);
+  const isSolved = isJigsawAssemblySolved(activeAssembly, puzzle.tiles.length);
   const assemblySummary = isSolved
     ? "Solved"
     : connectedCount === 0
@@ -897,7 +892,7 @@ export const TilePuzzlePreview = ({
       stagePoint.x,
       stagePoint.y,
     );
-    const position = getJigsawPlacementPosition(current.layout, tile, placement);
+    const position = getJigsawPlacementPosition(current.layout, placement);
     const currentPlacementState = placementStateRef.current;
     if (!currentPlacementState || currentPlacementState.puzzleId !== puzzle.id) return;
     const pieceIds = getJigsawComponentPieceIds(currentPlacementState.assembly, tile.id);
@@ -988,7 +983,7 @@ export const TilePuzzlePreview = ({
     dragRef.current = null;
     setActiveTileId(null);
     if (nextState?.puzzleId === puzzle.id) {
-      if (areJigsawPlacementsSolved(nextState.assembly, puzzle.tiles.length)) onCausativeInput();
+      if (isJigsawAssemblySolved(nextState.assembly, puzzle.tiles.length)) onCausativeInput();
       publishAssemblyProgress(nextState.assembly);
       replaceHistory(commitJigsawPlacementAction(historyRef.current, drag.startSnapshot, nextSnapshot));
     } else {
@@ -1288,7 +1283,7 @@ export const TilePuzzlePreview = ({
           {puzzle.tiles.map((tile) => {
             const placement = placementById.get(tile.id);
             if (!placement) return null;
-            const position = getJigsawPlacementPosition(layout, tile, placement);
+            const position = getJigsawPlacementPosition(layout, placement);
             const activeDrag = dragRef.current;
             const active =
               activeTileId !== null &&
