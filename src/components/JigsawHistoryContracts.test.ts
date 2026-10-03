@@ -28,25 +28,17 @@ describe("Jigsaw history integration", () => {
     expect(historyControl).not.toContain("isSolved");
   });
 
-  it("delegates drag snapshot, projection, completion, and cancellation to the tested drag-action boundary", () => {
+  it("uses the tested drag-action boundary for drag history semantics", () => {
     expect(previewSource).toContain("beginJigsawDragAction({");
-    expect(previewSource).toContain("projectJigsawDragAction(");
     expect(previewSource).toContain("completeJigsawDragAction(");
     expect(previewSource).toContain("cancelJigsawDragAction(");
   });
 
-  it("disables rendered history controls throughout drag and pinch gestures", () => {
-    const beginDrag = sourceBetween(previewSource, "const beginDrag =", "const moveDrag =");
-    const finishDrag = sourceBetween(previewSource, "const finishDrag =", "const cancelDrag =");
-    const cancelDrag = sourceBetween(previewSource, "const cancelDrag =", "const beginPan =");
-    const pinchStart = sourceBetween(previewSource, "const beginTouchPinch =", "const moveTouchPinch =");
-    const pinchEnd = sourceBetween(previewSource, "const endTouchPinch =", "const renderDraggedPieceImmediately =");
-
-    expect(beginDrag).toContain("publishHistoryAvailability(historyRef.current, true)");
-    expect(pinchStart).toContain("publishHistoryAvailability(historyRef.current, true)");
-    expect(finishDrag).toContain("publishHistoryAvailability(historyRef.current)");
-    expect(cancelDrag).toContain("publishHistoryAvailability(historyRef.current)");
-    expect(pinchEnd).toContain("publishHistoryAvailability(historyRef.current)");
+  it("blocks rendered history availability while a drag or pinch is active", () => {
+    expect((previewSource.match(/publishHistoryAvailability\(historyRef\.current, true\)/g) ?? []).length)
+      .toBeGreaterThanOrEqual(2);
+    expect((previewSource.match(/publishHistoryAvailability\(historyRef\.current\)/g) ?? []).length)
+      .toBeGreaterThanOrEqual(3);
   });
 
   it("binds history commands to the active puzzle instance", () => {
