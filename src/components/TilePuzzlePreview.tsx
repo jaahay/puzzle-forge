@@ -56,6 +56,7 @@ import {
   resetJigsawWorkspaceState,
   resolveInitialJigsawWorkspaceState,
   restageJigsawWorkspaceState,
+  restageJigsawWorkspaceSubset,
   type JigsawWorkspaceState,
 } from "../games/jigsaw/workspaceState";
 import {
@@ -513,6 +514,7 @@ export const TilePuzzlePreview = ({
     nextAssembly: JigsawAssemblyProgress,
     baseline: JigsawWorkspaceSnapshot | null,
     stagingViewport: JigsawViewport,
+    fitPlacements: readonly JigsawPlacement[] = nextPlacements,
   ) => {
     stopDragAnimation();
     updatePlacementState(() => ({
@@ -539,7 +541,7 @@ export const TilePuzzlePreview = ({
     setCamera(createJigsawWorkingFitCamera(
       layout,
       stagingViewport,
-      nextPlacements,
+      fitPlacements,
       28,
       getCurrentFitInsets(),
     ));
@@ -564,19 +566,41 @@ export const TilePuzzlePreview = ({
     const stagingViewport = getMeasuredJigsawViewport(stageRef.current);
     const baseline = getStagingActionBaseline();
     if (!stagingViewport || !baseline) return false;
-    const next = restageJigsawWorkspaceState(
-      layout,
-      puzzle.tiles,
-      baseline.assembly,
-      stagingViewport,
-    );
+    const focusPieceIds = focusedSection
+      ? getJigsawCoarseSectionFocusPieceIds(
+          focusedSection,
+          baseline.assembly,
+          puzzle.tiles,
+        )
+      : null;
+    const next = focusPieceIds
+      ? restageJigsawWorkspaceSubset(
+          layout,
+          puzzle.tiles,
+          baseline.assembly,
+          baseline.placements,
+          focusPieceIds,
+          stagingViewport,
+        )
+      : restageJigsawWorkspaceState(
+          layout,
+          puzzle.tiles,
+          baseline.assembly,
+          stagingViewport,
+        );
     if (!next) return false;
+
+    const focusIds = focusPieceIds ? new Set(focusPieceIds) : null;
+    const fitPlacements = focusIds
+      ? next.placements.filter((placement) => focusIds.has(placement.id))
+      : next.placements;
 
     return applyStagedPlacements(
       next.placements,
       next.assembly,
       baseline,
       stagingViewport,
+      fitPlacements,
     );
   };
 
@@ -1110,7 +1134,7 @@ export const TilePuzzlePreview = ({
             setShowCompactTools(false);
           }}
         >
-          Restage pieces
+          {focusedSection ? "Restage section" : "Restage pieces"}
         </button>
         <button
           type="button"
@@ -1123,7 +1147,7 @@ export const TilePuzzlePreview = ({
           {showEdgeSeams ? "Hide edge guides" : "Show edge guides"}
         </button>
         {coarseSections.length > 0 ? (
-          <div class="jigsaw-section-tools" aria-label="Puzzle section focus">
+          <div class="jigsaw-section-tools" role="group" aria-label="Puzzle section focus">
             <span class="jigsaw-section-tools-label">Focus</span>
             <button
               class="jigsaw-section-all"
