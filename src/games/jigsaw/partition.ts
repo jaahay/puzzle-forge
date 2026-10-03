@@ -22,6 +22,8 @@ export type JigsawCoarsePartition = {
   sections: readonly JigsawCoarsePartitionSection[];
 };
 
+export const jigsawCoarsePartitionMinimumAxis = 4;
+
 const makeSectionId = (
   rowBand: 0 | 1,
   columnBand: 0 | 1,
@@ -39,7 +41,10 @@ const getBandBounds = (
 export const createJigsawCoarsePartition = (
   puzzle: Pick<JigsawGeneratedPuzzle, "width" | "height" | "tiles">,
 ): JigsawCoarsePartition | null => {
-  if (puzzle.width < 2 || puzzle.height < 2) return null;
+  if (
+    puzzle.width < jigsawCoarsePartitionMinimumAxis ||
+    puzzle.height < jigsawCoarsePartitionMinimumAxis
+  ) return null;
 
   const sections: JigsawCoarsePartitionSection[] = [];
 
@@ -89,8 +94,7 @@ export const isJigsawCoarsePartitionSectionComplete = (
   progress: JigsawAssemblyProgress,
   section: JigsawCoarsePartitionSection,
 ) => {
-  if (section.pieceIds.length === 0) return false;
-  if (section.pieceIds.length === 1) return true;
+  if (section.pieceIds.length < 2) return false;
 
   const normalized = normalizeJigsawAssemblyProgress(progress);
   return normalized.joinedComponents.some((component) => {

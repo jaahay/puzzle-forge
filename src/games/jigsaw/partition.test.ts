@@ -148,20 +148,24 @@ describe("Jigsaw coarse partition model", () => {
     ).toBe(true);
   });
 
-  it("does not invent a partition model for a one-cell axis", () => {
+  it("requires a genuinely coarse puzzle before introducing sections", () => {
+    expect(createJigsawCoarsePartition(makePuzzle(3, 8))).toBeNull();
+    expect(createJigsawCoarsePartition(makePuzzle(8, 3))).toBeNull();
+    expect(createJigsawCoarsePartition(makePuzzle(4, 4))).not.toBeNull();
+  });
+
+  it("does not treat a singleton section as completed semantic progress", () => {
     const puzzle = makePuzzle(4, 4);
+    const section = {
+      ...createJigsawCoarsePartition(puzzle)!.sections[0]!,
+      pieceIds: [puzzle.tiles[0]!.id],
+    };
 
     expect(
-      createJigsawCoarsePartition({
-        ...puzzle,
-        width: 1,
-      }),
-    ).toBeNull();
-    expect(
-      createJigsawCoarsePartition({
-        ...puzzle,
-        height: 1,
-      }),
-    ).toBeNull();
+      isJigsawCoarsePartitionSectionComplete(
+        { joinedComponents: [] },
+        section,
+      ),
+    ).toBe(false);
   });
 });
