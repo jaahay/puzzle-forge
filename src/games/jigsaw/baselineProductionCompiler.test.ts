@@ -194,6 +194,18 @@ describe("Jigsaw baseline production compiler", () => {
     );
   });
 
+  it("keeps every canonical BaselineGrammar family distinct after compilation", () => {
+    const traces = jigsawBaselineGrammarIds.map((grammarId) =>
+      JSON.stringify(
+        compileJigsawBaselineProduction(
+          jigsawBaselineCanonicalProductions[grammarId],
+        ),
+      ),
+    );
+
+    expect(new Set(traces).size).toBe(jigsawBaselineGrammarIds.length);
+  });
+
   it("compiles a production outside the named BaselineGrammar catalog", () => {
     const novel = baselineSequence(
       baselinePrimitive("deflect"),
