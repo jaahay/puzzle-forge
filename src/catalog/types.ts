@@ -180,6 +180,11 @@ type JigsawPieceEdgeBase = {
   side: JigsawEdgeSide;
 };
 
+export type JigsawBoundaryContour = {
+  baselineGrammarId: JigsawBaselineGrammarId;
+  seedOffset: number;
+};
+
 export type JigsawBoundaryEdge = JigsawPieceEdgeBase & {
   boundary: true;
   neighborPieceId: null;
@@ -187,6 +192,7 @@ export type JigsawBoundaryEdge = JigsawPieceEdgeBase & {
   profileId: null;
   polarity: "flat";
   seedOffset: 0;
+  contour?: JigsawBoundaryContour;
 };
 
 export type JigsawInteriorEdge = JigsawPieceEdgeBase & {
