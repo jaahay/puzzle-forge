@@ -16,6 +16,7 @@ export type JigsawBaselineCandidateValidationReason =
   | "identity-deforms-baseline"
   | "course-on-baseline"
   | "course-changes-offset"
+  | "course-does-not-progress"
   | "cross-misses-baseline"
   | "deflect-does-not-deflect"
   | "deflect-crosses-baseline";
@@ -77,7 +78,7 @@ export const validateJigsawBaselineCandidate = (
     const start = points[index]!;
     const end = points[index + 1]!;
 
-    if (end.x <= start.x + epsilon) {
+    if (end.x < start.x - epsilon) {
       return invalid("non-monotonic-traversal", index);
     }
 
@@ -96,6 +97,9 @@ export const validateJigsawBaselineCandidate = (
         }
         if (!approximatelyEqual(start.y, end.y)) {
           return invalid("course-changes-offset", index);
+        }
+        if (end.x <= start.x + epsilon) {
+          return invalid("course-does-not-progress", index);
         }
         break;
       case "cross":

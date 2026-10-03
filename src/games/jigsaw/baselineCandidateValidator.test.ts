@@ -38,6 +38,44 @@ describe("Jigsaw baseline candidate validator", () => {
     ).toEqual({ valid: true });
   });
 
+  it("allows vertical structural events while keeping course longitudinal", () => {
+    expect(
+      validateJigsawBaselineCandidate(
+        [
+          instruction("deflect"),
+          instruction("course"),
+          instruction("deflect", 1, -1),
+        ],
+        [
+          { x: 0, y: 0 },
+          { x: 0, y: 1 },
+          { x: 0.75, y: 1 },
+          { x: 1, y: 0 },
+        ],
+      ),
+    ).toEqual({ valid: true });
+
+    expect(
+      validateJigsawBaselineCandidate(
+        [
+          instruction("deflect"),
+          instruction("course"),
+          instruction("deflect", 1, -1),
+        ],
+        [
+          { x: 0, y: 0 },
+          { x: 0.5, y: 1 },
+          { x: 0.5, y: 1 },
+          { x: 1, y: 0 },
+        ],
+      ),
+    ).toEqual({
+      valid: false,
+      reason: "course-does-not-progress",
+      instructionIndex: 1,
+    });
+  });
+
   it("requires exact normalized endpoints and one segment per instruction", () => {
     expect(
       validateJigsawBaselineCandidate(trace(), [
