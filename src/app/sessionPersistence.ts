@@ -20,6 +20,7 @@ import { puzzleIds } from "./sessionConstants";
 import type { PuzzleSession, SolitaireStats } from "./session";
 import {
   cloneJigsawAssemblyProgress,
+  normalizeJigsawAssemblyProgress,
   parseJigsawAssemblyProgress,
   type JigsawAssemblyProgress,
 } from "../games/jigsaw/assembly";
@@ -199,7 +200,7 @@ const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzlePr
       tileOrder: session.puzzle.tiles.map(({ id, currentIndex }) => ({ id, currentIndex })),
       selectedTileId: null,
       ...(session.puzzle.puzzleId === "jigsaw" && session.progress.jigsawAssembly
-        ? { jigsawAssembly: cloneJigsawAssemblyProgress(session.progress.jigsawAssembly) }
+        ? { jigsawAssembly: normalizeJigsawAssemblyProgress(session.progress.jigsawAssembly) }
         : {}),
     };
   }
@@ -224,7 +225,11 @@ export const buildPersistedPuzzleSession = (
   if (session.puzzle.puzzleId !== resource.puzzleId || !resource.generationId) return null;
   if (
     session.puzzle.puzzleId === "jigsaw" &&
-    (session.kind !== "tiles" || session.progress.jigsawAssembly === undefined)
+    (
+      session.kind !== "tiles" ||
+      session.progress.jigsawAssembly === undefined ||
+      parseJigsawAssemblyProgress(session.progress.jigsawAssembly, session.puzzle.tiles) === null
+    )
   ) return null;
 
   return {
