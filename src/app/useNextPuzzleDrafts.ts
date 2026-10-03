@@ -1,7 +1,11 @@
 import { useRef, useState } from "preact/hooks";
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { GeneratedPuzzle, PuzzleId } from "../catalog/types";
-import { getPuzzleImageAsset } from "../games/imageAssets";
+import {
+  getPuzzleImageAsset,
+  getSurprisePuzzleImageAsset,
+  isImageBackedPuzzleId,
+} from "../games/imageAssets";
 import {
   defaultJigsawCutStyle,
   normalizeJigsawCutStyle,
@@ -9,6 +13,7 @@ import {
 import {
   getJigsawSizePresetForDimensions,
   jigsawCustomSizeSelection,
+  resolveJigsawSizeDimensions,
 } from "../games/jigsaw/size";
 import { defaultSolitaireVariation, normalizeSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation } from "../games/sudoku/variation";
@@ -74,6 +79,33 @@ export const buildNextPuzzleDraft = ({
     ...(imageId ? { imageId } : {}),
     ...(jigsawSizeSelection ? { jigsawSizeSelection } : {}),
     ...(jigsawCutStyle ? { jigsawCutStyle } : {}),
+  };
+};
+
+export const randomizeNextPuzzleArtwork = (
+  puzzleId: PuzzleId,
+  draft: NextPuzzleDraft,
+  randomValue = Math.random(),
+): NextPuzzleDraft => {
+  if (!isImageBackedPuzzleId(puzzleId)) return draft;
+
+  const currentImageId = getPuzzleImageAsset(draft.imageId, puzzleId).id;
+  const asset = getSurprisePuzzleImageAsset(puzzleId, currentImageId, randomValue);
+  if (puzzleId !== "jigsaw") {
+    return { ...draft, imageId: asset.id };
+  }
+
+  const sizeSelection = draft.jigsawSizeSelection ?? jigsawCustomSizeSelection;
+  if (sizeSelection === jigsawCustomSizeSelection) {
+    return { ...draft, imageId: asset.id };
+  }
+
+  const dimensions = resolveJigsawSizeDimensions(asset, sizeSelection);
+  return {
+    ...draft,
+    imageId: asset.id,
+    width: dimensions.width,
+    height: dimensions.height,
   };
 };
 

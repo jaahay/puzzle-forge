@@ -28,7 +28,7 @@ import { getCurrentAppRoute, parseAppRoute, pushAppRoute, replaceAppRoute, type 
 import { initialSolitaireStats, loadPersistedPuzzleSessions } from "./app/session";
 import { resolveStartupRoute } from "./app/startupNavigation";
 import { useGridController } from "./app/useGridController";
-import { useNextPuzzleDrafts } from "./app/useNextPuzzleDrafts";
+import { randomizeNextPuzzleArtwork, useNextPuzzleDrafts } from "./app/useNextPuzzleDrafts";
 import { makeInitialPuzzleGenerationOptions, makeMissingPuzzleGenerationOptions, shouldRecoverMissingPuzzleSurface, usePuzzleGeneration, type BeginGenerationOptions } from "./app/usePuzzleGeneration";
 import { buildFreshSessionForGeneratedPuzzle, buildRuntimeSession, usePuzzleSessions } from "./app/usePuzzleSessions";
 import { useSolitaireController } from "./app/useSolitaireController";
@@ -614,8 +614,9 @@ export const App = () => {
   };
 
   const generateNextPuzzle = () => {
-    rememberNextPuzzleDraft();
-    commitGenerationSettings({ ...nextPuzzleDraft, seed: makeRandomSeed() });
+    const randomizedDraft = randomizeNextPuzzleArtwork(selectedPuzzleId, nextPuzzleDraft);
+    updateNextPuzzleDraft(randomizedDraft);
+    commitGenerationSettings({ ...randomizedDraft, seed: makeRandomSeed() });
   };
 
   const loadSeededPuzzle = () => {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import type { ImageBackedPuzzleId, PuzzleImageAsset } from "../catalog/types";
-import { getPuzzleImageAssetsFor, getSurprisePuzzleImageAsset } from "../games/imageAssets";
+import { getPuzzleImageAssetsFor } from "../games/imageAssets";
 
 type ArtworkAlbumProps = {
   puzzleId: ImageBackedPuzzleId;
@@ -8,6 +8,7 @@ type ArtworkAlbumProps = {
   selectedAsset: PuzzleImageAsset;
   disabled?: boolean;
   onSelectAsset: (asset: PuzzleImageAsset) => void;
+  onSurprise: () => void;
 };
 
 export const ArtworkAlbum = ({
@@ -16,6 +17,7 @@ export const ArtworkAlbum = ({
   selectedAsset,
   disabled = false,
   onSelectAsset,
+  onSurprise,
 }: ArtworkAlbumProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -49,11 +51,8 @@ export const ArtworkAlbum = ({
   };
 
   const surpriseMe = () => {
-    const asset = getSurprisePuzzleImageAsset(puzzleId, selectedAsset.id);
     closeAlbum();
-    if (asset.id !== selectedAsset.id) {
-      onSelectAsset(asset);
-    }
+    onSurprise();
   };
 
   return (
@@ -137,7 +136,7 @@ export const ArtworkAlbum = ({
             >
               Surprise Me
             </button>
-            <span>Chooses a different eligible artwork when possible.</span>
+            <span>Starts a new puzzle with a different eligible artwork when possible.</span>
           </footer>
         </div>
       </dialog>
