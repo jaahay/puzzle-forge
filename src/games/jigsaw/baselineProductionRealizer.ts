@@ -3,6 +3,10 @@ import {
   compileJigsawBaselineProduction,
   type JigsawBaselineInstruction,
 } from "./baselineProductionCompiler";
+import {
+  validateJigsawBaselineCandidate,
+  type JigsawBaselineCandidateValidationReason,
+} from "./baselineCandidateValidator";
 
 export type JigsawBaselineCandidatePoint = {
   x: number;
@@ -11,12 +15,9 @@ export type JigsawBaselineCandidatePoint = {
 
 export type JigsawBaselineCandidateRejectionReason =
   | "unclosable-deflection-balance"
-  | "identity-off-baseline"
-  | "course-on-baseline"
-  | "cross-on-baseline"
-  | "deflect-crosses-baseline"
   | "unclosed-production"
-  | "degenerate-production";
+  | "degenerate-production"
+  | JigsawBaselineCandidateValidationReason;
 
 export type JigsawBaselineCandidateResult =
   | {
@@ -163,13 +164,9 @@ export const realizeJigsawBaselineInstructionTrace = (
 
     switch (instruction.primitive) {
       case "identity":
-        if (Math.abs(y) > epsilon) return reject("identity-off-baseline");
-        break;
       case "course":
-        if (Math.abs(y) <= epsilon) return reject("course-on-baseline");
         break;
       case "cross":
-        if (Math.abs(y) <= epsilon) return reject("cross-on-baseline");
         nextY = -y;
         break;
       case "deflect": {
@@ -183,13 +180,6 @@ export const realizeJigsawBaselineInstructionTrace = (
             instruction.traversalDirection *
             amplitude;
 
-        if (
-          Math.abs(y) > epsilon &&
-          Math.abs(nextY) > epsilon &&
-          Math.sign(y) !== Math.sign(nextY)
-        ) {
-          return reject("deflect-crosses-baseline");
-        }
         break;
       }
     }
@@ -204,14 +194,25 @@ export const realizeJigsawBaselineInstructionTrace = (
   if (Math.abs(y) > epsilon) return reject("unclosed-production");
 
   const maximumDepth = Math.max(...points.map((point) => Math.abs(point.y)));
-  if (maximumDepth <= epsilon) return reject("degenerate-production");
+  if (maximumDepth <= epsilon) {
+    const validation = validateJigsawBaselineCandidate(instructions, points);
+    if (!validation.valid) return reject(validation.reason);
+    return reject("degenerate-production");
+  }
+
+  const normalizedPoints = points.map((point, index) => ({
+    x: index === points.length - 1 ? 1 : point.x,
+    y: index === points.length - 1 ? 0 : point.y / maximumDepth,
+  }));
+  const validation = validateJigsawBaselineCandidate(
+    instructions,
+    normalizedPoints,
+  );
+  if (!validation.valid) return reject(validation.reason);
 
   return {
     accepted: true,
-    points: points.map((point, index) => ({
-      x: index === points.length - 1 ? 1 : point.x,
-      y: index === points.length - 1 ? 0 : point.y / maximumDepth,
-    })),
+    points: normalizedPoints,
   };
 };
 

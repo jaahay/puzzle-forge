@@ -190,7 +190,7 @@ describe("Jigsaw generic baseline production realizer", () => {
       ),
     ).toEqual({
       accepted: false,
-      reason: "cross-on-baseline",
+      reason: "cross-misses-baseline",
     });
   });
 });
