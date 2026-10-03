@@ -130,8 +130,10 @@ describe("Jigsaw drag action", () => {
       makeEmptyJigsawHistoryState(),
       moved,
       drag,
+      new Set(["tile-0"]),
     );
 
+    expect(completed.solved).toBe(false);
     expect(completed.history.undoStack).toHaveLength(1);
     expect(completed.history.undoStack[0]).toEqual(drag.startSnapshot);
     expect(completed.snapshot.placements[0]!.worldX)

@@ -136,6 +136,7 @@ export const completeJigsawDragAction = (
   history: JigsawHistoryState,
   movedPlacements: readonly JigsawPlacement[],
   drag: JigsawDragAction,
+  eligiblePieceIds?: ReadonlySet<string>,
 ): JigsawCompletedDragAction => {
   const dropped = resolveJigsawComponentDrop(
     layout,
@@ -143,6 +144,7 @@ export const completeJigsawDragAction = (
     movedPlacements,
     drag.startSnapshot.assembly,
     drag.tileId,
+    eligiblePieceIds,
   );
   const snapshot: JigsawWorkspaceSnapshot = {
     placements: dropped.placements,

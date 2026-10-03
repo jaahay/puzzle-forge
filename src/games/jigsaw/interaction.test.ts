@@ -226,6 +226,73 @@ describe("Jigsaw island interaction", () => {
     expect(getTranslation(tile1, pieces[1]!)).toEqual({ x: 0, y: 0 });
   });
 
+  it("restricts snaps to fully eligible components", () => {
+    const targetTranslation = { x: 30, y: 18 };
+    const placements = [
+      placementAtTranslation(pieces[0]!, targetTranslation.x, targetTranslation.y),
+      placementAtTranslation(pieces[1]!, targetTranslation.x, targetTranslation.y),
+      placementAtTranslation(pieces[2]!, targetTranslation.x + 8, targetTranslation.y + 4),
+      placementAtTranslation(pieces[3]!, 180, 90),
+    ];
+    const assembly = {
+      joinedComponents: [["tile-0", "tile-1"]],
+    };
+
+    expect(
+      resolveJigsawComponentDrop(
+        layout,
+        pieces,
+        placements,
+        assembly,
+        "tile-2",
+        new Set(["tile-1", "tile-2", "tile-3"]),
+      ),
+    ).toMatchObject({
+      joined: false,
+      assembly,
+    });
+
+    expect(
+      resolveJigsawComponentDrop(
+        layout,
+        pieces,
+        placements,
+        assembly,
+        "tile-2",
+        new Set(["tile-0", "tile-1", "tile-2"]),
+      ),
+    ).toMatchObject({
+      joined: true,
+      assembly: {
+        joinedComponents: [["tile-0", "tile-1", "tile-2"]],
+      },
+    });
+  });
+
+  it("refuses a focused drag when its own joined island is only partially eligible", () => {
+    const placements = [
+      placementAtTranslation(pieces[0]!, 0, 0),
+      placementAtTranslation(pieces[1]!, 0, 0),
+      placementAtTranslation(pieces[2]!, 8, 4),
+      placementAtTranslation(pieces[3]!, 8, 4),
+    ];
+    const assembly = {
+      joinedComponents: [["tile-2", "tile-3"]],
+    };
+
+    const result = resolveJigsawComponentDrop(
+      layout,
+      pieces,
+      placements,
+      assembly,
+      "tile-2",
+      new Set(["tile-1", "tile-2"]),
+    );
+
+    expect(result.joined).toBe(false);
+    expect(result.assembly).toEqual(assembly);
+  });
+
   it("restages a joined island rigidly without persisting its old translation", () => {
     const staged = stageJigsawAssemblyPlacements(
       layout,
