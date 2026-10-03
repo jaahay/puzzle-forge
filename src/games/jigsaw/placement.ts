@@ -5,7 +5,6 @@ export type JigsawPlacement = {
   id: string;
   worldX: number;
   worldY: number;
-  snapped: boolean;
 };
 
 export type JigsawWorldLayout = {
@@ -351,15 +350,11 @@ export const getJigsawSolvedPosition = (
 
 export const getJigsawPlacementPosition = (
   layout: JigsawWorldLayout,
-  piece: Pick<JigsawPiece, "row" | "column">,
   placement: JigsawPlacement,
-): WorldPosition =>
-  placement.snapped
-    ? getJigsawSolvedPosition(layout, piece)
-    : {
-        left: clamp(placement.worldX, 0, Math.max(0, layout.worldWidth - layout.pieceWidth)),
-        top: clamp(placement.worldY, 0, Math.max(0, layout.worldHeight - layout.pieceHeight)),
-      };
+): WorldPosition => ({
+  left: clamp(placement.worldX, 0, Math.max(0, layout.worldWidth - layout.pieceWidth)),
+  top: clamp(placement.worldY, 0, Math.max(0, layout.worldHeight - layout.pieceHeight)),
+});
 
 export const getJigsawOccupiedBounds = (
   layout: JigsawWorldLayout,
@@ -373,7 +368,6 @@ export const getJigsawOccupiedBounds = (
   const verticalOverhang = layout.pieceHeight * jigsawPieceVisualOverhangRatio;
 
   for (const placement of placements) {
-    if (placement.snapped) continue;
     left = Math.min(left, placement.worldX - horizontalOverhang);
     top = Math.min(top, placement.worldY - verticalOverhang);
     right = Math.max(right, placement.worldX + layout.pieceWidth + horizontalOverhang);
@@ -404,7 +398,6 @@ export const getJigsawWorkingBounds = (
   const boardBottom = layout.boardY + layout.boardHeight;
 
   for (const placement of placements) {
-    if (placement.snapped) continue;
 
     const pieceLeft = placement.worldX - horizontalOverhang;
     const pieceTop = placement.worldY - verticalOverhang;
@@ -451,62 +444,8 @@ export const createInitialJigsawPlacements = (
     const repeatedLayer = Math.floor(index / fallbackSlots.length);
     const offset = repeatedLayer * 6;
     const position = normalizeJigsawWorldPosition(layout, slot.left + offset, slot.top + offset);
-    return { id: piece.id, ...position, snapped: false };
+    return { id: piece.id, ...position };
   });
-};
-
-export const stageLooseJigsawPlacements = (
-  layout: JigsawWorldLayout,
-  pieces: readonly JigsawPiece[],
-  fixedPlacements: readonly JigsawPlacement[],
-  viewport: JigsawViewport | null = null,
-): JigsawPlacement[] => {
-  const fixedById = new Map(
-    fixedPlacements
-      .filter((placement) => placement.snapped)
-      .map((placement) => [placement.id, placement] as const),
-  );
-  const orderedPieces = [...pieces].sort((left, right) => left.currentIndex - right.currentIndex);
-  const loosePieces = orderedPieces.filter((piece) => !fixedById.has(piece.id));
-  const stagedLooseById = new Map(
-    createInitialJigsawPlacements(layout, loosePieces, viewport)
-      .map((placement) => [placement.id, placement] as const),
-  );
-
-  return orderedPieces.map((piece) => {
-    const fixed = fixedById.get(piece.id);
-    if (fixed) return fixed;
-
-    const staged = stagedLooseById.get(piece.id);
-    return staged ?? {
-      id: piece.id,
-      ...normalizeJigsawWorldPosition(layout, worldPadding, worldPadding),
-      snapped: false,
-    };
-  });
-};
-
-export const restageLooseJigsawPlacements = (
-  layout: JigsawWorldLayout,
-  pieces: readonly JigsawPiece[],
-  placements: readonly JigsawPlacement[],
-  viewport: JigsawViewport | null = null,
-): JigsawPlacement[] => stageLooseJigsawPlacements(
-  layout,
-  pieces,
-  placements,
-  viewport,
-);
-
-export const shouldSnapJigsawPlacement = (
-  layout: JigsawWorldLayout,
-  piece: Pick<JigsawPiece, "row" | "column">,
-  placement: Pick<JigsawPlacement, "worldX" | "worldY">,
-) => {
-  const target = getJigsawSolvedPosition(layout, piece);
-  const distance = Math.hypot(placement.worldX - target.left, placement.worldY - target.top);
-  const threshold = Math.max(18, Math.min(layout.pieceWidth, layout.pieceHeight) * 0.42);
-  return distance <= threshold;
 };
 
 const clampCameraAxis = (center: number, worldSize: number, visibleSize: number) => {

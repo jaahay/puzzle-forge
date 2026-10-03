@@ -12,6 +12,12 @@ import { StartView } from "./components/StartView";
 import { getLocalDateStamp } from "./games/shared/daily";
 import { isImageBackedPuzzleId } from "./games/imageAssets";
 import { defaultJigsawCutStyle } from "./games/jigsaw/cutStyle";
+import {
+  cloneJigsawAssemblyProgress,
+  makeEmptyJigsawAssemblyProgress,
+  sameJigsawAssemblyProgress,
+  type JigsawAssemblyProgress,
+} from "./games/jigsaw/assembly";
 import { defaultSolitaireVariation, normalizeSolitaireVariation } from "./games/solitaire/variation";
 import { defaultSudokuVariation } from "./games/sudoku/variation";
 import {
@@ -91,7 +97,7 @@ export const App = () => {
   const [generationDefaults, setGenerationDefaults] = useState<GenerationRuntimeSettings>(makeInitialGenerationDefaults);
   const [puzzle, setPuzzle] = useState<GeneratedPuzzle | null>(null);
   const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
-  const [jigsawProgress, setJigsawProgress] = useState<{ puzzleInstanceId: string; snappedPieceIds: string[] } | null>(null);
+  const [jigsawProgress, setJigsawProgress] = useState<{ puzzleInstanceId: string; assembly: JigsawAssemblyProgress } | null>(null);
   const [puzzleLinkError, setPuzzleLinkError] = useState<string | null>(null);
   const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(true);
   const [hasSelectedPuzzle, setHasSelectedPuzzle] = useState(shouldStartOnPuzzleSurface);
@@ -192,7 +198,9 @@ export const App = () => {
     if (session.progress.kind === "tiles" && restoredPuzzle.puzzleId === "jigsaw") {
       setJigsawProgress({
         puzzleInstanceId: restoredPuzzle.id,
-        snappedPieceIds: [...(session.progress.jigsawSnappedPieceIds ?? [])],
+        assembly: cloneJigsawAssemblyProgress(
+          session.progress.jigsawAssembly ?? makeEmptyJigsawAssemblyProgress(),
+        ),
       });
     } else {
       setJigsawProgress(null);
@@ -238,9 +246,9 @@ export const App = () => {
         gridCells: grid.gridCells,
         selectedGridCell: grid.selectedGridCell,
         gridHistory: grid.gridHistory,
-        jigsawSnappedPieceIds:
+        jigsawAssembly:
           puzzle.puzzleId === "jigsaw" && jigsawProgress?.puzzleInstanceId === puzzle.id
-            ? jigsawProgress.snappedPieceIds
+            ? jigsawProgress.assembly
             : null,
         statusMessage,
       })
@@ -568,7 +576,7 @@ export const App = () => {
     } else if (puzzle.kind === "grid") {
       grid.resetCurrentGrid(puzzle, readyMessage, setStatusMessage);
     } else if (puzzle.puzzleId === "jigsaw") {
-      setJigsawProgress({ puzzleInstanceId: puzzle.id, snappedPieceIds: [] });
+      setJigsawProgress({ puzzleInstanceId: puzzle.id, assembly: makeEmptyJigsawAssemblyProgress() });
       setStatusMessage(readyMessage);
     } else {
       grid.prepareGeneratedGrid(puzzle);
@@ -671,23 +679,22 @@ export const App = () => {
     onCellInput: (cell: Parameters<typeof grid.handleGridCellInput>[1], value: string) => grid.handleGridCellInput(puzzle, cell, value, setStatusMessage),
   };
   const workspaceJigsaw = {
-    jigsawSnappedPieceIds:
+    jigsawAssembly:
       puzzle?.kind === "tiles" &&
       puzzle.puzzleId === "jigsaw" &&
       jigsawProgress?.puzzleInstanceId === puzzle.id
-        ? jigsawProgress.snappedPieceIds
+        ? jigsawProgress.assembly
         : null,
-    onJigsawSnappedPieceIdsChange: (pieceIds: string[]) => {
+    onJigsawAssemblyChange: (assembly: JigsawAssemblyProgress) => {
       if (puzzle?.kind !== "tiles" || puzzle.puzzleId !== "jigsaw") return;
       setJigsawProgress((current) => {
         if (
           current?.puzzleInstanceId === puzzle.id &&
-          current.snappedPieceIds.length === pieceIds.length &&
-          current.snappedPieceIds.every((pieceId, index) => pieceId === pieceIds[index])
+          sameJigsawAssemblyProgress(current.assembly, assembly)
         ) return current;
         return {
           puzzleInstanceId: puzzle.id,
-          snappedPieceIds: [...pieceIds],
+          assembly: cloneJigsawAssemblyProgress(assembly),
         };
       });
     },

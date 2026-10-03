@@ -33,39 +33,37 @@ describe("Jigsaw history integration", () => {
     const moveDrag = sourceBetween(previewSource, "const moveDrag =", "const finishDrag =");
     const finishDrag = sourceBetween(previewSource, "const finishDrag =", "const cancelDrag =");
 
-    expect(beginDrag).toContain(
-      "startPlacements: cloneJigsawPlacements(currentPlacementState.placements)",
-    );
+    expect(beginDrag).toContain("startSnapshot: cloneJigsawSnapshot({");
     expect(moveDrag).toContain("renderDraggedPieceImmediately");
     expect(moveDrag).not.toContain("updatePlacementState");
     expect(moveDrag).not.toContain("commitJigsawPlacementAction");
     expect(finishDrag).toContain("updatePlacementState");
     expect(finishDrag).toContain("commitJigsawPlacementAction");
-    expect(finishDrag).toContain("drag.startPlacements");
+    expect(finishDrag).toContain("drag.startSnapshot");
   });
 
   it("reverts interrupted drags instead of leaving untracked placement changes", () => {
     const pinchStart = sourceBetween(previewSource, "const beginTouchPinch =", "const moveTouchPinch =");
     const cancelDrag = sourceBetween(previewSource, "const cancelDrag =", "const beginPan =");
 
-    expect(pinchStart).toContain("cloneJigsawPlacements(interruptedDrag.startPlacements)");
-    expect(cancelDrag).toContain("cloneJigsawPlacements(drag.startPlacements)");
+    expect(pinchStart).toContain("cloneJigsawSnapshot(interruptedDrag.startSnapshot)");
+    expect(cancelDrag).toContain("cloneJigsawSnapshot(drag.startSnapshot)");
     expect(cancelDrag).not.toContain("commitJigsawPlacementAction");
   });
 
-  it("keeps Reset destructive while Restage preserves snapped progress and both remain reversible", () => {
+  it("keeps Reset destructive while Restage preserves island membership and both remain reversible", () => {
     const baseline = sourceBetween(previewSource, "const getStagingActionBaseline =", "const applyStagedPlacements =");
     const staging = sourceBetween(previewSource, "const applyStagedPlacements =", "const resetPieces =");
-    const reset = sourceBetween(previewSource, "const resetPieces =", "const restageLoosePieces =");
-    const restage = sourceBetween(previewSource, "const restageLoosePieces =", "useEffect(() => {");
+    const reset = sourceBetween(previewSource, "const resetPieces =", "const restagePieces =");
+    const restage = sourceBetween(previewSource, "const restagePieces =", "useEffect(() => {");
 
     expect(baseline).toContain(
-      "resolveJigsawActionBaseline(current.placements, activeDrag?.startPlacements ?? null)",
+      "resolveJigsawActionBaseline(current, activeDrag?.startSnapshot ?? null)",
     );
     expect(staging).toContain("commitJigsawPlacementAction");
-    expect(reset).toContain("createInitialJigsawPlacements");
-    expect(restage).toContain("restageLooseJigsawPlacements");
-    expect(restage).toContain("baseline");
+    expect(reset).toContain("makeEmptyJigsawAssemblyProgress");
+    expect(restage).toContain("stageJigsawAssemblyPlacements");
+    expect(restage).toContain("baseline.assembly");
   });
 
   it("disables rendered history controls throughout drag and pinch gestures", () => {

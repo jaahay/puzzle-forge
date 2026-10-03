@@ -16,6 +16,11 @@ import {
 import { cloneGridHistoryState, makeEmptyGridHistoryState, type GridHistoryState } from "./gridHistory";
 import { makePuzzleResourceKey, type PuzzleResourceIdentity } from "./puzzleResourceIdentity";
 import { cloneSolitaireHistoryEntry } from "./solitaireHistory";
+import {
+  cloneJigsawAssemblyProgress,
+  makeEmptyJigsawAssemblyProgress,
+  type JigsawAssemblyProgress,
+} from "../games/jigsaw/assembly";
 
 export type RuntimeSessionDraft = {
   puzzle: GeneratedPuzzle;
@@ -27,7 +32,7 @@ export type RuntimeSessionDraft = {
   gridCells: PuzzleCell[] | null;
   selectedGridCell: GridCellSelection | null;
   gridHistory?: GridHistoryState;
-  jigsawSnappedPieceIds?: string[] | null;
+  jigsawAssembly?: JigsawAssemblyProgress | null;
   statusMessage: string;
 };
 
@@ -131,8 +136,8 @@ export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => {
     puzzle: cloneTilePuzzle(session.puzzle),
     progress: {
       kind: "tiles",
-      ...(session.progress.jigsawSnappedPieceIds
-        ? { jigsawSnappedPieceIds: [...session.progress.jigsawSnappedPieceIds] }
+      ...(session.progress.jigsawAssembly
+        ? { jigsawAssembly: cloneJigsawAssemblyProgress(session.progress.jigsawAssembly) }
         : {}),
     },
     statusMessage: session.statusMessage,
@@ -149,7 +154,7 @@ export const buildRuntimeSession = ({
   gridCells,
   selectedGridCell,
   gridHistory,
-  jigsawSnappedPieceIds,
+  jigsawAssembly,
   statusMessage,
 }: RuntimeSessionDraft): PuzzleSession => {
   if (puzzle.kind === "cards") {
@@ -189,8 +194,8 @@ export const buildRuntimeSession = ({
     puzzle,
     progress: {
       kind: "tiles",
-      ...(puzzle.puzzleId === "jigsaw" && jigsawSnappedPieceIds
-        ? { jigsawSnappedPieceIds: [...jigsawSnappedPieceIds] }
+      ...(puzzle.puzzleId === "jigsaw" && jigsawAssembly
+        ? { jigsawAssembly: cloneJigsawAssemblyProgress(jigsawAssembly) }
         : {}),
     },
     statusMessage,
@@ -234,7 +239,9 @@ export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPu
     puzzle: generatedPuzzle,
     progress: {
       kind: "tiles",
-      ...(generatedPuzzle.puzzleId === "jigsaw" ? { jigsawSnappedPieceIds: [] } : {}),
+      ...(generatedPuzzle.puzzleId === "jigsaw"
+        ? { jigsawAssembly: makeEmptyJigsawAssemblyProgress() }
+        : {}),
     },
     statusMessage,
   };

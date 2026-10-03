@@ -1,14 +1,21 @@
+import type { JigsawAssemblyProgress } from "./assembly";
+import { cloneJigsawAssemblyProgress, sameJigsawAssemblyProgress } from "./assembly";
 import type { JigsawPlacement } from "./placement";
 
 export type JigsawHistoryAction = "undo" | "redo";
 
+export type JigsawWorkspaceSnapshot = {
+  placements: JigsawPlacement[];
+  assembly: JigsawAssemblyProgress;
+};
+
 export type JigsawHistoryState = {
-  undoStack: JigsawPlacement[][];
-  redoStack: JigsawPlacement[][];
+  undoStack: JigsawWorkspaceSnapshot[];
+  redoStack: JigsawWorkspaceSnapshot[];
 };
 
 export type JigsawHistoryTransition = {
-  placements: JigsawPlacement[];
+  snapshot: JigsawWorkspaceSnapshot;
   history: JigsawHistoryState;
 };
 
@@ -17,6 +24,13 @@ export const jigsawHistoryLimit = 100;
 export const cloneJigsawPlacements = (
   placements: readonly JigsawPlacement[],
 ): JigsawPlacement[] => placements.map((placement) => ({ ...placement }));
+
+export const cloneJigsawSnapshot = (
+  snapshot: JigsawWorkspaceSnapshot,
+): JigsawWorkspaceSnapshot => ({
+  placements: cloneJigsawPlacements(snapshot.placements),
+  assembly: cloneJigsawAssemblyProgress(snapshot.assembly),
+});
 
 export const makeEmptyJigsawHistoryState = (): JigsawHistoryState => ({
   undoStack: [],
@@ -34,11 +48,11 @@ export const getJigsawHistoryAvailability = (
     };
 
 export const resolveJigsawActionBaseline = (
-  current: readonly JigsawPlacement[],
-  inFlightStart: readonly JigsawPlacement[] | null = null,
-) => cloneJigsawPlacements(inFlightStart ?? current);
+  current: JigsawWorkspaceSnapshot,
+  inFlightStart: JigsawWorkspaceSnapshot | null = null,
+) => cloneJigsawSnapshot(inFlightStart ?? current);
 
-export const sameJigsawPlacements = (
+const sameJigsawPlacements = (
   left: readonly JigsawPlacement[],
   right: readonly JigsawPlacement[],
 ) =>
@@ -49,31 +63,37 @@ export const sameJigsawPlacements = (
       other &&
       placement.id === other.id &&
       placement.worldX === other.worldX &&
-      placement.worldY === other.worldY &&
-      placement.snapped === other.snapped,
+      placement.worldY === other.worldY,
     );
   });
 
+export const sameJigsawSnapshot = (
+  left: JigsawWorkspaceSnapshot,
+  right: JigsawWorkspaceSnapshot,
+) =>
+  sameJigsawPlacements(left.placements, right.placements) &&
+  sameJigsawAssemblyProgress(left.assembly, right.assembly);
+
 export const pushJigsawHistoryEntry = (
   history: JigsawHistoryState,
-  entry: readonly JigsawPlacement[],
+  entry: JigsawWorkspaceSnapshot,
 ): JigsawHistoryState => ({
-  undoStack: [...history.undoStack, cloneJigsawPlacements(entry)].slice(-jigsawHistoryLimit),
+  undoStack: [...history.undoStack, cloneJigsawSnapshot(entry)].slice(-jigsawHistoryLimit),
   redoStack: [],
 });
 
 export const commitJigsawPlacementAction = (
   history: JigsawHistoryState,
-  before: readonly JigsawPlacement[],
-  after: readonly JigsawPlacement[],
+  before: JigsawWorkspaceSnapshot,
+  after: JigsawWorkspaceSnapshot,
 ): JigsawHistoryState =>
-  sameJigsawPlacements(before, after)
+  sameJigsawSnapshot(before, after)
     ? history
     : pushJigsawHistoryEntry(history, before);
 
 export const applyJigsawHistoryAction = (
   history: JigsawHistoryState,
-  current: readonly JigsawPlacement[],
+  current: JigsawWorkspaceSnapshot,
   action: JigsawHistoryAction,
 ): JigsawHistoryTransition | null => {
   const sourceStack = action === "undo" ? history.undoStack : history.redoStack;
@@ -82,19 +102,19 @@ export const applyJigsawHistoryAction = (
 
   if (action === "undo") {
     return {
-      placements: cloneJigsawPlacements(entry),
+      snapshot: cloneJigsawSnapshot(entry),
       history: {
-        undoStack: history.undoStack.slice(0, -1).map(cloneJigsawPlacements),
-        redoStack: [...history.redoStack, cloneJigsawPlacements(current)].slice(-jigsawHistoryLimit),
+        undoStack: history.undoStack.slice(0, -1).map(cloneJigsawSnapshot),
+        redoStack: [...history.redoStack, cloneJigsawSnapshot(current)].slice(-jigsawHistoryLimit),
       },
     };
   }
 
   return {
-    placements: cloneJigsawPlacements(entry),
+    snapshot: cloneJigsawSnapshot(entry),
     history: {
-      undoStack: [...history.undoStack, cloneJigsawPlacements(current)].slice(-jigsawHistoryLimit),
-      redoStack: history.redoStack.slice(0, -1).map(cloneJigsawPlacements),
+      undoStack: [...history.undoStack, cloneJigsawSnapshot(current)].slice(-jigsawHistoryLimit),
+      redoStack: history.redoStack.slice(0, -1).map(cloneJigsawSnapshot),
     },
   };
 };
