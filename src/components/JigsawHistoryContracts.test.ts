@@ -28,27 +28,11 @@ describe("Jigsaw history integration", () => {
     expect(historyControl).not.toContain("isSolved");
   });
 
-  it("captures one pre-drag snapshot and does not record pointer-motion samples", () => {
-    const beginDrag = sourceBetween(previewSource, "const beginDrag =", "const moveDrag =");
-    const moveDrag = sourceBetween(previewSource, "const moveDrag =", "const finishDrag =");
-    const finishDrag = sourceBetween(previewSource, "const finishDrag =", "const cancelDrag =");
-
-    expect(beginDrag).toContain("startSnapshot: cloneJigsawSnapshot({");
-    expect(moveDrag).toContain("renderDraggedPieceImmediately");
-    expect(moveDrag).not.toContain("updatePlacementState");
-    expect(moveDrag).not.toContain("commitJigsawPlacementAction");
-    expect(finishDrag).toContain("updatePlacementState");
-    expect(finishDrag).toContain("commitJigsawPlacementAction");
-    expect(finishDrag).toContain("drag.startSnapshot");
-  });
-
-  it("reverts interrupted drags instead of leaving untracked placement changes", () => {
-    const pinchStart = sourceBetween(previewSource, "const beginTouchPinch =", "const moveTouchPinch =");
-    const cancelDrag = sourceBetween(previewSource, "const cancelDrag =", "const beginPan =");
-
-    expect(pinchStart).toContain("cloneJigsawSnapshot(interruptedDrag.startSnapshot)");
-    expect(cancelDrag).toContain("cloneJigsawSnapshot(drag.startSnapshot)");
-    expect(cancelDrag).not.toContain("commitJigsawPlacementAction");
+  it("delegates drag snapshot, projection, completion, and cancellation to the tested drag-action boundary", () => {
+    expect(previewSource).toContain("beginJigsawDragAction({");
+    expect(previewSource).toContain("projectJigsawDragAction(");
+    expect(previewSource).toContain("completeJigsawDragAction(");
+    expect(previewSource).toContain("cancelJigsawDragAction(");
   });
 
   it("disables rendered history controls throughout drag and pinch gestures", () => {
@@ -56,7 +40,7 @@ describe("Jigsaw history integration", () => {
     const finishDrag = sourceBetween(previewSource, "const finishDrag =", "const cancelDrag =");
     const cancelDrag = sourceBetween(previewSource, "const cancelDrag =", "const beginPan =");
     const pinchStart = sourceBetween(previewSource, "const beginTouchPinch =", "const moveTouchPinch =");
-    const pinchEnd = sourceBetween(previewSource, "const endTouchPinch =", "const getPointerPlacement =");
+    const pinchEnd = sourceBetween(previewSource, "const endTouchPinch =", "const renderDraggedPieceImmediately =");
 
     expect(beginDrag).toContain("publishHistoryAvailability(historyRef.current, true)");
     expect(pinchStart).toContain("publishHistoryAvailability(historyRef.current, true)");
