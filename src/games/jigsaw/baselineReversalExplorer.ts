@@ -149,8 +149,14 @@ const realizeCandidatePoints = (
         point(geometry.shoulderX, 0),
         point(geometry.entryX, side * geometry.entryDepth),
         point(geometry.turnX, side * geometry.turnDepth),
-        point(geometry.backtrackX, side * geometry.returnDepth),
-        point(geometry.resumeX, side * geometry.resumeDepth),
+        point(
+          geometry.backtrackX,
+          side * geometry.returnDepth * 0.45,
+        ),
+        point(
+          geometry.resumeX,
+          side * geometry.resumeDepth * 0.55,
+        ),
         point(geometry.exitX, 0),
         point(1, 0),
       ];
@@ -505,6 +511,8 @@ const validateClosedOutline = (
 export const validateJigsawBaselineReversalPieceOutline = (
   seam: readonly JigsawBaselineReversalPoint[],
 ) => {
+  if (!validateJigsawBaselineReversalPoints(seam).valid) return false;
+
   const outline = [
     ...seam.map((candidate) =>
       point(candidate.x, -candidate.y),

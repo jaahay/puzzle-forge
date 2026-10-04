@@ -127,8 +127,8 @@ describe("Jigsaw baseline longitudinal reversal exploration", () => {
       { x: 0, y: 0 },
       { x: 0.18, y: 0.12 },
       { x: 0.7, y: 0.4 },
-      { x: 0.52, y: 0.385 },
-      { x: 0.82, y: 0.36 },
+      { x: 0.52, y: 0.3 },
+      { x: 0.82, y: 0.28 },
       { x: 1, y: 0 },
     ]);
 
