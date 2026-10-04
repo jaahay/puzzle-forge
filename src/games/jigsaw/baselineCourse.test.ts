@@ -13,16 +13,13 @@ import {
 } from "./baselineGrammar";
 
 describe("Jigsaw baseline course vocabulary", () => {
-  it("contains the canonical grammar plus all shipped span and reversal courses", () => {
+  it("contains the canonical grammar plus all shipped span courses", () => {
     expect(jigsawBaselineCourseIds).toEqual([
       ...jigsawBaselineGrammarIds,
       "separated-bows",
       "opposed-pair",
       "primary-secondary",
       "inflection-rest-bow",
-      "same-side-hairpin",
-      "opposed-hairpin",
-      "counter-hook",
     ]);
   });
 

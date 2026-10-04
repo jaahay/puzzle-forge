@@ -84,7 +84,7 @@ describe("Jigsaw cut style", () => {
     const palette = [
       "bow",
       "separated-bows",
-      "opposed-hairpin",
+      "inflection-rest-bow",
       "primary-secondary",
     ] as const;
 
