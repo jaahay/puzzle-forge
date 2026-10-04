@@ -34,7 +34,7 @@ describe("Jigsaw boundary contour generation", () => {
     expect(
       boundaryEdges(puzzle).every((edge) => edge.contour === undefined),
     ).toBe(true);
-    expect(puzzle.id).toContain("boundary:flat");
+    expect(puzzle.id).not.toContain("boundary:");
   });
 
   it("deterministically assigns real contours without inventing outside neighbors", () => {
