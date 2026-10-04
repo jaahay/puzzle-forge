@@ -658,16 +658,16 @@ describe("Jigsaw edge paths", () => {
   });
 
   it("renders connectorless-wave as a reciprocal, shape-rich production seam", () => {
-    const top = getJigsawEdgePoints(
+    const bottom = getJigsawEdgePoints(
       makeInteriorEdge({
-        side: "top",
+        side: "bottom",
         profileId: "connectorless-wave",
         polarity: "tab",
         seedOffset: 123_456,
       }),
       expressiveEdgeModel,
     );
-    const reciprocal = getJigsawEdgePoints(
+    const top = getJigsawEdgePoints(
       makeInteriorEdge({
         side: "top",
         profileId: "connectorless-wave",
@@ -676,12 +676,12 @@ describe("Jigsaw edge paths", () => {
       }),
       expressiveEdgeModel,
     )
-      .map((candidate) => ({ x: 100 - candidate.x, y: candidate.y }))
+      .map((candidate) => ({ x: candidate.x, y: candidate.y + 100 }))
       .reverse();
 
-    expectPointsSafe(top, "connectorless-wave");
-    expectPointsToMatch(top, reciprocal);
-    expect(Math.max(...top.map((candidate) => Math.abs(candidate.y)))).toBeGreaterThan(1);
+    expectPointsSafe(bottom, "connectorless-wave");
+    expectPointsToMatch(bottom, top);
+    expect(Math.max(...bottom.map((candidate) => Math.abs(candidate.y - 100)))).toBeGreaterThan(1);
   });
 
   it("exercises every production baseline course through ordinary connected seams", () => {
