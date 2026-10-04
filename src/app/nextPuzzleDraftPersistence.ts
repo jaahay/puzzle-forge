@@ -1,6 +1,7 @@
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { PuzzleDifficulty, PuzzleId, SolitaireRedealLimit, SolitaireVariation, SudokuVariation } from "../catalog/types";
 import { getPuzzleImageAssetsFor, isImageBackedPuzzleId } from "../games/imageAssets";
+import { isJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
 import { isJigsawCutStyle } from "../games/jigsaw/cutStyle";
 import { isJigsawSizeSelection } from "../games/jigsaw/size";
 import { solitaireRedealLimits } from "../games/solitaire/variation";
@@ -57,6 +58,9 @@ const isJigsawSizeSelectionForPuzzle = (puzzleId: PuzzleId, value: unknown) =>
 const isJigsawCutStyleForPuzzle = (puzzleId: PuzzleId, value: unknown) =>
   puzzleId === "jigsaw" ? isJigsawCutStyle(value) : value === undefined;
 
+const isJigsawBoundaryModeForPuzzle = (puzzleId: PuzzleId, value: unknown) =>
+  puzzleId === "jigsaw" ? isJigsawBoundaryMode(value) : value === undefined;
+
 const parseDraft = (puzzleId: PuzzleId, value: unknown): NextPuzzleDraft | null => {
   if (
     !isRecord(value) ||
@@ -68,7 +72,8 @@ const parseDraft = (puzzleId: PuzzleId, value: unknown): NextPuzzleDraft | null 
     !isSolitaireVariation(value.solitaireVariation) ||
     !isImageIdForPuzzle(puzzleId, value.imageId) ||
     !isJigsawSizeSelectionForPuzzle(puzzleId, value.jigsawSizeSelection) ||
-    !isJigsawCutStyleForPuzzle(puzzleId, value.jigsawCutStyle)
+    !isJigsawCutStyleForPuzzle(puzzleId, value.jigsawCutStyle) ||
+    !isJigsawBoundaryModeForPuzzle(puzzleId, value.jigsawBoundaryMode)
   ) {
     return null;
   }
@@ -85,6 +90,7 @@ const parseDraft = (puzzleId: PuzzleId, value: unknown): NextPuzzleDraft | null 
       ? {
           jigsawSizeSelection: value.jigsawSizeSelection as NextPuzzleDraft["jigsawSizeSelection"],
           jigsawCutStyle: value.jigsawCutStyle as NextPuzzleDraft["jigsawCutStyle"],
+          jigsawBoundaryMode: value.jigsawBoundaryMode as NextPuzzleDraft["jigsawBoundaryMode"],
         }
       : {}),
   };
