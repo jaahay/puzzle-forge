@@ -161,6 +161,33 @@ Accordingly, this pass can prioritize or deprioritize hypotheses, but it cannot 
 
 This narrows the next realization pass to four high-value hypotheses without pretending the hand-authored sketches are generated survivors.
 
+## Common-realizer seam trial
+
+The next development-only layer uses production geometry semantics as building blocks rather than trusting the representative sketches.
+
+`edgeProbeRealizer.ts` realizes the four advanced hypotheses as complete seams:
+
+- **Compound lock** composes one seeded Classic bulb and one seeded Necked head in separate subspans.
+- **Opposed dual lock** composes two independently seeded Necked heads on opposite sides of the nominal edge.
+- **Notched head** starts from the seeded production Necked-head realization and applies one explicit crown cleft.
+- **Connectorless wave** realizes a full-width seeded Wave baseline with connector cardinality zero.
+
+For connector probes, the same existing BaselineGrammar realizers supply approach and departure roles. The experiment retains the current corner-depth attenuation rather than giving development candidates a more permissive safety envelope.
+
+The trial is deliberately not wired into `SeamProgram`, `edgePaths.ts`, generation identity, or cut-style policy.
+
+Executable sweeps require every advanced hypothesis to remain:
+
+- deterministic;
+- anchored to the complete seam endpoints;
+- inside the ordinary 32% edge-depth envelope;
+- free of proper self-intersection;
+- safe as one complete piece outline with the other three sides straight;
+- reciprocal under the same reverse/mirror/polarity relationship used by neighboring production edges;
+- compatible with every current BaselineGrammar family in both approach and departure roles.
+
+This is stronger evidence than the hand-authored atlas, but still not a promotion decision. Perceptual quality at normal play scale remains a separate curation step.
+
 ## Underexplored non-connector neighborhoods
 
 Three limitations are now explicit rather than hidden inside the generic baseline explorer.
@@ -232,9 +259,8 @@ Zero promotions is an acceptable result.
 
 ## Next exploration sequence
 
-1. Embed Compound lock, Opposed dual lock, Notched head, and Connectorless wave into complete development-only seams with representative BaselineGrammar approaches/departures.
-2. Exercise reciprocal polarity/orientation and whole-piece safety for those seams; eliminate any candidate that only works as an isolated atlas specimen.
-3. Extend the baseline explorer with an explicit separated-gesture experiment without changing production grammar.
-4. Compare surviving complete seams against the existing connector/baseline atlases at normal play scale.
-5. Promote only recurring, clearly irreducible survivors.
-6. Keep true longitudinal reversal and nested/enclosed geometry behind stronger validation or topology work.
+1. Run the common-realizer seam sweeps and remove any advanced hypothesis that fails reciprocal or whole-piece safety.
+2. Extend the baseline explorer with an explicit separated-gesture experiment without changing production grammar.
+3. Compare the safe complete seams against the existing connector/baseline atlases at normal play scale.
+4. Promote only recurring, clearly irreducible survivors.
+5. Keep true longitudinal reversal and nested/enclosed geometry behind stronger validation or topology work.
