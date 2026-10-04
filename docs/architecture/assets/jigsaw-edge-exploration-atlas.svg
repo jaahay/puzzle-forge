@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 860" role="img" aria-labelledby="title desc">
+<title id="title">Jigsaw edge-space exploration atlas</title>
+<desc id="desc">Development-only representative sketches used to prioritize Jigsaw seam hypotheses before common realization.</desc>
+<rect width="100%" height="100%" fill="white"/>
+<style>text{font-family:ui-sans-serif,system-ui,sans-serif;fill:#111}.label{font-size:18px;font-weight:650}.status{font-size:13px;fill:#555}.baseline{stroke:#bbb;stroke-width:1}.shape{fill:none;stroke:#111;stroke-width:4;stroke-linejoin:round;stroke-linecap:round}.carry{stroke:#111}.collapse{stroke:#666;stroke-dasharray:7 5}</style>
+<text class="label" x="26" y="30">Compound lock</text>
+<text class="status" x="26" y="50">advance to realizer</text>
+<line class="baseline" x1="35" y1="131.5" x2="565" y2="131.5"/>
+<polyline class="shape carry" points="80.0,131.5 119.6,131.5 146.0,111.7 179.0,91.2 212.0,111.7 234.0,131.5 260.4,131.5 278.0,120.3 278.0,105.5 242.8,100.5 242.8,86.9 269.2,74.5 300.0,70.7 330.8,74.5 357.2,86.9 357.2,100.5 322.0,105.5 322.0,120.3 339.6,131.5 520.0,131.5"/>
+<text class="label" x="626" y="30">Opposed dual lock</text>
+<text class="status" x="626" y="50">advance to realizer</text>
+<line class="baseline" x1="635" y1="131.5" x2="1165" y2="131.5"/>
+<polyline class="shape carry" points="680.0,131.5 719.6,131.5 737.2,120.3 737.2,105.5 706.4,100.5 706.4,88.1 750.4,76.9 785.6,74.5 820.8,76.9 864.8,88.1 864.8,100.5 834.0,105.5 834.0,120.3 851.6,131.5 926.4,131.5 944.0,142.7 944.0,157.5 913.2,162.5 913.2,174.9 957.2,186.1 992.4,188.5 1027.6,186.1 1071.6,174.9 1071.6,162.5 1040.8,157.5 1040.8,142.7 1058.4,131.5 1120.0,131.5"/>
+<text class="label" x="26" y="245">Notched head</text>
+<text class="status" x="26" y="265">advance to realizer</text>
+<line class="baseline" x1="35" y1="346.5" x2="565" y2="346.5"/>
+<polyline class="shape carry" points="80.0,346.5 225.2,346.5 247.2,334.1 247.2,316.7 190.0,310.5 190.0,295.7 234.0,283.3 273.6,278.3 300.0,298.1 326.4,278.3 366.0,283.3 410.0,295.7 410.0,310.5 352.8,316.7 352.8,334.1 374.8,346.5 520.0,346.5"/>
+<text class="label" x="626" y="245">Connectorless wave</text>
+<text class="status" x="626" y="265">advance to realizer</text>
+<line class="baseline" x1="635" y1="346.5" x2="1165" y2="346.5"/>
+<polyline class="shape carry" points="680.0,346.5 741.6,332.9 794.4,320.5 847.2,346.5 900.0,370.1 952.8,346.5 1005.6,326.7 1058.4,346.5 1120.0,346.5"/>
+<text class="label" x="26" y="460">Asymmetric catch</text>
+<text class="status" x="26" y="480">deprioritize: Scoop-adjacent</text>
+<line class="baseline" x1="35" y1="561.5" x2="565" y2="561.5"/>
+<polyline class="shape collapse" points="80.0,561.5 141.6,561.5 176.8,550.3 194.4,533.0 251.6,510.7 322.0,502.0 379.2,506.9 410.0,519.3 405.6,530.5 339.6,534.2 282.4,540.4 322.0,547.9 392.4,554.1 436.4,560.3 520.0,561.5"/>
+<text class="label" x="626" y="460">Hook catch</text>
+<text class="status" x="626" y="480">deprioritize: similar sketch</text>
+<line class="baseline" x1="635" y1="561.5" x2="1165" y2="561.5"/>
+<polyline class="shape collapse" points="680.0,561.5 741.6,561.5 772.4,547.9 790.0,525.5 860.4,504.5 952.8,502.0 1005.6,513.1 1010.0,525.5 948.4,528.0 878.0,531.7 838.4,540.4 869.2,547.9 935.2,551.6 1001.2,555.3 1045.2,560.3 1120.0,561.5"/>
+<text class="label" x="26" y="675">Nested lock</text>
+<text class="status" x="26" y="695">topology-dependent: notch-like sketch</text>
+<line class="baseline" x1="35" y1="776.5" x2="565" y2="776.5"/>
+<polyline class="shape collapse" points="80.0,776.5 225.2,776.5 247.2,764.1 247.2,745.5 185.6,739.3 185.6,725.7 229.6,714.5 264.8,709.5 284.6,721.9 300.0,734.3 315.4,721.9 335.2,709.5 370.4,714.5 414.4,725.7 414.4,739.3 352.8,745.5 352.8,764.1 374.8,776.5 520.0,776.5"/>
+</svg>
