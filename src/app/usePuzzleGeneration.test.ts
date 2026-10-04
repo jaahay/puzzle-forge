@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import {
   makeInitialPuzzleGenerationOptions,
+  makeMissingPuzzleGenerationOptions,
   shouldAcceptGenerationResponse,
   shouldRecoverMissingPuzzleSurface,
 } from "./usePuzzleGeneration";
@@ -108,6 +110,32 @@ describe("initial puzzle generation", () => {
       width: 6,
       height: 5,
       imageId: "great-wave",
+      jigsawCutStyle: "unconventional",
+      jigsawBoundaryMode: "contoured",
+    });
+  });
+
+  it("preserves Jigsaw cut and boundary settings during missing-surface recovery", () => {
+    const selectedDefinition = getPuzzleDefinition("jigsaw");
+
+    expect(makeMissingPuzzleGenerationOptions({
+      selectedPuzzleId: "jigsaw",
+      selectedDefinition,
+      seed: "recover-jigsaw",
+      width: 6,
+      height: 5,
+      difficulty: "Medium",
+      requireUniqueSolution: true,
+      sudokuVariation: "classic",
+      solitaireVariation: defaultSolitaireVariation,
+      jigsawCutStyle: "unconventional",
+      jigsawBoundaryMode: "contoured",
+      makeSeed: () => "fallback",
+    })).toMatchObject({
+      puzzleId: "jigsaw",
+      seed: "recover-jigsaw",
+      width: 6,
+      height: 5,
       jigsawCutStyle: "unconventional",
       jigsawBoundaryMode: "contoured",
     });
