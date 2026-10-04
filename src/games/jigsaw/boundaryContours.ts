@@ -46,7 +46,6 @@ export const getJigsawBoundaryMode = (
     : "flat";
 
 const generatedBoundaryGrammarIds = [
-  "bow",
   "angled-course",
   "dogleg",
   "stepped-course",
