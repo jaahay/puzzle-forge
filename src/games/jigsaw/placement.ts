@@ -1,4 +1,5 @@
-import type { JigsawPiece } from "../../catalog/types";
+import type { JigsawEdgeModel, JigsawPiece } from "../../catalog/types";
+import { getJigsawOuterBoundaryPoints } from "./boundaryContours";
 import { jigsawEdgeMaximumDepth } from "./edgePaths";
 
 export type JigsawPlacement = {
@@ -355,6 +356,45 @@ export const getJigsawPlacementPosition = (
   left: clamp(placement.worldX, 0, Math.max(0, layout.worldWidth - layout.pieceWidth)),
   top: clamp(placement.worldY, 0, Math.max(0, layout.worldHeight - layout.pieceHeight)),
 });
+
+export const getJigsawBoardBounds = (
+  layout: JigsawWorldLayout,
+  pieces: readonly JigsawPiece[],
+  puzzleWidth: number,
+  puzzleHeight: number,
+  edgeModel: JigsawEdgeModel,
+): JigsawWorldBounds => {
+  const points = getJigsawOuterBoundaryPoints(
+    pieces,
+    puzzleWidth,
+    puzzleHeight,
+    edgeModel,
+  );
+  if (!points || points.length === 0) {
+    return {
+      x: layout.boardX,
+      y: layout.boardY,
+      width: layout.boardWidth,
+      height: layout.boardHeight,
+    };
+  }
+
+  const worldPoints = points.map((candidate) => ({
+    x: layout.boardX + candidate.x * (layout.pieceWidth / 100),
+    y: layout.boardY + candidate.y * (layout.pieceHeight / 100),
+  }));
+  const left = Math.min(...worldPoints.map((candidate) => candidate.x));
+  const top = Math.min(...worldPoints.map((candidate) => candidate.y));
+  const right = Math.max(...worldPoints.map((candidate) => candidate.x));
+  const bottom = Math.max(...worldPoints.map((candidate) => candidate.y));
+
+  return {
+    x: left,
+    y: top,
+    width: Math.max(1, right - left),
+    height: Math.max(1, bottom - top),
+  };
+};
 
 export const getJigsawOccupiedBounds = (
   layout: JigsawWorldLayout,
