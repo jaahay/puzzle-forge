@@ -1,5 +1,10 @@
-import type { JigsawCutStyle, JigsawImageAsset } from "../catalog/types";
+import type { JigsawBoundaryMode, JigsawCutStyle, JigsawImageAsset } from "../catalog/types";
 import { getPuzzleImageAsset } from "../games/imageAssets";
+import {
+  jigsawBoundaryModeDescriptions,
+  jigsawBoundaryModeLabels,
+  jigsawBoundaryModes,
+} from "../games/jigsaw/boundaryContours";
 import {
   jigsawCutStyleDescriptions,
   jigsawCutStyleLabels,
@@ -41,6 +46,7 @@ type JigsawNewPuzzleControlProps = {
   height: number;
   sizeSelection: JigsawSizeSelection;
   cutStyle: JigsawCutStyle;
+  boundaryMode: JigsawBoundaryMode;
   minWidth: number;
   maxWidth: number;
   minHeight: number;
@@ -53,6 +59,7 @@ type JigsawNewPuzzleControlProps = {
     height?: number;
     jigsawSizeSelection?: JigsawSizeSelection;
     jigsawCutStyle?: JigsawCutStyle;
+    jigsawBoundaryMode?: JigsawBoundaryMode;
   }) => void;
   onSeedLoadInputChange: (seed: string) => void;
   onNewPuzzle: () => void;
@@ -67,6 +74,7 @@ export const JigsawNewPuzzleControl = ({
   height,
   sizeSelection,
   cutStyle,
+  boundaryMode,
   minWidth,
   maxWidth,
   minHeight,
@@ -87,10 +95,11 @@ export const JigsawNewPuzzleControl = ({
   const stretchedPieceDirection = gridAdaptation
     ? (getJigsawPieceAspectRatio(selectedAsset, width, height) > 1 ? "wide" : "tall")
     : null;
-  const configurationSummary = `${selectedAsset.title} · ${jigsawCutStyleLabels[cutStyle]} · ${sizeSelection} · ${pieceCount} pieces · ${width}×${height}`;
+  const boundaryLabel = jigsawBoundaryModeLabels[boundaryMode];
+  const configurationSummary = `${selectedAsset.title} · ${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${sizeSelection} · ${pieceCount} pieces · ${width}×${height}`;
   const randomConfigurationSummary = sizeSelection === jigsawCustomSizeSelection
-    ? `${jigsawCutStyleLabels[cutStyle]} · Custom · ${pieceCount} pieces · ${width}×${height}`
-    : `${jigsawCutStyleLabels[cutStyle]} · ${sizeSelection}`;
+    ? `${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · Custom · ${pieceCount} pieces · ${width}×${height}`
+    : `${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${sizeSelection}`;
 
   return (
     <NewPuzzleCommand
@@ -107,7 +116,7 @@ export const JigsawNewPuzzleControl = ({
       onLoadSeed={onLoadSeed}
       info={(
         <>
-          <p>Cut style and size configure the next Jigsaw. New and Surprise Me choose a different eligible artwork; Today and seed loads use the selected artwork.</p>
+          <p>Cut style, outer boundary, and size configure the next Jigsaw. New and Surprise Me choose a different eligible artwork; Today and seed loads use the selected artwork.</p>
           <p>Named size presets target an approximate piece count and adapt their dimensions to the selected artwork. Custom dimensions remain explicit when artwork changes; unusually stretched Custom grids can be adapted explicitly while keeping approximately the same piece count.</p>
         </>
       )}
@@ -130,6 +139,28 @@ export const JigsawNewPuzzleControl = ({
                 >
                   <strong>{jigsawCutStyleLabels[style]}</strong>
                   <span>{jigsawCutStyleDescriptions[style]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div class="jigsaw-boundary-settings" role="group" aria-label="Jigsaw outer boundary">
+            <div class="jigsaw-size-heading">
+              <strong>Outer boundary</strong>
+              <span>{jigsawBoundaryModeLabels[boundaryMode]}</span>
+            </div>
+            <div class="jigsaw-boundary-options">
+              {jigsawBoundaryModes.map((mode) => (
+                <button
+                  type="button"
+                  class="jigsaw-size-option jigsaw-boundary-option"
+                  aria-pressed={boundaryMode === mode}
+                  disabled={disabled}
+                  onClick={() => onSettingsChange({ jigsawBoundaryMode: mode })}
+                  key={mode}
+                >
+                  <strong>{jigsawBoundaryModeLabels[mode]}</strong>
+                  <span>{jigsawBoundaryModeDescriptions[mode]}</span>
                 </button>
               ))}
             </div>
