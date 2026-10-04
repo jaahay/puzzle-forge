@@ -16,7 +16,7 @@ export type JigsawEdgeExplorationProbe = {
 
 const point = (x: number, y: number): JigsawEdgeExplorationPoint => ({ x, y });
 
-export const jigsawEdgeExplorationProbes = [
+export const jigsawEdgeExplorationProbes: readonly JigsawEdgeExplorationProbe[] = [
   {
     id: "compound-lock",
     label: "Compound lock",
@@ -130,7 +130,7 @@ export const jigsawEdgeExplorationProbes = [
       point(0.24, 0.2), point(0.34, 0), point(1, 0),
     ],
   },
-] as const satisfies readonly JigsawEdgeExplorationProbe[];
+];
 
 export const jigsawEdgeCarryForwardProbeIds = [
   "compound-lock",
