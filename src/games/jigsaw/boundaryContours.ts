@@ -1,6 +1,7 @@
 import type {
   JigsawBaselineGrammarId,
   JigsawBoundaryContour,
+  JigsawBoundaryMode,
   JigsawEdgeModel,
   JigsawEdgeSide,
   JigsawPiece,
@@ -9,8 +10,6 @@ import type {
 import { createRandom } from "../shared";
 import { getJigsawEdgePoints } from "./edgePaths";
 
-export type JigsawBoundaryMode = "flat" | "contoured";
-
 export const jigsawBoundaryModes = [
   "flat",
   "contoured",
@@ -18,9 +17,32 @@ export const jigsawBoundaryModes = [
 
 export const defaultJigsawBoundaryMode: JigsawBoundaryMode = "flat";
 
+export const isJigsawBoundaryMode = (
+  value: unknown,
+): value is JigsawBoundaryMode =>
+  value === "flat" || value === "contoured";
+
+export const jigsawBoundaryModeLabels = {
+  flat: "Flat",
+  contoured: "Shaped",
+} as const satisfies Record<JigsawBoundaryMode, string>;
+
+export const jigsawBoundaryModeDescriptions = {
+  flat: "Straight outside edges preserve the classic frame-first solve.",
+  contoured: "Non-flat outside edges remove the usual border-piece shortcut.",
+} as const satisfies Record<JigsawBoundaryMode, string>;
+
 export const normalizeJigsawBoundaryMode = (
   value: JigsawBoundaryMode | undefined,
 ): JigsawBoundaryMode => value ?? defaultJigsawBoundaryMode;
+
+export const getJigsawBoundaryMode = (
+  pieces: readonly JigsawPiece[],
+): JigsawBoundaryMode =>
+  pieces.some((piece) =>
+    piece.edges.some((edge) => edge.boundary && edge.contour !== undefined))
+    ? "contoured"
+    : "flat";
 
 const maximumBoundaryOverhang = 8;
 const maximumBoundaryAttempts = 8;
