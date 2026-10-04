@@ -5,11 +5,13 @@ import {
   connectorNest,
   connectorOppose,
   connectorPrimitive,
+  connectorSequence,
   getCanonicalConnectorProductionSignatures,
   getJigsawConnectorProductionStructure,
   jigsawBaselineExplorationGaps,
   jigsawConnectorCanonicalProductions,
   jigsawConnectorExplorationProbes,
+  jigsawSeamExplorationGaps,
 } from "./connectorProductionEvaluation";
 
 describe("Jigsaw connector production evaluation", () => {
@@ -55,11 +57,16 @@ describe("Jigsaw connector production evaluation", () => {
   it("proves connector composition needs more than sequence and repeat to explore the full space", () => {
     const lobe = connectorPrimitive("lobe");
     const head = connectorPrimitive("head");
+    const asymmetric = connectorSequence(
+      connectorPrimitive("outer-sweep"),
+      connectorPrimitive("scoop"),
+      connectorPrimitive("return"),
+    );
 
     expect(getJigsawConnectorProductionStructure(connectorOppose(lobe)))
       .not.toBe(getJigsawConnectorProductionStructure(lobe));
-    expect(getJigsawConnectorProductionStructure(connectorMirror(lobe)))
-      .not.toBe(getJigsawConnectorProductionStructure(lobe));
+    expect(getJigsawConnectorProductionStructure(connectorMirror(asymmetric)))
+      .not.toBe(getJigsawConnectorProductionStructure(asymmetric));
     expect(
       getJigsawConnectorProductionStructure(connectorNest(lobe, head)),
     ).not.toBe(
@@ -67,7 +74,10 @@ describe("Jigsaw connector production evaluation", () => {
     );
   });
 
-  it("records baseline-language gaps separately from connector structure", () => {
+  it("records seam-cardinality and baseline-language gaps separately from connector structure", () => {
+    expect(jigsawSeamExplorationGaps.map((gap) => gap.id)).toEqual([
+      "connector-cardinality",
+    ]);
     expect(jigsawBaselineExplorationGaps.map((gap) => gap.id)).toEqual([
       "separated-gestures",
       "longitudinal-reversal",

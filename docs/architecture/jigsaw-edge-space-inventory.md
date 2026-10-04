@@ -14,11 +14,18 @@ The inventory distinguishes three layers:
 
 The first two belong to ordinary seam exploration. The third belongs primarily to #191 and should not be smuggled into ConnectorGrammar.
 
+A fourth axis cuts across the first two: **connector cardinality**. The current `SeamProgram` always contains exactly one connector. That means two legitimate structural questions remain open before the ordinary seam space can be called mature:
+
+- can an interior seam intentionally contain **no interlocking event**, relying on course shape/image rather than a knob-like lock?
+- when one seam contains several lock events, are they still one composite ConnectorProduction or do they deserve independent seam-level ownership?
+
+The default answer should remain one connector until play evidence justifies changing that invariant.
+
 ## External cut survey
 
 A small external survey was used to challenge the current catalog rather than to copy named commercial styles.
 
-- Bob Armstrong's historical cutting-style classification describes not only knob cuts but long/thin arms and long/angular, long/round, long/jagged, long/wavy, long/bumpy, long/foot, and scroll-like cutting patterns. This is evidence that whole-boundary course and longitudinal behavior matter independently of ordinary knobs.
+- Bob Armstrong's historical cutting-style classification describes not only knob cuts but long/thin arms and long/angular, long/round, long/jagged, long/wavy, long/bumpy, long/foot, and scroll-like cutting patterns; it also describes some such cuts as less interlocking. This is evidence that whole-boundary course and connector cardinality matter independently of ordinary knobs.
 - Jack-in-the-Box Puzzles distinguishes knobby, swirly, artistic, and grid cuts; its swirly description explicitly calls out hooks, curls, swirls, and mushroom-like forms.
 - Modern ribbon-vs-random descriptions consistently distinguish regular grid-aligned interlocks from irregular/freeform cuts with varied piece shapes.
 - Whimsy/figural pieces are a topology/whole-piece phenomenon rather than evidence that ordinary four-sided seams need more connector labels.
@@ -50,6 +57,24 @@ The production connector catalog already covers a strong set of structural neigh
 The non-connector BaselineGrammar covers straight travel, same-side deflection, crossing, offset course, repetition, opposition, and longitudinal mirroring.
 
 That is enough to make the current production vocabulary strong. It is not an exhaustive basis for every ordinary seam structure.
+
+## Underexplored seam cardinality
+
+Before adding connector families, explicitly probe the seam-level cases that today's `approach -> connector -> departure` model excludes.
+
+### Connectorless interior seam
+
+A shared interior boundary may be distinctive without containing a conventional lock event at all.
+
+This is not the same as a flat seam: BaselineGrammar or a future course grammar could still produce a strong matching silhouette. Digital play also does not require physical friction to keep assembled sections together.
+
+**Priority:** high as a development-only probe. Do not change the production seam contract until its solving value is demonstrated.
+
+### Multiple connector events
+
+The connector probes below intentionally keep several local lock events inside one composite ConnectorProduction. That is the conservative model.
+
+Only promote connector cardinality above one at the `SeamProgram` level if independent event ownership materially improves generation, solving semantics, or safety. Avoid turning every local bump into a first-class connector.
 
 ## Underexplored connector neighborhoods
 
@@ -160,7 +185,7 @@ The structural prototype supports:
 - longitudinal mirroring;
 - explicit nesting.
 
-All eight current production families map cleanly into that language without requiring their family-specific runtime program types.
+The structural skeleton of all eight current production families maps cleanly into that language. Their tuned runtime parameter/program types still remain necessary for current production realization.
 
 That is enough evidence that a ConnectorProduction AST is useful as a **design/exploration language**.
 
@@ -182,9 +207,10 @@ Zero promotions is an acceptable result.
 
 ## Next exploration sequence
 
-1. Build a development-only generic realizer for the explicit connector probes, not for arbitrary unconstrained ASTs.
-2. Render the surviving connector probes beside representative BaselineGrammar approaches/departures.
-3. Extend the baseline explorer with an explicit separated-gesture experiment without changing production grammar.
-4. Compare candidates against the existing connector/baseline atlases at normal play scale.
-5. Promote only recurring, clearly irreducible survivors.
-6. Keep longitudinal reversal and nested geometry behind stronger validation until their safety model is proven.
+1. Probe one connectorless interior seam alongside the ordinary one-connector control.
+2. Build a development-only generic realizer for the explicit connector probes, not for arbitrary unconstrained ASTs.
+3. Render the surviving connector probes beside representative BaselineGrammar approaches/departures.
+4. Extend the baseline explorer with an explicit separated-gesture experiment without changing production grammar.
+5. Compare candidates against the existing connector/baseline atlases at normal play scale.
+6. Promote only recurring, clearly irreducible survivors.
+7. Keep longitudinal reversal and nested geometry behind stronger validation until their safety model is proven.

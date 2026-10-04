@@ -335,6 +335,22 @@ export const jigsawConnectorExplorationProbes = [
   },
 ] as const satisfies readonly JigsawConnectorExplorationProbe[];
 
+export type JigsawSeamExplorationGap = {
+  id: "connector-cardinality";
+  limitation: string;
+  likelyLanguageNeed: string;
+};
+
+export const jigsawSeamExplorationGaps = [
+  {
+    id: "connector-cardinality",
+    limitation:
+      "SeamProgram always contains exactly one connector slot, so connectorless interior seams and multiple separately owned connector events are not expressible at the seam level.",
+    likelyLanguageNeed:
+      "First evaluate zero/one/many connector cardinality as a seam concept; keep multiple local lock events inside one ConnectorProduction unless play evidence proves they need independent seam ownership.",
+  },
+] as const satisfies readonly JigsawSeamExplorationGap[];
+
 export type JigsawBaselineExplorationGap = {
   id: "separated-gestures" | "longitudinal-reversal" | "scale-hierarchy";
   limitation: string;
