@@ -626,6 +626,7 @@ export const App = () => {
       solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? identity.solitaireVariation : undefined,
       imageId: isImageBackedPuzzleId(selectedPuzzleId) ? identity.imageId : undefined,
       jigsawCutStyle: selectedPuzzleId === "jigsaw" ? identity.jigsawCutStyle : undefined,
+      jigsawBoundaryMode: selectedPuzzleId === "jigsaw" ? identity.jigsawBoundaryMode : undefined,
       provenance: identity.provenance,
     }, { preserveScroll: true, resourceHistory: "push" });
   };
