@@ -8,6 +8,10 @@ import type {
 } from "../catalog/types";
 import { getPuzzleImageAsset, isImageBackedPuzzleId } from "../games/imageAssets";
 import {
+  defaultJigsawBoundaryMode,
+  isJigsawBoundaryMode,
+} from "../games/jigsaw/boundaryContours";
+import {
   defaultJigsawCutStyle,
   isJigsawCutStyle,
 } from "../games/jigsaw/cutStyle";
@@ -51,6 +55,7 @@ const queryKeyOrder = [
   "unique",
   "image",
   "cut",
+  "boundary",
   "draw",
   "redeals",
   "waste",
@@ -70,6 +75,7 @@ const makeDefaultRuntimeSettings = (puzzleId: PuzzleId): GenerationRuntimeSettin
     sudokuVariation: defaultSudokuVariation,
     solitaireVariation: defaultSolitaireVariation,
     jigsawCutStyle: defaultJigsawCutStyle,
+    jigsawBoundaryMode: defaultJigsawBoundaryMode,
   };
 };
 
@@ -101,7 +107,7 @@ const allowedQueryKeys = (puzzleId: PuzzleId): ReadonlySet<string> => {
     case "logic-grid":
       return new Set(["size"]);
     case "jigsaw":
-      return new Set(["size", "image", "cut"]);
+      return new Set(["size", "image", "cut", "boundary"]);
     case "tile-swap":
     case "sliding-puzzle":
       return new Set(["size", "image"]);
@@ -152,6 +158,12 @@ const appendCanonicalQuery = (identity: GenerationIdentity) => {
         identity.jigsawCutStyle !== defaultJigsawCutStyle
       ) {
         values.set("cut", identity.jigsawCutStyle);
+      }
+      if (
+        identity.jigsawBoundaryMode &&
+        identity.jigsawBoundaryMode !== defaultJigsawBoundaryMode
+      ) {
+        values.set("boundary", identity.jigsawBoundaryMode);
       }
       break;
     }
@@ -250,6 +262,13 @@ export const canonicalizeDailyResourceQuery = (
     const cutStyle = params.get("cut");
     if (!isJigsawCutStyle(cutStyle)) return { ok: false, reason: "invalid-query" };
     settings.jigsawCutStyle = cutStyle;
+  }
+
+  if (params.has("boundary")) {
+    if (puzzleId !== "jigsaw") return { ok: false, reason: "invalid-query" };
+    const boundaryMode = params.get("boundary");
+    if (!isJigsawBoundaryMode(boundaryMode)) return { ok: false, reason: "invalid-query" };
+    settings.jigsawBoundaryMode = boundaryMode;
   }
 
   if (params.has("image")) {
