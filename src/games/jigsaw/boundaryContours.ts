@@ -22,15 +22,6 @@ export const normalizeJigsawBoundaryMode = (
   value: JigsawBoundaryMode | undefined,
 ): JigsawBoundaryMode => value ?? defaultJigsawBoundaryMode;
 
-const boundedBoundaryGrammarIds = [
-  "bow",
-  "inflection",
-  "angled-course",
-  "dogleg",
-  "wave",
-  "stepped-course",
-] as const satisfies readonly JigsawBaselineGrammarId[];
-
 const maximumBoundaryOverhang = 8;
 const maximumBoundaryAttempts = 8;
 const coordinateEpsilon = 0.001;
@@ -98,6 +89,7 @@ const segmentsIntersect = (
 
 const deriveBoundaryContour = (
   edgeSeed: string,
+  baselineGrammarIds: readonly JigsawBaselineGrammarId[],
   row: number,
   column: number,
   side: JigsawEdgeSide,
@@ -107,11 +99,15 @@ const deriveBoundaryContour = (
     `${edgeSeed}:boundary:${row}:${column}:${side}:attempt:${attempt}`,
   );
   random();
-  const grammarIndex = Math.floor(random() * boundedBoundaryGrammarIds.length);
+  const contourGrammarIds = baselineGrammarIds.filter(
+    (grammarId) => grammarId !== "straight",
+  );
+  if (contourGrammarIds.length === 0) {
+    throw new Error("Contoured Jigsaw boundaries require a non-straight baseline grammar.");
+  }
+  const grammarIndex = Math.floor(random() * contourGrammarIds.length);
   const baselineGrammarId =
-    boundedBoundaryGrammarIds[
-      Math.min(grammarIndex, boundedBoundaryGrammarIds.length - 1)
-    ];
+    contourGrammarIds[Math.min(grammarIndex, contourGrammarIds.length - 1)];
   const seedOffset = Math.floor(random() * 1_000_000);
 
   return {
@@ -122,6 +118,7 @@ const deriveBoundaryContour = (
 
 const withBoundaryContours = (
   pieces: readonly JigsawPiece[],
+  edgeModel: JigsawEdgeModel,
   edgeSeed: string,
   attempt: number,
 ): JigsawPiece[] =>
@@ -133,6 +130,7 @@ const withBoundaryContours = (
             ...edge,
             contour: deriveBoundaryContour(
               edgeSeed,
+              edgeModel.baselineGrammarIds,
               piece.row,
               piece.column,
               edge.side,
@@ -405,7 +403,7 @@ export const applyJigsawBoundaryMode = ({
 
   let lastFailure = "unknown validation failure";
   for (let attempt = 0; attempt < maximumBoundaryAttempts; attempt += 1) {
-    const candidate = withBoundaryContours(pieces, edgeSeed, attempt);
+    const candidate = withBoundaryContours(pieces, edgeModel, edgeSeed, attempt);
     const validation = validateJigsawOuterBoundary({
       pieces: candidate,
       width,
