@@ -214,6 +214,34 @@ The generic realizer allocates longitudinal space uniformly across instructions.
 
 If this proves perceptually useful, the likely abstraction is local span allocation or hierarchical sub-production—not arbitrary extra named families.
 
+## Explicit span-allocation experiment
+
+The development-only `baselineSpanExplorer.ts` tests two non-connector language gaps without weakening the production BaselineProduction algebra.
+
+It introduces an exploration-only composition layer with two term kinds:
+
+- **gesture** — an ordinary BaselineProduction realized through the existing generic production realizer, assigned a bounded longitudinal span and amplitude;
+- **run** — an explicit span-consuming quiet baseline interval.
+
+That distinction matters because production `identity` is correctly algebraic: it disappears inside `baselineSequence()`. A deliberate quiet interval has spatial extent and therefore cannot honestly be represented by identity.
+
+Four bounded probes exercise the idea:
+
+- **Separated bows** — two same-side gestures with a substantial quiet interval.
+- **Opposed pair** — separated gestures on opposite sides of the baseline.
+- **Primary / secondary** — one dominant gesture followed by a smaller subordinate gesture, testing scale hierarchy.
+- **Inflection / rest / bow** — a more complex crossing gesture, deliberate rest, then a simpler secondary gesture.
+
+Broad deterministic sweeps keep each candidate anchored, longitudinally monotonic, bounded, and free of proper self-intersection.
+
+The experiment supports two architectural conclusions:
+
+1. **Separated gestures are a real expressive gap.** If promoted later, they deserve an explicit span/run concept rather than weakening identity normalization.
+2. **Scale hierarchy can be expressed through local span/amplitude allocation without minting another named BaselineGrammar family.** Whether that deserves a production combinator remains a perceptual/product question.
+
+The experiment does not alter `JigsawBaselineProduction`, the named BaselineGrammar catalog, SeamProgram, or production generation.
+
+
 ## What is not an ordinary connector problem
 
 The following remain topology rather than seam-vocabulary work:
@@ -261,8 +289,7 @@ Zero promotions is an acceptable result.
 
 ## Next exploration sequence
 
-1. Run the common-realizer seam sweeps and remove any advanced hypothesis that fails reciprocal or whole-piece safety.
-2. Extend the baseline explorer with an explicit separated-gesture experiment without changing production grammar.
-3. Compare the safe complete seams against the existing connector/baseline atlases at normal play scale.
-4. Promote only recurring, clearly irreducible survivors.
-5. Keep true longitudinal reversal and nested/enclosed geometry behind stronger validation or topology work.
+1. Compare the safe complete connector/seam probes and the span-allocation candidates against the existing atlases at normal play scale.
+2. Probe non-connector longitudinal reversal under a dedicated stricter safety model rather than relaxing the current monotonic validator.
+3. Promote only recurring, clearly irreducible survivors.
+4. Keep nested/enclosed geometry behind topology work unless a simple-boundary realizer proves otherwise.
