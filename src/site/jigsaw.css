@@ -287,18 +287,21 @@
 }
 
 .jigsaw-cut-style-settings,
+.jigsaw-boundary-settings,
 .jigsaw-size-settings {
   display: grid;
   gap: 0.55rem;
 }
 
-.jigsaw-cut-style-options {
+.jigsaw-cut-style-options,
+.jigsaw-boundary-options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem;
 }
 
-.jigsaw-cut-style-option span {
+.jigsaw-cut-style-option span,
+.jigsaw-boundary-option span {
   line-height: 1.3;
   white-space: normal;
 }
