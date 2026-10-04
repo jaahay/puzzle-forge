@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { GeneratedPuzzle, PuzzleDifficulty, SolitaireVariation, SudokuVariation } from "../catalog/types";
+import { defaultJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
 import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
 import { generateJigsaw } from "../games/jigsaw/generate";
 import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
@@ -22,6 +23,7 @@ const baseRuntimeSettings: GenerationRuntimeSettings = {
   sudokuVariation: defaultSudokuVariation,
   solitaireVariation: defaultSolitaireVariation,
   jigsawCutStyle: defaultJigsawCutStyle,
+  jigsawBoundaryMode: defaultJigsawBoundaryMode,
 };
 
 const baseIdentity = (puzzleId: GenerationIdentity["puzzleId"]): GenerationIdentity => ({
@@ -100,6 +102,7 @@ describe("generated puzzle runtime identity", () => {
       sudokuVariation: "diagonal",
       solitaireVariation: defaultSolitaireVariation,
       jigsawCutStyle: defaultJigsawCutStyle,
+      jigsawBoundaryMode: defaultJigsawBoundaryMode,
     });
   });
 });
@@ -170,6 +173,37 @@ describe("generated puzzle identity matching", () => {
         jigsawCutStyle: "unconventional",
       }),
     ).toBe(false);
+  });
+
+  it("includes Jigsaw outer boundary mode in generated identity matching", () => {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "jigsaw-boundary",
+      width: 6,
+      height: 5,
+      imageId: defaultJigsawImageAsset.id,
+      jigsawCutStyle: "traditional",
+      jigsawBoundaryMode: "contoured",
+    });
+    const identity: GenerationIdentity = {
+      ...baseIdentity("jigsaw"),
+      seed: puzzle.seed,
+      width: puzzle.width,
+      height: puzzle.height,
+      imageId: puzzle.asset.id,
+      jigsawCutStyle: "traditional",
+      jigsawBoundaryMode: "contoured",
+    };
+
+    expect(generatedPuzzleMatchesIdentity(puzzle, identity)).toBe(true);
+    expect(
+      generatedPuzzleMatchesIdentity(puzzle, {
+        ...identity,
+        jigsawBoundaryMode: "flat",
+      }),
+    ).toBe(false);
+    expect(getGeneratedPuzzleRuntimeSettings(puzzle, baseRuntimeSettings).jigsawBoundaryMode)
+      .toBe("contoured");
   });
 
   it("includes image identity and dimensions for image-backed puzzles", () => {
