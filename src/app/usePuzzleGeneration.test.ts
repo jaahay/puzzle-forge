@@ -46,6 +46,7 @@ describe("initial puzzle generation", () => {
       solitaireVariation: undefined,
       imageId: undefined,
       jigsawCutStyle: undefined,
+      jigsawBoundaryMode: undefined,
     });
   });
 
@@ -95,6 +96,7 @@ describe("initial puzzle generation", () => {
       solitaireVariation: defaultSolitaireVariation,
       imageId: "great-wave",
       jigsawCutStyle: "unconventional" as const,
+      jigsawBoundaryMode: "contoured" as const,
     };
 
     expect(makeInitialPuzzleGenerationOptions({
@@ -107,6 +109,7 @@ describe("initial puzzle generation", () => {
       height: 5,
       imageId: "great-wave",
       jigsawCutStyle: "unconventional",
+      jigsawBoundaryMode: "contoured",
     });
   });
 
