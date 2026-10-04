@@ -9,9 +9,9 @@ import type {
 import { createGeneratedJigsawPuzzle } from "../shared";
 import {
   defaultJigsawCutStyle,
-  deriveJigsawBaselinePalette,
+  deriveJigsawBaselineCoursePalette,
+  jigsawEdgeProfileIds,
 } from "./cutStyle";
-import { jigsawConnectorGrammarIds } from "./connectorGrammar";
 import { generateJigsaw } from "./generate";
 import { defaultJigsawImageAsset } from "./imageAssets";
 
@@ -61,7 +61,7 @@ describe("generateJigsaw", () => {
     expect(puzzle.edgeModel.cutStyle).toBe(defaultJigsawCutStyle);
     expect(puzzle.edgeModel).toEqual({
       cutStyle: defaultJigsawCutStyle,
-      baselineGrammarIds: deriveJigsawBaselinePalette(
+      baselineCourseIds: deriveJigsawBaselineCoursePalette(
         defaultJigsawCutStyle,
         `jigsaw:phase-one-seed:4x3:${defaultJigsawImageAsset.id}:edges:${defaultJigsawCutStyle}`,
       ),
@@ -80,8 +80,8 @@ describe("generateJigsaw", () => {
     expect(unconventional.edgeModel.cutStyle).toBe("unconventional");
     expect(traditional.id).not.toBe(unconventional.id);
     expect(traditional.checksum).not.toBe(unconventional.checksum);
-    expect(traditional.edgeModel.baselineGrammarIds).not.toEqual(
-      unconventional.edgeModel.baselineGrammarIds,
+    expect(traditional.edgeModel.baselineCourseIds).not.toEqual(
+      unconventional.edgeModel.baselineCourseIds,
     );
   });
 
@@ -120,7 +120,7 @@ describe("generateJigsaw", () => {
     expect(puzzle.tiles).toHaveLength(1024);
   });
 
-  it("uses exactly one connector family throughout each generated game", () => {
+  it("uses exactly one edge profile throughout each generated game", () => {
     for (const seed of ["one-family-a", "one-family-b", "one-family-c"]) {
       const puzzle = generateJigsaw({
         puzzleId: "jigsaw",
@@ -139,7 +139,7 @@ describe("generateJigsaw", () => {
     }
   });
 
-  it("keeps Traditional connector generation inside its familiar palette", () => {
+  it("keeps Traditional edge generation inside its familiar palette", () => {
     const selected = new Set<string>();
 
     for (let index = 0; index < 160; index += 1) {
@@ -163,7 +163,7 @@ describe("generateJigsaw", () => {
     );
   });
 
-  it("lets Unconventional connector generation reach the full vocabulary", () => {
+  it("lets Unconventional edge generation reach the full production vocabulary", () => {
     const selected = new Set<string>();
 
     for (let index = 0; index < 320; index += 1) {
@@ -182,7 +182,7 @@ describe("generateJigsaw", () => {
       selected.add(firstInteriorEdge.profileId);
     }
 
-    expect(selected).toEqual(new Set(jigsawConnectorGrammarIds));
+    expect(selected).toEqual(new Set(jigsawEdgeProfileIds));
   });
 
   it("varies the coherent baseline sub-palette across puzzle identities", () => {
@@ -199,7 +199,7 @@ describe("generateJigsaw", () => {
           height: 6,
           imageId: defaultJigsawImageAsset.id,
           jigsawCutStyle: "traditional",
-        }).edgeModel.baselineGrammarIds.join("|"),
+        }).edgeModel.baselineCourseIds.join("|"),
       );
       unconventionalPalettes.add(
         generateJigsaw({
@@ -209,7 +209,7 @@ describe("generateJigsaw", () => {
           height: 6,
           imageId: defaultJigsawImageAsset.id,
           jigsawCutStyle: "unconventional",
-        }).edgeModel.baselineGrammarIds.join("|"),
+        }).edgeModel.baselineCourseIds.join("|"),
       );
     }
 

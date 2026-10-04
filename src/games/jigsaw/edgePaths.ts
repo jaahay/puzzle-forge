@@ -1,5 +1,6 @@
 import type {
   JigsawBoundaryEdge,
+  JigsawConnectorGrammarId,
   JigsawEdgeModel,
   JigsawEdgeProfileId,
   JigsawEdgeSide,
@@ -12,6 +13,10 @@ import {
   realizeJigsawBaselineProgram,
   type JigsawBaselinePoint,
 } from "./baselineGrammar";
+import {
+  getJigsawBaselineCourseDefinition,
+  realizeJigsawBaselineCourseProgram,
+} from "./baselineCourse";
 import {
   deriveJigsawConnectorProgram,
   getJigsawConnectorGrammarDefinition,
@@ -65,7 +70,7 @@ const mirrorAnchors = (points: readonly JigsawEdgePoint[]) =>
   [...points].reverse().map((candidate) => point(-candidate.x, candidate.y));
 
 type CanonicalSeamParts = {
-  program: ReturnType<typeof deriveJigsawSeamProgram>;
+  program: import("./seamProgram").JigsawConnectedSeamProgram;
   approach: JigsawEdgePoint[];
   connector: JigsawEdgePoint[];
   departure: JigsawEdgePoint[];
@@ -80,18 +85,24 @@ const placeBaselinePoints = (
   corner: "start" | "end",
 ): JigsawEdgePoint[] => {
   const span = Math.max(0, endX - startX);
-  const depthScale = Math.min(1, span / 18);
+  let depthScale = Math.min(1, span / 18);
 
-  return points.map((candidate) => {
+  for (const candidate of points) {
+    const depth = Math.abs(candidate.y);
+    if (depth <= Number.EPSILON) continue;
+
     const x = startX + candidate.x * span;
-    const rawY = candidate.y * depthScale;
     const cornerDistance = corner === "start" ? x : 100 - x;
     const maximumDepth = Math.max(0, cornerDistance * baselineCornerSlope);
-    const y =
-      Math.sign(rawY) * Math.min(Math.abs(rawY), maximumDepth);
+    depthScale = Math.min(depthScale, maximumDepth / depth);
+  }
 
-    return point(x, y);
-  });
+  return points.map((candidate) =>
+    point(
+      startX + candidate.x * span,
+      candidate.y * depthScale,
+    ),
+  );
 };
 
 const placeBoundaryBaselinePoints = (
@@ -109,7 +120,7 @@ const placeBoundaryBaselinePoints = (
   });
 
 const getCanonicalConnectorPoints = (
-  profileId: JigsawEdgeProfileId,
+  profileId: JigsawConnectorGrammarId,
   seedOffset: number,
 ): JigsawEdgePoint[] => {
   const grammar = getJigsawConnectorGrammarDefinition(profileId);
@@ -147,7 +158,7 @@ const getCanonicalConnectorPoints = (
 };
 
 const getCanonicalSeamParts = (
-  profileId: JigsawEdgeProfileId,
+  profileId: JigsawConnectorGrammarId,
   seedOffset: number,
   edgeModel: JigsawEdgeModel,
 ): CanonicalSeamParts => {
@@ -159,14 +170,14 @@ const getCanonicalSeamParts = (
   return {
     program,
     approach: placeBaselinePoints(
-      realizeJigsawBaselineProgram(program.approach),
+      realizeJigsawBaselineCourseProgram(program.approach),
       0,
       connectorStart,
       "start",
     ),
     connector,
     departure: placeBaselinePoints(
-      realizeJigsawBaselineProgram(program.departure),
+      realizeJigsawBaselineCourseProgram(program.departure),
       connectorEnd,
       100,
       "end",
@@ -251,7 +262,7 @@ const segmentsFromPoints = (
     : curvedSegmentsFromPoints(points, curveTension, horizontalEndpoints);
 
 export const getJigsawCanonicalConnectorPoints = (
-  profileId: JigsawEdgeProfileId,
+  profileId: JigsawConnectorGrammarId,
   seedOffset: number,
 ): JigsawEdgePoint[] =>
   getCanonicalConnectorPoints(profileId, seedOffset).map(normalizePoint);
@@ -287,20 +298,36 @@ const getCanonicalEdgeSegments = (
   seedOffset: number,
   edgeModel: JigsawEdgeModel,
 ): JigsawEdgeSegment[] => {
+  if (profileId === "connectorless-wave") {
+    const seam = deriveJigsawSeamProgram(profileId, seedOffset, edgeModel);
+    const definition = getJigsawBaselineCourseDefinition(
+      seam.course.baselineCourseId,
+    );
+    const points = placeBoundaryBaselinePoints(
+      realizeJigsawBaselineCourseProgram(seam.course),
+    );
+    return segmentsFromPoints(
+      points,
+      definition.renderMode,
+      definition.curveTension,
+      definition.renderMode === "smooth",
+    );
+  }
+
   const seam = getCanonicalSeamParts(profileId, seedOffset, edgeModel);
   const connectorGrammar = getJigsawConnectorGrammarDefinition(profileId);
-  const approachGrammar = getJigsawBaselineGrammarDefinition(
-    seam.program.approach.baselineGrammarId,
+  const approachCourse = getJigsawBaselineCourseDefinition(
+    seam.program.approach.baselineCourseId,
   );
-  const departureGrammar = getJigsawBaselineGrammarDefinition(
-    seam.program.departure.baselineGrammarId,
+  const departureCourse = getJigsawBaselineCourseDefinition(
+    seam.program.departure.baselineCourseId,
   );
 
   return [
     ...segmentsFromPoints(
       seam.approach,
-      approachGrammar.renderMode,
-      approachGrammar.curveTension,
+      approachCourse.renderMode,
+      approachCourse.curveTension,
       true,
     ),
     ...segmentsFromPoints(
@@ -311,8 +338,8 @@ const getCanonicalEdgeSegments = (
     ),
     ...segmentsFromPoints(
       seam.departure,
-      departureGrammar.renderMode,
-      departureGrammar.curveTension,
+      departureCourse.renderMode,
+      departureCourse.curveTension,
       true,
     ),
   ];

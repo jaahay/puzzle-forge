@@ -318,7 +318,7 @@ After bundled image-backed puzzles work, consider source expansion in this order
 
 Do not make remote URL or upload support block the first bundled-image implementation.
 
-## Promotion criteria
+## Playable readiness criteria
 
 Jigsaw can move from `prototype` to `playable` when:
 

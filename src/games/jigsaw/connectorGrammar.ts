@@ -83,6 +83,27 @@ type StackedLockProgram = {
   crown: number;
 };
 
+type CompoundLockProgram = {
+  connectorGrammarId: "compound-lock";
+  events: readonly ["lobe", "saddle", "neck", "undercut", "head", "undercut", "neck"];
+  bulbSeed: number;
+  headSeed: number;
+};
+
+type OpposedDualLockProgram = {
+  connectorGrammarId: "opposed-dual-lock";
+  events: readonly ["neck", "head", "cross-baseline", "opposed-neck", "opposed-head"];
+  firstSeed: number;
+  secondSeed: number;
+};
+
+type NotchedHeadProgram = {
+  connectorGrammarId: "notched-head";
+  events: readonly ["neck", "undercut", "head", "notch", "undercut", "neck"];
+  headSeed: number;
+  notchFactor: number;
+};
+
 export type JigsawConnectorProgram =
   | ClassicBulbProgram
   | NeckedHeadProgram
@@ -91,7 +112,10 @@ export type JigsawConnectorProgram =
   | SerpentineProgram
   | TerraceProgram
   | ZigzagProgram
-  | StackedLockProgram;
+  | StackedLockProgram
+  | CompoundLockProgram
+  | OpposedDualLockProgram
+  | NotchedHeadProgram;
 
 export const jigsawConnectorGrammarIds = [
   "classic-bulb",
@@ -102,6 +126,9 @@ export const jigsawConnectorGrammarIds = [
   "terrace",
   "zigzag",
   "stacked-lock",
+  "compound-lock",
+  "opposed-dual-lock",
+  "notched-head",
 ] as const satisfies readonly JigsawConnectorGrammarId[];
 
 export const jigsawConnectorGrammarCatalog = {
@@ -209,6 +236,45 @@ export const jigsawConnectorGrammarCatalog = {
     cornerBuffer: 9,
     lean: 0.03,
   },
+  "compound-lock": {
+    id: "compound-lock",
+    label: "Compound lock",
+    description: "A bulb and a necked head form two distinct lock events inside one connector.",
+    production: "lobe > saddle > neck > undercut > head > undercut > neck",
+    renderMode: "smooth",
+    curveTension: 0.07,
+    mirrorable: true,
+    width: [56, 64],
+    depth: [18, 22],
+    cornerBuffer: 14,
+    lean: 0.03,
+  },
+  "opposed-dual-lock": {
+    id: "opposed-dual-lock",
+    label: "Opposed dual lock",
+    description: "Two complete necked locks occupy opposite sides of the nominal edge.",
+    production: "neck > head > cross-baseline > opposed-neck > opposed-head",
+    renderMode: "angular",
+    curveTension: 0,
+    mirrorable: true,
+    width: [56, 62],
+    depth: [18, 22],
+    cornerBuffer: 14,
+    lean: 0,
+  },
+  "notched-head": {
+    id: "notched-head",
+    label: "Notched head",
+    description: "A necked head carries a singular central cleft as an additional matching clue.",
+    production: "neck > undercut > head > notch > undercut > neck",
+    renderMode: "angular",
+    curveTension: 0,
+    mirrorable: false,
+    width: [56, 66],
+    depth: [19, 24],
+    cornerBuffer: 12,
+    lean: 0.02,
+  },
 } as const satisfies Record<JigsawConnectorGrammarId, JigsawConnectorGrammarDefinition>;
 
 const seededUnit = (seedOffset: number, salt: number) => {
@@ -229,6 +295,28 @@ const repeatedEvents = (
   Array.from({ length: count }, (_, index) =>
     index === count - 1 ? [first] : [first, second],
   ).flat();
+
+const deriveRoleSeed = (seedOffset: number, salt: number) =>
+  Math.imul((seedOffset ^ salt) >>> 0, 1_597_334_677) >>> 0;
+
+const placeConnectorSubspan = (
+  points: readonly JigsawConnectorPoint[],
+  start: number,
+  end: number,
+  depthScale: number,
+  normalDirection: -1 | 1 = 1,
+): JigsawConnectorPoint[] =>
+  points.map((candidate) =>
+    point(
+      start + ((candidate.x + 1) / 2) * (end - start),
+      candidate.y * depthScale * normalDirection,
+    ),
+  );
+
+const joinConnectorPaths = (
+  ...parts: readonly (readonly JigsawConnectorPoint[])[]
+): JigsawConnectorPoint[] =>
+  parts.flatMap((part, index) => index === 0 ? [...part] : part.slice(1));
 
 export const deriveJigsawConnectorProgram = (
   connectorGrammarId: JigsawConnectorGrammarId,
@@ -302,6 +390,27 @@ export const deriveJigsawConnectorProgram = (
         waist: range(seedOffset, 0x92b2, 0.16, 0.24),
         upperChamber: range(seedOffset, 0x92b3, 0.36, 0.46),
         crown: range(seedOffset, 0x92b4, 1.1, 1.2),
+      };
+    case "compound-lock":
+      return {
+        connectorGrammarId,
+        events: ["lobe", "saddle", "neck", "undercut", "head", "undercut", "neck"],
+        bulbSeed: deriveRoleSeed(seedOffset, 0xa301),
+        headSeed: deriveRoleSeed(seedOffset, 0xa302),
+      };
+    case "opposed-dual-lock":
+      return {
+        connectorGrammarId,
+        events: ["neck", "head", "cross-baseline", "opposed-neck", "opposed-head"],
+        firstSeed: deriveRoleSeed(seedOffset, 0xa401),
+        secondSeed: deriveRoleSeed(seedOffset, 0xa402),
+      };
+    case "notched-head":
+      return {
+        connectorGrammarId,
+        events: ["neck", "undercut", "head", "notch", "undercut", "neck"],
+        headSeed: deriveRoleSeed(seedOffset, 0xa501),
+        notchFactor: range(seedOffset, 0xa502, 0.52, 0.68),
       };
   }
 };
@@ -450,6 +559,60 @@ export const realizeJigsawConnectorProgram = (
         point(0.24, 0),
         point(1, 0),
       ];
+    case "compound-lock": {
+      const bulb = placeConnectorSubspan(
+        realizeJigsawConnectorProgram(
+          deriveJigsawConnectorProgram("classic-bulb", program.bulbSeed),
+        ),
+        -1,
+        -0.15,
+        0.72,
+      );
+      const head = placeConnectorSubspan(
+        realizeJigsawConnectorProgram(
+          deriveJigsawConnectorProgram("necked-head", program.headSeed),
+        ),
+        -0.15,
+        1,
+        0.86,
+      );
+      return joinConnectorPaths(bulb, head);
+    }
+    case "opposed-dual-lock": {
+      const first = placeConnectorSubspan(
+        realizeJigsawConnectorProgram(
+          deriveJigsawConnectorProgram("necked-head", program.firstSeed),
+        ),
+        -1,
+        0,
+        0.78,
+      );
+      const second = placeConnectorSubspan(
+        realizeJigsawConnectorProgram(
+          deriveJigsawConnectorProgram("necked-head", program.secondSeed),
+        ),
+        0,
+        1,
+        0.78,
+        -1,
+      );
+      return joinConnectorPaths(first, second);
+    }
+    case "notched-head": {
+      const points = realizeJigsawConnectorProgram(
+        deriveJigsawConnectorProgram("necked-head", program.headSeed),
+      );
+      const crownIndex = points.reduce(
+        (bestIndex, candidate, index) =>
+          candidate.y > points[bestIndex]!.y ? index : bestIndex,
+        0,
+      );
+      return points.map((candidate, index) =>
+        index === crownIndex
+          ? point(candidate.x, candidate.y * program.notchFactor)
+          : candidate,
+      );
+    }
   }
 };
 

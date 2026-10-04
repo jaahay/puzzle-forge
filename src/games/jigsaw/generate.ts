@@ -12,9 +12,9 @@ import { createGeneratedJigsawPuzzle, createRandom, normalizeDimension, normaliz
 import { jigsawMaximumAxis, jigsawMinimumAxis } from "./size";
 import {
   defaultJigsawCutStyle,
-  deriveJigsawBaselinePalette,
+  deriveJigsawBaselineCoursePalette,
   normalizeJigsawCutStyle,
-  selectJigsawConnectorGrammarForCutStyle,
+  selectJigsawEdgeProfileForCutStyle,
 } from "./cutStyle";
 import {
   applyJigsawBoundaryMode,
@@ -142,14 +142,14 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
   const solvedIndexes = Array.from({ length: boundedWidth * boundedHeight }, (_, index) => index);
   const shuffleSeed = `jigsaw:${normalizedSeed}:${boundedWidth}x${boundedHeight}:${imageIdentity}`;
   const edgeSeed = `${shuffleSeed}:${edgeIdentity}`;
-  const baselineGrammarIds = deriveJigsawBaselinePalette(cutStyle, edgeSeed);
+  const baselineCourseIds = deriveJigsawBaselineCoursePalette(cutStyle, edgeSeed);
   const edgeModel = {
     cutStyle,
-    baselineGrammarIds: [...baselineGrammarIds],
+    baselineCourseIds: [...baselineCourseIds],
   };
   const profileRandom = createRandom(`${edgeSeed}:profile`);
   profileRandom();
-  const profileId = selectJigsawConnectorGrammarForCutStyle(
+  const profileId = selectJigsawEdgeProfileForCutStyle(
     cutStyle,
     profileRandom(),
   );

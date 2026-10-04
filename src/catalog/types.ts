@@ -166,6 +166,19 @@ export type JigsawBaselineGrammarId =
   | "dogleg"
   | "wave"
   | "stepped-course";
+export type JigsawBaselineSpanCourseId =
+  | "separated-bows"
+  | "opposed-pair"
+  | "primary-secondary"
+  | "inflection-rest-bow";
+export type JigsawBaselineReversalCourseId =
+  | "same-side-hairpin"
+  | "opposed-hairpin"
+  | "counter-hook";
+export type JigsawBaselineCourseId =
+  | JigsawBaselineGrammarId
+  | JigsawBaselineSpanCourseId
+  | JigsawBaselineReversalCourseId;
 export type JigsawConnectorGrammarId =
   | "classic-bulb"
   | "necked-head"
@@ -174,8 +187,13 @@ export type JigsawConnectorGrammarId =
   | "serpentine"
   | "terrace"
   | "zigzag"
-  | "stacked-lock";
-export type JigsawEdgeProfileId = JigsawConnectorGrammarId;
+  | "stacked-lock"
+  | "compound-lock"
+  | "opposed-dual-lock"
+  | "notched-head";
+export type JigsawEdgeProfileId =
+  | JigsawConnectorGrammarId
+  | "connectorless-wave";
 
 type JigsawPieceEdgeBase = {
   edgeId: string;
@@ -210,7 +228,7 @@ export type JigsawPieceEdge = JigsawBoundaryEdge | JigsawInteriorEdge;
 
 export type JigsawEdgeModel = {
   cutStyle: JigsawCutStyle;
-  baselineGrammarIds: readonly JigsawBaselineGrammarId[];
+  baselineCourseIds: readonly JigsawBaselineCourseId[];
 };
 
 export type TilePuzzlePiece = {
