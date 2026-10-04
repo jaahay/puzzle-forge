@@ -29,6 +29,7 @@ describe("persisted next-puzzle preferences", () => {
       imageId: "great-wave",
       jigsawSizeSelection: "Custom" as const,
       jigsawCutStyle: "unconventional" as const,
+      jigsawBoundaryMode: "contoured" as const,
     };
     const drafts = parseNextPuzzleDraftCache({
       schemaVersion: 1,
@@ -48,6 +49,7 @@ describe("persisted next-puzzle preferences", () => {
           height: 5,
           imageId: "great-wave",
           jigsawCutStyle: "traditional",
+          jigsawBoundaryMode: "flat",
         },
       },
     });
@@ -66,6 +68,7 @@ describe("persisted next-puzzle preferences", () => {
           imageId: "great-wave",
           jigsawSizeSelection: "Huge",
           jigsawCutStyle: "traditional",
+          jigsawBoundaryMode: "flat",
         },
       },
     });
@@ -91,6 +94,39 @@ describe("persisted next-puzzle preferences", () => {
     expect(drafts).toEqual({});
   });
 
+  it("rejects missing or unknown Jigsaw boundary mode", () => {
+    const missing = parseNextPuzzleDraftCache({
+      schemaVersion: 1,
+      drafts: {
+        jigsaw: {
+          ...zeroKillerDraft,
+          width: 6,
+          height: 5,
+          imageId: "great-wave",
+          jigsawSizeSelection: "Custom",
+          jigsawCutStyle: "traditional",
+        },
+      },
+    });
+    const unknown = parseNextPuzzleDraftCache({
+      schemaVersion: 1,
+      drafts: {
+        jigsaw: {
+          ...zeroKillerDraft,
+          width: 6,
+          height: 5,
+          imageId: "great-wave",
+          jigsawSizeSelection: "Custom",
+          jigsawCutStyle: "traditional",
+          jigsawBoundaryMode: "organic",
+        },
+      },
+    });
+
+    expect(missing).toEqual({});
+    expect(unknown).toEqual({});
+  });
+
   it("rejects artwork that is unknown or attached to a non-image puzzle", () => {
     const drafts = parseNextPuzzleDraftCache({
       schemaVersion: 1,
@@ -102,6 +138,7 @@ describe("persisted next-puzzle preferences", () => {
           imageId: "not-an-asset",
           jigsawSizeSelection: "Custom",
           jigsawCutStyle: "traditional",
+          jigsawBoundaryMode: "flat",
         },
         sudoku: { ...zeroKillerDraft, imageId: "great-wave" },
       },
