@@ -37,12 +37,10 @@ import {
 } from "../games/jigsaw/history";
 import { getJigsawPinchCamera, type JigsawPinchPair, type JigsawPinchPoint } from "../games/jigsaw/pinch";
 import {
-  createJigsawBoundsFitCamera,
   createJigsawFitCamera,
   createJigsawOccupiedFitCamera,
   createJigsawWorkingFitCamera,
   createJigsawWorldLayout,
-  getJigsawBoardBounds,
   getJigsawCameraTransform,
   getJigsawPlacementPosition,
   isUsableJigsawViewport,
@@ -250,16 +248,6 @@ export const TilePuzzlePreview = ({
     puzzleWidth: puzzle.width,
     puzzleHeight: puzzle.height,
   }), [puzzle.asset.intrinsicHeight, puzzle.asset.intrinsicWidth, puzzle.height, puzzle.width]);
-  const boardBounds = useMemo(
-    () => getJigsawBoardBounds(
-      layout,
-      puzzle.tiles,
-      puzzle.width,
-      puzzle.height,
-      puzzle.edgeModel,
-    ),
-    [layout, puzzle.edgeModel, puzzle.height, puzzle.tiles, puzzle.width],
-  );
   const coarseSections = useMemo(
     () => shouldOfferJigsawCoarseSections(puzzle.tiles.length)
       ? createJigsawCoarseSections(puzzle.tiles, puzzle.width, puzzle.height)
@@ -456,14 +444,7 @@ export const TilePuzzlePreview = ({
     if (!isUsableJigsawViewport(viewport)) return;
     const insets = getCurrentFitInsets();
     if (target === "board") {
-      setCamera(createJigsawBoundsFitCamera(
-        layout,
-        viewport,
-        boardBounds,
-        32,
-        undefined,
-        insets,
-      ));
+      setCamera(createJigsawFitCamera(layout, viewport, "board", 32, insets));
       return;
     }
 
