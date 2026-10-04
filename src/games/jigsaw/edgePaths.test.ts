@@ -17,7 +17,10 @@ import {
   getJigsawBaselineCourseDefinition,
   jigsawBaselineCourseIds,
 } from "./baselineCourse";
-import { deriveJigsawBaselineCoursePalette } from "./cutStyle";
+import {
+  deriveJigsawBaselineCoursePalette,
+  jigsawEdgeProfileIds,
+} from "./cutStyle";
 import { jigsawConnectorGrammarIds } from "./connectorGrammar";
 import { deriveJigsawSeamProgram } from "./seamProgram";
 import { generateJigsaw } from "./generate";
@@ -558,7 +561,7 @@ describe("Jigsaw edge paths", () => {
       ["blank", "tab", "blank", "tab"],
     ];
 
-    for (const profileId of jigsawConnectorGrammarIds) {
+    for (const profileId of jigsawEdgeProfileIds) {
       for (const seedOffset of [7, 123, 8_001, 456_789]) {
         for (const polarities of polarityPatterns) {
           const piece = makePiece([
@@ -583,7 +586,7 @@ describe("Jigsaw edge paths", () => {
       ["blank", "blank", "blank", "blank"],
     ];
 
-    for (const profileId of jigsawConnectorGrammarIds) {
+    for (const profileId of jigsawEdgeProfileIds) {
       for (const seedOffset of broadPieceSeedOffsets) {
         for (const polarities of polarityPatterns) {
           const piece = makePiece([
@@ -601,6 +604,39 @@ describe("Jigsaw edge paths", () => {
       }
     }
   });
+
+  it("keeps every baseline course composable with every connected profile without pairwise exceptions", () => {
+    const regressionSeeds = [1, 17, 991, 8_001, 123_456, 456_789, 999_999];
+    const polarityPatterns: Array<readonly JigsawInteriorEdge["polarity"][]> = [
+      ["tab", "tab", "tab", "tab"],
+      ["blank", "blank", "blank", "blank"],
+    ];
+
+    for (const courseId of jigsawBaselineCourseIds) {
+      const edgeModel: JigsawEdgeModel = {
+        cutStyle: "unconventional",
+        baselineCourseIds: [courseId],
+      };
+
+      for (const profileId of jigsawConnectorGrammarIds) {
+        for (const seedOffset of regressionSeeds) {
+          for (const polarities of polarityPatterns) {
+            const piece = makePiece([
+              makeInteriorEdge({ side: "top", profileId, polarity: polarities[0], seedOffset }),
+              makeInteriorEdge({ side: "right", profileId, polarity: polarities[1], seedOffset: seedOffset + 1 }),
+              makeInteriorEdge({ side: "bottom", profileId, polarity: polarities[2], seedOffset: seedOffset + 2 }),
+              makeInteriorEdge({ side: "left", profileId, polarity: polarities[3], seedOffset: seedOffset + 3 }),
+            ]);
+
+            expectNoSelfIntersection(
+              getJigsawPieceOutlinePoints(piece, edgeModel),
+              `${courseId} with ${profileId} seed ${seedOffset} polarities ${polarities.join("/")}`,
+            );
+          }
+        }
+      }
+    }
+  }, 30_000);
 
   it("keeps generated one-family boards free of crossing piece outlines", () => {
     for (const seed of ["mixed-outline-a", "mixed-outline-b"]) {

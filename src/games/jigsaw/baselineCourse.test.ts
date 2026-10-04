@@ -13,13 +13,16 @@ import {
 } from "./baselineGrammar";
 
 describe("Jigsaw baseline course vocabulary", () => {
-  it("contains the canonical grammar plus all shipped span courses", () => {
+  it("contains the canonical grammar plus all shipped span and reversal courses", () => {
     expect(jigsawBaselineCourseIds).toEqual([
       ...jigsawBaselineGrammarIds,
       "separated-bows",
       "opposed-pair",
       "primary-secondary",
       "inflection-rest-bow",
+      "same-side-hairpin",
+      "opposed-hairpin",
+      "counter-hook",
     ]);
   });
 
@@ -35,6 +38,30 @@ describe("Jigsaw baseline course vocabulary", () => {
             deriveJigsawBaselineProgram(grammarId, seedOffset),
           ),
         );
+      }
+    }
+  });
+
+  it("keeps every reversal course as a genuine bounded longitudinal backtrack", () => {
+    const reversalIds = [
+      "same-side-hairpin",
+      "opposed-hairpin",
+      "counter-hook",
+    ] as const;
+
+    for (const courseId of reversalIds) {
+      for (const seedOffset of [1, 17, 991, 8_001, 123_456, 456_789, 999_999]) {
+        const points = realizeJigsawBaselineCourseProgram(
+          deriveJigsawBaselineCourseProgram(courseId, seedOffset),
+        );
+        expect(
+          points.some(
+            (candidate, index) =>
+              index > 0 && candidate.x < points[index - 1]!.x - 0.01,
+          ),
+        ).toBe(true);
+        expect(points[1]).toMatchObject({ y: 0 });
+        expect(points.at(-2)).toMatchObject({ y: 0 });
       }
     }
   });

@@ -85,18 +85,24 @@ const placeBaselinePoints = (
   corner: "start" | "end",
 ): JigsawEdgePoint[] => {
   const span = Math.max(0, endX - startX);
-  const depthScale = Math.min(1, span / 18);
+  let depthScale = Math.min(1, span / 18);
 
-  return points.map((candidate) => {
+  for (const candidate of points) {
+    const depth = Math.abs(candidate.y);
+    if (depth <= Number.EPSILON) continue;
+
     const x = startX + candidate.x * span;
-    const rawY = candidate.y * depthScale;
     const cornerDistance = corner === "start" ? x : 100 - x;
     const maximumDepth = Math.max(0, cornerDistance * baselineCornerSlope);
-    const y =
-      Math.sign(rawY) * Math.min(Math.abs(rawY), maximumDepth);
+    depthScale = Math.min(depthScale, maximumDepth / depth);
+  }
 
-    return point(x, y);
-  });
+  return points.map((candidate) =>
+    point(
+      startX + candidate.x * span,
+      candidate.y * depthScale,
+    ),
+  );
 };
 
 const placeBoundaryBaselinePoints = (

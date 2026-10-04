@@ -171,9 +171,14 @@ export type JigsawBaselineSpanCourseId =
   | "opposed-pair"
   | "primary-secondary"
   | "inflection-rest-bow";
+export type JigsawBaselineReversalCourseId =
+  | "same-side-hairpin"
+  | "opposed-hairpin"
+  | "counter-hook";
 export type JigsawBaselineCourseId =
   | JigsawBaselineGrammarId
-  | JigsawBaselineSpanCourseId;
+  | JigsawBaselineSpanCourseId
+  | JigsawBaselineReversalCourseId;
 export type JigsawConnectorGrammarId =
   | "classic-bulb"
   | "necked-head"
