@@ -7,7 +7,7 @@ Issue #229 established the executable grammar machinery now used by ordinary Jig
 The production system separates:
 
 1. **BaselineGrammar** — the canonical algebraic language for straight, deflecting, crossing, offset, repeated, opposed, and mirrored course structure.
-2. **BaselineCourse** — the product course vocabulary. It delegates canonical courses to BaselineGrammar and owns the shipped span-allocation courses whose semantics cannot be represented honestly by the canonical AST.
+2. **BaselineCourse** — the product course vocabulary. It delegates canonical courses to BaselineGrammar and owns shipped span-allocation and bounded-reversal courses whose semantics cannot be represented honestly by the canonical AST.
 3. **ConnectorGrammar** — the interlocking-event vocabulary, including single-event, repeated, compound, opposed, and notched structures.
 4. **SeamProgram** — composition of approach/course, connector profile, and departure/course, with an explicit connectorless seam form.
 5. **Cut style** — product policy over the production vocabularies. Traditional is restrained; Unconventional can reach the full production set.
@@ -18,7 +18,9 @@ The production system separates:
 
 The generic BaselineProduction realizer is now production infrastructure because span-based BaselineCourse families use it to realize their component gestures.
 
-A deliberate quiet run is not represented by algebraic `identity`; it consumes longitudinal span at the BaselineCourse layer. Bounded longitudinal-reversal experiments did not survive product-level whole-piece safety once embedded into ordinary seams, so they are not retained as a second vocabulary.
+A deliberate quiet run is not represented by algebraic `identity`; it consumes longitudinal span at the BaselineCourse layer. Bounded longitudinal reversal is also a BaselineCourse concern so the canonical BaselineProduction validator can preserve its monotonic invariant.
+
+Approach/departure placement is topology-preserving: the course is mapped affinely into its longitudinal span and receives one uniform depth scale chosen to fit the corner envelope. It is never pointwise clipped. A locally simple reversal therefore stays simple after seam embedding, while explicit quiet runways keep the fold away from both the piece corner and connector join.
 
 ## Connector structure
 
@@ -35,6 +37,8 @@ All product edge structure is derived from puzzle/seam seeds. Safety is enforced
 - complete piece outlines;
 - cut-style palette reachability;
 - connectorless seams;
-- span allocation.
+- span allocation;
+- bounded reversal geometry;
+- every BaselineCourse combined with every connected EdgeProfile across known regression seeds and both all-tab/all-blank whole-piece extremes.
 
 There is no separate candidate lifecycle in the architecture. If a future edge structure is worth keeping, it should enter the production vocabulary in the same change that makes it safely exercisable by generated puzzles.
