@@ -62,10 +62,14 @@ const makeJigsawEdgeModelChecksumPart = (edgeModel: JigsawEdgeModel) =>
   `edge-model:${edgeModel.cutStyle}:${edgeModel.baselineGrammarIds.join("|")}`;
 
 const makeJigsawTileChecksumPart = (tile: JigsawPiece) => {
-  const edgeParts = tile.edges.map(
-    (edge) =>
-      `${edge.edgeId}:${edge.side}:${edge.neighborPieceId ?? "none"}:${edge.neighborEdgeId ?? "none"}:${edge.boundary ? "boundary" : "interior"}:${edge.profileId ?? "flat"}:${edge.polarity}:${edge.seedOffset}`,
-  );
+  const edgeParts = tile.edges.map((edge) => {
+    const contourPart =
+      edge.boundary && edge.contour
+        ? `:${edge.contour.baselineGrammarId}:${edge.contour.seedOffset}`
+        : ":none";
+
+    return `${edge.edgeId}:${edge.side}:${edge.neighborPieceId ?? "none"}:${edge.neighborEdgeId ?? "none"}:${edge.boundary ? "boundary" : "interior"}:${edge.profileId ?? "flat"}:${edge.polarity}:${edge.seedOffset}${contourPart}`;
+  });
 
   return `${tile.id}:${tile.currentIndex}:${tile.solvedIndex}:${edgeParts.join("|")}`;
 };
