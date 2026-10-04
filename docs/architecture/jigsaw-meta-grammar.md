@@ -269,10 +269,11 @@ Structural and geometric programs remain deterministic derived state unless a fu
 The bounded sequence for #229 is:
 
 1. **Semantic compiler** — complete.
-2. **Geometry compiler contract** — this document.
-3. **Development-only generic baseline realization** — next implementation target.
-4. **Validation and candidate rejection**.
-5. **Bounded explorer/gallery**.
-6. **Connector AST evaluation**.
+2. **Geometry compiler contract** — complete.
+3. **Development-only generic baseline realization** — complete.
+4. **Validation and candidate rejection** — complete.
+5. **Bounded derivation/explorer core** — complete.
+6. **Gallery / visual inspection of surviving candidates** — next implementation target.
+7. **Connector AST evaluation**.
 
 The product grammar should remain curated throughout that work.
