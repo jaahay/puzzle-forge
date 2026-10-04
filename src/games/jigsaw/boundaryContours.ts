@@ -176,31 +176,128 @@ const getBoundaryTraversal = (
   return traversal;
 };
 
+type BoundaryRun = {
+  side: JigsawEdgeSide;
+  points: Point[];
+};
+
+const getBoundaryRuns = (
+  pieces: readonly JigsawPiece[],
+  width: number,
+  height: number,
+  edgeModel: JigsawEdgeModel,
+): BoundaryRun[] | null => {
+  const traversal = getBoundaryTraversal(pieces, width, height);
+  if (!traversal) return null;
+
+  const runs: BoundaryRun[] = [];
+  for (const { piece, side } of traversal) {
+    const edge = piece.edges.find((candidate) => candidate.side === side);
+    if (!edge?.boundary) return null;
+
+    runs.push({
+      side,
+      points: getJigsawEdgePoints(edge, edgeModel).map((candidate) => ({
+        x: candidate.x + piece.column * 100,
+        y: candidate.y + piece.row * 100,
+      })),
+    });
+  }
+
+  return runs;
+};
+
 export const getJigsawOuterBoundaryPoints = (
   pieces: readonly JigsawPiece[],
   width: number,
   height: number,
   edgeModel: JigsawEdgeModel,
 ): Point[] | null => {
-  const traversal = getBoundaryTraversal(pieces, width, height);
-  if (!traversal) return null;
+  const runs = getBoundaryRuns(pieces, width, height, edgeModel);
+  if (!runs) return null;
 
-  const points: Point[] = [];
+  return runs.flatMap((run, index) =>
+    index === 0 ? run.points : run.points.slice(1),
+  );
+};
 
-  for (const { piece, side } of traversal) {
-    const edge = piece.edges.find((candidate) => candidate.side === side);
-    if (!edge?.boundary) return null;
+const boundsFor = (points: readonly Point[]) => ({
+  minimumX: Math.min(...points.map((candidate) => candidate.x)),
+  maximumX: Math.max(...points.map((candidate) => candidate.x)),
+  minimumY: Math.min(...points.map((candidate) => candidate.y)),
+  maximumY: Math.max(...points.map((candidate) => candidate.y)),
+});
 
-    const localPoints = getJigsawEdgePoints(edge, edgeModel);
-    const translated = localPoints.map((candidate) => ({
-      x: candidate.x + piece.column * 100,
-      y: candidate.y + piece.row * 100,
-    }));
+const boundsOverlap = (
+  first: ReturnType<typeof boundsFor>,
+  second: ReturnType<typeof boundsFor>,
+) =>
+  first.minimumX <= second.maximumX + coordinateEpsilon &&
+  first.maximumX + coordinateEpsilon >= second.minimumX &&
+  first.minimumY <= second.maximumY + coordinateEpsilon &&
+  first.maximumY + coordinateEpsilon >= second.minimumY;
 
-    points.push(...(points.length === 0 ? translated : translated.slice(1)));
+const runIntersects = (
+  first: BoundaryRun,
+  second: BoundaryRun,
+  allowSharedEndpoint: boolean,
+) => {
+  for (let firstIndex = 0; firstIndex < first.points.length - 1; firstIndex += 1) {
+    const firstStart = first.points[firstIndex];
+    const firstEnd = first.points[firstIndex + 1];
+
+    for (
+      let secondIndex = 0;
+      secondIndex < second.points.length - 1;
+      secondIndex += 1
+    ) {
+      const secondStart = second.points[secondIndex];
+      const secondEnd = second.points[secondIndex + 1];
+
+      if (
+        allowSharedEndpoint &&
+        ((samePoint(firstEnd, secondStart) &&
+          firstIndex === first.points.length - 2 &&
+          secondIndex === 0) ||
+          (samePoint(secondEnd, firstStart) &&
+            secondIndex === second.points.length - 2 &&
+            firstIndex === 0))
+      ) {
+        continue;
+      }
+
+      if (segmentsIntersect(firstStart, firstEnd, secondStart, secondEnd)) {
+        return true;
+      }
+    }
   }
 
-  return points;
+  return false;
+};
+
+const runSelfIntersects = (run: BoundaryRun) => {
+  const segmentCount = run.points.length - 1;
+
+  for (let firstIndex = 0; firstIndex < segmentCount; firstIndex += 1) {
+    for (
+      let secondIndex = firstIndex + 2;
+      secondIndex < segmentCount;
+      secondIndex += 1
+    ) {
+      if (
+        segmentsIntersect(
+          run.points[firstIndex],
+          run.points[firstIndex + 1],
+          run.points[secondIndex],
+          run.points[secondIndex + 1],
+        )
+      ) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 };
 
 export const validateJigsawOuterBoundary = ({
@@ -214,18 +311,34 @@ export const validateJigsawOuterBoundary = ({
   height: number;
   edgeModel: JigsawEdgeModel;
 }): JigsawOuterBoundaryValidation => {
-  const points = getJigsawOuterBoundaryPoints(
-    pieces,
-    width,
-    height,
-    edgeModel,
-  );
-  if (!points || points.length < 5) {
+  const runs = getBoundaryRuns(pieces, width, height, edgeModel);
+  if (!runs || runs.some((run) => run.points.length < 2)) {
     return { ok: false, reason: "missing outer-boundary geometry" };
   }
 
-  if (points.some((candidate) => !Number.isFinite(candidate.x) || !Number.isFinite(candidate.y))) {
+  const points = runs.flatMap((run, index) =>
+    index === 0 ? run.points : run.points.slice(1),
+  );
+  if (
+    points.some(
+      (candidate) =>
+        !Number.isFinite(candidate.x) || !Number.isFinite(candidate.y),
+    )
+  ) {
     return { ok: false, reason: "non-finite outer-boundary coordinate" };
+  }
+
+  for (let index = 0; index < runs.length; index += 1) {
+    const currentRun = runs[index];
+    const nextRun = runs[(index + 1) % runs.length];
+    if (
+      !samePoint(
+        currentRun.points[currentRun.points.length - 1],
+        nextRun.points[0],
+      )
+    ) {
+      return { ok: false, reason: "outer boundary is not continuous" };
+    }
   }
 
   if (!samePoint(points[0], points[points.length - 1])) {
@@ -246,29 +359,25 @@ export const validateJigsawOuterBoundary = ({
     return { ok: false, reason: "outer boundary exceeds the bounded overhang" };
   }
 
-  const segmentCount = points.length - 1;
-  for (let firstIndex = 0; firstIndex < segmentCount; firstIndex += 1) {
-    const firstStart = points[firstIndex];
-    const firstEnd = points[firstIndex + 1];
+  if (runs.some(runSelfIntersects)) {
+    return { ok: false, reason: "outer boundary self-intersects" };
+  }
 
+  const runBounds = runs.map((run) => boundsFor(run.points));
+  for (let firstIndex = 0; firstIndex < runs.length; firstIndex += 1) {
     for (
       let secondIndex = firstIndex + 1;
-      secondIndex < segmentCount;
+      secondIndex < runs.length;
       secondIndex += 1
     ) {
+      if (!boundsOverlap(runBounds[firstIndex], runBounds[secondIndex])) {
+        continue;
+      }
+
       const adjacent =
         secondIndex === firstIndex + 1 ||
-        (firstIndex === 0 && secondIndex === segmentCount - 1);
-      if (adjacent) continue;
-
-      if (
-        segmentsIntersect(
-          firstStart,
-          firstEnd,
-          points[secondIndex],
-          points[secondIndex + 1],
-        )
-      ) {
+        (firstIndex === 0 && secondIndex === runs.length - 1);
+      if (runIntersects(runs[firstIndex], runs[secondIndex], adjacent)) {
         return { ok: false, reason: "outer boundary self-intersects" };
       }
     }
