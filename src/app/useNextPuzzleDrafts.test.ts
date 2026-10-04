@@ -76,7 +76,6 @@ describe("buildNextPuzzleDraft", () => {
       jigsawSizeSelection: "Small",
       jigsawCutStyle: defaultJigsawCutStyle,
       jigsawBoundaryMode: defaultJigsawBoundaryMode,
-      jigsawBoundaryMode: defaultJigsawBoundaryMode,
     });
   });
 
