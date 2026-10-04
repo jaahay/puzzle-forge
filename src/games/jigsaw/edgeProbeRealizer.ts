@@ -24,7 +24,8 @@ export type JigsawEdgeProbePoint = {
 
 export type JigsawEdgeProbeSeam = {
   probeId: JigsawEdgeRealizedProbeId;
-  connectorCount: number;
+  connectorCount: 0 | 1;
+  lockEventCount: number;
   points: readonly JigsawEdgeProbePoint[];
 };
 
@@ -222,6 +223,7 @@ export const realizeJigsawEdgeProbeSeam = ({
     return {
       probeId,
       connectorCount: 0,
+      lockEventCount: 0,
       points: placeBaseline(
         realizeBaseline(
           "wave",
@@ -266,7 +268,8 @@ export const realizeJigsawEdgeProbeSeam = ({
 
   return {
     probeId,
-    connectorCount: probeId === "notched-head" ? 1 : 2,
+    connectorCount: 1,
+    lockEventCount: probeId === "notched-head" ? 1 : 2,
     points: joinPaths(approach, connector, departure),
   };
 };

@@ -100,12 +100,18 @@ describe("Jigsaw edge probe realizer", () => {
     }
   });
 
-  it("makes connector cardinality explicit in realized development seams", () => {
+  it("keeps seam connector cardinality distinct from local lock-event count", () => {
     expect(
       realizeJigsawEdgeProbeSeam({
         probeId: "connectorless-wave",
         seedOffset: 1,
       }).connectorCount,
+    ).toBe(0);
+    expect(
+      realizeJigsawEdgeProbeSeam({
+        probeId: "connectorless-wave",
+        seedOffset: 1,
+      }).lockEventCount,
     ).toBe(0);
     expect(
       realizeJigsawEdgeProbeSeam({
@@ -115,15 +121,33 @@ describe("Jigsaw edge probe realizer", () => {
     ).toBe(1);
     expect(
       realizeJigsawEdgeProbeSeam({
+        probeId: "notched-head",
+        seedOffset: 1,
+      }).lockEventCount,
+    ).toBe(1);
+    expect(
+      realizeJigsawEdgeProbeSeam({
         probeId: "compound-lock",
         seedOffset: 1,
       }).connectorCount,
+    ).toBe(1);
+    expect(
+      realizeJigsawEdgeProbeSeam({
+        probeId: "compound-lock",
+        seedOffset: 1,
+      }).lockEventCount,
     ).toBe(2);
     expect(
       realizeJigsawEdgeProbeSeam({
         probeId: "opposed-dual-lock",
         seedOffset: 1,
       }).connectorCount,
+    ).toBe(1);
+    expect(
+      realizeJigsawEdgeProbeSeam({
+        probeId: "opposed-dual-lock",
+        seedOffset: 1,
+      }).lockEventCount,
     ).toBe(2);
   });
 

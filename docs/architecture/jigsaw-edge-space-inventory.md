@@ -167,10 +167,12 @@ The next development-only layer uses production geometry semantics as building b
 
 `edgeProbeRealizer.ts` realizes the four advanced hypotheses as complete seams:
 
-- **Compound lock** composes one seeded Classic bulb and one seeded Necked head in separate subspans.
-- **Opposed dual lock** composes two independently seeded Necked heads on opposite sides of the nominal edge.
+- **Compound lock** composes one seeded Classic bulb and one seeded Necked head as two local lock events inside one composite connector.
+- **Opposed dual lock** composes two independently seeded Necked heads on opposite sides of the nominal edge while still treating the result as one composite connector.
 - **Notched head** starts from the seeded production Necked-head realization and applies one explicit crown cleft.
 - **Connectorless wave** realizes a full-width seeded Wave baseline with connector cardinality zero.
+
+The realizer tracks **seam connector cardinality** separately from the number of local lock events. Compound lock and Opposed dual lock therefore remain one connector each with two internal lock events; only Connectorless wave changes seam cardinality to zero. This preserves the conservative SeamProgram model while testing richer connector structure.
 
 For connector probes, the same existing BaselineGrammar realizers supply approach and departure roles. The experiment retains the current corner-depth attenuation rather than giving development candidates a more permissive safety envelope.
 
