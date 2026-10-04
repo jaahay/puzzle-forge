@@ -1,7 +1,6 @@
 import type {
   JigsawBaselineCourseId,
   JigsawBaselineGrammarId,
-  JigsawBaselineReversalCourseId,
   JigsawBaselineSpanCourseId,
 } from "../../catalog/types";
 import {
@@ -16,11 +15,6 @@ import {
   jigsawBaselineSpanCourseIds,
   realizeJigsawBaselineSpanCourse,
 } from "./baselineSpanGrammar";
-import {
-  jigsawBaselineReversalCourseIds,
-  realizeJigsawBaselineReversalCourse,
-} from "./baselineReversalGrammar";
-
 type Range = readonly [minimum: number, maximum: number];
 
 export type JigsawBaselineCourseDefinition = {
@@ -41,7 +35,7 @@ type CanonicalCourseProgram = {
 
 type GeneratedCourseProgram = {
   kind: "generated";
-  baselineCourseId: JigsawBaselineSpanCourseId | JigsawBaselineReversalCourseId;
+  baselineCourseId: JigsawBaselineSpanCourseId;
   depth: number;
   points: readonly JigsawBaselinePoint[];
 };
@@ -53,11 +47,10 @@ export type JigsawBaselineCourseProgram =
 export const jigsawBaselineCourseIds = [
   ...jigsawBaselineGrammarIds,
   ...jigsawBaselineSpanCourseIds,
-  ...jigsawBaselineReversalCourseIds,
 ] as const satisfies readonly JigsawBaselineCourseId[];
 
 const advancedDefinitions: Record<
-  JigsawBaselineSpanCourseId | JigsawBaselineReversalCourseId,
+  JigsawBaselineSpanCourseId,
   JigsawBaselineCourseDefinition
 > = {
   "separated-bows": {
@@ -91,30 +84,6 @@ const advancedDefinitions: Record<
     renderMode: "angular",
     curveTension: 0,
     depth: [4, 6],
-  },
-  "same-side-hairpin": {
-    id: "same-side-hairpin",
-    label: "Same-side hairpin",
-    description: "The course advances, backtracks once on the same side, then resumes forward.",
-    renderMode: "angular",
-    curveTension: 0,
-    depth: [7, 9],
-  },
-  "opposed-hairpin": {
-    id: "opposed-hairpin",
-    label: "Opposed hairpin",
-    description: "A single bounded backtrack crosses the nominal edge before resolving.",
-    renderMode: "angular",
-    curveTension: 0,
-    depth: [7, 9],
-  },
-  "counter-hook": {
-    id: "counter-hook",
-    label: "Counter hook",
-    description: "A deep shoulder backtracks once and resolves through a shallow counter-sweep.",
-    renderMode: "angular",
-    curveTension: 0,
-    depth: [7, 9],
   },
 };
 
@@ -156,17 +125,10 @@ export const deriveJigsawBaselineCourseProgram = (
 
   const definition = advancedDefinitions[courseId];
   const depth = range(seedOffset, definition.depth);
-  const normalizedPoints = jigsawBaselineSpanCourseIds.includes(
+  const normalizedPoints = realizeJigsawBaselineSpanCourse(
     courseId as JigsawBaselineSpanCourseId,
-  )
-    ? realizeJigsawBaselineSpanCourse(
-        courseId as JigsawBaselineSpanCourseId,
-        seedOffset,
-      )
-    : realizeJigsawBaselineReversalCourse(
-        courseId as JigsawBaselineReversalCourseId,
-        seedOffset,
-      );
+    seedOffset,
+  );
 
   return {
     kind: "generated",

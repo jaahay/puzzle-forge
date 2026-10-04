@@ -58,11 +58,8 @@ Production BaselineCourse adds course structures that require semantics outside 
 - Opposed pair
 - Primary / secondary
 - Inflection / rest / bow
-- Same-side hairpin
-- Opposed hairpin
-- Counter hook
 
-The span courses preserve deliberate quiet longitudinal runs and scale hierarchy. The hairpin/counter-hook courses permit exactly one bounded longitudinal reversal under their dedicated safety contract.
+The span courses preserve deliberate quiet longitudinal runs and scale hierarchy.
 
 ## Cut-style policy
 
@@ -81,13 +78,12 @@ Production geometry remains deterministic and must preserve:
 - corner depth restraints;
 - bounded edge depth;
 - no self-crossing piece outlines;
-- safe whole-piece composition across polarity extremes;
-- bounded reversal backtracking and non-adjacent clearance.
+- safe whole-piece composition across polarity extremes.
 
 Contoured outer boundaries remain a separate independent product axis and use the subset of canonical BaselineGrammar families proven safe inside the artwork bounds.
 
 ## Deliberately excluded directions
 
-Asymmetric catch and hook-catch sketches did not justify separate connector identities beyond Scoop-adjacent geometry. True nested/enclosed locks cross toward topology rather than ordinary open-edge grammar and remain part of the separate non-grid/special-topology direction (#191).
+Asymmetric catch and hook-catch did not justify separate connector identities beyond Scoop-adjacent geometry. Bounded longitudinal-reversal courses were also removed: they were individually valid as isolated paths but violated whole-piece safety after ordinary seam embedding. True nested/enclosed locks cross toward topology rather than ordinary open-edge grammar and remain part of the separate non-grid/special-topology direction (#191).
 
 The shipped vocabulary is therefore the current edge-generation contract. Future work should add or remove production vocabulary directly, with the same safety and product tests, rather than maintaining a parallel research catalog.

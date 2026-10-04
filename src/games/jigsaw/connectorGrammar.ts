@@ -257,7 +257,7 @@ export const jigsawConnectorGrammarCatalog = {
     renderMode: "angular",
     curveTension: 0,
     mirrorable: true,
-    width: [54, 62],
+    width: [56, 62],
     depth: [18, 22],
     cornerBuffer: 14,
     lean: 0,
