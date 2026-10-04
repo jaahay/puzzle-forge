@@ -136,6 +136,29 @@ This is the cleanest probe of structural hierarchy without adding a scale operat
 
 **Priority:** high.
 
+## Visual probe outcome
+
+The first canonical geometry pass is source-controlled in:
+
+![Jigsaw edge-space exploration atlas](./assets/jigsaw-edge-exploration-atlas.svg)
+
+The pass intentionally includes rejected/collapsed specimens. Safety alone is not promotion.
+
+### Carry forward
+
+- **Compound lock** — paired-lock and mixed-lock read as one broader structural direction: multiple different lock events composed serially. Keep one exploration category rather than minting separate family labels.
+- **Opposed dual lock** — survives distinctly. Two complete mating events on opposite sides read differently from Serpentine's single crossing gesture. This is the strongest challenge to whole-seam tab/blank polarity.
+- **Notched head** — survives as a singular structural cleft inside an overhanging head. It remains visibly different from an ordinary Necked head at atlas scale.
+- **Connectorless wave** — survives as a seam-level probe, not a connector family. It is the cleanest test of zero connector cardinality.
+
+### Collapse or defer
+
+- **Asymmetric catch** and **Hook catch** are both safe as simple open paths, but the visible results occupy the same Scoop-adjacent neighborhood. Do not preserve separate names merely because their structural descriptions differ.
+- **Nested lock** does not survive as a distinct ordinary open-seam idea. Once forced into one simple boundary, visible nesting becomes a notch. True containment likely requires enclosed/branching geometry and therefore belongs closer to topology work.
+- **Paired lock** versus **Mixed lock** is likewise not a useful family split. Both are examples of the broader Compound lock direction.
+
+This leaves four geometries worth further seam-level testing and eliminates three proposed distinctions before production code is touched.
+
 ## Underexplored non-connector neighborhoods
 
 Three limitations are now explicit rather than hidden inside the generic baseline explorer.
@@ -207,10 +230,9 @@ Zero promotions is an acceptable result.
 
 ## Next exploration sequence
 
-1. Probe one connectorless interior seam alongside the ordinary one-connector control.
-2. Build a development-only generic realizer for the explicit connector probes, not for arbitrary unconstrained ASTs.
-3. Render the surviving connector probes beside representative BaselineGrammar approaches/departures.
-4. Extend the baseline explorer with an explicit separated-gesture experiment without changing production grammar.
-5. Compare candidates against the existing connector/baseline atlases at normal play scale.
-6. Promote only recurring, clearly irreducible survivors.
-7. Keep longitudinal reversal and nested geometry behind stronger validation until their safety model is proven.
+1. Embed Compound lock, Opposed dual lock, Notched head, and Connectorless wave into complete development-only seams with representative BaselineGrammar approaches/departures.
+2. Exercise reciprocal polarity/orientation and whole-piece safety for those seams; eliminate any candidate that only works as an isolated atlas specimen.
+3. Extend the baseline explorer with an explicit separated-gesture experiment without changing production grammar.
+4. Compare surviving complete seams against the existing connector/baseline atlases at normal play scale.
+5. Promote only recurring, clearly irreducible survivors.
+6. Keep true longitudinal reversal and nested/enclosed geometry behind stronger validation or topology work.
