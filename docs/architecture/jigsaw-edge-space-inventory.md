@@ -242,6 +242,33 @@ The experiment supports two architectural conclusions:
 The experiment does not alter `JigsawBaselineProduction`, the named BaselineGrammar catalog, SeamProgram, or production generation.
 
 
+## Dedicated longitudinal-reversal experiment
+
+The development-only `baselineReversalExplorer.ts` explores the remaining non-connector gap without weakening the production monotonic-baseline validator.
+
+It realizes three bounded hypotheses:
+
+- **Same-side hairpin** — advance, make one backtrack on the same side of the nominal edge, then resume forward.
+- **Opposed hairpin** — advance on one side, backtrack across the nominal edge, then resume on the opposite side.
+- **Counter hook** — advance into a deeper shoulder, backtrack on the same side, then resolve through a shallow opposite-side counter-sweep.
+
+These are deliberately course shapes rather than connector families. The experiment does not introduce neck/head/chamber semantics or change seam connector cardinality.
+
+The dedicated validator is stricter than the ordinary generic baseline validator. An accepted reversal must:
+
+- begin and end at the nominal anchors;
+- remain inside the ordinary normalized depth/corner envelope;
+- contain exactly one forward -> backward -> forward longitudinal pattern;
+- keep total backtracking inside a narrow bounded interval;
+- reject non-adjacent touching or retracing, not merely proper crossings;
+- retain minimum clearance between every pair of non-adjacent path segments;
+- remain a valid simple piece outline when the other three sides are straight;
+- preserve the same safety contract under reciprocal neighbor orientation.
+
+A 128-seed sweep exercises all three hypotheses deterministically.
+
+This establishes that **bounded longitudinal reversal is geometrically viable as a development-only non-connector course** without relaxing the existing monotonic BaselineProduction contract. It does not establish that any reversal structure deserves production promotion; normal-play visual legibility and solving value remain separate gates.
+
 ## What is not an ordinary connector problem
 
 The following remain topology rather than seam-vocabulary work:
@@ -289,7 +316,6 @@ Zero promotions is an acceptable result.
 
 ## Next exploration sequence
 
-1. Compare the safe complete connector/seam probes and the span-allocation candidates against the existing atlases at normal play scale.
-2. Probe non-connector longitudinal reversal under a dedicated stricter safety model rather than relaxing the current monotonic validator.
-3. Promote only recurring, clearly irreducible survivors.
-4. Keep nested/enclosed geometry behind topology work unless a simple-boundary realizer proves otherwise.
+1. Compare the safe complete connector/seam probes, span-allocation candidates, and bounded reversal candidates at normal play scale.
+2. Promote only recurring, clearly irreducible survivors with useful solving character.
+3. Keep nested/enclosed geometry behind topology work unless a simple-boundary realizer proves otherwise.
