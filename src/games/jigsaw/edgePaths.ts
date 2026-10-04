@@ -23,6 +23,7 @@ import {
   realizeJigsawConnectorProgram,
   type JigsawConnectorPoint,
 } from "./connectorGrammar";
+import { flattenCubicBezier } from "./cubicBezier";
 import { deriveJigsawSeamProgram } from "./seamProgram";
 
 export type JigsawEdgePoint = JigsawConnectorPoint;
@@ -200,8 +201,6 @@ type JigsawEdgeCubicSegment = {
 };
 
 type JigsawEdgeSegment = JigsawEdgeLineSegment | JigsawEdgeCubicSegment;
-
-const curveSampleCount = 6;
 
 const lineSegmentsFromPoints = (points: readonly JigsawEdgePoint[]): JigsawEdgeSegment[] =>
   points.slice(1).map((end, index) => ({
@@ -433,26 +432,6 @@ const getJigsawEdgeSegments = (
   );
 };
 
-const cubicPointAt = (
-  segment: JigsawEdgeCubicSegment,
-  t: number,
-): JigsawEdgePoint => {
-  const inverse = 1 - t;
-  const inverseSquared = inverse * inverse;
-  const tSquared = t * t;
-
-  return point(
-    inverseSquared * inverse * segment.start.x +
-      3 * inverseSquared * t * segment.control1.x +
-      3 * inverse * tSquared * segment.control2.x +
-      tSquared * t * segment.end.x,
-    inverseSquared * inverse * segment.start.y +
-      3 * inverseSquared * t * segment.control1.y +
-      3 * inverse * tSquared * segment.control2.y +
-      tSquared * t * segment.end.y,
-  );
-};
-
 const sampleSegments = (segments: readonly JigsawEdgeSegment[]): JigsawEdgePoint[] => {
   if (segments.length === 0) return [];
   const points = [segments[0].start];
@@ -463,9 +442,7 @@ const sampleSegments = (segments: readonly JigsawEdgeSegment[]): JigsawEdgePoint
       continue;
     }
 
-    for (let sample = 1; sample <= curveSampleCount; sample += 1) {
-      points.push(cubicPointAt(segment, sample / curveSampleCount));
-    }
+    points.push(...flattenCubicBezier(segment).slice(1));
   }
 
   return points.map(normalizeSignedZeroPoint);
