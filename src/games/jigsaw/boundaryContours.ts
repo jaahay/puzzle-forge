@@ -1,15 +1,15 @@
 import type {
   JigsawBaselineGrammarId,
   JigsawBoundaryContour,
-  JigsawBoundaryMode,
   JigsawEdgeModel,
-  JigsawEdgePoint,
   JigsawEdgeSide,
   JigsawPiece,
   JigsawPieceEdge,
 } from "../../catalog/types";
 import { createRandom } from "../shared";
 import { getJigsawEdgePoints } from "./edgePaths";
+
+export type JigsawBoundaryMode = "flat" | "contoured";
 
 export const jigsawBoundaryModes = [
   "flat",
