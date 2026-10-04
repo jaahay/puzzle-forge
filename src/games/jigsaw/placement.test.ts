@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest";
 import type { JigsawPiece } from "../../catalog/types";
+import { getJigsawOuterBoundaryPoints } from "./boundaryContours";
+import { generateJigsaw } from "./generate";
+import { defaultJigsawImageAsset } from "./imageAssets";
 import {
   createInitialJigsawPlacements,
+  createJigsawBoundsFitCamera,
   createJigsawFitCamera,
   createJigsawOccupiedFitCamera,
   createJigsawWorkingFitCamera,
   createJigsawWorldLayout,
+  getJigsawBoardBounds,
   getJigsawOccupiedBounds,
   getJigsawWorkingBounds,
   getJigsawCameraTransform,
@@ -311,6 +316,68 @@ describe("Jigsaw camera", () => {
     const transform = getJigsawCameraTransform(workspaceCamera, viewport);
     expect(layout.worldWidth / 2 * transform.scale + transform.translateX).toBeCloseTo(viewport.width / 2);
     expect(layout.worldHeight / 2 * transform.scale + transform.translateY).toBeCloseTo(viewport.height / 2);
+  });
+
+  it("fits a shaped boundary from its realized contour instead of the frame rectangle", () => {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "fit-shaped-boundary",
+      width: 6,
+      height: 5,
+      imageId: defaultJigsawImageAsset.id,
+      jigsawBoundaryMode: "contoured",
+    });
+    const shapedLayout = createJigsawWorldLayout({
+      imageWidth: puzzle.asset.intrinsicWidth,
+      imageHeight: puzzle.asset.intrinsicHeight,
+      puzzleWidth: puzzle.width,
+      puzzleHeight: puzzle.height,
+    });
+    const contour = getJigsawOuterBoundaryPoints(
+      puzzle.tiles,
+      puzzle.width,
+      puzzle.height,
+      puzzle.edgeModel,
+    );
+    expect(contour).not.toBeNull();
+    if (!contour) return;
+
+    const bounds = getJigsawBoardBounds(
+      shapedLayout,
+      puzzle.tiles,
+      puzzle.width,
+      puzzle.height,
+      puzzle.edgeModel,
+    );
+    const minimumX = Math.min(...contour.map((point) => point.x));
+    const minimumY = Math.min(...contour.map((point) => point.y));
+    const maximumX = Math.max(...contour.map((point) => point.x));
+    const maximumY = Math.max(...contour.map((point) => point.y));
+
+    expect(bounds.x).toBeCloseTo(
+      shapedLayout.boardX + minimumX * shapedLayout.pieceWidth / 100,
+    );
+    expect(bounds.y).toBeCloseTo(
+      shapedLayout.boardY + minimumY * shapedLayout.pieceHeight / 100,
+    );
+    expect(bounds.width).toBeCloseTo(
+      (maximumX - minimumX) * shapedLayout.pieceWidth / 100,
+    );
+    expect(bounds.height).toBeCloseTo(
+      (maximumY - minimumY) * shapedLayout.pieceHeight / 100,
+    );
+
+    const camera = createJigsawBoundsFitCamera(
+      shapedLayout,
+      viewport,
+      bounds,
+      32,
+    );
+    const screenBounds = getScreenBounds(bounds, camera, viewport);
+    expect(screenBounds.left).toBeGreaterThanOrEqual(31.99);
+    expect(screenBounds.top).toBeGreaterThanOrEqual(31.99);
+    expect(screenBounds.right).toBeLessThanOrEqual(viewport.width - 31.99);
+    expect(screenBounds.bottom).toBeLessThanOrEqual(viewport.height - 31.99);
   });
 
   it("uses a board-first working fit instead of shrinking to every loose piece", () => {
