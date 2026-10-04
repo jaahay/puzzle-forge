@@ -21,6 +21,7 @@ const makeJigsawDraft = (overrides: Partial<NextPuzzleDraft> = {}): NextPuzzleDr
   imageId: defaultJigsawImageAsset.id,
   jigsawSizeSelection: jigsawCustomSizeSelection,
   jigsawCutStyle: "traditional",
+  jigsawBoundaryMode: "flat",
   ...overrides,
 });
 
@@ -129,6 +130,22 @@ describe("Jigsaw image library", () => {
       height: draft.height,
       jigsawSizeSelection: draft.jigsawSizeSelection,
       jigsawCutStyle: "unconventional",
+    });
+  });
+
+  it("updates outer boundary without changing cut style, size, or artwork intent", () => {
+    const draft = makeJigsawDraft();
+    const updated = applyNextPuzzleDraftSettings(draft, {
+      jigsawBoundaryMode: "contoured",
+    });
+
+    expect(updated).toMatchObject({
+      imageId: draft.imageId,
+      width: draft.width,
+      height: draft.height,
+      jigsawSizeSelection: draft.jigsawSizeSelection,
+      jigsawCutStyle: draft.jigsawCutStyle,
+      jigsawBoundaryMode: "contoured",
     });
   });
 
