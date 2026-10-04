@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
-  getJigsawEdgeCarryForwardProbes,
-  jigsawEdgeCarryForwardProbeIds,
+  getJigsawEdgeAdvanceProbes,
+  jigsawEdgeAdvanceProbeIds,
   jigsawEdgeExplorationProbes,
   validateJigsawEdgeExplorationProbe,
 } from "./edgeProbeGallery";
 
 describe("Jigsaw edge exploration gallery", () => {
-  it("keeps every canonical visual probe finite, anchored, bounded, and non-self-intersecting", () => {
+  it("keeps every representative visual sketch finite, anchored, bounded, and non-self-intersecting", () => {
     for (const probe of jigsawEdgeExplorationProbes) {
       expect(validateJigsawEdgeExplorationProbe(probe)).toEqual({
         valid: true,
@@ -15,9 +15,9 @@ describe("Jigsaw edge exploration gallery", () => {
     }
   });
 
-  it("carries forward only the visually distinct probe classes", () => {
-    expect(getJigsawEdgeCarryForwardProbes().map((probe) => probe.id)).toEqual(
-      [...jigsawEdgeCarryForwardProbeIds],
+  it("advances only the strongest sketch hypotheses to common realization", () => {
+    expect(getJigsawEdgeAdvanceProbes().map((probe) => probe.id)).toEqual(
+      [...jigsawEdgeAdvanceProbeIds],
     );
   });
 
@@ -53,7 +53,7 @@ describe("Jigsaw edge exploration gallery", () => {
     ]);
   });
 
-  it("collapses safe hook/catch shapes when visual structure is not distinct enough", () => {
+  it("deprioritizes Scoop-adjacent sketches without claiming semantic collapse", () => {
     const scoopAdjacent = jigsawEdgeExplorationProbes.filter(
       (probe) => probe.comparisonGroup === "scoop-adjacent",
     );
@@ -63,16 +63,16 @@ describe("Jigsaw edge exploration gallery", () => {
       "hook-catch",
     ]);
     expect(
-      scoopAdjacent.every((probe) => probe.disposition === "collapse"),
+      scoopAdjacent.every((probe) => probe.sketchDisposition === "deprioritize"),
     ).toBe(true);
   });
 
-  it("defers true nesting instead of relabeling a notched simple seam", () => {
+  it("marks true nesting topology-dependent instead of declaring it collapsed", () => {
     const nested = jigsawEdgeExplorationProbes.find(
       (probe) => probe.id === "nested-lock",
     );
 
-    expect(nested?.disposition).toBe("defer");
+    expect(nested?.sketchDisposition).toBe("topology-dependent");
     expect(nested?.comparisonGroup).toBe("notched-head");
   });
 });

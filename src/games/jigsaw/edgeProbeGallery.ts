@@ -7,7 +7,7 @@ export type JigsawEdgeExplorationProbe = {
   id: string;
   label: string;
   scope: "connector" | "seam";
-  disposition: "carry-forward" | "collapse" | "defer";
+  sketchDisposition: "advance" | "deprioritize" | "topology-dependent";
   sourceProbeIds: readonly string[];
   comparisonGroup?: string;
   rationale: string;
@@ -21,10 +21,10 @@ export const jigsawEdgeExplorationProbes: readonly JigsawEdgeExplorationProbe[] 
     id: "compound-lock",
     label: "Compound lock",
     scope: "connector",
-    disposition: "carry-forward",
+    sketchDisposition: "advance",
     sourceProbeIds: ["paired-lock", "mixed-lock"],
     rationale:
-      "Two different lock events read as one coherent compound structure; separate paired/mixed family labels would overstate the distinction.",
+      "This representative sketch keeps two different lock events legible as one compound structure; a common realizer must determine whether paired/mixed variants truly collapse together.",
     points: [
       point(-1, 0), point(-0.82, 0), point(-0.7, 0.32), point(-0.55, 0.65),
       point(-0.4, 0.32), point(-0.3, 0), point(-0.18, 0), point(-0.1, 0.18),
@@ -37,7 +37,7 @@ export const jigsawEdgeExplorationProbes: readonly JigsawEdgeExplorationProbe[] 
     id: "opposed-dual-lock",
     label: "Opposed dual lock",
     scope: "connector",
-    disposition: "carry-forward",
+    sketchDisposition: "advance",
     sourceProbeIds: ["opposed-dual-lock"],
     rationale:
       "Two complete lock events on opposite sides remain visually distinct from Serpentine and directly test local polarity inside one seam.",
@@ -55,10 +55,10 @@ export const jigsawEdgeExplorationProbes: readonly JigsawEdgeExplorationProbe[] 
     id: "notched-head",
     label: "Notched head",
     scope: "connector",
-    disposition: "carry-forward",
+    sketchDisposition: "advance",
     sourceProbeIds: ["notched-head", "nested-lock"],
     rationale:
-      "A singular cleft remains a readable structural clue; the attempted nested lock collapses into this same simple-open-seam silhouette.",
+      "A singular cleft is readable in this representative sketch; a common realizer must determine whether nested geometry remains distinct or lands in the same neighborhood.",
     points: [
       point(-1, 0), point(-0.34, 0), point(-0.24, 0.2), point(-0.24, 0.48),
       point(-0.5, 0.58), point(-0.5, 0.82), point(-0.3, 1.02), point(-0.12, 1.1),
@@ -71,7 +71,7 @@ export const jigsawEdgeExplorationProbes: readonly JigsawEdgeExplorationProbe[] 
     id: "connectorless-wave",
     label: "Connectorless wave",
     scope: "seam",
-    disposition: "carry-forward",
+    sketchDisposition: "advance",
     sourceProbeIds: ["connector-cardinality"],
     rationale:
       "A full shared interior seam can remain shape-rich without a local interlocking event, making zero connector cardinality worth a controlled play probe.",
@@ -85,11 +85,11 @@ export const jigsawEdgeExplorationProbes: readonly JigsawEdgeExplorationProbe[] 
     id: "asymmetric-catch",
     label: "Asymmetric catch",
     scope: "connector",
-    disposition: "collapse",
+    sketchDisposition: "deprioritize",
     sourceProbeIds: ["asymmetric-catch"],
     comparisonGroup: "scoop-adjacent",
     rationale:
-      "The open-seam realization reads as a Scoop variant rather than a new irreducible construction.",
+      "This representative sketch reads as Scoop-adjacent, so the direction is deprioritized until a common realizer demonstrates a stronger distinction.",
     points: [
       point(-1, 0), point(-0.72, 0), point(-0.56, 0.18), point(-0.48, 0.46),
       point(-0.22, 0.82), point(0.1, 0.96), point(0.36, 0.88), point(0.5, 0.68),
@@ -101,11 +101,11 @@ export const jigsawEdgeExplorationProbes: readonly JigsawEdgeExplorationProbe[] 
     id: "hook-catch",
     label: "Hook catch",
     scope: "connector",
-    disposition: "collapse",
+    sketchDisposition: "deprioritize",
     sourceProbeIds: ["hook-catch"],
     comparisonGroup: "scoop-adjacent",
     rationale:
-      "Longitudinal backtracking is visible, but the safe open-seam result occupies the same perceptual neighborhood as Asymmetric catch and Scoop.",
+      "This representative sketch shows backtracking but still reads Scoop-adjacent; retain it as a low-priority hypothesis until realized from common semantics.",
     points: [
       point(-1, 0), point(-0.72, 0), point(-0.58, 0.22), point(-0.5, 0.58),
       point(-0.18, 0.92), point(0.24, 0.96), point(0.48, 0.78), point(0.5, 0.58),
@@ -117,11 +117,11 @@ export const jigsawEdgeExplorationProbes: readonly JigsawEdgeExplorationProbe[] 
     id: "nested-lock",
     label: "Nested lock",
     scope: "connector",
-    disposition: "defer",
+    sketchDisposition: "topology-dependent",
     sourceProbeIds: ["nested-lock"],
     comparisonGroup: "notched-head",
     rationale:
-      "On one simple open boundary, visible nesting becomes a notch; true containment likely requires enclosed or branching geometry and therefore crosses toward topology.",
+      "This simple-boundary sketch resembles a notch, suggesting true containment may require enclosed or branching geometry; treat the direction as topology-dependent pending a realizer.",
     points: [
       point(-1, 0), point(-0.34, 0), point(-0.24, 0.2), point(-0.24, 0.5),
       point(-0.52, 0.6), point(-0.52, 0.82), point(-0.32, 1), point(-0.16, 1.08),
@@ -132,7 +132,7 @@ export const jigsawEdgeExplorationProbes: readonly JigsawEdgeExplorationProbe[] 
   },
 ];
 
-export const jigsawEdgeCarryForwardProbeIds = [
+export const jigsawEdgeAdvanceProbeIds = [
   "compound-lock",
   "opposed-dual-lock",
   "notched-head",
@@ -239,7 +239,7 @@ export const validateJigsawEdgeExplorationProbe = (
   return { valid: true };
 };
 
-export const getJigsawEdgeCarryForwardProbes = () =>
+export const getJigsawEdgeAdvanceProbes = () =>
   jigsawEdgeExplorationProbes.filter(
-    (probe) => probe.disposition === "carry-forward",
+    (probe) => probe.sketchDisposition === "advance",
   );
