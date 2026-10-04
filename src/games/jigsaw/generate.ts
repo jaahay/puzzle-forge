@@ -15,6 +15,11 @@ import {
   normalizeJigsawCutStyle,
   selectJigsawConnectorGrammarForCutStyle,
 } from "./cutStyle";
+import {
+  applyJigsawBoundaryMode,
+  defaultJigsawBoundaryMode,
+  type JigsawBoundaryMode,
+} from "./boundaryContours";
 
 const edgeSides: readonly JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
 const oppositeSide: Record<JigsawEdgeSide, JigsawEdgeSide> = {
@@ -116,13 +121,13 @@ const makePieceEdges = ({
     };
   });
 
-export const generateJigsaw: JigsawPuzzleGenerator = ({
+const generateJigsawWithBoundaryMode = ({
   seed,
   width,
   height,
   imageId,
   jigsawCutStyle = defaultJigsawCutStyle,
-}) => {
+}: Parameters<JigsawPuzzleGenerator>[0], boundaryMode: JigsawBoundaryMode) => {
   const normalizedSeed = normalizeSeed(seed);
   const boundedWidth = normalizeDimension(width, 4, jigsawMinimumAxis, jigsawMaximumAxis);
   const boundedHeight = normalizeDimension(height, 4, jigsawMinimumAxis, jigsawMaximumAxis);
@@ -130,6 +135,7 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
   const imageIdentity = asset.id;
   const cutStyle = normalizeJigsawCutStyle(jigsawCutStyle);
   const edgeIdentity = `edges:${cutStyle}`;
+  const boundaryIdentity = `boundary:${boundaryMode}`;
   const solvedIndexes = Array.from({ length: boundedWidth * boundedHeight }, (_, index) => index);
   const shuffleSeed = `jigsaw:${normalizedSeed}:${boundedWidth}x${boundedHeight}:${imageIdentity}`;
   const edgeSeed = `${shuffleSeed}:${edgeIdentity}`;
@@ -166,14 +172,22 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
       }),
     };
   });
+  const boundedPieces = applyJigsawBoundaryMode({
+    pieces: piecesBySolvedIndex,
+    width: boundedWidth,
+    height: boundedHeight,
+    edgeModel,
+    edgeSeed,
+    boundaryMode,
+  });
   const shuffledIndexes = shuffle(solvedIndexes, shuffleSeed);
   const tiles = shuffledIndexes.map((solvedIndex, currentIndex) => ({
-    ...piecesBySolvedIndex[solvedIndex],
+    ...boundedPieces[solvedIndex],
     currentIndex,
   }));
 
   return createGeneratedJigsawPuzzle({
-    id: `jigsaw-${imageIdentity}-${edgeIdentity}-${normalizedSeed}-${boundedWidth}x${boundedHeight}`,
+    id: `jigsaw-${imageIdentity}-${edgeIdentity}-${boundaryIdentity}-${normalizedSeed}-${boundedWidth}x${boundedHeight}`,
     title: "Jigsaw",
     seed: normalizedSeed,
     width: boundedWidth,
@@ -184,3 +198,10 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
     notes: [`Jigsaw using the bundled ${asset.title} image.`],
   });
 };
+
+export const generateJigsawWithBoundaryContours = (
+  params: Parameters<JigsawPuzzleGenerator>[0],
+) => generateJigsawWithBoundaryMode(params, "contoured");
+
+export const generateJigsaw: JigsawPuzzleGenerator = (params) =>
+  generateJigsawWithBoundaryMode(params, defaultJigsawBoundaryMode);
