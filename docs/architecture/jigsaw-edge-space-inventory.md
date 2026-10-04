@@ -202,6 +202,18 @@ The current production AST treats `identity` as algebraic identity and removes i
 
 An explicit span-consuming baseline run is semantically different from algebraic identity. If visual exploration proves this useful, add a dedicated run/span concept rather than weakening identity normalization.
 
+### Longitudinal reversal
+
+The generic candidate validator requires monotonic travel along the edge. This intentionally excludes non-connector hooks/backtracks.
+
+Do not remove that guard merely to generate more shapes. A reversal experiment needs its own bounded path and self-intersection rules first.
+
+### Scale hierarchy
+
+The generic realizer allocates longitudinal space uniformly across instructions. It can generate complicated structures, but it cannot structurally state that one gesture is dominant and another subordinate.
+
+If this proves perceptually useful, the likely abstraction is local span allocation or hierarchical sub-production—not arbitrary extra named families.
+
 ## Explicit span-allocation experiment
 
 The development-only `baselineSpanExplorer.ts` tests two non-connector language gaps without weakening the production BaselineProduction algebra.
@@ -229,17 +241,6 @@ The experiment supports two architectural conclusions:
 
 The experiment does not alter `JigsawBaselineProduction`, the named BaselineGrammar catalog, SeamProgram, or production generation.
 
-### Longitudinal reversal
-
-The generic candidate validator requires monotonic travel along the edge. This intentionally excludes non-connector hooks/backtracks.
-
-Do not remove that guard merely to generate more shapes. A reversal experiment needs its own bounded path and self-intersection rules first.
-
-### Scale hierarchy
-
-The generic realizer allocates longitudinal space uniformly across instructions. It can generate complicated structures, but it cannot structurally state that one gesture is dominant and another subordinate.
-
-If this proves perceptually useful, the likely abstraction is local span allocation or hierarchical sub-production—not arbitrary extra named families.
 
 ## What is not an ordinary connector problem
 
