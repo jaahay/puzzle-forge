@@ -135,7 +135,7 @@ const generateJigsawWithBoundaryMode = ({
   const imageIdentity = asset.id;
   const cutStyle = normalizeJigsawCutStyle(jigsawCutStyle);
   const edgeIdentity = `edges:${cutStyle}`;
-  const boundaryIdentity = `boundary:${boundaryMode}`;
+  const boundaryIdentity = boundaryMode === "flat" ? "" : `-boundary:${boundaryMode}`;
   const solvedIndexes = Array.from({ length: boundedWidth * boundedHeight }, (_, index) => index);
   const shuffleSeed = `jigsaw:${normalizedSeed}:${boundedWidth}x${boundedHeight}:${imageIdentity}`;
   const edgeSeed = `${shuffleSeed}:${edgeIdentity}`;
@@ -187,7 +187,7 @@ const generateJigsawWithBoundaryMode = ({
   }));
 
   return createGeneratedJigsawPuzzle({
-    id: `jigsaw-${imageIdentity}-${edgeIdentity}-${boundaryIdentity}-${normalizedSeed}-${boundedWidth}x${boundedHeight}`,
+    id: `jigsaw-${imageIdentity}-${edgeIdentity}${boundaryIdentity}-${normalizedSeed}-${boundedWidth}x${boundedHeight}`,
     title: "Jigsaw",
     seed: normalizedSeed,
     width: boundedWidth,
