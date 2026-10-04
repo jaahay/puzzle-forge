@@ -30,6 +30,16 @@ const explorerPrimitives = [
   "course",
 ] as const satisfies readonly JigsawBaselinePrimitive[];
 
+const explorerProductionKinds = [
+  "primitive",
+  "sequence",
+  "repeat",
+  "oppose",
+  "mirror",
+] as const;
+
+const explorerCompositeCounts = [2, 3] as const;
+
 const defaultSampleCount = 32;
 const defaultMaximumDepth = 3;
 const defaultMaximumInstructions = 16;
@@ -112,33 +122,31 @@ const deriveProduction = (
 
   if (depth >= maximumDepth) return primitive();
 
-  const kind = random();
-  if (kind < 0.28) return primitive();
-
-  if (kind < 0.58) {
-    const termCount = random() < 0.68 ? 2 : 3;
-    return baselineSequence(
-      ...Array.from({ length: termCount }, () =>
-        deriveProduction(random, depth + 1, maximumDepth)),
-    );
+  const kind = pick(explorerProductionKinds, random());
+  switch (kind) {
+    case "primitive":
+      return primitive();
+    case "sequence": {
+      const termCount = pick(explorerCompositeCounts, random());
+      return baselineSequence(
+        ...Array.from({ length: termCount }, () =>
+          deriveProduction(random, depth + 1, maximumDepth)),
+      );
+    }
+    case "repeat":
+      return baselineRepeat(
+        deriveProduction(random, depth + 1, maximumDepth),
+        pick(explorerCompositeCounts, random()),
+      );
+    case "oppose":
+      return baselineOppose(
+        deriveProduction(random, depth + 1, maximumDepth),
+      );
+    case "mirror":
+      return baselineMirror(
+        deriveProduction(random, depth + 1, maximumDepth),
+      );
   }
-
-  if (kind < 0.72) {
-    return baselineRepeat(
-      deriveProduction(random, depth + 1, maximumDepth),
-      random() < 0.72 ? 2 : 3,
-    );
-  }
-
-  if (kind < 0.86) {
-    return baselineOppose(
-      deriveProduction(random, depth + 1, maximumDepth),
-    );
-  }
-
-  return baselineMirror(
-    deriveProduction(random, depth + 1, maximumDepth),
-  );
 };
 
 export const getJigsawBaselineInstructionSignature = (
