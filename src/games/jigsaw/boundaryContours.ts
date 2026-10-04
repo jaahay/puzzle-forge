@@ -119,7 +119,6 @@ const segmentsIntersect = (
 
 const deriveBoundaryContour = (
   edgeSeed: string,
-  baselineGrammarIds: readonly JigsawBaselineGrammarId[],
   row: number,
   column: number,
   side: JigsawEdgeSide,
@@ -129,15 +128,11 @@ const deriveBoundaryContour = (
     `${edgeSeed}:boundary:${row}:${column}:${side}:attempt:${attempt}`,
   );
   random();
-  const contourGrammarIds = generatedBoundaryGrammarIds.filter((grammarId) =>
-    baselineGrammarIds.includes(grammarId),
-  );
-  if (contourGrammarIds.length === 0) {
-    throw new Error("Contoured Jigsaw boundaries require an inset-safe baseline grammar.");
-  }
-  const grammarIndex = Math.floor(random() * contourGrammarIds.length);
+  const grammarIndex = Math.floor(random() * generatedBoundaryGrammarIds.length);
   const baselineGrammarId =
-    contourGrammarIds[Math.min(grammarIndex, contourGrammarIds.length - 1)];
+    generatedBoundaryGrammarIds[
+      Math.min(grammarIndex, generatedBoundaryGrammarIds.length - 1)
+    ];
   const initialSeedOffset = Math.floor(random() * 1_000_000);
 
   for (let offset = 0; offset < maximumInsetSeedAttempts; offset += 1) {
@@ -155,7 +150,6 @@ const deriveBoundaryContour = (
 
 const withBoundaryContours = (
   pieces: readonly JigsawPiece[],
-  edgeModel: JigsawEdgeModel,
   edgeSeed: string,
   attempt: number,
 ): JigsawPiece[] =>
@@ -167,7 +161,6 @@ const withBoundaryContours = (
             ...edge,
             contour: deriveBoundaryContour(
               edgeSeed,
-              edgeModel.baselineGrammarIds,
               piece.row,
               piece.column,
               edge.side,
@@ -440,7 +433,7 @@ export const applyJigsawBoundaryMode = ({
 
   let lastFailure = "unknown validation failure";
   for (let attempt = 0; attempt < maximumBoundaryAttempts; attempt += 1) {
-    const candidate = withBoundaryContours(pieces, edgeModel, edgeSeed, attempt);
+    const candidate = withBoundaryContours(pieces, edgeSeed, attempt);
     const validation = validateJigsawOuterBoundary({
       pieces: candidate,
       width,
