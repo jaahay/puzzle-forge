@@ -1,10 +1,10 @@
 import type {
-  JigsawBaselineGrammarId,
-  JigsawConnectorGrammarId,
+  JigsawBaselineCourseId,
   JigsawCutStyle,
+  JigsawEdgeProfileId,
 } from "../../catalog/types";
 import { createRandom } from "../shared";
-import { jigsawBaselineGrammarIds } from "./baselineGrammar";
+import { jigsawBaselineCourseIds } from "./baselineCourse";
 import { jigsawConnectorGrammarIds } from "./connectorGrammar";
 
 export const jigsawCutStyles = [
@@ -24,54 +24,70 @@ export const jigsawCutStyleLabels = {
 
 export const jigsawCutStyleDescriptions = {
   traditional: "Familiar, restrained cuts with occasional irregular character.",
-  unconventional: "Expressive cuts drawn from the broader Puzzle Forge grammar.",
+  unconventional: "Expressive cuts drawn from the full Puzzle Forge edge vocabulary.",
 } as const satisfies Record<JigsawCutStyle, string>;
+
+export const jigsawEdgeProfileIds = [
+  ...jigsawConnectorGrammarIds,
+  "connectorless-wave",
+] as const satisfies readonly JigsawEdgeProfileId[];
 
 type WeightMap<T extends string> = Partial<Record<T, number>>;
 
 type JigsawCutStyleDefinition = {
-  connectorWeights: WeightMap<JigsawConnectorGrammarId>;
-  baselineWeights: WeightMap<JigsawBaselineGrammarId>;
-  requiredBaselineGrammarIds: readonly JigsawBaselineGrammarId[];
+  edgeProfileWeights: WeightMap<JigsawEdgeProfileId>;
+  baselineCourseWeights: WeightMap<JigsawBaselineCourseId>;
+  requiredBaselineCourseIds: readonly JigsawBaselineCourseId[];
   baselinePaletteSize: number;
 };
 
 const jigsawCutStyleDefinitions: Record<JigsawCutStyle, JigsawCutStyleDefinition> = {
   traditional: {
-    connectorWeights: {
+    edgeProfileWeights: {
       "classic-bulb": 4,
       "necked-head": 2,
     },
-    baselineWeights: {
+    baselineCourseWeights: {
       straight: 4,
       bow: 3,
       inflection: 1.2,
       "angled-course": 0.8,
     },
-    requiredBaselineGrammarIds: ["straight", "bow"],
+    requiredBaselineCourseIds: ["straight", "bow"],
     baselinePaletteSize: 3,
   },
   unconventional: {
-    connectorWeights: {
-      "classic-bulb": 0.35,
-      "necked-head": 0.6,
-      "multi-lobe": 1.1,
-      scoop: 1.25,
-      serpentine: 1.35,
-      terrace: 1.05,
-      zigzag: 1.15,
-      "stacked-lock": 1.3,
+    edgeProfileWeights: {
+      "classic-bulb": 0.3,
+      "necked-head": 0.55,
+      "multi-lobe": 1,
+      scoop: 1.1,
+      serpentine: 1.2,
+      terrace: 0.95,
+      zigzag: 1,
+      "stacked-lock": 1.15,
+      "compound-lock": 1.15,
+      "opposed-dual-lock": 0.9,
+      "notched-head": 1.05,
+      "connectorless-wave": 0.65,
     },
-    baselineWeights: {
-      straight: 0.2,
-      bow: 0.65,
-      inflection: 1,
-      "angled-course": 1.05,
-      dogleg: 1.25,
-      wave: 1.5,
-      "stepped-course": 1.35,
+    baselineCourseWeights: {
+      straight: 0.15,
+      bow: 0.55,
+      inflection: 0.8,
+      "angled-course": 0.85,
+      dogleg: 1,
+      wave: 1.15,
+      "stepped-course": 1.05,
+      "separated-bows": 0.9,
+      "opposed-pair": 0.9,
+      "primary-secondary": 0.85,
+      "inflection-rest-bow": 0.95,
+      "same-side-hairpin": 0.75,
+      "opposed-hairpin": 0.7,
+      "counter-hook": 0.75,
     },
-    requiredBaselineGrammarIds: ["bow"],
+    requiredBaselineCourseIds: ["bow"],
     baselinePaletteSize: 4,
   },
 };
@@ -85,7 +101,7 @@ const selectWeightedId = <T extends string>(
     .map((id) => ({ id, weight: Math.max(0, weights[id] ?? 0) }))
     .filter(({ weight }) => weight > 0);
   if (weighted.length === 0) {
-    throw new Error("Jigsaw cut-style policy has no selectable grammar.");
+    throw new Error("Jigsaw cut-style policy has no selectable edge vocabulary.");
   }
 
   const total = weighted.reduce((sum, entry) => sum + entry.weight, 0);
@@ -97,33 +113,33 @@ const selectWeightedId = <T extends string>(
     if (cursor < 0) return entry.id;
   }
 
-  return weighted[weighted.length - 1].id;
+  return weighted[weighted.length - 1]!.id;
 };
 
 export const normalizeJigsawCutStyle = (
   value: JigsawCutStyle | undefined,
 ): JigsawCutStyle => value ?? defaultJigsawCutStyle;
 
-export const selectJigsawConnectorGrammarForCutStyle = (
+export const selectJigsawEdgeProfileForCutStyle = (
   cutStyle: JigsawCutStyle,
   randomUnit: number,
-): JigsawConnectorGrammarId =>
+): JigsawEdgeProfileId =>
   selectWeightedId(
-    jigsawConnectorGrammarIds,
-    jigsawCutStyleDefinitions[cutStyle].connectorWeights,
+    jigsawEdgeProfileIds,
+    jigsawCutStyleDefinitions[cutStyle].edgeProfileWeights,
     randomUnit,
   );
 
-export const deriveJigsawBaselinePalette = (
+export const deriveJigsawBaselineCoursePalette = (
   cutStyle: JigsawCutStyle,
   seed: string,
-): readonly JigsawBaselineGrammarId[] => {
+): readonly JigsawBaselineCourseId[] => {
   const definition = jigsawCutStyleDefinitions[cutStyle];
-  const selected = [...definition.requiredBaselineGrammarIds];
-  const available = jigsawBaselineGrammarIds.filter(
-    (grammarId) =>
-      !selected.includes(grammarId) &&
-      (definition.baselineWeights[grammarId] ?? 0) > 0,
+  const selected = [...definition.requiredBaselineCourseIds];
+  const available = jigsawBaselineCourseIds.filter(
+    (courseId) =>
+      !selected.includes(courseId) &&
+      (definition.baselineCourseWeights[courseId] ?? 0) > 0,
   );
   const random = createRandom(`${seed}:baseline-palette`);
 
@@ -131,30 +147,30 @@ export const deriveJigsawBaselinePalette = (
     selected.length < definition.baselinePaletteSize &&
     available.length > 0
   ) {
-    const grammarId = selectWeightedId(
+    const courseId = selectWeightedId(
       available,
-      definition.baselineWeights,
+      definition.baselineCourseWeights,
       random(),
     );
-    selected.push(grammarId);
-    available.splice(available.indexOf(grammarId), 1);
+    selected.push(courseId);
+    available.splice(available.indexOf(courseId), 1);
   }
 
   return selected;
 };
 
-export const sampleJigsawBaselineGrammarForCutStyle = (
+export const sampleJigsawBaselineCourseForCutStyle = (
   cutStyle: JigsawCutStyle,
-  baselineGrammarIds: readonly JigsawBaselineGrammarId[],
+  baselineCourseIds: readonly JigsawBaselineCourseId[],
   randomUnit: number,
-): JigsawBaselineGrammarId => {
-  if (baselineGrammarIds.length === 0) {
-    throw new Error("Jigsaw baseline palette must contain at least one grammar.");
+): JigsawBaselineCourseId => {
+  if (baselineCourseIds.length === 0) {
+    throw new Error("Jigsaw baseline palette must contain at least one course.");
   }
 
   return selectWeightedId(
-    baselineGrammarIds,
-    jigsawCutStyleDefinitions[cutStyle].baselineWeights,
+    baselineCourseIds,
+    jigsawCutStyleDefinitions[cutStyle].baselineCourseWeights,
     randomUnit,
   );
 };

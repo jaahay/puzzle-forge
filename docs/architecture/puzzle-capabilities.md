@@ -218,7 +218,7 @@ Manual QA:
 1. Open each playable puzzle.
 2. Confirm controls match expected capabilities.
 3. Confirm planned puzzles do not expose invalid generation controls.
-4. Confirm Jigsaw remains prototype until promotion criteria are met.
+4. Confirm Jigsaw remains prototype until playable readiness criteria are met.
 
 ## Handoff prompt
 

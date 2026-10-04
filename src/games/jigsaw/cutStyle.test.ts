@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { jigsawBaselineGrammarIds } from "./baselineGrammar";
+import { jigsawBaselineCourseIds } from "./baselineCourse";
 import {
   defaultJigsawCutStyle,
-  deriveJigsawBaselinePalette,
+  deriveJigsawBaselineCoursePalette,
   jigsawCutStyles,
+  jigsawEdgeProfileIds,
   normalizeJigsawCutStyle,
-  sampleJigsawBaselineGrammarForCutStyle,
-  selectJigsawConnectorGrammarForCutStyle,
+  sampleJigsawBaselineCourseForCutStyle,
+  selectJigsawEdgeProfileForCutStyle,
 } from "./cutStyle";
-import { jigsawConnectorGrammarIds } from "./connectorGrammar";
 
 describe("Jigsaw cut style", () => {
   it("is an intentional closed binary product axis", () => {
@@ -18,37 +18,35 @@ describe("Jigsaw cut style", () => {
     expect(normalizeJigsawCutStyle("unconventional")).toBe("unconventional");
   });
 
-  it("defines Traditional positively with a familiar connector vocabulary", () => {
+  it("defines Traditional positively with a familiar edge vocabulary", () => {
     const selected = new Set(
       Array.from({ length: 2_000 }, (_, index) =>
-        selectJigsawConnectorGrammarForCutStyle(
+        selectJigsawEdgeProfileForCutStyle(
           "traditional",
           (index + 0.5) / 2_000,
         ),
       ),
     );
 
-    expect(selected).toEqual(
-      new Set(["classic-bulb", "necked-head"]),
-    );
+    expect(selected).toEqual(new Set(["classic-bulb", "necked-head"]));
   });
 
-  it("lets Unconventional reach the complete connector vocabulary", () => {
+  it("lets Unconventional reach every production edge profile", () => {
     const selected = new Set(
-      Array.from({ length: 4_000 }, (_, index) =>
-        selectJigsawConnectorGrammarForCutStyle(
+      Array.from({ length: 8_000 }, (_, index) =>
+        selectJigsawEdgeProfileForCutStyle(
           "unconventional",
-          (index + 0.5) / 4_000,
+          (index + 0.5) / 8_000,
         ),
       ),
     );
 
-    expect(selected).toEqual(new Set(jigsawConnectorGrammarIds));
+    expect(selected).toEqual(new Set(jigsawEdgeProfileIds));
   });
 
   it("derives a restrained, coherent Traditional baseline palette", () => {
     for (let index = 0; index < 128; index += 1) {
-      const palette = deriveJigsawBaselinePalette(
+      const palette = deriveJigsawBaselineCoursePalette(
         "traditional",
         `traditional-${index}`,
       );
@@ -58,50 +56,44 @@ describe("Jigsaw cut style", () => {
       expect(palette).toContain("straight");
       expect(palette).toContain("bow");
       expect(
-        palette.every((grammarId) =>
-          [
-            "straight",
-            "bow",
-            "inflection",
-            "angled-course",
-          ].includes(grammarId),
+        palette.every((courseId) =>
+          ["straight", "bow", "inflection", "angled-course"].includes(courseId),
         ),
       ).toBe(true);
     }
   });
 
-  it("keeps a familiar anchor while varying the Unconventional baseline sub-palette", () => {
+  it("lets Unconventional palettes reach every production baseline course", () => {
     const observed = new Set<string>();
 
-    for (let index = 0; index < 512; index += 1) {
-      const palette = deriveJigsawBaselinePalette(
+    for (let index = 0; index < 2_048; index += 1) {
+      const palette = deriveJigsawBaselineCoursePalette(
         "unconventional",
         `unconventional-${index}`,
       );
-
       expect(palette).toHaveLength(4);
       expect(new Set(palette).size).toBe(4);
       expect(palette).toContain("bow");
-      palette.forEach((grammarId) => observed.add(grammarId));
+      palette.forEach((courseId) => observed.add(courseId));
     }
 
-    expect(observed).toEqual(new Set(jigsawBaselineGrammarIds));
+    expect(observed).toEqual(new Set(jigsawBaselineCourseIds));
   });
 
   it("samples only within the puzzle's selected baseline sub-palette", () => {
     const palette = [
       "bow",
-      "dogleg",
-      "wave",
-      "stepped-course",
+      "separated-bows",
+      "opposed-hairpin",
+      "primary-secondary",
     ] as const;
 
     const selected = new Set(
-      Array.from({ length: 2_000 }, (_, index) =>
-        sampleJigsawBaselineGrammarForCutStyle(
+      Array.from({ length: 4_000 }, (_, index) =>
+        sampleJigsawBaselineCourseForCutStyle(
           "unconventional",
           palette,
-          (index + 0.5) / 2_000,
+          (index + 0.5) / 4_000,
         ),
       ),
     );
@@ -110,11 +102,15 @@ describe("Jigsaw cut style", () => {
   });
 
   it("is deterministic at the palette boundary", () => {
-    expect(deriveJigsawBaselinePalette("traditional", "same-seed")).toEqual(
-      deriveJigsawBaselinePalette("traditional", "same-seed"),
+    expect(
+      deriveJigsawBaselineCoursePalette("traditional", "same-seed"),
+    ).toEqual(
+      deriveJigsawBaselineCoursePalette("traditional", "same-seed"),
     );
-    expect(deriveJigsawBaselinePalette("unconventional", "same-seed")).toEqual(
-      deriveJigsawBaselinePalette("unconventional", "same-seed"),
+    expect(
+      deriveJigsawBaselineCoursePalette("unconventional", "same-seed"),
+    ).toEqual(
+      deriveJigsawBaselineCoursePalette("unconventional", "same-seed"),
     );
   });
 });

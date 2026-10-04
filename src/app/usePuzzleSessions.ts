@@ -83,7 +83,7 @@ const cloneTilePuzzle = (puzzle: Exclude<GeneratedPuzzle, CardGeneratedPuzzle | 
       asset: { ...puzzle.asset, files: { ...puzzle.asset.files }, credit: { ...puzzle.asset.credit } },
       edgeModel: {
         ...puzzle.edgeModel,
-        baselineGrammarIds: [...puzzle.edgeModel.baselineGrammarIds],
+        baselineCourseIds: [...puzzle.edgeModel.baselineCourseIds],
       },
     };
   }

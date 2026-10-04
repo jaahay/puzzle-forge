@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type {
   JigsawBaselineGrammarId,
   JigsawBoundaryEdge,
+  JigsawConnectorGrammarId,
   JigsawCutStyle,
   JigsawEdgeModel,
   JigsawEdgeProfileId,
@@ -10,10 +11,13 @@ import type {
   JigsawPiece,
 } from "../../catalog/types";
 import {
-  getJigsawBaselineGrammarDefinition,
   jigsawBaselineGrammarIds,
 } from "./baselineGrammar";
-import { deriveJigsawBaselinePalette } from "./cutStyle";
+import {
+  getJigsawBaselineCourseDefinition,
+  jigsawBaselineCourseIds,
+} from "./baselineCourse";
+import { deriveJigsawBaselineCoursePalette } from "./cutStyle";
 import { jigsawConnectorGrammarIds } from "./connectorGrammar";
 import { deriveJigsawSeamProgram } from "./seamProgram";
 import { generateJigsaw } from "./generate";
@@ -91,8 +95,8 @@ const makeEdgeModel = (
   cutStyle: JigsawCutStyle = "unconventional",
 ): JigsawEdgeModel => ({
   cutStyle,
-  baselineGrammarIds: [
-    ...deriveJigsawBaselinePalette(cutStyle, `edge-path-test:${cutStyle}`),
+  baselineCourseIds: [
+    ...deriveJigsawBaselineCoursePalette(cutStyle, `edge-path-test:${cutStyle}`),
   ],
 });
 
@@ -284,7 +288,7 @@ describe("Jigsaw edge paths", () => {
   });
 
   it("preserves connector render modes while baseline rendering remains independent", () => {
-    const organicFamilies: JigsawEdgeProfileId[] = [
+    const organicFamilies: JigsawConnectorGrammarId[] = [
       "classic-bulb",
       "necked-head",
       "multi-lobe",
@@ -292,7 +296,7 @@ describe("Jigsaw edge paths", () => {
       "serpentine",
       "stacked-lock",
     ];
-    const angularFamilies: JigsawEdgeProfileId[] = [
+    const angularFamilies: JigsawConnectorGrammarId[] = [
       "terrace",
       "zigzag",
     ];
@@ -306,14 +310,14 @@ describe("Jigsaw edge paths", () => {
         (seedOffset) => {
           const seam = deriveJigsawSeamProgram(profileId, seedOffset, {
             cutStyle: expressiveEdgeModel.cutStyle,
-            baselineGrammarIds: expressiveEdgeModel.baselineGrammarIds,
+            baselineCourseIds: expressiveEdgeModel.baselineCourseIds,
           });
           return (
-            getJigsawBaselineGrammarDefinition(
-              seam.approach.baselineGrammarId,
+            getJigsawBaselineCourseDefinition(
+              seam.approach.baselineCourseId,
             ).renderMode === "angular" &&
-            getJigsawBaselineGrammarDefinition(
-              seam.departure.baselineGrammarId,
+            getJigsawBaselineCourseDefinition(
+              seam.departure.baselineCourseId,
             ).renderMode === "angular"
           );
         },
@@ -334,14 +338,14 @@ describe("Jigsaw edge paths", () => {
       (seedOffset) => {
         const seam = deriveJigsawSeamProgram("terrace", seedOffset, {
           cutStyle: expressiveEdgeModel.cutStyle,
-          baselineGrammarIds: expressiveEdgeModel.baselineGrammarIds,
+          baselineCourseIds: expressiveEdgeModel.baselineCourseIds,
         });
         return (
-          getJigsawBaselineGrammarDefinition(
-            seam.approach.baselineGrammarId,
+          getJigsawBaselineCourseDefinition(
+            seam.approach.baselineCourseId,
           ).renderMode === "smooth" ||
-          getJigsawBaselineGrammarDefinition(
-            seam.departure.baselineGrammarId,
+          getJigsawBaselineCourseDefinition(
+            seam.departure.baselineCourseId,
           ).renderMode === "smooth"
         );
       },
@@ -460,12 +464,12 @@ describe("Jigsaw edge paths", () => {
         for (const seedOffset of broadSeamSeedOffsets) {
           const seam = deriveJigsawSeamProgram(profileId, seedOffset, {
             cutStyle: edgeModel.cutStyle,
-            baselineGrammarIds: edgeModel.baselineGrammarIds,
+            baselineCourseIds: edgeModel.baselineCourseIds,
           });
-          approachGrammarIds.add(seam.approach.baselineGrammarId);
-          departureGrammarIds.add(seam.departure.baselineGrammarId);
+          approachGrammarIds.add(seam.approach.baselineCourseId);
+          departureGrammarIds.add(seam.departure.baselineCourseId);
           baselinePairs.add(
-            `${seam.approach.baselineGrammarId}>${seam.departure.baselineGrammarId}`,
+            `${seam.approach.baselineCourseId}>${seam.departure.baselineCourseId}`,
           );
           const points = getJigsawEdgePoints(
             makeInteriorEdge({ side: "top", profileId, polarity: "tab", seedOffset }),
@@ -479,13 +483,13 @@ describe("Jigsaw edge paths", () => {
         }
 
         expect(approachGrammarIds).toEqual(
-          new Set(edgeModel.baselineGrammarIds),
+          new Set(edgeModel.baselineCourseIds),
         );
         expect(departureGrammarIds).toEqual(
-          new Set(edgeModel.baselineGrammarIds),
+          new Set(edgeModel.baselineCourseIds),
         );
         expect(baselinePairs.size).toBeGreaterThanOrEqual(
-          edgeModel.baselineGrammarIds.length * 2,
+          edgeModel.baselineCourseIds.length * 2,
         );
       }
     }
@@ -652,4 +656,60 @@ describe("Jigsaw edge paths", () => {
       ),
     );
   });
+
+  it("renders connectorless-wave as a reciprocal, shape-rich production seam", () => {
+    const top = getJigsawEdgePoints(
+      makeInteriorEdge({
+        side: "top",
+        profileId: "connectorless-wave",
+        polarity: "tab",
+        seedOffset: 123_456,
+      }),
+      expressiveEdgeModel,
+    );
+    const reciprocal = getJigsawEdgePoints(
+      makeInteriorEdge({
+        side: "top",
+        profileId: "connectorless-wave",
+        polarity: "blank",
+        seedOffset: 123_456,
+      }),
+      expressiveEdgeModel,
+    )
+      .map((candidate) => ({ x: 100 - candidate.x, y: candidate.y }))
+      .reverse();
+
+    expectPointsSafe(top, "connectorless-wave");
+    expectPointsToMatch(top, reciprocal);
+    expect(Math.max(...top.map((candidate) => Math.abs(candidate.y)))).toBeGreaterThan(1);
+  });
+
+  it("exercises every production baseline course through ordinary connected seams", () => {
+    const edgeModel: JigsawEdgeModel = {
+      cutStyle: "unconventional",
+      baselineCourseIds: [...jigsawBaselineCourseIds],
+    };
+    const observed = new Set<string>();
+
+    for (const seedOffset of broadSeamSeedOffsets) {
+      const seam = deriveJigsawSeamProgram("classic-bulb", seedOffset, edgeModel);
+      observed.add(seam.approach.baselineCourseId);
+      observed.add(seam.departure.baselineCourseId);
+      expectPointsSafe(
+        getJigsawEdgePoints(
+          makeInteriorEdge({
+            side: "top",
+            profileId: "classic-bulb",
+            polarity: "tab",
+            seedOffset,
+          }),
+          edgeModel,
+        ),
+        `all-course seam seed ${seedOffset}`,
+      );
+    }
+
+    expect(observed).toEqual(new Set(jigsawBaselineCourseIds));
+  }, 20_000);
+
 });
