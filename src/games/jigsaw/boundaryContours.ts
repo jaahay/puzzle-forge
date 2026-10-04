@@ -25,7 +25,7 @@ export const isJigsawBoundaryMode = (
 
 export const jigsawBoundaryModeLabels = {
   flat: "Flat",
-  contoured: "Shaped",
+  contoured: "Contoured",
 } as const satisfies Record<JigsawBoundaryMode, string>;
 
 export const jigsawBoundaryModeDescriptions = {
