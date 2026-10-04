@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { getPuzzleDefinition, isGeneratable } from "../catalog/puzzleCatalog";
 import type {
   GeneratedPuzzle,
+  JigsawBoundaryMode,
   JigsawCutStyle,
   PuzzleDefinition,
   PuzzleDifficulty,
@@ -12,6 +13,7 @@ import type {
   SudokuVariation,
 } from "../catalog/types";
 import { isImageBackedPuzzleId } from "../games/imageAssets";
+import { defaultJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
 import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
@@ -53,6 +55,7 @@ type MissingPuzzleGenerationInput = {
   sudokuVariation: SudokuVariation;
   solitaireVariation: SolitaireVariation;
   jigsawCutStyle?: JigsawCutStyle;
+  jigsawBoundaryMode?: JigsawBoundaryMode;
   makeSeed: () => string;
 };
 
@@ -121,6 +124,9 @@ export const makeInitialPuzzleGenerationOptions = ({
     jigsawCutStyle: puzzleId === "jigsaw"
       ? rememberedDraft?.jigsawCutStyle ?? defaultJigsawCutStyle
       : undefined,
+    jigsawBoundaryMode: puzzleId === "jigsaw"
+      ? rememberedDraft?.jigsawBoundaryMode ?? defaultJigsawBoundaryMode
+      : undefined,
   };
 };
 
@@ -146,6 +152,7 @@ export const makeMissingPuzzleGenerationOptions = ({
   sudokuVariation: selectedPuzzleId === "sudoku" ? sudokuVariation : undefined,
   solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? solitaireVariation : undefined,
   jigsawCutStyle: selectedPuzzleId === "jigsaw" ? jigsawCutStyle : undefined,
+  jigsawBoundaryMode: selectedPuzzleId === "jigsaw" ? jigsawBoundaryMode : undefined,
 });
 
 export const usePuzzleGeneration = () => {
@@ -198,6 +205,9 @@ export const usePuzzleGeneration = () => {
       imageId: isImageBackedPuzzleId(puzzleId) ? options.imageId : undefined,
       jigsawCutStyle: puzzleId === "jigsaw"
         ? options.jigsawCutStyle ?? defaultJigsawCutStyle
+        : undefined,
+      jigsawBoundaryMode: puzzleId === "jigsaw"
+        ? options.jigsawBoundaryMode ?? defaultJigsawBoundaryMode
         : undefined,
     };
 
