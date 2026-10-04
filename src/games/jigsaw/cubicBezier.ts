@@ -104,12 +104,15 @@ export const flattenCubicBezier = (
   const points: JigsawCurvePoint[] = [curve.start];
 
   const flatten = (candidate: JigsawCubicBezier, depth: number) => {
-    if (
-      depth >= maximumSubdivisionDepth ||
-      isFlatEnough(candidate, tolerance)
-    ) {
+    if (isFlatEnough(candidate, tolerance)) {
       points.push(candidate.end);
       return;
+    }
+
+    if (depth >= maximumSubdivisionDepth) {
+      throw new Error(
+        "Unable to flatten cubic Bézier within the requested tolerance.",
+      );
     }
 
     const [left, right] = splitCubicBezier(candidate);

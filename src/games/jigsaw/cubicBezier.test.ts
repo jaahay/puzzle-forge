@@ -128,6 +128,19 @@ describe("adaptive cubic Bézier flattening", () => {
     }
   });
 
+  it("never silently violates the requested error bound at the depth guard", () => {
+    const pathological: JigsawCubicBezier = {
+      start: { x: 0, y: 0 },
+      control1: { x: 0, y: 1e20 },
+      control2: { x: 100, y: -1e20 },
+      end: { x: 100, y: 0 },
+    };
+
+    expect(() => flattenCubicBezier(pathological)).toThrow(
+      "within the requested tolerance",
+    );
+  });
+
   it("rejects invalid tolerances", () => {
     const curve: JigsawCubicBezier = {
       start: { x: 0, y: 0 },
