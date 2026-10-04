@@ -1,5 +1,6 @@
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type {
+  JigsawBoundaryMode,
   JigsawCutStyle,
   PuzzleDifficulty,
   PuzzleId,
@@ -7,6 +8,10 @@ import type {
   SudokuVariation,
 } from "../catalog/types";
 import { getPuzzleImageAsset } from "../games/imageAssets";
+import {
+  jigsawBoundaryModes,
+  normalizeJigsawBoundaryMode,
+} from "../games/jigsaw/boundaryContours";
 import {
   defaultJigsawCutStyle,
   jigsawCutStyles,
@@ -184,7 +189,10 @@ const pushPuzzlePayload = (bytes: number[], identity: GenerationIdentity) => {
       const cutStyle = normalizeJigsawCutStyle(identity.jigsawCutStyle);
       const cutStyleIndex = jigsawCutStyles.indexOf(cutStyle);
       if (cutStyleIndex < 0) throw new Error(`Unsupported Jigsaw cut style: ${cutStyle}`);
-      pushByte(bytes, cutStyleIndex);
+      const boundaryMode = normalizeJigsawBoundaryMode(identity.jigsawBoundaryMode);
+      const boundaryModeIndex = jigsawBoundaryModes.indexOf(boundaryMode);
+      if (boundaryModeIndex < 0) throw new Error(`Unsupported Jigsaw boundary mode: ${boundaryMode}`);
+      pushByte(bytes, cutStyleIndex | (boundaryModeIndex << 1));
       return;
     }
     case "tile-swap":
@@ -261,6 +269,7 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
     let sudokuVariation: SudokuVariation = defaultSudokuVariation;
     let solitaireVariation: SolitaireVariation = defaultSolitaireVariation;
     let jigsawCutStyle: JigsawCutStyle | undefined;
+    let jigsawBoundaryMode: JigsawBoundaryMode | undefined;
     let imageId: string | undefined;
 
     switch (puzzleId) {
@@ -294,9 +303,15 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
         width = reader.readByte();
         height = reader.readByte();
         imageId = getPuzzleImageAsset(reader.readText(), puzzleId).id;
-        const decodedCutStyle = jigsawCutStyles[reader.readByte()];
-        if (!decodedCutStyle) return { ok: false, reason: "invalid-identity" };
+        const flags = reader.readByte();
+        if ((flags & 0xfc) !== 0) return { ok: false, reason: "invalid-identity" };
+        const decodedCutStyle = jigsawCutStyles[flags & 0x01];
+        const decodedBoundaryMode = jigsawBoundaryModes[(flags >>> 1) & 0x01];
+        if (!decodedCutStyle || !decodedBoundaryMode) {
+          return { ok: false, reason: "invalid-identity" };
+        }
         jigsawCutStyle = decodedCutStyle;
+        jigsawBoundaryMode = decodedBoundaryMode;
         break;
       }
       case "tile-swap":
@@ -356,6 +371,7 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
       sudokuVariation,
       solitaireVariation,
       ...(jigsawCutStyle ? { jigsawCutStyle } : {}),
+      ...(jigsawBoundaryMode ? { jigsawBoundaryMode } : {}),
       ...(imageId ? { imageId } : {}),
       ...(provenance ? { provenance } : {}),
     };
