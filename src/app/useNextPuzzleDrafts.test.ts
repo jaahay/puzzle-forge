@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { GeneratedPuzzle } from "../catalog/types";
 import { getPuzzleImageAsset, getPuzzleImageAssetsFor } from "../games/imageAssets";
+import { defaultJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
 import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
 import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
 import { resolveJigsawSizeDimensions } from "../games/jigsaw/size";
@@ -20,6 +21,7 @@ const runtimeSettings: GenerationRuntimeSettings = {
   sudokuVariation: "diagonal",
   solitaireVariation: { ...defaultSolitaireVariation, drawMode: "draw-3" },
   jigsawCutStyle: defaultJigsawCutStyle,
+  jigsawBoundaryMode: defaultJigsawBoundaryMode,
 };
 
 const sudokuPuzzle: GeneratedPuzzle = {
@@ -73,6 +75,8 @@ describe("buildNextPuzzleDraft", () => {
       height: small.height,
       jigsawSizeSelection: "Small",
       jigsawCutStyle: defaultJigsawCutStyle,
+      jigsawBoundaryMode: defaultJigsawBoundaryMode,
+      jigsawBoundaryMode: defaultJigsawBoundaryMode,
     });
   });
 
@@ -102,6 +106,24 @@ describe("buildNextPuzzleDraft", () => {
   });
 });
 
+
+describe("Jigsaw boundary draft intent", () => {
+  it("keeps boundary mode independent while changing other Jigsaw draft settings", () => {
+    const base = buildNextPuzzleDraft({
+      puzzleId: "jigsaw",
+      selectedPuzzleId: "jigsaw",
+      currentPuzzle: null,
+      runtimeSettings: {
+        ...runtimeSettings,
+        jigsawBoundaryMode: "contoured",
+      },
+    });
+
+    expect(base.jigsawBoundaryMode).toBe("contoured");
+    expect(randomizeNextPuzzleArtwork("jigsaw", base, 0).jigsawBoundaryMode)
+      .toBe("contoured");
+  });
+});
 
 describe("randomizeNextPuzzleArtwork", () => {
   it("keeps non-image puzzle drafts unchanged", () => {
@@ -167,6 +189,7 @@ describe("randomizeNextPuzzleArtwork", () => {
       imageId: currentAsset.id,
       jigsawSizeSelection: "Small" as const,
       jigsawCutStyle: defaultJigsawCutStyle,
+      jigsawBoundaryMode: defaultJigsawBoundaryMode,
     };
 
     const randomized = randomizeNextPuzzleArtwork("jigsaw", draft, 0);
@@ -179,6 +202,7 @@ describe("randomizeNextPuzzleArtwork", () => {
       height: expectedSize.height,
       jigsawSizeSelection: "Small",
       jigsawCutStyle: defaultJigsawCutStyle,
+      jigsawBoundaryMode: defaultJigsawBoundaryMode,
     });
   });
 
@@ -194,6 +218,7 @@ describe("randomizeNextPuzzleArtwork", () => {
       imageId: currentAsset.id,
       jigsawSizeSelection: "Custom" as const,
       jigsawCutStyle: defaultJigsawCutStyle,
+      jigsawBoundaryMode: defaultJigsawBoundaryMode,
     };
 
     const randomized = randomizeNextPuzzleArtwork("jigsaw", draft, 0);
