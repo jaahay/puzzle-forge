@@ -141,6 +141,7 @@ export const makeMissingPuzzleGenerationOptions = ({
   sudokuVariation,
   solitaireVariation,
   jigsawCutStyle,
+  jigsawBoundaryMode,
   makeSeed,
 }: MissingPuzzleGenerationInput): BeginGenerationOptions => ({
   puzzleId: selectedPuzzleId,
