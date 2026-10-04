@@ -93,6 +93,30 @@ describe("Daily resource semantics", () => {
     if (traditional.ok) expect(traditional.query).toBe("");
   });
 
+  it("round-trips Jigsaw outer boundary independently of cut style", () => {
+    const resolved = resolveDailyResource(
+      "jigsaw",
+      "2026-09-15",
+      "boundary=contoured&cut=unconventional",
+    );
+    expect(resolved.ok).toBe(true);
+    if (!resolved.ok) return;
+
+    expect(resolved.query).toBe("cut=unconventional&boundary=contoured");
+    expect(resolved.identity.jigsawCutStyle).toBe("unconventional");
+    expect(resolved.identity.jigsawBoundaryMode).toBe("contoured");
+    expect(makeDailyResourceLocatorPath(resolved.identity))
+      .toBe("/jigsaw/daily/2026-09-15?cut=unconventional&boundary=contoured");
+
+    const flat = resolveDailyResource(
+      "jigsaw",
+      "2026-09-15",
+      "boundary=flat",
+    );
+    expect(flat.ok).toBe(true);
+    if (flat.ok) expect(flat.query).toBe("");
+  });
+
   it("round-trips material qualifiers for other Daily puzzle families", () => {
     const solitaire = resolveDailyResource(
       "klondike-solitaire",
@@ -128,6 +152,7 @@ describe("Daily resource semantics", () => {
     expect(resolveDailyResource("klondike-solitaire", "2026-09-15", "redeals=01").ok).toBe(false);
     expect(resolveDailyResource("jigsaw", "2026-09-15", "image=").ok).toBe(false);
     expect(resolveDailyResource("jigsaw", "2026-09-15", "cut=expressive").ok).toBe(false);
+    expect(resolveDailyResource("jigsaw", "2026-09-15", "boundary=organic").ok).toBe(false);
     expect(resolveDailyResource("tile-swap", "2026-09-15", "cut=unconventional").ok).toBe(false);
   });
 });

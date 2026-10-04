@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { GeneratedPuzzle } from "../catalog/types";
 import { getPuzzleImageAsset } from "../games/imageAssets";
+import { defaultJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
 import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
 import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
 import { generateJigsaw } from "../games/jigsaw/generate";
@@ -24,6 +25,7 @@ const runtimeSettings: GenerationRuntimeSettings = {
   sudokuVariation: defaultSudokuVariation,
   solitaireVariation: defaultSolitaireVariation,
   jigsawCutStyle: defaultJigsawCutStyle,
+  jigsawBoundaryMode: defaultJigsawBoundaryMode,
 };
 
 const cardPuzzle: GeneratedPuzzle = {
@@ -236,6 +238,34 @@ describe("resolveGenerationIdentity", () => {
 
     expect(inherited.jigsawCutStyle).toBe("unconventional");
     expect(changed.jigsawCutStyle).toBe("traditional");
+  });
+
+  it("uses current Jigsaw boundary mode unless another mode is explicitly requested", () => {
+    const currentPuzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "current-boundary",
+      width: 4,
+      height: 4,
+      imageId: defaultJigsawImageAsset.id,
+      jigsawBoundaryMode: "contoured",
+    });
+
+    const inherited = resolveGenerationIdentity({
+      puzzleId: "jigsaw",
+      currentPuzzle,
+      runtimeSettings,
+      makeSeed: () => "fallback",
+    });
+    const changed = resolveGenerationIdentity({
+      puzzleId: "jigsaw",
+      currentPuzzle,
+      runtimeSettings,
+      settings: { jigsawBoundaryMode: "flat" },
+      makeSeed: () => "fallback",
+    });
+
+    expect(inherited.jigsawBoundaryMode).toBe("contoured");
+    expect(changed.jigsawBoundaryMode).toBe("flat");
   });
 
   it("resolves implicit default artwork before Tile Swap and Sliding Puzzle generation", () => {

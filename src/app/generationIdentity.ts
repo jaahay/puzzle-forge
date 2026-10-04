@@ -1,5 +1,6 @@
 import type {
   GeneratedPuzzle,
+  JigsawBoundaryMode,
   JigsawCutStyle,
   PuzzleDifficulty,
   PuzzleId,
@@ -7,6 +8,10 @@ import type {
   SudokuVariation,
 } from "../catalog/types";
 import { isImageBackedPuzzleId } from "../games/imageAssets";
+import {
+  getJigsawBoundaryMode,
+  normalizeJigsawBoundaryMode,
+} from "../games/jigsaw/boundaryContours";
 import { normalizeJigsawCutStyle } from "../games/jigsaw/cutStyle";
 import { normalizeSolitaireVariation, solitaireVariationsEqual } from "../games/solitaire/variation";
 import { normalizeSudokuVariation } from "../games/sudoku/variation";
@@ -21,6 +26,7 @@ export type GenerationRuntimeSettings = {
   sudokuVariation: SudokuVariation;
   solitaireVariation: SolitaireVariation;
   jigsawCutStyle?: JigsawCutStyle;
+  jigsawBoundaryMode?: JigsawBoundaryMode;
 };
 
 export type GenerationIdentity = GenerationRuntimeSettings & {
@@ -50,6 +56,10 @@ export const getGeneratedPuzzleRuntimeSettings = (
     puzzle.kind === "tiles" && puzzle.puzzleId === "jigsaw"
       ? normalizeJigsawCutStyle(puzzle.edgeModel.cutStyle)
       : fallback.jigsawCutStyle,
+  jigsawBoundaryMode:
+    puzzle.kind === "tiles" && puzzle.puzzleId === "jigsaw"
+      ? getJigsawBoundaryMode(puzzle.tiles)
+      : fallback.jigsawBoundaryMode,
 });
 
 export const generatedPuzzleMatchesIdentity = (
@@ -106,7 +116,9 @@ export const generatedPuzzleMatchesIdentity = (
       puzzle.height === identity.height &&
       puzzle.asset.id === identity.imageId &&
       normalizeJigsawCutStyle(puzzle.edgeModel.cutStyle) ===
-        normalizeJigsawCutStyle(identity.jigsawCutStyle)
+        normalizeJigsawCutStyle(identity.jigsawCutStyle) &&
+      getJigsawBoundaryMode(puzzle.tiles) ===
+        normalizeJigsawBoundaryMode(identity.jigsawBoundaryMode)
     );
   }
 

@@ -7,6 +7,11 @@ import {
   isImageBackedPuzzleId,
 } from "../games/imageAssets";
 import {
+  defaultJigsawBoundaryMode,
+  getJigsawBoundaryMode,
+  normalizeJigsawBoundaryMode,
+} from "../games/jigsaw/boundaryContours";
+import {
   defaultJigsawCutStyle,
   normalizeJigsawCutStyle,
 } from "../games/jigsaw/cutStyle";
@@ -58,6 +63,15 @@ export const buildNextPuzzleDraft = ({
             : defaultJigsawCutStyle,
       )
     : undefined;
+  const jigsawBoundaryMode = puzzleId === "jigsaw"
+    ? normalizeJigsawBoundaryMode(
+        puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw"
+          ? getJigsawBoundaryMode(puzzle.tiles)
+          : useRuntimeFallback
+            ? runtimeSettings.jigsawBoundaryMode
+            : defaultJigsawBoundaryMode,
+      )
+    : undefined;
 
   return {
     width,
@@ -79,6 +93,7 @@ export const buildNextPuzzleDraft = ({
     ...(imageId ? { imageId } : {}),
     ...(jigsawSizeSelection ? { jigsawSizeSelection } : {}),
     ...(jigsawCutStyle ? { jigsawCutStyle } : {}),
+    ...(jigsawBoundaryMode ? { jigsawBoundaryMode } : {}),
   };
 };
 
@@ -129,6 +144,7 @@ export const applyNextPuzzleDraftSettings = (
   imageId: settings.imageId ?? base.imageId,
   jigsawSizeSelection: settings.jigsawSizeSelection ?? base.jigsawSizeSelection,
   jigsawCutStyle: settings.jigsawCutStyle ?? base.jigsawCutStyle,
+  jigsawBoundaryMode: settings.jigsawBoundaryMode ?? base.jigsawBoundaryMode,
 });
 
 type UseNextPuzzleDraftsInput = {

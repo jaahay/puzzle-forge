@@ -1,4 +1,5 @@
 import type {
+  JigsawBoundaryMode,
   JigsawEdgePolarity,
   JigsawEdgeProfileId,
   JigsawEdgeSide,
@@ -18,7 +19,7 @@ import {
 import {
   applyJigsawBoundaryMode,
   defaultJigsawBoundaryMode,
-  type JigsawBoundaryMode,
+  normalizeJigsawBoundaryMode,
 } from "./boundaryContours";
 
 const edgeSides: readonly JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
@@ -121,19 +122,21 @@ const makePieceEdges = ({
     };
   });
 
-const generateJigsawWithBoundaryMode = ({
+export const generateJigsaw: JigsawPuzzleGenerator = ({
   seed,
   width,
   height,
   imageId,
   jigsawCutStyle = defaultJigsawCutStyle,
-}: Parameters<JigsawPuzzleGenerator>[0], boundaryMode: JigsawBoundaryMode) => {
+  jigsawBoundaryMode = defaultJigsawBoundaryMode,
+}) => {
   const normalizedSeed = normalizeSeed(seed);
   const boundedWidth = normalizeDimension(width, 4, jigsawMinimumAxis, jigsawMaximumAxis);
   const boundedHeight = normalizeDimension(height, 4, jigsawMinimumAxis, jigsawMaximumAxis);
   const asset = getPuzzleImageAsset(imageId, "jigsaw");
   const imageIdentity = asset.id;
   const cutStyle = normalizeJigsawCutStyle(jigsawCutStyle);
+  const boundaryMode: JigsawBoundaryMode = normalizeJigsawBoundaryMode(jigsawBoundaryMode);
   const edgeIdentity = `edges:${cutStyle}`;
   const boundaryIdentity = boundaryMode === "flat" ? "" : `-boundary:${boundaryMode}`;
   const solvedIndexes = Array.from({ length: boundedWidth * boundedHeight }, (_, index) => index);
@@ -199,9 +202,3 @@ const generateJigsawWithBoundaryMode = ({
   });
 };
 
-export const generateJigsawWithBoundaryContours = (
-  params: Parameters<JigsawPuzzleGenerator>[0],
-) => generateJigsawWithBoundaryMode(params, "contoured");
-
-export const generateJigsaw: JigsawPuzzleGenerator = (params) =>
-  generateJigsawWithBoundaryMode(params, defaultJigsawBoundaryMode);

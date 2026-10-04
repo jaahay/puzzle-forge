@@ -4,10 +4,7 @@ import {
   getJigsawOuterBoundaryPoints,
   validateJigsawOuterBoundary,
 } from "./boundaryContours";
-import {
-  generateJigsaw,
-  generateJigsawWithBoundaryContours,
-} from "./generate";
+import { generateJigsaw } from "./generate";
 import { defaultJigsawImageAsset } from "./imageAssets";
 
 const makeParams = (seed: string, width = 6, height = 5) => ({
@@ -38,12 +35,14 @@ describe("Jigsaw boundary contour generation", () => {
   });
 
   it("deterministically assigns real contours without inventing outside neighbors", () => {
-    const first = generateJigsawWithBoundaryContours(
-      makeParams("bounded-contours"),
-    );
-    const second = generateJigsawWithBoundaryContours(
-      makeParams("bounded-contours"),
-    );
+    const first = generateJigsaw({
+      ...makeParams("bounded-contours"),
+      jigsawBoundaryMode: "contoured",
+    });
+    const second = generateJigsaw({
+      ...makeParams("bounded-contours"),
+      jigsawBoundaryMode: "contoured",
+    });
 
     expect(first.id).toBe(second.id);
     expect(first.checksum).toBe(second.checksum);
@@ -70,9 +69,10 @@ describe("Jigsaw boundary contour generation", () => {
       [12, 8],
     ] as const) {
       for (let index = 0; index < 24; index += 1) {
-        const puzzle = generateJigsawWithBoundaryContours(
-          makeParams(`boundary-sweep-${width}x${height}-${index}`, width, height),
-        );
+        const puzzle = generateJigsaw({
+          ...makeParams(`boundary-sweep-${width}x${height}-${index}`, width, height),
+          jigsawBoundaryMode: "contoured",
+        });
         const validation = validateJigsawOuterBoundary({
           pieces: puzzle.tiles,
           width: puzzle.width,
@@ -89,6 +89,12 @@ describe("Jigsaw boundary contour generation", () => {
         expect(validation).toEqual({ ok: true });
         expect(points).not.toBeNull();
         expect(points?.[0]).toEqual(points?.at(-1));
+        expect(points?.every((point) =>
+          point.x >= -0.001 &&
+          point.x <= puzzle.width * 100 + 0.001 &&
+          point.y >= -0.001 &&
+          point.y <= puzzle.height * 100 + 0.001
+        )).toBe(true);
       }
     }
   });
@@ -96,7 +102,10 @@ describe("Jigsaw boundary contour generation", () => {
   it("changes geometry identity while preserving interior adjacency truth", () => {
     const params = makeParams("same-interior-truth");
     const flat = generateJigsaw(params);
-    const contoured = generateJigsawWithBoundaryContours(params);
+    const contoured = generateJigsaw({
+      ...params,
+      jigsawBoundaryMode: "contoured",
+    });
 
     expect(contoured.id).not.toBe(flat.id);
     expect(contoured.checksum).not.toBe(flat.checksum);

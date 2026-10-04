@@ -1,15 +1,15 @@
 import type {
   JigsawBaselineGrammarId,
   JigsawBoundaryContour,
+  JigsawBoundaryMode,
   JigsawEdgeModel,
   JigsawEdgeSide,
   JigsawPiece,
   JigsawPieceEdge,
 } from "../../catalog/types";
 import { createRandom } from "../shared";
+import { deriveJigsawBaselineProgram } from "./baselineGrammar";
 import { getJigsawEdgePoints } from "./edgePaths";
-
-export type JigsawBoundaryMode = "flat" | "contoured";
 
 export const jigsawBoundaryModes = [
   "flat",
@@ -18,12 +18,42 @@ export const jigsawBoundaryModes = [
 
 export const defaultJigsawBoundaryMode: JigsawBoundaryMode = "flat";
 
+export const isJigsawBoundaryMode = (
+  value: unknown,
+): value is JigsawBoundaryMode =>
+  value === "flat" || value === "contoured";
+
+export const jigsawBoundaryModeLabels = {
+  flat: "Flat",
+  contoured: "Contoured",
+} as const satisfies Record<JigsawBoundaryMode, string>;
+
+export const jigsawBoundaryModeDescriptions = {
+  flat: "Straight outside edges preserve the classic frame-first solve.",
+  contoured: "Non-flat outside edges remove the usual border-piece shortcut.",
+} as const satisfies Record<JigsawBoundaryMode, string>;
+
 export const normalizeJigsawBoundaryMode = (
   value: JigsawBoundaryMode | undefined,
 ): JigsawBoundaryMode => value ?? defaultJigsawBoundaryMode;
 
-const maximumBoundaryOverhang = 8;
+export const getJigsawBoundaryMode = (
+  pieces: readonly JigsawPiece[],
+): JigsawBoundaryMode =>
+  pieces.some((piece) =>
+    piece.edges.some((edge) => edge.boundary && edge.contour !== undefined))
+    ? "contoured"
+    : "flat";
+
+const generatedBoundaryGrammarIds = [
+  "angled-course",
+  "dogleg",
+  "stepped-course",
+] as const satisfies readonly JigsawBaselineGrammarId[];
+
+const maximumBoundaryOverhang = 0.001;
 const maximumBoundaryAttempts = 8;
+const maximumInsetSeedAttempts = 32;
 const coordinateEpsilon = 0.001;
 
 type Point = {
@@ -89,7 +119,6 @@ const segmentsIntersect = (
 
 const deriveBoundaryContour = (
   edgeSeed: string,
-  baselineGrammarIds: readonly JigsawBaselineGrammarId[],
   row: number,
   column: number,
   side: JigsawEdgeSide,
@@ -99,26 +128,28 @@ const deriveBoundaryContour = (
     `${edgeSeed}:boundary:${row}:${column}:${side}:attempt:${attempt}`,
   );
   random();
-  const contourGrammarIds = baselineGrammarIds.filter(
-    (grammarId) => grammarId !== "straight",
-  );
-  if (contourGrammarIds.length === 0) {
-    throw new Error("Contoured Jigsaw boundaries require a non-straight baseline grammar.");
-  }
-  const grammarIndex = Math.floor(random() * contourGrammarIds.length);
+  const grammarIndex = Math.floor(random() * generatedBoundaryGrammarIds.length);
   const baselineGrammarId =
-    contourGrammarIds[Math.min(grammarIndex, contourGrammarIds.length - 1)];
-  const seedOffset = Math.floor(random() * 1_000_000);
+    generatedBoundaryGrammarIds[
+      Math.min(grammarIndex, generatedBoundaryGrammarIds.length - 1)
+    ];
+  const initialSeedOffset = Math.floor(random() * 1_000_000);
 
-  return {
-    baselineGrammarId,
-    seedOffset,
-  };
+  for (let offset = 0; offset < maximumInsetSeedAttempts; offset += 1) {
+    const seedOffset = (initialSeedOffset + offset) % 1_000_000;
+    if (deriveJigsawBaselineProgram(baselineGrammarId, seedOffset).direction < 0) {
+      return {
+        baselineGrammarId,
+        seedOffset,
+      };
+    }
+  }
+
+  throw new Error("Unable to derive an inset Jigsaw boundary contour.");
 };
 
 const withBoundaryContours = (
   pieces: readonly JigsawPiece[],
-  edgeModel: JigsawEdgeModel,
   edgeSeed: string,
   attempt: number,
 ): JigsawPiece[] =>
@@ -130,7 +161,6 @@ const withBoundaryContours = (
             ...edge,
             contour: deriveBoundaryContour(
               edgeSeed,
-              edgeModel.baselineGrammarIds,
               piece.row,
               piece.column,
               edge.side,
@@ -354,7 +384,7 @@ export const validateJigsawOuterBoundary = ({
         candidate.y > maximumY + maximumBoundaryOverhang,
     )
   ) {
-    return { ok: false, reason: "outer boundary exceeds the bounded overhang" };
+    return { ok: false, reason: "outer boundary exceeds artwork bounds" };
   }
 
   if (runs.some(runSelfIntersects)) {
@@ -403,7 +433,7 @@ export const applyJigsawBoundaryMode = ({
 
   let lastFailure = "unknown validation failure";
   for (let attempt = 0; attempt < maximumBoundaryAttempts; attempt += 1) {
-    const candidate = withBoundaryContours(pieces, edgeModel, edgeSeed, attempt);
+    const candidate = withBoundaryContours(pieces, edgeSeed, attempt);
     const validation = validateJigsawOuterBoundary({
       pieces: candidate,
       width,

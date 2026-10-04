@@ -120,6 +120,7 @@ export type PuzzleVariationSettings = {
   solitaireVariation?: SolitaireVariation;
   imageId?: string;
   jigsawCutStyle?: JigsawCutStyle;
+  jigsawBoundaryMode?: JigsawBoundaryMode;
 };
 
 export type GeneratedTilePuzzleAsset = {
@@ -156,6 +157,7 @@ export type TilePuzzleAsset = GeneratedTilePuzzleAsset | PuzzleImageAsset;
 export type JigsawEdgeSide = "top" | "right" | "bottom" | "left";
 export type JigsawEdgePolarity = "flat" | "tab" | "blank";
 export type JigsawCutStyle = "traditional" | "unconventional";
+export type JigsawBoundaryMode = "flat" | "contoured";
 export type JigsawBaselineGrammarId =
   | "straight"
   | "bow"
