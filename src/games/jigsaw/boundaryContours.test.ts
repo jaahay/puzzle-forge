@@ -89,6 +89,12 @@ describe("Jigsaw boundary contour generation", () => {
         expect(validation).toEqual({ ok: true });
         expect(points).not.toBeNull();
         expect(points?.[0]).toEqual(points?.at(-1));
+        expect(points?.every((point) =>
+          point.x >= -0.001 &&
+          point.x <= puzzle.width * 100 + 0.001 &&
+          point.y >= -0.001 &&
+          point.y <= puzzle.height * 100 + 0.001
+        )).toBe(true);
       }
     }
   });
