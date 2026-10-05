@@ -14,6 +14,10 @@ import {
 } from "./cutStyle";
 import { generateJigsaw } from "./generate";
 import { defaultJigsawImageAsset } from "./imageAssets";
+import {
+  getJigsawSurpriseAnomalyBudget,
+  jigsawSurpriseEdgeProfileIds,
+} from "./surpriseAnomalies";
 
 const makeJigsaw = (
   imageId: string = defaultJigsawImageAsset.id,
@@ -41,6 +45,18 @@ const getEdge = (tile: JigsawPiece, side: JigsawEdgeSide): JigsawPieceEdge => {
 };
 
 const getAllEdges = (puzzle: JigsawGeneratedPuzzle) => puzzle.tiles.flatMap((tile) => tile.edges);
+
+const getDominantInteriorProfile = (puzzle: JigsawGeneratedPuzzle) => {
+  const counts = new Map<string, number>();
+
+  for (const edge of getAllEdges(puzzle)) {
+    if (edge.boundary) continue;
+    counts.set(edge.profileId, (counts.get(edge.profileId) ?? 0) + 1);
+  }
+
+  return [...counts.entries()]
+    .sort((left, right) => right[1] - left[1])[0]?.[0] ?? null;
+};
 
 describe("generateJigsaw", () => {
   it("is deterministic for seed, dimensions, image id, cut style, and edge model", () => {
@@ -120,7 +136,7 @@ describe("generateJigsaw", () => {
     expect(puzzle.tiles).toHaveLength(1024);
   });
 
-  it("uses exactly one edge profile throughout each generated game", () => {
+  it("keeps one dominant edge profile with only a tiny bounded surprise layer", () => {
     for (const seed of ["one-family-a", "one-family-b", "one-family-c"]) {
       const puzzle = generateJigsaw({
         puzzleId: "jigsaw",
@@ -129,13 +145,24 @@ describe("generateJigsaw", () => {
         height: 12,
         imageId: defaultJigsawImageAsset.id,
       });
-      const profileIds = new Set(
-        getAllEdges(puzzle)
-          .filter((edge) => !edge.boundary)
-          .map((edge) => edge.profileId),
+      const dominantProfileId = getDominantInteriorProfile(puzzle);
+      const surpriseEdges = getAllEdges(puzzle).filter(
+        (edge) => !edge.boundary && edge.profileId !== dominantProfileId,
       );
+      const surprisePairs = new Set(
+        surpriseEdges.map((edge) =>
+          [edge.edgeId, edge.neighborEdgeId].sort().join("|"),
+        ),
+      );
+      const budget = getJigsawSurpriseAnomalyBudget(puzzle.width * puzzle.height);
 
-      expect(profileIds.size).toBe(1);
+      expect(dominantProfileId).not.toBeNull();
+      expect(surpriseEdges).toHaveLength(budget * 2);
+      expect(surprisePairs.size).toBe(budget);
+      surpriseEdges.forEach((edge) => {
+        if (edge.boundary) throw new Error("Expected an interior surprise edge.");
+        expect(jigsawSurpriseEdgeProfileIds).toContain(edge.profileId);
+      });
     }
   });
 
@@ -151,11 +178,9 @@ describe("generateJigsaw", () => {
         imageId: defaultJigsawImageAsset.id,
         jigsawCutStyle: "classic",
       });
-      const firstInteriorEdge = getAllEdges(puzzle).find((edge) => !edge.boundary);
-      if (!firstInteriorEdge || firstInteriorEdge.boundary) {
-        throw new Error("Expected an interior Jigsaw edge.");
-      }
-      selected.add(firstInteriorEdge.profileId);
+      const dominantProfileId = getDominantInteriorProfile(puzzle);
+      if (!dominantProfileId) throw new Error("Expected a dominant Jigsaw edge profile.");
+      selected.add(dominantProfileId);
     }
 
     expect(selected).toEqual(
@@ -175,11 +200,9 @@ describe("generateJigsaw", () => {
         imageId: defaultJigsawImageAsset.id,
         jigsawCutStyle: "eclectic",
       });
-      const firstInteriorEdge = getAllEdges(puzzle).find((edge) => !edge.boundary);
-      if (!firstInteriorEdge || firstInteriorEdge.boundary) {
-        throw new Error("Expected an interior Jigsaw edge.");
-      }
-      selected.add(firstInteriorEdge.profileId);
+      const dominantProfileId = getDominantInteriorProfile(puzzle);
+      if (!dominantProfileId) throw new Error("Expected a dominant Jigsaw edge profile.");
+      selected.add(dominantProfileId);
     }
 
     expect(selected).toEqual(new Set(jigsawEdgeProfileIds));

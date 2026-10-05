@@ -21,6 +21,10 @@ import {
   defaultJigsawBoundaryMode,
   normalizeJigsawBoundaryMode,
 } from "./boundaryContours";
+import {
+  deriveJigsawSurpriseAnomalies,
+  makeJigsawInteriorSeamKey,
+} from "./surpriseAnomalies";
 
 const edgeSides: readonly JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
 const oppositeSide: Record<JigsawEdgeSide, JigsawEdgeSide> = {
@@ -54,13 +58,6 @@ const shuffle = <T>(items: T[], seed: string) => {
 
 const makeEdgeId = (pieceId: string, side: JigsawEdgeSide) => `${pieceId}:edge:${side}`;
 
-const makeEdgePairKey = (row: number, column: number, side: JigsawEdgeSide) => {
-  if (side === "right") return `horizontal:${row}:${column}`;
-  if (side === "left") return `horizontal:${row}:${column - 1}`;
-  if (side === "bottom") return `vertical:${row}:${column}`;
-  return `vertical:${row - 1}:${column}`;
-};
-
 const invertPolarity = (polarity: Exclude<JigsawEdgePolarity, "flat">): Exclude<JigsawEdgePolarity, "flat"> =>
   polarity === "tab" ? "blank" : "tab";
 
@@ -72,6 +69,7 @@ const makePieceEdges = ({
   height,
   edgeSeed,
   profileId,
+  surpriseProfileBySeam,
 }: {
   pieceId: string;
   row: number;
@@ -80,6 +78,7 @@ const makePieceEdges = ({
   height: number;
   edgeSeed: string;
   profileId: JigsawEdgeProfileId;
+  surpriseProfileBySeam: ReadonlyMap<string, JigsawEdgeProfileId>;
 }): JigsawPieceEdge[] =>
   edgeSides.map((side) => {
     const offset = neighborOffset[side];
@@ -100,7 +99,7 @@ const makePieceEdges = ({
       };
     }
 
-    const pairKey = makeEdgePairKey(row, column, side);
+    const pairKey = makeJigsawInteriorSeamKey(row, column, side);
     const random = createRandom(`${edgeSeed}:${pairKey}`);
     // The first sample from similarly structured pair seeds is visibly correlated.
     // Burn it so polarity and shape variation use the well-mixed subsequent sequence.
@@ -116,7 +115,7 @@ const makePieceEdges = ({
       neighborPieceId,
       neighborEdgeId: makeEdgeId(neighborPieceId, oppositeSide[side]),
       boundary: false,
-      profileId,
+      profileId: surpriseProfileBySeam.get(pairKey) ?? profileId,
       polarity: isLeadingPiece ? leadingPolarity : invertPolarity(leadingPolarity),
       seedOffset,
     };
@@ -153,6 +152,14 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
     cutStyle,
     profileRandom(),
   );
+  const surpriseProfileBySeam = new Map(
+    deriveJigsawSurpriseAnomalies({
+      width: boundedWidth,
+      height: boundedHeight,
+      edgeSeed,
+      dominantProfileId: profileId,
+    }).map((anomaly) => [anomaly.seamKey, anomaly.profileId]),
+  );
   const piecesBySolvedIndex = solvedIndexes.map((solvedIndex): JigsawPiece => {
     const row = Math.floor(solvedIndex / boundedWidth);
     const column = solvedIndex % boundedWidth;
@@ -172,6 +179,7 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
         height: boundedHeight,
         edgeSeed,
         profileId,
+        surpriseProfileBySeam,
       }),
     };
   });
