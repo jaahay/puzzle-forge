@@ -147,8 +147,9 @@ describe("Jigsaw island interaction", () => {
     if (!medallion || medallion.specialShape?.kind !== "medallion") {
       throw new Error("Expected a generated medallion.");
     }
+    const socketPieceIds = medallion.specialShape.socketPieceIds;
     const socket = puzzle.tiles.find(
-      (tile) => tile.id === medallion.specialShape.socketPieceIds[0],
+      (tile) => tile.id === socketPieceIds[0],
     );
     if (!socket) throw new Error("Expected a medallion socket neighbor.");
 
@@ -178,7 +179,7 @@ describe("Jigsaw island interaction", () => {
 
     expect(result.joined).toBe(true);
     expect(result.assembly.joinedComponents).toEqual([
-      [medallion.id, ...medallion.specialShape.socketPieceIds]
+      [medallion.id, ...socketPieceIds]
         .sort((left, right) => left.localeCompare(right)),
     ]);
   });
