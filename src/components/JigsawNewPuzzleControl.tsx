@@ -127,21 +127,23 @@ export const JigsawNewPuzzleControl = ({
               <strong>Cut style</strong>
               <span>{jigsawCutStyleLabels[cutStyle]}</span>
             </div>
-            <div class="jigsaw-cut-style-options">
+            <div class="new-puzzle-segmented jigsaw-cut-style-options">
               {jigsawCutStyles.map((style) => (
                 <button
                   type="button"
-                  class="jigsaw-size-option jigsaw-cut-style-option"
+                  class={cutStyle === style ? "selected" : undefined}
                   aria-pressed={cutStyle === style}
                   disabled={disabled}
                   onClick={() => onSettingsChange({ jigsawCutStyle: style })}
                   key={style}
                 >
-                  <strong>{jigsawCutStyleLabels[style]}</strong>
-                  <span>{jigsawCutStyleDescriptions[style]}</span>
+                  {jigsawCutStyleLabels[style]}
                 </button>
               ))}
             </div>
+            <p class="jigsaw-cut-style-description">
+              {jigsawCutStyleDescriptions[cutStyle]}
+            </p>
           </div>
 
           <div class="jigsaw-boundary-settings" role="group" aria-label="Jigsaw outer boundary">

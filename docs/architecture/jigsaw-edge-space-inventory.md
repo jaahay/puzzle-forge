@@ -66,9 +66,15 @@ The span courses preserve deliberate quiet longitudinal runs and scale hierarchy
 
 ## Cut-style policy
 
-**Traditional** stays intentionally restrained: Classic bulb / Necked head connectors and a small familiar baseline palette.
+The player-facing styles are curated policies over the same production-safe vocabulary:
 
-**Unconventional** can select every production EdgeProfile and every production BaselineCourse. A generated game still chooses one coherent EdgeProfile for the board while sampling approach/departure courses from a deterministic puzzle-level sub-palette.
+- **Classic** stays intentionally restrained: Classic bulb / Necked head connectors and a small familiar baseline palette.
+- **Flowing** emphasizes rounded connectors and smooth bow / inflection / wave courses.
+- **Geometric** emphasizes terrace / zigzag / stacked-lock connectors and angular course grammar.
+- **Intricate** emphasizes compound, opposed, notched, and other multi-event structures with richer baseline courses.
+- **Eclectic** can select every production EdgeProfile and every production BaselineCourse.
+
+A generated game still chooses one coherent EdgeProfile for the board while sampling approach/departure courses from a deterministic puzzle-level sub-palette.
 
 No extra player-facing control is required for individual grammar families.
 

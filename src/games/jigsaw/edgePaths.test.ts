@@ -19,6 +19,7 @@ import {
 } from "./baselineCourse";
 import {
   deriveJigsawBaselineCoursePalette,
+  jigsawCutStyles,
   jigsawEdgeProfileIds,
 } from "./cutStyle";
 import { jigsawConnectorGrammarIds } from "./connectorGrammar";
@@ -95,7 +96,7 @@ const broadSeamSeedOffsets = makeSeedSweep(256);
 const broadPieceSeedOffsets = makeSeedSweep(64);
 
 const makeEdgeModel = (
-  cutStyle: JigsawCutStyle = "unconventional",
+  cutStyle: JigsawCutStyle = "eclectic",
 ): JigsawEdgeModel => ({
   cutStyle,
   baselineCourseIds: [
@@ -103,7 +104,7 @@ const makeEdgeModel = (
   ],
 });
 
-const expressiveEdgeModel = makeEdgeModel("unconventional");
+const expressiveEdgeModel = makeEdgeModel("eclectic");
 
 const expectPointsToMatch = (
   first: Array<{ x: number; y: number }>,
@@ -455,8 +456,8 @@ describe("Jigsaw edge paths", () => {
     }
   });
 
-  it("survives broad deterministic seam sweeps for both cut styles", () => {
-    for (const cutStyle of ["traditional", "unconventional"] as const) {
+  it("survives broad deterministic seam sweeps for every cut style", () => {
+    for (const cutStyle of jigsawCutStyles) {
       const edgeModel = makeEdgeModel(cutStyle);
 
       for (const profileId of jigsawConnectorGrammarIds) {
@@ -614,7 +615,7 @@ describe("Jigsaw edge paths", () => {
 
     for (const courseId of jigsawBaselineCourseIds) {
       const edgeModel: JigsawEdgeModel = {
-        cutStyle: "unconventional",
+        cutStyle: "eclectic",
         baselineCourseIds: [courseId],
       };
 
@@ -722,7 +723,7 @@ describe("Jigsaw edge paths", () => {
 
   it("exercises every production baseline course through ordinary connected seams", () => {
     const edgeModel: JigsawEdgeModel = {
-      cutStyle: "unconventional",
+      cutStyle: "eclectic",
       baselineCourseIds: [...jigsawBaselineCourseIds],
     };
     const observed = new Set<string>();

@@ -97,7 +97,7 @@ describe("initial puzzle generation", () => {
       sudokuVariation: "classic" as const,
       solitaireVariation: defaultSolitaireVariation,
       imageId: "great-wave",
-      jigsawCutStyle: "unconventional" as const,
+      jigsawCutStyle: "eclectic" as const,
       jigsawBoundaryMode: "contoured" as const,
     };
 
@@ -110,7 +110,7 @@ describe("initial puzzle generation", () => {
       width: 6,
       height: 5,
       imageId: "great-wave",
-      jigsawCutStyle: "unconventional",
+      jigsawCutStyle: "eclectic",
       jigsawBoundaryMode: "contoured",
     });
   });
@@ -128,7 +128,7 @@ describe("initial puzzle generation", () => {
       requireUniqueSolution: true,
       sudokuVariation: "classic",
       solitaireVariation: defaultSolitaireVariation,
-      jigsawCutStyle: "unconventional",
+      jigsawCutStyle: "eclectic",
       jigsawBoundaryMode: "contoured",
       makeSeed: () => "fallback",
     })).toMatchObject({
@@ -136,7 +136,7 @@ describe("initial puzzle generation", () => {
       seed: "recover-jigsaw",
       width: 6,
       height: 5,
-      jigsawCutStyle: "unconventional",
+      jigsawCutStyle: "eclectic",
       jigsawBoundaryMode: "contoured",
     });
   });

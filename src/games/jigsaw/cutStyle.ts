@@ -8,23 +8,32 @@ import { jigsawBaselineCourseIds } from "./baselineCourse";
 import { jigsawConnectorGrammarIds } from "./connectorGrammar";
 
 export const jigsawCutStyles = [
-  "traditional",
-  "unconventional",
+  "classic",
+  "flowing",
+  "geometric",
+  "intricate",
+  "eclectic",
 ] as const satisfies readonly JigsawCutStyle[];
 
-export const defaultJigsawCutStyle: JigsawCutStyle = "traditional";
+export const defaultJigsawCutStyle: JigsawCutStyle = "classic";
 
 export const isJigsawCutStyle = (value: unknown): value is JigsawCutStyle =>
-  value === "traditional" || value === "unconventional";
+  jigsawCutStyles.includes(value as JigsawCutStyle);
 
 export const jigsawCutStyleLabels = {
-  traditional: "Traditional",
-  unconventional: "Unconventional",
+  classic: "Classic",
+  flowing: "Flowing",
+  geometric: "Geometric",
+  intricate: "Intricate",
+  eclectic: "Eclectic",
 } as const satisfies Record<JigsawCutStyle, string>;
 
 export const jigsawCutStyleDescriptions = {
-  traditional: "Familiar, restrained cuts with occasional irregular character.",
-  unconventional: "Expressive cuts drawn from the full Puzzle Forge edge vocabulary.",
+  classic: "Familiar, restrained cuts inspired by manufactured jigsaws.",
+  flowing: "Rounded, organic cuts with sweeping curves and waves.",
+  geometric: "Angular, architectural cuts built from steps, terraces, and zigzags.",
+  intricate: "Compound and multi-event interlocks with dense matching clues.",
+  eclectic: "A coherent puzzle drawn from the full Puzzle Forge edge vocabulary.",
 } as const satisfies Record<JigsawCutStyle, string>;
 
 export const jigsawEdgeProfileIds = [
@@ -42,7 +51,7 @@ type JigsawCutStyleDefinition = {
 };
 
 const jigsawCutStyleDefinitions: Record<JigsawCutStyle, JigsawCutStyleDefinition> = {
-  traditional: {
+  classic: {
     edgeProfileWeights: {
       "classic-bulb": 4,
       "necked-head": 2,
@@ -56,7 +65,63 @@ const jigsawCutStyleDefinitions: Record<JigsawCutStyle, JigsawCutStyleDefinition
     requiredBaselineCourseIds: ["straight", "bow"],
     baselinePaletteSize: 3,
   },
-  unconventional: {
+  flowing: {
+    edgeProfileWeights: {
+      "classic-bulb": 0.6,
+      "multi-lobe": 1.15,
+      scoop: 1.3,
+      serpentine: 1.2,
+      "connectorless-wave": 0.7,
+    },
+    baselineCourseWeights: {
+      straight: 0.25,
+      bow: 1.35,
+      inflection: 1,
+      wave: 1.4,
+    },
+    requiredBaselineCourseIds: ["bow", "wave"],
+    baselinePaletteSize: 3,
+  },
+  geometric: {
+    edgeProfileWeights: {
+      terrace: 1.2,
+      zigzag: 1.25,
+      "stacked-lock": 1,
+    },
+    baselineCourseWeights: {
+      straight: 0.25,
+      "angled-course": 1.05,
+      dogleg: 1.2,
+      "stepped-course": 1.3,
+    },
+    requiredBaselineCourseIds: ["angled-course", "stepped-course"],
+    baselinePaletteSize: 3,
+  },
+  intricate: {
+    edgeProfileWeights: {
+      "necked-head": 0.35,
+      "multi-lobe": 0.55,
+      "stacked-lock": 0.85,
+      "compound-lock": 1.25,
+      "opposed-dual-lock": 1.1,
+      "notched-head": 1.15,
+    },
+    baselineCourseWeights: {
+      bow: 0.25,
+      inflection: 0.35,
+      wave: 0.3,
+      "separated-bows": 0.9,
+      "opposed-pair": 0.95,
+      "primary-secondary": 1.15,
+      "inflection-rest-bow": 1.05,
+      "same-side-hairpin": 0.9,
+      "opposed-hairpin": 0.9,
+      "counter-hook": 1,
+    },
+    requiredBaselineCourseIds: ["primary-secondary"],
+    baselinePaletteSize: 4,
+  },
+  eclectic: {
     edgeProfileWeights: {
       "classic-bulb": 0.3,
       "necked-head": 0.55,
@@ -101,7 +166,7 @@ const selectWeightedId = <T extends string>(
     .map((id) => ({ id, weight: Math.max(0, weights[id] ?? 0) }))
     .filter(({ weight }) => weight > 0);
   if (weighted.length === 0) {
-    throw new Error("Jigsaw cut-style policy has no selectable edge vocabulary.");
+    throw new Error("Jigsaw cut-style policy has no selectable vocabulary.");
   }
 
   const total = weighted.reduce((sum, entry) => sum + entry.weight, 0);

@@ -219,7 +219,7 @@ describe("resolveGenerationIdentity", () => {
       width: 4,
       height: 4,
       imageId: defaultJigsawImageAsset.id,
-      jigsawCutStyle: "unconventional",
+      jigsawCutStyle: "eclectic",
     });
 
     const inherited = resolveGenerationIdentity({
@@ -232,12 +232,12 @@ describe("resolveGenerationIdentity", () => {
       puzzleId: "jigsaw",
       currentPuzzle,
       runtimeSettings,
-      settings: { jigsawCutStyle: "traditional" },
+      settings: { jigsawCutStyle: "classic" },
       makeSeed: () => "fallback",
     });
 
-    expect(inherited.jigsawCutStyle).toBe("unconventional");
-    expect(changed.jigsawCutStyle).toBe("traditional");
+    expect(inherited.jigsawCutStyle).toBe("eclectic");
+    expect(changed.jigsawCutStyle).toBe("classic");
   });
 
   it("uses current Jigsaw boundary mode unless another mode is explicitly requested", () => {

@@ -8,15 +8,8 @@ import type {
   SudokuVariation,
 } from "../catalog/types";
 import { getPuzzleImageAsset } from "../games/imageAssets";
-import {
-  jigsawBoundaryModes,
-  normalizeJigsawBoundaryMode,
-} from "../games/jigsaw/boundaryContours";
-import {
-  defaultJigsawCutStyle,
-  jigsawCutStyles,
-  normalizeJigsawCutStyle,
-} from "../games/jigsaw/cutStyle";
+import { normalizeJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
+import { normalizeJigsawCutStyle } from "../games/jigsaw/cutStyle";
 import { normalizeSeed } from "../games/shared";
 import { isDailyDateStamp } from "../games/shared/daily";
 import {
@@ -57,6 +50,19 @@ export type PuzzleResourceSegmentResolution =
 
 const compactGenerationIdVersion = 1;
 const puzzleDifficulties = ["Easy", "Medium", "Hard", "Expert"] as const satisfies readonly PuzzleDifficulty[];
+
+const jigsawCutStyleCodebook = [
+  ["classic", 0],
+  ["flowing", 1],
+  ["geometric", 2],
+  ["intricate", 3],
+  ["eclectic", 4],
+] as const satisfies readonly (readonly [JigsawCutStyle, number])[];
+
+const jigsawBoundaryModeCodebook = [
+  ["flat", 0],
+  ["contoured", 1],
+] as const satisfies readonly (readonly [JigsawBoundaryMode, number])[];
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 
@@ -187,12 +193,12 @@ const pushPuzzlePayload = (bytes: number[], identity: GenerationIdentity) => {
       pushDimensions(bytes, identity);
       pushText(bytes, getPuzzleImageAsset(identity.imageId, identity.puzzleId).id);
       const cutStyle = normalizeJigsawCutStyle(identity.jigsawCutStyle);
-      const cutStyleIndex = jigsawCutStyles.indexOf(cutStyle);
-      if (cutStyleIndex < 0) throw new Error(`Unsupported Jigsaw cut style: ${cutStyle}`);
+      const cutStyleCode = jigsawCutStyleCodebook.find(([style]) => style === cutStyle)?.[1];
+      if (cutStyleCode === undefined) throw new Error(`Unsupported Jigsaw cut style: ${cutStyle}`);
       const boundaryMode = normalizeJigsawBoundaryMode(identity.jigsawBoundaryMode);
-      const boundaryModeIndex = jigsawBoundaryModes.indexOf(boundaryMode);
-      if (boundaryModeIndex < 0) throw new Error(`Unsupported Jigsaw boundary mode: ${boundaryMode}`);
-      pushByte(bytes, cutStyleIndex | (boundaryModeIndex << 1));
+      const boundaryModeCode = jigsawBoundaryModeCodebook.find(([mode]) => mode === boundaryMode)?.[1];
+      if (boundaryModeCode === undefined) throw new Error(`Unsupported Jigsaw boundary mode: ${boundaryMode}`);
+      pushByte(bytes, cutStyleCode | (boundaryModeCode << 3));
       return;
     }
     case "tile-swap":
@@ -304,9 +310,11 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
         height = reader.readByte();
         imageId = getPuzzleImageAsset(reader.readText(), puzzleId).id;
         const flags = reader.readByte();
-        if ((flags & 0xfc) !== 0) return { ok: false, reason: "invalid-identity" };
-        const decodedCutStyle = jigsawCutStyles[flags & 0x01];
-        const decodedBoundaryMode = jigsawBoundaryModes[(flags >>> 1) & 0x01];
+        if ((flags & 0xf0) !== 0) return { ok: false, reason: "invalid-identity" };
+        const cutStyleCode = flags & 0x07;
+        const boundaryModeCode = (flags >>> 3) & 0x01;
+        const decodedCutStyle = jigsawCutStyleCodebook.find(([, code]) => code === cutStyleCode)?.[0];
+        const decodedBoundaryMode = jigsawBoundaryModeCodebook.find(([, code]) => code === boundaryModeCode)?.[0];
         if (!decodedCutStyle || !decodedBoundaryMode) {
           return { ok: false, reason: "invalid-identity" };
         }
