@@ -136,6 +136,42 @@ describe("Jigsaw session assembly persistence", () => {
     });
   });
 
+  it("round-trips medallion/socket joins through the existing assembly persistence contract", () => {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "persist-medallion",
+      width: 4,
+      height: 4,
+      imageId: defaultJigsawImageAsset.id,
+    });
+    const medallion = puzzle.tiles.find(
+      (tile) => tile.specialShape?.kind === "medallion",
+    );
+    if (!medallion || medallion.specialShape?.kind !== "medallion") {
+      throw new Error("Expected generated medallion.");
+    }
+    const socketId = medallion.specialShape.socketPieceIds[0];
+    const session: Extract<PuzzleSession, { kind: "tiles" }> = {
+      kind: "tiles",
+      puzzle,
+      progress: {
+        kind: "tiles",
+        jigsawAssembly: {
+          joinedComponents: [[medallion.id, socketId]],
+        },
+      },
+      statusMessage: "Medallion in progress.",
+    };
+    const { persisted } = buildPersisted(session);
+    const restored = restorePuzzleSessionFromPersisted(persisted, puzzle);
+
+    expect(restored?.progress.kind).toBe("tiles");
+    if (!restored || restored.progress.kind !== "tiles") return;
+    expect(restored.progress.jigsawAssembly).toEqual({
+      joinedComponents: [[medallion.id, socketId].sort((left, right) => left.localeCompare(right))],
+    });
+  });
+
   it("persists explicit empty assembly progress rather than treating it as missing", () => {
     const session = makeJigsawSession([]);
     const puzzle = session.puzzle;
