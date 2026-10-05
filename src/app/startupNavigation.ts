@@ -2,8 +2,28 @@ import type { PuzzleId } from "../catalog/types";
 import type { AppRoute } from "./routes";
 import type { PersistedPuzzleSession, PersistedPuzzleSessions } from "./session";
 
-export const isInstalledAppLaunch = (search: string) =>
-  new URLSearchParams(search).get("launch") === "app";
+type InstalledAppEnvironment = {
+  displayModeStandalone?: boolean;
+  navigatorStandalone?: boolean;
+};
+
+export const isInstalledAppContext = (
+  environment: InstalledAppEnvironment = {},
+) => {
+  const displayModeStandalone = environment.displayModeStandalone ??
+    (
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(display-mode: standalone)").matches
+    );
+  const navigatorStandalone = environment.navigatorStandalone ??
+    (
+      typeof navigator !== "undefined" &&
+      (navigator as Navigator & { standalone?: boolean }).standalone === true
+    );
+
+  return displayModeStandalone || navigatorStandalone;
+};
 
 const persistedSessionTimestamp = (session: PersistedPuzzleSession) => {
   const timestamp = Date.parse(session.updatedAt);

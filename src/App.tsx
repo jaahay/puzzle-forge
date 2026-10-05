@@ -33,7 +33,7 @@ import { encodeGenerationId, resolvePuzzleResourceSegment } from "./app/puzzleRe
 import { defaultPuzzleDifficulty, makeRandomSeed } from "./app/runtime";
 import { getCurrentAppRoute, parseAppRoute, pushAppRoute, replaceAppRoute, type AppRoute } from "./app/routes";
 import { initialSolitaireStats, loadPersistedPuzzleSessions } from "./app/session";
-import { isInstalledAppLaunch, resolveStartupRoute } from "./app/startupNavigation";
+import { isInstalledAppContext, resolveStartupRoute } from "./app/startupNavigation";
 import { useGridController } from "./app/useGridController";
 import { randomizeNextPuzzleArtwork, useNextPuzzleDrafts } from "./app/useNextPuzzleDrafts";
 import { makeInitialPuzzleGenerationOptions, makeMissingPuzzleGenerationOptions, shouldRecoverMissingPuzzleSurface, usePuzzleGeneration, type BeginGenerationOptions } from "./app/usePuzzleGeneration";
@@ -87,9 +87,7 @@ export const App = () => {
       getCurrentAppRoute(),
       initialPersistedSessions,
       {
-        resumeActiveSession:
-          typeof window !== "undefined" &&
-          isInstalledAppLaunch(window.location.search),
+        resumeActiveSession: isInstalledAppContext(),
       },
     ),
     [initialPersistedSessions],

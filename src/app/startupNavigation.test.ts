@@ -8,7 +8,7 @@ import type {
   PersistedPuzzleSession,
   PersistedPuzzleSessions,
 } from "./session";
-import { isInstalledAppLaunch, resolveStartupRoute } from "./startupNavigation";
+import { isInstalledAppContext, resolveStartupRoute } from "./startupNavigation";
 
 type TestPuzzleId = "sudoku" | "jigsaw";
 
@@ -66,10 +66,19 @@ const makePersisted = (
 };
 
 describe("startup navigation", () => {
-  it("recognizes only the installed-app launch marker", () => {
-    expect(isInstalledAppLaunch("?launch=app")).toBe(true);
-    expect(isInstalledAppLaunch("?launch=browser")).toBe(false);
-    expect(isInstalledAppLaunch("")).toBe(false);
+  it("recognizes standalone display mode and iOS home-screen context", () => {
+    expect(isInstalledAppContext({
+      displayModeStandalone: true,
+      navigatorStandalone: false,
+    })).toBe(true);
+    expect(isInstalledAppContext({
+      displayModeStandalone: false,
+      navigatorStandalone: true,
+    })).toBe(true);
+    expect(isInstalledAppContext({
+      displayModeStandalone: false,
+      navigatorStandalone: false,
+    })).toBe(false);
   });
 
   it("resumes the active unfinished resource from an installed-app cold launch", () => {
