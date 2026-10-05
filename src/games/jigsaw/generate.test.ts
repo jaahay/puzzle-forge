@@ -118,7 +118,8 @@ describe("generateJigsaw", () => {
 
     expect(puzzle.width).toBe(32);
     expect(puzzle.height).toBe(32);
-    expect(puzzle.tiles).toHaveLength(1024);
+    expect(puzzle.tiles.filter((tile) => tile.id.startsWith("tile-"))).toHaveLength(1024);
+    expect(puzzle.tiles).toHaveLength(1025);
   });
 
   it("adds one true circular medallion at the central qualifying grid intersection", () => {
