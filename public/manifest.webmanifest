@@ -3,7 +3,7 @@
   "name": "Puzzle Forge",
   "short_name": "Puzzle Forge",
   "description": "Generate, solve, and experiment with seeded procedural logic puzzles.",
-  "start_url": "/",
+  "start_url": "/?launch=app",
   "scope": "/",
   "display": "standalone",
   "background_color": "#111827",

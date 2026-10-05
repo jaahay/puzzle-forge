@@ -8,7 +8,7 @@ import type {
   PersistedPuzzleSession,
   PersistedPuzzleSessions,
 } from "./session";
-import { resolveStartupRoute } from "./startupNavigation";
+import { isInstalledAppLaunch, resolveStartupRoute } from "./startupNavigation";
 
 type TestPuzzleId = "sudoku" | "jigsaw";
 
@@ -29,6 +29,7 @@ const makeSession = (
   puzzleId: TestPuzzleId,
   seed: string,
   updatedAt: string,
+  completedAt?: string,
 ): PersistedPuzzleSession => {
   const progress: PersistedPuzzleProgress = puzzleId === "jigsaw"
     ? { kind: "tiles", tileOrder: [], selectedTileId: null, jigsawAssembly: { joinedComponents: [] } }
@@ -41,6 +42,7 @@ const makeSession = (
     progress,
     statusMessage: "",
     updatedAt,
+    ...(completedAt ? { completedAt } : {}),
   };
 };
 
@@ -64,6 +66,46 @@ const makePersisted = (
 };
 
 describe("startup navigation", () => {
+  it("recognizes only the installed-app launch marker", () => {
+    expect(isInstalledAppLaunch("?launch=app")).toBe(true);
+    expect(isInstalledAppLaunch("?launch=browser")).toBe(false);
+    expect(isInstalledAppLaunch("")).toBe(false);
+  });
+
+  it("resumes the active unfinished resource from an installed-app cold launch", () => {
+    const session = makeSession("jigsaw", "active-jigsaw", "2026-10-05T20:00:00.000Z");
+
+    expect(resolveStartupRoute(
+      { kind: "home" },
+      makePersisted([session]),
+      { resumeActiveSession: true },
+    )).toEqual({
+      kind: "resource",
+      puzzleId: "jigsaw",
+      generationId: session.generationId,
+    });
+  });
+
+  it("keeps the home surface for ordinary browser visits and completed app sessions", () => {
+    const unfinished = makeSession("jigsaw", "unfinished-jigsaw", "2026-10-05T20:00:00.000Z");
+    const completed = makeSession(
+      "jigsaw",
+      "completed-jigsaw",
+      "2026-10-05T21:00:00.000Z",
+      "2026-10-05T21:00:00.000Z",
+    );
+
+    expect(resolveStartupRoute(
+      { kind: "home" },
+      makePersisted([unfinished]),
+    )).toEqual({ kind: "home" });
+    expect(resolveStartupRoute(
+      { kind: "home" },
+      makePersisted([completed]),
+      { resumeActiveSession: true },
+    )).toEqual({ kind: "home" });
+  });
+
   it("reopens the active persisted resource for a matching bare puzzle route", () => {
     const session = makeSession("sudoku", "active-sudoku", "2026-09-29T20:00:00.000Z");
 
