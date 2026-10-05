@@ -166,6 +166,32 @@ describe("generateJigsaw", () => {
     }
   });
 
+  it("keeps surprise seams exactly reciprocal between neighboring pieces", () => {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "surprise-reciprocal",
+      width: 12,
+      height: 12,
+      imageId: defaultJigsawImageAsset.id,
+    });
+    const dominantProfileId = getDominantInteriorProfile(puzzle);
+    const edgeById = new Map(getAllEdges(puzzle).map((edge) => [edge.edgeId, edge]));
+    const surpriseEdges = getAllEdges(puzzle).filter(
+      (edge) => !edge.boundary && edge.profileId !== dominantProfileId,
+    );
+
+    expect(surpriseEdges.length).toBeGreaterThan(0);
+    for (const edge of surpriseEdges) {
+      if (edge.boundary) throw new Error("Expected an interior surprise edge.");
+      const neighbor = edgeById.get(edge.neighborEdgeId);
+      expect(neighbor).toBeDefined();
+      if (!neighbor || neighbor.boundary) continue;
+      expect(neighbor.profileId).toBe(edge.profileId);
+      expect(neighbor.seedOffset).toBe(edge.seedOffset);
+      expect([edge.polarity, neighbor.polarity].sort()).toEqual(["blank", "tab"]);
+    }
+  });
+
   it("keeps Classic edge generation inside its familiar palette", () => {
     const selected = new Set<string>();
 
