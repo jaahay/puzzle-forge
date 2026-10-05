@@ -61,17 +61,45 @@ export const makeChecksum = (cells: PuzzleCell[], cages: GridPuzzleCage[] = [], 
 const makeJigsawEdgeModelChecksumPart = (edgeModel: JigsawEdgeModel) =>
   `edge-model:${edgeModel.cutStyle}:${edgeModel.baselineCourseIds.join("|")}`;
 
+const makeJigsawSpecialShapeChecksumPart = (tile: JigsawPiece) => {
+  const shape = tile.specialShape;
+  if (!shape) return "";
+
+  if (shape.kind === "medallion") {
+    return [
+      ":medallion",
+      shape.centerRow,
+      shape.centerColumn,
+      shape.radiusX,
+      shape.radiusY,
+      shape.socketPieceIds.join(","),
+    ].join(":");
+  }
+
+  return [
+    ":medallion-socket",
+    shape.medallionPieceId,
+    shape.corner,
+    shape.radiusX,
+    shape.radiusY,
+  ].join(":");
+};
+
 const makeJigsawTileChecksumPart = (tile: JigsawPiece) => {
   const edgeParts = tile.edges.map((edge) => {
     const contourPart =
       edge.boundary && edge.contour
         ? `:${edge.contour.baselineGrammarId}:${edge.contour.seedOffset}`
         : ":none";
+    const specialGeometryPart =
+      !edge.boundary && edge.specialGeometry
+        ? `:${edge.specialGeometry.kind}:${edge.specialGeometry.start}:${edge.specialGeometry.end}`
+        : "";
 
-    return `${edge.edgeId}:${edge.side}:${edge.neighborPieceId ?? "none"}:${edge.neighborEdgeId ?? "none"}:${edge.boundary ? "boundary" : "interior"}:${edge.profileId ?? "flat"}:${edge.polarity}:${edge.seedOffset}${contourPart}`;
+    return `${edge.edgeId}:${edge.side}:${edge.neighborPieceId ?? "none"}:${edge.neighborEdgeId ?? "none"}:${edge.boundary ? "boundary" : "interior"}:${edge.profileId ?? "flat"}:${edge.polarity}:${edge.seedOffset}${contourPart}${specialGeometryPart}`;
   });
 
-  return `${tile.id}:${tile.currentIndex}:${tile.solvedIndex}:${edgeParts.join("|")}`;
+  return `${tile.id}:${tile.currentIndex}:${tile.solvedIndex}:${edgeParts.join("|")}${makeJigsawSpecialShapeChecksumPart(tile)}`;
 };
 
 export const createGeneratedPuzzle = ({

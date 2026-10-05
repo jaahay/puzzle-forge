@@ -694,6 +694,52 @@ describe("Jigsaw edge paths", () => {
     );
   });
 
+  it("renders a true circular medallion and four simple complementary socket contours", () => {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "medallion-outline",
+      width: 4,
+      height: 4,
+      imageId: defaultJigsawImageAsset.id,
+    });
+    const medallion = puzzle.tiles.find(
+      (tile) => tile.specialShape?.kind === "medallion",
+    );
+    const sockets = puzzle.tiles.filter(
+      (tile) => tile.specialShape?.kind === "medallion-socket",
+    );
+    expect(medallion).toBeDefined();
+    expect(sockets).toHaveLength(4);
+    if (!medallion || medallion.specialShape?.kind !== "medallion") return;
+
+    const medallionPoints = getJigsawPieceOutlinePoints(
+      medallion,
+      puzzle.edgeModel,
+    );
+    const { radiusX, radiusY } = medallion.specialShape;
+    expect(medallionPoints.length).toBeGreaterThan(48);
+    for (const candidate of medallionPoints) {
+      const ellipse =
+        ((candidate.x - 50) / radiusX) ** 2 +
+        ((candidate.y - 50) / radiusY) ** 2;
+      expect(ellipse).toBeCloseTo(1, 2);
+    }
+    expect(getJigsawPieceOutlinePath(medallion, puzzle.edgeModel)).toContain(
+      `A ${radiusX} ${radiusY}`,
+    );
+
+    for (const socket of sockets) {
+      if (socket.specialShape?.kind !== "medallion-socket") continue;
+      expect(socket.specialShape.radiusX).toBe(radiusX);
+      expect(socket.specialShape.radiusY).toBe(radiusY);
+      const points = getJigsawPieceOutlinePoints(socket, puzzle.edgeModel);
+      expectNoSelfIntersection(points);
+      expect(getJigsawPieceOutlinePath(socket, puzzle.edgeModel)).toContain(
+        `A ${radiusX} ${radiusY}`,
+      );
+    }
+  });
+
   it("renders connectorless-wave as a reciprocal, shape-rich production seam", () => {
     const bottom = getJigsawEdgePoints(
       makeInteriorEdge({

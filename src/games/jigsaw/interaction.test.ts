@@ -5,6 +5,8 @@ import {
   resolveJigsawComponentDrop,
   stageJigsawAssemblyPlacements,
 } from "./interaction";
+import { generateJigsaw } from "./generate";
+import { defaultJigsawImageAsset } from "./imageAssets";
 import {
   createJigsawWorldLayout,
   getJigsawSolvedPosition,
@@ -129,6 +131,55 @@ describe("Jigsaw island interaction", () => {
     expect(secondDelta).toEqual(firstDelta);
     expect(first.worldX).toBeGreaterThanOrEqual(0);
     expect(first.worldY).toBeGreaterThanOrEqual(0);
+  });
+
+  it("snaps the circular medallion to a socket neighbor through special adjacency", () => {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "medallion-snap",
+      width: 4,
+      height: 4,
+      imageId: defaultJigsawImageAsset.id,
+    });
+    const medallion = puzzle.tiles.find(
+      (tile) => tile.specialShape?.kind === "medallion",
+    );
+    if (!medallion || medallion.specialShape?.kind !== "medallion") {
+      throw new Error("Expected a generated medallion.");
+    }
+    const socket = puzzle.tiles.find(
+      (tile) => tile.id === medallion.specialShape.socketPieceIds[0],
+    );
+    if (!socket) throw new Error("Expected a medallion socket neighbor.");
+
+    const medallionLayout = createJigsawWorldLayout({
+      imageWidth: puzzle.asset.intrinsicWidth,
+      imageHeight: puzzle.asset.intrinsicHeight,
+      puzzleWidth: puzzle.width,
+      puzzleHeight: puzzle.height,
+    });
+    const placements = puzzle.tiles.map((piece) => {
+      const solved = getJigsawSolvedPosition(medallionLayout, piece);
+      const near = piece.id === medallion.id;
+      return {
+        id: piece.id,
+        worldX: solved.left + (near ? 8 : 0),
+        worldY: solved.top + (near ? 6 : 0),
+      };
+    });
+
+    const result = resolveJigsawComponentDrop(
+      medallionLayout,
+      puzzle.tiles,
+      placements,
+      { joinedComponents: [] },
+      medallion.id,
+    );
+
+    expect(result.joined).toBe(true);
+    expect(result.assembly.joinedComponents).toContainEqual(
+      [medallion.id, socket.id].sort((left, right) => left.localeCompare(right)),
+    );
   });
 
   it("snaps a free piece to a neighboring island by canonical translation", () => {

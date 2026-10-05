@@ -5,6 +5,7 @@ import {
   mergeJigsawAssemblyComponents,
   type JigsawAssemblyProgress,
 } from "./assembly";
+import { getJigsawPieceNeighborIds } from "./medallion";
 import {
   createInitialJigsawPlacements,
   getJigsawSolvedPosition,
@@ -143,9 +144,9 @@ export const resolveJigsawComponentDrop = (
     const piece = piecesById.get(pieceId);
     if (!piece) continue;
 
-    for (const edge of piece.edges) {
-      if (edge.boundary || !edge.neighborPieceId || draggedIdSet.has(edge.neighborPieceId)) continue;
-      const targetPieceIds = getJigsawComponentPieceIds(assembly, edge.neighborPieceId);
+    for (const neighborPieceId of getJigsawPieceNeighborIds(piece)) {
+      if (draggedIdSet.has(neighborPieceId)) continue;
+      const targetPieceIds = getJigsawComponentPieceIds(assembly, neighborPieceId);
       if (
         eligiblePieceIds &&
         targetPieceIds.some((pieceId) => !eligiblePieceIds.has(pieceId))
@@ -155,7 +156,7 @@ export const resolveJigsawComponentDrop = (
         layout,
         piecesById,
         placementsById,
-        edge.neighborPieceId,
+        neighborPieceId,
       );
       if (!targetTranslation) continue;
       const distance = Math.hypot(
@@ -166,11 +167,11 @@ export const resolveJigsawComponentDrop = (
       if (
         !existing ||
         distance < existing.distance ||
-        (distance === existing.distance && edge.neighborPieceId.localeCompare(existing.pieceId) < 0)
+        (distance === existing.distance && neighborPieceId.localeCompare(existing.pieceId) < 0)
       ) {
         candidates.set(componentKey, {
           componentKey,
-          pieceId: edge.neighborPieceId,
+          pieceId: neighborPieceId,
           pieceIds: targetPieceIds,
           distance,
           translationX: targetTranslation.x,

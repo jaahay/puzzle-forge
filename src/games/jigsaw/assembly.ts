@@ -1,4 +1,5 @@
 import type { JigsawPiece } from "../../catalog/types";
+import { getJigsawPieceNeighborIds } from "./medallion";
 
 export type JigsawAssemblyProgress = {
   joinedComponents: string[][];
@@ -51,10 +52,6 @@ export const sameJigsawAssemblyProgress = (
     });
 };
 
-const getConnectedNeighborIds = (piece: JigsawPiece) =>
-  piece.edges.flatMap((edge) =>
-    edge.boundary || edge.neighborPieceId === null ? [] : [edge.neighborPieceId]);
-
 const isTopologyConnected = (
   component: readonly string[],
   piecesById: ReadonlyMap<string, JigsawPiece>,
@@ -72,7 +69,7 @@ const isTopologyConnected = (
     const piece = piecesById.get(pieceId);
     if (!piece) return false;
 
-    for (const neighborId of getConnectedNeighborIds(piece)) {
+    for (const neighborId of getJigsawPieceNeighborIds(piece)) {
       if (!componentIds.has(neighborId) || visited.has(neighborId)) continue;
       visited.add(neighborId);
       pending.push(neighborId);
