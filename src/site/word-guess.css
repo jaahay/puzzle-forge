@@ -37,6 +37,7 @@
   border: 0;
   opacity: 0;
   pointer-events: none;
+  font-size: 16px;
 }
 
 .word-guess-board {
