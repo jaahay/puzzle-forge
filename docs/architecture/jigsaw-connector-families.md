@@ -92,7 +92,7 @@ Cut style is an intentionally closed product axis for the current implementation
 - **Intricate** — compound and multi-event interlocks with denser matching clues;
 - **Eclectic** — the broad Puzzle Forge vocabulary, still constrained to one coherent board-level connector profile and a small baseline palette.
 
-Both modes use the same connector grammar catalog, baseline grammar catalog, seam composition, renderer, polarity, complementarity, and safety machinery. The mode changes product policy, not geometry infrastructure.
+All styles use the same connector grammar catalog, baseline grammar catalog, seam composition, renderer, polarity, complementarity, and safety machinery. Style changes product policy, not geometry infrastructure.
 
 For every generated puzzle:
 
@@ -101,19 +101,21 @@ For every generated puzzle:
 3. one small deterministic baseline sub-palette is derived for the whole puzzle;
 4. each seam independently selects its approach and departure baseline grammar from that sub-palette.
 
-The current policy is deliberately asymmetric:
+The current styles are deliberately curated rather than arranged on one linear complexity axis:
 
-| Policy | Classic | Eclectic |
-| --- | --- | --- |
-| Connector palette | Classic bulb, Necked head | All connector grammars |
-| Required baseline anchors | Straight, Bow | Bow |
-| Baseline palette size | 3 | 4 |
-| Additional Classic baseline candidates | Inflection, Angled course | — |
-| Expressive baseline access | Excluded | Full catalog, subject to weighted sub-palette derivation |
+| Style | Connector admission | Required baseline anchors | Baseline palette size | Additional baseline candidates |
+| --- | --- | --- | ---: | --- |
+| **Classic** | Classic bulb, Necked head | Straight, Bow | 3 | Inflection, Angled course |
+| **Flowing** | Classic bulb, Multi-lobe, Scoop, Serpentine, Connectorless wave | Bow, Wave | 3 | Straight, Inflection |
+| **Geometric** | Terrace, Zigzag, Stacked lock | Angled course, Stepped course | 3 | Straight, Dogleg |
+| **Intricate** | Necked head, Multi-lobe, Stacked lock, Compound lock, Opposed dual lock, Notched head | Primary-secondary | 4 | Bow, Inflection, Wave, Separated bows, Opposed pair, Inflection-rest-bow, Same-side hairpin, Opposed hairpin, Counter-hook |
+| **Eclectic** | Complete production EdgeProfile catalog | Bow | 4 | Complete weighted BaselineCourse catalog |
 
-Classic connector weighting favors Classic bulb over Necked head. Its third baseline family is selected from Inflection / Angled course, then all three baseline families remain weighted so Straight and Bow dominate individual seams.
+Classic connector weighting favors Classic bulb over Necked head, while its third baseline family varies between Inflection and Angled course.
 
-Eclectic can reach the complete connector and baseline vocabularies across generated puzzles. Bow remains a familiar anchor in every baseline sub-palette, while the other three entries are weighted toward the more expressive families.
+Flowing emphasizes rounded, sweeping, and baseline-crossing geometry. Geometric concentrates the angular and architectural families. Intricate emphasizes compound and multi-event structures rather than merely increasing amplitude. Eclectic can reach the complete connector and baseline vocabularies across generated puzzles.
+
+The style policy still selects one connector profile for the whole puzzle and one small deterministic baseline sub-palette. This keeps each board visually coherent even when the selected style has broad admission.
 
 Individual seams still vary deterministically by seed:
 
@@ -539,7 +541,7 @@ The rows remain useful as a perceptual continuum from quiet to expressive, but t
 
 BaselineGrammar defines what can be expressed and how canonical productions are realized safely. It does **not** decide which productions should feel classic, adventurous, common, or rare.
 
-The raw BaselineGrammar catalog remains policy-free. Product generation no longer samples that catalog uniformly: #213 supplies Classic / Eclectic admission and weighting over the shared grammar vocabulary through `cutStyle.ts`.
+The raw BaselineGrammar catalog remains policy-free. Product generation does not sample that catalog uniformly: `cutStyle.ts` supplies the current five-style admission, weighting, and puzzle-level sub-palette policy over the shared grammar vocabulary.
 
 This separation is intentional:
 
