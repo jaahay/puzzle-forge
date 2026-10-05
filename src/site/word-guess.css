@@ -26,6 +26,17 @@
   width: fit-content;
   max-width: 100%;
   margin: 0 auto;
+  cursor: text;
+}
+
+.word-guess-native-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .word-guess-board {
