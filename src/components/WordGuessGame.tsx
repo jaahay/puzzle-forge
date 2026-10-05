@@ -5,6 +5,7 @@ import { getWordGuessAnalysis } from "../games/wordGuess/analysis";
 import { scoreWordGuess } from "../games/wordGuess/feedback";
 import { readWordGuessProgress, writeWordGuessProgress, type WordGuessProgressStatus } from "../games/wordGuess/progress";
 import { formatWordGuessShareText } from "../games/wordGuess/share";
+import { normalizeWordGuessNativeInput } from "../games/wordGuess/input";
 import { getWordGuessBank, isValidWordGuess, normalizeWordGuessWord } from "../games/wordGuess/words";
 import { PuzzleTerminalDock } from "./PuzzleTerminalDock";
 
@@ -113,8 +114,13 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
   const [hardMode, setHardMode] = useState(false);
   const restoredPuzzleId = useRef<string | null>(null);
   const skipNextSave = useRef(false);
+  const nativeInputRef = useRef<HTMLInputElement>(null);
   const activeRow = status === "playing" ? submittedRows : -1;
   const rowGuesses = rows.map(getGuess);
+  const nativeInputValue =
+    activeRow >= 0
+      ? normalizeWordGuessNativeInput(rowGuesses[activeRow] ?? "", puzzle.width)
+      : "";
   const submittedGuesses = rowGuesses.slice(0, submittedRows).filter((guess) => guess.length === puzzle.width);
   const submittedGuessKey = submittedGuesses.join("|");
   const analysis = useMemo(() => getWordGuessAnalysis(answer, submittedGuesses, wordBank), [answer, submittedGuessKey, wordBank]);
@@ -265,6 +271,40 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     setCopiedShare(false);
   };
 
+  const applyNativeInput = (value: string) => {
+    if (status !== "playing" || disabled) {
+      return;
+    }
+
+    const rowCells = rows[activeRow] ?? [];
+    const nextValue = normalizeWordGuessNativeInput(value, puzzle.width);
+
+    rowCells.forEach((cell, columnIndex) => {
+      const nextLetter = nextValue[columnIndex] ?? "";
+      if (cell.value !== nextLetter) {
+        onCellInput(cell, nextLetter);
+      }
+    });
+
+    setMessage(`Type a ${puzzle.width}-letter word.`);
+    setCopiedShare(false);
+  };
+
+  const focusNativeInput = () => {
+    if (status !== "playing" || disabled) {
+      return;
+    }
+
+    const input = nativeInputRef.current;
+    if (!input) {
+      return;
+    }
+
+    input.focus({ preventScroll: true });
+    const end = input.value.length;
+    input.setSelectionRange(end, end);
+  };
+
   const resetGame = () => {
     skipNextSave.current = true;
     onReset();
@@ -342,7 +382,33 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
         <strong>{message}</strong>
       </div>
 
-      <div class="word-guess-board-shell">
+      <div class="word-guess-board-shell" onClick={focusNativeInput}>
+        <input
+          ref={nativeInputRef}
+          class="word-guess-native-input"
+          type="text"
+          value={nativeInputValue}
+          inputMode="text"
+          enterKeyHint="done"
+          autoComplete="off"
+          autoCapitalize="characters"
+          autoCorrect="off"
+          spellcheck={false}
+          tabIndex={-1}
+          aria-label="Type your Word Guess"
+          disabled={status !== "playing" || disabled}
+          onInput={(event) => applyNativeInput(event.currentTarget.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              submitGuess();
+            }
+          }}
+          onFocus={(event) => {
+            const end = event.currentTarget.value.length;
+            event.currentTarget.setSelectionRange(end, end);
+          }}
+        />
         <div class="word-guess-board" aria-label="Word Guess board">
           {rows.map((rowCells, rowIndex) => {
             const guess = getGuess(rowCells);
