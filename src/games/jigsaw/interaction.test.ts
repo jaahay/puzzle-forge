@@ -177,9 +177,10 @@ describe("Jigsaw island interaction", () => {
     );
 
     expect(result.joined).toBe(true);
-    expect(result.assembly.joinedComponents).toContainEqual(
-      [medallion.id, socket.id].sort((left, right) => left.localeCompare(right)),
-    );
+    expect(result.assembly.joinedComponents).toEqual([
+      [medallion.id, ...medallion.specialShape.socketPieceIds]
+        .sort((left, right) => left.localeCompare(right)),
+    ]);
   });
 
   it("snaps a free piece to a neighboring island by canonical translation", () => {
