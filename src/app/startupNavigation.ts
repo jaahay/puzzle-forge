@@ -56,7 +56,7 @@ export const resolveStartupRoute = (
 ): AppRoute => {
   if (initialRoute.kind === "home" && options.resumeActiveSession) {
     const activeSession = persisted?.sessions[persisted.activeResourceKey];
-    if (activeSession && !activeSession.completedAt) {
+    if (activeSession) {
       return {
         kind: "resource",
         puzzleId: activeSession.puzzleId,

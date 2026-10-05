@@ -95,7 +95,7 @@ describe("startup navigation", () => {
     });
   });
 
-  it("keeps the home surface for ordinary browser visits and completed app sessions", () => {
+  it("keeps ordinary browser home visits on home and resumes the active resource regardless of terminal metadata", () => {
     const unfinished = makeSession("jigsaw", "unfinished-jigsaw", "2026-10-05T20:00:00.000Z");
     const completed = makeSession(
       "jigsaw",
@@ -112,7 +112,11 @@ describe("startup navigation", () => {
       { kind: "home" },
       makePersisted([completed]),
       { resumeActiveSession: true },
-    )).toEqual({ kind: "home" });
+    )).toEqual({
+      kind: "resource",
+      puzzleId: "jigsaw",
+      generationId: completed.generationId,
+    });
   });
 
   it("reopens the active persisted resource for a matching bare puzzle route", () => {

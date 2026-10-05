@@ -523,9 +523,16 @@ export const App = () => {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const handlePageHide = () => saveCurrentSessionRef.current();
-    window.addEventListener("pagehide", handlePageHide);
-    return () => window.removeEventListener("pagehide", handlePageHide);
+    const saveCurrentSession = () => saveCurrentSessionRef.current();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") saveCurrentSession();
+    };
+    window.addEventListener("pagehide", saveCurrentSession);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      window.removeEventListener("pagehide", saveCurrentSession);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   useEffect(() => {
