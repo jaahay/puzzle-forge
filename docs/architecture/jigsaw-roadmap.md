@@ -267,7 +267,7 @@ The styles are not difficulty levels and are not ordered from "safe" to "wild." 
 
 Classic remains deliberately familiar. Flowing emphasizes rounded and baseline-crossing motion. Geometric emphasizes angular and architectural structure. Intricate emphasizes compound and multi-event interlocks. Eclectic permits the full production vocabulary while preserving the same puzzle-level coherence rule.
 
-Cut style is part of canonical generation identity. The same seed, artwork, and grid under different styles are intentionally different generated puzzles. The style also round-trips through compact resource identity and Daily Jigsaw locators. There is no compatibility path for superseded compact Jigsaw resource IDs; old shapes are simply invalid under the current decoder.
+Cut style is part of canonical generation identity. The same seed, artwork, and grid under different styles are intentionally different generated puzzles. The style also round-trips through compact resource identity and Daily Jigsaw locators. Compact Jigsaw resource identity keeps style and boundary in one settings byte using explicit codec-owned numeric codes rather than UI-array positions. No migration or compatibility machinery is added.
 
 ### Follow-on geometry directions
 

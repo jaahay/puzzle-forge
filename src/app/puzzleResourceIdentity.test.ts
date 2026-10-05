@@ -34,6 +34,13 @@ const alternateDimension = (value: number, minimum: number, maximum: number) => 
   return value;
 };
 
+const decodeGenerationIdBytes = (generationId: string) => {
+  const base64 = generationId.replace(/-/g, "+").replace(/_/g, "/");
+  const padding = "=".repeat((4 - (base64.length % 4)) % 4);
+  const binary = atob(`${base64}${padding}`);
+  return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+};
+
 describe("canonical puzzle generation identity", () => {
   it("uses a compact self-contained id for ordinary generated puzzles", () => {
     const seed = makeRandomSeed();
@@ -142,12 +149,21 @@ describe("canonical puzzle generation identity", () => {
       jigsawCutStyle: defaultJigsawCutStyle,
     });
 
-    const ids = jigsawCutStyles.map((jigsawCutStyle) =>
-      encodeGenerationId({ ...base, jigsawCutStyle }),
-    );
+    const expectedCodes = [
+      ["classic", 0],
+      ["flowing", 1],
+      ["geometric", 2],
+      ["intricate", 3],
+      ["eclectic", 4],
+    ] as const;
+    const ids = expectedCodes.map(([jigsawCutStyle, expectedCode]) => {
+      const id = encodeGenerationId({ ...base, jigsawCutStyle });
+      expect(decodeGenerationIdBytes(id).at(-1)).toBe(expectedCode);
+      return id;
+    });
     expect(new Set(ids).size).toBe(jigsawCutStyles.length);
 
-    jigsawCutStyles.forEach((jigsawCutStyle, index) => {
+    expectedCodes.forEach(([jigsawCutStyle], index) => {
       const decoded = decodeGenerationId("jigsaw", ids[index]!);
       expect(decoded.ok).toBe(true);
       if (!decoded.ok) return;
@@ -178,6 +194,8 @@ describe("canonical puzzle generation identity", () => {
 
     expect(implicitFlat).toBe(flat);
     expect(contoured).not.toBe(flat);
+    expect(decodeGenerationIdBytes(flat).at(-1)).toBe(0);
+    expect(decodeGenerationIdBytes(contoured).at(-1)).toBe(0x08);
 
     const decoded = decodeGenerationId("jigsaw", contoured);
     expect(decoded.ok).toBe(true);
