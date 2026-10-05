@@ -140,6 +140,7 @@ describe("startup navigation", () => {
     expect(resolveStartupRoute(
       { kind: "puzzle", puzzleId: "jigsaw" },
       makePersisted([olderJigsaw, newerJigsaw, activeSudoku]),
+      { resumeActiveSession: true },
     )).toEqual({
       kind: "resource",
       puzzleId: "jigsaw",
@@ -158,6 +159,7 @@ describe("startup navigation", () => {
     expect(resolveStartupRoute(
       route,
       makePersisted([makeSession("jigsaw", "saved-jigsaw", "2026-09-29T20:00:00.000Z")]),
+      { resumeActiveSession: true },
     )).toEqual(route);
   });
 
@@ -171,12 +173,22 @@ describe("startup navigation", () => {
     )).toEqual(route);
   });
 
-  it("does not alter non-puzzle site routes", () => {
-    const route: AppRoute = { kind: "home" };
+  it("does not let installed-app recovery override explicit non-home site routes", () => {
+    const persisted = makePersisted([
+      makeSession("sudoku", "saved-sudoku", "2026-09-29T20:00:00.000Z"),
+    ]);
+    const routes: AppRoute[] = [
+      { kind: "updates" },
+      { kind: "about" },
+      { kind: "not-found", pathname: "/missing" },
+    ];
 
-    expect(resolveStartupRoute(
-      route,
-      makePersisted([makeSession("sudoku", "saved-sudoku", "2026-09-29T20:00:00.000Z")]),
-    )).toEqual(route);
+    routes.forEach((route) => {
+      expect(resolveStartupRoute(
+        route,
+        persisted,
+        { resumeActiveSession: true },
+      )).toEqual(route);
+    });
   });
 });
