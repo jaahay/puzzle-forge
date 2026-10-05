@@ -2,6 +2,29 @@ import type { PuzzleId } from "../catalog/types";
 import type { AppRoute } from "./routes";
 import type { PersistedPuzzleSession, PersistedPuzzleSessions } from "./session";
 
+type InstalledAppEnvironment = {
+  displayModeStandalone?: boolean;
+  navigatorStandalone?: boolean;
+};
+
+export const isInstalledAppContext = (
+  environment: InstalledAppEnvironment = {},
+) => {
+  const displayModeStandalone = environment.displayModeStandalone ??
+    (
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(display-mode: standalone)").matches
+    );
+  const navigatorStandalone = environment.navigatorStandalone ??
+    (
+      typeof navigator !== "undefined" &&
+      (navigator as Navigator & { standalone?: boolean }).standalone === true
+    );
+
+  return displayModeStandalone || navigatorStandalone;
+};
+
 const persistedSessionTimestamp = (session: PersistedPuzzleSession) => {
   const timestamp = Date.parse(session.updatedAt);
   return Number.isFinite(timestamp) ? timestamp : Number.NEGATIVE_INFINITY;
@@ -29,7 +52,20 @@ export const getMostRecentPersistedPuzzleSession = (
 export const resolveStartupRoute = (
   initialRoute: AppRoute,
   persisted: PersistedPuzzleSessions | null,
+  options: { resumeActiveSession?: boolean } = {},
 ): AppRoute => {
+  if (initialRoute.kind === "home" && options.resumeActiveSession) {
+    const activeSession = persisted?.sessions[persisted.activeResourceKey];
+    if (activeSession) {
+      return {
+        kind: "resource",
+        puzzleId: activeSession.puzzleId,
+        generationId: activeSession.generationId,
+      };
+    }
+    return initialRoute;
+  }
+
   if (initialRoute.kind !== "puzzle") return initialRoute;
 
   const session = getMostRecentPersistedPuzzleSession(initialRoute.puzzleId, persisted);

@@ -8,7 +8,7 @@ import type {
   PersistedPuzzleSession,
   PersistedPuzzleSessions,
 } from "./session";
-import { resolveStartupRoute } from "./startupNavigation";
+import { isInstalledAppContext, resolveStartupRoute } from "./startupNavigation";
 
 type TestPuzzleId = "sudoku" | "jigsaw";
 
@@ -29,6 +29,7 @@ const makeSession = (
   puzzleId: TestPuzzleId,
   seed: string,
   updatedAt: string,
+  completedAt?: string,
 ): PersistedPuzzleSession => {
   const progress: PersistedPuzzleProgress = puzzleId === "jigsaw"
     ? { kind: "tiles", tileOrder: [], selectedTileId: null, jigsawAssembly: { joinedComponents: [] } }
@@ -41,6 +42,7 @@ const makeSession = (
     progress,
     statusMessage: "",
     updatedAt,
+    ...(completedAt ? { completedAt } : {}),
   };
 };
 
@@ -64,6 +66,59 @@ const makePersisted = (
 };
 
 describe("startup navigation", () => {
+  it("recognizes standalone display mode and iOS home-screen context", () => {
+    expect(isInstalledAppContext({
+      displayModeStandalone: true,
+      navigatorStandalone: false,
+    })).toBe(true);
+    expect(isInstalledAppContext({
+      displayModeStandalone: false,
+      navigatorStandalone: true,
+    })).toBe(true);
+    expect(isInstalledAppContext({
+      displayModeStandalone: false,
+      navigatorStandalone: false,
+    })).toBe(false);
+  });
+
+  it("resumes the active unfinished resource from an installed-app cold launch", () => {
+    const session = makeSession("jigsaw", "active-jigsaw", "2026-10-05T20:00:00.000Z");
+
+    expect(resolveStartupRoute(
+      { kind: "home" },
+      makePersisted([session]),
+      { resumeActiveSession: true },
+    )).toEqual({
+      kind: "resource",
+      puzzleId: "jigsaw",
+      generationId: session.generationId,
+    });
+  });
+
+  it("keeps ordinary browser home visits on home and resumes the active resource regardless of terminal metadata", () => {
+    const unfinished = makeSession("jigsaw", "unfinished-jigsaw", "2026-10-05T20:00:00.000Z");
+    const completed = makeSession(
+      "jigsaw",
+      "completed-jigsaw",
+      "2026-10-05T21:00:00.000Z",
+      "2026-10-05T21:00:00.000Z",
+    );
+
+    expect(resolveStartupRoute(
+      { kind: "home" },
+      makePersisted([unfinished]),
+    )).toEqual({ kind: "home" });
+    expect(resolveStartupRoute(
+      { kind: "home" },
+      makePersisted([completed]),
+      { resumeActiveSession: true },
+    )).toEqual({
+      kind: "resource",
+      puzzleId: "jigsaw",
+      generationId: completed.generationId,
+    });
+  });
+
   it("reopens the active persisted resource for a matching bare puzzle route", () => {
     const session = makeSession("sudoku", "active-sudoku", "2026-09-29T20:00:00.000Z");
 
@@ -85,6 +140,7 @@ describe("startup navigation", () => {
     expect(resolveStartupRoute(
       { kind: "puzzle", puzzleId: "jigsaw" },
       makePersisted([olderJigsaw, newerJigsaw, activeSudoku]),
+      { resumeActiveSession: true },
     )).toEqual({
       kind: "resource",
       puzzleId: "jigsaw",
@@ -103,6 +159,7 @@ describe("startup navigation", () => {
     expect(resolveStartupRoute(
       route,
       makePersisted([makeSession("jigsaw", "saved-jigsaw", "2026-09-29T20:00:00.000Z")]),
+      { resumeActiveSession: true },
     )).toEqual(route);
   });
 
@@ -116,12 +173,22 @@ describe("startup navigation", () => {
     )).toEqual(route);
   });
 
-  it("does not alter non-puzzle site routes", () => {
-    const route: AppRoute = { kind: "home" };
+  it("does not let installed-app recovery override explicit non-home site routes", () => {
+    const persisted = makePersisted([
+      makeSession("sudoku", "saved-sudoku", "2026-09-29T20:00:00.000Z"),
+    ]);
+    const routes: AppRoute[] = [
+      { kind: "updates" },
+      { kind: "about" },
+      { kind: "not-found", pathname: "/missing" },
+    ];
 
-    expect(resolveStartupRoute(
-      route,
-      makePersisted([makeSession("sudoku", "saved-sudoku", "2026-09-29T20:00:00.000Z")]),
-    )).toEqual(route);
+    routes.forEach((route) => {
+      expect(resolveStartupRoute(
+        route,
+        persisted,
+        { resumeActiveSession: true },
+      )).toEqual(route);
+    });
   });
 });

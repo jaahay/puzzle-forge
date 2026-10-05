@@ -33,7 +33,7 @@ import { encodeGenerationId, resolvePuzzleResourceSegment } from "./app/puzzleRe
 import { defaultPuzzleDifficulty, makeRandomSeed } from "./app/runtime";
 import { getCurrentAppRoute, parseAppRoute, pushAppRoute, replaceAppRoute, type AppRoute } from "./app/routes";
 import { initialSolitaireStats, loadPersistedPuzzleSessions } from "./app/session";
-import { resolveStartupRoute } from "./app/startupNavigation";
+import { isInstalledAppContext, resolveStartupRoute } from "./app/startupNavigation";
 import { useGridController } from "./app/useGridController";
 import { randomizeNextPuzzleArtwork, useNextPuzzleDrafts } from "./app/useNextPuzzleDrafts";
 import { makeInitialPuzzleGenerationOptions, makeMissingPuzzleGenerationOptions, shouldRecoverMissingPuzzleSurface, usePuzzleGeneration, type BeginGenerationOptions } from "./app/usePuzzleGeneration";
@@ -83,7 +83,13 @@ const generatedBaselinesMatch = (left: GeneratedPuzzle, right: GeneratedPuzzle) 
 export const App = () => {
   const initialPersistedSessions = useMemo(loadPersistedPuzzleSessions, []);
   const initialRoute = useMemo(
-    () => resolveStartupRoute(getCurrentAppRoute(), initialPersistedSessions),
+    () => resolveStartupRoute(
+      getCurrentAppRoute(),
+      initialPersistedSessions,
+      {
+        resumeActiveSession: isInstalledAppContext(),
+      },
+    ),
     [initialPersistedSessions],
   );
   const storedPuzzleId = useMemo(
@@ -517,9 +523,16 @@ export const App = () => {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const handlePageHide = () => saveCurrentSessionRef.current();
-    window.addEventListener("pagehide", handlePageHide);
-    return () => window.removeEventListener("pagehide", handlePageHide);
+    const saveCurrentSession = () => saveCurrentSessionRef.current();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") saveCurrentSession();
+    };
+    window.addEventListener("pagehide", saveCurrentSession);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      window.removeEventListener("pagehide", saveCurrentSession);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   useEffect(() => {
