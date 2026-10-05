@@ -7,7 +7,7 @@ import {
   isImageBackedPuzzleId,
 } from "../games/imageAssets";
 import { defaultJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
-import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
+import { defaultJigsawCutStyle, jigsawCutStyles } from "../games/jigsaw/cutStyle";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation } from "../games/sudoku/variation";
 import type { GenerationIdentity } from "./generationIdentity";
@@ -75,7 +75,7 @@ describe("canonical puzzle generation identity", () => {
         imageId,
         jigsawCutStyle:
           definition.id === "jigsaw"
-            ? "unconventional"
+            ? "eclectic"
             : defaultJigsawCutStyle,
         jigsawBoundaryMode:
           definition.id === "jigsaw"
@@ -107,7 +107,7 @@ describe("canonical puzzle generation identity", () => {
             width,
             height,
             imageId,
-            jigsawCutStyle: "unconventional",
+            jigsawCutStyle: "eclectic",
             jigsawBoundaryMode: "contoured",
           });
           break;
@@ -132,27 +132,27 @@ describe("canonical puzzle generation identity", () => {
     }
   });
 
-  it("forks Jigsaw resource identity by cut style", () => {
+  it("forks Jigsaw resource identity by every cut style", () => {
     const definition = getPuzzleDefinition("jigsaw");
     const base = makeIdentity({
       puzzleId: "jigsaw",
       width: definition.defaultWidth,
       height: definition.defaultHeight,
       imageId: getPuzzleImageAsset(undefined, "jigsaw").id,
-      jigsawCutStyle: "traditional",
+      jigsawCutStyle: defaultJigsawCutStyle,
     });
 
-    const traditional = encodeGenerationId(base);
-    const unconventional = encodeGenerationId({
-      ...base,
-      jigsawCutStyle: "unconventional",
-    });
+    const ids = jigsawCutStyles.map((jigsawCutStyle) =>
+      encodeGenerationId({ ...base, jigsawCutStyle }),
+    );
+    expect(new Set(ids).size).toBe(jigsawCutStyles.length);
 
-    expect(unconventional).not.toBe(traditional);
-    const decoded = decodeGenerationId("jigsaw", unconventional);
-    expect(decoded.ok).toBe(true);
-    if (!decoded.ok) return;
-    expect(decoded.identity.jigsawCutStyle).toBe("unconventional");
+    jigsawCutStyles.forEach((jigsawCutStyle, index) => {
+      const decoded = decodeGenerationId("jigsaw", ids[index]!);
+      expect(decoded.ok).toBe(true);
+      if (!decoded.ok) return;
+      expect(decoded.identity.jigsawCutStyle).toBe(jigsawCutStyle);
+    });
   });
 
   it("forks Jigsaw resource identity by outer boundary while keeping flat canonical", () => {
@@ -162,7 +162,7 @@ describe("canonical puzzle generation identity", () => {
       width: definition.defaultWidth,
       height: definition.defaultHeight,
       imageId: getPuzzleImageAsset(undefined, "jigsaw").id,
-      jigsawCutStyle: "traditional",
+      jigsawCutStyle: "classic",
       jigsawBoundaryMode: "flat",
     });
 

@@ -9,7 +9,7 @@ The implementation lives in:
 - `src/games/jigsaw/connectorGrammar.ts` — structural connector grammar definitions, seeded program derivation, and normalized realization;
 - `src/games/jigsaw/baselineGrammar.ts` — structural baseline grammar definitions, seeded program derivation, and normalized realization;
 - `src/games/jigsaw/seamProgram.ts` — seeded approach / connector / departure composition;
-- `src/games/jigsaw/cutStyle.ts` — Traditional / Unconventional palette admission, weighting, and puzzle-level baseline sub-palette policy;
+- `src/games/jigsaw/cutStyle.ts` — curated style palette admission, weighting, and puzzle-level baseline sub-palette policy;
 - `src/games/jigsaw/edgePaths.ts` — shared placement, polarity, complementarity, curve rendering, orientation, and validation sampling.
 
 The current grammar catalog is deliberately small. **Eight strong grammars are preferable to fourteen labels that collapse into the same geometry.**
@@ -86,8 +86,11 @@ This matters: shared Bézier machinery does not make two grammars equivalent any
 
 Cut style is an intentionally closed product axis for the current implementation:
 
-- **Traditional** — familiar physical-jigsaw cut language;
-- **Unconventional** — the broader expressive Puzzle Forge language.
+- **Classic** — familiar, restrained manufactured-jigsaw language;
+- **Flowing** — rounded and organic curves, waves, scoops, and related gestures;
+- **Geometric** — angular and architectural terraces, zigzags, locks, and courses;
+- **Intricate** — compound and multi-event interlocks with denser matching clues;
+- **Eclectic** — the broad Puzzle Forge vocabulary, still constrained to one coherent board-level connector profile and a small baseline palette.
 
 Both modes use the same connector grammar catalog, baseline grammar catalog, seam composition, renderer, polarity, complementarity, and safety machinery. The mode changes product policy, not geometry infrastructure.
 
@@ -100,17 +103,17 @@ For every generated puzzle:
 
 The current policy is deliberately asymmetric:
 
-| Policy | Traditional | Unconventional |
+| Policy | Classic | Eclectic |
 | --- | --- | --- |
 | Connector palette | Classic bulb, Necked head | All connector grammars |
 | Required baseline anchors | Straight, Bow | Bow |
 | Baseline palette size | 3 | 4 |
-| Additional Traditional baseline candidates | Inflection, Angled course | — |
+| Additional Classic baseline candidates | Inflection, Angled course | — |
 | Expressive baseline access | Excluded | Full catalog, subject to weighted sub-palette derivation |
 
-Traditional connector weighting favors Classic bulb over Necked head. Its third baseline family is selected from Inflection / Angled course, then all three baseline families remain weighted so Straight and Bow dominate individual seams.
+Classic connector weighting favors Classic bulb over Necked head. Its third baseline family is selected from Inflection / Angled course, then all three baseline families remain weighted so Straight and Bow dominate individual seams.
 
-Unconventional can reach the complete connector and baseline vocabularies across generated puzzles. Bow remains a familiar anchor in every baseline sub-palette, while the other three entries are weighted toward the more expressive families.
+Eclectic can reach the complete connector and baseline vocabularies across generated puzzles. Bow remains a familiar anchor in every baseline sub-palette, while the other three entries are weighted toward the more expressive families.
 
 Individual seams still vary deterministically by seed:
 
@@ -534,9 +537,9 @@ The rows remain useful as a perceptual continuum from quiet to expressive, but t
 
 ### Grammar versus generation policy
 
-BaselineGrammar defines what can be expressed and how canonical productions are realized safely. It does **not** decide which productions should feel traditional, adventurous, common, or rare.
+BaselineGrammar defines what can be expressed and how canonical productions are realized safely. It does **not** decide which productions should feel classic, adventurous, common, or rare.
 
-The raw BaselineGrammar catalog remains policy-free. Product generation no longer samples that catalog uniformly: #213 supplies Traditional / Unconventional admission and weighting over the shared grammar vocabulary through `cutStyle.ts`.
+The raw BaselineGrammar catalog remains policy-free. Product generation no longer samples that catalog uniformly: #213 supplies Classic / Eclectic admission and weighting over the shared grammar vocabulary through `cutStyle.ts`.
 
 This separation is intentional:
 

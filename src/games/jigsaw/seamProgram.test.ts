@@ -46,7 +46,7 @@ describe("Jigsaw seam program", () => {
     const seam = deriveJigsawSeamProgram(
       "connectorless-wave",
       123_456,
-      makeEdgeModel("unconventional"),
+      makeEdgeModel("eclectic"),
     );
 
     expect(seam.kind).toBe("connectorless");

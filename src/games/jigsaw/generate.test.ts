@@ -71,17 +71,17 @@ describe("generateJigsaw", () => {
   });
 
   it("makes cut style part of deterministic puzzle identity", () => {
-    const traditional = makeJigsaw(defaultJigsawImageAsset.id, "traditional");
-    const unconventional = makeJigsaw(defaultJigsawImageAsset.id, "unconventional");
+    const classic = makeJigsaw(defaultJigsawImageAsset.id, "classic");
+    const eclectic = makeJigsaw(defaultJigsawImageAsset.id, "eclectic");
 
-    expect(traditional.seed).toBe(unconventional.seed);
-    expect(traditional.asset.id).toBe(unconventional.asset.id);
-    expect(traditional.edgeModel.cutStyle).toBe("traditional");
-    expect(unconventional.edgeModel.cutStyle).toBe("unconventional");
-    expect(traditional.id).not.toBe(unconventional.id);
-    expect(traditional.checksum).not.toBe(unconventional.checksum);
-    expect(traditional.edgeModel.baselineCourseIds).not.toEqual(
-      unconventional.edgeModel.baselineCourseIds,
+    expect(classic.seed).toBe(eclectic.seed);
+    expect(classic.asset.id).toBe(eclectic.asset.id);
+    expect(classic.edgeModel.cutStyle).toBe("classic");
+    expect(eclectic.edgeModel.cutStyle).toBe("eclectic");
+    expect(classic.id).not.toBe(eclectic.id);
+    expect(classic.checksum).not.toBe(eclectic.checksum);
+    expect(classic.edgeModel.baselineCourseIds).not.toEqual(
+      eclectic.edgeModel.baselineCourseIds,
     );
   });
 
@@ -139,17 +139,17 @@ describe("generateJigsaw", () => {
     }
   });
 
-  it("keeps Traditional edge generation inside its familiar palette", () => {
+  it("keeps Classic edge generation inside its familiar palette", () => {
     const selected = new Set<string>();
 
     for (let index = 0; index < 160; index += 1) {
       const puzzle = generateJigsaw({
         puzzleId: "jigsaw",
-        seed: `traditional-family-${index}`,
+        seed: `classic-family-${index}`,
         width: 4,
         height: 4,
         imageId: defaultJigsawImageAsset.id,
-        jigsawCutStyle: "traditional",
+        jigsawCutStyle: "classic",
       });
       const firstInteriorEdge = getAllEdges(puzzle).find((edge) => !edge.boundary);
       if (!firstInteriorEdge || firstInteriorEdge.boundary) {
@@ -163,17 +163,17 @@ describe("generateJigsaw", () => {
     );
   });
 
-  it("lets Unconventional edge generation reach the full production vocabulary", () => {
+  it("lets Eclectic edge generation reach the full production vocabulary", () => {
     const selected = new Set<string>();
 
     for (let index = 0; index < 320; index += 1) {
       const puzzle = generateJigsaw({
         puzzleId: "jigsaw",
-        seed: `unconventional-family-${index}`,
+        seed: `eclectic-family-${index}`,
         width: 4,
         height: 4,
         imageId: defaultJigsawImageAsset.id,
-        jigsawCutStyle: "unconventional",
+        jigsawCutStyle: "eclectic",
       });
       const firstInteriorEdge = getAllEdges(puzzle).find((edge) => !edge.boundary);
       if (!firstInteriorEdge || firstInteriorEdge.boundary) {
@@ -186,35 +186,35 @@ describe("generateJigsaw", () => {
   });
 
   it("varies the coherent baseline sub-palette across puzzle identities", () => {
-    const traditionalPalettes = new Set<string>();
-    const unconventionalPalettes = new Set<string>();
+    const classicPalettes = new Set<string>();
+    const eclecticPalettes = new Set<string>();
 
     for (let index = 0; index < 96; index += 1) {
       const seed = `palette-sample-${index}`;
-      traditionalPalettes.add(
+      classicPalettes.add(
         generateJigsaw({
           puzzleId: "jigsaw",
           seed,
           width: 6,
           height: 6,
           imageId: defaultJigsawImageAsset.id,
-          jigsawCutStyle: "traditional",
+          jigsawCutStyle: "classic",
         }).edgeModel.baselineCourseIds.join("|"),
       );
-      unconventionalPalettes.add(
+      eclecticPalettes.add(
         generateJigsaw({
           puzzleId: "jigsaw",
           seed,
           width: 6,
           height: 6,
           imageId: defaultJigsawImageAsset.id,
-          jigsawCutStyle: "unconventional",
+          jigsawCutStyle: "eclectic",
         }).edgeModel.baselineCourseIds.join("|"),
       );
     }
 
-    expect(traditionalPalettes.size).toBeGreaterThan(1);
-    expect(unconventionalPalettes.size).toBeGreaterThan(4);
+    expect(classicPalettes.size).toBeGreaterThan(1);
+    expect(eclecticPalettes.size).toBeGreaterThan(4);
   });
 
   it("makes every border edge flat, unpaired, and profile-free", () => {
@@ -329,9 +329,9 @@ describe("generateJigsaw", () => {
       edgeModel: {
         ...puzzle.edgeModel,
         cutStyle:
-          puzzle.edgeModel.cutStyle === "traditional"
-            ? "unconventional"
-            : "traditional",
+          puzzle.edgeModel.cutStyle === "classic"
+            ? "eclectic"
+            : "classic",
       },
       notes: puzzle.notes,
     });

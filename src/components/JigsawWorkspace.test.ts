@@ -20,7 +20,7 @@ const makeJigsawDraft = (overrides: Partial<NextPuzzleDraft> = {}): NextPuzzleDr
   solitaireVariation: defaultSolitaireVariation,
   imageId: defaultJigsawImageAsset.id,
   jigsawSizeSelection: jigsawCustomSizeSelection,
-  jigsawCutStyle: "traditional",
+  jigsawCutStyle: "classic",
   jigsawBoundaryMode: "flat",
   ...overrides,
 });
@@ -121,7 +121,7 @@ describe("Jigsaw image library", () => {
   it("updates cut style without changing size or artwork draft intent", () => {
     const draft = makeJigsawDraft();
     const updated = applyNextPuzzleDraftSettings(draft, {
-      jigsawCutStyle: "unconventional",
+      jigsawCutStyle: "eclectic",
     });
 
     expect(updated).toMatchObject({
@@ -129,7 +129,7 @@ describe("Jigsaw image library", () => {
       width: draft.width,
       height: draft.height,
       jigsawSizeSelection: draft.jigsawSizeSelection,
-      jigsawCutStyle: "unconventional",
+      jigsawCutStyle: "eclectic",
     });
   });
 

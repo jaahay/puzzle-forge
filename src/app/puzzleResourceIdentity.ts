@@ -192,7 +192,8 @@ const pushPuzzlePayload = (bytes: number[], identity: GenerationIdentity) => {
       const boundaryMode = normalizeJigsawBoundaryMode(identity.jigsawBoundaryMode);
       const boundaryModeIndex = jigsawBoundaryModes.indexOf(boundaryMode);
       if (boundaryModeIndex < 0) throw new Error(`Unsupported Jigsaw boundary mode: ${boundaryMode}`);
-      pushByte(bytes, cutStyleIndex | (boundaryModeIndex << 1));
+      pushByte(bytes, cutStyleIndex);
+      pushByte(bytes, boundaryModeIndex);
       return;
     }
     case "tile-swap":
@@ -303,10 +304,8 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
         width = reader.readByte();
         height = reader.readByte();
         imageId = getPuzzleImageAsset(reader.readText(), puzzleId).id;
-        const flags = reader.readByte();
-        if ((flags & 0xfc) !== 0) return { ok: false, reason: "invalid-identity" };
-        const decodedCutStyle = jigsawCutStyles[flags & 0x01];
-        const decodedBoundaryMode = jigsawBoundaryModes[(flags >>> 1) & 0x01];
+        const decodedCutStyle = jigsawCutStyles[reader.readByte()];
+        const decodedBoundaryMode = jigsawBoundaryModes[reader.readByte()];
         if (!decodedCutStyle || !decodedBoundaryMode) {
           return { ok: false, reason: "invalid-identity" };
         }

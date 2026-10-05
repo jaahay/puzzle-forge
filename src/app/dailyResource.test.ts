@@ -74,39 +74,39 @@ describe("Daily resource semantics", () => {
     const resolved = resolveDailyResource(
       "jigsaw",
       "2026-09-15",
-      "cut=unconventional",
+      "cut=eclectic",
     );
     expect(resolved.ok).toBe(true);
     if (!resolved.ok) return;
 
-    expect(resolved.query).toBe("cut=unconventional");
-    expect(resolved.identity.jigsawCutStyle).toBe("unconventional");
+    expect(resolved.query).toBe("cut=eclectic");
+    expect(resolved.identity.jigsawCutStyle).toBe("eclectic");
     expect(makeDailyResourceLocatorPath(resolved.identity))
-      .toBe("/jigsaw/daily/2026-09-15?cut=unconventional");
+      .toBe("/jigsaw/daily/2026-09-15?cut=eclectic");
 
-    const traditional = resolveDailyResource(
+    const classic = resolveDailyResource(
       "jigsaw",
       "2026-09-15",
-      "cut=traditional",
+      "cut=classic",
     );
-    expect(traditional.ok).toBe(true);
-    if (traditional.ok) expect(traditional.query).toBe("");
+    expect(classic.ok).toBe(true);
+    if (classic.ok) expect(classic.query).toBe("");
   });
 
   it("round-trips Jigsaw outer boundary independently of cut style", () => {
     const resolved = resolveDailyResource(
       "jigsaw",
       "2026-09-15",
-      "boundary=contoured&cut=unconventional",
+      "boundary=contoured&cut=eclectic",
     );
     expect(resolved.ok).toBe(true);
     if (!resolved.ok) return;
 
-    expect(resolved.query).toBe("cut=unconventional&boundary=contoured");
-    expect(resolved.identity.jigsawCutStyle).toBe("unconventional");
+    expect(resolved.query).toBe("cut=eclectic&boundary=contoured");
+    expect(resolved.identity.jigsawCutStyle).toBe("eclectic");
     expect(resolved.identity.jigsawBoundaryMode).toBe("contoured");
     expect(makeDailyResourceLocatorPath(resolved.identity))
-      .toBe("/jigsaw/daily/2026-09-15?cut=unconventional&boundary=contoured");
+      .toBe("/jigsaw/daily/2026-09-15?cut=eclectic&boundary=contoured");
 
     const flat = resolveDailyResource(
       "jigsaw",
@@ -153,6 +153,6 @@ describe("Daily resource semantics", () => {
     expect(resolveDailyResource("jigsaw", "2026-09-15", "image=").ok).toBe(false);
     expect(resolveDailyResource("jigsaw", "2026-09-15", "cut=expressive").ok).toBe(false);
     expect(resolveDailyResource("jigsaw", "2026-09-15", "boundary=organic").ok).toBe(false);
-    expect(resolveDailyResource("tile-swap", "2026-09-15", "cut=unconventional").ok).toBe(false);
+    expect(resolveDailyResource("tile-swap", "2026-09-15", "cut=eclectic").ok).toBe(false);
   });
 });

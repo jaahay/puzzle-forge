@@ -10,7 +10,7 @@ The production system separates:
 2. **BaselineCourse** — the product course vocabulary. It delegates canonical courses to BaselineGrammar and owns shipped span-allocation and bounded-reversal courses whose semantics cannot be represented honestly by the canonical AST.
 3. **ConnectorGrammar** — the interlocking-event vocabulary, including single-event, repeated, compound, opposed, and notched structures.
 4. **SeamProgram** — composition of approach/course, connector profile, and departure/course, with an explicit connectorless seam form.
-5. **Cut style** — product policy over the production vocabularies. Traditional is restrained; Unconventional can reach the full production set.
+5. **Cut style** — product policy over the production vocabularies. Classic is familiar and restrained; Flowing, Geometric, and Intricate curate distinct visual subsets; Eclectic can reach the full production set.
 
 ## Executable baseline IR
 

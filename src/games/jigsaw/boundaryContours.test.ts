@@ -13,7 +13,7 @@ const makeParams = (seed: string, width = 6, height = 5) => ({
   width,
   height,
   imageId: defaultJigsawImageAsset.id,
-  jigsawCutStyle: "unconventional" as const,
+  jigsawCutStyle: "eclectic" as const,
 });
 
 const boundaryEdges = (puzzle: ReturnType<typeof generateJigsaw>) =>

@@ -155,7 +155,7 @@ describe("generated puzzle identity matching", () => {
       width: 6,
       height: 5,
       imageId: defaultJigsawImageAsset.id,
-      jigsawCutStyle: "traditional",
+      jigsawCutStyle: "classic",
     });
     const identity: GenerationIdentity = {
       ...baseIdentity("jigsaw"),
@@ -163,14 +163,14 @@ describe("generated puzzle identity matching", () => {
       width: puzzle.width,
       height: puzzle.height,
       imageId: puzzle.asset.id,
-      jigsawCutStyle: "traditional",
+      jigsawCutStyle: "classic",
     };
 
     expect(generatedPuzzleMatchesIdentity(puzzle, identity)).toBe(true);
     expect(
       generatedPuzzleMatchesIdentity(puzzle, {
         ...identity,
-        jigsawCutStyle: "unconventional",
+        jigsawCutStyle: "eclectic",
       }),
     ).toBe(false);
   });
@@ -182,7 +182,7 @@ describe("generated puzzle identity matching", () => {
       width: 6,
       height: 5,
       imageId: defaultJigsawImageAsset.id,
-      jigsawCutStyle: "traditional",
+      jigsawCutStyle: "classic",
       jigsawBoundaryMode: "contoured",
     });
     const identity: GenerationIdentity = {
@@ -191,7 +191,7 @@ describe("generated puzzle identity matching", () => {
       width: puzzle.width,
       height: puzzle.height,
       imageId: puzzle.asset.id,
-      jigsawCutStyle: "traditional",
+      jigsawCutStyle: "classic",
       jigsawBoundaryMode: "contoured",
     };
 

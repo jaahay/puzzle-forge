@@ -128,7 +128,7 @@ type JigsawPiece = {
 
 See [Jigsaw Connector Grammar Design](./jigsaw-connector-families.md) for the visual identification guide, grammar-by-grammar design intent, tuning snapshot, generated atlas, and rejected/collapsed productions.
 
-The edge repository is now **grammar-first**. Ordinary connector entries are distinct structural productions rather than cosmetic names backed by one shared formula. Traditional / Unconventional product policy owns connector selection weights in `cutStyle.ts`; connector metadata stays with the grammar definitions themselves. The generator chooses one connector grammar once per puzzle, so cut-style weights shape variety across games rather than within one board. Individual seams then vary deterministically within that grammar.
+The edge repository is now **grammar-first**. Ordinary connector entries are distinct structural productions rather than cosmetic names backed by one shared formula. Curated cut-style product policy owns connector selection weights in `cutStyle.ts`; connector metadata stays with the grammar definitions themselves. The generator chooses one connector grammar once per puzzle, so cut-style weights shape variety across games rather than within one board. Individual seams then vary deterministically within that grammar.
 
 ```ts
 type JigsawConnectorGrammarId =
@@ -236,7 +236,7 @@ Named baseline families are therefore canonical sentences, not primitive atoms. 
 
 Connector identity remains separate from baseline identity. A connector grammar determines the interlocking event; baseline productions determine the structural course of the non-connector spans. Common polarity, reciprocal orientation, rendering, sampling, bounds, and whole-piece safety remain downstream concerns.
 
-The grammar layer deliberately does not encode Traditional / Unconventional admission or weighting. Product-level policy in `cutStyle.ts` now operates over both BaselineGrammar and ConnectorGrammar through the same seam-generation pipeline.
+The grammar layer deliberately does not encode cut-style admission or weighting. Product-level policy in `cutStyle.ts` now operates over both BaselineGrammar and ConnectorGrammar through the same seam-generation pipeline.
 
 For each puzzle, that policy:
 
@@ -249,31 +249,31 @@ The composed seam, not each part in isolation, remains the safety boundary. Broa
 
 The generated puzzle carries the puzzle-level cut-style policy result in its runtime `edgeModel`, but persisted sessions continue to store canonical generation identity plus progress and regenerate the baseline puzzle on restore. Individual seam baseline choices, baseline parameters, and renderer control points are not persisted separately; they remain deterministic derived state. No generator-version migration/compatibility machinery is introduced.
 
-### Traditional / Unconventional cut-style policy
+### Classic / Eclectic cut-style policy
 
 Cut style is intentionally a closed binary product axis in the current design rather than the first two values of a speculative open taxonomy.
 
 ```text
-Traditional <-> Unconventional
+Classic <-> Eclectic
 ```
 
 The two modes share all grammar definitions, seam composition, reciprocal-edge transforms, rendering, and safety validation.
 
-**Traditional**
+**Classic**
 
 - connector palette: Classic bulb, Necked head;
 - required baseline anchors: Straight, Bow;
 - one additional baseline family per puzzle from Inflection / Angled course;
 - weighted seam sampling keeps Straight and Bow dominant.
 
-**Unconventional**
+**Eclectic**
 
 - connector palette: the complete connector grammar catalog;
 - required baseline anchor: Bow;
 - three additional baseline families per puzzle from the full weighted baseline catalog;
 - weighting favors the more expressive families while preserving a familiar anchor.
 
-The source-controlled connector and baseline atlases remain the visual reference for policy review. Traditional intentionally occupies the familiar subset of those atlases, while Unconventional can reach the catalog's baseline-crossing, repeated, angular, and multi-event structures. This makes the two modes perceptibly different without introducing a second renderer or duplicate geometry system.
+The source-controlled connector and baseline atlases remain the visual reference for policy review. Classic intentionally occupies the familiar subset of those atlases, while Eclectic can reach the catalog's baseline-crossing, repeated, angular, and multi-event structures. This makes the two modes perceptibly different without introducing a second renderer or duplicate geometry system.
 
 Cut style is part of canonical generation identity. The same seed, artwork, and grid under different cut styles are intentionally different generated puzzles. The style also round-trips through compact resource identity and Daily Jigsaw locators.
 

@@ -156,7 +156,7 @@ export type TilePuzzleAsset = GeneratedTilePuzzleAsset | PuzzleImageAsset;
 
 export type JigsawEdgeSide = "top" | "right" | "bottom" | "left";
 export type JigsawEdgePolarity = "flat" | "tab" | "blank";
-export type JigsawCutStyle = "traditional" | "unconventional";
+export type JigsawCutStyle = "classic" | "flowing" | "geometric" | "intricate" | "eclectic";
 export type JigsawBoundaryMode = "flat" | "contoured";
 export type JigsawBaselineGrammarId =
   | "straight"
