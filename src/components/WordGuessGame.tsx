@@ -394,7 +394,6 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
           autoCapitalize="characters"
           autoCorrect="off"
           spellcheck={false}
-          maxLength={puzzle.width}
           tabIndex={-1}
           aria-label="Type your Word Guess"
           disabled={status !== "playing" || disabled}
