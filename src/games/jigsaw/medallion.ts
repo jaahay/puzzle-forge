@@ -20,6 +20,11 @@ type SocketDescriptor = {
   radialRanges: Partial<Record<JigsawEdgeSide, RadialRange>>;
 };
 
+export type JigsawMedallionPlacement = {
+  centerRow: number;
+  centerColumn: number;
+};
+
 export type JigsawMedallionGeometry = {
   medallionId: string;
   centerRow: number;
@@ -44,6 +49,7 @@ export const deriveJigsawMedallionGeometry = (
   width: number,
   height: number,
   asset: Pick<JigsawImageAsset, "intrinsicWidth" | "intrinsicHeight">,
+  placement?: JigsawMedallionPlacement,
 ): JigsawMedallionGeometry | null => {
   if (width < 4 || height < 4) return null;
 
@@ -51,8 +57,8 @@ export const deriveJigsawMedallionGeometry = (
   const distortion = Math.max(pieceAspectRatio, 1 / pieceAspectRatio);
   if (distortion >= jigsawGridAdaptationDistortionThreshold) return null;
 
-  const centerRow = Math.floor(height / 2);
-  const centerColumn = Math.floor(width / 2);
+  const centerRow = placement?.centerRow ?? Math.floor(height / 2);
+  const centerColumn = placement?.centerColumn ?? Math.floor(width / 2);
   if (
     centerRow <= 0 ||
     centerRow >= height ||
@@ -115,6 +121,22 @@ export const deriveJigsawMedallionGeometry = (
   };
 };
 
+export const getJigsawMedallionCandidateIntersections = (
+  width: number,
+  height: number,
+  asset: Pick<JigsawImageAsset, "intrinsicWidth" | "intrinsicHeight">,
+): JigsawMedallionPlacement[] => {
+  if (!deriveJigsawMedallionGeometry(width, height, asset)) return [];
+
+  const candidates: JigsawMedallionPlacement[] = [];
+  for (let centerRow = 1; centerRow < height; centerRow += 1) {
+    for (let centerColumn = 1; centerColumn < width; centerColumn += 1) {
+      candidates.push({ centerRow, centerColumn });
+    }
+  }
+  return candidates;
+};
+
 const withRadialGeometry = (
   edge: JigsawPieceEdge,
   range: RadialRange | undefined,
@@ -135,13 +157,15 @@ export const applyJigsawMedallionTopology = ({
   width,
   height,
   asset,
+  placement,
 }: {
   pieces: readonly JigsawPiece[];
   width: number;
   height: number;
   asset: Pick<JigsawImageAsset, "intrinsicWidth" | "intrinsicHeight">;
+  placement?: JigsawMedallionPlacement;
 }): JigsawPiece[] => {
-  const geometry = deriveJigsawMedallionGeometry(width, height, asset);
+  const geometry = deriveJigsawMedallionGeometry(width, height, asset, placement);
   if (!geometry) return pieces.map((piece) => ({ ...piece, edges: [...piece.edges] }));
 
   const socketByPieceId = new Map(

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { GeneratedPuzzle, PuzzleDifficulty, SolitaireVariation, SudokuVariation } from "../catalog/types";
 import { defaultJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
 import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
+import { defaultJigsawSpecialPiecesMode } from "../games/jigsaw/specialPieces";
 import { generateJigsaw } from "../games/jigsaw/generate";
 import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
@@ -24,6 +25,7 @@ const baseRuntimeSettings: GenerationRuntimeSettings = {
   solitaireVariation: defaultSolitaireVariation,
   jigsawCutStyle: defaultJigsawCutStyle,
   jigsawBoundaryMode: defaultJigsawBoundaryMode,
+  jigsawSpecialPiecesMode: defaultJigsawSpecialPiecesMode,
 };
 
 const baseIdentity = (puzzleId: GenerationIdentity["puzzleId"]): GenerationIdentity => ({
@@ -103,6 +105,7 @@ describe("generated puzzle runtime identity", () => {
       solitaireVariation: defaultSolitaireVariation,
       jigsawCutStyle: defaultJigsawCutStyle,
       jigsawBoundaryMode: defaultJigsawBoundaryMode,
+      jigsawSpecialPiecesMode: defaultJigsawSpecialPiecesMode,
     });
   });
 });

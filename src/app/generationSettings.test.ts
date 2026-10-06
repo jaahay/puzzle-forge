@@ -3,6 +3,7 @@ import type { GeneratedPuzzle } from "../catalog/types";
 import { getPuzzleImageAsset } from "../games/imageAssets";
 import { defaultJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
 import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
+import { defaultJigsawSpecialPiecesMode } from "../games/jigsaw/specialPieces";
 import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
 import { generateJigsaw } from "../games/jigsaw/generate";
 import { getDailyPuzzleSeedForProfile } from "../games/shared/daily";
@@ -26,6 +27,7 @@ const runtimeSettings: GenerationRuntimeSettings = {
   solitaireVariation: defaultSolitaireVariation,
   jigsawCutStyle: defaultJigsawCutStyle,
   jigsawBoundaryMode: defaultJigsawBoundaryMode,
+  jigsawSpecialPiecesMode: defaultJigsawSpecialPiecesMode,
 };
 
 const cardPuzzle: GeneratedPuzzle = {
@@ -266,6 +268,34 @@ describe("resolveGenerationIdentity", () => {
 
     expect(inherited.jigsawBoundaryMode).toBe("contoured");
     expect(changed.jigsawBoundaryMode).toBe("flat");
+  });
+
+  it("uses current Jigsaw Special pieces mode unless another mode is explicitly requested", () => {
+    const currentPuzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "current-special-pieces",
+      width: 6,
+      height: 6,
+      imageId: defaultJigsawImageAsset.id,
+      jigsawSpecialPiecesMode: "always",
+    });
+
+    const inherited = resolveGenerationIdentity({
+      puzzleId: "jigsaw",
+      currentPuzzle,
+      runtimeSettings,
+      makeSeed: () => "fallback",
+    });
+    const changed = resolveGenerationIdentity({
+      puzzleId: "jigsaw",
+      currentPuzzle,
+      runtimeSettings,
+      settings: { jigsawSpecialPiecesMode: "off" },
+      makeSeed: () => "fallback",
+    });
+
+    expect(inherited.jigsawSpecialPiecesMode).toBe("always");
+    expect(changed.jigsawSpecialPiecesMode).toBe("off");
   });
 
   it("resolves implicit default artwork before Tile Swap and Sliding Puzzle generation", () => {

@@ -7,6 +7,7 @@ import type {
   JigsawGeneratedPuzzle,
   JigsawImageAsset,
   JigsawPiece,
+  JigsawSpecialPiecesMode,
   PuzzleCell,
   PuzzleDifficulty,
   PuzzleId,
@@ -161,6 +162,7 @@ export const createGeneratedJigsawPuzzle = ({
   tiles,
   asset,
   edgeModel,
+  specialPiecesMode,
   notes,
 }: {
   id: string;
@@ -171,6 +173,7 @@ export const createGeneratedJigsawPuzzle = ({
   tiles: JigsawPiece[];
   asset: JigsawImageAsset;
   edgeModel: JigsawEdgeModel;
+  specialPiecesMode: JigsawSpecialPiecesMode;
   notes: string[];
 }): JigsawGeneratedPuzzle => ({
   kind: "tiles",
@@ -183,8 +186,10 @@ export const createGeneratedJigsawPuzzle = ({
   tiles,
   asset,
   edgeModel,
+  specialPiecesMode,
   checksum: makeChecksumFromParts([
     makeJigsawEdgeModelChecksumPart(edgeModel),
+    `special-pieces:${specialPiecesMode}`,
     ...tiles.map(makeJigsawTileChecksumPart),
   ]),
   createdAt: new Date().toISOString(),

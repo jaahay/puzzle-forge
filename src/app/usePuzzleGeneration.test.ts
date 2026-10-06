@@ -49,6 +49,7 @@ describe("initial puzzle generation", () => {
       imageId: undefined,
       jigsawCutStyle: undefined,
       jigsawBoundaryMode: undefined,
+      jigsawSpecialPiecesMode: undefined,
     });
   });
 
@@ -99,6 +100,7 @@ describe("initial puzzle generation", () => {
       imageId: "great-wave",
       jigsawCutStyle: "eclectic" as const,
       jigsawBoundaryMode: "contoured" as const,
+      jigsawSpecialPiecesMode: "always" as const,
     };
 
     expect(makeInitialPuzzleGenerationOptions({
@@ -112,10 +114,11 @@ describe("initial puzzle generation", () => {
       imageId: "great-wave",
       jigsawCutStyle: "eclectic",
       jigsawBoundaryMode: "contoured",
+      jigsawSpecialPiecesMode: "always",
     });
   });
 
-  it("preserves Jigsaw cut and boundary settings during missing-surface recovery", () => {
+  it("preserves Jigsaw cut, boundary, and Special pieces settings during missing-surface recovery", () => {
     const selectedDefinition = getPuzzleDefinition("jigsaw");
 
     expect(makeMissingPuzzleGenerationOptions({
@@ -130,6 +133,7 @@ describe("initial puzzle generation", () => {
       solitaireVariation: defaultSolitaireVariation,
       jigsawCutStyle: "eclectic",
       jigsawBoundaryMode: "contoured",
+      jigsawSpecialPiecesMode: "off",
       makeSeed: () => "fallback",
     })).toMatchObject({
       puzzleId: "jigsaw",
@@ -138,6 +142,7 @@ describe("initial puzzle generation", () => {
       height: 5,
       jigsawCutStyle: "eclectic",
       jigsawBoundaryMode: "contoured",
+      jigsawSpecialPiecesMode: "off",
     });
   });
 

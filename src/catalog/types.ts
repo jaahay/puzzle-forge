@@ -121,6 +121,7 @@ export type PuzzleVariationSettings = {
   imageId?: string;
   jigsawCutStyle?: JigsawCutStyle;
   jigsawBoundaryMode?: JigsawBoundaryMode;
+  jigsawSpecialPiecesMode?: JigsawSpecialPiecesMode;
 };
 
 export type GeneratedTilePuzzleAsset = {
@@ -158,6 +159,7 @@ export type JigsawEdgeSide = "top" | "right" | "bottom" | "left";
 export type JigsawEdgePolarity = "flat" | "tab" | "blank";
 export type JigsawCutStyle = "classic" | "flowing" | "geometric" | "intricate" | "eclectic";
 export type JigsawBoundaryMode = "flat" | "contoured";
+export type JigsawSpecialPiecesMode = "off" | "rare" | "always";
 export type JigsawBaselineGrammarId =
   | "straight"
   | "bow"
@@ -319,6 +321,7 @@ export type JigsawGeneratedPuzzle = Omit<TileGeneratedPuzzle, "puzzleId" | "tile
   tiles: JigsawPiece[];
   asset: PuzzleImageAsset;
   edgeModel: JigsawEdgeModel;
+  specialPiecesMode: JigsawSpecialPiecesMode;
 };
 
 export type TileSwapGeneratedPuzzle = Omit<TileGeneratedPuzzle, "puzzleId" | "asset"> & {

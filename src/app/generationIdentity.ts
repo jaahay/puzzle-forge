@@ -2,6 +2,7 @@ import type {
   GeneratedPuzzle,
   JigsawBoundaryMode,
   JigsawCutStyle,
+  JigsawSpecialPiecesMode,
   PuzzleDifficulty,
   PuzzleId,
   SolitaireVariation,
@@ -13,6 +14,7 @@ import {
   normalizeJigsawBoundaryMode,
 } from "../games/jigsaw/boundaryContours";
 import { normalizeJigsawCutStyle } from "../games/jigsaw/cutStyle";
+import { normalizeJigsawSpecialPiecesMode } from "../games/jigsaw/specialPieces";
 import { normalizeSolitaireVariation, solitaireVariationsEqual } from "../games/solitaire/variation";
 import { normalizeSudokuVariation } from "../games/sudoku/variation";
 import { puzzleProvenanceMatches, type PuzzleProvenance } from "./puzzleProvenance";
@@ -27,6 +29,7 @@ export type GenerationRuntimeSettings = {
   solitaireVariation: SolitaireVariation;
   jigsawCutStyle?: JigsawCutStyle;
   jigsawBoundaryMode?: JigsawBoundaryMode;
+  jigsawSpecialPiecesMode?: JigsawSpecialPiecesMode;
 };
 
 export type GenerationIdentity = GenerationRuntimeSettings & {
@@ -60,6 +63,10 @@ export const getGeneratedPuzzleRuntimeSettings = (
     puzzle.kind === "tiles" && puzzle.puzzleId === "jigsaw"
       ? getJigsawBoundaryMode(puzzle.tiles)
       : fallback.jigsawBoundaryMode,
+  jigsawSpecialPiecesMode:
+    puzzle.kind === "tiles" && puzzle.puzzleId === "jigsaw"
+      ? normalizeJigsawSpecialPiecesMode(puzzle.specialPiecesMode)
+      : fallback.jigsawSpecialPiecesMode,
 });
 
 export const generatedPuzzleMatchesIdentity = (
@@ -118,7 +125,9 @@ export const generatedPuzzleMatchesIdentity = (
       normalizeJigsawCutStyle(puzzle.edgeModel.cutStyle) ===
         normalizeJigsawCutStyle(identity.jigsawCutStyle) &&
       getJigsawBoundaryMode(puzzle.tiles) ===
-        normalizeJigsawBoundaryMode(identity.jigsawBoundaryMode)
+        normalizeJigsawBoundaryMode(identity.jigsawBoundaryMode) &&
+      normalizeJigsawSpecialPiecesMode(puzzle.specialPiecesMode) ===
+        normalizeJigsawSpecialPiecesMode(identity.jigsawSpecialPiecesMode)
     );
   }
 

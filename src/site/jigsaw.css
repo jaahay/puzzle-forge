@@ -288,6 +288,7 @@
 
 .jigsaw-cut-style-settings,
 .jigsaw-boundary-settings,
+.jigsaw-special-pieces-settings,
 .jigsaw-size-settings {
   display: grid;
   gap: 0.55rem;
@@ -297,12 +298,17 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
+.jigsaw-special-pieces-options {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .jigsaw-cut-style-options button {
   padding-inline: 0.2rem;
   font-size: 0.7rem;
 }
 
-.jigsaw-cut-style-description {
+.jigsaw-cut-style-description,
+.jigsaw-special-pieces-description {
   margin: 0;
   color: #94a3b8;
   font-size: 0.7rem;
