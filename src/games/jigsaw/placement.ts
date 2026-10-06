@@ -518,16 +518,17 @@ export const createInitialJigsawPlacements = (
   viewport: JigsawViewport | null = null,
 ): JigsawPlacement[] => {
   const orderedPieces = [...pieces].sort((left, right) => left.currentIndex - right.currentIndex);
-  const usedSlotIds = new Set<number>();
+  const usedSlotPositions = new Set<string>();
+  const slotPositionKey = (slot: WorldPosition) => `${slot.left.toFixed(6)}:${slot.top.toFixed(6)}`;
 
   return orderedPieces.map((piece, index) => {
     const slots = createScatterSlots(layout, pieces.length, viewport, piece);
-    const availableSlot = slots.find((slot) => !usedSlotIds.has(slot.index));
+    const availableSlot = slots.find((slot) => !usedSlotPositions.has(slotPositionKey(slot)));
     const fallbackSlots = slots.length > 0
       ? slots
       : [{ left: worldPadding, top: worldPadding, index: -1 }];
     const slot = availableSlot ?? fallbackSlots[index % fallbackSlots.length];
-    if (availableSlot) usedSlotIds.add(availableSlot.index);
+    if (availableSlot) usedSlotPositions.add(slotPositionKey(availableSlot));
     const repeatedLayer = availableSlot ? 0 : Math.floor(index / fallbackSlots.length);
     const offset = repeatedLayer * 6;
     const position = normalizeJigsawPieceWorldPosition(
