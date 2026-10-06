@@ -3,6 +3,7 @@ import type { CardGeneratedPuzzle, CardStack, GeneratedPuzzle, GridGeneratedPuzz
 import { cloneStack, type CardSelection } from "../interactions/cardRules";
 import { cloneGridCell, prepareGridCells, type GridCellSelection } from "../interactions/gridRules";
 import {
+  getMostRecentPersistedPuzzleSession,
   initialSolitaireStats,
   restorePuzzleSessionFromPersisted,
   savePersistedPuzzleSessions,
@@ -17,7 +18,6 @@ import {
 import { cloneGridHistoryState, makeEmptyGridHistoryState, type GridHistoryState } from "./gridHistory";
 import { makePuzzleResourceKey, type PuzzleResourceIdentity } from "./puzzleResourceIdentity";
 import { cloneSolitaireHistoryEntry } from "./solitaireHistory";
-import { getMostRecentPersistedPuzzleSession } from "./startupNavigation";
 import {
   cloneJigsawAssemblyProgress,
   makeEmptyJigsawAssemblyProgress,
