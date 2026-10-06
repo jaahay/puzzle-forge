@@ -6,6 +6,8 @@ import type { JigsawAssemblyProgress } from "../games/jigsaw/assembly";
 import {
   loadPersistedPuzzleSessions as loadPersistedPuzzleSessionsUnsafe,
   savePersistedPuzzleSessions as savePersistedPuzzleSessionsUnsafe,
+  type PersistedPuzzleSession,
+  type PersistedPuzzleSessions,
   type RuntimePuzzleSessions,
 } from "./sessionPersistence";
 import {
@@ -82,6 +84,30 @@ export type PuzzleSession =
     };
 
 export type PuzzleSessionCache = Partial<Record<PuzzleId, PuzzleSession>>;
+
+const persistedSessionTimestamp = (session: PersistedPuzzleSession) => {
+  const timestamp = Date.parse(session.updatedAt);
+  return Number.isFinite(timestamp) ? timestamp : Number.NEGATIVE_INFINITY;
+};
+
+export const getMostRecentPersistedPuzzleSession = (
+  puzzleId: PuzzleId,
+  persisted: PersistedPuzzleSessions | null,
+): PersistedPuzzleSession | null => {
+  if (!persisted) return null;
+
+  const activeSession = persisted.sessions[persisted.activeResourceKey];
+  if (activeSession?.puzzleId === puzzleId) return activeSession;
+
+  let mostRecent: PersistedPuzzleSession | null = null;
+  for (const session of Object.values(persisted.sessions)) {
+    if (!session || session.puzzleId !== puzzleId) continue;
+    if (!mostRecent || persistedSessionTimestamp(session) > persistedSessionTimestamp(mostRecent)) {
+      mostRecent = session;
+    }
+  }
+  return mostRecent;
+};
 
 export const loadPersistedPuzzleSessions = () => {
   try {
