@@ -560,6 +560,7 @@ export const TilePuzzlePreview = ({
       fitPlacements,
       28,
       getCurrentFitInsets(),
+      puzzle.tiles,
     ));
     return true;
   };
