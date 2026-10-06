@@ -8,6 +8,10 @@ import {
 } from "../games/imageAssets";
 import { defaultJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
 import { defaultJigsawCutStyle, jigsawCutStyles } from "../games/jigsaw/cutStyle";
+import {
+  defaultJigsawSpecialPiecesMode,
+  jigsawSpecialPiecesModes,
+} from "../games/jigsaw/specialPieces";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation } from "../games/sudoku/variation";
 import type { GenerationIdentity } from "./generationIdentity";
@@ -25,6 +29,7 @@ const makeIdentity = (overrides: Partial<GenerationIdentity> = {}): GenerationId
   solitaireVariation: defaultSolitaireVariation,
   jigsawCutStyle: defaultJigsawCutStyle,
   jigsawBoundaryMode: defaultJigsawBoundaryMode,
+  jigsawSpecialPiecesMode: defaultJigsawSpecialPiecesMode,
   ...overrides,
 });
 
@@ -116,6 +121,7 @@ describe("canonical puzzle generation identity", () => {
             imageId,
             jigsawCutStyle: "eclectic",
             jigsawBoundaryMode: "contoured",
+            jigsawSpecialPiecesMode: "rare",
           });
           break;
         case "tile-swap":
@@ -201,6 +207,39 @@ describe("canonical puzzle generation identity", () => {
     expect(decoded.ok).toBe(true);
     if (!decoded.ok) return;
     expect(decoded.identity.jigsawBoundaryMode).toBe("contoured");
+  });
+
+  it("forks Jigsaw resource identity by Special pieces mode", () => {
+    const definition = getPuzzleDefinition("jigsaw");
+    const base = makeIdentity({
+      puzzleId: "jigsaw",
+      width: definition.defaultWidth,
+      height: definition.defaultHeight,
+      imageId: getPuzzleImageAsset(undefined, "jigsaw").id,
+      jigsawCutStyle: "classic",
+      jigsawBoundaryMode: "flat",
+    });
+    const expectedCodes = [
+      ["rare", 0x00],
+      ["off", 0x10],
+      ["always", 0x20],
+    ] as const;
+    const ids = expectedCodes.map(([jigsawSpecialPiecesMode, expectedCode]) => {
+      const generationId = encodeGenerationId({
+        ...base,
+        jigsawSpecialPiecesMode,
+      });
+      expect(decodeGenerationIdBytes(generationId).at(-1)).toBe(expectedCode);
+      return generationId;
+    });
+    expect(new Set(ids).size).toBe(jigsawSpecialPiecesModes.length);
+
+    expectedCodes.forEach(([jigsawSpecialPiecesMode], index) => {
+      const decoded = decodeGenerationId("jigsaw", ids[index]!);
+      expect(decoded.ok).toBe(true);
+      if (!decoded.ok) return;
+      expect(decoded.identity.jigsawSpecialPiecesMode).toBe(jigsawSpecialPiecesMode);
+    });
   });
 
   it("round-trips compact Daily provenance", () => {

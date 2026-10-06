@@ -16,6 +16,10 @@ import {
   normalizeJigsawCutStyle,
 } from "../games/jigsaw/cutStyle";
 import {
+  defaultJigsawSpecialPiecesMode,
+  normalizeJigsawSpecialPiecesMode,
+} from "../games/jigsaw/specialPieces";
+import {
   getJigsawSizePresetForDimensions,
   jigsawCustomSizeSelection,
   resolveJigsawSizeDimensions,
@@ -72,6 +76,15 @@ export const buildNextPuzzleDraft = ({
             : defaultJigsawBoundaryMode,
       )
     : undefined;
+  const jigsawSpecialPiecesMode = puzzleId === "jigsaw"
+    ? normalizeJigsawSpecialPiecesMode(
+        puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw"
+          ? puzzle.specialPiecesMode
+          : useRuntimeFallback
+            ? runtimeSettings.jigsawSpecialPiecesMode
+            : defaultJigsawSpecialPiecesMode,
+      )
+    : undefined;
 
   return {
     width,
@@ -94,6 +107,7 @@ export const buildNextPuzzleDraft = ({
     ...(jigsawSizeSelection ? { jigsawSizeSelection } : {}),
     ...(jigsawCutStyle ? { jigsawCutStyle } : {}),
     ...(jigsawBoundaryMode ? { jigsawBoundaryMode } : {}),
+    ...(jigsawSpecialPiecesMode ? { jigsawSpecialPiecesMode } : {}),
   };
 };
 
@@ -145,6 +159,8 @@ export const applyNextPuzzleDraftSettings = (
   jigsawSizeSelection: settings.jigsawSizeSelection ?? base.jigsawSizeSelection,
   jigsawCutStyle: settings.jigsawCutStyle ?? base.jigsawCutStyle,
   jigsawBoundaryMode: settings.jigsawBoundaryMode ?? base.jigsawBoundaryMode,
+  jigsawSpecialPiecesMode:
+    settings.jigsawSpecialPiecesMode ?? base.jigsawSpecialPiecesMode,
 });
 
 type UseNextPuzzleDraftsInput = {

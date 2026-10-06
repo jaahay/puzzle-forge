@@ -617,13 +617,10 @@ promote compelling recurring derivations
 
 That would make the grammar an **idea generator for future families**, rather than immediately turning ordinary puzzles into unconstrained procedural geometry.
 
-## Separate future topology
+## Separate special-piece topology
 
-The connector grammar still assumes an ordinary shared boundary between rectangular-grid neighbors.
+ConnectorGrammar still owns ordinary shared boundaries between grid-backed neighboring pieces. Special-piece topology is a separate production layer, not another connector family.
 
-That is separate from:
+The current shipped family is the **Circular medallion** from #191: one circular piece with four explicit socket neighbors. #190 / PR #260 controls whether that layer participates through **Special pieces · Off · Rare · Always**. Those modes do not alter ConnectorGrammar admission, cut-style weighting, BaselineGrammar composition, or ordinary seam safety.
 
-- #190 — rare one-off surprise/anomaly geometry;
-- #191 — non-grid topology such as circular center pieces, arbitrary neighbor counts, and pieces that cannot be represented as four rectangular sides.
-
-Those directions may reuse the same rendering and validation primitives, but they are not ordinary connector grammar productions.
+Future families should remain distinct from ordinary connector grammar when they change piece topology rather than merely seam shape. #261 proposes **Capsule** as the next such family because it would add multi-cell occupancy and six-way adjacency. Do not generalize this document into a hypothetical special-piece catalog before that second family actually ships.

@@ -3,6 +3,7 @@ import type { PuzzleDifficulty, PuzzleId, SolitaireRedealLimit, SolitaireVariati
 import { getPuzzleImageAssetsFor, isImageBackedPuzzleId } from "../games/imageAssets";
 import { isJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
 import { isJigsawCutStyle } from "../games/jigsaw/cutStyle";
+import { isJigsawSpecialPiecesMode } from "../games/jigsaw/specialPieces";
 import { isJigsawSizeSelection } from "../games/jigsaw/size";
 import { solitaireRedealLimits } from "../games/solitaire/variation";
 import { puzzleIds } from "./sessionConstants";
@@ -61,6 +62,9 @@ const isJigsawCutStyleForPuzzle = (puzzleId: PuzzleId, value: unknown) =>
 const isJigsawBoundaryModeForPuzzle = (puzzleId: PuzzleId, value: unknown) =>
   puzzleId === "jigsaw" ? isJigsawBoundaryMode(value) : value === undefined;
 
+const isJigsawSpecialPiecesModeForPuzzle = (puzzleId: PuzzleId, value: unknown) =>
+  puzzleId === "jigsaw" ? isJigsawSpecialPiecesMode(value) : value === undefined;
+
 const parseDraft = (puzzleId: PuzzleId, value: unknown): NextPuzzleDraft | null => {
   if (
     !isRecord(value) ||
@@ -73,7 +77,8 @@ const parseDraft = (puzzleId: PuzzleId, value: unknown): NextPuzzleDraft | null 
     !isImageIdForPuzzle(puzzleId, value.imageId) ||
     !isJigsawSizeSelectionForPuzzle(puzzleId, value.jigsawSizeSelection) ||
     !isJigsawCutStyleForPuzzle(puzzleId, value.jigsawCutStyle) ||
-    !isJigsawBoundaryModeForPuzzle(puzzleId, value.jigsawBoundaryMode)
+    !isJigsawBoundaryModeForPuzzle(puzzleId, value.jigsawBoundaryMode) ||
+    !isJigsawSpecialPiecesModeForPuzzle(puzzleId, value.jigsawSpecialPiecesMode)
   ) {
     return null;
   }
@@ -91,6 +96,8 @@ const parseDraft = (puzzleId: PuzzleId, value: unknown): NextPuzzleDraft | null 
           jigsawSizeSelection: value.jigsawSizeSelection as NextPuzzleDraft["jigsawSizeSelection"],
           jigsawCutStyle: value.jigsawCutStyle as NextPuzzleDraft["jigsawCutStyle"],
           jigsawBoundaryMode: value.jigsawBoundaryMode as NextPuzzleDraft["jigsawBoundaryMode"],
+          jigsawSpecialPiecesMode:
+            value.jigsawSpecialPiecesMode as NextPuzzleDraft["jigsawSpecialPiecesMode"],
         }
       : {}),
   };

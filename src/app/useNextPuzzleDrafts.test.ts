@@ -3,6 +3,7 @@ import type { GeneratedPuzzle } from "../catalog/types";
 import { getPuzzleImageAsset, getPuzzleImageAssetsFor } from "../games/imageAssets";
 import { defaultJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
 import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
+import { defaultJigsawSpecialPiecesMode } from "../games/jigsaw/specialPieces";
 import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
 import { resolveJigsawSizeDimensions } from "../games/jigsaw/size";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
@@ -22,6 +23,7 @@ const runtimeSettings: GenerationRuntimeSettings = {
   solitaireVariation: { ...defaultSolitaireVariation, drawMode: "draw-3" },
   jigsawCutStyle: defaultJigsawCutStyle,
   jigsawBoundaryMode: defaultJigsawBoundaryMode,
+  jigsawSpecialPiecesMode: defaultJigsawSpecialPiecesMode,
 };
 
 const sudokuPuzzle: GeneratedPuzzle = {
@@ -105,6 +107,24 @@ describe("buildNextPuzzleDraft", () => {
   });
 });
 
+
+describe("Jigsaw Special pieces draft intent", () => {
+  it("keeps Special pieces mode while changing artwork", () => {
+    const base = buildNextPuzzleDraft({
+      puzzleId: "jigsaw",
+      selectedPuzzleId: "jigsaw",
+      currentPuzzle: null,
+      runtimeSettings: {
+        ...runtimeSettings,
+        jigsawSpecialPiecesMode: "always",
+      },
+    });
+
+    expect(base.jigsawSpecialPiecesMode).toBe("always");
+    expect(randomizeNextPuzzleArtwork("jigsaw", base, 0).jigsawSpecialPiecesMode)
+      .toBe("always");
+  });
+});
 
 describe("Jigsaw boundary draft intent", () => {
   it("keeps boundary mode independent while changing other Jigsaw draft settings", () => {

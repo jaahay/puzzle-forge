@@ -13,6 +13,7 @@ import {
   normalizeJigsawBoundaryMode,
 } from "../games/jigsaw/boundaryContours";
 import { normalizeJigsawCutStyle } from "../games/jigsaw/cutStyle";
+import { normalizeJigsawSpecialPiecesMode } from "../games/jigsaw/specialPieces";
 import type { JigsawSizeSelection } from "../games/jigsaw/size";
 import { getDailyPuzzleSeedForProfile } from "../games/shared/daily";
 import { normalizeSolitaireVariation } from "../games/solitaire/variation";
@@ -33,6 +34,7 @@ export type GenerationSettings = Partial<
     | "imageId"
     | "jigsawCutStyle"
     | "jigsawBoundaryMode"
+    | "jigsawSpecialPiecesMode"
   >
 > & {
   jigsawSizeSelection?: JigsawSizeSelection;
@@ -50,6 +52,7 @@ export type NextPuzzleDraft = {
   jigsawSizeSelection?: JigsawSizeSelection;
   jigsawCutStyle?: GenerationIdentity["jigsawCutStyle"];
   jigsawBoundaryMode?: GenerationIdentity["jigsawBoundaryMode"];
+  jigsawSpecialPiecesMode?: GenerationIdentity["jigsawSpecialPiecesMode"];
 };
 
 type ResolveGenerationIdentityInput = {
@@ -131,6 +134,17 @@ export const resolveGenerationIdentity = ({
           runtimeSettings.jigsawBoundaryMode,
       )
     : undefined;
+  const currentJigsawSpecialPiecesMode =
+    currentPuzzle?.kind === "tiles" && currentPuzzle.puzzleId === "jigsaw"
+      ? currentPuzzle.specialPiecesMode
+      : undefined;
+  const jigsawSpecialPiecesMode = puzzleId === "jigsaw"
+    ? normalizeJigsawSpecialPiecesMode(
+        settings.jigsawSpecialPiecesMode ??
+          currentJigsawSpecialPiecesMode ??
+          runtimeSettings.jigsawSpecialPiecesMode,
+      )
+    : undefined;
   const provenance = settings.provenance === null ? undefined : settings.provenance;
   const seed = provenance?.source === "daily" && explicitSeed === null
     ? getDailyPuzzleSeedForProfile(puzzleId, provenance.dateStamp, {
@@ -154,6 +168,7 @@ export const resolveGenerationIdentity = ({
     imageId,
     jigsawCutStyle,
     jigsawBoundaryMode,
+    jigsawSpecialPiecesMode,
     provenance,
   };
 };

@@ -140,6 +140,7 @@ describe("Jigsaw island interaction", () => {
       width: 4,
       height: 4,
       imageId: defaultJigsawImageAsset.id,
+      jigsawSpecialPiecesMode: "always",
     });
     const medallion = puzzle.tiles.find(
       (tile) => tile.specialShape?.kind === "medallion",

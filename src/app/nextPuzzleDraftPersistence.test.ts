@@ -30,6 +30,7 @@ describe("persisted next-puzzle preferences", () => {
       jigsawSizeSelection: "Custom" as const,
       jigsawCutStyle: "eclectic" as const,
       jigsawBoundaryMode: "contoured" as const,
+      jigsawSpecialPiecesMode: "always" as const,
     };
     const drafts = parseNextPuzzleDraftCache({
       schemaVersion: 1,
@@ -50,6 +51,7 @@ describe("persisted next-puzzle preferences", () => {
           imageId: "great-wave",
           jigsawCutStyle: "classic",
           jigsawBoundaryMode: "flat",
+          jigsawSpecialPiecesMode: "rare",
         },
       },
     });
@@ -69,6 +71,7 @@ describe("persisted next-puzzle preferences", () => {
           jigsawSizeSelection: "Huge",
           jigsawCutStyle: "classic",
           jigsawBoundaryMode: "flat",
+          jigsawSpecialPiecesMode: "rare",
         },
       },
     });
@@ -105,6 +108,7 @@ describe("persisted next-puzzle preferences", () => {
           imageId: "great-wave",
           jigsawSizeSelection: "Custom",
           jigsawCutStyle: "classic",
+          jigsawSpecialPiecesMode: "rare",
         },
       },
     });
@@ -119,6 +123,43 @@ describe("persisted next-puzzle preferences", () => {
           jigsawSizeSelection: "Custom",
           jigsawCutStyle: "classic",
           jigsawBoundaryMode: "organic",
+          jigsawSpecialPiecesMode: "rare",
+        },
+      },
+    });
+
+    expect(missing).toEqual({});
+    expect(unknown).toEqual({});
+  });
+
+  it("rejects missing or unknown Jigsaw Special pieces mode", () => {
+    const missing = parseNextPuzzleDraftCache({
+      schemaVersion: 1,
+      drafts: {
+        jigsaw: {
+          ...zeroKillerDraft,
+          width: 6,
+          height: 5,
+          imageId: "great-wave",
+          jigsawSizeSelection: "Custom",
+          jigsawCutStyle: "classic",
+          jigsawBoundaryMode: "flat",
+          jigsawSpecialPiecesMode: undefined,
+        },
+      },
+    });
+    const unknown = parseNextPuzzleDraftCache({
+      schemaVersion: 1,
+      drafts: {
+        jigsaw: {
+          ...zeroKillerDraft,
+          width: 6,
+          height: 5,
+          imageId: "great-wave",
+          jigsawSizeSelection: "Custom",
+          jigsawCutStyle: "classic",
+          jigsawBoundaryMode: "flat",
+          jigsawSpecialPiecesMode: "sometimes",
         },
       },
     });
@@ -139,6 +180,7 @@ describe("persisted next-puzzle preferences", () => {
           jigsawSizeSelection: "Custom",
           jigsawCutStyle: "classic",
           jigsawBoundaryMode: "flat",
+          jigsawSpecialPiecesMode: "rare",
         },
         sudoku: { ...zeroKillerDraft, imageId: "great-wave" },
       },

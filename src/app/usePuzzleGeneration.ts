@@ -4,6 +4,7 @@ import type {
   GeneratedPuzzle,
   JigsawBoundaryMode,
   JigsawCutStyle,
+  JigsawSpecialPiecesMode,
   PuzzleDefinition,
   PuzzleDifficulty,
   PuzzleGenerationRequest,
@@ -15,6 +16,7 @@ import type {
 import { isImageBackedPuzzleId } from "../games/imageAssets";
 import { defaultJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
 import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
+import { defaultJigsawSpecialPiecesMode } from "../games/jigsaw/specialPieces";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
 import type { NextPuzzleDraft } from "./generationSettings";
@@ -56,6 +58,7 @@ type MissingPuzzleGenerationInput = {
   solitaireVariation: SolitaireVariation;
   jigsawCutStyle?: JigsawCutStyle;
   jigsawBoundaryMode?: JigsawBoundaryMode;
+  jigsawSpecialPiecesMode?: JigsawSpecialPiecesMode;
   makeSeed: () => string;
 };
 
@@ -127,6 +130,9 @@ export const makeInitialPuzzleGenerationOptions = ({
     jigsawBoundaryMode: puzzleId === "jigsaw"
       ? rememberedDraft?.jigsawBoundaryMode ?? defaultJigsawBoundaryMode
       : undefined,
+    jigsawSpecialPiecesMode: puzzleId === "jigsaw"
+      ? rememberedDraft?.jigsawSpecialPiecesMode ?? defaultJigsawSpecialPiecesMode
+      : undefined,
   };
 };
 
@@ -142,6 +148,7 @@ export const makeMissingPuzzleGenerationOptions = ({
   solitaireVariation,
   jigsawCutStyle,
   jigsawBoundaryMode,
+  jigsawSpecialPiecesMode,
   makeSeed,
 }: MissingPuzzleGenerationInput): BeginGenerationOptions => ({
   puzzleId: selectedPuzzleId,
@@ -154,6 +161,8 @@ export const makeMissingPuzzleGenerationOptions = ({
   solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? solitaireVariation : undefined,
   jigsawCutStyle: selectedPuzzleId === "jigsaw" ? jigsawCutStyle : undefined,
   jigsawBoundaryMode: selectedPuzzleId === "jigsaw" ? jigsawBoundaryMode : undefined,
+  jigsawSpecialPiecesMode:
+    selectedPuzzleId === "jigsaw" ? jigsawSpecialPiecesMode : undefined,
 });
 
 export const usePuzzleGeneration = () => {
@@ -209,6 +218,9 @@ export const usePuzzleGeneration = () => {
         : undefined,
       jigsawBoundaryMode: puzzleId === "jigsaw"
         ? options.jigsawBoundaryMode ?? defaultJigsawBoundaryMode
+        : undefined,
+      jigsawSpecialPiecesMode: puzzleId === "jigsaw"
+        ? options.jigsawSpecialPiecesMode ?? defaultJigsawSpecialPiecesMode
         : undefined,
     };
 

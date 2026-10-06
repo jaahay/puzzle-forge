@@ -6,6 +6,7 @@ import type {
   JigsawPiece,
   JigsawPieceEdge,
   JigsawPuzzleGenerator,
+  JigsawSpecialPiecesMode,
 } from "../../catalog/types";
 import { getPuzzleImageAsset } from "../imageAssets";
 import { createGeneratedJigsawPuzzle, createRandom, normalizeDimension, normalizeSeed } from "../shared";
@@ -22,6 +23,11 @@ import {
   normalizeJigsawBoundaryMode,
 } from "./boundaryContours";
 import { applyJigsawMedallionTopology } from "./medallion";
+import {
+  defaultJigsawSpecialPiecesMode,
+  normalizeJigsawSpecialPiecesMode,
+  selectJigsawMedallionPlacement,
+} from "./specialPieces";
 
 const edgeSides: readonly JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
 const oppositeSide: Record<JigsawEdgeSide, JigsawEdgeSide> = {
@@ -130,6 +136,7 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
   imageId,
   jigsawCutStyle = defaultJigsawCutStyle,
   jigsawBoundaryMode = defaultJigsawBoundaryMode,
+  jigsawSpecialPiecesMode = defaultJigsawSpecialPiecesMode,
 }) => {
   const normalizedSeed = normalizeSeed(seed);
   const boundedWidth = normalizeDimension(width, 4, jigsawMinimumAxis, jigsawMaximumAxis);
@@ -138,6 +145,8 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
   const imageIdentity = asset.id;
   const cutStyle = normalizeJigsawCutStyle(jigsawCutStyle);
   const boundaryMode: JigsawBoundaryMode = normalizeJigsawBoundaryMode(jigsawBoundaryMode);
+  const specialPiecesMode: JigsawSpecialPiecesMode =
+    normalizeJigsawSpecialPiecesMode(jigsawSpecialPiecesMode);
   const edgeIdentity = `edges:${cutStyle}`;
   const boundaryIdentity = boundaryMode === "flat" ? "" : `-boundary:${boundaryMode}`;
   const solvedIndexes = Array.from({ length: boundedWidth * boundedHeight }, (_, index) => index);
@@ -184,20 +193,29 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
     edgeSeed,
     boundaryMode,
   });
-  const topologyPieces = applyJigsawMedallionTopology({
-    pieces: boundedPieces,
+  const medallionPlacement = selectJigsawMedallionPlacement({
+    mode: specialPiecesMode,
+    identitySeed: `${shuffleSeed}:special-piece`,
     width: boundedWidth,
     height: boundedHeight,
     asset,
   });
+  const topologyPieces = medallionPlacement
+    ? applyJigsawMedallionTopology({
+        pieces: boundedPieces,
+        width: boundedWidth,
+        height: boundedHeight,
+        asset,
+        placement: medallionPlacement,
+      })
+    : boundedPieces;
   const topologyIndexes = Array.from(
     { length: topologyPieces.length },
     (_, index) => index,
   );
-  const topologyShuffleSeed =
-    topologyPieces.length === boundedPieces.length
-      ? shuffleSeed
-      : `${shuffleSeed}:medallion`;
+  const topologyShuffleSeed = medallionPlacement
+    ? `${shuffleSeed}:medallion:${medallionPlacement.centerRow}:${medallionPlacement.centerColumn}`
+    : shuffleSeed;
   const shuffledIndexes = shuffle(topologyIndexes, topologyShuffleSeed);
   const tiles = shuffledIndexes.map((solvedIndex, currentIndex) => ({
     ...topologyPieces[solvedIndex]!,
@@ -205,7 +223,7 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
   }));
 
   return createGeneratedJigsawPuzzle({
-    id: `jigsaw-${imageIdentity}-${edgeIdentity}${boundaryIdentity}-${normalizedSeed}-${boundedWidth}x${boundedHeight}`,
+    id: `jigsaw-${imageIdentity}-${edgeIdentity}${boundaryIdentity}-special:${specialPiecesMode}-${normalizedSeed}-${boundedWidth}x${boundedHeight}`,
     title: "Jigsaw",
     seed: normalizedSeed,
     width: boundedWidth,
@@ -213,6 +231,7 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
     tiles,
     asset,
     edgeModel,
+    specialPiecesMode,
     notes: [`Jigsaw using the bundled ${asset.title} image.`],
   });
 };

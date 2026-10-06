@@ -15,6 +15,10 @@ import {
   defaultJigsawCutStyle,
   isJigsawCutStyle,
 } from "../games/jigsaw/cutStyle";
+import {
+  defaultJigsawSpecialPiecesMode,
+  isJigsawSpecialPiecesMode,
+} from "../games/jigsaw/specialPieces";
 import { isDailyDateStamp } from "../games/shared/daily";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import {
@@ -56,6 +60,7 @@ const queryKeyOrder = [
   "image",
   "cut",
   "boundary",
+  "special",
   "draw",
   "redeals",
   "waste",
@@ -76,6 +81,7 @@ const makeDefaultRuntimeSettings = (puzzleId: PuzzleId): GenerationRuntimeSettin
     solitaireVariation: defaultSolitaireVariation,
     jigsawCutStyle: defaultJigsawCutStyle,
     jigsawBoundaryMode: defaultJigsawBoundaryMode,
+    jigsawSpecialPiecesMode: defaultJigsawSpecialPiecesMode,
   };
 };
 
@@ -107,7 +113,7 @@ const allowedQueryKeys = (puzzleId: PuzzleId): ReadonlySet<string> => {
     case "logic-grid":
       return new Set(["size"]);
     case "jigsaw":
-      return new Set(["size", "image", "cut", "boundary"]);
+      return new Set(["size", "image", "cut", "boundary", "special"]);
     case "tile-swap":
     case "sliding-puzzle":
       return new Set(["size", "image"]);
@@ -164,6 +170,12 @@ const appendCanonicalQuery = (identity: GenerationIdentity) => {
         identity.jigsawBoundaryMode !== defaultJigsawBoundaryMode
       ) {
         values.set("boundary", identity.jigsawBoundaryMode);
+      }
+      if (
+        identity.jigsawSpecialPiecesMode &&
+        identity.jigsawSpecialPiecesMode !== defaultJigsawSpecialPiecesMode
+      ) {
+        values.set("special", identity.jigsawSpecialPiecesMode);
       }
       break;
     }
@@ -269,6 +281,15 @@ export const canonicalizeDailyResourceQuery = (
     const boundaryMode = params.get("boundary");
     if (!isJigsawBoundaryMode(boundaryMode)) return { ok: false, reason: "invalid-query" };
     settings.jigsawBoundaryMode = boundaryMode;
+  }
+
+  if (params.has("special")) {
+    if (puzzleId !== "jigsaw") return { ok: false, reason: "invalid-query" };
+    const specialPiecesMode = params.get("special");
+    if (!isJigsawSpecialPiecesMode(specialPiecesMode)) {
+      return { ok: false, reason: "invalid-query" };
+    }
+    settings.jigsawSpecialPiecesMode = specialPiecesMode;
   }
 
   if (params.has("image")) {

@@ -1,4 +1,9 @@
-import type { JigsawBoundaryMode, JigsawCutStyle, JigsawImageAsset } from "../catalog/types";
+import type {
+  JigsawBoundaryMode,
+  JigsawCutStyle,
+  JigsawImageAsset,
+  JigsawSpecialPiecesMode,
+} from "../catalog/types";
 import { getPuzzleImageAsset } from "../games/imageAssets";
 import {
   jigsawBoundaryModeDescriptions,
@@ -10,6 +15,11 @@ import {
   jigsawCutStyleLabels,
   jigsawCutStyles,
 } from "../games/jigsaw/cutStyle";
+import {
+  jigsawSpecialPiecesModeDescriptions,
+  jigsawSpecialPiecesModeLabels,
+  jigsawSpecialPiecesModes,
+} from "../games/jigsaw/specialPieces";
 import {
   getJigsawGridAdaptation,
   getJigsawPieceAspectRatio,
@@ -47,6 +57,7 @@ type JigsawNewPuzzleControlProps = {
   sizeSelection: JigsawSizeSelection;
   cutStyle: JigsawCutStyle;
   boundaryMode: JigsawBoundaryMode;
+  specialPiecesMode: JigsawSpecialPiecesMode;
   minWidth: number;
   maxWidth: number;
   minHeight: number;
@@ -60,6 +71,7 @@ type JigsawNewPuzzleControlProps = {
     jigsawSizeSelection?: JigsawSizeSelection;
     jigsawCutStyle?: JigsawCutStyle;
     jigsawBoundaryMode?: JigsawBoundaryMode;
+    jigsawSpecialPiecesMode?: JigsawSpecialPiecesMode;
   }) => void;
   onSeedLoadInputChange: (seed: string) => void;
   onNewPuzzle: () => void;
@@ -75,6 +87,7 @@ export const JigsawNewPuzzleControl = ({
   sizeSelection,
   cutStyle,
   boundaryMode,
+  specialPiecesMode,
   minWidth,
   maxWidth,
   minHeight,
@@ -96,10 +109,11 @@ export const JigsawNewPuzzleControl = ({
     ? (getJigsawPieceAspectRatio(selectedAsset, width, height) > 1 ? "wide" : "tall")
     : null;
   const boundaryLabel = jigsawBoundaryModeLabels[boundaryMode];
-  const configurationSummary = `${selectedAsset.title} · ${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${sizeSelection} · ~${pieceCount} pieces · ${width}×${height}`;
+  const specialPiecesLabel = jigsawSpecialPiecesModeLabels[specialPiecesMode];
+  const configurationSummary = `${selectedAsset.title} · ${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${specialPiecesLabel} special pieces · ${sizeSelection} · ~${pieceCount} pieces · ${width}×${height}`;
   const randomConfigurationSummary = sizeSelection === jigsawCustomSizeSelection
-    ? `${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · Custom · ~${pieceCount} pieces · ${width}×${height}`
-    : `${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${sizeSelection}`;
+    ? `${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${specialPiecesLabel} special pieces · Custom · ~${pieceCount} pieces · ${width}×${height}`
+    : `${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${specialPiecesLabel} special pieces · ${sizeSelection}`;
 
   return (
     <NewPuzzleCommand
@@ -116,7 +130,7 @@ export const JigsawNewPuzzleControl = ({
       onLoadSeed={onLoadSeed}
       info={(
         <>
-          <p>Cut style, outer boundary, and size configure the next Jigsaw. New and Surprise Me choose a different eligible artwork; Today and seed loads use the selected artwork.</p>
+          <p>Cut style, outer boundary, special pieces, and size configure the next Jigsaw. New and Surprise Me choose a different eligible artwork; Today and seed loads use the selected artwork.</p>
           <p>Named size presets target an approximate piece count and adapt their dimensions to the selected artwork. Custom dimensions remain explicit when artwork changes; unusually stretched Custom grids can be adapted explicitly while keeping approximately the same piece count.</p>
         </>
       )}
@@ -166,6 +180,30 @@ export const JigsawNewPuzzleControl = ({
                 </button>
               ))}
             </div>
+          </div>
+
+          <div class="jigsaw-special-pieces-settings" role="group" aria-label="Jigsaw special pieces">
+            <div class="jigsaw-size-heading">
+              <strong>Special pieces</strong>
+              <span>{jigsawSpecialPiecesModeLabels[specialPiecesMode]}</span>
+            </div>
+            <div class="new-puzzle-segmented jigsaw-special-pieces-options">
+              {jigsawSpecialPiecesModes.map((mode) => (
+                <button
+                  type="button"
+                  class={specialPiecesMode === mode ? "selected" : undefined}
+                  aria-pressed={specialPiecesMode === mode}
+                  disabled={disabled}
+                  onClick={() => onSettingsChange({ jigsawSpecialPiecesMode: mode })}
+                  key={mode}
+                >
+                  {jigsawSpecialPiecesModeLabels[mode]}
+                </button>
+              ))}
+            </div>
+            <p class="jigsaw-special-pieces-description">
+              {jigsawSpecialPiecesModeDescriptions[specialPiecesMode]}
+            </p>
           </div>
 
           <div class="jigsaw-size-settings" role="group" aria-label="Jigsaw size">

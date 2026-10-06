@@ -114,6 +114,7 @@ describe("generateJigsaw", () => {
       width: 40,
       height: 33,
       imageId: defaultJigsawImageAsset.id,
+      jigsawSpecialPiecesMode: "always",
     });
 
     expect(puzzle.width).toBe(32);
@@ -122,13 +123,14 @@ describe("generateJigsaw", () => {
     expect(puzzle.tiles).toHaveLength(1025);
   });
 
-  it("adds one true circular medallion at the central qualifying grid intersection", () => {
+  it("adds one true circular medallion at a deterministic qualifying grid intersection", () => {
     const puzzle = generateJigsaw({
       puzzleId: "jigsaw",
       seed: "medallion-capability",
       width: 4,
       height: 4,
       imageId: defaultJigsawImageAsset.id,
+      jigsawSpecialPiecesMode: "always",
     });
     const medallions = puzzle.tiles.filter(
       (tile) => tile.specialShape?.kind === "medallion",
@@ -142,8 +144,8 @@ describe("generateJigsaw", () => {
     expect(sockets).toHaveLength(4);
 
     const medallion = medallions[0]!;
-    expect(medallion.row).toBe(1.5);
-    expect(medallion.column).toBe(1.5);
+    expect([0.5, 1.5, 2.5]).toContain(medallion.row);
+    expect([0.5, 1.5, 2.5]).toContain(medallion.column);
     expect(medallion.edges).toEqual([]);
     expect(new Set(getJigsawPieceNeighborIds(medallion))).toEqual(
       new Set(sockets.map((socket) => socket.id)),
@@ -164,6 +166,7 @@ describe("generateJigsaw", () => {
       width: 4,
       height: 4,
       imageId: defaultJigsawImageAsset.id,
+      jigsawSpecialPiecesMode: "always",
     });
     expect(repeated.tiles).toEqual(puzzle.tiles);
     expect(repeated.checksum).toBe(puzzle.checksum);
@@ -176,12 +179,67 @@ describe("generateJigsaw", () => {
       width: 5,
       height: 3,
       imageId: defaultJigsawImageAsset.id,
+      jigsawSpecialPiecesMode: "always",
     });
 
     expect(puzzle.tiles).toHaveLength(15);
     expect(puzzle.tiles.every((tile) => tile.specialShape === undefined)).toBe(true);
     expect(getAllEdges(puzzle).every((edge) =>
       edge.boundary || edge.specialGeometry === undefined)).toBe(true);
+  });
+
+  it("honors Off, Rare, and Always as distinct special-piece policies", () => {
+    const base = {
+      puzzleId: "jigsaw" as const,
+      width: 6,
+      height: 6,
+      imageId: defaultJigsawImageAsset.id,
+    };
+    const off = generateJigsaw({
+      ...base,
+      seed: "special-policy-off",
+      jigsawSpecialPiecesMode: "off",
+    });
+    const always = generateJigsaw({
+      ...base,
+      seed: "special-policy-off",
+      jigsawSpecialPiecesMode: "always",
+    });
+
+    expect(off.specialPiecesMode).toBe("off");
+    expect(off.tiles).toHaveLength(36);
+    expect(off.tiles.every((tile) => tile.specialShape === undefined)).toBe(true);
+    expect(always.specialPiecesMode).toBe("always");
+    expect(always.tiles.filter((tile) => tile.specialShape?.kind === "medallion")).toHaveLength(1);
+
+    const rarePuzzles = Array.from({ length: 64 }, (_, index) =>
+      generateJigsaw({
+        ...base,
+        seed: `special-policy-rare-${index}`,
+        jigsawSpecialPiecesMode: "rare",
+      }));
+    const rareWithMedallion = rarePuzzles.find((puzzle) =>
+      puzzle.tiles.some((tile) => tile.specialShape?.kind === "medallion"));
+    const rareWithoutMedallion = rarePuzzles.find((puzzle) =>
+      puzzle.tiles.every((tile) => tile.specialShape === undefined));
+
+    expect(rareWithMedallion).toBeDefined();
+    expect(rareWithoutMedallion).toBeDefined();
+    if (!rareWithMedallion) return;
+
+    const matchingAlways = generateJigsaw({
+      ...base,
+      seed: rareWithMedallion.seed,
+      jigsawSpecialPiecesMode: "always",
+    });
+    const rareMedallion = rareWithMedallion.tiles.find(
+      (tile) => tile.specialShape?.kind === "medallion",
+    );
+    const alwaysMedallion = matchingAlways.tiles.find(
+      (tile) => tile.specialShape?.kind === "medallion",
+    );
+    expect(rareMedallion?.row).toBe(alwaysMedallion?.row);
+    expect(rareMedallion?.column).toBe(alwaysMedallion?.column);
   });
 
   it("uses exactly one edge profile throughout each generated game", () => {
@@ -380,6 +438,7 @@ describe("generateJigsaw", () => {
       tiles: changedTiles,
       asset: puzzle.asset,
       edgeModel: puzzle.edgeModel,
+      specialPiecesMode: puzzle.specialPiecesMode,
       notes: puzzle.notes,
     });
     const changedModelPuzzle = createGeneratedJigsawPuzzle({
@@ -397,6 +456,7 @@ describe("generateJigsaw", () => {
             ? "eclectic"
             : "classic",
       },
+      specialPiecesMode: puzzle.specialPiecesMode,
       notes: puzzle.notes,
     });
 

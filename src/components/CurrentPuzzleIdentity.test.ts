@@ -170,6 +170,7 @@ describe("current puzzle identity", () => {
       width: 6,
       height: 6,
       imageId: "wheat-field-cypresses",
+      jigsawSpecialPiecesMode: "always",
     });
 
     expect(getCurrentPuzzleIdentity(puzzle, currentDateStamp)).toEqual({

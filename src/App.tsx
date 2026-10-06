@@ -13,6 +13,7 @@ import { getLocalDateStamp } from "./games/shared/daily";
 import { isImageBackedPuzzleId } from "./games/imageAssets";
 import { defaultJigsawBoundaryMode } from "./games/jigsaw/boundaryContours";
 import { defaultJigsawCutStyle } from "./games/jigsaw/cutStyle";
+import { defaultJigsawSpecialPiecesMode } from "./games/jigsaw/specialPieces";
 import {
   cloneJigsawAssemblyProgress,
   makeEmptyJigsawAssemblyProgress,
@@ -64,6 +65,7 @@ const makeInitialGenerationDefaults = (): GenerationRuntimeSettings => ({
   solitaireVariation: defaultSolitaireVariation,
   jigsawCutStyle: defaultJigsawCutStyle,
   jigsawBoundaryMode: defaultJigsawBoundaryMode,
+  jigsawSpecialPiecesMode: defaultJigsawSpecialPiecesMode,
 });
 
 const viewForRoute = (route: AppRoute): AppView | null => {
@@ -125,6 +127,7 @@ export const App = () => {
     solitaireVariation,
     jigsawCutStyle,
     jigsawBoundaryMode,
+    jigsawSpecialPiecesMode,
   } = generationDefaults;
   const activeSolitaireVariation = puzzle?.kind === "cards" ? puzzle.solitaireVariation : solitaireVariation;
 
@@ -308,6 +311,8 @@ export const App = () => {
         imageId: isImageBackedPuzzleId(identity.puzzleId) ? identity.imageId : undefined,
         jigsawCutStyle: identity.puzzleId === "jigsaw" ? identity.jigsawCutStyle : undefined,
         jigsawBoundaryMode: identity.puzzleId === "jigsaw" ? identity.jigsawBoundaryMode : undefined,
+        jigsawSpecialPiecesMode:
+          identity.puzzleId === "jigsaw" ? identity.jigsawSpecialPiecesMode : undefined,
         provenance: identity.provenance,
       },
     );
@@ -347,6 +352,7 @@ export const App = () => {
       solitaireVariation: identity.solitaireVariation,
       jigsawCutStyle: identity.jigsawCutStyle,
       jigsawBoundaryMode: identity.jigsawBoundaryMode,
+      jigsawSpecialPiecesMode: identity.jigsawSpecialPiecesMode,
     });
     if (puzzle?.puzzleId !== request.puzzleId) resetRuntimePuzzleState();
     setStatusMessage(`Generating ${title}...`);
@@ -464,6 +470,7 @@ export const App = () => {
       solitaireVariation: identity.solitaireVariation,
       jigsawCutStyle: identity.jigsawCutStyle,
       jigsawBoundaryMode: identity.jigsawBoundaryMode,
+      jigsawSpecialPiecesMode: identity.jigsawSpecialPiecesMode,
     });
     beginGeneration(
       {
@@ -478,6 +485,8 @@ export const App = () => {
         imageId: identity.imageId,
         jigsawCutStyle: identity.puzzleId === "jigsaw" ? identity.jigsawCutStyle : undefined,
         jigsawBoundaryMode: identity.puzzleId === "jigsaw" ? identity.jigsawBoundaryMode : undefined,
+        jigsawSpecialPiecesMode:
+          identity.puzzleId === "jigsaw" ? identity.jigsawSpecialPiecesMode : undefined,
         provenance: identity.provenance,
       },
       { resourceHistory: "replace" },
@@ -579,9 +588,10 @@ export const App = () => {
       solitaireVariation,
       jigsawCutStyle,
       jigsawBoundaryMode,
+      jigsawSpecialPiecesMode,
       makeSeed: makeRandomSeed,
     }), { resourceHistory: "replace" });
-  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, puzzle, puzzleLinkError, selectedPuzzleId, selectedPuzzleIsGeneratable, selectedDefinition, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation, jigsawCutStyle, jigsawBoundaryMode]);
+  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, puzzle, puzzleLinkError, selectedPuzzleId, selectedPuzzleIsGeneratable, selectedDefinition, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation, jigsawCutStyle, jigsawBoundaryMode, jigsawSpecialPiecesMode]);
 
   useEffect(() => {
     if (!hasSelectedPuzzle || generation.isGenerating || isHomeSelected || !puzzle) return;
@@ -626,6 +636,7 @@ export const App = () => {
       solitaireVariation: identity.solitaireVariation,
       jigsawCutStyle: identity.jigsawCutStyle,
       jigsawBoundaryMode: identity.jigsawBoundaryMode,
+      jigsawSpecialPiecesMode: identity.jigsawSpecialPiecesMode,
     });
     if (settingsAreCurrent) return;
 
@@ -640,6 +651,8 @@ export const App = () => {
       imageId: isImageBackedPuzzleId(selectedPuzzleId) ? identity.imageId : undefined,
       jigsawCutStyle: selectedPuzzleId === "jigsaw" ? identity.jigsawCutStyle : undefined,
       jigsawBoundaryMode: selectedPuzzleId === "jigsaw" ? identity.jigsawBoundaryMode : undefined,
+      jigsawSpecialPiecesMode:
+        selectedPuzzleId === "jigsaw" ? identity.jigsawSpecialPiecesMode : undefined,
       provenance: identity.provenance,
     }, { preserveScroll: true, resourceHistory: "push" });
   };
