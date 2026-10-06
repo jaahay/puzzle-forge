@@ -8,7 +8,7 @@ import type {
   PersistedPuzzleSession,
   PersistedPuzzleSessions,
 } from "./session";
-import { isInstalledAppContext, resolveStartupRoute } from "./startupNavigation";
+import { isInstalledAppContext, resolvePuzzleNavigationRoute, resolveStartupRoute } from "./startupNavigation";
 
 type TestPuzzleId = "sudoku" | "jigsaw";
 
@@ -145,6 +145,29 @@ describe("startup navigation", () => {
       kind: "resource",
       puzzleId: "jigsaw",
       generationId: newerJigsaw.generationId,
+    });
+  });
+
+  it("resolves in-app puzzle selection to the most recent retained resource", () => {
+    const olderJigsaw = makeSession("jigsaw", "older-jigsaw", "2026-09-29T18:00:00.000Z");
+    const newerJigsaw = makeSession("jigsaw", "newer-jigsaw", "2026-09-29T19:00:00.000Z");
+    const activeSudoku = makeSession("sudoku", "active-sudoku", "2026-09-29T20:00:00.000Z");
+
+    expect(resolvePuzzleNavigationRoute(
+      "jigsaw",
+      makePersisted([olderJigsaw, newerJigsaw, activeSudoku]),
+    )).toEqual({
+      kind: "resource",
+      puzzleId: "jigsaw",
+      generationId: newerJigsaw.generationId,
+    });
+
+    expect(resolvePuzzleNavigationRoute(
+      "jigsaw",
+      makePersisted([activeSudoku]),
+    )).toEqual({
+      kind: "puzzle",
+      puzzleId: "jigsaw",
     });
   });
 

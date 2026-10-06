@@ -3,7 +3,7 @@ import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { generateJigsaw } from "../games/jigsaw/generate";
 import { defaultJigsawImageAsset } from "../games/jigsaw/imageAssets";
 import { initialSolitaireStats, type PuzzleSession } from "./session";
-import { buildRuntimeSession, clonePuzzleSession } from "./usePuzzleSessions";
+import { buildRuntimeSession, clonePuzzleSession, createPuzzleSessionResumeIndex } from "./usePuzzleSessions";
 
 const makeJigsawSession = (): PuzzleSession => {
   const puzzle = generateJigsaw({
@@ -37,6 +37,23 @@ const makeSudokuPuzzle = (): GridGeneratedPuzzle => ({
   notes: [],
   kind: "grid",
   cells: [],
+});
+
+describe("puzzle session resume index", () => {
+  it("keeps a runtime-only resource resumable without durable persistence", () => {
+    const index = createPuzzleSessionResumeIndex(null);
+    const resource = {
+      puzzleId: "sudoku" as const,
+      generationId: "runtime-only-generation",
+    };
+
+    expect(index.get("sudoku")).toBeNull();
+
+    index.remember(resource);
+
+    expect(index.get("sudoku")).toEqual(resource);
+    expect(index.get("jigsaw")).toBeNull();
+  });
 });
 
 describe("clonePuzzleSession", () => {

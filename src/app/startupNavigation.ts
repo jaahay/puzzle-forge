@@ -1,6 +1,6 @@
 import type { PuzzleId } from "../catalog/types";
 import type { AppRoute } from "./routes";
-import type { PersistedPuzzleSession, PersistedPuzzleSessions } from "./session";
+import { getMostRecentPersistedPuzzleSession, type PersistedPuzzleSessions } from "./session";
 
 type InstalledAppEnvironment = {
   displayModeStandalone?: boolean;
@@ -25,28 +25,18 @@ export const isInstalledAppContext = (
   return displayModeStandalone || navigatorStandalone;
 };
 
-const persistedSessionTimestamp = (session: PersistedPuzzleSession) => {
-  const timestamp = Date.parse(session.updatedAt);
-  return Number.isFinite(timestamp) ? timestamp : Number.NEGATIVE_INFINITY;
-};
-
-export const getMostRecentPersistedPuzzleSession = (
+export const resolvePuzzleNavigationRoute = (
   puzzleId: PuzzleId,
   persisted: PersistedPuzzleSessions | null,
-): PersistedPuzzleSession | null => {
-  if (!persisted) return null;
+): AppRoute => {
+  const session = getMostRecentPersistedPuzzleSession(puzzleId, persisted);
+  if (!session) return { kind: "puzzle", puzzleId };
 
-  const activeSession = persisted.sessions[persisted.activeResourceKey];
-  if (activeSession?.puzzleId === puzzleId) return activeSession;
-
-  let mostRecent: PersistedPuzzleSession | null = null;
-  for (const session of Object.values(persisted.sessions)) {
-    if (!session || session.puzzleId !== puzzleId) continue;
-    if (!mostRecent || persistedSessionTimestamp(session) > persistedSessionTimestamp(mostRecent)) {
-      mostRecent = session;
-    }
-  }
-  return mostRecent;
+  return {
+    kind: "resource",
+    puzzleId: session.puzzleId,
+    generationId: session.generationId,
+  };
 };
 
 export const resolveStartupRoute = (
@@ -67,13 +57,5 @@ export const resolveStartupRoute = (
   }
 
   if (initialRoute.kind !== "puzzle") return initialRoute;
-
-  const session = getMostRecentPersistedPuzzleSession(initialRoute.puzzleId, persisted);
-  if (!session) return initialRoute;
-
-  return {
-    kind: "resource",
-    puzzleId: session.puzzleId,
-    generationId: session.generationId,
-  };
+  return resolvePuzzleNavigationRoute(initialRoute.puzzleId, persisted);
 };

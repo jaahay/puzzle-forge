@@ -136,7 +136,7 @@ export const App = () => {
   };
 
   const generation = usePuzzleGeneration();
-  const sessions = usePuzzleSessions(initialPersistedSessions?.sessions);
+  const sessions = usePuzzleSessions(initialPersistedSessions);
   const grid = useGridController();
   const solitaire = useSolitaireController({ statusMessage, onStatusMessage: setStatusMessage, solitaireVariation: activeSolitaireVariation });
   const {
@@ -414,6 +414,12 @@ export const App = () => {
   ) => {
     if (puzzleId === selectedPuzzleId && hasSelectedPuzzle && !isHomeSelected && puzzle) {
       setPuzzleLinkError(null);
+      return;
+    }
+
+    const preferredResource = sessions.getPreferredResource(puzzleId);
+    if (preferredResource) {
+      selectResource({ kind: "resource", ...preferredResource }, behavior);
       return;
     }
 
