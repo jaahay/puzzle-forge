@@ -49,6 +49,20 @@ export const getMostRecentPersistedPuzzleSession = (
   return mostRecent;
 };
 
+export const resolvePuzzleNavigationRoute = (
+  puzzleId: PuzzleId,
+  persisted: PersistedPuzzleSessions | null,
+): AppRoute => {
+  const session = getMostRecentPersistedPuzzleSession(puzzleId, persisted);
+  if (!session) return { kind: "puzzle", puzzleId };
+
+  return {
+    kind: "resource",
+    puzzleId: session.puzzleId,
+    generationId: session.generationId,
+  };
+};
+
 export const resolveStartupRoute = (
   initialRoute: AppRoute,
   persisted: PersistedPuzzleSessions | null,
@@ -67,13 +81,5 @@ export const resolveStartupRoute = (
   }
 
   if (initialRoute.kind !== "puzzle") return initialRoute;
-
-  const session = getMostRecentPersistedPuzzleSession(initialRoute.puzzleId, persisted);
-  if (!session) return initialRoute;
-
-  return {
-    kind: "resource",
-    puzzleId: session.puzzleId,
-    generationId: session.generationId,
-  };
+  return resolvePuzzleNavigationRoute(initialRoute.puzzleId, persisted);
 };
