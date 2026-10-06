@@ -27,6 +27,10 @@ import { deriveJigsawSeamProgram } from "./seamProgram";
 import { generateJigsaw } from "./generate";
 import { defaultJigsawImageAsset } from "./imageAssets";
 import {
+  createJigsawWorldLayout,
+  getJigsawSolvedPosition,
+} from "./placement";
+import {
   getJigsawCanonicalConnectorPoints,
   getJigsawEdgePath,
   getJigsawEdgePoints,
@@ -691,6 +695,89 @@ describe("Jigsaw edge paths", () => {
         makePiece([edges[2], edges[3], edges[0], edges[1]]),
         expressiveEdgeModel,
       ),
+    );
+  });
+
+  it("keeps every socket quarter-arc reciprocal with the medallion in solved world space", () => {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "medallion-world-reciprocity",
+      width: 6,
+      height: 4,
+      imageId: defaultJigsawImageAsset.id,
+    });
+    const medallion = puzzle.tiles.find(
+      (tile) => tile.specialShape?.kind === "medallion",
+    );
+    const sockets = puzzle.tiles.filter(
+      (tile) => tile.specialShape?.kind === "medallion-socket",
+    );
+    expect(medallion).toBeDefined();
+    expect(sockets).toHaveLength(4);
+    if (!medallion || medallion.specialShape?.kind !== "medallion") return;
+
+    const layout = createJigsawWorldLayout({
+      imageWidth: puzzle.asset.intrinsicWidth,
+      imageHeight: puzzle.asset.intrinsicHeight,
+      puzzleWidth: puzzle.width,
+      puzzleHeight: puzzle.height,
+    });
+    const medallionSolved = getJigsawSolvedPosition(layout, medallion);
+    const center = {
+      x: medallionSolved.left + layout.pieceWidth / 2,
+      y: medallionSolved.top + layout.pieceHeight / 2,
+    };
+    const radiusX = medallion.specialShape.radiusX * layout.pieceWidth / 100;
+    const radiusY = medallion.specialShape.radiusY * layout.pieceHeight / 100;
+
+    expect(radiusX).toBeCloseTo(radiusY, 3);
+    const worldRadius = (radiusX + radiusY) / 2;
+    const toWorldPoint = (
+      piece: JigsawPiece,
+      candidate: { x: number; y: number },
+    ) => {
+      const solved = getJigsawSolvedPosition(layout, piece);
+      return {
+        x: solved.left + candidate.x * layout.pieceWidth / 100,
+        y: solved.top + candidate.y * layout.pieceHeight / 100,
+      };
+    };
+
+    for (const candidate of getJigsawPieceOutlinePoints(medallion, puzzle.edgeModel)) {
+      const world = toWorldPoint(medallion, candidate);
+      expect(Math.hypot(world.x - center.x, world.y - center.y)).toBeCloseTo(
+        worldRadius,
+        2,
+      );
+    }
+
+    const socketArcWorldPoints = sockets.flatMap((socket) =>
+      getJigsawPieceOutlinePoints(socket, puzzle.edgeModel)
+        .slice(-12)
+        .map((candidate) => toWorldPoint(socket, candidate)));
+    expect(socketArcWorldPoints).toHaveLength(48);
+    for (const world of socketArcWorldPoints) {
+      expect(Math.hypot(world.x - center.x, world.y - center.y)).toBeCloseTo(
+        worldRadius,
+        2,
+      );
+    }
+
+    expect(Math.min(...socketArcWorldPoints.map((point) => point.x))).toBeCloseTo(
+      center.x - worldRadius,
+      2,
+    );
+    expect(Math.max(...socketArcWorldPoints.map((point) => point.x))).toBeCloseTo(
+      center.x + worldRadius,
+      2,
+    );
+    expect(Math.min(...socketArcWorldPoints.map((point) => point.y))).toBeCloseTo(
+      center.y - worldRadius,
+      2,
+    );
+    expect(Math.max(...socketArcWorldPoints.map((point) => point.y))).toBeCloseTo(
+      center.y + worldRadius,
+      2,
     );
   });
 
