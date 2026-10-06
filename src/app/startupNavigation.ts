@@ -1,6 +1,6 @@
 import type { PuzzleId } from "../catalog/types";
 import type { AppRoute } from "./routes";
-import type { PersistedPuzzleSession, PersistedPuzzleSessions } from "./session";
+import { getMostRecentPersistedPuzzleSession, type PersistedPuzzleSessions } from "./session";
 
 type InstalledAppEnvironment = {
   displayModeStandalone?: boolean;
@@ -23,30 +23,6 @@ export const isInstalledAppContext = (
     );
 
   return displayModeStandalone || navigatorStandalone;
-};
-
-const persistedSessionTimestamp = (session: PersistedPuzzleSession) => {
-  const timestamp = Date.parse(session.updatedAt);
-  return Number.isFinite(timestamp) ? timestamp : Number.NEGATIVE_INFINITY;
-};
-
-export const getMostRecentPersistedPuzzleSession = (
-  puzzleId: PuzzleId,
-  persisted: PersistedPuzzleSessions | null,
-): PersistedPuzzleSession | null => {
-  if (!persisted) return null;
-
-  const activeSession = persisted.sessions[persisted.activeResourceKey];
-  if (activeSession?.puzzleId === puzzleId) return activeSession;
-
-  let mostRecent: PersistedPuzzleSession | null = null;
-  for (const session of Object.values(persisted.sessions)) {
-    if (!session || session.puzzleId !== puzzleId) continue;
-    if (!mostRecent || persistedSessionTimestamp(session) > persistedSessionTimestamp(mostRecent)) {
-      mostRecent = session;
-    }
-  }
-  return mostRecent;
 };
 
 export const resolvePuzzleNavigationRoute = (
