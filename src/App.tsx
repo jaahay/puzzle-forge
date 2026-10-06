@@ -34,7 +34,7 @@ import { encodeGenerationId, resolvePuzzleResourceSegment } from "./app/puzzleRe
 import { defaultPuzzleDifficulty, makeRandomSeed } from "./app/runtime";
 import { getCurrentAppRoute, parseAppRoute, pushAppRoute, replaceAppRoute, type AppRoute } from "./app/routes";
 import { initialSolitaireStats, loadPersistedPuzzleSessions } from "./app/session";
-import { isInstalledAppContext, resolveStartupRoute } from "./app/startupNavigation";
+import { isInstalledAppContext, resolvePuzzleNavigationRoute, resolveStartupRoute } from "./app/startupNavigation";
 import { useGridController } from "./app/useGridController";
 import { randomizeNextPuzzleArtwork, useNextPuzzleDrafts } from "./app/useNextPuzzleDrafts";
 import { makeInitialPuzzleGenerationOptions, makeMissingPuzzleGenerationOptions, shouldRecoverMissingPuzzleSurface, usePuzzleGeneration, type BeginGenerationOptions } from "./app/usePuzzleGeneration";
@@ -417,7 +417,12 @@ export const App = () => {
       return;
     }
 
-    const nextRoute: AppRoute = { kind: "puzzle", puzzleId };
+    const nextRoute = resolvePuzzleNavigationRoute(puzzleId, loadPersistedPuzzleSessions());
+    if (nextRoute.kind === "resource") {
+      selectResource(nextRoute, behavior);
+      return;
+    }
+
     setAppRoute(nextRoute, behavior);
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
     cancelPendingGeneration();
