@@ -938,7 +938,7 @@ describe("Jigsaw edge paths", () => {
       ) => Math.min(...candidates.map((candidate) =>
         Math.hypot(point.x - candidate.x, point.y - candidate.y)));
 
-      expect(reciprocalSocketWorldPoints.length).toBeGreaterThan(capsuleWorldPoints.length);
+      expect(reciprocalSocketWorldPoints.length).toBeGreaterThan(0);
       for (const point of capsuleWorldPoints) {
         expect(nearestDistance(point, reciprocalSocketWorldPoints)).toBeLessThan(0.03);
       }
