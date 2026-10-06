@@ -31,6 +31,24 @@ const makePiece = (solvedIndex: number, width = 4): JigsawPiece => ({
   edges: [],
 });
 
+const makeCapsulePiece = (
+  orientation: "horizontal" | "vertical",
+  currentIndex: number,
+): JigsawPiece => ({
+  ...makePiece(currentIndex, 6),
+  id: `capsule-${orientation}`,
+  currentIndex,
+  specialShape: {
+    kind: "capsule",
+    orientation,
+    anchorRow: 3,
+    anchorColumn: 3,
+    radiusX: 40,
+    radiusY: 40,
+    socketPieceIds: ["a", "b", "c", "d", "e", "f"],
+  },
+});
+
 const overlapsBoard = (
   left: number,
   top: number,
@@ -212,6 +230,51 @@ describe("Jigsaw world layout", () => {
         layout.boardHeight,
       )).toBe(false);
     }
+  });
+
+  it.each([
+    { orientation: "horizontal" as const, viewport: null, expectedMode: "perimeter" as const },
+    { orientation: "vertical" as const, viewport: null, expectedMode: "perimeter" as const },
+    { orientation: "horizontal" as const, viewport: { width: 1440, height: 800 }, expectedMode: "sides" as const },
+    { orientation: "vertical" as const, viewport: { width: 1440, height: 800 }, expectedMode: "sides" as const },
+    { orientation: "horizontal" as const, viewport: { width: 760, height: 1280 }, expectedMode: "top-bottom" as const },
+    { orientation: "vertical" as const, viewport: { width: 760, height: 1280 }, expectedMode: "top-bottom" as const },
+  ])("keeps a $orientation capsule clear of the board in $expectedMode staging", ({
+    orientation,
+    viewport,
+    expectedMode,
+  }) => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 1200,
+      imageHeight: 1200,
+      puzzleWidth: 6,
+      puzzleHeight: 6,
+    });
+    const pieces = [
+      ...Array.from({ length: 36 }, (_, index) => makePiece(index, 6)),
+      makeCapsulePiece(orientation, 36),
+    ];
+    const placements = createInitialJigsawPlacements(layout, pieces, viewport);
+    const capsule = pieces.at(-1)!;
+    const placement = placements.find((candidate) => candidate.id === capsule.id)!;
+    const position = getJigsawPlacementPosition(layout, placement, capsule);
+    const size = getJigsawPieceWorldSize(layout, capsule);
+
+    expect(getJigsawStagingMode(layout, pieces.length, viewport)).toBe(expectedMode);
+    expect(overlapsBoard(
+      position.left,
+      position.top,
+      size.width,
+      size.height,
+      layout.boardX,
+      layout.boardY,
+      layout.boardWidth,
+      layout.boardHeight,
+    )).toBe(false);
+    expect(position.left).toBeGreaterThanOrEqual(0);
+    expect(position.top).toBeGreaterThanOrEqual(0);
+    expect(position.left + size.width).toBeLessThanOrEqual(layout.worldWidth);
+    expect(position.top + size.height).toBeLessThanOrEqual(layout.worldHeight);
   });
 
   it("prefers balanced, board-aligned side trays for a portrait puzzle on a wide display", () => {
