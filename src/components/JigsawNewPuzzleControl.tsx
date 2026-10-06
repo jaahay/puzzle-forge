@@ -96,9 +96,9 @@ export const JigsawNewPuzzleControl = ({
     ? (getJigsawPieceAspectRatio(selectedAsset, width, height) > 1 ? "wide" : "tall")
     : null;
   const boundaryLabel = jigsawBoundaryModeLabels[boundaryMode];
-  const configurationSummary = `${selectedAsset.title} · ${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${sizeSelection} · ${pieceCount} pieces · ${width}×${height}`;
+  const configurationSummary = `${selectedAsset.title} · ${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${sizeSelection} · ~${pieceCount} pieces · ${width}×${height}`;
   const randomConfigurationSummary = sizeSelection === jigsawCustomSizeSelection
-    ? `${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · Custom · ${pieceCount} pieces · ${width}×${height}`
+    ? `${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · Custom · ~${pieceCount} pieces · ${width}×${height}`
     : `${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${sizeSelection}`;
 
   return (
@@ -171,7 +171,7 @@ export const JigsawNewPuzzleControl = ({
           <div class="jigsaw-size-settings" role="group" aria-label="Jigsaw size">
             <div class="jigsaw-size-heading">
               <strong>Size</strong>
-              <span>{sizeSelection} · {pieceCount} pieces · {width} × {height}</span>
+              <span>{sizeSelection} · ~{pieceCount} pieces · {width} × {height}</span>
             </div>
             <div class="jigsaw-size-options">
               {jigsawSizePresets.map((preset) => {
@@ -242,7 +242,7 @@ export const JigsawNewPuzzleControl = ({
                 <strong>Grid may stretch pieces</strong>
                 <span>
                   These dimensions make pieces very {stretchedPieceDirection} for this artwork.
-                  Adapt to {gridAdaptation.width} × {gridAdaptation.height} ({gridAdaptation.pieceCount} pieces).
+                  Adapt to {gridAdaptation.width} × {gridAdaptation.height} (~{gridAdaptation.pieceCount} pieces).
                 </span>
               </div>
               <button
