@@ -923,13 +923,27 @@ describe("Jigsaw edge paths", () => {
         `A ${shape.radiusX} ${shape.radiusY}`,
       );
 
-      for (const socket of sockets) {
+      const reciprocalSocketWorldPoints = sockets.flatMap((socket) => {
         const points = getJigsawPieceOutlinePoints(socket, puzzle.edgeModel);
         expectNoSelfIntersection(points);
         const reciprocalPoints = points
           .map((candidate) => toWorldPoint(socket, candidate))
           .filter(onCapsuleBoundary);
         expect(reciprocalPoints.length).toBeGreaterThanOrEqual(2);
+        return reciprocalPoints;
+      });
+      const nearestDistance = (
+        point: { x: number; y: number },
+        candidates: readonly { x: number; y: number }[],
+      ) => Math.min(...candidates.map((candidate) =>
+        Math.hypot(point.x - candidate.x, point.y - candidate.y)));
+
+      expect(reciprocalSocketWorldPoints.length).toBeGreaterThan(capsuleWorldPoints.length);
+      for (const point of capsuleWorldPoints) {
+        expect(nearestDistance(point, reciprocalSocketWorldPoints)).toBeLessThan(0.03);
+      }
+      for (const point of reciprocalSocketWorldPoints) {
+        expect(nearestDistance(point, capsuleWorldPoints)).toBeLessThan(0.03);
       }
     }
   });
