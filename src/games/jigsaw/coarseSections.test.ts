@@ -201,6 +201,42 @@ describe("Jigsaw coarse sections", () => {
     ]);
   });
 
+  it("assigns a multi-cell Capsule to one stable coarse section while preserving island focus", () => {
+    const pieces = makeGrid(6, 6);
+    const capsule: JigsawPiece = {
+      id: "capsule-horizontal",
+      currentIndex: pieces.length,
+      solvedIndex: pieces.length,
+      row: 2.5,
+      column: 2.5,
+      edges: [],
+      specialShape: {
+        kind: "capsule",
+        orientation: "horizontal",
+        anchorRow: 3,
+        anchorColumn: 3,
+        radiusX: 40,
+        radiusY: 40,
+        socketPieceIds: ["tile-14", "tile-15", "tile-16", "tile-22", "tile-21", "tile-20"],
+      },
+    };
+    const allPieces = [...pieces, capsule];
+    const sections = createJigsawCoarseSections(allPieces, 6, 6);
+    const memberships = sections.filter((section) => section.pieceIds.includes(capsule.id));
+
+    expect(memberships).toHaveLength(1);
+    expect(memberships[0]?.id).toBe("top-left");
+
+    const focused = getJigsawCoarseSectionFocusPieceIds(
+      memberships[0]!,
+      { joinedComponents: [[capsule.id, "tile-21", "tile-22"]] },
+      allPieces,
+    );
+    expect(focused).toContain(capsule.id);
+    expect(focused).toContain("tile-21");
+    expect(focused).toContain("tile-22");
+  });
+
   it("derives completion from global assembly membership rather than section-local state", () => {
     const sections = createJigsawCoarseSections(makeGrid(4, 4), 4, 4);
     const topLeft = sections[0]!;
