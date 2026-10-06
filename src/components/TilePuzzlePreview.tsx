@@ -42,6 +42,7 @@ import {
   createJigsawWorkingFitCamera,
   createJigsawWorldLayout,
   getJigsawCameraTransform,
+  getJigsawPieceCellSpan,
   getJigsawPlacementPosition,
   isUsableJigsawViewport,
   panJigsawCamera,
@@ -307,7 +308,14 @@ export const TilePuzzlePreview = ({
   const activeCamera = cameraState?.puzzleId === puzzle.id
     ? cameraState.camera
     : visiblePlacements
-      ? createJigsawWorkingFitCamera(layout, renderViewport, visiblePlacements)
+      ? createJigsawWorkingFitCamera(
+          layout,
+          renderViewport,
+          visiblePlacements,
+          28,
+          {},
+          visiblePieces,
+        )
       : createJigsawFitCamera(layout, renderViewport, "workspace");
   const wheelStateRef = useRef({
     puzzleId: puzzle.id,
@@ -386,7 +394,13 @@ export const TilePuzzlePreview = ({
       if (current?.puzzleId === puzzle.id) return current;
       return {
         puzzleId: puzzle.id,
-        camera: initializeOrPreserveJigsawCamera(layout, viewport, null, activePlacements),
+        camera: initializeOrPreserveJigsawCamera(
+          layout,
+          viewport,
+          null,
+          activePlacements,
+          puzzle.tiles,
+        ),
       };
     });
   }, [activePlacements, layout, puzzle.id, viewport.height, viewport.width]);
@@ -434,6 +448,7 @@ export const TilePuzzlePreview = ({
       currentCameraState,
       cameraWasUserAdjustedRef.current,
       getCurrentFitInsets(),
+      puzzle.tiles,
     );
     if (nextCamera === currentCameraState) return;
     setCamera(nextCamera);
@@ -453,7 +468,7 @@ export const TilePuzzlePreview = ({
     const placements = focusedSection
       ? current.placements.filter((placement) => visiblePieceIds.has(placement.id))
       : current.placements;
-    setCamera(createJigsawOccupiedFitCamera(layout, viewport, placements, 28, insets));
+    setCamera(createJigsawOccupiedFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles));
   };
 
   const selectSectionFocus = (sectionId: JigsawCoarseSectionId | null) => {
@@ -493,6 +508,7 @@ export const TilePuzzlePreview = ({
       placements,
       28,
       getCurrentFitInsets(),
+      puzzle.tiles,
     ));
   };
 
@@ -782,6 +798,7 @@ export const TilePuzzlePreview = ({
     if (!stagePoint) return null;
     const projection = projectJigsawDragAction(
       state.layout,
+      puzzle.tiles,
       state.camera,
       state.viewport,
       stagePoint,
@@ -841,7 +858,7 @@ export const TilePuzzlePreview = ({
     const stagePoint = getStagePoint(event.clientX, event.clientY);
     if (!stagePoint) return;
     const current = wheelStateRef.current;
-    const position = getJigsawPlacementPosition(current.layout, placement);
+    const position = getJigsawPlacementPosition(current.layout, placement, tile);
     const currentPlacementState = placementStateRef.current;
     if (!currentPlacementState || currentPlacementState.puzzleId !== puzzle.id) return;
     const pieceIds = getJigsawComponentPieceIds(currentPlacementState.assembly, tile.id);
@@ -1265,7 +1282,8 @@ export const TilePuzzlePreview = ({
           {visiblePieces.map((tile) => {
             const placement = placementById.get(tile.id);
             if (!placement) return null;
-            const position = getJigsawPlacementPosition(layout, placement);
+            const position = getJigsawPlacementPosition(layout, placement, tile);
+            const cellSpan = getJigsawPieceCellSpan(tile);
             const activeDrag = dragRef.current;
             const active =
               activeTileId !== null &&
@@ -1275,8 +1293,8 @@ export const TilePuzzlePreview = ({
             const outlinePath = getJigsawPieceOutlinePath(tile, puzzle.edgeModel);
             const clipPathId = getJigsawPieceClipPathId(puzzle, tile);
             const pieceStyle = {
-              width: `${layout.pieceWidth}px`,
-              height: `${layout.pieceHeight}px`,
+              width: `${layout.pieceWidth * cellSpan.width}px`,
+              height: `${layout.pieceHeight * cellSpan.height}px`,
               "--jigsaw-piece-x": `${position.left}px`,
               "--jigsaw-piece-y": `${position.top}px`,
               zIndex: getPieceZIndex(tile, active, raised),
@@ -1301,7 +1319,7 @@ export const TilePuzzlePreview = ({
               >
                 <svg
                   class="tile-puzzle-piece-visual"
-                  viewBox="0 0 100 100"
+                  viewBox={`0 0 ${cellSpan.width * 100} ${cellSpan.height * 100}`}
                   preserveAspectRatio="none"
                   aria-hidden="true"
                 >

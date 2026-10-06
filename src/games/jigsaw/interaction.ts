@@ -8,6 +8,7 @@ import {
 import { getJigsawPieceNeighborIds } from "./medallion";
 import {
   createInitialJigsawPlacements,
+  getJigsawPieceWorldSize,
   getJigsawSolvedPosition,
   type JigsawPlacement,
   type JigsawViewport,
@@ -29,15 +30,27 @@ export const moveJigsawComponent = (
   pieceIds: readonly string[],
   deltaX: number,
   deltaY: number,
+  pieces: readonly JigsawPiece[] = [],
 ): JigsawPlacement[] => {
   const ids = new Set(pieceIds);
   const members = placements.filter((placement) => ids.has(placement.id));
   if (members.length === 0) return placements.map((placement) => ({ ...placement }));
 
+  const piecesById = getPieceById(pieces);
   const left = Math.min(...members.map((placement) => placement.worldX));
   const top = Math.min(...members.map((placement) => placement.worldY));
-  const right = Math.max(...members.map((placement) => placement.worldX + layout.pieceWidth));
-  const bottom = Math.max(...members.map((placement) => placement.worldY + layout.pieceHeight));
+  const right = Math.max(...members.map((placement) => {
+    const piece = piecesById.get(placement.id);
+    return placement.worldX + (piece
+      ? getJigsawPieceWorldSize(layout, piece).width
+      : layout.pieceWidth);
+  }));
+  const bottom = Math.max(...members.map((placement) => {
+    const piece = piecesById.get(placement.id);
+    return placement.worldY + (piece
+      ? getJigsawPieceWorldSize(layout, piece).height
+      : layout.pieceHeight);
+  }));
   const clampedDeltaX = clamp(deltaX, -left, layout.worldWidth - right);
   const clampedDeltaY = clamp(deltaY, -top, layout.worldHeight - bottom);
 
@@ -231,13 +244,30 @@ export const resolveJigsawComponentDrop = (
   });
   const left = Math.min(...mergedMembers.map((placement) => placement.worldX));
   const top = Math.min(...mergedMembers.map((placement) => placement.worldY));
-  const right = Math.max(...mergedMembers.map((placement) => placement.worldX + layout.pieceWidth));
-  const bottom = Math.max(...mergedMembers.map((placement) => placement.worldY + layout.pieceHeight));
+  const right = Math.max(...mergedMembers.map((placement) => {
+    const piece = piecesById.get(placement.id);
+    return placement.worldX + (piece
+      ? getJigsawPieceWorldSize(layout, piece).width
+      : layout.pieceWidth);
+  }));
+  const bottom = Math.max(...mergedMembers.map((placement) => {
+    const piece = piecesById.get(placement.id);
+    return placement.worldY + (piece
+      ? getJigsawPieceWorldSize(layout, piece).height
+      : layout.pieceHeight);
+  }));
   const correctionX = clamp(0, -left, layout.worldWidth - right);
   const correctionY = clamp(0, -top, layout.worldHeight - bottom);
 
   return {
-    placements: moveJigsawComponent(layout, aligned, mergedIds, correctionX, correctionY),
+    placements: moveJigsawComponent(
+      layout,
+      aligned,
+      mergedIds,
+      correctionX,
+      correctionY,
+      pieces,
+    ),
     assembly: mergedAssembly,
     joined: true,
   };
@@ -291,7 +321,14 @@ export const stageJigsawAssemblyPlacements = (
       });
     }
 
-    const normalized = moveJigsawComponent(layout, staged, component, 0, 0);
+    const normalized = moveJigsawComponent(
+      layout,
+      staged,
+      component,
+      0,
+      0,
+      pieces,
+    );
     staged.splice(0, staged.length, ...normalized);
   }
 

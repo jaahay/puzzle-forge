@@ -9,10 +9,13 @@ import {
   getJigsawOccupiedBounds,
   getJigsawWorkingBounds,
   getJigsawCameraTransform,
+  getJigsawPieceCellSpan,
+  getJigsawPieceWorldSize,
   getJigsawPlacementPosition,
   getJigsawSolvedPosition,
   getJigsawStagingMode,
   isUsableJigsawViewport,
+  normalizeJigsawPieceWorldPosition,
   normalizeJigsawWorldPosition,
   panJigsawCamera,
   screenToJigsawWorld,
@@ -100,6 +103,48 @@ const getScreenBounds = (
 };
 
 describe("Jigsaw world layout", () => {
+  it("derives and clamps multi-cell visual spans for capsule pieces", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 1200,
+      imageHeight: 900,
+      puzzleWidth: 6,
+      puzzleHeight: 6,
+    });
+    const horizontal = {
+      specialShape: {
+        kind: "capsule" as const,
+        orientation: "horizontal" as const,
+        anchorRow: 2,
+        anchorColumn: 2,
+        radiusX: 30,
+        radiusY: 40,
+        socketPieceIds: ["a", "b", "c", "d", "e", "f"] as const,
+      },
+    };
+    const vertical = {
+      specialShape: {
+        ...horizontal.specialShape,
+        orientation: "vertical" as const,
+      },
+    };
+
+    expect(getJigsawPieceCellSpan(horizontal)).toEqual({ width: 2, height: 1 });
+    expect(getJigsawPieceCellSpan(vertical)).toEqual({ width: 1, height: 2 });
+    expect(getJigsawPieceWorldSize(layout, horizontal)).toEqual({
+      width: layout.pieceWidth * 2,
+      height: layout.pieceHeight,
+    });
+
+    const clamped = normalizeJigsawPieceWorldPosition(
+      layout,
+      horizontal,
+      layout.worldWidth,
+      layout.worldHeight,
+    );
+    expect(clamped.worldX).toBeCloseTo(layout.worldWidth - layout.pieceWidth * 2);
+    expect(clamped.worldY).toBeCloseTo(layout.worldHeight - layout.pieceHeight);
+  });
+
   it("keeps artwork composition exact while making world size independent of the viewport", () => {
     const landscape = createJigsawWorldLayout({
       imageWidth: 1200,
