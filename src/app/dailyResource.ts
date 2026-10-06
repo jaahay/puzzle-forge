@@ -15,6 +15,10 @@ import {
   defaultJigsawCutStyle,
   isJigsawCutStyle,
 } from "../games/jigsaw/cutStyle";
+import {
+  defaultJigsawSpecialPiecesMode,
+  isJigsawSpecialPiecesMode,
+} from "../games/jigsaw/specialPieces";
 import { isDailyDateStamp } from "../games/shared/daily";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import {

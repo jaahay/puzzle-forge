@@ -66,8 +66,8 @@ const jigsawBoundaryModeCodebook = [
   ["contoured", 1],
 ] as const satisfies readonly (readonly [JigsawBoundaryMode, number])[];
 const jigsawSpecialPiecesModeCodebook = [
-  ["off", 0],
-  ["rare", 1],
+  ["rare", 0],
+  ["off", 1],
   ["always", 2],
 ] as const satisfies readonly (readonly [JigsawSpecialPiecesMode, number])[];
 const textEncoder = new TextEncoder();

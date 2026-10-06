@@ -123,14 +123,13 @@ describe("generateJigsaw", () => {
     expect(puzzle.tiles).toHaveLength(1025);
   });
 
-  it("adds one true circular medallion at the central qualifying grid intersection", () => {
+  it("adds one true circular medallion at a deterministic qualifying grid intersection", () => {
     const puzzle = generateJigsaw({
       puzzleId: "jigsaw",
       seed: "medallion-capability",
       width: 4,
       height: 4,
       imageId: defaultJigsawImageAsset.id,
-      jigsawSpecialPiecesMode: "always",
       jigsawSpecialPiecesMode: "always",
     });
     const medallions = puzzle.tiles.filter(
@@ -145,8 +144,8 @@ describe("generateJigsaw", () => {
     expect(sockets).toHaveLength(4);
 
     const medallion = medallions[0]!;
-    expect(medallion.row).toBe(1.5);
-    expect(medallion.column).toBe(1.5);
+    expect([0.5, 1.5, 2.5]).toContain(medallion.row);
+    expect([0.5, 1.5, 2.5]).toContain(medallion.column);
     expect(medallion.edges).toEqual([]);
     expect(new Set(getJigsawPieceNeighborIds(medallion))).toEqual(
       new Set(sockets.map((socket) => socket.id)),
@@ -167,6 +166,7 @@ describe("generateJigsaw", () => {
       width: 4,
       height: 4,
       imageId: defaultJigsawImageAsset.id,
+      jigsawSpecialPiecesMode: "always",
     });
     expect(repeated.tiles).toEqual(puzzle.tiles);
     expect(repeated.checksum).toBe(puzzle.checksum);

@@ -164,7 +164,7 @@ describe("canonical puzzle generation identity", () => {
     ] as const;
     const ids = expectedCodes.map(([jigsawCutStyle, expectedCode]) => {
       const id = encodeGenerationId({ ...base, jigsawCutStyle });
-      expect(decodeGenerationIdBytes(id).at(-1)).toBe(0x10 | expectedCode);
+      expect(decodeGenerationIdBytes(id).at(-1)).toBe(expectedCode);
       return id;
     });
     expect(new Set(ids).size).toBe(jigsawCutStyles.length);
@@ -200,8 +200,8 @@ describe("canonical puzzle generation identity", () => {
 
     expect(implicitFlat).toBe(flat);
     expect(contoured).not.toBe(flat);
-    expect(decodeGenerationIdBytes(flat).at(-1)).toBe(0x10);
-    expect(decodeGenerationIdBytes(contoured).at(-1)).toBe(0x18);
+    expect(decodeGenerationIdBytes(flat).at(-1)).toBe(0);
+    expect(decodeGenerationIdBytes(contoured).at(-1)).toBe(0x08);
 
     const decoded = decodeGenerationId("jigsaw", contoured);
     expect(decoded.ok).toBe(true);
@@ -220,8 +220,8 @@ describe("canonical puzzle generation identity", () => {
       jigsawBoundaryMode: "flat",
     });
     const expectedCodes = [
-      ["off", 0x00],
-      ["rare", 0x10],
+      ["rare", 0x00],
+      ["off", 0x10],
       ["always", 0x20],
     ] as const;
     const ids = expectedCodes.map(([jigsawSpecialPiecesMode, expectedCode]) => {

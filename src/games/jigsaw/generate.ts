@@ -195,7 +195,7 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
   });
   const medallionPlacement = selectJigsawMedallionPlacement({
     mode: specialPiecesMode,
-    identitySeed: `${shuffleSeed}:${edgeIdentity}${boundaryIdentity}:special-piece`,
+    identitySeed: `${shuffleSeed}:special-piece`,
     width: boundedWidth,
     height: boundedHeight,
     asset,
