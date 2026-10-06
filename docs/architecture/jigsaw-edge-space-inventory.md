@@ -95,6 +95,8 @@ Contoured outer boundaries remain a separate independent product axis and use th
 
 ## Deliberately excluded directions
 
-Asymmetric catch and hook-catch did not justify separate connector identities beyond Scoop-adjacent geometry. True nested/enclosed locks cross toward topology rather than ordinary open-edge grammar and remain part of the separate non-grid/special-topology direction (#191).
+Asymmetric catch and hook-catch did not justify separate connector identities beyond Scoop-adjacent geometry. True nested/enclosed locks cross toward piece topology rather than ordinary open-edge grammar and therefore do not belong in the connector catalog.
 
-The shipped vocabulary is therefore the current edge-generation contract. Future work should add or remove production vocabulary directly, with the same safety and product tests, rather than maintaining a parallel research catalog.
+That topology boundary is now concrete: #191 ships **Circular medallion** as the first special-piece family, and #190 / PR #260 owns its **Off · Rare · Always** product policy. Special pieces may reuse shared rendering, solved-space, interaction, and validation machinery, but they do not become ConnectorGrammar or BaselineCourse entries merely because they introduce unusual boundaries.
+
+The shipped edge vocabulary is therefore the current ordinary edge-generation contract. Future connector work should add or remove production vocabulary directly, with the same safety and product tests, rather than maintaining a parallel research catalog. Future special-piece families should be documented separately once more than one family exists; #261 tracks the proposed Capsule family.

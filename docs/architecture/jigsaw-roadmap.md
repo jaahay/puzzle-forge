@@ -269,14 +269,17 @@ Classic remains deliberately familiar. Flowing emphasizes rounded and baseline-c
 
 Cut style is part of canonical generation identity. The same seed, artwork, and grid under different styles are intentionally different generated puzzles. The style also round-trips through compact resource identity and Daily Jigsaw locators. Compact Jigsaw resource identity keeps style and boundary in one settings byte using explicit codec-owned numeric codes rather than UI-array positions. No migration or compatibility machinery is added.
 
-### Follow-on geometry directions
+### Special-piece topology
 
-Two separate future directions are intentionally outside the ordinary connector-grammar work:
+Special pieces are a production layer separate from ordinary connector grammar.
 
-- #190 explores rare surprise/anomaly geometry whose value depends on being exceptional rather than part of the everyday distribution.
-- #191 explores non-grid piece topology such as circular medallion pieces, arbitrary neighbor counts, and piece boundaries that are not four rectangular sides.
+The first shipped special topology is the **Circular medallion** from #191: one true circular piece centered on an interior grid intersection, with four surrounding pieces contributing exact reciprocal quarter-circle socket boundaries. It uses explicit special adjacency where ordinary top/right/bottom/left edge semantics are insufficient, while preserving the same solved-coordinate, snapping, persistence, rendering, and safety infrastructure as ordinary Jigsaw pieces.
 
-The ordinary seam representation should not prevent those directions, but it should not prematurely implement their topology either.
+#190 / PR #260 adds the product policy for that layer through **Special pieces · Off · Rare · Always**. The policy remains orthogonal to cut style and outer-boundary mode: ordinary seam grammar still owns the dominant board vocabulary, while special-piece policy decides whether a bounded local topology replacement participates.
+
+Do not treat `medallion` as the umbrella abstraction for future special pieces. New families should earn separate topology identities only when they introduce materially different structural/play behavior. #261 tracks the next proposed family, **Capsule**, specifically to exercise multi-cell occupancy and six-way adjacency.
+
+A dedicated special-piece family inventory is intentionally deferred until a second topology ships; until then, Circular medallion is the only production family.
 
 ## Phase 3: Visual custom-edge rendering
 
