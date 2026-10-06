@@ -76,11 +76,31 @@ const makeJigsawSpecialShapeChecksumPart = (tile: JigsawPiece) => {
       shape.socketPieceIds.join(","),
     ].join(":");
   }
-
+  if (shape.kind === "medallion-socket") {
+    return [
+      ":medallion-socket",
+      shape.medallionPieceId,
+      shape.corner,
+      shape.radiusX,
+      shape.radiusY,
+    ].join(":");
+  }
+  if (shape.kind === "capsule") {
+    return [
+      ":capsule",
+      shape.orientation,
+      shape.anchorRow,
+      shape.anchorColumn,
+      shape.radiusX,
+      shape.radiusY,
+      shape.socketPieceIds.join(","),
+    ].join(":");
+  }
   return [
-    ":medallion-socket",
-    shape.medallionPieceId,
-    shape.corner,
+    ":capsule-socket",
+    shape.capsulePieceId,
+    shape.orientation,
+    shape.role,
     shape.radiusX,
     shape.radiusY,
   ].join(":");
@@ -94,7 +114,9 @@ const makeJigsawTileChecksumPart = (tile: JigsawPiece) => {
         : ":none";
     const specialGeometryPart =
       !edge.boundary && edge.specialGeometry
-        ? `:${edge.specialGeometry.kind}:${edge.specialGeometry.start}:${edge.specialGeometry.end}`
+        ? edge.specialGeometry.kind === "removed"
+          ? ":removed"
+          : `:${edge.specialGeometry.kind}:${edge.specialGeometry.start}:${edge.specialGeometry.end}`
         : "";
 
     return `${edge.edgeId}:${edge.side}:${edge.neighborPieceId ?? "none"}:${edge.neighborEdgeId ?? "none"}:${edge.boundary ? "boundary" : "interior"}:${edge.profileId ?? "flat"}:${edge.polarity}:${edge.seedOffset}${contourPart}${specialGeometryPart}`;

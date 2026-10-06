@@ -75,6 +75,24 @@ const pieces: JigsawPiece[] = [
   },
 ];
 
+const generateAlwaysWithFamily = (
+  family: "medallion" | "capsule",
+  seedPrefix: string,
+) => {
+  for (let index = 0; index < 128; index += 1) {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: `${seedPrefix}-${index}`,
+      width: 6,
+      height: 6,
+      imageId: defaultJigsawImageAsset.id,
+      jigsawSpecialPiecesMode: "always",
+    });
+    if (puzzle.tiles.some((tile) => tile.specialShape?.kind === family)) return puzzle;
+  }
+  throw new Error(`Expected generated ${family}.`);
+};
+
 const layout = createJigsawWorldLayout({
   imageWidth: 1200,
   imageHeight: 300,
@@ -134,14 +152,7 @@ describe("Jigsaw island interaction", () => {
   });
 
   it("snaps the circular medallion to a socket neighbor through special adjacency", () => {
-    const puzzle = generateJigsaw({
-      puzzleId: "jigsaw",
-      seed: "medallion-snap",
-      width: 4,
-      height: 4,
-      imageId: defaultJigsawImageAsset.id,
-      jigsawSpecialPiecesMode: "always",
-    });
+    const puzzle = generateAlwaysWithFamily("medallion", "medallion-snap");
     const medallion = puzzle.tiles.find(
       (tile) => tile.specialShape?.kind === "medallion",
     );
@@ -182,6 +193,43 @@ describe("Jigsaw island interaction", () => {
     expect(result.assembly.joinedComponents).toEqual([
       [medallion.id, ...socketPieceIds]
         .sort((left, right) => left.localeCompare(right)),
+    ]);
+  });
+
+  it("snaps the capsule to all six aligned socket neighbors through special adjacency", () => {
+    const puzzle = generateAlwaysWithFamily("capsule", "capsule-snap");
+    const capsule = puzzle.tiles.find((tile) => tile.specialShape?.kind === "capsule");
+    if (!capsule || capsule.specialShape?.kind !== "capsule") {
+      throw new Error("Expected a generated capsule.");
+    }
+    const socketPieceIds = capsule.specialShape.socketPieceIds;
+    const capsuleLayout = createJigsawWorldLayout({
+      imageWidth: puzzle.asset.intrinsicWidth,
+      imageHeight: puzzle.asset.intrinsicHeight,
+      puzzleWidth: puzzle.width,
+      puzzleHeight: puzzle.height,
+    });
+    const placements = puzzle.tiles.map((piece) => {
+      const solved = getJigsawSolvedPosition(capsuleLayout, piece);
+      const near = piece.id === capsule.id;
+      return {
+        id: piece.id,
+        worldX: solved.left + (near ? 8 : 0),
+        worldY: solved.top + (near ? 6 : 0),
+      };
+    });
+
+    const result = resolveJigsawComponentDrop(
+      capsuleLayout,
+      puzzle.tiles,
+      placements,
+      { joinedComponents: [] },
+      capsule.id,
+    );
+
+    expect(result.joined).toBe(true);
+    expect(result.assembly.joinedComponents).toEqual([
+      [capsule.id, ...socketPieceIds].sort((left, right) => left.localeCompare(right)),
     ]);
   });
 

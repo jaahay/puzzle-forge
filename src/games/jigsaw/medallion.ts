@@ -215,18 +215,3 @@ export const applyJigsawMedallionTopology = ({
 
   return [...shapedPieces, medallion];
 };
-
-export const getJigsawPieceNeighborIds = (
-  piece: JigsawPiece,
-): string[] => {
-  const edgeNeighbors = piece.edges.flatMap((edge) =>
-    edge.boundary || edge.neighborPieceId === null ? [] : [edge.neighborPieceId]);
-
-  const specialNeighbors = piece.specialShape?.kind === "medallion"
-    ? [...piece.specialShape.socketPieceIds]
-    : piece.specialShape?.kind === "medallion-socket"
-      ? [piece.specialShape.medallionPieceId]
-      : [];
-
-  return [...new Set([...edgeNeighbors, ...specialNeighbors])];
-};

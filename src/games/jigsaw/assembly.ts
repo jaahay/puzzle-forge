@@ -1,5 +1,5 @@
 import type { JigsawPiece } from "../../catalog/types";
-import { getJigsawPieceNeighborIds } from "./medallion";
+import { getJigsawPieceNeighborIds } from "./specialTopology";
 
 export type JigsawAssemblyProgress = {
   joinedComponents: string[][];

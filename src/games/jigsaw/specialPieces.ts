@@ -4,6 +4,10 @@ import type {
 } from "../../catalog/types";
 import { createRandom } from "../shared";
 import {
+  getJigsawCapsuleCandidatePlacements,
+  type JigsawCapsulePlacement,
+} from "./capsule";
+import {
   getJigsawMedallionCandidateIntersections,
   type JigsawMedallionPlacement,
 } from "./medallion";
@@ -41,7 +45,13 @@ export const normalizeJigsawSpecialPiecesMode = (
 ): JigsawSpecialPiecesMode =>
   isJigsawSpecialPiecesMode(value) ? value : defaultJigsawSpecialPiecesMode;
 
-export const selectJigsawMedallionPlacement = ({
+export type JigsawSpecialPiecePlan =
+  | { family: "medallion"; placement: JigsawMedallionPlacement }
+  | { family: "capsule"; placement: JigsawCapsulePlacement };
+
+export const jigsawSpecialPieceFamilies = ["medallion", "capsule"] as const;
+
+export const selectJigsawSpecialPiecePlan = ({
   mode,
   identitySeed,
   width,
@@ -53,18 +63,39 @@ export const selectJigsawMedallionPlacement = ({
   width: number;
   height: number;
   asset: Pick<JigsawImageAsset, "intrinsicWidth" | "intrinsicHeight">;
-}): JigsawMedallionPlacement | null => {
+}): JigsawSpecialPiecePlan | null => {
   const normalizedMode = normalizeJigsawSpecialPiecesMode(mode);
   if (normalizedMode === "off") return null;
 
-  const candidates = getJigsawMedallionCandidateIntersections(width, height, asset);
-  if (candidates.length === 0) return null;
+  const families = [
+    {
+      family: "medallion" as const,
+      candidates: getJigsawMedallionCandidateIntersections(width, height, asset),
+    },
+    {
+      family: "capsule" as const,
+      candidates: getJigsawCapsuleCandidatePlacements(width, height, asset),
+    },
+  ].filter(({ candidates }) => candidates.length > 0);
+  if (families.length === 0) return null;
 
   if (normalizedMode === "rare") {
     const presenceRandom = createRandom(`${identitySeed}:presence`);
     if (presenceRandom() >= jigsawRareSpecialPieceRate) return null;
   }
 
-  const locationRandom = createRandom(`${identitySeed}:location`);
-  return candidates[Math.floor(locationRandom() * candidates.length)] ?? null;
+  const familyRandom = createRandom(`${identitySeed}:family`);
+  const selectedFamily =
+    families[Math.floor(familyRandom() * families.length)] ?? families[0]!;
+  const locationRandom = createRandom(
+    `${identitySeed}:${selectedFamily.family}:location`,
+  );
+  const placement = selectedFamily.candidates[
+    Math.floor(locationRandom() * selectedFamily.candidates.length)
+  ];
+  if (!placement) return null;
+
+  return selectedFamily.family === "medallion"
+    ? { family: "medallion", placement: placement as JigsawMedallionPlacement }
+    : { family: "capsule", placement: placement as JigsawCapsulePlacement };
 };

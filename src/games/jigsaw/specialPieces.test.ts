@@ -3,8 +3,9 @@ import { defaultJigsawImageAsset } from "./imageAssets";
 import {
   defaultJigsawSpecialPiecesMode,
   jigsawRareSpecialPieceRate,
+  jigsawSpecialPieceFamilies,
   normalizeJigsawSpecialPiecesMode,
-  selectJigsawMedallionPlacement,
+  selectJigsawSpecialPiecePlan,
 } from "./specialPieces";
 
 describe("Jigsaw special pieces policy", () => {
@@ -22,15 +23,30 @@ describe("Jigsaw special pieces policy", () => {
       height: 6,
       asset: defaultJigsawImageAsset,
     };
-    expect(selectJigsawMedallionPlacement({ ...input, mode: "off" })).toBeNull();
+    expect(selectJigsawSpecialPiecePlan({ ...input, mode: "off" })).toBeNull();
 
-    const first = selectJigsawMedallionPlacement({ ...input, mode: "always" });
-    const second = selectJigsawMedallionPlacement({ ...input, mode: "always" });
+    const first = selectJigsawSpecialPiecePlan({ ...input, mode: "always" });
+    const second = selectJigsawSpecialPiecePlan({ ...input, mode: "always" });
     expect(first).toEqual(second);
     expect(first).not.toBeNull();
   });
 
-  it("makes Rare sparse while sharing Always placement when it triggers", () => {
+  it("lets both shipped families participate in Always", () => {
+    const observed = new Set<string>();
+    for (let index = 0; index < 128; index += 1) {
+      const plan = selectJigsawSpecialPiecePlan({
+        mode: "always",
+        identitySeed: `family-policy-${index}`,
+        width: 6,
+        height: 6,
+        asset: defaultJigsawImageAsset,
+      });
+      if (plan) observed.add(plan.family);
+    }
+    expect(observed).toEqual(new Set(jigsawSpecialPieceFamilies));
+  });
+
+  it("makes Rare sparse while sharing the exact Always plan when it triggers", () => {
     const input = {
       width: 6,
       height: 6,
@@ -40,7 +56,7 @@ describe("Jigsaw special pieces policy", () => {
       const identitySeed = `rare-policy-${index}`;
       return {
         identitySeed,
-        rare: selectJigsawMedallionPlacement({
+        rare: selectJigsawSpecialPiecePlan({
           ...input,
           identitySeed,
           mode: "rare",
@@ -52,7 +68,7 @@ describe("Jigsaw special pieces policy", () => {
     expect(triggered.length).toBeLessThan(samples.length / 2);
 
     for (const { identitySeed, rare } of triggered) {
-      expect(rare).toEqual(selectJigsawMedallionPlacement({
+      expect(rare).toEqual(selectJigsawSpecialPiecePlan({
         ...input,
         identitySeed,
         mode: "always",

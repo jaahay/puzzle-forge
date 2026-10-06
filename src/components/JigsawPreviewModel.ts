@@ -47,9 +47,10 @@ export const initializeOrPreserveJigsawCamera = (
   viewport: JigsawViewport,
   currentCamera: JigsawCamera | null,
   placements: readonly JigsawPlacement[] | null = null,
+  pieces: readonly JigsawPiece[] = [],
 ) => currentCamera ?? (
   placements
-    ? createJigsawWorkingFitCamera(layout, viewport, placements)
+    ? createJigsawWorkingFitCamera(layout, viewport, placements, 28, {}, pieces)
     : createJigsawFitCamera(layout, viewport, "workspace")
 );
 
@@ -60,9 +61,10 @@ export const resolveJigsawCameraForViewportResize = (
   currentCamera: JigsawCamera,
   userAdjusted: boolean,
   insets: Partial<JigsawViewportInsets> = {},
+  pieces: readonly JigsawPiece[] = [],
 ) => userAdjusted
   ? currentCamera
-  : createJigsawWorkingFitCamera(layout, viewport, placements, 28, insets);
+  : createJigsawWorkingFitCamera(layout, viewport, placements, 28, insets, pieces);
 
 export const getMeasuredJigsawViewport = (
   stage: Pick<HTMLElement, "clientWidth" | "clientHeight"> | null,

@@ -92,6 +92,7 @@ describe("Jigsaw drag action", () => {
     const before = structuredClone(drag.startSnapshot);
     const projection = projectJigsawDragAction(
       layout,
+      pieces,
       { ...camera, centerX: camera.centerX + 20 },
       viewport,
       { x: 240, y: 210 },

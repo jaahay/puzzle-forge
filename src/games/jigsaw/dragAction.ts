@@ -91,6 +91,7 @@ export type JigsawDragProjection = {
 
 export const projectJigsawDragAction = (
   layout: JigsawWorldLayout,
+  pieces: readonly JigsawPiece[],
   camera: JigsawCamera,
   viewport: JigsawViewport,
   stagePoint: JigsawStagePoint,
@@ -112,6 +113,7 @@ export const projectJigsawDragAction = (
     drag.pieceIds,
     pointerWorld.x - drag.offsetWorldX - startPlacement.worldX,
     pointerWorld.y - drag.offsetWorldY - startPlacement.worldY,
+    pieces,
   );
   const movedPlacement = movedPlacements
     .find((placement) => placement.id === drag.tileId);

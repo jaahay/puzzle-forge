@@ -223,6 +223,21 @@ export type JigsawMedallionRadialEdgeGeometry = {
   end: number;
 };
 
+export type JigsawCapsuleRadialEdgeGeometry = {
+  kind: "capsule-radial";
+  start: number;
+  end: number;
+};
+
+export type JigsawRemovedEdgeGeometry = {
+  kind: "removed";
+};
+
+export type JigsawInteriorEdgeSpecialGeometry =
+  | JigsawMedallionRadialEdgeGeometry
+  | JigsawCapsuleRadialEdgeGeometry
+  | JigsawRemovedEdgeGeometry;
+
 export type JigsawInteriorEdge = JigsawPieceEdgeBase & {
   boundary: false;
   neighborPieceId: string;
@@ -230,7 +245,7 @@ export type JigsawInteriorEdge = JigsawPieceEdgeBase & {
   profileId: JigsawEdgeProfileId;
   polarity: Exclude<JigsawEdgePolarity, "flat">;
   seedOffset: number;
-  specialGeometry?: JigsawMedallionRadialEdgeGeometry;
+  specialGeometry?: JigsawInteriorEdgeSpecialGeometry;
 };
 
 export type JigsawPieceEdge = JigsawBoundaryEdge | JigsawInteriorEdge;
@@ -258,9 +273,42 @@ export type JigsawMedallionSocketShape = {
   radiusY: number;
 };
 
+export type JigsawCapsuleOrientation = "horizontal" | "vertical";
+
+export type JigsawCapsuleSocketRole =
+  | "north-west"
+  | "north"
+  | "north-east"
+  | "east"
+  | "south-east"
+  | "south"
+  | "south-west"
+  | "west";
+
+export type JigsawCapsulePieceShape = {
+  kind: "capsule";
+  orientation: JigsawCapsuleOrientation;
+  anchorRow: number;
+  anchorColumn: number;
+  radiusX: number;
+  radiusY: number;
+  socketPieceIds: readonly [string, string, string, string, string, string];
+};
+
+export type JigsawCapsuleSocketShape = {
+  kind: "capsule-socket";
+  capsulePieceId: string;
+  orientation: JigsawCapsuleOrientation;
+  role: JigsawCapsuleSocketRole;
+  radiusX: number;
+  radiusY: number;
+};
+
 export type JigsawPieceSpecialShape =
   | JigsawMedallionPieceShape
-  | JigsawMedallionSocketShape;
+  | JigsawMedallionSocketShape
+  | JigsawCapsulePieceShape
+  | JigsawCapsuleSocketShape;
 
 export type JigsawEdgeModel = {
   cutStyle: JigsawCutStyle;

@@ -340,6 +340,44 @@ export const normalizeJigsawWorldPosition = (
   worldY: clamp(top, 0, Math.max(0, layout.worldHeight - layout.pieceHeight)),
 });
 
+export type JigsawPieceCellSpan = {
+  width: number;
+  height: number;
+};
+
+export const getJigsawPieceCellSpan = (
+  piece: Pick<JigsawPiece, "specialShape">,
+): JigsawPieceCellSpan =>
+  piece.specialShape?.kind === "capsule"
+    ? piece.specialShape.orientation === "horizontal"
+      ? { width: 2, height: 1 }
+      : { width: 1, height: 2 }
+    : { width: 1, height: 1 };
+
+export const getJigsawPieceWorldSize = (
+  layout: JigsawWorldLayout,
+  piece: Pick<JigsawPiece, "specialShape">,
+) => {
+  const span = getJigsawPieceCellSpan(piece);
+  return {
+    width: layout.pieceWidth * span.width,
+    height: layout.pieceHeight * span.height,
+  };
+};
+
+export const normalizeJigsawPieceWorldPosition = (
+  layout: JigsawWorldLayout,
+  piece: Pick<JigsawPiece, "specialShape">,
+  left: number,
+  top: number,
+): Pick<JigsawPlacement, "worldX" | "worldY"> => {
+  const size = getJigsawPieceWorldSize(layout, piece);
+  return {
+    worldX: clamp(left, 0, Math.max(0, layout.worldWidth - size.width)),
+    worldY: clamp(top, 0, Math.max(0, layout.worldHeight - size.height)),
+  };
+};
+
 export const getJigsawSolvedPosition = (
   layout: JigsawWorldLayout,
   piece: Pick<JigsawPiece, "row" | "column">,
@@ -351,14 +389,21 @@ export const getJigsawSolvedPosition = (
 export const getJigsawPlacementPosition = (
   layout: JigsawWorldLayout,
   placement: JigsawPlacement,
-): WorldPosition => ({
-  left: clamp(placement.worldX, 0, Math.max(0, layout.worldWidth - layout.pieceWidth)),
-  top: clamp(placement.worldY, 0, Math.max(0, layout.worldHeight - layout.pieceHeight)),
-});
+  piece?: Pick<JigsawPiece, "specialShape">,
+): WorldPosition => {
+  const size = piece
+    ? getJigsawPieceWorldSize(layout, piece)
+    : { width: layout.pieceWidth, height: layout.pieceHeight };
+  return {
+    left: clamp(placement.worldX, 0, Math.max(0, layout.worldWidth - size.width)),
+    top: clamp(placement.worldY, 0, Math.max(0, layout.worldHeight - size.height)),
+  };
+};
 
 export const getJigsawOccupiedBounds = (
   layout: JigsawWorldLayout,
   placements: readonly JigsawPlacement[],
+  pieces: readonly JigsawPiece[] = [],
 ): JigsawWorldBounds => {
   let left = layout.boardX;
   let top = layout.boardY;
@@ -366,12 +411,17 @@ export const getJigsawOccupiedBounds = (
   let bottom = layout.boardY + layout.boardHeight;
   const horizontalOverhang = layout.pieceWidth * jigsawPieceVisualOverhangRatio;
   const verticalOverhang = layout.pieceHeight * jigsawPieceVisualOverhangRatio;
+  const piecesById = new Map(pieces.map((piece) => [piece.id, piece] as const));
 
   for (const placement of placements) {
+    const piece = piecesById.get(placement.id);
+    const size = piece
+      ? getJigsawPieceWorldSize(layout, piece)
+      : { width: layout.pieceWidth, height: layout.pieceHeight };
     left = Math.min(left, placement.worldX - horizontalOverhang);
     top = Math.min(top, placement.worldY - verticalOverhang);
-    right = Math.max(right, placement.worldX + layout.pieceWidth + horizontalOverhang);
-    bottom = Math.max(bottom, placement.worldY + layout.pieceHeight + verticalOverhang);
+    right = Math.max(right, placement.worldX + size.width + horizontalOverhang);
+    bottom = Math.max(bottom, placement.worldY + size.height + verticalOverhang);
   }
 
   return {
@@ -385,6 +435,7 @@ export const getJigsawOccupiedBounds = (
 export const getJigsawWorkingBounds = (
   layout: JigsawWorldLayout,
   placements: readonly JigsawPlacement[],
+  pieces: readonly JigsawPiece[] = [],
 ): JigsawWorldBounds => {
   let left = layout.boardX;
   let top = layout.boardY;
@@ -396,13 +447,17 @@ export const getJigsawWorkingBounds = (
   const maximumVerticalGap = layout.pieceHeight * 0.45;
   const boardRight = layout.boardX + layout.boardWidth;
   const boardBottom = layout.boardY + layout.boardHeight;
+  const piecesById = new Map(pieces.map((piece) => [piece.id, piece] as const));
 
   for (const placement of placements) {
-
+    const piece = piecesById.get(placement.id);
+    const size = piece
+      ? getJigsawPieceWorldSize(layout, piece)
+      : { width: layout.pieceWidth, height: layout.pieceHeight };
     const pieceLeft = placement.worldX - horizontalOverhang;
     const pieceTop = placement.worldY - verticalOverhang;
-    const pieceRight = placement.worldX + layout.pieceWidth + horizontalOverhang;
-    const pieceBottom = placement.worldY + layout.pieceHeight + verticalOverhang;
+    const pieceRight = placement.worldX + size.width + horizontalOverhang;
+    const pieceBottom = placement.worldY + size.height + verticalOverhang;
     const horizontalGap = pieceRight < layout.boardX
       ? layout.boardX - pieceRight
       : pieceLeft > boardRight
@@ -443,7 +498,12 @@ export const createInitialJigsawPlacements = (
     const slot = fallbackSlots[index % fallbackSlots.length];
     const repeatedLayer = Math.floor(index / fallbackSlots.length);
     const offset = repeatedLayer * 6;
-    const position = normalizeJigsawWorldPosition(layout, slot.left + offset, slot.top + offset);
+    const position = normalizeJigsawPieceWorldPosition(
+      layout,
+      piece,
+      slot.left + offset,
+      slot.top + offset,
+    );
     return { id: piece.id, ...position };
   });
 };
@@ -582,10 +642,11 @@ export const createJigsawOccupiedFitCamera = (
   placements: readonly JigsawPlacement[],
   padding = 28,
   insets: Partial<JigsawViewportInsets> = {},
+  pieces: readonly JigsawPiece[] = [],
 ): JigsawCamera => createJigsawBoundsFitCamera(
   layout,
   viewport,
-  getJigsawOccupiedBounds(layout, placements),
+  getJigsawOccupiedBounds(layout, placements, pieces),
   padding,
   1.25,
   insets,
@@ -597,10 +658,11 @@ export const createJigsawWorkingFitCamera = (
   placements: readonly JigsawPlacement[],
   padding = 28,
   insets: Partial<JigsawViewportInsets> = {},
+  pieces: readonly JigsawPiece[] = [],
 ): JigsawCamera => createJigsawBoundsFitCamera(
   layout,
   viewport,
-  getJigsawWorkingBounds(layout, placements),
+  getJigsawWorkingBounds(layout, placements, pieces),
   padding,
   1.25,
   insets,
