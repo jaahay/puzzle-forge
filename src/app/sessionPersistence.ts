@@ -479,13 +479,21 @@ const restorePersistedJigsawAssembly = (
 
 const restorePersistedTilePuzzle = (progress: PersistedTileProgress, puzzle: TileGeneratedPuzzle): TileGeneratedPuzzle | null => {
   const boardCellCount = puzzle.width * puzzle.height;
-  const expectedTileCount = puzzle.puzzleId === "sliding-puzzle" ? boardCellCount - 1 : boardCellCount;
-  if (puzzle.tiles.length !== expectedTileCount || progress.tileOrder.length !== expectedTileCount) return null;
+  const expectedTileCount = puzzle.puzzleId === "jigsaw"
+    ? puzzle.tiles.length
+    : puzzle.puzzleId === "sliding-puzzle"
+      ? boardCellCount - 1
+      : boardCellCount;
+  if (progress.tileOrder.length !== expectedTileCount) return null;
+  if (puzzle.puzzleId !== "jigsaw" && puzzle.tiles.length !== expectedTileCount) return null;
 
+  const currentIndexCount = puzzle.puzzleId === "jigsaw"
+    ? expectedTileCount
+    : boardCellCount;
   const tileIndexes = new Map<string, number>();
   const usedIndexes = new Set<number>();
   for (const { id, currentIndex } of progress.tileOrder) {
-    if (tileIndexes.has(id) || currentIndex >= boardCellCount || usedIndexes.has(currentIndex)) return null;
+    if (tileIndexes.has(id) || currentIndex >= currentIndexCount || usedIndexes.has(currentIndex)) return null;
     tileIndexes.set(id, currentIndex);
     usedIndexes.add(currentIndex);
   }

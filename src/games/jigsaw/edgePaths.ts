@@ -4,6 +4,7 @@ import type {
   JigsawEdgeModel,
   JigsawEdgeProfileId,
   JigsawEdgeSide,
+  JigsawMedallionSocketCorner,
   JigsawPiece,
   JigsawPieceEdge,
 } from "../../catalog/types";
@@ -413,6 +414,14 @@ const getJigsawEdgeSegments = (
   edge: JigsawPieceEdge,
   edgeModel: JigsawEdgeModel,
 ): JigsawEdgeSegment[] => {
+  if (!edge.boundary && edge.specialGeometry?.kind === "medallion-radial") {
+    return [{
+      kind: "line",
+      start: transformPoint(edge.side, edge.specialGeometry.start, 0),
+      end: transformPoint(edge.side, edge.specialGeometry.end, 0),
+    }];
+  }
+
   const canonical = edge.boundary
     ? getCanonicalBoundarySegments(edge)
     : getCanonicalEdgeSegments(edge.profileId, edge.seedOffset, edgeModel);
@@ -477,26 +486,153 @@ export const getJigsawEdgePath = (
 ) =>
   segmentsToPath(getJigsawEdgeSegments(edge, edgeModel));
 
+const socketSideOrder: Record<
+  JigsawMedallionSocketCorner,
+  readonly JigsawEdgeSide[]
+> = {
+  "top-left": ["top", "right", "bottom", "left"],
+  "top-right": ["right", "bottom", "left", "top"],
+  "bottom-right": ["bottom", "left", "top", "right"],
+  "bottom-left": ["left", "top", "right", "bottom"],
+};
+
+const socketArcAngles: Record<
+  JigsawMedallionSocketCorner,
+  readonly [number, number]
+> = {
+  "top-left": [Math.PI / 2, 0],
+  "top-right": [Math.PI, Math.PI / 2],
+  "bottom-right": [-Math.PI / 2, -Math.PI],
+  "bottom-left": [0, -Math.PI / 2],
+};
+
+const socketCenter: Record<
+  JigsawMedallionSocketCorner,
+  JigsawEdgePoint
+> = {
+  "top-left": point(0, 0),
+  "top-right": point(100, 0),
+  "bottom-right": point(100, 100),
+  "bottom-left": point(0, 100),
+};
+
+const getPieceEdge = (piece: JigsawPiece, side: JigsawEdgeSide) => {
+  const edge = piece.edges.find((candidate) => candidate.side === side);
+  if (!edge) throw new Error(`Jigsaw piece ${piece.id} is missing its ${side} edge.`);
+  return edge;
+};
+
+const sampleEllipseArc = (
+  center: JigsawEdgePoint,
+  radiusX: number,
+  radiusY: number,
+  startAngle: number,
+  endAngle: number,
+  steps: number,
+) => Array.from({ length: steps + 1 }, (_, index) => {
+  const progress = index / steps;
+  const angle = startAngle + (endAngle - startAngle) * progress;
+  return normalizePoint(point(
+    center.x + Math.cos(angle) * radiusX,
+    center.y + Math.sin(angle) * radiusY,
+  ));
+});
+
+const getMedallionOutlinePoints = (
+  piece: JigsawPiece,
+): JigsawEdgePoint[] => {
+  if (piece.specialShape?.kind !== "medallion") return [];
+  const { radiusX, radiusY } = piece.specialShape;
+  return sampleEllipseArc(
+    point(50, 50),
+    radiusX,
+    radiusY,
+    0,
+    Math.PI * 2,
+    64,
+  );
+};
+
+const getSocketOutlinePoints = (
+  piece: JigsawPiece,
+  edgeModel: JigsawEdgeModel,
+): JigsawEdgePoint[] => {
+  if (piece.specialShape?.kind !== "medallion-socket") return [];
+  const shape = piece.specialShape;
+  const sides = socketSideOrder[shape.corner];
+  const sidePoints = sides.flatMap((side, index) => {
+    const points = sampleSegments(
+      getJigsawEdgeSegments(getPieceEdge(piece, side), edgeModel),
+    );
+    return index === 0 ? points : points.slice(1);
+  });
+  const center = socketCenter[shape.corner];
+  const [startAngle, endAngle] = socketArcAngles[shape.corner];
+  const arc = sampleEllipseArc(
+    center,
+    shape.radiusX,
+    shape.radiusY,
+    startAngle,
+    endAngle,
+    12,
+  );
+  return [...sidePoints, ...arc.slice(1)];
+};
+
 export const getJigsawPieceOutlinePoints = (
   piece: JigsawPiece,
   edgeModel: JigsawEdgeModel,
-): JigsawEdgePoint[] =>
-  pieceEdgeOrder.flatMap((side, edgeIndex) => {
-    const edge = piece.edges.find((candidate) => candidate.side === side);
-    if (!edge) throw new Error(`Jigsaw piece ${piece.id} is missing its ${side} edge.`);
-    const points = getJigsawEdgePoints(edge, edgeModel);
+): JigsawEdgePoint[] => {
+  if (piece.specialShape?.kind === "medallion") {
+    return getMedallionOutlinePoints(piece);
+  }
+  if (piece.specialShape?.kind === "medallion-socket") {
+    return getSocketOutlinePoints(piece, edgeModel);
+  }
+
+  return pieceEdgeOrder.flatMap((side, edgeIndex) => {
+    const points = getJigsawEdgePoints(getPieceEdge(piece, side), edgeModel);
     return edgeIndex === 0 ? points : points.slice(1);
   });
+};
 
 export const getJigsawPieceOutlinePath = (
   piece: JigsawPiece,
   edgeModel: JigsawEdgeModel,
 ) => {
-  const edgeSegments = pieceEdgeOrder.map((side) => {
-    const edge = piece.edges.find((candidate) => candidate.side === side);
-    if (!edge) throw new Error(`Jigsaw piece ${piece.id} is missing its ${side} edge.`);
-    return getJigsawEdgeSegments(edge, edgeModel);
-  });
+  if (piece.specialShape?.kind === "medallion") {
+    const { radiusX, radiusY } = piece.specialShape;
+    const right = roundCoordinate(50 + radiusX);
+    const left = roundCoordinate(50 - radiusX);
+    return [
+      `M ${right} 50`,
+      `A ${radiusX} ${radiusY} 0 1 1 ${left} 50`,
+      `A ${radiusX} ${radiusY} 0 1 1 ${right} 50`,
+      "Z",
+    ].join(" ");
+  }
+
+  if (piece.specialShape?.kind === "medallion-socket") {
+    const shape = piece.specialShape;
+    const sides = socketSideOrder[shape.corner];
+    const edgeSegments = sides.map((side) =>
+      getJigsawEdgeSegments(getPieceEdge(piece, side), edgeModel));
+    const commands = edgeSegments.flatMap((segments, edgeIndex) => {
+      const path = segmentsToPath(segments, edgeIndex === 0);
+      return path ? [path] : [];
+    });
+    const firstSegment = edgeSegments[0]?.[0];
+    if (!firstSegment) {
+      throw new Error(`Jigsaw medallion socket ${piece.id} has no outline segments.`);
+    }
+    commands.push(
+      `A ${shape.radiusX} ${shape.radiusY} 0 0 0 ${firstSegment.start.x} ${firstSegment.start.y}`,
+    );
+    return `${commands.join(" ")} Z`;
+  }
+
+  const edgeSegments = pieceEdgeOrder.map((side) =>
+    getJigsawEdgeSegments(getPieceEdge(piece, side), edgeModel));
 
   const commands = edgeSegments.flatMap((segments, edgeIndex) => {
     const path = segmentsToPath(segments, edgeIndex === 0);

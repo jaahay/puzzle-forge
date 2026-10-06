@@ -14,6 +14,7 @@ import {
 } from "./cutStyle";
 import { generateJigsaw } from "./generate";
 import { defaultJigsawImageAsset } from "./imageAssets";
+import { getJigsawPieceNeighborIds } from "./medallion";
 
 const makeJigsaw = (
   imageId: string = defaultJigsawImageAsset.id,
@@ -117,7 +118,70 @@ describe("generateJigsaw", () => {
 
     expect(puzzle.width).toBe(32);
     expect(puzzle.height).toBe(32);
-    expect(puzzle.tiles).toHaveLength(1024);
+    expect(puzzle.tiles.filter((tile) => tile.id.startsWith("tile-"))).toHaveLength(1024);
+    expect(puzzle.tiles).toHaveLength(1025);
+  });
+
+  it("adds one true circular medallion at the central qualifying grid intersection", () => {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "medallion-capability",
+      width: 4,
+      height: 4,
+      imageId: defaultJigsawImageAsset.id,
+    });
+    const medallions = puzzle.tiles.filter(
+      (tile) => tile.specialShape?.kind === "medallion",
+    );
+    const sockets = puzzle.tiles.filter(
+      (tile) => tile.specialShape?.kind === "medallion-socket",
+    );
+
+    expect(puzzle.tiles).toHaveLength(17);
+    expect(medallions).toHaveLength(1);
+    expect(sockets).toHaveLength(4);
+
+    const medallion = medallions[0]!;
+    expect(medallion.row).toBe(1.5);
+    expect(medallion.column).toBe(1.5);
+    expect(medallion.edges).toEqual([]);
+    expect(new Set(getJigsawPieceNeighborIds(medallion))).toEqual(
+      new Set(sockets.map((socket) => socket.id)),
+    );
+
+    for (const socket of sockets) {
+      expect(getJigsawPieceNeighborIds(socket)).toContain(medallion.id);
+      expect(
+        socket.edges.filter(
+          (edge) => !edge.boundary && edge.specialGeometry?.kind === "medallion-radial",
+        ),
+      ).toHaveLength(2);
+    }
+
+    const repeated = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "medallion-capability",
+      width: 4,
+      height: 4,
+      imageId: defaultJigsawImageAsset.id,
+    });
+    expect(repeated.tiles).toEqual(puzzle.tiles);
+    expect(repeated.checksum).toBe(puzzle.checksum);
+  });
+
+  it("leaves non-qualifying grid topology unchanged", () => {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "no-medallion",
+      width: 5,
+      height: 3,
+      imageId: defaultJigsawImageAsset.id,
+    });
+
+    expect(puzzle.tiles).toHaveLength(15);
+    expect(puzzle.tiles.every((tile) => tile.specialShape === undefined)).toBe(true);
+    expect(getAllEdges(puzzle).every((edge) =>
+      edge.boundary || edge.specialGeometry === undefined)).toBe(true);
   });
 
   it("uses exactly one edge profile throughout each generated game", () => {

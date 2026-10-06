@@ -21,6 +21,7 @@ import {
   defaultJigsawBoundaryMode,
   normalizeJigsawBoundaryMode,
 } from "./boundaryContours";
+import { applyJigsawMedallionTopology } from "./medallion";
 
 const edgeSides: readonly JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
 const oppositeSide: Record<JigsawEdgeSide, JigsawEdgeSide> = {
@@ -183,9 +184,23 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
     edgeSeed,
     boundaryMode,
   });
-  const shuffledIndexes = shuffle(solvedIndexes, shuffleSeed);
+  const topologyPieces = applyJigsawMedallionTopology({
+    pieces: boundedPieces,
+    width: boundedWidth,
+    height: boundedHeight,
+    asset,
+  });
+  const topologyIndexes = Array.from(
+    { length: topologyPieces.length },
+    (_, index) => index,
+  );
+  const topologyShuffleSeed =
+    topologyPieces.length === boundedPieces.length
+      ? shuffleSeed
+      : `${shuffleSeed}:medallion`;
+  const shuffledIndexes = shuffle(topologyIndexes, topologyShuffleSeed);
   const tiles = shuffledIndexes.map((solvedIndex, currentIndex) => ({
-    ...boundedPieces[solvedIndex],
+    ...topologyPieces[solvedIndex]!,
     currentIndex,
   }));
 

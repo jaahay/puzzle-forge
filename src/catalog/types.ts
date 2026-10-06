@@ -215,6 +215,12 @@ export type JigsawBoundaryEdge = JigsawPieceEdgeBase & {
   contour?: JigsawBoundaryContour;
 };
 
+export type JigsawMedallionRadialEdgeGeometry = {
+  kind: "medallion-radial";
+  start: number;
+  end: number;
+};
+
 export type JigsawInteriorEdge = JigsawPieceEdgeBase & {
   boundary: false;
   neighborPieceId: string;
@@ -222,9 +228,37 @@ export type JigsawInteriorEdge = JigsawPieceEdgeBase & {
   profileId: JigsawEdgeProfileId;
   polarity: Exclude<JigsawEdgePolarity, "flat">;
   seedOffset: number;
+  specialGeometry?: JigsawMedallionRadialEdgeGeometry;
 };
 
 export type JigsawPieceEdge = JigsawBoundaryEdge | JigsawInteriorEdge;
+
+export type JigsawMedallionSocketCorner =
+  | "top-left"
+  | "top-right"
+  | "bottom-right"
+  | "bottom-left";
+
+export type JigsawMedallionPieceShape = {
+  kind: "medallion";
+  centerRow: number;
+  centerColumn: number;
+  radiusX: number;
+  radiusY: number;
+  socketPieceIds: readonly [string, string, string, string];
+};
+
+export type JigsawMedallionSocketShape = {
+  kind: "medallion-socket";
+  medallionPieceId: string;
+  corner: JigsawMedallionSocketCorner;
+  radiusX: number;
+  radiusY: number;
+};
+
+export type JigsawPieceSpecialShape =
+  | JigsawMedallionPieceShape
+  | JigsawMedallionSocketShape;
 
 export type JigsawEdgeModel = {
   cutStyle: JigsawCutStyle;
@@ -241,6 +275,7 @@ export type TilePuzzlePiece = {
 
 export type JigsawPiece = TilePuzzlePiece & {
   edges: JigsawPieceEdge[];
+  specialShape?: JigsawPieceSpecialShape;
 };
 
 type BaseGeneratedPuzzle = {

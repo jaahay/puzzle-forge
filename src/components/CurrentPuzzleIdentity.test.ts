@@ -175,7 +175,7 @@ describe("current puzzle identity", () => {
     expect(getCurrentPuzzleIdentity(puzzle, currentDateStamp)).toEqual({
       puzzleLabel: "Jigsaw",
       sourceLabel: null,
-      details: ["Wheat Field with Cypresses", "36 pieces", "6×6"],
+      details: ["Wheat Field with Cypresses", "37 pieces", "6×6"],
       difficultyLabel: null,
     });
   });
