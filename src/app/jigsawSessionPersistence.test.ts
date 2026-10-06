@@ -13,6 +13,24 @@ import {
   type PuzzleSession,
 } from "./session";
 
+const generateAlwaysWithFamily = (
+  family: "medallion" | "capsule",
+  seedPrefix: string,
+) => {
+  for (let index = 0; index < 128; index += 1) {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: `${seedPrefix}-${index}`,
+      width: 6,
+      height: 6,
+      imageId: defaultJigsawImageAsset.id,
+      jigsawSpecialPiecesMode: "always",
+    });
+    if (puzzle.tiles.some((tile) => tile.specialShape?.kind === family)) return puzzle;
+  }
+  throw new Error(`Expected generated ${family}.`);
+};
+
 const makeJigsawSession = (
   joinedComponents: string[][] = [["tile-2", "tile-1", "tile-0"]],
 ): Extract<PuzzleSession, { kind: "tiles" }> => {
@@ -137,14 +155,7 @@ describe("Jigsaw session assembly persistence", () => {
   });
 
   it("round-trips medallion/socket joins through the existing assembly persistence contract", () => {
-    const puzzle = generateJigsaw({
-      puzzleId: "jigsaw",
-      seed: "persist-medallion",
-      width: 4,
-      height: 4,
-      imageId: defaultJigsawImageAsset.id,
-      jigsawSpecialPiecesMode: "always",
-    });
+    const puzzle = generateAlwaysWithFamily("medallion", "persist-medallion");
     const medallion = puzzle.tiles.find(
       (tile) => tile.specialShape?.kind === "medallion",
     );
@@ -170,6 +181,34 @@ describe("Jigsaw session assembly persistence", () => {
     if (!restored || restored.progress.kind !== "tiles") return;
     expect(restored.progress.jigsawAssembly).toEqual({
       joinedComponents: [[medallion.id, socketId].sort((left, right) => left.localeCompare(right))],
+    });
+  });
+
+  it("round-trips capsule/socket joins through the existing assembly persistence contract", () => {
+    const puzzle = generateAlwaysWithFamily("capsule", "persist-capsule");
+    const capsule = puzzle.tiles.find((tile) => tile.specialShape?.kind === "capsule");
+    if (!capsule || capsule.specialShape?.kind !== "capsule") {
+      throw new Error("Expected generated capsule.");
+    }
+    const socketId = capsule.specialShape.socketPieceIds[0];
+    const session: Extract<PuzzleSession, { kind: "tiles" }> = {
+      kind: "tiles",
+      puzzle,
+      progress: {
+        kind: "tiles",
+        jigsawAssembly: {
+          joinedComponents: [[capsule.id, socketId]],
+        },
+      },
+      statusMessage: "Capsule in progress.",
+    };
+    const { persisted } = buildPersisted(session);
+    const restored = restorePuzzleSessionFromPersisted(persisted, puzzle);
+
+    expect(restored?.progress.kind).toBe("tiles");
+    if (!restored || restored.progress.kind !== "tiles") return;
+    expect(restored.progress.jigsawAssembly).toEqual({
+      joinedComponents: [[capsule.id, socketId].sort((left, right) => left.localeCompare(right))],
     });
   });
 

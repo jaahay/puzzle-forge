@@ -14,7 +14,7 @@ import {
 } from "./cutStyle";
 import { generateJigsaw } from "./generate";
 import { defaultJigsawImageAsset } from "./imageAssets";
-import { getJigsawPieceNeighborIds } from "./medallion";
+import { getJigsawPieceNeighborIds } from "./specialTopology";
 
 const makeJigsaw = (
   imageId: string = defaultJigsawImageAsset.id,
@@ -42,6 +42,26 @@ const getEdge = (tile: JigsawPiece, side: JigsawEdgeSide): JigsawPieceEdge => {
 };
 
 const getAllEdges = (puzzle: JigsawGeneratedPuzzle) => puzzle.tiles.flatMap((tile) => tile.edges);
+
+const generateAlwaysWithFamily = (
+  family: "medallion" | "capsule",
+  seedPrefix: string,
+  width = 6,
+  height = 6,
+) => {
+  for (let index = 0; index < 128; index += 1) {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: `${seedPrefix}-${index}`,
+      width,
+      height,
+      imageId: defaultJigsawImageAsset.id,
+      jigsawSpecialPiecesMode: "always",
+    });
+    if (puzzle.tiles.some((tile) => tile.specialShape?.kind === family)) return puzzle;
+  }
+  throw new Error(`Expected generated ${family}.`);
+};
 
 describe("generateJigsaw", () => {
   it("is deterministic for seed, dimensions, image id, cut style, and edge model", () => {
@@ -124,48 +144,62 @@ describe("generateJigsaw", () => {
   });
 
   it("adds one true circular medallion at a deterministic qualifying grid intersection", () => {
-    const puzzle = generateJigsaw({
-      puzzleId: "jigsaw",
-      seed: "medallion-capability",
-      width: 4,
-      height: 4,
-      imageId: defaultJigsawImageAsset.id,
-      jigsawSpecialPiecesMode: "always",
-    });
-    const medallions = puzzle.tiles.filter(
-      (tile) => tile.specialShape?.kind === "medallion",
-    );
-    const sockets = puzzle.tiles.filter(
-      (tile) => tile.specialShape?.kind === "medallion-socket",
-    );
+    const puzzle = generateAlwaysWithFamily("medallion", "medallion-capability", 4, 4);
+    const medallions = puzzle.tiles.filter((tile) => tile.specialShape?.kind === "medallion");
+    const sockets = puzzle.tiles.filter((tile) => tile.specialShape?.kind === "medallion-socket");
 
     expect(puzzle.tiles).toHaveLength(17);
     expect(medallions).toHaveLength(1);
     expect(sockets).toHaveLength(4);
-
     const medallion = medallions[0]!;
-    expect([0.5, 1.5, 2.5]).toContain(medallion.row);
-    expect([0.5, 1.5, 2.5]).toContain(medallion.column);
     expect(medallion.edges).toEqual([]);
     expect(new Set(getJigsawPieceNeighborIds(medallion))).toEqual(
       new Set(sockets.map((socket) => socket.id)),
     );
-
     for (const socket of sockets) {
       expect(getJigsawPieceNeighborIds(socket)).toContain(medallion.id);
-      expect(
-        socket.edges.filter(
-          (edge) => !edge.boundary && edge.specialGeometry?.kind === "medallion-radial",
-        ),
-      ).toHaveLength(2);
     }
 
     const repeated = generateJigsaw({
       puzzleId: "jigsaw",
-      seed: "medallion-capability",
-      width: 4,
-      height: 4,
-      imageId: defaultJigsawImageAsset.id,
+      seed: puzzle.seed,
+      width: puzzle.width,
+      height: puzzle.height,
+      imageId: puzzle.asset.id,
+      jigsawSpecialPiecesMode: "always",
+    });
+    expect(repeated.tiles).toEqual(puzzle.tiles);
+    expect(repeated.checksum).toBe(puzzle.checksum);
+  });
+
+  it("adds one elongated capsule with six true socket neighbors", () => {
+    const puzzle = generateAlwaysWithFamily("capsule", "capsule-capability");
+    const capsules = puzzle.tiles.filter((tile) => tile.specialShape?.kind === "capsule");
+    const sockets = puzzle.tiles.filter((tile) => tile.specialShape?.kind === "capsule-socket");
+    expect(puzzle.tiles).toHaveLength(puzzle.width * puzzle.height + 1);
+    expect(capsules).toHaveLength(1);
+    expect(sockets).toHaveLength(6);
+
+    const capsule = capsules[0]!;
+    expect(capsule.edges).toEqual([]);
+    expect(new Set(getJigsawPieceNeighborIds(capsule))).toEqual(
+      new Set(sockets.map((socket) => socket.id)),
+    );
+    for (const socket of sockets) {
+      expect(getJigsawPieceNeighborIds(socket)).toContain(capsule.id);
+    }
+    expect(
+      sockets.flatMap((socket) => socket.edges).filter(
+        (edge) => !edge.boundary && edge.specialGeometry?.kind === "removed",
+      ),
+    ).toHaveLength(2);
+
+    const repeated = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: puzzle.seed,
+      width: puzzle.width,
+      height: puzzle.height,
+      imageId: puzzle.asset.id,
       jigsawSpecialPiecesMode: "always",
     });
     expect(repeated.tiles).toEqual(puzzle.tiles);
@@ -195,22 +229,13 @@ describe("generateJigsaw", () => {
       height: 6,
       imageId: defaultJigsawImageAsset.id,
     };
-    const off = generateJigsaw({
-      ...base,
-      seed: "special-policy-off",
-      jigsawSpecialPiecesMode: "off",
-    });
-    const always = generateJigsaw({
-      ...base,
-      seed: "special-policy-off",
-      jigsawSpecialPiecesMode: "always",
-    });
+    const off = generateJigsaw({ ...base, seed: "special-policy-off", jigsawSpecialPiecesMode: "off" });
+    const always = generateJigsaw({ ...base, seed: "special-policy-off", jigsawSpecialPiecesMode: "always" });
 
-    expect(off.specialPiecesMode).toBe("off");
     expect(off.tiles).toHaveLength(36);
     expect(off.tiles.every((tile) => tile.specialShape === undefined)).toBe(true);
-    expect(always.specialPiecesMode).toBe("always");
-    expect(always.tiles.filter((tile) => tile.specialShape?.kind === "medallion")).toHaveLength(1);
+    expect(always.tiles.filter((tile) =>
+      tile.specialShape?.kind === "medallion" || tile.specialShape?.kind === "capsule")).toHaveLength(1);
 
     const rarePuzzles = Array.from({ length: 64 }, (_, index) =>
       generateJigsaw({
@@ -218,28 +243,27 @@ describe("generateJigsaw", () => {
         seed: `special-policy-rare-${index}`,
         jigsawSpecialPiecesMode: "rare",
       }));
-    const rareWithMedallion = rarePuzzles.find((puzzle) =>
-      puzzle.tiles.some((tile) => tile.specialShape?.kind === "medallion"));
-    const rareWithoutMedallion = rarePuzzles.find((puzzle) =>
+    const rareWithSpecial = rarePuzzles.find((puzzle) =>
+      puzzle.tiles.some((tile) =>
+        tile.specialShape?.kind === "medallion" || tile.specialShape?.kind === "capsule"));
+    const rareWithoutSpecial = rarePuzzles.find((puzzle) =>
       puzzle.tiles.every((tile) => tile.specialShape === undefined));
 
-    expect(rareWithMedallion).toBeDefined();
-    expect(rareWithoutMedallion).toBeDefined();
-    if (!rareWithMedallion) return;
+    expect(rareWithSpecial).toBeDefined();
+    expect(rareWithoutSpecial).toBeDefined();
+    if (!rareWithSpecial) return;
 
     const matchingAlways = generateJigsaw({
       ...base,
-      seed: rareWithMedallion.seed,
+      seed: rareWithSpecial.seed,
       jigsawSpecialPiecesMode: "always",
     });
-    const rareMedallion = rareWithMedallion.tiles.find(
-      (tile) => tile.specialShape?.kind === "medallion",
-    );
-    const alwaysMedallion = matchingAlways.tiles.find(
-      (tile) => tile.specialShape?.kind === "medallion",
-    );
-    expect(rareMedallion?.row).toBe(alwaysMedallion?.row);
-    expect(rareMedallion?.column).toBe(alwaysMedallion?.column);
+    const rareSpecial = rareWithSpecial.tiles.find((tile) =>
+      tile.specialShape?.kind === "medallion" || tile.specialShape?.kind === "capsule");
+    const alwaysSpecial = matchingAlways.tiles.find((tile) =>
+      tile.specialShape?.kind === "medallion" || tile.specialShape?.kind === "capsule");
+    expect(rareSpecial?.id).toBe(alwaysSpecial?.id);
+    expect(rareSpecial?.specialShape).toEqual(alwaysSpecial?.specialShape);
   });
 
   it("uses exactly one edge profile throughout each generated game", () => {

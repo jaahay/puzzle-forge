@@ -22,11 +22,12 @@ import {
   defaultJigsawBoundaryMode,
   normalizeJigsawBoundaryMode,
 } from "./boundaryContours";
+import { applyJigsawCapsuleTopology } from "./capsule";
 import { applyJigsawMedallionTopology } from "./medallion";
 import {
   defaultJigsawSpecialPiecesMode,
   normalizeJigsawSpecialPiecesMode,
-  selectJigsawMedallionPlacement,
+  selectJigsawSpecialPiecePlan,
 } from "./specialPieces";
 
 const edgeSides: readonly JigsawEdgeSide[] = ["top", "right", "bottom", "left"];
@@ -193,29 +194,41 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
     edgeSeed,
     boundaryMode,
   });
-  const medallionPlacement = selectJigsawMedallionPlacement({
+  const specialPiecePlan = selectJigsawSpecialPiecePlan({
     mode: specialPiecesMode,
     identitySeed: `${shuffleSeed}:special-piece`,
     width: boundedWidth,
     height: boundedHeight,
     asset,
   });
-  const topologyPieces = medallionPlacement
-    ? applyJigsawMedallionTopology({
-        pieces: boundedPieces,
-        width: boundedWidth,
-        height: boundedHeight,
-        asset,
-        placement: medallionPlacement,
-      })
-    : boundedPieces;
+  const topologyPieces =
+    specialPiecePlan?.family === "medallion"
+      ? applyJigsawMedallionTopology({
+          pieces: boundedPieces,
+          width: boundedWidth,
+          height: boundedHeight,
+          asset,
+          placement: specialPiecePlan.placement,
+        })
+      : specialPiecePlan?.family === "capsule"
+        ? applyJigsawCapsuleTopology({
+            pieces: boundedPieces,
+            width: boundedWidth,
+            height: boundedHeight,
+            asset,
+            placement: specialPiecePlan.placement,
+          })
+        : boundedPieces;
   const topologyIndexes = Array.from(
     { length: topologyPieces.length },
     (_, index) => index,
   );
-  const topologyShuffleSeed = medallionPlacement
-    ? `${shuffleSeed}:medallion:${medallionPlacement.centerRow}:${medallionPlacement.centerColumn}`
-    : shuffleSeed;
+  const topologyShuffleSeed =
+    specialPiecePlan?.family === "medallion"
+      ? `${shuffleSeed}:medallion:${specialPiecePlan.placement.centerRow}:${specialPiecePlan.placement.centerColumn}`
+      : specialPiecePlan?.family === "capsule"
+        ? `${shuffleSeed}:capsule:${specialPiecePlan.placement.orientation}:${specialPiecePlan.placement.anchorRow}:${specialPiecePlan.placement.anchorColumn}`
+        : shuffleSeed;
   const shuffledIndexes = shuffle(topologyIndexes, topologyShuffleSeed);
   const tiles = shuffledIndexes.map((solvedIndex, currentIndex) => ({
     ...topologyPieces[solvedIndex]!,

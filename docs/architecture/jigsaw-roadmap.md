@@ -277,9 +277,9 @@ The first shipped special topology is the **Circular medallion** from #191: one 
 
 #190 / PR #260 adds the product policy for that layer through **Special pieces · Off · Rare · Always**. The policy remains orthogonal to cut style and outer-boundary mode: ordinary seam grammar still owns the dominant board vocabulary, while special-piece policy decides whether a bounded local topology replacement participates.
 
-Do not treat `medallion` as the umbrella abstraction for future special pieces. New families should earn separate topology identities only when they introduce materially different structural/play behavior. #261 tracks the next proposed family, **Capsule**, specifically to exercise multi-cell occupancy and six-way adjacency.
+Do not treat `medallion` as the umbrella abstraction for special pieces. New families earn separate topology identities only when they introduce materially different structural/play behavior.
 
-A dedicated special-piece family inventory is intentionally deferred until a second topology ships; until then, Circular medallion is the only production family.
+#261 adds the second shipped family, **Capsule**: one elongated 2×1 or 1×2 visual-span piece centered on an interior grid-edge segment, with six explicit socket neighbors and the buried grid seam removed from the topology graph. See [Jigsaw Special Pieces](./jigsaw-special-pieces.md) for the production family inventory and shared invariants.
 
 ## Phase 3: Visual custom-edge rendering
 

@@ -99,6 +99,26 @@ const makeSeedSweep = (count: number) => {
 const broadSeamSeedOffsets = makeSeedSweep(256);
 const broadPieceSeedOffsets = makeSeedSweep(64);
 
+const generateAlwaysWithFamily = (
+  family: "medallion" | "capsule",
+  seedPrefix: string,
+  width = 6,
+  height = 6,
+) => {
+  for (let index = 0; index < 128; index += 1) {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: `${seedPrefix}-${index}`,
+      width,
+      height,
+      imageId: defaultJigsawImageAsset.id,
+      jigsawSpecialPiecesMode: "always",
+    });
+    if (puzzle.tiles.some((tile) => tile.specialShape?.kind === family)) return puzzle;
+  }
+  throw new Error(`Expected generated ${family}.`);
+};
+
 const makeEdgeModel = (
   cutStyle: JigsawCutStyle = "eclectic",
 ): JigsawEdgeModel => ({
@@ -699,14 +719,7 @@ describe("Jigsaw edge paths", () => {
   });
 
   it("keeps every socket quarter-arc reciprocal with the medallion in solved world space", () => {
-    const puzzle = generateJigsaw({
-      puzzleId: "jigsaw",
-      seed: "medallion-world-reciprocity",
-      width: 6,
-      height: 4,
-      imageId: defaultJigsawImageAsset.id,
-      jigsawSpecialPiecesMode: "always",
-    });
+    const puzzle = generateAlwaysWithFamily("medallion", "medallion-world-reciprocity", 6, 4);
     const medallion = puzzle.tiles.find(
       (tile) => tile.specialShape?.kind === "medallion",
     );
@@ -783,14 +796,7 @@ describe("Jigsaw edge paths", () => {
   });
 
   it("renders a true circular medallion and four simple complementary socket contours", () => {
-    const puzzle = generateJigsaw({
-      puzzleId: "jigsaw",
-      seed: "medallion-outline",
-      width: 4,
-      height: 4,
-      imageId: defaultJigsawImageAsset.id,
-      jigsawSpecialPiecesMode: "always",
-    });
+    const puzzle = generateAlwaysWithFamily("medallion", "medallion-outline", 4, 4);
     const medallion = puzzle.tiles.find(
       (tile) => tile.specialShape?.kind === "medallion",
     );
@@ -826,6 +832,79 @@ describe("Jigsaw edge paths", () => {
       expect(getJigsawPieceOutlinePath(socket, puzzle.edgeModel)).toContain(
         `A ${radiusX} ${radiusY}`,
       );
+    }
+  });
+
+  it("renders a reciprocal capsule boundary across all six socket pieces", () => {
+    const puzzle = generateAlwaysWithFamily("capsule", "capsule-outline", 6, 6);
+    const capsule = puzzle.tiles.find((tile) => tile.specialShape?.kind === "capsule");
+    const sockets = puzzle.tiles.filter((tile) => tile.specialShape?.kind === "capsule-socket");
+    expect(capsule).toBeDefined();
+    expect(sockets).toHaveLength(6);
+    if (!capsule || capsule.specialShape?.kind !== "capsule") return;
+
+    const layout = createJigsawWorldLayout({
+      imageWidth: puzzle.asset.intrinsicWidth,
+      imageHeight: puzzle.asset.intrinsicHeight,
+      puzzleWidth: puzzle.width,
+      puzzleHeight: puzzle.height,
+    });
+    const solved = getJigsawSolvedPosition(layout, capsule);
+    const shape = capsule.specialShape;
+    const radius = shape.radiusX * layout.pieceWidth / 100;
+    expect(radius).toBeCloseTo(shape.radiusY * layout.pieceHeight / 100, 3);
+
+    const toWorldPoint = (piece: JigsawPiece, candidate: { x: number; y: number }) => {
+      const origin = getJigsawSolvedPosition(layout, piece);
+      return {
+        x: origin.left + candidate.x * layout.pieceWidth / 100,
+        y: origin.top + candidate.y * layout.pieceHeight / 100,
+      };
+    };
+    const onCapsuleBoundary = (candidate: { x: number; y: number }) => {
+      if (shape.orientation === "horizontal") {
+        const cy = solved.top + layout.pieceHeight / 2;
+        const leftCx = solved.left + layout.pieceWidth / 2;
+        const rightCx = solved.left + layout.pieceWidth * 1.5;
+        const onRail =
+          candidate.x >= leftCx - 0.02 &&
+          candidate.x <= rightCx + 0.02 &&
+          (Math.abs(candidate.y - (cy - radius)) < 0.03 ||
+            Math.abs(candidate.y - (cy + radius)) < 0.03);
+        const onCap =
+          Math.abs(Math.hypot(candidate.x - leftCx, candidate.y - cy) - radius) < 0.03 ||
+          Math.abs(Math.hypot(candidate.x - rightCx, candidate.y - cy) - radius) < 0.03;
+        return onRail || onCap;
+      }
+      const cx = solved.left + layout.pieceWidth / 2;
+      const topCy = solved.top + layout.pieceHeight / 2;
+      const bottomCy = solved.top + layout.pieceHeight * 1.5;
+      const onRail =
+        candidate.y >= topCy - 0.02 &&
+        candidate.y <= bottomCy + 0.02 &&
+        (Math.abs(candidate.x - (cx - radius)) < 0.03 ||
+          Math.abs(candidate.x - (cx + radius)) < 0.03);
+      const onCap =
+        Math.abs(Math.hypot(candidate.x - cx, candidate.y - topCy) - radius) < 0.03 ||
+        Math.abs(Math.hypot(candidate.x - cx, candidate.y - bottomCy) - radius) < 0.03;
+      return onRail || onCap;
+    };
+
+    const capsuleWorldPoints = getJigsawPieceOutlinePoints(capsule, puzzle.edgeModel)
+      .map((candidate) => toWorldPoint(capsule, candidate));
+    expect(capsuleWorldPoints.length).toBeGreaterThan(40);
+    expect(capsuleWorldPoints.every(onCapsuleBoundary)).toBe(true);
+    expect(getJigsawPieceOutlinePath(capsule, puzzle.edgeModel)).toContain(
+      `A ${shape.radiusX} ${shape.radiusY}`,
+    );
+
+    for (const socket of sockets) {
+      const points = getJigsawPieceOutlinePoints(socket, puzzle.edgeModel);
+      expectNoSelfIntersection(points);
+      const reciprocalPoints = points
+        .map((candidate) => toWorldPoint(socket, candidate))
+        .filter(onCapsuleBoundary);
+      expect(reciprocalPoints.length).toBeGreaterThanOrEqual(2);
     }
   });
 

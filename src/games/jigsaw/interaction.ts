@@ -5,7 +5,7 @@ import {
   mergeJigsawAssemblyComponents,
   type JigsawAssemblyProgress,
 } from "./assembly";
-import { getJigsawPieceNeighborIds } from "./medallion";
+import { getJigsawPieceNeighborIds } from "./specialTopology";
 import {
   createInitialJigsawPlacements,
   getJigsawPieceWorldSize,

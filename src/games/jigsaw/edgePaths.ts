@@ -1,5 +1,6 @@
 import type {
   JigsawBoundaryEdge,
+  JigsawCapsuleSocketRole,
   JigsawConnectorGrammarId,
   JigsawEdgeModel,
   JigsawEdgeProfileId,
@@ -414,7 +415,14 @@ const getJigsawEdgeSegments = (
   edge: JigsawPieceEdge,
   edgeModel: JigsawEdgeModel,
 ): JigsawEdgeSegment[] => {
-  if (!edge.boundary && edge.specialGeometry?.kind === "medallion-radial") {
+  if (!edge.boundary && edge.specialGeometry?.kind === "removed") {
+    return [];
+  }
+  if (
+    !edge.boundary &&
+    (edge.specialGeometry?.kind === "medallion-radial" ||
+      edge.specialGeometry?.kind === "capsule-radial")
+  ) {
     return [{
       kind: "line",
       start: transformPoint(edge.side, edge.specialGeometry.start, 0),
@@ -579,6 +587,154 @@ const getSocketOutlinePoints = (
   return [...sidePoints, ...arc.slice(1)];
 };
 
+const capsuleCornerByRole: Partial<Record<
+  JigsawCapsuleSocketRole,
+  JigsawMedallionSocketCorner
+>> = {
+  "north-west": "bottom-right",
+  "north-east": "bottom-left",
+  "south-east": "top-left",
+  "south-west": "top-right",
+};
+
+const getCornerSocketOutlinePoints = (
+  piece: JigsawPiece,
+  edgeModel: JigsawEdgeModel,
+  corner: JigsawMedallionSocketCorner,
+  radiusX: number,
+  radiusY: number,
+) => {
+  const sides = socketSideOrder[corner];
+  const sidePoints = sides.flatMap((side, index) => {
+    const points = sampleSegments(
+      getJigsawEdgeSegments(getPieceEdge(piece, side), edgeModel),
+    );
+    return index === 0 ? points : points.slice(1);
+  });
+  const center = socketCenter[corner];
+  const [startAngle, endAngle] = socketArcAngles[corner];
+  const arc = sampleEllipseArc(
+    center,
+    radiusX,
+    radiusY,
+    startAngle,
+    endAngle,
+    12,
+  );
+  return [...sidePoints, ...arc.slice(1)];
+};
+
+const getCapsuleOutlinePoints = (piece: JigsawPiece): JigsawEdgePoint[] => {
+  if (piece.specialShape?.kind !== "capsule") return [];
+  const { orientation, radiusX, radiusY } = piece.specialShape;
+  if (orientation === "horizontal") {
+    const top = 50 - radiusY;
+    const bottom = 50 + radiusY;
+    return [
+      point(50, top),
+      point(150, top),
+      ...sampleEllipseArc(point(150, 50), radiusX, radiusY, -Math.PI / 2, Math.PI / 2, 24).slice(1),
+      point(50, bottom),
+      ...sampleEllipseArc(point(50, 50), radiusX, radiusY, Math.PI / 2, Math.PI * 1.5, 24).slice(1),
+    ].map(normalizePoint);
+  }
+
+  const left = 50 - radiusX;
+  const right = 50 + radiusX;
+  return [
+    point(left, 50),
+    ...sampleEllipseArc(point(50, 50), radiusX, radiusY, Math.PI, Math.PI * 2, 24).slice(1),
+    point(right, 150),
+    ...sampleEllipseArc(point(50, 150), radiusX, radiusY, 0, Math.PI, 24).slice(1),
+    point(left, 50),
+  ].map(normalizePoint);
+};
+
+type CapsuleSocketPart =
+  | { kind: "edge"; side: JigsawEdgeSide }
+  | { kind: "line"; end: JigsawEdgePoint };
+
+const getCapsuleSideSocketParts = (
+  role: JigsawCapsuleSocketRole,
+  radiusX: number,
+  radiusY: number,
+): CapsuleSocketPart[] => {
+  if (role === "north") {
+    return [
+      { kind: "edge", side: "top" },
+      { kind: "edge", side: "right" },
+      { kind: "line", end: point(0, 100 - radiusY) },
+      { kind: "edge", side: "left" },
+    ];
+  }
+  if (role === "south") {
+    return [
+      { kind: "edge", side: "bottom" },
+      { kind: "edge", side: "left" },
+      { kind: "line", end: point(100, radiusY) },
+      { kind: "edge", side: "right" },
+    ];
+  }
+  if (role === "east") {
+    return [
+      { kind: "edge", side: "top" },
+      { kind: "edge", side: "right" },
+      { kind: "edge", side: "bottom" },
+      { kind: "line", end: point(radiusX, 0) },
+    ];
+  }
+  if (role === "west") {
+    return [
+      { kind: "edge", side: "top" },
+      { kind: "line", end: point(100 - radiusX, 100) },
+      { kind: "edge", side: "bottom" },
+      { kind: "edge", side: "left" },
+    ];
+  }
+  return [];
+};
+
+const getCapsuleSideSocketSegments = (
+  piece: JigsawPiece,
+  edgeModel: JigsawEdgeModel,
+): JigsawEdgeSegment[] => {
+  if (piece.specialShape?.kind !== "capsule-socket") return [];
+  const { role, radiusX, radiusY } = piece.specialShape;
+  const parts = getCapsuleSideSocketParts(role, radiusX, radiusY);
+  const segments: JigsawEdgeSegment[] = [];
+
+  for (const part of parts) {
+    if (part.kind === "edge") {
+      segments.push(...getJigsawEdgeSegments(getPieceEdge(piece, part.side), edgeModel));
+      continue;
+    }
+    const start = segments.at(-1)?.end;
+    if (!start) throw new Error(`Jigsaw capsule socket ${piece.id} has no line start.`);
+    segments.push({ kind: "line", start, end: normalizePoint(part.end) });
+  }
+
+  return segments;
+};
+
+const getCapsuleSocketOutlinePoints = (
+  piece: JigsawPiece,
+  edgeModel: JigsawEdgeModel,
+): JigsawEdgePoint[] => {
+  if (piece.specialShape?.kind !== "capsule-socket") return [];
+  const shape = piece.specialShape;
+  const corner = capsuleCornerByRole[shape.role];
+  if (corner) {
+    return getCornerSocketOutlinePoints(
+      piece,
+      edgeModel,
+      corner,
+      shape.radiusX,
+      shape.radiusY,
+    );
+  }
+  return sampleSegments(getCapsuleSideSocketSegments(piece, edgeModel));
+};
+
 export const getJigsawPieceOutlinePoints = (
   piece: JigsawPiece,
   edgeModel: JigsawEdgeModel,
@@ -588,6 +744,12 @@ export const getJigsawPieceOutlinePoints = (
   }
   if (piece.specialShape?.kind === "medallion-socket") {
     return getSocketOutlinePoints(piece, edgeModel);
+  }
+  if (piece.specialShape?.kind === "capsule") {
+    return getCapsuleOutlinePoints(piece);
+  }
+  if (piece.specialShape?.kind === "capsule-socket") {
+    return getCapsuleSocketOutlinePoints(piece, edgeModel);
   }
 
   return pieceEdgeOrder.flatMap((side, edgeIndex) => {
@@ -629,6 +791,68 @@ export const getJigsawPieceOutlinePath = (
       `A ${shape.radiusX} ${shape.radiusY} 0 0 0 ${firstSegment.start.x} ${firstSegment.start.y}`,
     );
     return `${commands.join(" ")} Z`;
+  }
+
+  if (piece.specialShape?.kind === "capsule") {
+    const { orientation, radiusX, radiusY } = piece.specialShape;
+    if (orientation === "horizontal") {
+      const top = roundCoordinate(50 - radiusY);
+      const bottom = roundCoordinate(50 + radiusY);
+      const right = roundCoordinate(150 + radiusX);
+      const left = roundCoordinate(50 - radiusX);
+      return [
+        `M 50 ${top}`,
+        `L 150 ${top}`,
+        `A ${radiusX} ${radiusY} 0 0 1 ${right} 50`,
+        `A ${radiusX} ${radiusY} 0 0 1 150 ${bottom}`,
+        `L 50 ${bottom}`,
+        `A ${radiusX} ${radiusY} 0 0 1 ${left} 50`,
+        `A ${radiusX} ${radiusY} 0 0 1 50 ${top}`,
+        "Z",
+      ].join(" ");
+    }
+
+    const left = roundCoordinate(50 - radiusX);
+    const right = roundCoordinate(50 + radiusX);
+    const top = roundCoordinate(50 - radiusY);
+    const bottom = roundCoordinate(150 + radiusY);
+    return [
+      `M ${left} 50`,
+      `A ${radiusX} ${radiusY} 0 0 1 50 ${top}`,
+      `A ${radiusX} ${radiusY} 0 0 1 ${right} 50`,
+      `L ${right} 150`,
+      `A ${radiusX} ${radiusY} 0 0 1 50 ${bottom}`,
+      `A ${radiusX} ${radiusY} 0 0 1 ${left} 150`,
+      `L ${left} 50`,
+      "Z",
+    ].join(" ");
+  }
+
+  if (piece.specialShape?.kind === "capsule-socket") {
+    const shape = piece.specialShape;
+    const corner = capsuleCornerByRole[shape.role];
+    if (corner) {
+      const sides = socketSideOrder[corner];
+      const edgeSegments = sides.map((side) =>
+        getJigsawEdgeSegments(getPieceEdge(piece, side), edgeModel));
+      const commands = edgeSegments.flatMap((segments, edgeIndex) => {
+        const path = segmentsToPath(segments, edgeIndex === 0);
+        return path ? [path] : [];
+      });
+      const firstSegment = edgeSegments[0]?.[0];
+      if (!firstSegment) {
+        throw new Error(`Jigsaw capsule corner socket ${piece.id} has no outline segments.`);
+      }
+      commands.push(
+        `A ${shape.radiusX} ${shape.radiusY} 0 0 0 ${firstSegment.start.x} ${firstSegment.start.y}`,
+      );
+      return `${commands.join(" ")} Z`;
+    }
+
+    const segments = getCapsuleSideSocketSegments(piece, edgeModel);
+    const path = segmentsToPath(segments);
+    if (!path) throw new Error(`Jigsaw capsule side socket ${piece.id} has no outline segments.`);
+    return `${path} Z`;
   }
 
   const edgeSegments = pieceEdgeOrder.map((side) =>
