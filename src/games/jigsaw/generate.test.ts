@@ -438,6 +438,7 @@ describe("generateJigsaw", () => {
       tiles: changedTiles,
       asset: puzzle.asset,
       edgeModel: puzzle.edgeModel,
+      specialPiecesMode: puzzle.specialPiecesMode,
       notes: puzzle.notes,
     });
     const changedModelPuzzle = createGeneratedJigsawPuzzle({
@@ -455,6 +456,7 @@ describe("generateJigsaw", () => {
             ? "eclectic"
             : "classic",
       },
+      specialPiecesMode: puzzle.specialPiecesMode,
       notes: puzzle.notes,
     });
 
