@@ -10,7 +10,7 @@ The production system separates:
 2. **BaselineCourse** — the product course vocabulary. It delegates canonical courses to BaselineGrammar and owns shipped span-allocation and bounded-reversal courses whose semantics cannot be represented honestly by the canonical AST.
 3. **ConnectorGrammar** — the interlocking-event vocabulary, including single-event, repeated, compound, opposed, and notched structures.
 4. **SeamProgram** — composition of approach/course, connector profile, and departure/course, with an explicit connectorless seam form.
-5. **Cut style** — product policy over the production vocabularies. Classic is familiar and restrained; Flowing, Geometric, and Intricate curate distinct visual subsets; Eclectic can reach the full production set.
+5. **Cut style** — product policy over the production vocabularies and their realization envelopes. Classic is familiar and restrained; Flowing, Geometric, and Intricate curate distinct visual subsets; Eclectic can reach the full production set.
 
 ## Executable baseline IR
 
@@ -27,6 +27,8 @@ Approach/departure placement is topology-preserving: the course is mapped affine
 ConnectorGrammar remains family-specific at realization time. The connector vocabulary now includes the structures that survived the structural inventory directly in production: Compound lock, Opposed dual lock, and Notched head.
 
 Connectorless wave is intentionally an EdgeProfile rather than a fake connector family.
+
+ConnectorGrammar programs remain primitive grammar output. SeamProgram applies cut-style realization policy to that output before geometry embedding, so downstream consumers see the same generated parameters that the renderer uses without changing the structural production. Classic currently uses that boundary to favor conventional necked-head geometry, narrow and shallow the connector envelope, reduce lean and off-center placement, and remap the neck/head proportions toward familiar manufactured cuts. Other styles currently consume the neutral primitive realization.
 
 ## Determinism and safety
 
