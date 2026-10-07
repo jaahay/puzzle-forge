@@ -26,6 +26,10 @@ import {
   type JigsawConnectorPoint,
 } from "./connectorGrammar";
 import { flattenCubicBezier } from "./cubicBezier";
+import {
+  applyJigsawConnectorProgramForCutStyle,
+  getJigsawConnectorRealizationPolicy,
+} from "./cutStyle";
 import { deriveJigsawSeamProgram } from "./seamProgram";
 
 export type JigsawEdgePoint = JigsawConnectorPoint;
@@ -125,13 +129,25 @@ const placeBoundaryBaselinePoints = (
 const getCanonicalConnectorPoints = (
   profileId: JigsawConnectorGrammarId,
   seedOffset: number,
+  connectorProgram = deriveJigsawConnectorProgram(profileId, seedOffset),
+  cutStyle?: JigsawEdgeModel["cutStyle"],
 ): JigsawEdgePoint[] => {
   const grammar = getJigsawConnectorGrammarDefinition(profileId);
-  const connectorProgram = deriveJigsawConnectorProgram(profileId, seedOffset);
-  const width = seededRange(seedOffset, 0x51ed, grammar.width);
-  const depth = seededRange(seedOffset, 0x7f4a, grammar.depth);
+  const realizationPolicy = getJigsawConnectorRealizationPolicy(
+    cutStyle,
+    profileId,
+  );
+  const width =
+    seededRange(seedOffset, 0x51ed, grammar.width) *
+    realizationPolicy.widthScale;
+  const depth =
+    seededRange(seedOffset, 0x7f4a, grammar.depth) *
+    realizationPolicy.depthScale;
   const lean =
-    (seededUnit(seedOffset, 0x2c1b) - 0.5) * grammar.lean * 2;
+    (seededUnit(seedOffset, 0x2c1b) - 0.5) *
+    grammar.lean *
+    2 *
+    realizationPolicy.leanScale;
   const shouldMirror =
     grammar.mirrorable && seededUnit(seedOffset, 0x65d3) < 0.5;
 
@@ -147,7 +163,9 @@ const getCanonicalConnectorPoints = (
     100 - grammar.cornerBuffer - Math.max(...horizontalOffsets);
   const centerUnit = seededUnit(seedOffset, 0x9e37) * 2 - 1;
   const centerBias =
-    Math.sign(centerUnit) * Math.pow(Math.abs(centerUnit), 0.7);
+    Math.sign(centerUnit) *
+    Math.pow(Math.abs(centerUnit), 0.7) *
+    realizationPolicy.centerBiasScale;
   const center =
     minimumCenter +
     ((centerBias + 1) / 2) * (maximumCenter - minimumCenter);
@@ -166,7 +184,16 @@ const getCanonicalSeamParts = (
   edgeModel: JigsawEdgeModel,
 ): CanonicalSeamParts => {
   const program = deriveJigsawSeamProgram(profileId, seedOffset, edgeModel);
-  const connector = getCanonicalConnectorPoints(profileId, seedOffset);
+  const connectorProgram = applyJigsawConnectorProgramForCutStyle(
+    edgeModel.cutStyle,
+    program.connector,
+  );
+  const connector = getCanonicalConnectorPoints(
+    profileId,
+    seedOffset,
+    connectorProgram,
+    edgeModel.cutStyle,
+  );
   const connectorStart = connector[0].x;
   const connectorEnd = connector[connector.length - 1].x;
 
