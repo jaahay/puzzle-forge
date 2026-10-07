@@ -30,7 +30,6 @@ const makeSession = (
   generationId: encodeGenerationId(identity),
   baselineChecksum: `checksum-${identity.seed}`,
   progress: { kind: "grid", cells: [], selectedCell: null },
-  statusMessage: "In progress.",
   updatedAt,
   ...(completedAt ? { completedAt } : {}),
 });

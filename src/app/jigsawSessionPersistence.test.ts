@@ -49,7 +49,6 @@ const makeJigsawSession = (
       kind: "tiles",
       jigsawAssembly: { joinedComponents: joinedComponents.map((component) => [...component]) },
     },
-    statusMessage: "Jigsaw in progress.",
   };
 };
 
@@ -172,7 +171,6 @@ describe("Jigsaw session assembly persistence", () => {
           joinedComponents: [[medallion.id, socketId]],
         },
       },
-      statusMessage: "Medallion in progress.",
     };
     const { persisted } = buildPersisted(session);
     const restored = restorePuzzleSessionFromPersisted(persisted, puzzle);
@@ -200,7 +198,6 @@ describe("Jigsaw session assembly persistence", () => {
           joinedComponents: [[capsule.id, socketId]],
         },
       },
-      statusMessage: "Capsule in progress.",
     };
     const { persisted } = buildPersisted(session);
     const restored = restorePuzzleSessionFromPersisted(persisted, puzzle);

@@ -26,7 +26,6 @@ const session = (cells: PuzzleCell[]): PuzzleSession => ({
   kind: "grid",
   puzzle,
   progress: { kind: "grid", cells, selectedCell: null },
-  statusMessage: "In progress.",
 });
 
 describe("restored session generated-state integrity", () => {
