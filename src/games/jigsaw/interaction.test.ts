@@ -9,6 +9,7 @@ import { generateJigsaw } from "./generate";
 import { defaultJigsawImageAsset } from "./imageAssets";
 import {
   createJigsawWorldLayout,
+  getJigsawPieceWorldSize,
   getJigsawSolvedPosition,
   type JigsawPlacement,
 } from "./placement";
@@ -106,6 +107,18 @@ const placementAtTranslation = (piece: JigsawPiece, x: number, y: number): Jigsa
     id: piece.id,
     worldX: solved.left + x,
     worldY: solved.top + y,
+  };
+};
+
+const getTranslationForLayout = (
+  targetLayout: ReturnType<typeof createJigsawWorldLayout>,
+  placement: JigsawPlacement,
+  piece: JigsawPiece,
+) => {
+  const solved = getJigsawSolvedPosition(targetLayout, piece);
+  return {
+    x: placement.worldX - solved.left,
+    y: placement.worldY - solved.top,
   };
 };
 
@@ -407,6 +420,46 @@ describe("Jigsaw island interaction", () => {
 
     expect(second.x).toBeCloseTo(first.x);
     expect(second.y).toBeCloseTo(first.y);
+  });
+
+  it("keeps a restaged Capsule island within workspace bounds", () => {
+    const puzzle = generateAlwaysWithFamily("capsule", "capsule-restage");
+    const capsule = puzzle.tiles.find((piece) => piece.specialShape?.kind === "capsule");
+    if (!capsule || capsule.specialShape?.kind !== "capsule") {
+      throw new Error("Expected a generated capsule.");
+    }
+    const socketId = capsule.specialShape.socketPieceIds[0];
+    const capsuleLayout = createJigsawWorldLayout({
+      imageWidth: puzzle.asset.intrinsicWidth,
+      imageHeight: puzzle.asset.intrinsicHeight,
+      puzzleWidth: puzzle.width,
+      puzzleHeight: puzzle.height,
+    });
+    const staged = stageJigsawAssemblyPlacements(
+      capsuleLayout,
+      puzzle.tiles,
+      { joinedComponents: [[socketId, capsule.id]] },
+      { width: 760, height: 560 },
+    );
+    const stagedById = new Map(staged.map((placement) => [placement.id, placement] as const));
+
+    for (const pieceId of [socketId, capsule.id]) {
+      const piece = puzzle.tiles.find((candidate) => candidate.id === pieceId)!;
+      const placement = stagedById.get(pieceId)!;
+      const size = getJigsawPieceWorldSize(capsuleLayout, piece);
+      expect(placement.worldX).toBeGreaterThanOrEqual(0);
+      expect(placement.worldY).toBeGreaterThanOrEqual(0);
+      expect(placement.worldX + size.width).toBeLessThanOrEqual(capsuleLayout.worldWidth);
+      expect(placement.worldY + size.height).toBeLessThanOrEqual(capsuleLayout.worldHeight);
+    }
+
+    const socket = puzzle.tiles.find((piece) => piece.id === socketId)!;
+    const capsulePlacement = stagedById.get(capsule.id)!;
+    const socketPlacement = stagedById.get(socketId)!;
+    const capsuleTranslation = getTranslationForLayout(capsuleLayout, capsulePlacement, capsule);
+    const socketTranslation = getTranslationForLayout(capsuleLayout, socketPlacement, socket);
+    expect(capsuleTranslation.x).toBeCloseTo(socketTranslation.x);
+    expect(capsuleTranslation.y).toBeCloseTo(socketTranslation.y);
   });
 
   it("does not treat correct absolute board placement as progress", () => {
