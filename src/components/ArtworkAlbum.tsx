@@ -4,7 +4,6 @@ import { getPuzzleImageAssetsFor } from "../games/imageAssets";
 
 type ArtworkAlbumProps = {
   puzzleId: ImageBackedPuzzleId;
-  puzzleTitle: string;
   selectedAsset: PuzzleImageAsset;
   disabled?: boolean;
   onSelectAsset: (asset: PuzzleImageAsset) => void;
@@ -13,7 +12,6 @@ type ArtworkAlbumProps = {
 
 export const ArtworkAlbum = ({
   puzzleId,
-  puzzleTitle,
   selectedAsset,
   disabled = false,
   onSelectAsset,
@@ -59,7 +57,6 @@ export const ArtworkAlbum = ({
     <section class="artwork-control" aria-label="Selected artwork">
       <img class="artwork-control-thumb" src={selectedAsset.files.thumbnail} alt="" />
       <div class="artwork-control-copy">
-        <span>Artwork</span>
         <strong>{selectedAsset.title}</strong>
       </div>
       <div class="artwork-control-actions">
@@ -68,8 +65,9 @@ export const ArtworkAlbum = ({
           type="button"
           disabled={disabled}
           onClick={() => setIsOpen(true)}
+          aria-label="Choose artwork"
         >
-          Choose artwork
+          Choose
         </button>
         <button
           type="button"
@@ -79,13 +77,6 @@ export const ArtworkAlbum = ({
           Surprise Me
         </button>
       </div>
-      <p class="artwork-control-credit">
-        {selectedAsset.credit.text}
-        {selectedAsset.credit.sourceRecordUrl ? (
-          <> <a href={selectedAsset.credit.sourceRecordUrl} target="_blank" rel="noreferrer">Source</a></>
-        ) : null}
-      </p>
-
       <dialog
         ref={dialogRef}
         class="artwork-album-dialog"
@@ -97,11 +88,7 @@ export const ArtworkAlbum = ({
       >
         <div class="artwork-album-shell">
           <header class="artwork-album-header">
-            <div>
-              <span>Artwork Album</span>
-              <h2 id={titleId}>Choose artwork for {puzzleTitle}</h2>
-              <p>{eligibleAssets.length} eligible bundled artworks</p>
-            </div>
+            <h2 id={titleId}>Choose artwork</h2>
             <button type="button" class="artwork-album-close" aria-label="Close artwork album" onClick={closeAlbum}>×</button>
           </header>
 
@@ -120,7 +107,6 @@ export const ArtworkAlbum = ({
                   <img src={asset.files.thumbnail} alt="" />
                   <span class="artwork-album-option-copy">
                     <strong>{asset.title}</strong>
-                    <span>{asset.orientation}</span>
                   </span>
                   {selected ? <span class="artwork-album-selected">Selected</span> : null}
                 </button>
@@ -136,7 +122,12 @@ export const ArtworkAlbum = ({
             >
               Surprise Me
             </button>
-            <span>Starts a new puzzle with a different eligible artwork when possible.</span>
+            <span class="artwork-album-credit">
+              {selectedAsset.credit.text}
+              {selectedAsset.credit.sourceRecordUrl ? (
+                <> · <a href={selectedAsset.credit.sourceRecordUrl} target="_blank" rel="noreferrer">Source</a></>
+              ) : null}
+            </span>
           </footer>
         </div>
       </dialog>

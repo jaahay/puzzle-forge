@@ -1,5 +1,5 @@
 import type { ComponentChildren } from "preact";
-import { useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { makeRandomSeed, maxPuzzleSeedLength } from "../app/runtime";
 import { InfoIcon, PlayIcon, RandomIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
 import { CurrentSeedDisplay } from "./SeedControl";
@@ -78,11 +78,21 @@ export const NewPuzzleCommand = ({
 }: NewPuzzleCommandProps) => {
   const commandRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDetailsElement>(null);
+  const infoButtonRef = useRef<HTMLButtonElement>(null);
+  const [infoOpen, setInfoOpen] = useState(false);
+
+  const closeInfo = (restoreFocus = false) => {
+    if (!infoOpen) return false;
+    setInfoOpen(false);
+    if (restoreFocus) infoButtonRef.current?.focus();
+    return true;
+  };
 
   const closeOptions = (restoreFocus = false) => {
     const options = optionsRef.current;
     if (!options) return;
     const wasOpen = options.open;
+    setInfoOpen(false);
     options.open = false;
     if (restoreFocus && wasOpen) options.querySelector("summary")?.focus();
   };
@@ -107,10 +117,14 @@ export const NewPuzzleCommand = ({
       if (target instanceof Node && !commandRef.current?.contains(target)) closeOptions();
     };
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && optionsRef.current?.open) {
-        event.preventDefault();
-        closeOptions(true);
+      if (event.key !== "Escape" || !optionsRef.current?.open) return;
+
+      event.preventDefault();
+      if (infoOpen) {
+        closeInfo(true);
+        return;
       }
+      closeOptions(true);
     };
 
     document.addEventListener("pointerdown", handlePointerDown);
@@ -119,7 +133,7 @@ export const NewPuzzleCommand = ({
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [infoOpen]);
 
   const panelClass = ["new-puzzle-options-panel", panelClassName].filter(Boolean).join(" ");
 
@@ -140,11 +154,15 @@ export const NewPuzzleCommand = ({
           class="new-puzzle-options"
           ref={optionsRef}
           onToggle={(event) => {
-            if (event.currentTarget.open && disabled) {
+            if (!event.currentTarget.open) {
+              setInfoOpen(false);
+              return;
+            }
+            if (disabled) {
               event.currentTarget.open = false;
               return;
             }
-            if (event.currentTarget.open && !seedLoadInput.trim()) renewSeedCandidate();
+            if (!seedLoadInput.trim()) renewSeedCandidate();
           }}
         >
           <summary
@@ -159,45 +177,58 @@ export const NewPuzzleCommand = ({
             <span class="new-puzzle-command-caret" aria-hidden="true">▾</span>
           </summary>
           <div class={panelClass} aria-label="New puzzle options">
-            {info ? (
-              <details class="new-puzzle-info">
-                <summary aria-label="About new puzzle options" title="About these options">
-                  <InfoIcon />
-                </summary>
-                <div class="new-puzzle-info-panel">{info}</div>
-              </details>
-            ) : null}
-
-            <div class="new-puzzle-quick-actions" aria-label="Puzzle source">
+            <div class="new-puzzle-info">
               <button
+                ref={infoButtonRef}
                 type="button"
-                onClick={() => startRandomPuzzle(true)}
-                disabled={disabled}
-                aria-label={`Start a random ${puzzleTitle}, ${randomConfigurationSummary}`}
-                title={`Random puzzle — ${randomConfigurationSummary}`}
+                aria-expanded={infoOpen}
+                aria-label="About new puzzle options"
+                title="About these options"
+                onClick={() => setInfoOpen((open) => !open)}
               >
-                <RandomIcon />
-                <span class="new-puzzle-quick-action-copy"><strong>Random</strong></span>
+                <InfoIcon />
               </button>
-              <button
-                type="button"
-                onClick={startToday}
-                disabled={disabled}
-                aria-label={`Start today's ${puzzleTitle}, ${dailySummary}`}
-                title={`Today's puzzle — ${dailySummary}`}
-              >
-                <TodayDateTile />
-                <span class="new-puzzle-quick-action-copy"><strong>Today</strong></span>
-              </button>
+              {infoOpen ? (
+                <div class="new-puzzle-info-panel">
+                  {info}
+                  <div class="new-puzzle-info-seed">
+                    <strong>Current seed</strong>
+                    <div class="new-puzzle-current-seed">
+                      <CurrentSeedDisplay seed={currentSeed} disabledInput />
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </div>
 
-            {settings}
-
-            <div class="new-puzzle-seed-stack">
-              <div class="new-puzzle-seed-row new-puzzle-current-seed">
-                <CurrentSeedDisplay seed={currentSeed} disabledInput />
+            <div class="new-puzzle-operational" hidden={infoOpen}>
+              <div class="new-puzzle-quick-actions" aria-label="Puzzle source">
+                <button
+                  type="button"
+                  onClick={() => startRandomPuzzle(true)}
+                  disabled={disabled}
+                  aria-label={`Start a random ${puzzleTitle}, ${randomConfigurationSummary}`}
+                  title={`Random puzzle — ${randomConfigurationSummary}`}
+                >
+                  <RandomIcon />
+                  <span class="new-puzzle-quick-action-copy"><strong>Random</strong></span>
+                </button>
+                <button
+                  type="button"
+                  onClick={startToday}
+                  disabled={disabled}
+                  aria-label={`Start today's ${puzzleTitle}, ${dailySummary}`}
+                  title={`Today's puzzle — ${dailySummary}`}
+                >
+                  <TodayDateTile />
+                  <span class="new-puzzle-quick-action-copy"><strong>Today</strong></span>
+                </button>
               </div>
-              <div class="new-puzzle-seed-row new-puzzle-seed-entry">
+
+              {settings}
+
+              <div class="new-puzzle-seed-entry">
+                <span class="new-puzzle-seed-label" aria-hidden="true">Seed</span>
                 <input
                   aria-label="Seed to load"
                   value={seedLoadInput}

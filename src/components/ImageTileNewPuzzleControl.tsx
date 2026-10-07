@@ -100,7 +100,6 @@ export const ImageTileNewPuzzleControl = ({
           </div>
           <ArtworkAlbum
             puzzleId={puzzleId}
-            puzzleTitle={puzzleTitle}
             selectedAsset={selectedAsset}
             disabled={disabled}
             onSelectAsset={(asset) => onImageChange(asset.id)}

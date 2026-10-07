@@ -130,8 +130,11 @@ export const JigsawNewPuzzleControl = ({
       onLoadSeed={onLoadSeed}
       info={(
         <>
-          <p>Cut style, outer boundary, special pieces, and size configure the next Jigsaw. New and Surprise Me choose a different eligible artwork; Today and seed loads use the selected artwork.</p>
-          <p>Named size presets target an approximate piece count and adapt their dimensions to the selected artwork. Custom dimensions remain explicit when artwork changes; unusually stretched Custom grids can be adapted explicitly while keeping approximately the same piece count.</p>
+          <p><strong>Cut style.</strong> {jigsawCutStyleDescriptions[cutStyle]}</p>
+          <p><strong>Outer boundary.</strong> {jigsawBoundaryModeDescriptions[boundaryMode]}</p>
+          <p><strong>Special pieces.</strong> {jigsawSpecialPiecesModeDescriptions[specialPiecesMode]}</p>
+          <p><strong>Size.</strong> Named presets target an approximate piece count and adapt to the selected artwork. Custom dimensions stay explicit when artwork changes.</p>
+          <p>New and Surprise Me choose a different eligible artwork; Today and seed loads use the selected artwork.</p>
         </>
       )}
       settings={(
@@ -139,7 +142,6 @@ export const JigsawNewPuzzleControl = ({
           <div class="jigsaw-cut-style-settings" role="group" aria-label="Jigsaw cut style">
             <div class="jigsaw-size-heading">
               <strong>Cut style</strong>
-              <span>{jigsawCutStyleLabels[cutStyle]}</span>
             </div>
             <div class="new-puzzle-segmented jigsaw-cut-style-options">
               {jigsawCutStyles.map((style) => (
@@ -155,15 +157,11 @@ export const JigsawNewPuzzleControl = ({
                 </button>
               ))}
             </div>
-            <p class="jigsaw-cut-style-description">
-              {jigsawCutStyleDescriptions[cutStyle]}
-            </p>
           </div>
 
           <div class="jigsaw-boundary-settings" role="group" aria-label="Jigsaw outer boundary">
             <div class="jigsaw-size-heading">
               <strong>Outer boundary</strong>
-              <span>{jigsawBoundaryModeLabels[boundaryMode]}</span>
             </div>
             <div class="jigsaw-boundary-options">
               {jigsawBoundaryModes.map((mode) => (
@@ -176,7 +174,6 @@ export const JigsawNewPuzzleControl = ({
                   key={mode}
                 >
                   <strong>{jigsawBoundaryModeLabels[mode]}</strong>
-                  <span>{jigsawBoundaryModeDescriptions[mode]}</span>
                 </button>
               ))}
             </div>
@@ -185,7 +182,6 @@ export const JigsawNewPuzzleControl = ({
           <div class="jigsaw-special-pieces-settings" role="group" aria-label="Jigsaw special pieces">
             <div class="jigsaw-size-heading">
               <strong>Special pieces</strong>
-              <span>{jigsawSpecialPiecesModeLabels[specialPiecesMode]}</span>
             </div>
             <div class="new-puzzle-segmented jigsaw-special-pieces-options">
               {jigsawSpecialPiecesModes.map((mode) => (
@@ -201,15 +197,12 @@ export const JigsawNewPuzzleControl = ({
                 </button>
               ))}
             </div>
-            <p class="jigsaw-special-pieces-description">
-              {jigsawSpecialPiecesModeDescriptions[specialPiecesMode]}
-            </p>
           </div>
 
           <div class="jigsaw-size-settings" role="group" aria-label="Jigsaw size">
             <div class="jigsaw-size-heading">
               <strong>Size</strong>
-              <span>{sizeSelection} · ~{pieceCount} pieces · {width} × {height}</span>
+              <span>~{pieceCount} pieces</span>
             </div>
             <div class="jigsaw-size-options">
               {jigsawSizePresets.map((preset) => {
@@ -228,7 +221,7 @@ export const JigsawNewPuzzleControl = ({
                     key={preset}
                   >
                     <strong>{preset}</strong>
-                    <span>~{jigsawSizeTargetPieces[preset]} pieces · {dimensions.width} × {dimensions.height}</span>
+                    <span>~{jigsawSizeTargetPieces[preset]} pieces</span>
                   </button>
                 );
               })}
@@ -299,7 +292,6 @@ export const JigsawNewPuzzleControl = ({
 
           <ArtworkAlbum
             puzzleId="jigsaw"
-            puzzleTitle="Jigsaw"
             selectedAsset={selectedAsset}
             disabled={disabled}
             onSelectAsset={(asset) => onSettingsChange(makeJigsawImageSelectionSettings(asset, sizeSelection))}

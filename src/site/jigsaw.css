@@ -307,23 +307,10 @@
   font-size: 0.7rem;
 }
 
-.jigsaw-cut-style-description,
-.jigsaw-special-pieces-description {
-  margin: 0;
-  color: #94a3b8;
-  font-size: 0.7rem;
-  line-height: 1.35;
-}
-
 .jigsaw-boundary-options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem;
-}
-
-.jigsaw-boundary-option span {
-  line-height: 1.3;
-  white-space: normal;
 }
 
 .jigsaw-size-heading {
