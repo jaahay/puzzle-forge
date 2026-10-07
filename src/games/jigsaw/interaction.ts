@@ -147,7 +147,6 @@ export const resolveJigsawComponentDrop = (
   type SnapCandidate = {
     componentKey: string;
     pieceId: string;
-    pieceIds: string[];
     distance: number;
     translationX: number;
     translationY: number;
@@ -185,7 +184,6 @@ export const resolveJigsawComponentDrop = (
         candidates.set(componentKey, {
           componentKey,
           pieceId: neighborPieceId,
-          pieceIds: targetPieceIds,
           distance,
           translationX: targetTranslation.x,
           translationY: targetTranslation.y,
@@ -196,10 +194,7 @@ export const resolveJigsawComponentDrop = (
 
   const snapThreshold = getSnapThreshold(layout);
   const viableCandidates = [...candidates.values()]
-    .filter(({ distance }) => distance <= snapThreshold)
-    .sort((left, right) =>
-      left.distance - right.distance ||
-      left.componentKey.localeCompare(right.componentKey));
+    .filter(({ distance }) => distance <= snapThreshold);
 
   if (viableCandidates.length === 0) {
     return {
@@ -254,34 +249,12 @@ export const resolveJigsawComponentDrop = (
       candidate.translationY,
     );
 
-    const alignedById = getPlacementById(aligned);
-    const mergedMembers = mergedIds.flatMap((pieceId) => {
-      const placement = alignedById.get(pieceId);
-      return placement ? [placement] : [];
-    });
-    const left = Math.min(...mergedMembers.map((placement) => placement.worldX));
-    const top = Math.min(...mergedMembers.map((placement) => placement.worldY));
-    const right = Math.max(...mergedMembers.map((placement) => {
-      const piece = piecesById.get(placement.id);
-      return placement.worldX + (piece
-        ? getJigsawPieceWorldSize(layout, piece).width
-        : layout.pieceWidth);
-    }));
-    const bottom = Math.max(...mergedMembers.map((placement) => {
-      const piece = piecesById.get(placement.id);
-      return placement.worldY + (piece
-        ? getJigsawPieceWorldSize(layout, piece).height
-        : layout.pieceHeight);
-    }));
-    const correctionX = clamp(0, -left, layout.worldWidth - right);
-    const correctionY = clamp(0, -top, layout.worldHeight - bottom);
-
     mergedPlacements = moveJigsawComponent(
       layout,
       aligned,
       mergedIds,
-      correctionX,
-      correctionY,
+      0,
+      0,
       pieces,
     );
     currentTranslation = getComponentTranslation(
