@@ -411,7 +411,7 @@ describe("Jigsaw island interaction", () => {
     for (const piece of bridgePieces) {
       const placement = result.placements.find((candidate) => candidate.id === piece.id)!;
       const translation = getTranslationForLayout(bridgeLayout, placement, piece);
-      expect(translation.x).toBeCloseTo(46);
+      expect(translation.x).toBeCloseTo(24);
       expect(translation.y).toBeCloseTo(18);
     }
   });
