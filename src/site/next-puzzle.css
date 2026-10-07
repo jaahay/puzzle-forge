@@ -420,9 +420,23 @@
 .new-puzzle-current-seed .seed-control,
 .new-puzzle-seed-entry {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 2.8rem;
   gap: 0.4rem;
   align-items: stretch;
+}
+
+.new-puzzle-current-seed .seed-control {
+  grid-template-columns: minmax(0, 1fr) 2.8rem;
+}
+
+.new-puzzle-seed-entry {
+  grid-template-columns: auto minmax(0, 1fr) 2.8rem;
+}
+
+.new-puzzle-seed-label {
+  align-self: center;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 .new-puzzle-current-seed .seed-control input,

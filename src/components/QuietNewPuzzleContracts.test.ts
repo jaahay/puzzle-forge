@@ -23,6 +23,7 @@ describe("Quiet New Puzzle contracts", () => {
     expect(currentSeed).toBeGreaterThan(infoPanel);
     expect(seedEntry).toBeGreaterThan(currentSeed);
     expect(commandSource).not.toContain("new-puzzle-seed-stack");
+    expect(commandSource).toContain('<span class="new-puzzle-seed-label" aria-hidden="true">Seed</span>');
     expect(sudokuSource).not.toContain("The locked field is the current puzzle's seed");
     expect(nonogramSource).not.toContain("The locked field is the current puzzle's seed");
     expect(nextPuzzleCss).toContain(".new-puzzle-info-seed");

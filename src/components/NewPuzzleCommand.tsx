@@ -200,6 +200,7 @@ export const NewPuzzleCommand = ({
             {settings}
 
             <div class="new-puzzle-seed-entry">
+              <span class="new-puzzle-seed-label" aria-hidden="true">Seed</span>
               <input
                 aria-label="Seed to load"
                 value={seedLoadInput}
