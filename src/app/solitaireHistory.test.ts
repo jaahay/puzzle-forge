@@ -42,7 +42,7 @@ const stats = (moveCount: number): SolitaireStats => ({
 
 describe("Solitaire history", () => {
   it("reports Undo and Redo availability from the authoritative stacks", () => {
-    const entry = makeSolitaireHistoryEntry(stacks(["A♣"], []), null, stats(0), "Ready.");
+    const entry = makeSolitaireHistoryEntry(stacks(["A♣"], []), null, stats(0));
 
     expect(getSolitaireHistoryAvailability([], [])).toEqual({
       canUndo: false,
@@ -58,14 +58,13 @@ describe("Solitaire history", () => {
     });
   });
 
-  it("round-trips stacks, selection, stats, and status through Undo and Redo", () => {
+  it("round-trips stacks, selection, and stats without presentation copy", () => {
     const beforeStacks = stacks(["A♣"], []);
     const afterStacks = stacks([], ["A♣"]);
     const before = makeSolitaireHistoryEntry(
       beforeStacks,
       { stackId: "stock", cardIndex: 0 },
       stats(0),
-      "Ready.",
     );
     const runtime: SolitaireHistoryRuntime = {
       cardStacks: afterStacks,
@@ -73,7 +72,6 @@ describe("Solitaire history", () => {
       solitaireStats: stats(1),
       undoStack: [before],
       redoStack: [],
-      statusMessage: "Drew A♣.",
     };
 
     const undone = applySolitaireHistoryAction(runtime, "undo");
@@ -81,26 +79,26 @@ describe("Solitaire history", () => {
     expect(undone!.cardStacks).toEqual(beforeStacks);
     expect(undone!.selectedCard).toEqual({ stackId: "stock", cardIndex: 0 });
     expect(undone!.solitaireStats).toEqual(stats(0));
-    expect(undone!.statusMessage).toBe("Ready.");
     expect(undone!.undoStack).toHaveLength(0);
     expect(undone!.redoStack).toHaveLength(1);
+    expect(undone).not.toHaveProperty("statusMessage");
 
     const redone = applySolitaireHistoryAction(undone!, "redo");
     expect(redone).not.toBeNull();
     expect(redone!.cardStacks).toEqual(afterStacks);
     expect(redone!.selectedCard).toBeNull();
     expect(redone!.solitaireStats).toEqual(stats(1));
-    expect(redone!.statusMessage).toBe("Drew A♣.");
     expect(redone!.undoStack).toHaveLength(1);
     expect(redone!.redoStack).toHaveLength(0);
+    expect(redone).not.toHaveProperty("statusMessage");
   });
 
   it("supports back-to-back authoritative Undo transitions", () => {
     const initialStacks = stacks(["A♣", "2♣"], []);
     const afterFirst = stacks(["A♣"], ["2♣"]);
     const afterSecond = stacks([], ["2♣", "A♣"]);
-    const first = makeSolitaireHistoryEntry(initialStacks, null, stats(0), "Ready.");
-    const second = makeSolitaireHistoryEntry(afterFirst, null, stats(1), "Drew 2♣.");
+    const first = makeSolitaireHistoryEntry(initialStacks, null, stats(0));
+    const second = makeSolitaireHistoryEntry(afterFirst, null, stats(1));
 
     const runtime: SolitaireHistoryRuntime = {
       cardStacks: afterSecond,
@@ -108,7 +106,6 @@ describe("Solitaire history", () => {
       solitaireStats: stats(2),
       undoStack: [first, second],
       redoStack: [],
-      statusMessage: "Drew A♣.",
     };
 
     const once = applySolitaireHistoryAction(runtime, "undo");
@@ -123,14 +120,13 @@ describe("Solitaire history", () => {
   });
 
   it("does not mutate stored snapshots while restoring them", () => {
-    const before = makeSolitaireHistoryEntry(stacks(["A♣"], []), null, stats(0), "Ready.");
+    const before = makeSolitaireHistoryEntry(stacks(["A♣"], []), null, stats(0));
     const runtime: SolitaireHistoryRuntime = {
       cardStacks: stacks([], ["A♣"]),
       selectedCard: null,
       solitaireStats: stats(1),
       undoStack: [before],
       redoStack: [],
-      statusMessage: "Drew A♣.",
     };
 
     const undone = applySolitaireHistoryAction(runtime, "undo");

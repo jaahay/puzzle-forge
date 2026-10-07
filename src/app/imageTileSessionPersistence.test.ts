@@ -15,7 +15,6 @@ const makeTileSession = (puzzle: ImageTileGeneratedPuzzle): PuzzleSession => ({
   kind: "tiles",
   puzzle,
   progress: { kind: "tiles" },
-  statusMessage: `${puzzle.title} in progress.`,
 });
 
 const makeResource = (puzzle: ImageTileGeneratedPuzzle) => ({

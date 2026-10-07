@@ -203,7 +203,7 @@ export const ImageTilePuzzleWorkspace = ({
     <PuzzleWorkspaceLayout
       className="image-tile-workspace"
       crown={crown}
-      status={<p class="status-line" aria-live="polite">{statusMessage}</p>}
+      status={statusMessage ? <p class="status-line" aria-live="polite">{statusMessage}</p> : null}
       board={board}
       gameplay={gameplay}
       enableImmersive

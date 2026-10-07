@@ -450,11 +450,6 @@
   margin-top: 0;
 }
 
-.puzzle-meta {
-  display: none;
-}
-
-.puzzle-meta span,
 .tag-row span {
   min-height: 1.85rem;
   display: inline-flex;

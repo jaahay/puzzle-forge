@@ -107,7 +107,6 @@ const makeZeroKillerSession = (seed = "refresh-seed", checksum = "checksum"): Pu
       undoStack: [makeHistoryEntry(0)],
       redoStack: [],
     },
-    statusMessage: "Sudoku entry updated.",
   };
 };
 

@@ -529,7 +529,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
         )}
       </details>
 
-      <span class="sr-only">{statusMessage}</span>
+      {statusMessage ? <span class="sr-only">{statusMessage}</span> : null}
     </section>
   );
 };

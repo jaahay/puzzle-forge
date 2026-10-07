@@ -1,5 +1,4 @@
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
-import { getPuzzleProvenance } from "../app/puzzleProvenance";
 import { playingTerminalState, solvedTerminalState, type PuzzleTerminalState } from "../app/puzzleTerminalState";
 import { isGridPuzzleSolved } from "../interactions/gridChecking";
 import { getBoardViewportNaturalWidth } from "./BoardViewport";
@@ -15,9 +14,6 @@ import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { WordGuessGame } from "./WordGuessGame";
 import { WordGuessNewPuzzleControl } from "./WordGuessNewPuzzleControl";
 
-const getFilledOpenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => !cell.locked && cell.value).length ?? 0;
-const getOpenCount = (cells: PuzzleCell[] | null) => cells?.filter((cell) => !cell.locked).length ?? 0;
-
 export const getGridWorkspaceTerminalState = (
   puzzle: GridGeneratedPuzzle | null,
   cells: PuzzleCell[] | null,
@@ -28,27 +24,6 @@ export const getGridWorkspaceTerminalState = (
 
   return isGridPuzzleSolved(puzzle, cells) ? solvedTerminalState : playingTerminalState;
 };
-
-export const getGridPuzzleMetaItems = ({
-  isFutoshiki,
-  isWordGuess,
-  filledOpenCount,
-  openCount,
-  dailyLabel,
-}: {
-  isFutoshiki: boolean;
-  isWordGuess: boolean;
-  filledOpenCount: number;
-  openCount: number;
-  dailyLabel: string | null;
-}) => [
-  ...(isWordGuess ? ["Answer-list solvable"] : []),
-  ...(isFutoshiki
-    ? [`${filledOpenCount}/${openCount} filled`]
-    : !isWordGuess && dailyLabel
-      ? [`Daily: ${dailyLabel}`]
-      : []),
-];
 
 export const GridPuzzleWorkspace = ({
   selectedDefinition,
@@ -85,10 +60,6 @@ export const GridPuzzleWorkspace = ({
   const terminalPuzzle = puzzle?.kind === "grid" ? puzzle : null;
   const terminalState = getGridWorkspaceTerminalState(terminalPuzzle, gridCells);
   const isSolved = terminalState.kind === "solved";
-  const filledOpenCount = getFilledOpenCount(gridCells);
-  const openCount = getOpenCount(gridCells);
-  const dailyLabel = puzzle ? getPuzzleProvenance(puzzle)?.dateStamp ?? null : null;
-  const puzzleMetaItems = getGridPuzzleMetaItems({ isFutoshiki, isWordGuess, filledOpenCount, openCount, dailyLabel });
   const workspaceClass = [
     isNonogram ? "nonogram-workspace" : "",
     isWordGuess ? "word-guess-workspace" : "",
@@ -190,7 +161,7 @@ export const GridPuzzleWorkspace = ({
     />
   ) : null;
 
-  const status = usesDedicatedStatus ? null : <p class="status-line" aria-live="polite">{statusMessage}</p>;
+  const status = usesDedicatedStatus || !statusMessage ? null : <p class="status-line" aria-live="polite">{statusMessage}</p>;
   const validationMessage = !isSolved && gridCheckFeedbackTone ? statusMessage : "";
   const validation = isNonogram || isFutoshiki ? (
     <p
@@ -217,11 +188,6 @@ export const GridPuzzleWorkspace = ({
       class={`puzzle-panel${hasCrown && isPuzzleArriving ? " puzzle-arrival" : ""}`}
       aria-label="Generated puzzle preview"
     >
-      {isNonogram ? null : (
-        <div class="puzzle-meta">
-          {puzzleMetaItems.map((item) => <span key={item}>{item}</span>)}
-        </div>
-      )}
       {puzzle.puzzleId === "word-guess" && gridCells ? (
         <WordGuessGame
           puzzle={puzzle}

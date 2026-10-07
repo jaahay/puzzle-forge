@@ -54,7 +54,6 @@ const makeSudokuSession = (): PuzzleSession => ({
     cells: makeGridCells(),
     selectedCell: { row: 0, column: 1 },
   },
-  statusMessage: "In progress.",
 });
 
 const makeSudokuResource = (puzzle: GridGeneratedPuzzle = makeSudokuPuzzle()) => ({

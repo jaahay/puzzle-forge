@@ -40,7 +40,6 @@ const makeSession = (
     generationId: makeGenerationId(puzzleId, seed),
     baselineChecksum: "checksum",
     progress,
-    statusMessage: "",
     updatedAt,
     ...(completedAt ? { completedAt } : {}),
   };

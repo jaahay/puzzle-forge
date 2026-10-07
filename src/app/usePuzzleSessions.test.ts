@@ -18,7 +18,6 @@ const makeJigsawSession = (): PuzzleSession => {
     kind: "tiles",
     puzzle,
     progress: { kind: "tiles" },
-    statusMessage: "Jigsaw in progress.",
   };
 };
 
@@ -81,6 +80,7 @@ describe("clonePuzzleSession", () => {
     expect(cloned.puzzle.asset.files).not.toBe(session.puzzle.asset.files);
     expect(cloned.puzzle.asset.credit).not.toBe(session.puzzle.asset.credit);
     expect(cloned.puzzle.edgeModel).not.toBe(session.puzzle.edgeModel);
+    expect(cloned).not.toHaveProperty("statusMessage");
   });
 });
 
@@ -111,7 +111,6 @@ describe("buildRuntimeSession", () => {
       solitaireRedoStack: [],
       gridCells,
       selectedGridCell: null,
-      statusMessage: "1 entry needs attention.",
     });
 
     expect(session.progress.kind).toBe("grid");
@@ -146,7 +145,6 @@ describe("buildRuntimeSession", () => {
       solitaireRedoStack: [],
       gridCells,
       selectedGridCell: null,
-      statusMessage: "1 row clue needs attention.",
     });
 
     expect(session.progress.kind).toBe("grid");
@@ -171,7 +169,6 @@ describe("buildRuntimeSession", () => {
       solitaireRedoStack: [],
       gridCells,
       selectedGridCell: null,
-      statusMessage: "1 entry needs attention.",
     });
 
     expect(session.progress.kind).toBe("grid");

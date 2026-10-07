@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PuzzleCell } from "../catalog/types";
-import { clearGridValidationTone, getGridEntryTone } from "./useGridController";
+import { clearGridValidationTone, getGridEntryStatusMessage, getGridEntryTone } from "./useGridController";
 
 const makeCell = (tone: PuzzleCell["tone"], locked = false): PuzzleCell => ({
   row: 0,
@@ -37,5 +37,19 @@ describe("Futoshiki grid entry tones", () => {
 
   it("preserves locked givens while clearing validation", () => {
     expect(clearGridValidationTone("futoshiki", makeCell("answer", true)).tone).toBe("answer");
+  });
+});
+
+
+describe("grid entry status", () => {
+  it("keeps ordinary Word Guess letter entry out of the shared live-status channel", () => {
+    expect(getGridEntryStatusMessage("word-guess", "A")).toBe("");
+    expect(getGridEntryStatusMessage("word-guess", "")).toBe("");
+  });
+
+  it("retains meaningful entry feedback for other grid surfaces", () => {
+    expect(getGridEntryStatusMessage("sudoku", "3")).toBe("Sudoku entry updated.");
+    expect(getGridEntryStatusMessage("futoshiki", "2")).toBe("Futoshiki entry updated.");
+    expect(getGridEntryStatusMessage("nonogram", "■")).toBe("Set cell to ■.");
   });
 });

@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { getCurrentPuzzleIdentity } from "./CurrentPuzzleIdentity";
-import * as gridWorkspaceModule from "./GridPuzzleWorkspace";
 import * as newPuzzleCommandModule from "./NewPuzzleCommand";
 import * as wordGuessNewPuzzleControlModule from "./WordGuessNewPuzzleControl";
 
@@ -21,21 +20,9 @@ type CommandActionFactory = (options: {
   renewSeedCandidate: () => void;
 }) => CommandActions;
 
-type GridMetaResolver = (options: {
-  isFutoshiki: boolean;
-  isWordGuess: boolean;
-  filledOpenCount: number;
-  openCount: number;
-  dailyLabel: string | null;
-}) => string[];
-
 const commandActionFactory = (
   newPuzzleCommandModule as unknown as { createNewPuzzleCommandActions?: CommandActionFactory }
 ).createNewPuzzleCommandActions;
-
-const gridMetaResolver = (
-  gridWorkspaceModule as unknown as { getGridPuzzleMetaItems?: GridMetaResolver }
-).getGridPuzzleMetaItems;
 
 const wordGuessDimensionSeparator = (
   wordGuessNewPuzzleControlModule as unknown as { wordGuessDimensionSeparator?: string }
@@ -49,11 +36,6 @@ const workspaceHierarchyCss = readFileSync(
 const requireCommandActionFactory = () => {
   expect(commandActionFactory).toBeTypeOf("function");
   return commandActionFactory!;
-};
-
-const requireGridMetaResolver = () => {
-  expect(gridMetaResolver).toBeTypeOf("function");
-  return gridMetaResolver!;
 };
 
 describe("shared New puzzle command interactions", () => {
@@ -158,30 +140,6 @@ describe("rolled-out puzzle presentation", () => {
     });
   });
 
-  it("keeps only Futoshiki progress beside the board", () => {
-    const resolveGridMeta = requireGridMetaResolver();
-
-    expect(resolveGridMeta({
-      isFutoshiki: true,
-      isWordGuess: false,
-      filledOpenCount: 7,
-      openCount: 16,
-      dailyLabel: null,
-    })).toEqual(["7/16 filled"]);
-  });
-
-  it("keeps Word Guess provenance in the crown instead of repeating it beside the board", () => {
-    const resolveGridMeta = requireGridMetaResolver();
-
-    expect(resolveGridMeta({
-      isFutoshiki: false,
-      isWordGuess: true,
-      filledOpenCount: 0,
-      openCount: 0,
-      dailyLabel: "2026-09-16",
-    })).toEqual(["Answer-list solvable"]);
-  });
-
   it("uses a non-geometric separator for Word Guess choices", () => {
     expect(wordGuessDimensionSeparator).toBe("·");
   });
@@ -197,5 +155,4 @@ describe("rolled-out puzzle presentation", () => {
     selectors.forEach((selector) => expect(workspaceHierarchyCss).toContain(selector));
     expect(workspaceHierarchyCss).toMatch(/\.jigsaw-workspace \.tile-puzzle-summary[\s\S]*?\.image-tile-workspace \.image-tile-summary[\s\S]*?\{\s*display:\s*none;\s*\}/);
   });
-
 });
