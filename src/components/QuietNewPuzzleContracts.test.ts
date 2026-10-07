@@ -30,6 +30,19 @@ describe("Quiet New Puzzle contracts", () => {
     expect(nextPuzzleCss).toMatch(/\.new-puzzle-info-panel\s*\{[\s\S]*?max-height:[^;]+;[\s\S]*?overflow:\s*auto;/);
   });
 
+  it("treats help as an inline topmost disclosure with coherent focus and close behavior", () => {
+    expect(commandSource).toContain("const [infoOpen, setInfoOpen] = useState(false);");
+    expect(commandSource).toContain("aria-expanded={infoOpen}");
+    expect(commandSource).toContain("{!infoOpen ? (");
+    expect(commandSource).toContain("if (infoOpen) {");
+    expect(commandSource).toContain("closeInfo(true);");
+    expect(commandSource).toContain("if (!event.currentTarget.open) {");
+    expect(commandSource).not.toContain('<details class="new-puzzle-info">');
+    expect(nextPuzzleCss).toMatch(/\\.new-puzzle-info\\s*\\{[\\s\\S]*?display:\\s*grid;/);
+    expect(nextPuzzleCss).not.toMatch(/\\.new-puzzle-info\\s*\\{[^}]*position:\\s*absolute/);
+    expect(nextPuzzleCss).not.toMatch(/\\.new-puzzle-info-panel\\s*\\{[^}]*position:\\s*absolute/);
+  });
+
   it("keeps Jigsaw choices operational while putting their explanations behind info", () => {
     expect(jigsawSource).toContain("jigsawCutStyleDescriptions[cutStyle]");
     expect(jigsawSource).toContain("jigsawBoundaryModeDescriptions[boundaryMode]");
