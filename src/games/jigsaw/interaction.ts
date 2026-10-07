@@ -210,12 +210,11 @@ export const resolveJigsawComponentDrop = (
     };
   }
 
-  const compatibleTranslationEpsilon = 0.001;
   const compatibleCandidates = viableCandidates.filter((candidate) =>
     Math.hypot(
       candidate.translationX - primaryCandidate.translationX,
       candidate.translationY - primaryCandidate.translationY,
-    ) <= compatibleTranslationEpsilon);
+    ) <= snapThreshold);
 
   let mergedAssembly = assembly;
   const mergedIdSet = new Set(draggedIds);
