@@ -65,7 +65,6 @@ export const NonogramNewPuzzleControl = ({
         <>
           <p>A Nonogram's clues can sometimes describe more than one completed grid. Requiring exactly one solution makes the generator test the clues and retry until only one grid satisfies them. When that requirement is off, the test is skipped; the puzzle may still happen to be unique, but it is not guaranteed.</p>
           <p>Random, Today, and ordinary seed loads use the settings below. Today is deterministic for the local date and selected difficulty, size, and uniqueness requirement, so each meaningful configuration has its own daily track.</p>
-          <p>The locked field is the current puzzle's seed. Edit the lower seed and press play to load another seed.</p>
         </>
       )}
       settings={(
@@ -120,10 +119,7 @@ export const NonogramNewPuzzleControl = ({
               onChange={(event) => onUniqueSolutionChange(event.currentTarget.checked)}
               disabled={disabled}
             />
-            <span class="new-puzzle-uniqueness-copy">
-              <strong>Require exactly one solution</strong>
-              <span>{requireUniqueSolution ? "Clues are checked before play." : "Off — more than one solution may fit the clues."}</span>
-            </span>
+            <strong>Require exactly one solution</strong>
           </label>
         </>
       )}

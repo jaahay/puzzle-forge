@@ -53,7 +53,6 @@ export const SudokuNewPuzzleControl = ({
         <>
           <p>{sudokuVariationDescriptions[sudokuVariation]}</p>
           <p>Random, Today, and ordinary seed loads use the difficulty and ruleset below. Today is deterministic for the local date and selected configuration, so changing either difficulty or ruleset selects a different daily track.</p>
-          <p>The locked field is the current puzzle's seed. Edit the lower seed and press play to load another seed.</p>
         </>
       )}
       settings={(

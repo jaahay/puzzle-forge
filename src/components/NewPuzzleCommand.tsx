@@ -159,14 +159,20 @@ export const NewPuzzleCommand = ({
             <span class="new-puzzle-command-caret" aria-hidden="true">▾</span>
           </summary>
           <div class={panelClass} aria-label="New puzzle options">
-            {info ? (
-              <details class="new-puzzle-info">
-                <summary aria-label="About new puzzle options" title="About these options">
-                  <InfoIcon />
-                </summary>
-                <div class="new-puzzle-info-panel">{info}</div>
-              </details>
-            ) : null}
+            <details class="new-puzzle-info">
+              <summary aria-label="About new puzzle options" title="About these options">
+                <InfoIcon />
+              </summary>
+              <div class="new-puzzle-info-panel">
+                {info}
+                <div class="new-puzzle-info-seed">
+                  <strong>Current seed</strong>
+                  <div class="new-puzzle-current-seed">
+                    <CurrentSeedDisplay seed={currentSeed} disabledInput />
+                  </div>
+                </div>
+              </div>
+            </details>
 
             <div class="new-puzzle-quick-actions" aria-label="Puzzle source">
               <button
@@ -193,30 +199,25 @@ export const NewPuzzleCommand = ({
 
             {settings}
 
-            <div class="new-puzzle-seed-stack">
-              <div class="new-puzzle-seed-row new-puzzle-current-seed">
-                <CurrentSeedDisplay seed={currentSeed} disabledInput />
-              </div>
-              <div class="new-puzzle-seed-row new-puzzle-seed-entry">
-                <input
-                  aria-label="Seed to load"
-                  value={seedLoadInput}
-                  maxLength={maxPuzzleSeedLength}
-                  onInput={(event) => onSeedLoadInputChange(event.currentTarget.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") loadSeed();
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={loadSeed}
-                  disabled={disabled || !seedLoadInput.trim()}
-                  aria-label="Load seed"
-                  title="Load seed"
-                >
-                  <PlayIcon />
-                </button>
-              </div>
+            <div class="new-puzzle-seed-entry">
+              <input
+                aria-label="Seed to load"
+                value={seedLoadInput}
+                maxLength={maxPuzzleSeedLength}
+                onInput={(event) => onSeedLoadInputChange(event.currentTarget.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") loadSeed();
+                }}
+              />
+              <button
+                type="button"
+                onClick={loadSeed}
+                disabled={disabled || !seedLoadInput.trim()}
+                aria-label="Load seed"
+                title="Load seed"
+              >
+                <PlayIcon />
+              </button>
             </div>
           </div>
         </details>
