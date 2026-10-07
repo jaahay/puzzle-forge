@@ -217,7 +217,7 @@ describe("generated puzzle identity matching", () => {
       height: 4,
       checksum: "checksum",
       createdAt: "2026-08-29T00:00:00.000Z",
-          kind: "tiles",
+      kind: "tiles",
       tiles: [],
       asset: {
         kind: "image",
