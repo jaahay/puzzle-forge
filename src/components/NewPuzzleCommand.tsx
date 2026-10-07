@@ -201,56 +201,54 @@ export const NewPuzzleCommand = ({
               ) : null}
             </div>
 
-            {!infoOpen ? (
-              <>
-                <div class="new-puzzle-quick-actions" aria-label="Puzzle source">
-              <button
-                type="button"
-                onClick={() => startRandomPuzzle(true)}
-                disabled={disabled}
-                aria-label={`Start a random ${puzzleTitle}, ${randomConfigurationSummary}`}
-                title={`Random puzzle — ${randomConfigurationSummary}`}
-              >
-                <RandomIcon />
-                <span class="new-puzzle-quick-action-copy"><strong>Random</strong></span>
-              </button>
-              <button
-                type="button"
-                onClick={startToday}
-                disabled={disabled}
-                aria-label={`Start today's ${puzzleTitle}, ${dailySummary}`}
-                title={`Today's puzzle — ${dailySummary}`}
-              >
-                <TodayDateTile />
-                <span class="new-puzzle-quick-action-copy"><strong>Today</strong></span>
-              </button>
+            <div class="new-puzzle-operational" hidden={infoOpen}>
+              <div class="new-puzzle-quick-actions" aria-label="Puzzle source">
+                <button
+                  type="button"
+                  onClick={() => startRandomPuzzle(true)}
+                  disabled={disabled}
+                  aria-label={`Start a random ${puzzleTitle}, ${randomConfigurationSummary}`}
+                  title={`Random puzzle — ${randomConfigurationSummary}`}
+                >
+                  <RandomIcon />
+                  <span class="new-puzzle-quick-action-copy"><strong>Random</strong></span>
+                </button>
+                <button
+                  type="button"
+                  onClick={startToday}
+                  disabled={disabled}
+                  aria-label={`Start today's ${puzzleTitle}, ${dailySummary}`}
+                  title={`Today's puzzle — ${dailySummary}`}
+                >
+                  <TodayDateTile />
+                  <span class="new-puzzle-quick-action-copy"><strong>Today</strong></span>
+                </button>
+              </div>
+
+              {settings}
+
+              <div class="new-puzzle-seed-entry">
+                <span class="new-puzzle-seed-label" aria-hidden="true">Seed</span>
+                <input
+                  aria-label="Seed to load"
+                  value={seedLoadInput}
+                  maxLength={maxPuzzleSeedLength}
+                  onInput={(event) => onSeedLoadInputChange(event.currentTarget.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") loadSeed();
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={loadSeed}
+                  disabled={disabled || !seedLoadInput.trim()}
+                  aria-label="Load seed"
+                  title="Load seed"
+                >
+                  <PlayIcon />
+                </button>
+              </div>
             </div>
-
-            {settings}
-
-            <div class="new-puzzle-seed-entry">
-              <span class="new-puzzle-seed-label" aria-hidden="true">Seed</span>
-              <input
-                aria-label="Seed to load"
-                value={seedLoadInput}
-                maxLength={maxPuzzleSeedLength}
-                onInput={(event) => onSeedLoadInputChange(event.currentTarget.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") loadSeed();
-                }}
-              />
-              <button
-                type="button"
-                onClick={loadSeed}
-                disabled={disabled || !seedLoadInput.trim()}
-                aria-label="Load seed"
-                title="Load seed"
-              >
-                <PlayIcon />
-              </button>
-                </div>
-              </>
-            ) : null}
           </div>
         </details>
       </div>

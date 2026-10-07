@@ -33,7 +33,8 @@ describe("Quiet New Puzzle contracts", () => {
   it("treats help as an inline topmost disclosure with coherent focus and close behavior", () => {
     expect(commandSource).toContain("const [infoOpen, setInfoOpen] = useState(false);");
     expect(commandSource).toContain("aria-expanded={infoOpen}");
-    expect(commandSource).toContain("{!infoOpen ? (");
+    expect(commandSource).toContain('class="new-puzzle-operational" hidden={infoOpen}');
+    expect(nextPuzzleCss).toContain(".new-puzzle-operational[hidden]");
     expect(commandSource).toContain("if (infoOpen) {");
     expect(commandSource).toContain("closeInfo(true);");
     expect(commandSource).toContain("if (!event.currentTarget.open) {");
