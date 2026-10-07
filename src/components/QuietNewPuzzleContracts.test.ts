@@ -27,6 +27,7 @@ describe("Quiet New Puzzle contracts", () => {
     expect(sudokuSource).not.toContain("The locked field is the current puzzle's seed");
     expect(nonogramSource).not.toContain("The locked field is the current puzzle's seed");
     expect(nextPuzzleCss).toContain(".new-puzzle-info-seed");
+    expect(nextPuzzleCss).toMatch(/\.new-puzzle-info-panel\s*\{[\s\S]*?max-height:[^;]+;[\s\S]*?overflow:\s*auto;/);
   });
 
   it("keeps Jigsaw choices operational while putting their explanations behind info", () => {
