@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { JigsawCutStyle, JigsawEdgeModel } from "../../catalog/types";
 import { deriveJigsawConnectorProgram, jigsawConnectorGrammarIds } from "./connectorGrammar";
 import {
+  applyJigsawConnectorProgramForCutStyle,
   deriveJigsawBaselineCoursePalette,
   jigsawCutStyles,
   jigsawEdgeProfileIds,
@@ -27,7 +28,7 @@ describe("Jigsaw seam program", () => {
     }
   });
 
-  it("preserves ConnectorGrammar derivation inside connected seams", () => {
+  it("applies cut-style realization policy to primitive ConnectorGrammar programs", () => {
     for (const cutStyle of jigsawCutStyles) {
       const edgeModel = makeEdgeModel(cutStyle);
       for (const profileId of jigsawConnectorGrammarIds) {
@@ -35,7 +36,10 @@ describe("Jigsaw seam program", () => {
           const seam = deriveJigsawSeamProgram(profileId, seedOffset, edgeModel);
           expect(seam.kind).toBe("connected");
           expect(seam.connector).toEqual(
-            deriveJigsawConnectorProgram(profileId, seedOffset),
+            applyJigsawConnectorProgramForCutStyle(
+              cutStyle,
+              deriveJigsawConnectorProgram(profileId, seedOffset),
+            ),
           );
         }
       }

@@ -26,10 +26,7 @@ import {
   type JigsawConnectorPoint,
 } from "./connectorGrammar";
 import { flattenCubicBezier } from "./cubicBezier";
-import {
-  applyJigsawConnectorProgramForCutStyle,
-  getJigsawConnectorRealizationPolicy,
-} from "./cutStyle";
+import { getJigsawConnectorRealizationPolicy } from "./cutStyle";
 import { deriveJigsawSeamProgram } from "./seamProgram";
 
 export type JigsawEdgePoint = JigsawConnectorPoint;
@@ -184,14 +181,10 @@ const getCanonicalSeamParts = (
   edgeModel: JigsawEdgeModel,
 ): CanonicalSeamParts => {
   const program = deriveJigsawSeamProgram(profileId, seedOffset, edgeModel);
-  const connectorProgram = applyJigsawConnectorProgramForCutStyle(
-    edgeModel.cutStyle,
-    program.connector,
-  );
   const connector = getCanonicalConnectorPoints(
     profileId,
     seedOffset,
-    connectorProgram,
+    program.connector,
     edgeModel.cutStyle,
   );
   const connectorStart = connector[0].x;

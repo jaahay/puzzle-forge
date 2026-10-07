@@ -28,7 +28,7 @@ ConnectorGrammar remains family-specific at realization time. The connector voca
 
 Connectorless wave is intentionally an EdgeProfile rather than a fake connector family.
 
-Connector programs remain primitive grammar output. Cut-style realization policy may restrain how those programs are embedded without changing their structural production. Classic currently uses that boundary to favor conventional necked-head geometry, narrow and shallow the connector envelope, reduce lean and off-center placement, and remap the neck/head proportions toward familiar manufactured cuts. Other styles currently consume the neutral primitive realization.
+ConnectorGrammar programs remain primitive grammar output. SeamProgram applies cut-style realization policy to that output before geometry embedding, so downstream consumers see the same generated parameters that the renderer uses without changing the structural production. Classic currently uses that boundary to favor conventional necked-head geometry, narrow and shallow the connector envelope, reduce lean and off-center placement, and remap the neck/head proportions toward familiar manufactured cuts. Other styles currently consume the neutral primitive realization.
 
 ## Determinism and safety
 

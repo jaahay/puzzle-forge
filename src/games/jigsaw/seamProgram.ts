@@ -11,7 +11,10 @@ import {
   deriveJigsawConnectorProgram,
   type JigsawConnectorProgram,
 } from "./connectorGrammar";
-import { sampleJigsawBaselineCourseForCutStyle } from "./cutStyle";
+import {
+  applyJigsawConnectorProgramForCutStyle,
+  sampleJigsawBaselineCourseForCutStyle,
+} from "./cutStyle";
 
 export type JigsawConnectedSeamProgram = {
   kind: "connected";
@@ -84,7 +87,10 @@ export function deriveJigsawSeamProgram(
       approachCourseId,
       deriveRoleSeed(seedOffset, 0xc211),
     ),
-    connector: deriveJigsawConnectorProgram(profileId, seedOffset),
+    connector: applyJigsawConnectorProgramForCutStyle(
+      edgeModel.cutStyle,
+      deriveJigsawConnectorProgram(profileId, seedOffset),
+    ),
     departure: deriveJigsawBaselineCourseProgram(
       departureCourseId,
       deriveRoleSeed(seedOffset, 0xc212),
