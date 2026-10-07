@@ -147,7 +147,7 @@ export const restorePersistedSolitaireHistoryEntry = (entry: PersistedSolitaireH
     cardStacks: restoredStacks,
     selectedCard: entry.selectedCard ? { ...entry.selectedCard } : null,
     solitaireStats: { ...entry.solitaireStats },
-    };
+  };
 };
 
 export const restorePersistedSolitaireHistory = (entries: PersistedSolitaireHistoryEntry[], puzzleStacks: CardStack[]): SolitaireHistoryEntry[] | null => {

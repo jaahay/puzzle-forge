@@ -21,7 +21,7 @@ import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation } from "../games/sudoku/variation";
 import type { NextPuzzleDraft } from "./generationSettings";
 import { withPuzzleProvenance, type PuzzleProvenance } from "./puzzleProvenance";
-import { makeRequestId } from "./runtime";
+import { defaultPuzzleDifficulty, makeRequestId } from "./runtime";
 
 export type BeginGenerationOptions = Partial<Omit<PuzzleGenerationRequest, "requestId">> & {
   provenance?: PuzzleProvenance;

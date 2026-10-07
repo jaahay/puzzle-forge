@@ -140,10 +140,6 @@ describe("rolled-out puzzle presentation", () => {
     });
   });
 
-
-
-
-
   it("uses a non-geometric separator for Word Guess choices", () => {
     expect(wordGuessDimensionSeparator).toBe("·");
   });
@@ -159,5 +155,4 @@ describe("rolled-out puzzle presentation", () => {
     selectors.forEach((selector) => expect(workspaceHierarchyCss).toContain(selector));
     expect(workspaceHierarchyCss).toMatch(/\.jigsaw-workspace \.tile-puzzle-summary[\s\S]*?\.image-tile-workspace \.image-tile-summary[\s\S]*?\{\s*display:\s*none;\s*\}/);
   });
-
 });

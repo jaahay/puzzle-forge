@@ -67,17 +67,17 @@ export type PuzzleSession =
       kind: "cards";
       puzzle: CardGeneratedPuzzle;
       progress: CardSessionProgress;
-        }
+    }
   | {
       kind: "grid";
       puzzle: GridGeneratedPuzzle;
       progress: GridSessionProgress;
-        }
+    }
   | {
       kind: "tiles";
       puzzle: TileGeneratedPuzzle;
       progress: TileSessionProgress;
-        };
+    };
 
 export type PuzzleSessionCache = Partial<Record<PuzzleId, PuzzleSession>>;
 
