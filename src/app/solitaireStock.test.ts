@@ -131,7 +131,7 @@ describe("Solitaire variation session integration", () => {
       solitaireVariation,
     };
 
-    const freshSession = buildFreshSessionForGeneratedPuzzle(puzzle, "Ready.");
+    const freshSession = buildFreshSessionForGeneratedPuzzle(puzzle);
     expect(freshSession.kind).toBe("cards");
     if (freshSession.kind !== "cards") return;
 
@@ -144,7 +144,6 @@ describe("Solitaire variation session integration", () => {
       solitaireRedoStack: freshSession.progress.redoStack,
       gridCells: null,
       selectedGridCell: null,
-      statusMessage: freshSession.statusMessage,
     });
 
     expect(runtimeSession.kind).toBe("cards");

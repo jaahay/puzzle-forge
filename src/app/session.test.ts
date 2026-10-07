@@ -47,7 +47,6 @@ const makeHistoryEntry = (moveCount: number): SolitaireHistoryEntry => ({
   cardStacks: makeCardStacks(),
   selectedCard: { stackId: "waste", cardIndex: 0 },
   solitaireStats: makeStats(moveCount),
-  statusMessage: `Move ${moveCount}`,
 });
 
 const makeCardPuzzle = (seed = "seed-1", checksum = "checksum"): Extract<GeneratedPuzzle, { kind: "cards" }> => ({
@@ -79,10 +78,9 @@ const makeCardResource = (puzzle = makeCardPuzzle()) => ({
   }),
 });
 
-type CardProgressOverrides = Partial<Omit<CardSessionProgress, "kind">> & { statusMessage?: string };
+type CardProgressOverrides = Partial<Omit<CardSessionProgress, "kind">>;
 
-const makeSession = (overrides: CardProgressOverrides = {}): PuzzleSession => {
-  const { statusMessage = "In progress.", ...progressOverrides } = overrides;
+const makeSession = (progressOverrides: CardProgressOverrides = {}): PuzzleSession => {
   return {
     kind: "cards",
     puzzle: makeCardPuzzle(),
@@ -95,7 +93,6 @@ const makeSession = (overrides: CardProgressOverrides = {}): PuzzleSession => {
       redoStack: [],
       ...progressOverrides,
     },
-    statusMessage,
   };
 };
 
@@ -144,6 +141,7 @@ describe("app session persistence", () => {
     expect(persisted.generationId).toBe(resource.generationId);
     expect(persisted.baselineChecksum).toBe(session.puzzle.checksum);
     expect(persisted).not.toHaveProperty("puzzle");
+    expect(persisted).not.toHaveProperty("statusMessage");
     expect(persisted.progress.kind).toBe("cards");
     if (persisted.progress.kind !== "cards") return;
     expect(persisted.progress.stacks[0].cards).toEqual([{ code: "A♠", faceDown: true }]);
@@ -181,7 +179,6 @@ describe("app session persistence", () => {
     const persisted = buildPersistedPuzzleSession(
       makeCardResource(),
       makeSession({
-        statusMessage: "Restored progress.",
         undoStack: [makeHistoryEntry(1)],
       }),
     );
@@ -192,7 +189,6 @@ describe("app session persistence", () => {
     const restored = restorePuzzleSessionFromPersisted(persisted, regenerated);
     const mismatched = restorePuzzleSessionFromPersisted(persisted, makeCardPuzzle("seed-1", "different-checksum"));
 
-    expect(restored?.statusMessage).toBe("Restored progress.");
     expect(restored?.puzzle).toEqual(regenerated);
     expect(restored?.progress.kind).toBe("cards");
     if (!restored || restored.progress.kind !== "cards") return;
