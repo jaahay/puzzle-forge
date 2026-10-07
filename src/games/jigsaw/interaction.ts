@@ -147,7 +147,6 @@ export const resolveJigsawComponentDrop = (
   type SnapCandidate = {
     componentKey: string;
     pieceId: string;
-    pieceIds: string[];
     distance: number;
     translationX: number;
     translationY: number;
@@ -185,7 +184,6 @@ export const resolveJigsawComponentDrop = (
         candidates.set(componentKey, {
           componentKey,
           pieceId: neighborPieceId,
-          pieceIds: targetPieceIds,
           distance,
           translationX: targetTranslation.x,
           translationY: targetTranslation.y,
@@ -195,14 +193,9 @@ export const resolveJigsawComponentDrop = (
   }
 
   const snapThreshold = getSnapThreshold(layout);
-  const viableCandidates = [...candidates.values()]
-    .filter(({ distance }) => distance <= snapThreshold)
-    .sort((left, right) =>
-      left.distance - right.distance ||
-      left.componentKey.localeCompare(right.componentKey));
+  const remainingCandidates = [...candidates.values()];
 
-  const primaryCandidate = viableCandidates[0];
-  if (!primaryCandidate) {
+  if (remainingCandidates.length === 0) {
     return {
       placements: placements.map((placement) => ({ ...placement })),
       assembly,
@@ -210,66 +203,74 @@ export const resolveJigsawComponentDrop = (
     };
   }
 
-  const compatibleTranslationEpsilon = 0.001;
-  const compatibleCandidates = viableCandidates.filter((candidate) =>
-    Math.hypot(
-      candidate.translationX - primaryCandidate.translationX,
-      candidate.translationY - primaryCandidate.translationY,
-    ) <= compatibleTranslationEpsilon);
-
   let mergedAssembly = assembly;
-  const mergedIdSet = new Set(draggedIds);
-  for (const candidate of compatibleCandidates) {
+  let mergedPlacements = placements.map((placement) => ({ ...placement }));
+  let currentTranslation = draggedTranslation;
+  let joined = false;
+
+  while (remainingCandidates.length > 0) {
+    const nextCandidate = remainingCandidates
+      .map((candidate) => ({
+        candidate,
+        distance: Math.hypot(
+          candidate.translationX - currentTranslation.x,
+          candidate.translationY - currentTranslation.y,
+        ),
+      }))
+      .filter(({ distance }) => distance <= snapThreshold)
+      .sort((left, right) =>
+        left.distance - right.distance ||
+        left.candidate.componentKey.localeCompare(right.candidate.componentKey))[0];
+    if (!nextCandidate) break;
+
+    const { candidate } = nextCandidate;
+    const candidateIndex = remainingCandidates.findIndex(
+      ({ componentKey }) => componentKey === candidate.componentKey,
+    );
+    if (candidateIndex >= 0) remainingCandidates.splice(candidateIndex, 1);
+
     mergedAssembly = mergeJigsawAssemblyComponents(
       mergedAssembly,
       draggedPieceId,
       candidate.pieceId,
     );
-    for (const pieceId of candidate.pieceIds) mergedIdSet.add(pieceId);
-  }
-  const mergedIds = [...mergedIdSet];
-  const aligned = alignComponentToTranslation(
-    layout,
-    pieces,
-    placements,
-    mergedIds,
-    primaryCandidate.translationX,
-    primaryCandidate.translationY,
-  );
+    const mergedIds = getJigsawComponentPieceIds(
+      mergedAssembly,
+      draggedPieceId,
+    );
+    const aligned = alignComponentToTranslation(
+      layout,
+      pieces,
+      mergedPlacements,
+      mergedIds,
+      candidate.translationX,
+      candidate.translationY,
+    );
 
-  const alignedById = getPlacementById(aligned);
-  const mergedMembers = mergedIds.flatMap((pieceId) => {
-    const placement = alignedById.get(pieceId);
-    return placement ? [placement] : [];
-  });
-  const left = Math.min(...mergedMembers.map((placement) => placement.worldX));
-  const top = Math.min(...mergedMembers.map((placement) => placement.worldY));
-  const right = Math.max(...mergedMembers.map((placement) => {
-    const piece = piecesById.get(placement.id);
-    return placement.worldX + (piece
-      ? getJigsawPieceWorldSize(layout, piece).width
-      : layout.pieceWidth);
-  }));
-  const bottom = Math.max(...mergedMembers.map((placement) => {
-    const piece = piecesById.get(placement.id);
-    return placement.worldY + (piece
-      ? getJigsawPieceWorldSize(layout, piece).height
-      : layout.pieceHeight);
-  }));
-  const correctionX = clamp(0, -left, layout.worldWidth - right);
-  const correctionY = clamp(0, -top, layout.worldHeight - bottom);
-
-  return {
-    placements: moveJigsawComponent(
+    mergedPlacements = moveJigsawComponent(
       layout,
       aligned,
       mergedIds,
-      correctionX,
-      correctionY,
+      0,
+      0,
       pieces,
-    ),
+    );
+    currentTranslation = getComponentTranslation(
+      layout,
+      piecesById,
+      getPlacementById(mergedPlacements),
+      draggedPieceId,
+    ) ?? {
+      x: candidate.translationX,
+      y: candidate.translationY,
+    };
+    joined = true;
+  }
+
+  return {
+    placements: mergedPlacements,
     assembly: mergedAssembly,
-    joined: true,
+    joined,
   };
 };
 

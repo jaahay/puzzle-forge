@@ -76,6 +76,49 @@ const pieces: JigsawPiece[] = [
   },
 ];
 
+const bridgePieces: JigsawPiece[] = [
+  {
+    id: "bridge-0",
+    currentIndex: 0,
+    solvedIndex: 0,
+    row: 0,
+    column: 0,
+    edges: [edge("bridge-0-left", "left", null), edge("bridge-0-right", "right", "bridge-1")],
+  },
+  {
+    id: "bridge-1",
+    currentIndex: 1,
+    solvedIndex: 1,
+    row: 0,
+    column: 1,
+    edges: [edge("bridge-1-left", "left", "bridge-0", "blank"), edge("bridge-1-right", "right", "bridge-2")],
+  },
+  {
+    id: "bridge-2",
+    currentIndex: 2,
+    solvedIndex: 2,
+    row: 0,
+    column: 2,
+    edges: [edge("bridge-2-left", "left", "bridge-1", "blank"), edge("bridge-2-right", "right", "bridge-3")],
+  },
+  {
+    id: "bridge-3",
+    currentIndex: 3,
+    solvedIndex: 3,
+    row: 0,
+    column: 3,
+    edges: [edge("bridge-3-left", "left", "bridge-2", "blank"), edge("bridge-3-right", "right", "bridge-4")],
+  },
+  {
+    id: "bridge-4",
+    currentIndex: 4,
+    solvedIndex: 4,
+    row: 0,
+    column: 4,
+    edges: [edge("bridge-4-left", "left", "bridge-3", "blank"), edge("bridge-4-right", "right", null)],
+  },
+];
+
 const generateAlwaysWithFamily = (
   family: "medallion" | "capsule",
   seedPrefix: string,
@@ -98,6 +141,13 @@ const layout = createJigsawWorldLayout({
   imageWidth: 1200,
   imageHeight: 300,
   puzzleWidth: 4,
+  puzzleHeight: 1,
+});
+
+const bridgeLayout = createJigsawWorldLayout({
+  imageWidth: 1500,
+  imageHeight: 300,
+  puzzleWidth: 5,
   puzzleHeight: 1,
 });
 
@@ -319,12 +369,117 @@ describe("Jigsaw island interaction", () => {
     expect(result.joined).toBe(true);
   });
 
+  it("bridges two independently offset islands in one drop", () => {
+    const translations = new Map([
+      ["bridge-0", 24],
+      ["bridge-1", 24],
+      ["bridge-2", 38],
+      ["bridge-3", 46],
+      ["bridge-4", 46],
+    ]);
+    const placements = bridgePieces.map((piece) => {
+      const solved = getJigsawSolvedPosition(bridgeLayout, piece);
+      return {
+        id: piece.id,
+        worldX: solved.left + (translations.get(piece.id) ?? 0),
+        worldY: solved.top + 18,
+      };
+    });
+    const result = resolveJigsawComponentDrop(
+      bridgeLayout,
+      bridgePieces,
+      placements,
+      {
+        joinedComponents: [
+          ["bridge-0", "bridge-1"],
+          ["bridge-3", "bridge-4"],
+        ],
+      },
+      "bridge-2",
+    );
+
+    expect(result.joined).toBe(true);
+    expect(result.assembly).toEqual({
+      joinedComponents: [[
+        "bridge-0",
+        "bridge-1",
+        "bridge-2",
+        "bridge-3",
+        "bridge-4",
+      ]],
+    });
+    for (const piece of bridgePieces) {
+      const placement = result.placements.find((candidate) => candidate.id === piece.id)!;
+      const translation = getTranslationForLayout(bridgeLayout, placement, piece);
+      expect(translation.x).toBeCloseTo(24);
+      expect(translation.y).toBeCloseTo(18);
+    }
+  });
+
+  it("continues to a neighboring island that becomes reachable after the first snap", () => {
+    const snapThreshold = Math.max(
+      18,
+      Math.min(bridgeLayout.pieceWidth, bridgeLayout.pieceHeight) * 0.42,
+    );
+    const firstTargetTranslation = 100;
+    const bridgeTranslation = firstTargetTranslation + snapThreshold * 0.9;
+    const secondTargetTranslation = firstTargetTranslation - snapThreshold * 0.2;
+    expect(Math.abs(bridgeTranslation - firstTargetTranslation)).toBeLessThanOrEqual(snapThreshold);
+    expect(Math.abs(bridgeTranslation - secondTargetTranslation)).toBeGreaterThan(snapThreshold);
+    expect(Math.abs(firstTargetTranslation - secondTargetTranslation)).toBeLessThanOrEqual(snapThreshold);
+
+    const translations = new Map([
+      ["bridge-0", firstTargetTranslation],
+      ["bridge-1", firstTargetTranslation],
+      ["bridge-2", bridgeTranslation],
+      ["bridge-3", secondTargetTranslation],
+      ["bridge-4", secondTargetTranslation],
+    ]);
+    const placements = bridgePieces.map((piece) => {
+      const solved = getJigsawSolvedPosition(bridgeLayout, piece);
+      return {
+        id: piece.id,
+        worldX: solved.left + (translations.get(piece.id) ?? 0),
+        worldY: solved.top + 18,
+      };
+    });
+    const result = resolveJigsawComponentDrop(
+      bridgeLayout,
+      bridgePieces,
+      placements,
+      {
+        joinedComponents: [
+          ["bridge-0", "bridge-1"],
+          ["bridge-3", "bridge-4"],
+        ],
+      },
+      "bridge-2",
+    );
+
+    expect(result.joined).toBe(true);
+    expect(result.assembly).toEqual({
+      joinedComponents: [[
+        "bridge-0",
+        "bridge-1",
+        "bridge-2",
+        "bridge-3",
+        "bridge-4",
+      ]],
+    });
+    for (const piece of bridgePieces) {
+      const placement = result.placements.find((candidate) => candidate.id === piece.id)!;
+      const translation = getTranslationForLayout(bridgeLayout, placement, piece);
+      expect(translation.x).toBeCloseTo(secondTargetTranslation);
+      expect(translation.y).toBeCloseTo(18);
+    }
+  });
+
   it("resolves competing target transforms deterministically", () => {
     const placements = [
       placementAtTranslation(pieces[0]!, 0, 0),
-      placementAtTranslation(pieces[1]!, 10, 0),
-      placementAtTranslation(pieces[2]!, 20, 0),
-      placementAtTranslation(pieces[3]!, 20, 0),
+      placementAtTranslation(pieces[1]!, 35, 0),
+      placementAtTranslation(pieces[2]!, 70, 0),
+      placementAtTranslation(pieces[3]!, 70, 0),
     ];
     const result = resolveJigsawComponentDrop(
       layout,
