@@ -96,8 +96,12 @@
   font-weight: 800;
 }
 
-.image-tile-help {
+.image-tile-tools {
   position: relative;
+}
+
+.image-tile-help {
+  position: static;
 }
 
 .image-tile-tools button,

@@ -47,6 +47,8 @@ describe("ImageTilePuzzlePreview layout", () => {
     expect(imageTilePreviewSource).not.toContain('class="image-tile-instruction"');
     expect(imageTilePreviewSource).not.toContain("image-tile-instruction-sizer");
     expect(imageTilePreviewSource).not.toContain("Puzzle complete.");
+    expect(imageTileCss).toMatch(/\.image-tile-tools\s*\{[^}]*position: relative;/);
+    expect(imageTileCss).toMatch(/\.image-tile-help\s*\{[^}]*position: static;/);
     expect(imageTileCss).toMatch(/\.image-tile-help > summary\s*\{[^}]*list-style: none;/);
     expect(imageTileCss).toMatch(/\.image-tile-help > p\s*\{[^}]*position: absolute;/);
   });
