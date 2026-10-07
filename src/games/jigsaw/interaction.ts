@@ -193,10 +193,9 @@ export const resolveJigsawComponentDrop = (
   }
 
   const snapThreshold = getSnapThreshold(layout);
-  const viableCandidates = [...candidates.values()]
-    .filter(({ distance }) => distance <= snapThreshold);
+  const remainingCandidates = [...candidates.values()];
 
-  if (viableCandidates.length === 0) {
+  if (remainingCandidates.length === 0) {
     return {
       placements: placements.map((placement) => ({ ...placement })),
       assembly,
@@ -207,7 +206,6 @@ export const resolveJigsawComponentDrop = (
   let mergedAssembly = assembly;
   let mergedPlacements = placements.map((placement) => ({ ...placement }));
   let currentTranslation = draggedTranslation;
-  const remainingCandidates = [...viableCandidates];
   let joined = false;
 
   while (remainingCandidates.length > 0) {

@@ -416,6 +416,64 @@ describe("Jigsaw island interaction", () => {
     }
   });
 
+  it("continues to a neighboring island that becomes reachable after the first snap", () => {
+    const snapThreshold = Math.max(
+      18,
+      Math.min(bridgeLayout.pieceWidth, bridgeLayout.pieceHeight) * 0.42,
+    );
+    const firstTargetTranslation = 100;
+    const bridgeTranslation = firstTargetTranslation + snapThreshold * 0.9;
+    const secondTargetTranslation = firstTargetTranslation - snapThreshold * 0.2;
+    expect(Math.abs(bridgeTranslation - firstTargetTranslation)).toBeLessThanOrEqual(snapThreshold);
+    expect(Math.abs(bridgeTranslation - secondTargetTranslation)).toBeGreaterThan(snapThreshold);
+    expect(Math.abs(firstTargetTranslation - secondTargetTranslation)).toBeLessThanOrEqual(snapThreshold);
+
+    const translations = new Map([
+      ["bridge-0", firstTargetTranslation],
+      ["bridge-1", firstTargetTranslation],
+      ["bridge-2", bridgeTranslation],
+      ["bridge-3", secondTargetTranslation],
+      ["bridge-4", secondTargetTranslation],
+    ]);
+    const placements = bridgePieces.map((piece) => {
+      const solved = getJigsawSolvedPosition(bridgeLayout, piece);
+      return {
+        id: piece.id,
+        worldX: solved.left + (translations.get(piece.id) ?? 0),
+        worldY: solved.top + 18,
+      };
+    });
+    const result = resolveJigsawComponentDrop(
+      bridgeLayout,
+      bridgePieces,
+      placements,
+      {
+        joinedComponents: [
+          ["bridge-0", "bridge-1"],
+          ["bridge-3", "bridge-4"],
+        ],
+      },
+      "bridge-2",
+    );
+
+    expect(result.joined).toBe(true);
+    expect(result.assembly).toEqual({
+      joinedComponents: [[
+        "bridge-0",
+        "bridge-1",
+        "bridge-2",
+        "bridge-3",
+        "bridge-4",
+      ]],
+    });
+    for (const piece of bridgePieces) {
+      const placement = result.placements.find((candidate) => candidate.id === piece.id)!;
+      const translation = getTranslationForLayout(bridgeLayout, placement, piece);
+      expect(translation.x).toBeCloseTo(secondTargetTranslation);
+      expect(translation.y).toBeCloseTo(18);
+    }
+  });
+
   it("resolves competing target transforms deterministically", () => {
     const placements = [
       placementAtTranslation(pieces[0]!, 0, 0),
