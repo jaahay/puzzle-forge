@@ -138,7 +138,7 @@ export const App = () => {
   const generation = usePuzzleGeneration();
   const sessions = usePuzzleSessions(initialPersistedSessions);
   const grid = useGridController();
-  const solitaire = useSolitaireController({ statusMessage, onStatusMessage: setStatusMessage, solitaireVariation: activeSolitaireVariation });
+  const solitaire = useSolitaireController({ onStatusMessage: setStatusMessage, solitaireVariation: activeSolitaireVariation });
   const {
     nextPuzzleDraft,
     seedLoadInput,
@@ -225,12 +225,11 @@ export const App = () => {
         solitaireStats: session.progress.solitaireStats,
         solitaireUndoStack: session.progress.undoStack,
         solitaireRedoStack: session.progress.redoStack,
-        statusMessage: session.statusMessage,
       });
     } else {
       solitaire.resetSolitaire();
-      setStatusMessage(session.statusMessage);
     }
+    setStatusMessage("");
 
     grid.restoreGridSnapshot(
       session.progress.kind === "grid"
@@ -262,7 +261,6 @@ export const App = () => {
           puzzle.puzzleId === "jigsaw" && jigsawProgress?.puzzleInstanceId === puzzle.id
             ? jigsawProgress.assembly
             : null,
-        statusMessage,
       })
     : null;
 
@@ -391,9 +389,8 @@ export const App = () => {
       return;
     }
 
-    const readyMessage = generation.makeReadyMessage(generatedPuzzle);
     restoreSession(
-      buildFreshSessionForGeneratedPuzzle(generatedPuzzle, readyMessage),
+      buildFreshSessionForGeneratedPuzzle(generatedPuzzle),
       pendingResource.route,
       pendingResource.history,
     );
@@ -607,18 +604,16 @@ export const App = () => {
   const resetCurrentPuzzle = () => {
     if (!puzzle) return;
     rememberScrollPosition();
-    const readyMessage = generation.makeReadyMessage(puzzle);
     if (puzzle.kind === "cards") {
-      solitaire.restoreSolitaireSnapshot({ cardStacks: puzzle.stacks, selectedCard: null, solitaireStats: initialSolitaireStats, solitaireUndoStack: [], solitaireRedoStack: [], statusMessage: readyMessage });
+      solitaire.restoreSolitaireSnapshot({ cardStacks: puzzle.stacks, selectedCard: null, solitaireStats: initialSolitaireStats, solitaireUndoStack: [], solitaireRedoStack: [] });
     } else if (puzzle.kind === "grid") {
-      grid.resetCurrentGrid(puzzle, readyMessage, setStatusMessage);
+      grid.resetCurrentGrid(puzzle, "", setStatusMessage);
     } else if (puzzle.puzzleId === "jigsaw") {
       setJigsawProgress({ puzzleInstanceId: puzzle.id, assembly: makeEmptyJigsawAssemblyProgress() });
-      setStatusMessage(readyMessage);
     } else {
       grid.prepareGeneratedGrid(puzzle);
-      setStatusMessage(readyMessage);
     }
+    setStatusMessage("");
     restoreScrollPosition();
   };
 

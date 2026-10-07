@@ -16,7 +16,6 @@ export type PersistedSolitaireHistoryEntry = {
   cardStacks: PersistedCardStack[];
   selectedCard: CardSelection | null;
   solitaireStats: SolitaireStats;
-  statusMessage: string;
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
@@ -28,7 +27,6 @@ export const cloneSolitaireHistoryEntry = (entry: SolitaireHistoryEntry): Solita
   cardStacks: entry.cardStacks.map(cloneCardStack),
   selectedCard: entry.selectedCard ? { ...entry.selectedCard } : null,
   solitaireStats: { ...entry.solitaireStats },
-  statusMessage: entry.statusMessage,
 });
 
 export const trimSolitaireHistory = (entries: SolitaireHistoryEntry[] = []) => entries.slice(-solitaireHistoryLimit).map(cloneSolitaireHistoryEntry);
@@ -48,8 +46,7 @@ export const isPersistedSolitaireHistoryEntry = (value: unknown, isSolitaireStat
   Array.isArray(value.cardStacks) &&
   value.cardStacks.every(isPersistedCardStack) &&
   (value.selectedCard === null || (isRecord(value.selectedCard) && typeof value.selectedCard.stackId === "string" && isNonNegativeInteger(value.selectedCard.cardIndex))) &&
-  isSolitaireStats(value.solitaireStats) &&
-  typeof value.statusMessage === "string";
+  isSolitaireStats(value.solitaireStats);
 
 export const buildPersistedCardRef = (card: PlayingCard): PersistedCardRef => (card.faceUp ? card.code : { code: card.code, faceDown: true });
 
@@ -69,14 +66,12 @@ export const buildPersistedSolitaireHistoryEntry = (entry: SolitaireHistoryEntry
   cardStacks: entry.cardStacks.map(buildPersistedCardStack),
   selectedCard: entry.selectedCard ? { ...entry.selectedCard } : null,
   solitaireStats: { ...entry.solitaireStats },
-  statusMessage: entry.statusMessage,
 });
 
 export const clonePersistedSolitaireHistoryEntry = (entry: PersistedSolitaireHistoryEntry): PersistedSolitaireHistoryEntry => ({
   cardStacks: entry.cardStacks.map(clonePersistedCardStack),
   selectedCard: entry.selectedCard ? { ...entry.selectedCard } : null,
   solitaireStats: { ...entry.solitaireStats },
-  statusMessage: entry.statusMessage,
 });
 
 export const trimPersistedSolitaireHistory = (entries: PersistedSolitaireHistoryEntry[] = []) => entries.slice(-solitaireHistoryLimit).map(clonePersistedSolitaireHistoryEntry);
@@ -152,8 +147,7 @@ export const restorePersistedSolitaireHistoryEntry = (entry: PersistedSolitaireH
     cardStacks: restoredStacks,
     selectedCard: entry.selectedCard ? { ...entry.selectedCard } : null,
     solitaireStats: { ...entry.solitaireStats },
-    statusMessage: entry.statusMessage,
-  };
+    };
 };
 
 export const restorePersistedSolitaireHistory = (entries: PersistedSolitaireHistoryEntry[], puzzleStacks: CardStack[]): SolitaireHistoryEntry[] | null => {

@@ -71,7 +71,6 @@ export type PersistedPuzzleSession = {
   generationId: string;
   baselineChecksum: string;
   progress: PersistedPuzzleProgress;
-  statusMessage: string;
   updatedAt: string;
   completedAt?: string;
 };
@@ -125,8 +124,7 @@ const isPersistedSolitaireHistoryEntry = (value: unknown): value is PersistedSol
   Array.isArray(value.cardStacks) &&
   value.cardStacks.every(isPersistedCardStack) &&
   isCardSelection(value.selectedCard) &&
-  isSolitaireStats(value.solitaireStats) &&
-  typeof value.statusMessage === "string";
+  isSolitaireStats(value.solitaireStats);
 const isPersistedCompactGridHistoryEntry = (value: unknown): value is PersistedCompactGridHistoryEntry =>
   isRecord(value) &&
   Array.isArray(value.values) &&
@@ -237,7 +235,6 @@ export const buildPersistedPuzzleSession = (
     generationId: resource.generationId,
     baselineChecksum: session.puzzle.checksum,
     progress: buildPersistedPuzzleProgress(session),
-    statusMessage: session.statusMessage,
     updatedAt: new Date().toISOString(),
   };
 };
@@ -294,7 +291,6 @@ const isPersistedPuzzleSession = (value: unknown): value is PersistedPuzzleSessi
     value.generationId.length === 0 ||
     typeof value.baselineChecksum !== "string" ||
     value.baselineChecksum.length === 0 ||
-    typeof value.statusMessage !== "string" ||
     typeof value.updatedAt !== "string" ||
     (value.completedAt !== undefined && typeof value.completedAt !== "string") ||
     !isPersistedPuzzleProgress(value.progress)
@@ -546,7 +542,6 @@ export const restorePuzzleSessionFromPersisted = (
         undoStack,
         redoStack,
       },
-      statusMessage: persisted.statusMessage,
     };
   }
 
@@ -561,7 +556,6 @@ export const restorePuzzleSessionFromPersisted = (
         kind: "tiles",
         ...(jigsawAssembly ? { jigsawAssembly } : {}),
       },
-      statusMessage: persisted.statusMessage,
     };
   }
 
@@ -572,7 +566,6 @@ export const restorePuzzleSessionFromPersisted = (
       kind: "grid",
       puzzle: generatedPuzzle,
       progress: { kind: "grid", ...restoredProgress },
-      statusMessage: persisted.statusMessage,
     };
   }
 

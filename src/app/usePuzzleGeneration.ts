@@ -18,10 +18,10 @@ import { defaultJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
 import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
 import { defaultJigsawSpecialPiecesMode } from "../games/jigsaw/specialPieces";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
-import { defaultSudokuVariation, normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
+import { defaultSudokuVariation, normalizeSudokuVariation } from "../games/sudoku/variation";
 import type { NextPuzzleDraft } from "./generationSettings";
 import { withPuzzleProvenance, type PuzzleProvenance } from "./puzzleProvenance";
-import { defaultPuzzleDifficulty, makeRequestId } from "./runtime";
+import { makeRequestId } from "./runtime";
 
 export type BeginGenerationOptions = Partial<Omit<PuzzleGenerationRequest, "requestId">> & {
   provenance?: PuzzleProvenance;
@@ -250,15 +250,6 @@ export const usePuzzleGeneration = () => {
     onGenerated(withPuzzleProvenance(event.data.puzzle, provenance));
   };
 
-  const makeReadyMessage = (puzzle: GeneratedPuzzle) =>
-    puzzle.puzzleId === "sudoku"
-      ? `${puzzle.difficulty ?? defaultPuzzleDifficulty} ${sudokuVariationLabels[normalizeSudokuVariation(puzzle.sudokuVariation)]} Sudoku ready.`
-      : puzzle.puzzleId === "nonogram"
-        ? puzzle.uniqueSolution
-          ? "Nonogram ready. Exactly one solution fits the clues."
-          : "Nonogram ready. Uniqueness was not required; more than one solution may fit the clues."
-        : `${puzzle.title} ready.`;
-
   return {
     isGenerating,
     worker,
@@ -266,6 +257,5 @@ export const usePuzzleGeneration = () => {
     hasActiveRequest,
     cancelGeneration,
     handleGenerationMessage,
-    makeReadyMessage,
   };
 };

@@ -30,12 +30,9 @@ export type SolitaireControllerState = {
   solitaireRedoStack: SolitaireHistoryEntry[];
 };
 
-export type SolitaireControllerSnapshot = SolitaireControllerState & {
-  statusMessage: string;
-};
+export type SolitaireControllerSnapshot = SolitaireControllerState;
 
 export type SolitaireControllerOptions = {
-  statusMessage: string;
   onStatusMessage: (message: string) => void;
   solitaireVariation?: SolitaireVariation;
 };
@@ -72,12 +69,10 @@ const moveResultStatsDelta = (result: SolitaireMoveResult): SolitaireStatsDelta 
   };
 };
 
-export const useSolitaireController = ({ statusMessage, onStatusMessage, solitaireVariation }: SolitaireControllerOptions) => {
+export const useSolitaireController = ({ onStatusMessage, solitaireVariation }: SolitaireControllerOptions) => {
   const [solitaireState, setRenderedSolitaireState] = useState<SolitaireControllerState>(initialSolitaireControllerState);
   const solitaireStateRef = useRef(solitaireState);
-  const statusMessageRef = useRef(statusMessage);
   solitaireStateRef.current = solitaireState;
-  statusMessageRef.current = statusMessage;
   const { cardStacks, selectedCard, solitaireStats, solitaireUndoStack, solitaireRedoStack } = solitaireState;
 
   const updateSolitaireState = (
@@ -90,7 +85,6 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
   };
 
   const setStatusMessage = (message: string) => {
-    statusMessageRef.current = message;
     onStatusMessage(message);
   };
 
@@ -109,7 +103,6 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
             current.cardStacks,
             current.selectedCard,
             current.solitaireStats,
-            statusMessageRef.current,
           )
         : null;
       const nextState: SolitaireControllerState = {
@@ -155,7 +148,6 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
     solitaireStats: nextStats,
     solitaireUndoStack: nextUndoStack,
     solitaireRedoStack: nextRedoStack,
-    statusMessage: nextStatusMessage,
   }: SolitaireControllerSnapshot) => {
     updateSolitaireState(() => ({
       cardStacks: nextCardStacks?.map(cloneStack) ?? null,
@@ -164,7 +156,6 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
       solitaireUndoStack: nextUndoStack.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit),
       solitaireRedoStack: nextRedoStack.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit),
     }));
-    setStatusMessage(nextStatusMessage);
   };
 
   const canUndoSolitaireNow = () =>
@@ -192,7 +183,6 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
       solitaireStats: current.solitaireStats,
       undoStack: current.solitaireUndoStack,
       redoStack: current.solitaireRedoStack,
-      statusMessage: statusMessageRef.current,
     }, action);
 
     if (!transition) {
@@ -207,7 +197,7 @@ export const useSolitaireController = ({ statusMessage, onStatusMessage, solitai
       solitaireUndoStack: transition.undoStack,
       solitaireRedoStack: transition.redoStack,
     }));
-    setStatusMessage(transition.statusMessage);
+    setStatusMessage(action === "undo" ? "Undid last Solitaire move." : "Redid last Solitaire move.");
     return true;
   };
 

@@ -14,26 +14,22 @@ export type SolitaireHistoryRuntime = {
   solitaireStats: SolitaireStats;
   undoStack: SolitaireHistoryEntry[];
   redoStack: SolitaireHistoryEntry[];
-  statusMessage: string;
 };
 
 export const cloneSolitaireHistoryEntry = (entry: SolitaireHistoryEntry): SolitaireHistoryEntry => ({
   cardStacks: entry.cardStacks.map(cloneStack),
   selectedCard: entry.selectedCard ? { ...entry.selectedCard } : null,
   solitaireStats: { ...entry.solitaireStats },
-  statusMessage: entry.statusMessage,
 });
 
 export const makeSolitaireHistoryEntry = (
   stacks: CardStack[],
   selected: CardSelection | null,
   stats: SolitaireStats,
-  message: string,
 ): SolitaireHistoryEntry => ({
   cardStacks: stacks.map(cloneStack),
   selectedCard: selected ? { ...selected } : null,
   solitaireStats: { ...stats },
-  statusMessage: message,
 });
 
 export const getSolitaireHistoryAvailability = (
@@ -56,7 +52,6 @@ export const applySolitaireHistoryAction = (
     runtime.cardStacks,
     runtime.selectedCard,
     runtime.solitaireStats,
-    runtime.statusMessage,
   );
 
   if (action === "undo") {
@@ -66,7 +61,6 @@ export const applySolitaireHistoryAction = (
       solitaireStats: { ...target.solitaireStats },
       undoStack: runtime.undoStack.slice(0, -1).map(cloneSolitaireHistoryEntry),
       redoStack: [...runtime.redoStack.map(cloneSolitaireHistoryEntry), current].slice(-solitaireHistoryLimit),
-      statusMessage: target.statusMessage,
     };
   }
 
@@ -76,6 +70,5 @@ export const applySolitaireHistoryAction = (
     solitaireStats: { ...target.solitaireStats },
     undoStack: [...runtime.undoStack.map(cloneSolitaireHistoryEntry), current].slice(-solitaireHistoryLimit),
     redoStack: runtime.redoStack.slice(0, -1).map(cloneSolitaireHistoryEntry),
-    statusMessage: target.statusMessage,
   };
 };

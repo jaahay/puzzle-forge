@@ -35,7 +35,6 @@ export type RuntimeSessionDraft = {
   selectedGridCell: GridCellSelection | null;
   gridHistory?: GridHistoryState;
   jigsawAssembly?: JigsawAssemblyProgress | null;
-  statusMessage: string;
 };
 
 const cloneSessionGridCell = (puzzleId: PuzzleId, cell: PuzzleCell): PuzzleCell => {
@@ -110,7 +109,6 @@ export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => {
         undoStack: session.progress.undoStack.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit),
         redoStack: session.progress.redoStack.map(cloneSolitaireHistoryEntry).slice(-solitaireHistoryLimit),
       },
-      statusMessage: session.statusMessage,
     };
   }
 
@@ -129,7 +127,6 @@ export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => {
         undoStack: history.undoStack,
         redoStack: history.redoStack,
       },
-      statusMessage: session.statusMessage,
     };
   }
 
@@ -142,7 +139,6 @@ export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => {
         ? { jigsawAssembly: cloneJigsawAssemblyProgress(session.progress.jigsawAssembly) }
         : {}),
     },
-    statusMessage: session.statusMessage,
   };
 };
 
@@ -157,7 +153,6 @@ export const buildRuntimeSession = ({
   selectedGridCell,
   gridHistory,
   jigsawAssembly,
-  statusMessage,
 }: RuntimeSessionDraft): PuzzleSession => {
   if (puzzle.kind === "cards") {
     return {
@@ -171,7 +166,6 @@ export const buildRuntimeSession = ({
         undoStack: solitaireUndoStack.map(cloneSolitaireHistoryEntry),
         redoStack: solitaireRedoStack.map(cloneSolitaireHistoryEntry),
       },
-      statusMessage,
     };
   }
 
@@ -187,7 +181,6 @@ export const buildRuntimeSession = ({
         undoStack: history.undoStack,
         redoStack: history.redoStack,
       },
-      statusMessage,
     };
   }
 
@@ -200,11 +193,10 @@ export const buildRuntimeSession = ({
         ? { jigsawAssembly: cloneJigsawAssemblyProgress(jigsawAssembly) }
         : {}),
     },
-    statusMessage,
   };
 };
 
-export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPuzzle, statusMessage: string): PuzzleSession => {
+export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPuzzle): PuzzleSession => {
   if (generatedPuzzle.kind === "cards") {
     return {
       kind: "cards",
@@ -217,7 +209,6 @@ export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPu
         undoStack: [],
         redoStack: [],
       },
-      statusMessage,
     };
   }
 
@@ -232,7 +223,6 @@ export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPu
         undoStack: [],
         redoStack: [],
       },
-      statusMessage,
     };
   }
 
@@ -245,7 +235,6 @@ export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPu
         ? { jigsawAssembly: makeEmptyJigsawAssemblyProgress() }
         : {}),
     },
-    statusMessage,
   };
 };
 

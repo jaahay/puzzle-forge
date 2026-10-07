@@ -29,7 +29,6 @@ export type SolitaireHistoryEntry = {
   cardStacks: CardStack[];
   selectedCard: CardSelection | null;
   solitaireStats: SolitaireStats;
-  statusMessage: string;
 };
 
 export const initialSolitaireStats: SolitaireStats = {
@@ -68,20 +67,17 @@ export type PuzzleSession =
       kind: "cards";
       puzzle: CardGeneratedPuzzle;
       progress: CardSessionProgress;
-      statusMessage: string;
-    }
+        }
   | {
       kind: "grid";
       puzzle: GridGeneratedPuzzle;
       progress: GridSessionProgress;
-      statusMessage: string;
-    }
+        }
   | {
       kind: "tiles";
       puzzle: TileGeneratedPuzzle;
       progress: TileSessionProgress;
-      statusMessage: string;
-    };
+        };
 
 export type PuzzleSessionCache = Partial<Record<PuzzleId, PuzzleSession>>;
 
