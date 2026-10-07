@@ -18,7 +18,7 @@ import {
   hasUniqueTilePositions,
   isImageTileSolved,
 } from "../games/imageTiles/state";
-import { InfoIcon } from "./NewPuzzleActionVisuals";
+import { InfoIcon } from "./InfoIcon";
 import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
 import { usePuzzleViewportSize } from "./usePuzzleViewportSize";
 
