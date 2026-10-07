@@ -67,6 +67,12 @@ export const clearGridValidationTone = (puzzleId: PuzzleId, cell: PuzzleCell): P
 export const getGridEntryTone = (puzzleId: PuzzleId, value: string): PuzzleCell["tone"] =>
   usesNeutralNumericEntryTone(puzzleId) ? "empty" : value ? "answer" : "empty";
 
+export const getGridEntryStatusMessage = (puzzleId: PuzzleId, value: string) => {
+  if (puzzleId === "word-guess") return "";
+  const puzzleName = puzzleId === "sudoku" ? "Sudoku" : puzzleId === "futoshiki" ? "Futoshiki" : null;
+  return puzzleName ? `${puzzleName} entry updated.` : value ? `Set cell to ${value}.` : "Cleared cell.";
+};
+
 export const useGridController = () => {
   const [gridCells, setGridCellsState] = useState<PuzzleCell[] | null>(null);
   const gridCellsRef = useRef<PuzzleCell[] | null>(null);
@@ -291,10 +297,9 @@ export const useGridController = () => {
         };
       }
 
-      const puzzleName = puzzle.puzzleId === "sudoku" ? "Sudoku" : puzzle.puzzleId === "futoshiki" ? "Futoshiki" : null;
       return {
         cells: editableCells,
-        message: puzzleName ? `${puzzleName} entry updated.` : nextValue ? `Set cell to ${nextValue}.` : "Cleared cell.",
+        message: getGridEntryStatusMessage(puzzle.puzzleId, nextValue),
       };
     }, onStatusMessage);
 
