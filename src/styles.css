@@ -98,15 +98,13 @@ h2 {
   background: #c4b5fd;
 }
 
-.tag-row,
-.puzzle-meta {
+.tag-row {
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
 }
 
-.tag-row span,
-.puzzle-meta span {
+.tag-row span {
   border-radius: 999px;
   padding: 0.35rem 0.7rem;
   color: #cbd5e1;

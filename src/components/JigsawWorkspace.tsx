@@ -42,7 +42,7 @@ export const JigsawWorkspace = ({
   const puzzleInstanceId = jigsawPuzzle?.id ?? null;
   const puzzleArrivalIdentity = jigsawPuzzle ? getPuzzleArrivalIdentity(jigsawPuzzle) : null;
   const isPuzzleArriving = usePuzzleArrival(puzzleArrivalIdentity);
-  const showStatus = !jigsawPuzzle || statusMessage !== `${jigsawPuzzle.title} ready.`;
+  const showStatus = Boolean(statusMessage);
   const isSolved = Boolean(
     puzzleInstanceId &&
     completionState?.puzzleInstanceId === puzzleInstanceId &&

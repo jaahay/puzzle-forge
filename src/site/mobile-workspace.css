@@ -122,10 +122,6 @@
     order: 1;
   }
 
-  .puzzle-meta {
-    display: none;
-  }
-
   .puzzle-actions {
     order: 3;
   }
