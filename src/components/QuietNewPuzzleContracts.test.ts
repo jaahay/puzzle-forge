@@ -66,8 +66,8 @@ describe("Quiet New Puzzle contracts", () => {
     expect(albumSource).not.toContain("artwork-control-credit");
     expect(albumSource).not.toContain("asset.orientation");
     expect(albumSource).not.toContain("puzzleTitle:");
-    expect(jigsawSource).not.toContain('puzzleTitle="Jigsaw"');
-    expect(imageTileSource).not.toContain("puzzleTitle={puzzleTitle}");
+    expect(jigsawSource.match(/puzzleTitle="Jigsaw"/g)?.length).toBe(1);
+    expect(imageTileSource.match(/puzzleTitle=\{puzzleTitle\}/g)?.length).toBe(1);
     expect(artworkCss).not.toContain(".artwork-control-credit");
     expect(artworkCss).toContain(".artwork-album-credit");
   });
