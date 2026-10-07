@@ -10,7 +10,10 @@ import {
   sampleJigsawBaselineCourseForCutStyle,
   selectJigsawEdgeProfileForCutStyle,
 } from "./cutStyle";
-import { deriveJigsawConnectorProgram } from "./connectorGrammar";
+import {
+  deriveJigsawConnectorProgram,
+  realizeJigsawConnectorProgram,
+} from "./connectorGrammar";
 import { getJigsawEdgePoints } from "./edgePaths";
 
 const makeInteriorEdge = (
@@ -62,7 +65,23 @@ describe("Classic Jigsaw realization policy", () => {
     expect(classic.stem).toBeGreaterThan(primitive.stem);
     expect(classic.head).toBeLessThan(primitive.head);
     expect(classic.shaftHeight).toBeLessThan(primitive.shaftHeight);
-    expect(classic.crown).toBeLessThan(primitive.crown);
+    expect(classic.crown).toBeGreaterThanOrEqual(1.06);
+    expect(classic.crown).toBeLessThanOrEqual(1.1);
+  });
+
+  it("keeps the Classic necked-head crown above its shoulder anchors", () => {
+    for (let seedOffset = 0; seedOffset < 512; seedOffset += 1) {
+      const primitive = deriveJigsawConnectorProgram("necked-head", seedOffset);
+      const classic = applyJigsawConnectorProgramForCutStyle("classic", primitive);
+      expect(classic.connectorGrammarId).toBe("necked-head");
+      if (classic.connectorGrammarId !== "necked-head") continue;
+
+      const points = realizeJigsawConnectorProgram(classic);
+      const fixedShoulderHeight = Math.max(points[6]!.y, points[10]!.y);
+      expect(points[7]!.y).toBeGreaterThan(fixedShoulderHeight);
+      expect(points[8]!.y).toBeGreaterThan(points[7]!.y);
+      expect(points[9]!.y).toBeGreaterThan(fixedShoulderHeight);
+    }
   });
 
   it("uses a restrained Classic connector envelope without changing other styles", () => {

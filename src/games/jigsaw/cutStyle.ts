@@ -202,19 +202,8 @@ export const getJigsawConnectorRealizationPolicy = (
       ?? neutralConnectorRealizationPolicy
     : neutralConnectorRealizationPolicy;
 
-type NumericRange = readonly [minimum: number, maximum: number];
-
-const remapRange = (
-  value: number,
-  source: NumericRange,
-  target: NumericRange,
-) => {
-  const progress = Math.min(
-    1,
-    Math.max(0, (value - source[0]) / (source[1] - source[0])),
-  );
-  return target[0] + progress * (target[1] - target[0]);
-};
+const clamp = (value: number, minimum: number, maximum: number) =>
+  Math.min(maximum, Math.max(minimum, value));
 
 export const applyJigsawConnectorProgramForCutStyle = (
   cutStyle: JigsawCutStyle,
@@ -226,10 +215,10 @@ export const applyJigsawConnectorProgramForCutStyle = (
 
   return {
     ...program,
-    stem: remapRange(program.stem, [0.1, 0.17], [0.18, 0.24]),
-    head: remapRange(program.head, [0.48, 0.64], [0.4, 0.5]),
-    shaftHeight: remapRange(program.shaftHeight, [0.42, 0.56], [0.34, 0.44]),
-    crown: remapRange(program.crown, [1.04, 1.16], [0.98, 1.06]),
+    stem: clamp(program.stem + 0.08, 0.18, 0.24),
+    head: clamp(program.head - 0.08, 0.4, 0.5),
+    shaftHeight: clamp(program.shaftHeight - 0.08, 0.34, 0.44),
+    crown: clamp(program.crown, 1.06, 1.1),
   };
 };
 
