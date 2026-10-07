@@ -97,8 +97,7 @@
   min-height: 0;
 }
 
-.jigsaw-workspace.is-immersive .jigsaw-image-library,
-.jigsaw-workspace.is-immersive .notes-list {
+.jigsaw-workspace.is-immersive .jigsaw-image-library {
   display: none;
 }
 

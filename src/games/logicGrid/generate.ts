@@ -55,9 +55,5 @@ export const generateLogicGrid: PuzzleGenerator = ({ seed, width, height }) => {
     height: boundedHeight,
     cells,
     answerKey,
-    notes: [
-      "Type digits into open cells, then use Check to judge against the generated solution.",
-      "Future versions can attach rules, regions, and solver traces to the same grid model.",
-    ],
   });
 };

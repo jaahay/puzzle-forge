@@ -55,7 +55,6 @@ const gridPuzzle = (
   difficulty: overrides.difficulty ?? "Medium",
   uniqueSolution: overrides.uniqueSolution ?? true,
   sudokuVariation: overrides.sudokuVariation,
-  notes: [],
   kind: "grid",
   cells: [],
 });
@@ -69,7 +68,6 @@ const cardPuzzle = (variation: SolitaireVariation = defaultSolitaireVariation): 
   height: 7,
   checksum: "checksum",
   createdAt: "2026-08-29T00:00:00.000Z",
-  notes: [],
   kind: "cards",
   stacks: [],
   solitaireVariation: variation,
@@ -219,8 +217,7 @@ describe("generated puzzle identity matching", () => {
       height: 4,
       checksum: "checksum",
       createdAt: "2026-08-29T00:00:00.000Z",
-      notes: [],
-      kind: "tiles",
+          kind: "tiles",
       tiles: [],
       asset: {
         kind: "image",

@@ -46,7 +46,6 @@ const expectValidZeroKillerPuzzle = (puzzle: ReturnType<typeof generateSudoku>) 
   expect(new Set(cagedCellKeys).size).toBe(cagedCellKeys.length);
   expect(cagedCellKeys.length).toBeLessThan(81);
   expect(sudokuTestHooks.hasUniqueKillerSolution(cages, solution)).toBe(true);
-  expect(puzzle.notes.every((note) => !note.includes("uniqueness checks"))).toBe(true);
 
   for (const cage of cages) {
     const cageValues = cage.cells.map((cell) => solution[cell.row * 9 + cell.column] ?? "");

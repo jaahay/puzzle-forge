@@ -236,7 +236,6 @@ const removeClues = (solution: string[], random: () => number, clueTarget: numbe
   return puzzle;
 };
 
-const cellKey = (row: number, column: number) => `${row}-${column}`;
 const toCellIndex = (row: number, column: number) => row * BOARD_SIZE + column;
 const toPublicCage = (cage: InternalKillerCage): GridPuzzleCage => ({
   id: cage.id,
@@ -537,8 +536,6 @@ export const generateSudoku: PuzzleGenerator = ({ seed, difficulty, sudokuVariat
   if (selectedVariation === "zero-killer") {
     const { cages: internalCages } = buildZeroKillerCages(solution, random, selectedDifficulty);
     const cages = internalCages.map(toPublicCage);
-    const cagedCells = new Set(cages.flatMap((cage) => cage.cells.map((cell) => cellKey(cell.row, cell.column))));
-    const uncagedCount = CELL_COUNT - cagedCells.size;
     const cells = makeSudokuCells(Array.from({ length: CELL_COUNT }, () => ""), title);
     const generatedPuzzle = createGeneratedPuzzle({
       id: `sudoku-${selectedVariation}-v${ZERO_KILLER_GENERATOR_POLICY.version}-${normalizedSeed}-${selectedDifficulty.toLowerCase()}`,
@@ -552,17 +549,12 @@ export const generateSudoku: PuzzleGenerator = ({ seed, difficulty, sudokuVariat
       cells,
       answerKey: solution,
       cages,
-      notes: [
-        `${selectedDifficulty} zero killer puzzle with ${cages.length} cages and ${uncagedCount} uncaged cells.`,
-        sudokuVariationDescriptions[selectedVariation],
-      ],
     });
     return { ...generatedPuzzle, sudokuVariation: selectedVariation };
   }
 
   const clueTarget = difficultyClueTargetsByVariation[selectedVariation][selectedDifficulty];
   const puzzleValues = removeClues(solution, random, clueTarget, peerMap);
-  const givenCount = puzzleValues.filter(Boolean).length;
   const cells = makeSudokuCells(puzzleValues, title);
   const generatedPuzzle = createGeneratedPuzzle({
     id: `sudoku-${selectedVariation}-${normalizedSeed}-${selectedDifficulty.toLowerCase()}`,
@@ -575,7 +567,6 @@ export const generateSudoku: PuzzleGenerator = ({ seed, difficulty, sudokuVariat
     uniqueSolution: true,
     cells,
     answerKey: solution,
-    notes: [`${selectedDifficulty} ${variationLabel.toLowerCase()} puzzle with ${givenCount} givens and a unique generated solution.`, sudokuVariationDescriptions[selectedVariation]],
   });
   return { ...generatedPuzzle, sudokuVariation: selectedVariation };
 };

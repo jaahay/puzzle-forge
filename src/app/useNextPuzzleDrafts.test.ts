@@ -38,7 +38,6 @@ const sudokuPuzzle: GeneratedPuzzle = {
   difficulty: "Medium",
   uniqueSolution: true,
   sudokuVariation: "zero-killer",
-  notes: [],
   kind: "grid",
   cells: [],
 };

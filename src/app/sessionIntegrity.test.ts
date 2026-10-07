@@ -15,7 +15,6 @@ const puzzle: GridGeneratedPuzzle = {
   difficulty: "Medium",
   uniqueSolution: true,
   sudokuVariation: "classic",
-  notes: [],
   kind: "grid",
   cells: [
     { row: 0, column: 0, value: "7", locked: true, tone: "given" },

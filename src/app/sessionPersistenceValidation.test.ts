@@ -42,7 +42,6 @@ const makeSudokuPuzzle = (): GridGeneratedPuzzle => ({
   difficulty: "Medium",
   uniqueSolution: true,
   sudokuVariation: "classic",
-  notes: [],
   kind: "grid",
   cells: makeGridCells(),
 });

@@ -56,6 +56,5 @@ export const generateTileSwap: TileSwapPuzzleGenerator = ({ seed, width, height,
       ...tiles.map((tile) => `${tile.id}:${tile.currentIndex}:${tile.solvedIndex}`),
     ]),
     createdAt: new Date().toISOString(),
-    notes: [`Tile Swap using the bundled ${asset.title} image.`],
   };
 };

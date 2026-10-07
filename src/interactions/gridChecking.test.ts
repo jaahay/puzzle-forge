@@ -11,7 +11,6 @@ const makeSudokuPuzzle = (): GridGeneratedPuzzle => ({
   height: 2,
   checksum: "test-checksum",
   createdAt: "2026-08-18T00:00:00.000Z",
-  notes: [],
   kind: "grid",
   cells: [],
   answerKey: ["1", "2", "3", "4"],

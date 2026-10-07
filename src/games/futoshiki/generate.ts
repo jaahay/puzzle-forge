@@ -158,6 +158,5 @@ export const generateFutoshiki: GridPuzzleGenerator = ({ seed, width, difficulty
     cells,
     answerKey: solution.map(String),
     inequalities,
-    notes: ["Fill each row and column with 1 through the board size. Every inequality must be true."],
   });
 };
