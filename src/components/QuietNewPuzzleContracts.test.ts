@@ -38,9 +38,9 @@ describe("Quiet New Puzzle contracts", () => {
     expect(commandSource).toContain("closeInfo(true);");
     expect(commandSource).toContain("if (!event.currentTarget.open) {");
     expect(commandSource).not.toContain('<details class="new-puzzle-info">');
-    expect(nextPuzzleCss).toMatch(/\\.new-puzzle-info\\s*\\{[\\s\\S]*?display:\\s*grid;/);
-    expect(nextPuzzleCss).not.toMatch(/\\.new-puzzle-info\\s*\\{[^}]*position:\\s*absolute/);
-    expect(nextPuzzleCss).not.toMatch(/\\.new-puzzle-info-panel\\s*\\{[^}]*position:\\s*absolute/);
+    expect(nextPuzzleCss).toMatch(/\.new-puzzle-info\s*\{[\s\S]*?display:\s*grid;/);
+    expect(nextPuzzleCss).not.toMatch(/\.new-puzzle-info\s*\{[^}]*position:\s*absolute/);
+    expect(nextPuzzleCss).not.toMatch(/\.new-puzzle-info-panel\s*\{[^}]*position:\s*absolute/);
   });
 
   it("keeps Jigsaw choices operational while putting their explanations behind info", () => {
