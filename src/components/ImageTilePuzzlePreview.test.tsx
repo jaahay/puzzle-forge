@@ -5,7 +5,7 @@ import { generateSlidingPuzzle } from "../games/slidingPuzzle/generate";
 import { generateTileSwap } from "../games/tileSwap/generate";
 import {
   getImageTileBoardStyle,
-  getImageTileInstruction,
+  getImageTileHelpCopy,
   restoreImageTileProgress,
   shouldRevealSlidingCompletionGap,
 } from "./ImageTilePuzzlePreview";
@@ -34,26 +34,23 @@ describe("ImageTilePuzzlePreview layout", () => {
     expect(imageTileCss).toMatch(/\.image-tile-board-viewport\s*\{[^}]*width:\s*100%;/);
   });
 
-  it("replaces active move instructions with stable completion copy after solve", () => {
-    expect(getImageTileInstruction(true, false, null)).toBe("Puzzle complete.");
-    expect(getImageTileInstruction(true, true, null)).toBe("Puzzle complete.");
-    expect(getImageTileInstruction(false, true, null)).toBe(
+  it("keeps image-tile rules behind deliberate help disclosure", () => {
+    expect(getImageTileHelpCopy(true)).toBe(
       "Choose any tile in the empty space's row or column. The tiles between it and the gap slide together.",
     );
-    expect(getImageTileInstruction(false, false, null)).toBe(
+    expect(getImageTileHelpCopy(false)).toBe(
       "Choose one tile, then another, to exchange their positions.",
     );
-    expect(getImageTileInstruction(false, false, "tile-1")).toBe(
-      "Choose a second tile to exchange with the selected tile.",
-    );
-  });
-
-  it("reserves instruction geometry across active and solved copy", () => {
-    expect(imageTilePreviewSource.match(/class="image-tile-instruction-sizer" aria-hidden="true"/g)?.length).toBe(2);
-    expect(imageTileCss).toMatch(/\.image-tile-instruction\s*\{[^}]*display: grid;/);
-    expect(imageTileCss).toMatch(/\.image-tile-instruction > span\s*\{[^}]*grid-area: 1 \/ 1;/);
-    expect(imageTileCss).toMatch(/\.image-tile-instruction-sizer\s*\{[^}]*visibility: hidden;/);
-    expect(imageTileCss).toMatch(/\.image-tile-instruction-copy\s*\{[^}]*align-self: center;/);
+    expect(imageTilePreviewSource).toContain('class="image-tile-help"');
+    expect(imageTilePreviewSource).toContain('aria-label={`How to play ${puzzle.title}`}');
+    expect(imageTilePreviewSource).toContain("<InfoIcon />");
+    expect(imageTilePreviewSource).not.toContain('class="image-tile-instruction"');
+    expect(imageTilePreviewSource).not.toContain("image-tile-instruction-sizer");
+    expect(imageTilePreviewSource).not.toContain("Puzzle complete.");
+    expect(imageTileCss).toMatch(/\.image-tile-tools\s*\{[^}]*position: relative;/);
+    expect(imageTileCss).toMatch(/\.image-tile-help\s*\{[^}]*position: static;/);
+    expect(imageTileCss).toMatch(/\.image-tile-help > summary\s*\{[^}]*list-style: none;/);
+    expect(imageTileCss).toMatch(/\.image-tile-help > p\s*\{[^}]*position: absolute;/);
   });
 
   it("keeps the Sliding Puzzle gap empty until completion presentation begins", () => {

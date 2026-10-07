@@ -96,28 +96,16 @@
   font-weight: 800;
 }
 
-.image-tile-instruction {
-  display: grid;
-  max-width: 42rem;
-  margin: 0;
-  color: #cbd5e1;
-  font-size: 0.9rem;
-  text-align: center;
+.image-tile-tools {
+  position: relative;
 }
 
-.image-tile-instruction > span {
-  grid-area: 1 / 1;
+.image-tile-help {
+  position: static;
 }
 
-.image-tile-instruction-sizer {
-  visibility: hidden;
-}
-
-.image-tile-instruction-copy {
-  align-self: center;
-}
-
-.image-tile-tools button {
+.image-tile-tools button,
+.image-tile-help > summary {
   min-height: 2.55rem;
   border: 1px solid rgba(96, 165, 250, 0.38);
   border-radius: 999px;
@@ -128,10 +116,55 @@
   font-weight: 800;
 }
 
+.image-tile-help > summary {
+  display: grid;
+  width: 2.55rem;
+  min-width: 2.55rem;
+  place-items: center;
+  padding: 0.58rem;
+  list-style: none;
+}
+
+.image-tile-help > summary::-webkit-details-marker {
+  display: none;
+}
+
+.image-tile-help > summary svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
 .image-tile-tools button:hover,
-.image-tile-tools button:focus-visible {
+.image-tile-tools button:focus-visible,
+.image-tile-help > summary:hover,
+.image-tile-help > summary:focus-visible,
+.image-tile-help[open] > summary {
   box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.22);
   outline: none;
+}
+
+.image-tile-help > p {
+  position: absolute;
+  z-index: 4;
+  top: calc(100% + 0.45rem);
+  left: 50%;
+  width: min(20rem, calc(100vw - 2rem));
+  margin: 0;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 0.75rem;
+  padding: 0.7rem 0.8rem;
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, 0.98);
+  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.32);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  text-align: left;
+  transform: translateX(-50%);
 }
 
 .image-tile-board-viewport {
@@ -263,9 +296,6 @@
     grid-column: 1 / -1;
   }
 
-  .image-tile-instruction {
-    font-size: 0.84rem;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
