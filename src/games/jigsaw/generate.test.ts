@@ -463,7 +463,6 @@ describe("generateJigsaw", () => {
       asset: puzzle.asset,
       edgeModel: puzzle.edgeModel,
       specialPiecesMode: puzzle.specialPiecesMode,
-      notes: puzzle.notes,
     });
     const changedModelPuzzle = createGeneratedJigsawPuzzle({
       id: puzzle.id,
@@ -481,7 +480,6 @@ describe("generateJigsaw", () => {
             : "classic",
       },
       specialPiecesMode: puzzle.specialPiecesMode,
-      notes: puzzle.notes,
     });
 
     expect(changedEdgesPuzzle.checksum).not.toBe(puzzle.checksum);

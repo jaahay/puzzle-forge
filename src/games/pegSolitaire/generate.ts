@@ -53,10 +53,5 @@ export const generatePegSolitaire = ({ seed }: { seed: string }) => {
     width: 7,
     height: 7,
     cells,
-    notes: [
-      "Classic English cross board with a seeded opening hole.",
-      "Jump one peg over an adjacent peg into an empty hole, removing the jumped peg.",
-      "This preview models board generation; move validation and solver hints can layer on next.",
-    ],
   });
 };

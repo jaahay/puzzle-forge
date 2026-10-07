@@ -60,7 +60,6 @@ const makeCardPuzzle = (seed = "seed-1", checksum = "checksum"): Extract<Generat
   checksum,
   createdAt: "2026-06-22T00:00:00.000Z",
   difficulty: "Easy",
-  notes: [],
   kind: "cards",
   stacks: makeCardStacks(),
   solitaireVariation: defaultSolitaireVariation,

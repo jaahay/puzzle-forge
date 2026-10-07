@@ -126,8 +126,7 @@
     display: none;
   }
 
-  .puzzle-actions,
-  .notes-list {
+  .puzzle-actions {
     order: 3;
   }
 

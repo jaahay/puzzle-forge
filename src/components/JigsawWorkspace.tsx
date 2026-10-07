@@ -12,9 +12,6 @@ import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { TilePuzzlePreview, type JigsawHistoryAvailability, type JigsawHistoryController } from "./TilePuzzlePreview";
 import { usePuzzleCompletionPresentation } from "./usePuzzleCompletionPresentation";
 
-export const getJigsawGameplayNotes = (notes: string[], assetTitle: string) =>
-  notes.filter((note) => note !== `Jigsaw using the bundled ${assetTitle} image.`);
-
 export const JigsawWorkspace = ({
   selectedDefinition,
   selectedPuzzleIsGeneratable,
@@ -45,7 +42,6 @@ export const JigsawWorkspace = ({
   const puzzleInstanceId = jigsawPuzzle?.id ?? null;
   const puzzleArrivalIdentity = jigsawPuzzle ? getPuzzleArrivalIdentity(jigsawPuzzle) : null;
   const isPuzzleArriving = usePuzzleArrival(puzzleArrivalIdentity);
-  const gameplayNotes = jigsawPuzzle ? getJigsawGameplayNotes(jigsawPuzzle.notes, jigsawPuzzle.asset.title) : [];
   const showStatus = !jigsawPuzzle || statusMessage !== `${jigsawPuzzle.title} ready.`;
   const isSolved = Boolean(
     puzzleInstanceId &&
@@ -187,9 +183,6 @@ export const JigsawWorkspace = ({
         onResetPuzzle={resetJigsaw}
         onNewPuzzle={onNewPuzzle}
       />
-      {gameplayNotes.length === 0 ? null : (
-        <ul class="notes-list">{gameplayNotes.map((note) => <li key={note}>{note}</li>)}</ul>
-      )}
     </section>
   ) : isGenerating ? loadingBoard : null;
 

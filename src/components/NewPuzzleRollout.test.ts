@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { getCurrentPuzzleIdentity } from "./CurrentPuzzleIdentity";
 import * as gridWorkspaceModule from "./GridPuzzleWorkspace";
-import * as jigsawWorkspaceModule from "./JigsawWorkspace";
 import * as newPuzzleCommandModule from "./NewPuzzleCommand";
 import * as wordGuessNewPuzzleControlModule from "./WordGuessNewPuzzleControl";
 
@@ -30,8 +29,6 @@ type GridMetaResolver = (options: {
   dailyLabel: string | null;
 }) => string[];
 
-type JigsawGameplayNotesResolver = (notes: string[], assetTitle: string) => string[];
-
 const commandActionFactory = (
   newPuzzleCommandModule as unknown as { createNewPuzzleCommandActions?: CommandActionFactory }
 ).createNewPuzzleCommandActions;
@@ -39,10 +36,6 @@ const commandActionFactory = (
 const gridMetaResolver = (
   gridWorkspaceModule as unknown as { getGridPuzzleMetaItems?: GridMetaResolver }
 ).getGridPuzzleMetaItems;
-
-const jigsawGameplayNotesResolver = (
-  jigsawWorkspaceModule as unknown as { getJigsawGameplayNotes?: JigsawGameplayNotesResolver }
-).getJigsawGameplayNotes;
 
 const wordGuessDimensionSeparator = (
   wordGuessNewPuzzleControlModule as unknown as { wordGuessDimensionSeparator?: string }
@@ -61,11 +54,6 @@ const requireCommandActionFactory = () => {
 const requireGridMetaResolver = () => {
   expect(gridMetaResolver).toBeTypeOf("function");
   return gridMetaResolver!;
-};
-
-const requireJigsawGameplayNotesResolver = () => {
-  expect(jigsawGameplayNotesResolver).toBeTypeOf("function");
-  return jigsawGameplayNotesResolver!;
 };
 
 describe("shared New puzzle command interactions", () => {
@@ -210,12 +198,4 @@ describe("rolled-out puzzle presentation", () => {
     expect(workspaceHierarchyCss).toMatch(/\.jigsaw-workspace \.tile-puzzle-summary[\s\S]*?\.image-tile-workspace \.image-tile-summary[\s\S]*?\{\s*display:\s*none;\s*\}/);
   });
 
-  it("filters the generated Jigsaw artwork note while preserving real gameplay notes", () => {
-    const resolveNotes = requireJigsawGameplayNotesResolver();
-
-    expect(resolveNotes([
-      "Jigsaw using the bundled Alpine Lake image.",
-      "A future gameplay-specific note.",
-    ], "Alpine Lake")).toEqual(["A future gameplay-specific note."]);
-  });
 });

@@ -41,6 +41,5 @@ export const generateWordGuess: GridPuzzleGenerator = ({ seed, width, height }) 
     height: maxGuesses,
     cells,
     answerKey: Array.from(answerWord),
-    notes: [],
   });
 };

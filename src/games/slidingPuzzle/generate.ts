@@ -84,9 +84,5 @@ export const generateSlidingPuzzle: SlidingPuzzleGenerator = ({ seed, width, hei
       ...tiles.map((tile) => `${tile.id}:${tile.currentIndex}:${tile.solvedIndex}`),
     ]),
     createdAt: new Date().toISOString(),
-    notes: [
-      `Sliding Puzzle using the bundled ${asset.title} image.`,
-      "Scrambled from the solved board through legal moves, so the generated position is reachable.",
-    ],
   };
 };

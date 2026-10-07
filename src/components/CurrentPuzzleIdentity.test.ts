@@ -15,7 +15,6 @@ const makeGridPuzzle = (overrides: Partial<GridGeneratedPuzzle> = {}): GridGener
   createdAt: "2026-09-03T00:00:00.000Z",
   difficulty: "Medium",
   uniqueSolution: true,
-  notes: [],
   kind: "grid",
   cells: [],
   ...overrides,

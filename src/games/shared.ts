@@ -135,7 +135,6 @@ export const createGeneratedPuzzle = ({
   difficulty,
   uniqueSolution,
   cells,
-  notes,
   answerKey,
   clues,
   cages,
@@ -150,7 +149,6 @@ export const createGeneratedPuzzle = ({
   difficulty?: PuzzleDifficulty;
   uniqueSolution?: boolean;
   cells: PuzzleCell[];
-  notes: string[];
   answerKey?: string[];
   clues?: GridPuzzleClues;
   cages?: GridPuzzleCage[];
@@ -172,7 +170,6 @@ export const createGeneratedPuzzle = ({
   inequalities,
   checksum: makeChecksum(cells, cages, inequalities),
   createdAt: new Date().toISOString(),
-  notes,
 });
 
 export const createGeneratedJigsawPuzzle = ({
@@ -185,7 +182,6 @@ export const createGeneratedJigsawPuzzle = ({
   asset,
   edgeModel,
   specialPiecesMode,
-  notes,
 }: {
   id: string;
   title: string;
@@ -196,7 +192,6 @@ export const createGeneratedJigsawPuzzle = ({
   asset: JigsawImageAsset;
   edgeModel: JigsawEdgeModel;
   specialPiecesMode: JigsawSpecialPiecesMode;
-  notes: string[];
 }): JigsawGeneratedPuzzle => ({
   kind: "tiles",
   id,
@@ -215,5 +210,4 @@ export const createGeneratedJigsawPuzzle = ({
     ...tiles.map(makeJigsawTileChecksumPart),
   ]),
   createdAt: new Date().toISOString(),
-  notes,
 });

@@ -20,7 +20,6 @@ const makePuzzle = (overrides: Partial<GridGeneratedPuzzle>): GridGeneratedPuzzl
   height: 2,
   checksum: "terminal-checksum",
   createdAt: "2026-09-17T00:00:00.000Z",
-  notes: [],
   kind: "grid",
   cells: [],
   ...overrides,

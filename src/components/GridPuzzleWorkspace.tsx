@@ -253,9 +253,6 @@ export const GridPuzzleWorkspace = ({
           onCellInput={handleCellInput}
         />
       ) : null}
-      {usesDedicatedStatus || puzzle.notes.length === 0 ? null : (
-        <ul class="notes-list">{puzzle.notes.map((note) => <li key={note}>{note}</li>)}</ul>
-      )}
     </section>
   ) : isGenerating ? loadingBoard : null;
 

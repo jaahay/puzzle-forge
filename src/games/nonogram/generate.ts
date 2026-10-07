@@ -76,6 +76,5 @@ export const generateNonogram: PuzzleGenerator = ({ seed, width, height, difficu
     cells,
     answerKey,
     clues,
-    notes: [],
   });
 };

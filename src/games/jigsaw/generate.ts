@@ -245,7 +245,6 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
     asset,
     edgeModel,
     specialPiecesMode,
-    notes: [`Jigsaw using the bundled ${asset.title} image.`],
   });
 };
 

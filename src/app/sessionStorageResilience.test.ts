@@ -38,7 +38,6 @@ const makeZeroKillerPuzzle = (seed = "refresh-seed", checksum = "checksum"): Gri
   difficulty: "Medium",
   uniqueSolution: true,
   sudokuVariation: "zero-killer",
-  notes: [],
   kind: "grid",
   cells: makeEmptyZeroKillerCells(),
 });

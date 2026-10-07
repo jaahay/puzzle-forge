@@ -127,7 +127,6 @@ describe("Solitaire variation session integration", () => {
       height: 7,
       checksum: "checksum",
       createdAt: "2026-06-24T00:00:00.000Z",
-      notes: [],
       stacks: makeStacks([makeCard("A♠")]),
       solitaireVariation,
     };

@@ -340,7 +340,6 @@ type BaseGeneratedPuzzle = {
   difficulty?: PuzzleDifficulty;
   uniqueSolution?: boolean;
   sudokuVariation?: SudokuVariation;
-  notes: string[];
 };
 
 export type GridGeneratedPuzzle = BaseGeneratedPuzzle & {
