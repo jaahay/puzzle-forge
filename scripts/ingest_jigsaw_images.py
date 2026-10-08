@@ -230,6 +230,30 @@ def resolve_preferred_name(record: dict) -> str | None:
     return label if isinstance(label, str) and label else None
 
 
+def resolve_linked_art_creator(record: dict) -> str | None:
+    production = record.get("produced_by")
+    if not isinstance(production, dict):
+        return None
+    for part in production.get("part", []):
+        if not isinstance(part, dict):
+            continue
+        for actor in part.get("carried_out_by", []):
+            if not isinstance(actor, dict):
+                continue
+            for notation in actor.get("notation", []):
+                if (
+                    isinstance(notation, dict)
+                    and notation.get("@language") == "en"
+                    and isinstance(notation.get("@value"), str)
+                    and notation["@value"]
+                ):
+                    return notation["@value"]
+            label = actor.get("_label")
+            if isinstance(label, str) and label:
+                return label
+    return None
+
+
 def rijks_data_uri(uri: str) -> str:
     prefix = "https://id.rijksmuseum.nl/"
     if not uri.startswith(prefix):
@@ -426,19 +450,6 @@ def resolve_rijksmuseum_source(artwork: Artwork) -> SourceRecord:
             None,
         )
 
-    creator_element = edm_root.find(f".//{{{dc_ns}}}creator")
-    creator = None
-    if creator_element is not None:
-        creator_uri = creator_element.get(rdf_resource)
-        if isinstance(creator_uri, str):
-            creator_record = fetch_json(
-                rijks_data_uri(creator_uri) + "?_profile=la-framed",
-                artwork.provider,
-            )
-            creator = resolve_preferred_name(creator_record)
-        elif isinstance(creator_element.text, str) and creator_element.text.strip():
-            creator = creator_element.text.strip()
-
     date_element = edm_root.find(f".//{{{dc_ns}}}date")
     date = date_element.text.strip() if date_element is not None and date_element.text else None
     medium_element = edm_root.find(f".//{{{dcterms_ns}}}medium")
@@ -447,6 +458,16 @@ def resolve_rijksmuseum_source(artwork: Artwork) -> SourceRecord:
     dimensions = extent_element.text.strip() if extent_element is not None and extent_element.text else None
 
     object_record = fetch_json(object_data_uri + "?_profile=la-framed", artwork.provider)
+    creator = resolve_linked_art_creator(object_record)
+    if creator is None:
+        creator_element = edm_root.find(f".//{{{dc_ns}}}creator")
+        if (
+            creator_element is not None
+            and isinstance(creator_element.text, str)
+            and creator_element.text.strip()
+        ):
+            creator = creator_element.text.strip()
+
     visual_item_uri = first_linked_id(object_record, "shows", f"object {object_number}")
     visual_item = fetch_json(
         rijks_data_uri(visual_item_uri) + "?_profile=la-framed",
