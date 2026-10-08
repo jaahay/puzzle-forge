@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "musicians",
+  "assetRevision": 1,
+  "work": {
+    "title": "The Musicians",
+    "creator": "Caravaggio (Michelangelo Merisi)",
+    "date": "1597",
+    "medium": "Oil on canvas",
+    "dimensions": "36 1/4 x 46 5/8 in. (92.1 x 118.4 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 435844,
+    "accessionNumber": "52.81",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/435844",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/435844",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP-687-001.jpg",
+    "retrievedAt": "2026-10-08T08:00:41.899180+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 4683079,
+    "sha256": "82d57c6e26834154dd2c76717f300dfab12a77da8d8d4d917b73674108dd3683",
+    "width": 4000,
+    "height": 3105
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 435844.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "embedded ICC profile converted to sRGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/musicians/puzzle.webp",
+      "width": 2048,
+      "height": 1590,
+      "byteSize": 799298,
+      "sha256": "63bb2abc91c444d43fb3a531b66be1648d6e61095ccb54ad1238d68c07e7c7cf",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/musicians/preview.webp",
+      "width": 1024,
+      "height": 795,
+      "byteSize": 115756,
+      "sha256": "9c4d1bbc1b4edd3e28f6ae76950eea3e3d9857067d893e9bd2b5995ba65c6634",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/musicians/thumbnail.webp",
+      "width": 384,
+      "height": 298,
+      "byteSize": 16444,
+      "sha256": "1d73625483e399dcc771702f1b5e3aa2c5f029464263ed6ef8873aaf22860a25",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

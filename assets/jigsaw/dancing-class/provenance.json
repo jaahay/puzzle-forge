@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "dancing-class",
+  "assetRevision": 1,
+  "work": {
+    "title": "The Dancing Class",
+    "creator": "Edgar Degas",
+    "date": "ca. 1870",
+    "medium": "Oil on wood",
+    "dimensions": "7 3/4 x 10 5/8 in. (19.7 x 27 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 436141,
+    "accessionNumber": "29.100.184",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/436141",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/436141",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP-25445-001.jpg",
+    "retrievedAt": "2026-10-08T08:00:41.899180+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 3632363,
+    "sha256": "f14772e6458a2756badde8045d0e42a733be51257f9c2e30df6fa4a85592c7df",
+    "width": 4000,
+    "height": 2988
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 436141.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "embedded ICC profile converted to sRGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/dancing-class/puzzle.webp",
+      "width": 2048,
+      "height": 1530,
+      "byteSize": 470544,
+      "sha256": "7a3566d3824545b271e3505f3b91ca2ccf9b7b19987aa3f09ccdf5e84caf71d2",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/dancing-class/preview.webp",
+      "width": 1024,
+      "height": 765,
+      "byteSize": 67466,
+      "sha256": "c498c70f33b1f5dff110c5d086ff2fbd5c7ad5b1e94f1d24124ed1fe92ae8e6a",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/dancing-class/thumbnail.webp",
+      "width": 384,
+      "height": 287,
+      "byteSize": 8970,
+      "sha256": "ba24311f43a55e226f84f72ee37b969a69c0ed08dd7e7b1cd39678237ce5352b",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

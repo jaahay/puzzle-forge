@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "death-of-socrates",
+  "assetRevision": 1,
+  "work": {
+    "title": "The Death of Socrates",
+    "creator": "Jacques Louis David",
+    "date": "1787",
+    "medium": "Oil on canvas",
+    "dimensions": "51 x 77 1/4 in. (129.5 x 196.2 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 436105,
+    "accessionNumber": "31.45",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/436105",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/436105",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP-13139-001.jpg",
+    "retrievedAt": "2026-10-08T08:00:41.899180+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 1793830,
+    "sha256": "eaff5a04103361fed9fba6f10ea7bed80ccdc595d664b6997c6bd32f0eee06a6",
+    "width": 4000,
+    "height": 2663
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 436105.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; assumed sRGB after RGB conversion",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/death-of-socrates/puzzle.webp",
+      "width": 2048,
+      "height": 1363,
+      "byteSize": 180434,
+      "sha256": "c8545080972ca9877d56e9c2c123c2c770f6e6de0458f3ea6032bca2b1c565ea",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/death-of-socrates/preview.webp",
+      "width": 1024,
+      "height": 682,
+      "byteSize": 47120,
+      "sha256": "a4e6cfcd1b1a3bbd31f0c225784dc4dc4531cde5045bdd8938cdcc00e8078119",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/death-of-socrates/thumbnail.webp",
+      "width": 384,
+      "height": 256,
+      "byteSize": 8428,
+      "sha256": "4bac76cb803267b3c9166c6e06333558f8d4408f5a4f26ac4f5ac517773f9a69",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

@@ -149,10 +149,10 @@ describe("Jigsaw image library", () => {
     });
   });
 
-  it("exposes the twelve bundled images with unique ids and same-origin derivatives", () => {
+  it("exposes the twenty bundled images with unique ids and same-origin derivatives", () => {
     const imageIds = jigsawImageAssets.map((asset) => asset.id);
 
-    expect(jigsawImageAssets).toHaveLength(12);
+    expect(jigsawImageAssets).toHaveLength(20);
     expect(new Set(imageIds).size).toBe(imageIds.length);
     expect(
       jigsawImageAssets.every(
@@ -162,6 +162,6 @@ describe("Jigsaw image library", () => {
           asset.files.thumbnail === `/jigsaw/${asset.id}/thumbnail.webp`,
       ),
     ).toBe(true);
-    expect(jigsawImageAssets.every((asset) => asset.credit.sourceRecordUrl?.startsWith("https://www.metmuseum.org/"))).toBe(true);
+    expect(jigsawImageAssets.every((asset) => asset.credit.sourceName && asset.credit.sourceRecordUrl?.startsWith("https://"))).toBe(true);
   });
 });

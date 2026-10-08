@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "sudden-shower-shin-ohashi",
+  "assetRevision": 1,
+  "work": {
+    "title": "Sudden Shower over Shin-Ōhashi Bridge and Atake (Ōhashi Atake no yūdachi), from the series One Hundred Famous Views of Edo (Meisho Edo hyakkei)",
+    "creator": "Utagawa Hiroshige",
+    "date": "1857",
+    "medium": "Woodblock print; ink and color on paper",
+    "dimensions": "Oban 13 3/8 x 9 1/2 in. (34 x 24.1 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 55433,
+    "accessionNumber": "JP2522",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/55433",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/55433",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/as/original/DP130156.jpg",
+    "retrievedAt": "2026-10-08T08:00:41.899180+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 3043911,
+    "sha256": "17c1ee8bd3a8089d11bd83a6728351b1609a523887d693f81c9a6aee36134a31",
+    "width": 2650,
+    "height": 3860
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 55433.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; assumed sRGB after RGB conversion",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/sudden-shower-shin-ohashi/puzzle.webp",
+      "width": 1406,
+      "height": 2048,
+      "byteSize": 818670,
+      "sha256": "82a03be14c37535edc509fe1f342fcb32a07b1acb2f813dbb151e4e8d6ffff95",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/sudden-shower-shin-ohashi/preview.webp",
+      "width": 703,
+      "height": 1024,
+      "byteSize": 152512,
+      "sha256": "76489d6896d2ae914fd1caaf9b3ec316a5e7c2743016ef6d1f298e514cef9ebb",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/sudden-shower-shin-ohashi/thumbnail.webp",
+      "width": 264,
+      "height": 384,
+      "byteSize": 16642,
+      "sha256": "0785592f0c89447ca8fdc4466f2f94d46c5844da43c3ce4c159ecf23d136fff9",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

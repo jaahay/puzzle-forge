@@ -12,6 +12,14 @@
     { "assetId": "canadian-rockies-lake-louise", "provider": "met", "objectId": 10149 },
     { "assetId": "snowy-gorge", "provider": "met", "objectId": 56683 },
     { "assetId": "carrara-marble-quarries", "provider": "met", "objectId": 12052 },
-    { "assetId": "self-portrait-dou", "provider": "met", "objectId": 436210 }
+    { "assetId": "self-portrait-dou", "provider": "met", "objectId": 436210 },
+    { "assetId": "young-woman-water-pitcher", "provider": "met", "objectId": 437881 },
+    { "assetId": "death-of-socrates", "provider": "met", "objectId": 436105 },
+    { "assetId": "dancing-class", "provider": "met", "objectId": 436141 },
+    { "assetId": "silver-tureen", "provider": "met", "objectId": 435887 },
+    { "assetId": "sudden-shower-shin-ohashi", "provider": "met", "objectId": 55433 },
+    { "assetId": "musicians", "provider": "met", "objectId": 435844 },
+    { "assetId": "unicorn-garden", "provider": "met", "objectId": 467642 },
+    { "assetId": "washington-crossing-delaware", "provider": "met", "objectId": 11417 }
   ]
 }

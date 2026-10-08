@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "unicorn-garden",
+  "assetRevision": 1,
+  "work": {
+    "title": "The Unicorn Rests in a Garden (from the Unicorn Tapestries)",
+    "creator": "",
+    "date": "1495–1505",
+    "medium": "Wool warp with wool, silk, silver, and gilt wefts",
+    "dimensions": "12 ft. 7/8 in. × 8 ft. 3 in. (368 × 251.5 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 467642,
+    "accessionNumber": "37.80.6",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/467642",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/467642",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/cl/original/DP118991.jpg",
+    "retrievedAt": "2026-10-08T08:00:41.899180+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 4814678,
+    "sha256": "cb997d7f0579824695f7174f0f8e50b289bfdabce3b4bd4a8eb6a09fdba09651",
+    "width": 2715,
+    "height": 3848
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 467642.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; assumed sRGB after RGB conversion",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/unicorn-garden/puzzle.webp",
+      "width": 1445,
+      "height": 2048,
+      "byteSize": 1279274,
+      "sha256": "35209f5a3f88143d80c294b557d398e9119455d7369ab8c256fd19349af14448",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/unicorn-garden/preview.webp",
+      "width": 722,
+      "height": 1024,
+      "byteSize": 313624,
+      "sha256": "1c59634ec0f31bbf10efd3b752f5c0ddd87ffbc762d7d3fc6d8f9a59ec1a6705",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/unicorn-garden/thumbnail.webp",
+      "width": 271,
+      "height": 384,
+      "byteSize": 43700,
+      "sha256": "1fe93e6ec45185c47d5a78036dd0b8908d531fbcd772097e7121a2a19d3a523c",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}
