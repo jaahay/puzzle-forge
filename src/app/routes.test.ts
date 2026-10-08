@@ -111,15 +111,22 @@ describe("pathname routing", () => {
     expect(today).toEqual(dated);
   });
 
-  it("rejects malformed Daily locators and unsupported Daily query grammar", () => {
+  it("keeps puzzle identity when a Daily or Today resource is no longer resolvable", () => {
     expect(parseAppRoute("/sudoku/daily", "")).toEqual({ kind: "not-found", pathname: "/sudoku/daily" });
     expect(parseAppRoute("/sudoku/daily/2026-02-29", "")).toEqual({
-      kind: "not-found",
+      kind: "unavailable-resource",
+      puzzleId: "sudoku",
       pathname: "/sudoku/daily/2026-02-29",
     });
     expect(parseAppRoute("/sudoku/daily/2026-09-15", "?size=9x9")).toEqual({
-      kind: "not-found",
+      kind: "unavailable-resource",
+      puzzleId: "sudoku",
       pathname: "/sudoku/daily/2026-09-15",
+    });
+    expect(parseAppRoute("/sudoku/today", "?size=9x9", "2026-09-15")).toEqual({
+      kind: "unavailable-resource",
+      puzzleId: "sudoku",
+      pathname: "/sudoku/today",
     });
   });
 
@@ -229,6 +236,11 @@ describe("pathname routing", () => {
       .toBe("/sudoku/seed%2Fvalue");
     expect(appRoutePath({ kind: "resource", puzzleId: "sudoku", generationId: "Happy2026!" }))
       .toBe("/sudoku/Happy2026!");
+    expect(appRoutePath({
+      kind: "unavailable-resource",
+      puzzleId: "sudoku",
+      pathname: "/sudoku/daily/2026-02-29",
+    })).toBe("/sudoku/daily/2026-02-29");
     expect(appRoutePath({ kind: "puzzle", puzzleId: "tile-swap" })).toBe("/tile-swap");
     expect(appRoutePath({ kind: "puzzle", puzzleId: "sliding-puzzle" })).toBe("/sliding-puzzle");
     expect(appRoutePath({ kind: "updates" })).toBe("/updates");

@@ -99,10 +99,16 @@ export const App = () => {
     () => getInitialSelectedPuzzleId("sudoku", initialPersistedSessions),
     [initialPersistedSessions],
   );
-  const initialSelectedPuzzleId = initialRoute.kind === "puzzle" || initialRoute.kind === "resource"
-    ? initialRoute.puzzleId
-    : storedPuzzleId;
-  const shouldStartOnPuzzleSurface = initialRoute.kind === "puzzle" || initialRoute.kind === "resource";
+  const initialSelectedPuzzleId =
+    initialRoute.kind === "puzzle" ||
+    initialRoute.kind === "resource" ||
+    initialRoute.kind === "unavailable-resource"
+      ? initialRoute.puzzleId
+      : storedPuzzleId;
+  const shouldStartOnPuzzleSurface =
+    initialRoute.kind === "puzzle" ||
+    initialRoute.kind === "resource" ||
+    initialRoute.kind === "unavailable-resource";
   const [route, setRoute] = useState<AppRoute>(initialRoute);
   const [selectedPuzzleId, setSelectedPuzzleId] = useState<PuzzleId>(initialSelectedPuzzleId);
   const [generationDefaults, setGenerationDefaults] = useState<GenerationRuntimeSettings>(makeInitialGenerationDefaults);
@@ -450,10 +456,34 @@ export const App = () => {
     startFreshPuzzle(puzzleId, behavior);
   };
 
+  const presentUnavailableResource = (
+    puzzleId: PuzzleId,
+    nextRoute: Extract<AppRoute, { kind: "resource" | "unavailable-resource" }>,
+    behavior: NavigationBehavior = {},
+  ) => {
+    if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
+    cancelPendingGeneration();
+    setAppRoute(nextRoute, behavior);
+    setHasSelectedPuzzle(true);
+    setIsHomeSelected(false);
+    setSelectedPuzzleId(puzzleId);
+    markPuzzleNavigation(puzzleId);
+    const message = "This puzzle is no longer available.";
+    resetRuntimePuzzleState();
+    setPuzzleLinkError(message);
+    setStatusMessage(message);
+  };
+
   const selectResource = (
     resourceRoute: Extract<AppRoute, { kind: "resource" }>,
     behavior: NavigationBehavior = {},
   ) => {
+    const decoded = resolvePuzzleResourceSegment(resourceRoute.puzzleId, resourceRoute.generationId);
+    if (!decoded.ok) {
+      presentUnavailableResource(resourceRoute.puzzleId, resourceRoute, behavior);
+      return;
+    }
+
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
     cancelPendingGeneration();
     setAppRoute(resourceRoute, behavior);
@@ -461,15 +491,6 @@ export const App = () => {
     setIsHomeSelected(false);
     setSelectedPuzzleId(resourceRoute.puzzleId);
     markPuzzleNavigation(resourceRoute.puzzleId);
-
-    const decoded = resolvePuzzleResourceSegment(resourceRoute.puzzleId, resourceRoute.generationId);
-    if (!decoded.ok) {
-      const message = "This puzzle is no longer available.";
-      resetRuntimePuzzleState();
-      setPuzzleLinkError(message);
-      setStatusMessage(message);
-      return;
-    }
 
     const identity = decoded.identity;
     setPuzzleLinkError(null);
@@ -514,6 +535,13 @@ export const App = () => {
     setAppRoute(view === "changelog" ? { kind: "updates" } : { kind: "about" }, behavior);
   };
 
+  const selectUnavailableResource = (
+    nextRoute: Extract<AppRoute, { kind: "unavailable-resource" }>,
+    behavior: NavigationBehavior = {},
+  ) => {
+    presentUnavailableResource(nextRoute.puzzleId, nextRoute, behavior);
+  };
+
   const selectNotFound = (nextRoute: Extract<AppRoute, { kind: "not-found" }>, behavior: NavigationBehavior = {}) => {
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
     cancelPendingGeneration();
@@ -527,6 +555,8 @@ export const App = () => {
       selectPuzzle(nextRoute.puzzleId, { pushHistory: false });
     } else if (nextRoute.kind === "resource") {
       selectResource(nextRoute, { pushHistory: false });
+    } else if (nextRoute.kind === "unavailable-resource") {
+      selectUnavailableResource(nextRoute, { pushHistory: false });
     } else if (nextRoute.kind === "home") {
       selectHome({ pushHistory: false });
     } else if (nextRoute.kind === "not-found") {
@@ -573,6 +603,8 @@ export const App = () => {
       selectPuzzle(initialRoute.puzzleId, { pushHistory: false });
     } else if (initialRoute.kind === "resource") {
       selectResource(initialRoute, { pushHistory: false });
+    } else if (initialRoute.kind === "unavailable-resource") {
+      selectUnavailableResource(initialRoute, { pushHistory: false });
     }
 
     return () => generation.worker.removeEventListener("message", handleMessage);
@@ -627,7 +659,10 @@ export const App = () => {
     restoreScrollPosition();
   };
 
-  const commitGenerationSettings = (settings: GenerationSettings = {}) => {
+  const commitGenerationSettings = (
+    settings: GenerationSettings = {},
+    behavior: GenerationBehavior = { preserveScroll: true, resourceHistory: "push" },
+  ) => {
     const identity = resolveGenerationIdentity({
       puzzleId: selectedPuzzleId,
       currentPuzzle: puzzle,
@@ -665,13 +700,22 @@ export const App = () => {
       jigsawSpecialPiecesMode:
         selectedPuzzleId === "jigsaw" ? identity.jigsawSpecialPiecesMode : undefined,
       provenance: identity.provenance,
-    }, { preserveScroll: true, resourceHistory: "push" });
+    }, behavior);
+  };
+
+  const createNewPuzzle = (behavior: GenerationBehavior) => {
+    const randomizedDraft = randomizeNextPuzzleArtwork(selectedPuzzleId, nextPuzzleDraft);
+    updateNextPuzzleDraft(randomizedDraft);
+    commitGenerationSettings({ ...randomizedDraft, seed: makeRandomSeed() }, behavior);
   };
 
   const generateNextPuzzle = () => {
-    const randomizedDraft = randomizeNextPuzzleArtwork(selectedPuzzleId, nextPuzzleDraft);
-    updateNextPuzzleDraft(randomizedDraft);
-    commitGenerationSettings({ ...randomizedDraft, seed: makeRandomSeed() });
+    createNewPuzzle({ preserveScroll: true, resourceHistory: "push" });
+  };
+
+  const recoverUnavailablePuzzle = () => {
+    replaceCurrentRoute({ kind: "puzzle", puzzleId: selectedPuzzleId });
+    createNewPuzzle({ resourceHistory: "replace" });
   };
 
   const loadSeededPuzzle = () => {
@@ -778,7 +822,7 @@ export const App = () => {
           <ResourceUnavailableView
             message={puzzleLinkError}
             puzzleTitle={selectedDefinition.title}
-            onStartNew={() => startFreshPuzzle(selectedPuzzleId, {}, true)}
+            onStartNew={recoverUnavailablePuzzle}
             onHome={() => {
               cancelPendingGeneration();
               setPuzzleLinkError(null);

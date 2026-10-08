@@ -10,7 +10,9 @@ const indexSource = readFileSync(new URL("../../index.html", import.meta.url), "
 describe("GA recovery presentation", () => {
   it("offers same-puzzle recovery instead of a dead-end invalid resource", () => {
     expect(appSource).toContain('const message = "This puzzle is no longer available."');
-    expect(appSource).toContain("startFreshPuzzle(selectedPuzzleId, {}, true)");
+    expect(appSource).toContain("onStartNew={recoverUnavailablePuzzle}");
+    expect(appSource).toContain("createNewPuzzle({ resourceHistory: \"replace\" });");
+    expect(appSource).toContain("randomizeNextPuzzleArtwork(selectedPuzzleId, nextPuzzleDraft)");
     expect(unavailableSource).toContain("Start a new {puzzleTitle}");
     expect(unavailableSource).toContain(">Home</button>");
   });
