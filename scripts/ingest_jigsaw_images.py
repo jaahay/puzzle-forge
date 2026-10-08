@@ -349,10 +349,6 @@ def resolve_rijksmuseum_source(artwork: Artwork) -> SourceRecord:
     object_number = artwork.source_id
 
     search_url = RIJKS_SEARCH_API + "?" + urllib.parse.urlencode({"objectNumber": object_number})
-    search = fetch_json(search_url, artwork.provider)
-    items = search.get("orderedItems")
-    if not isinstance(items, list) or not items:
-        raise RuntimeError(f"Rijksmuseum object {object_number} was not found")
 
     oai_ns = "http://www.openarchives.org/OAI/2.0/"
     dc_ns = "http://purl.org/dc/elements/1.1/"
@@ -364,43 +360,60 @@ def resolve_rijksmuseum_source(artwork: Artwork) -> SourceRecord:
     object_data_uri = None
     edm_root = None
     candidate_identifiers: list[list[str]] = []
-    for item in items:
-        candidate_uri = item.get("id") if isinstance(item, dict) else None
-        if not isinstance(candidate_uri, str):
-            continue
+    current_search_url: str | None = search_url
 
-        candidate_oai_url = RIJKS_OAI_API + "?" + urllib.parse.urlencode(
-            {
-                "verb": "GetRecord",
-                "metadataPrefix": "edm",
-                "identifier": candidate_uri,
-            }
-        )
-        candidate_bytes, _ = fetch_bytes(candidate_oai_url, artwork.provider)
-        try:
-            candidate_root = ET.fromstring(candidate_bytes)
-        except ET.ParseError as exc:
+    while current_search_url and edm_root is None:
+        search = fetch_json(current_search_url, artwork.provider)
+        items = search.get("orderedItems")
+        if not isinstance(items, list):
             raise RuntimeError(
-                f"Could not parse Rijksmuseum EDM candidate for {object_number}"
-            ) from exc
+                f"Rijksmuseum search returned invalid orderedItems for {object_number}"
+            )
 
-        error = candidate_root.find(f".//{{{oai_ns}}}error")
-        if error is not None:
-            continue
+        for item in items:
+            candidate_uri = item.get("id") if isinstance(item, dict) else None
+            if not isinstance(candidate_uri, str):
+                continue
 
-        identifiers = [
-            element.text.strip()
-            for element in candidate_root.findall(f".//{{{dc_ns}}}identifier")
-            if isinstance(element.text, str) and element.text.strip()
-        ]
-        candidate_identifiers.append(identifiers)
-        if object_number not in identifiers:
-            continue
+            candidate_oai_url = RIJKS_OAI_API + "?" + urllib.parse.urlencode(
+                {
+                    "verb": "GetRecord",
+                    "metadataPrefix": "edm",
+                    "identifier": candidate_uri,
+                }
+            )
+            candidate_bytes, _ = fetch_bytes(candidate_oai_url, artwork.provider)
+            try:
+                candidate_root = ET.fromstring(candidate_bytes)
+            except ET.ParseError as exc:
+                raise RuntimeError(
+                    f"Could not parse Rijksmuseum EDM candidate for {object_number}"
+                ) from exc
 
-        persistent_uri = candidate_uri
-        object_data_uri = rijks_data_uri(candidate_uri)
-        edm_root = candidate_root
-        break
+            error = candidate_root.find(f".//{{{oai_ns}}}error")
+            if error is not None:
+                continue
+
+            identifiers = [
+                element.text.strip()
+                for element in candidate_root.findall(f".//{{{dc_ns}}}identifier")
+                if isinstance(element.text, str) and element.text.strip()
+            ]
+            candidate_identifiers.append(identifiers)
+            if object_number not in identifiers:
+                continue
+
+            persistent_uri = candidate_uri
+            object_data_uri = rijks_data_uri(candidate_uri)
+            edm_root = candidate_root
+            break
+
+        if edm_root is not None:
+            break
+
+        next_page = search.get("next")
+        next_id = next_page.get("id") if isinstance(next_page, dict) else None
+        current_search_url = next_id if isinstance(next_id, str) and next_id else None
 
     if persistent_uri is None or object_data_uri is None or edm_root is None:
         raise RuntimeError(
