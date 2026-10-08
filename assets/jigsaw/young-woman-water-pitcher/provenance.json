@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "young-woman-water-pitcher",
+  "assetRevision": 1,
+  "work": {
+    "title": "Young Woman with a Water Pitcher",
+    "creator": "Johannes Vermeer",
+    "date": "ca. 1662",
+    "medium": "Oil on canvas",
+    "dimensions": "18 x 16 in. (45.7 x 40.6 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 437881,
+    "accessionNumber": "89.15.21",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/437881",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/437881",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP353257.jpg",
+    "retrievedAt": "2026-10-08T08:00:41.899180+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 2638182,
+    "sha256": "d14901b9c2124bd767cc1a4ca6286092eeedc3067a627449bd94869489bcefce",
+    "width": 3437,
+    "height": 3866
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 437881.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "embedded ICC profile converted to sRGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/young-woman-water-pitcher/puzzle.webp",
+      "width": 1821,
+      "height": 2048,
+      "byteSize": 564490,
+      "sha256": "550fe955d4b0c2c546f7ceff8d39694738b4df9d469f730fb3a9842f1391de2e",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/young-woman-water-pitcher/preview.webp",
+      "width": 910,
+      "height": 1024,
+      "byteSize": 97118,
+      "sha256": "f28fb07a6adf21610f40a48713818cbf888acd6278e34dbb63fce901b73d3b6a",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/young-woman-water-pitcher/thumbnail.webp",
+      "width": 341,
+      "height": 384,
+      "byteSize": 13116,
+      "sha256": "465e897dc63b6a4240cc66f19a531e276211a4428bcd0c7f5560ab5ffaa3af5f",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

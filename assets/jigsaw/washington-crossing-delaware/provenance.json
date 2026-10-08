@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "washington-crossing-delaware",
+  "assetRevision": 1,
+  "work": {
+    "title": "Washington Crossing the Delaware",
+    "creator": "Emanuel Leutze",
+    "date": "1851",
+    "medium": "Oil on canvas",
+    "dimensions": "149 x 255 in. (378.5 x 647.7 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 11417,
+    "accessionNumber": "97.34",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/11417",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/11417",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/ad/original/DP215410.jpg",
+    "retrievedAt": "2026-10-08T08:00:41.899180+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 1495013,
+    "sha256": "f421242b2362d204ea8718d8eff36e04fb1cba04f7b0e32cc077b2b5a4dbfc46",
+    "width": 1937,
+    "height": 1135
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 11417.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; assumed sRGB after RGB conversion",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/washington-crossing-delaware/puzzle.webp",
+      "width": 1937,
+      "height": 1135,
+      "byteSize": 285814,
+      "sha256": "c57e0838a9d635ccd9e1b9eacaf3c51f7efb7e7d3e682eec96e0e785e8a49db8",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/washington-crossing-delaware/preview.webp",
+      "width": 1024,
+      "height": 600,
+      "byteSize": 74618,
+      "sha256": "5ebaeb1785d255843a79bd15eec1522781d0242eba1196aa8f040a9c33319c86",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/washington-crossing-delaware/thumbnail.webp",
+      "width": 384,
+      "height": 225,
+      "byteSize": 12062,
+      "sha256": "97f140812132e9e1631df6df51f586a137f421b1e48e742a23dbb49d5d348d87",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

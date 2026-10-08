@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "silver-tureen",
+  "assetRevision": 1,
+  "work": {
+    "title": "The Silver Tureen",
+    "creator": "Jean Siméon Chardin",
+    "date": "ca. 1728–30",
+    "medium": "Oil on canvas",
+    "dimensions": "30 x 42 1/2 in. (76.2 x 108 cm)"
+  },
+  "source": {
+    "institution": "The Metropolitan Museum of Art",
+    "objectId": 435887,
+    "accessionNumber": "59.9",
+    "recordUrl": "https://www.metmuseum.org/art/collection/search/435887",
+    "apiRecordUrl": "https://collectionapi.metmuseum.org/public/collection/v1/objects/435887",
+    "sourceImageUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP356136.jpg",
+    "retrievedAt": "2026-10-08T08:00:41.899180+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 2391142,
+    "sha256": "a48be50c6ed58846faabb65854590628aee8db25ffbe931ce695aa6c16fc567f",
+    "width": 3925,
+    "height": 2776
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "The Met Open Access",
+    "policyUrl": "https://www.metmuseum.org/hubs/open-access",
+    "verification": "The Met object API returned isPublicDomain=true for object 435887.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; assumed sRGB after RGB conversion",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/silver-tureen/puzzle.webp",
+      "width": 2048,
+      "height": 1448,
+      "byteSize": 462590,
+      "sha256": "8bca02a379d5973b64a691e1fc9014a4b37f2fbd8ea7f2a1d9707b7b671a3257",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/silver-tureen/preview.webp",
+      "width": 1024,
+      "height": 724,
+      "byteSize": 58444,
+      "sha256": "d922d4a680b8c858fc5b72f2e40bd329dc300a823dddf76cda12dd101ccb0d87",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/silver-tureen/thumbnail.webp",
+      "width": 384,
+      "height": 272,
+      "byteSize": 7740,
+      "sha256": "bc442768e2d8856d5b02256e929b7545a6efe1fe7aca765c75eec6ba302fe91b",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}
