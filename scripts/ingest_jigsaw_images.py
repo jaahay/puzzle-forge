@@ -214,6 +214,20 @@ def request_headers(provider: str) -> dict[str, str]:
     headers = {"User-Agent": "puzzle-forge-artwork-ingestion/2"}
     if provider == "artic":
         headers["AIC-User-Agent"] = "puzzle-forge (https://github.com/jaahay/puzzle-forge)"
+    elif provider == "smithsonian":
+        headers.update(
+            {
+                "User-Agent": (
+                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                    "(KHTML, like Gecko) Chrome/152.0 Safari/537.36"
+                ),
+                "Accept": (
+                    "text/html,application/xhtml+xml,application/xml;q=0.9,"
+                    "image/avif,image/webp,image/apng,*/*;q=0.8"
+                ),
+                "Accept-Language": "en-US,en;q=0.9",
+            }
+        )
     return headers
 
 
