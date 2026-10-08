@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "paris-street-rainy-day",
+  "assetRevision": 1,
+  "work": {
+    "title": "Paris Street; Rainy Day",
+    "creator": "Gustave Caillebotte (French, 1848–1894)",
+    "date": "1877",
+    "medium": "Oil on canvas",
+    "dimensions": "212.2 × 276.2 cm (83 1/2 × 108 3/4 in.); Framed: 241.3 × 306.1 × 10.2 cm (95 × 120 1/2 × 4 in.)"
+  },
+  "source": {
+    "institution": "Art Institute of Chicago",
+    "objectId": 20684,
+    "accessionNumber": "1964.336",
+    "recordUrl": "https://www.artic.edu/artworks/20684",
+    "apiRecordUrl": "https://api.artic.edu/api/v1/artworks/20684",
+    "sourceImageUrl": "https://www.artic.edu/iiif/2/f8fd76e9-c396-5678-36ed-6a348c904d27/full/1686,/0/default.jpg",
+    "retrievedAt": "2026-10-08T08:28:15.761102+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 658998,
+    "sha256": "2b5b34eeee43dbc6d08b4f0ed4c17c2577b29a3809aa0761781531b1ee7a3952",
+    "width": 1686,
+    "height": 1309
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "Art Institute of Chicago public-domain designation",
+    "policyUrl": "https://api.artic.edu/docs/#copyright",
+    "verification": "Art Institute API returned is_public_domain=true for artwork 20684.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.14",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; assumed sRGB after RGB conversion",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/paris-street-rainy-day/puzzle.webp",
+      "width": 1686,
+      "height": 1309,
+      "byteSize": 326980,
+      "sha256": "82278f6e700a733ec92e902fe7cdc1f9fc664d3cc265013638e3a6d052f643cf",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/paris-street-rainy-day/preview.webp",
+      "width": 1024,
+      "height": 795,
+      "byteSize": 100146,
+      "sha256": "731dcb491fa5df0330a670cd84cd9610409c8a50bd60c716734e6fbbdfd621f0",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/paris-street-rainy-day/thumbnail.webp",
+      "width": 384,
+      "height": 298,
+      "byteSize": 17452,
+      "sha256": "57bb8f81a9ee3b4ec4ee6be6201db961350233bdd8fd7cbfe194c9683a886f66",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}
