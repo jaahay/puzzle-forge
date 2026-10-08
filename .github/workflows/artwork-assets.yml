@@ -11,6 +11,9 @@ on:
         description: Space- or newline-separated manifest asset IDs
         required: true
         type: string
+  issue_comment:
+    types:
+      - created
   push:
     paths:
       - "assets/jigsaw/**"
@@ -37,7 +40,7 @@ permissions:
 jobs:
   verify:
     name: Verify committed artwork
-    if: github.event_name != 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -59,29 +62,66 @@ jobs:
 
   ingest:
     name: Ingest artwork
-    if: github.event_name == 'workflow_dispatch'
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.comment.user.login == github.repository_owner &&
+        !github.event.issue.pull_request &&
+        startsWith(github.event.comment.body, '/ingest-artwork ')
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: write
     concurrency:
-      group: artwork-ingestion-${{ inputs.target_branch }}
+      group: artwork-ingestion
       cancel-in-progress: false
 
     steps:
-      - name: Require trusted workflow ref
+      - name: Resolve trusted ingestion request
+        id: request
         env:
+          EVENT_NAME: ${{ github.event_name }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           WORKFLOW_REF: ${{ github.ref_name }}
+          DISPATCH_TARGET_BRANCH: ${{ inputs.target_branch }}
+          DISPATCH_ASSET_IDS: ${{ inputs.asset_ids }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMENT_AUTHOR: ${{ github.event.comment.user.login }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+        shell: python
         run: |
-          if [ "$WORKFLOW_REF" != "$DEFAULT_BRANCH" ]; then
-            echo "Run this workflow from the default branch only." >&2
-            exit 1
-          fi
+          import os
+          from pathlib import Path
+
+          event_name = os.environ["EVENT_NAME"]
+          if event_name == "workflow_dispatch":
+              if os.environ["WORKFLOW_REF"] != os.environ["DEFAULT_BRANCH"]:
+                  raise SystemExit("Run this workflow from the default branch only.")
+              target_branch = os.environ["DISPATCH_TARGET_BRANCH"].strip()
+              asset_ids = os.environ["DISPATCH_ASSET_IDS"].split()
+          elif event_name == "issue_comment":
+              if os.environ["COMMENT_AUTHOR"] != os.environ["REPOSITORY_OWNER"]:
+                  raise SystemExit("Artwork ingestion comments are restricted to the repository owner.")
+              tokens = os.environ["COMMENT_BODY"].split()
+              if len(tokens) < 3 or tokens[0] != "/ingest-artwork":
+                  raise SystemExit(
+                      "Usage: /ingest-artwork <target-feature-branch> <asset-id> [asset-id ...]"
+                  )
+              target_branch = tokens[1]
+              asset_ids = tokens[2:]
+          else:
+              raise SystemExit(f"Unsupported ingestion event: {event_name}")
+
+          output_path = Path(os.environ["GITHUB_OUTPUT"])
+          with output_path.open("a", encoding="utf-8") as output:
+              output.write(f"target_branch={target_branch}\n")
+              output.write("asset_ids=" + " ".join(asset_ids) + "\n")
 
       - name: Checkout target branch
         uses: actions/checkout@v7
         with:
-          ref: ${{ inputs.target_branch }}
+          ref: ${{ steps.request.outputs.target_branch }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -94,8 +134,9 @@ jobs:
         run: python -m pip install "Pillow==12.3.0"
 
       - name: Validate target branch
+        id: target
         env:
-          TARGET_BRANCH: ${{ inputs.target_branch }}
+          TARGET_BRANCH: ${{ steps.request.outputs.target_branch }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           if [ -z "$TARGET_BRANCH" ] || [ "$TARGET_BRANCH" = "$DEFAULT_BRANCH" ] || [ "$TARGET_BRANCH" = "main" ] || [ "$TARGET_BRANCH" = "master" ]; then
@@ -136,11 +177,17 @@ jobs:
             exit 1
           fi
 
+          echo "head_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "config_sha=$(sha256sum .git/config | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
       - name: Verify sources and ingest requested artwork
         env:
-          ASSET_IDS: ${{ inputs.asset_ids }}
+          ASSET_IDS: ${{ steps.request.outputs.asset_ids }}
+          EXPECTED_TARGET_HEAD: ${{ steps.target.outputs.head_sha }}
+          EXPECTED_LOCAL_CONFIG_SHA: ${{ steps.target.outputs.config_sha }}
         shell: python
         run: |
+          import hashlib
           import json
           import os
           import re
@@ -177,6 +224,19 @@ jobs:
               check=True,
           )
 
+          current_head = subprocess.run(
+              ["git", "rev-parse", "HEAD"],
+              check=True,
+              capture_output=True,
+              text=True,
+          ).stdout.strip()
+          if current_head != os.environ["EXPECTED_TARGET_HEAD"]:
+              raise SystemExit("Ingestion changed the checked-out Git HEAD.")
+
+          current_config_sha = hashlib.sha256(Path(".git/config").read_bytes()).hexdigest()
+          if current_config_sha != os.environ["EXPECTED_LOCAL_CONFIG_SHA"]:
+              raise SystemExit("Ingestion changed the local Git configuration.")
+
           allowed_paths = {
               *(f"assets/jigsaw/{asset_id}/provenance.json" for asset_id in asset_ids),
               *(
@@ -206,11 +266,27 @@ jobs:
 
       - name: Commit generated artwork
         env:
-          TARGET_BRANCH: ${{ inputs.target_branch }}
+          TARGET_BRANCH: ${{ steps.request.outputs.target_branch }}
+          EXPECTED_TARGET_HEAD: ${{ steps.target.outputs.head_sha }}
           GH_TOKEN: ${{ github.token }}
+          GIT_CONFIG_GLOBAL: /dev/null
+          GIT_CONFIG_NOSYSTEM: "1"
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
         run: |
+          if [ "$(git rev-parse HEAD)" != "$EXPECTED_TARGET_HEAD" ]; then
+            echo "Target HEAD changed during ingestion." >&2
+            exit 1
+          fi
+          REMOTE_TARGET_SHA="$(git ls-remote --exit-code --heads origin "$TARGET_BRANCH" | awk '{print $1}')"
+          if [ "$REMOTE_TARGET_SHA" != "$EXPECTED_TARGET_HEAD" ]; then
+            echo "Target branch moved during ingestion." >&2
+            exit 1
+          fi
           while IFS= read -r asset_id; do
-            git add -- "assets/jigsaw/$asset_id" "public/jigsaw/$asset_id"
+            git -c core.hooksPath=/dev/null add -- "assets/jigsaw/$asset_id" "public/jigsaw/$asset_id"
           done < .artwork-ingestion-ids
           rm .artwork-ingestion-ids
 
@@ -219,10 +295,10 @@ jobs:
             exit 1
           fi
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Ingest artwork assets"
+          git -c core.hooksPath=/dev/null commit -m "Ingest artwork assets"
 
           AUTH_HEADER="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
-          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $AUTH_HEADER" \
+          git \
+            -c core.hooksPath=/dev/null \
+            -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $AUTH_HEADER" \
             push "https://github.com/$GITHUB_REPOSITORY.git" "HEAD:$TARGET_BRANCH"
