@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { getPuzzleAvailability } from "./catalog/puzzleAvailability";
+import { needsAbandonmentConfirmation, type IdentifiedWorkspaceProgress, type WorkspaceProgressReport } from "./app/abandonmentPolicy";
 import { getPuzzleDefinition, isGeneratable } from "./catalog/puzzleCatalog";
 import type { GeneratedPuzzle, PuzzleId } from "./catalog/types";
 import { AboutView } from "./components/AboutView";
 import { AppShell } from "./components/AppShell";
+import { AbandonmentDialog, type DestructivePuzzleAction } from "./components/AbandonmentDialog";
 import { ChangelogView } from "./components/ChangelogView";
 import { NotFoundView } from "./components/NotFoundView";
 import { PuzzleCatalog } from "./components/PuzzleCatalog";
@@ -116,6 +118,8 @@ export const App = () => {
   const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
   const [jigsawProgress, setJigsawProgress] = useState<{ puzzleInstanceId: string; assembly: JigsawAssemblyProgress } | null>(null);
   const [puzzleLinkError, setPuzzleLinkError] = useState<string | null>(null);
+  const [pendingAbandonment, setPendingAbandonment] = useState<{ action: DestructivePuzzleAction; puzzleInstanceId: string; proceed: () => void } | null>(null);
+  const workspaceProgressRef = useRef<IdentifiedWorkspaceProgress | null>(null);
   const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(true);
   const [hasSelectedPuzzle, setHasSelectedPuzzle] = useState(shouldStartOnPuzzleSurface);
   const [isHomeSelected, setIsHomeSelected] = useState(!shouldStartOnPuzzleSurface);
@@ -657,6 +661,32 @@ export const App = () => {
     restoreScrollPosition();
   };
 
+  const reportWorkspaceProgress = (puzzleInstanceId: string, report: WorkspaceProgressReport) => {
+    workspaceProgressRef.current = { puzzleInstanceId, ...report };
+  };
+
+  const requestDestructiveAction = (action: DestructivePuzzleAction, proceed: () => void) => {
+    const assembly = puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw" &&
+      jigsawProgress?.puzzleInstanceId === puzzle.id ? jigsawProgress.assembly : null;
+    if (!needsAbandonmentConfirmation(puzzle, {
+      gridCells: grid.gridCells,
+      cardStacks: solitaire.cardStacks,
+      jigsawAssembly: assembly,
+      workspaceProgress: workspaceProgressRef.current,
+    })) {
+      proceed();
+      return;
+    }
+    if (puzzle) setPendingAbandonment({ action, puzzleInstanceId: puzzle.id, proceed });
+  };
+
+  const requestResetCurrentPuzzle = (afterReset?: () => void) =>
+    requestDestructiveAction("reset", () => {
+      resetCurrentPuzzle();
+      afterReset?.();
+      workspaceProgressRef.current = null;
+    });
+
   const commitGenerationSettings = (
     settings: GenerationSettings = {},
     behavior: GenerationBehavior = { preserveScroll: true, resourceHistory: "push" },
@@ -707,9 +737,7 @@ export const App = () => {
     commitGenerationSettings({ ...randomizedDraft, seed: makeRandomSeed() }, behavior);
   };
 
-  const generateNextPuzzle = () => {
-    createNewPuzzle({ preserveScroll: true, resourceHistory: "push" });
-  };
+  const generateNextPuzzle = () => requestDestructiveAction("new", () => createNewPuzzle({ preserveScroll: true, resourceHistory: "push" }));
 
   const recoverUnavailablePuzzle = () => {
     replaceCurrentRoute({ kind: "puzzle", puzzleId: selectedPuzzleId });
@@ -719,17 +747,19 @@ export const App = () => {
   const loadSeededPuzzle = () => {
     const nextSeed = seedLoadInput.trim();
     if (!nextSeed) return;
-    rememberNextPuzzleDraft();
-    commitGenerationSettings({ ...nextPuzzleDraft, seed: nextSeed });
+    requestDestructiveAction("new", () => {
+      rememberNextPuzzleDraft();
+      commitGenerationSettings({ ...nextPuzzleDraft, seed: nextSeed });
+    });
   };
 
-  const loadToday = () => {
+  const loadToday = () => requestDestructiveAction("new", () => {
     rememberNextPuzzleDraft();
     commitGenerationSettings({
       ...nextPuzzleDraft,
       provenance: { source: "daily", dateStamp: getLocalDateStamp() },
     });
-  };
+  });
 
   const handleCheck = () => { if (!puzzle) return; puzzle.kind === "cards" ? solitaire.checkSolitaire() : grid.checkGrid(puzzle, setStatusMessage); };
   const workspaceIsGenerating = generation.isGenerating || (!puzzle && selectedPuzzleIsGeneratable && !isHomeSelected && !puzzleLinkError);
@@ -741,7 +771,8 @@ export const App = () => {
     statusMessage,
     onStatusMessageChange: setStatusMessage,
     isGenerating: workspaceIsGenerating,
-    onReset: resetCurrentPuzzle,
+    onReset: requestResetCurrentPuzzle,
+    onRuntimeProgressChange: reportWorkspaceProgress,
   };
   const workspaceProspective = {
     nextPuzzleDraft,
@@ -844,6 +875,17 @@ export const App = () => {
   return (
     <AppShell activeView={activeView} headerControls={puzzleNavigation} onHomeSelect={() => selectHome()} onViewSelect={(view) => selectSiteView(view)}>
       {content}
+      {pendingAbandonment ? (
+        <AbandonmentDialog
+          action={pendingAbandonment.action}
+          onCancel={() => setPendingAbandonment(null)}
+          onConfirm={() => {
+            const pending = pendingAbandonment;
+            setPendingAbandonment(null);
+            if (puzzle?.id === pending.puzzleInstanceId) pending.proceed();
+          }}
+        />
+      ) : null}
     </AppShell>
   );
 };

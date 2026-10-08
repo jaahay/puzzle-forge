@@ -21,6 +21,7 @@ import "./site/jigsaw.css";
 import "./site/image-tiles.css";
 import "./site/artwork-album.css";
 import "./site/solitaire.css";
+import "./site/abandonment-dialog.css";
 
 const root = document.getElementById("app");
 

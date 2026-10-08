@@ -1,0 +1,27 @@
+.puzzle-abandon-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+    max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  background: rgb(2 6 23 / 74%);
+}
+.puzzle-abandon-dialog {
+  width: min(100%, 28rem);
+  padding: 1.5rem;
+  border: 1px solid #475569;
+  border-radius: 1rem;
+  background: #172033;
+  box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 35%);
+}
+.puzzle-abandon-dialog h2 { font-size: 1.35rem; line-height: 1.3; margin: 0 0 .7rem; }
+.puzzle-abandon-dialog p { margin: 0 0 1.5rem; color: #cbd5e1; }
+.puzzle-abandon-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: .65rem; }
+.puzzle-abandon-actions button {
+  min-height: 2.75rem; padding: .65rem 1rem; border-radius: .65rem;
+  color: #f8fafc; background: #334155; cursor: pointer;
+}
+.puzzle-abandon-actions .puzzle-abandon-confirm { background: #a43b3b; }
+.puzzle-abandon-actions button:focus-visible { outline: 3px solid #93c5fd; outline-offset: 3px; }

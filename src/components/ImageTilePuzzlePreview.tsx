@@ -1,6 +1,7 @@
 import type { JSX } from "preact";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import type { ImageTileGeneratedPuzzle, TilePuzzlePiece } from "../catalog/types";
+import type { WorkspaceProgressReport } from "../app/abandonmentPolicy";
 import { getImageTileCrop } from "../games/imageTiles/geometry";
 import {
   applyImageTileHistoryAction,
@@ -40,6 +41,7 @@ type ImageTilePuzzlePreviewProps = {
   onCausativeInput?: () => void;
   onCompletionAnimationEnd?: () => void;
   onSolvedChange?: (solved: boolean) => void;
+  onProgressChange?: (report: WorkspaceProgressReport) => void;
   onHistoryAvailabilityChange?: (availability: ImageTileHistoryAvailability) => void;
   onHistoryControllerChange?: (controller: ImageTileHistoryController | null) => void;
 };
@@ -235,6 +237,7 @@ export const ImageTilePuzzlePreview = ({
   onCausativeInput,
   onCompletionAnimationEnd,
   onSolvedChange,
+  onProgressChange,
   onHistoryAvailabilityChange,
   onHistoryControllerChange,
 }: ImageTilePuzzlePreviewProps) => {
@@ -329,7 +332,8 @@ export const ImageTilePuzzlePreview = ({
 
   useEffect(() => {
     onSolvedChange?.(isSolved);
-  }, [isSolved, onSolvedChange]);
+    onProgressChange?.({ hasProgress: progress.moveCount > 0, terminal: isSolved });
+  }, [isSolved, onSolvedChange, onProgressChange, progress.moveCount]);
 
   const moveTile = (tile: TilePuzzlePiece) => {
     if (isSolved) return;
