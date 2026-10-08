@@ -214,22 +214,6 @@ def fetch_bytes(url: str, provider: str) -> tuple[bytes, str]:
         ) from exc
 
 
-def resolve_preferred_name(record: dict) -> str | None:
-    for identifier in record.get("identified_by", []):
-        if not isinstance(identifier, dict):
-            continue
-        for classification in identifier.get("classified_as", []):
-            if (
-                isinstance(classification, dict)
-                and classification.get("id") == "http://vocab.getty.edu/aat/300404672"
-            ):
-                content = identifier.get("content")
-                if isinstance(content, str) and content:
-                    return content
-    label = record.get("_label")
-    return label if isinstance(label, str) and label else None
-
-
 def resolve_linked_art_creator(record: dict) -> str | None:
     production = record.get("produced_by")
     if not isinstance(production, dict):
@@ -378,7 +362,6 @@ def resolve_rijksmuseum_source(artwork: Artwork) -> SourceRecord:
 
     persistent_uri = None
     object_data_uri = None
-    oai_url = None
     edm_root = None
     candidate_identifiers: list[list[str]] = []
     for item in items:
@@ -416,11 +399,10 @@ def resolve_rijksmuseum_source(artwork: Artwork) -> SourceRecord:
 
         persistent_uri = candidate_uri
         object_data_uri = rijks_data_uri(candidate_uri)
-        oai_url = candidate_oai_url
         edm_root = candidate_root
         break
 
-    if persistent_uri is None or object_data_uri is None or oai_url is None or edm_root is None:
+    if persistent_uri is None or object_data_uri is None or edm_root is None:
         raise RuntimeError(
             f"Rijksmuseum search returned no exact object-number match for {object_number}; "
             f"candidate identifiers were {candidate_identifiers!r}"
