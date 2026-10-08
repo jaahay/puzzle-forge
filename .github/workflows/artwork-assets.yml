@@ -83,6 +83,7 @@ jobs:
         with:
           ref: ${{ inputs.target_branch }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -206,6 +207,7 @@ jobs:
       - name: Commit generated artwork
         env:
           TARGET_BRANCH: ${{ inputs.target_branch }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           while IFS= read -r asset_id; do
             git add -- "assets/jigsaw/$asset_id" "public/jigsaw/$asset_id"
@@ -220,4 +222,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "Ingest artwork assets"
-          git push origin "HEAD:$TARGET_BRANCH"
+
+          AUTH_HEADER="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $AUTH_HEADER" \
+            push "https://github.com/$GITHUB_REPOSITORY.git" "HEAD:$TARGET_BRANCH"
