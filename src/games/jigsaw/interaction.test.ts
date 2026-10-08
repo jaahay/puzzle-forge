@@ -515,7 +515,7 @@ describe("Jigsaw island interaction", () => {
         placements,
         assembly,
         "tile-2",
-        new Set(["tile-1", "tile-2", "tile-3"]),
+        { eligiblePieceIds: new Set(["tile-1", "tile-2", "tile-3"]) },
       ),
     ).toMatchObject({
       joined: false,
@@ -529,7 +529,7 @@ describe("Jigsaw island interaction", () => {
         placements,
         assembly,
         "tile-2",
-        new Set(["tile-0", "tile-1", "tile-2"]),
+        { eligiblePieceIds: new Set(["tile-0", "tile-1", "tile-2"]) },
       ),
     ).toMatchObject({
       joined: true,
@@ -556,7 +556,7 @@ describe("Jigsaw island interaction", () => {
       placements,
       assembly,
       "tile-2",
-      new Set(["tile-1", "tile-2"]),
+      { eligiblePieceIds: new Set(["tile-1", "tile-2"]) },
     );
 
     expect(result.joined).toBe(false);
@@ -615,6 +615,81 @@ describe("Jigsaw island interaction", () => {
     const socketTranslation = getTranslationForLayout(capsuleLayout, socketPlacement, socket);
     expect(capsuleTranslation.x).toBeCloseTo(socketTranslation.x);
     expect(capsuleTranslation.y).toBeCloseTo(socketTranslation.y);
+  });
+
+  it("snaps a near-frame piece only when frame assistance is enabled", () => {
+    const placements = [
+      placementAtTranslation(pieces[0]!, 8, 6),
+      placementAtTranslation(pieces[1]!, 200, 120),
+      placementAtTranslation(pieces[2]!, 200, 120),
+      placementAtTranslation(pieces[3]!, 200, 120),
+    ];
+
+    const ordinaryDrop = resolveJigsawComponentDrop(
+      layout,
+      pieces,
+      placements,
+      { joinedComponents: [] },
+      "tile-0",
+    );
+    const assistedDrop = resolveJigsawComponentDrop(
+      layout,
+      pieces,
+      placements,
+      { joinedComponents: [] },
+      "tile-0",
+      { snapToFrame: true },
+    );
+
+    expect(getTranslation(ordinaryDrop.placements[0]!, pieces[0]!)).toEqual({ x: 8, y: 6 });
+    expect(getTranslation(assistedDrop.placements[0]!, pieces[0]!)).toEqual({ x: 0, y: 0 });
+    expect(assistedDrop.joined).toBe(false);
+    expect(assistedDrop.assembly).toEqual({ joinedComponents: [] });
+  });
+
+  it("snaps an existing island rigidly to the frame without creating progress", () => {
+    const placements = [
+      placementAtTranslation(pieces[0]!, 9, 7),
+      placementAtTranslation(pieces[1]!, 9, 7),
+      placementAtTranslation(pieces[2]!, 200, 120),
+      placementAtTranslation(pieces[3]!, 200, 120),
+    ];
+    const assembly = { joinedComponents: [["tile-0", "tile-1"]] };
+    const result = resolveJigsawComponentDrop(
+      layout,
+      pieces,
+      placements,
+      assembly,
+      "tile-0",
+      { snapToFrame: true },
+    );
+
+    expect(result.joined).toBe(false);
+    expect(result.assembly).toEqual(assembly);
+    expect(getTranslation(result.placements[0]!, pieces[0]!)).toEqual({ x: 0, y: 0 });
+    expect(getTranslation(result.placements[1]!, pieces[1]!)).toEqual({ x: 0, y: 0 });
+  });
+
+  it("lets frame alignment absorb a neighboring component in the same drop", () => {
+    const placements = [
+      placementAtTranslation(pieces[0]!, 8, 4),
+      placementAtTranslation(pieces[1]!, 10, 5),
+      placementAtTranslation(pieces[2]!, 200, 120),
+      placementAtTranslation(pieces[3]!, 200, 120),
+    ];
+    const result = resolveJigsawComponentDrop(
+      layout,
+      pieces,
+      placements,
+      { joinedComponents: [] },
+      "tile-1",
+      { snapToFrame: true },
+    );
+
+    expect(result.joined).toBe(true);
+    expect(result.assembly).toEqual({ joinedComponents: [["tile-0", "tile-1"]] });
+    expect(getTranslation(result.placements[0]!, pieces[0]!)).toEqual({ x: 0, y: 0 });
+    expect(getTranslation(result.placements[1]!, pieces[1]!)).toEqual({ x: 0, y: 0 });
   });
 
   it("does not treat correct absolute board placement as progress", () => {

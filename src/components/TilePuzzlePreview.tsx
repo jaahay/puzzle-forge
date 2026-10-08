@@ -227,6 +227,7 @@ export const TilePuzzlePreview = ({
   const [isPanning, setIsPanning] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showEdgeSeams, setShowEdgeSeams] = useState(false);
+  const [snapToFrame, setSnapToFrame] = useState(false);
   const [showCompactTools, setShowCompactTools] = useState(false);
   const [showFitMenu, setShowFitMenu] = useState(false);
   const [focusedSectionId, setFocusedSectionId] = useState<JigsawCoarseSectionId | null>(null);
@@ -935,7 +936,10 @@ export const TilePuzzlePreview = ({
       historyRef.current,
       movedPlacements,
       drag,
-      focusedSection ? visiblePieceIds : undefined,
+      {
+        eligiblePieceIds: focusedSection ? visiblePieceIds : undefined,
+        snapToFrame,
+      },
     );
     const nextSnapshot = completed.snapshot;
     const nextState = updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
@@ -1163,6 +1167,16 @@ export const TilePuzzlePreview = ({
           }}
         >
           {showEdgeSeams ? "Hide edge guides" : "Show edge guides"}
+        </button>
+        <button
+          type="button"
+          aria-pressed={snapToFrame}
+          onClick={() => {
+            setSnapToFrame((current) => !current);
+            setShowCompactTools(false);
+          }}
+        >
+          Snap to frame
         </button>
         {coarseSections.length > 0 ? (
           <div class="jigsaw-section-tools" role="group" aria-label="Puzzle section focus">

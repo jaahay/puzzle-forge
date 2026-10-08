@@ -6,7 +6,7 @@ import {
   type JigsawHistoryState,
   type JigsawWorkspaceSnapshot,
 } from "./history";
-import { moveJigsawComponent, resolveJigsawComponentDrop } from "./interaction";
+import { moveJigsawComponent, resolveJigsawComponentDrop, type JigsawDropOptions } from "./interaction";
 import {
   screenToJigsawWorld,
   type JigsawCamera,
@@ -138,7 +138,7 @@ export const completeJigsawDragAction = (
   history: JigsawHistoryState,
   movedPlacements: readonly JigsawPlacement[],
   drag: JigsawDragAction,
-  eligiblePieceIds?: ReadonlySet<string>,
+  options: JigsawDropOptions = {},
 ): JigsawCompletedDragAction => {
   const dropped = resolveJigsawComponentDrop(
     layout,
@@ -146,7 +146,7 @@ export const completeJigsawDragAction = (
     movedPlacements,
     drag.startSnapshot.assembly,
     drag.tileId,
-    eligiblePieceIds,
+    options,
   );
   const snapshot: JigsawWorkspaceSnapshot = {
     placements: dropped.placements,

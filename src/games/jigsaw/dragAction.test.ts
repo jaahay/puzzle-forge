@@ -104,6 +104,45 @@ describe("Jigsaw drag action", () => {
     expect(drag.startSnapshot).toEqual(before);
   });
 
+  it("records a frame-assisted drop as one ordinary history action", () => {
+    const snapshot = makeSnapshot();
+    const origin = snapshot.placements[0]!;
+    const drag = beginJigsawDragAction({
+      puzzleId: "jigsaw-1",
+      tileId: "tile-0",
+      pieceIds: ["tile-0"],
+      pointerId: 7,
+      camera: { centerX: 400, centerY: 300, zoom: 1 },
+      viewport: { width: 800, height: 600 },
+      stagePoint: { x: 200, y: 200 },
+      origin: { left: origin.worldX, top: origin.worldY },
+      snapshot,
+      clientX: 200,
+      clientY: 200,
+    });
+    const solved = getJigsawSolvedPosition(layout, pieces[0]!);
+    const moved = drag.startSnapshot.placements.map((placement) => placement.id === "tile-0"
+      ? { ...placement, worldX: solved.left + 8, worldY: solved.top + 6 }
+      : { ...placement });
+
+    const completed = completeJigsawDragAction(
+      layout,
+      pieces,
+      makeEmptyJigsawHistoryState(),
+      moved,
+      drag,
+      { snapToFrame: true },
+    );
+
+    expect(completed.history.undoStack).toHaveLength(1);
+    expect(completed.history.undoStack[0]).toEqual(drag.startSnapshot);
+    expect(completed.snapshot.assembly).toEqual({ joinedComponents: [] });
+    expect(completed.snapshot.placements[0]).toMatchObject({
+      worldX: solved.left,
+      worldY: solved.top,
+    });
+  });
+
   it("commits one completed drag to history and cancel restores the start snapshot", () => {
     const snapshot = makeSnapshot();
     const origin = snapshot.placements[0]!;
@@ -131,7 +170,7 @@ describe("Jigsaw drag action", () => {
       makeEmptyJigsawHistoryState(),
       moved,
       drag,
-      new Set(["tile-0"]),
+      { eligiblePieceIds: new Set(["tile-0"]) },
     );
 
     expect(completed.solved).toBe(false);

@@ -105,6 +105,11 @@ const getComponentTranslation = (
 const getSnapThreshold = (layout: JigsawWorldLayout) =>
   Math.max(18, Math.min(layout.pieceWidth, layout.pieceHeight) * 0.42);
 
+export type JigsawDropOptions = {
+  eligiblePieceIds?: ReadonlySet<string>;
+  snapToFrame?: boolean;
+};
+
 export type JigsawDropResult = {
   placements: JigsawPlacement[];
   assembly: JigsawAssemblyProgress;
@@ -117,8 +122,9 @@ export const resolveJigsawComponentDrop = (
   placements: readonly JigsawPlacement[],
   assembly: JigsawAssemblyProgress,
   draggedPieceId: string,
-  eligiblePieceIds?: ReadonlySet<string>,
+  options: JigsawDropOptions = {},
 ): JigsawDropResult => {
+  const { eligiblePieceIds, snapToFrame = false } = options;
   const draggedIds = getJigsawComponentPieceIds(assembly, draggedPieceId);
   if (eligiblePieceIds && draggedIds.some((pieceId) => !eligiblePieceIds.has(pieceId))) {
     return {
@@ -194,19 +200,27 @@ export const resolveJigsawComponentDrop = (
 
   const snapThreshold = getSnapThreshold(layout);
   const remainingCandidates = [...candidates.values()];
-
-  if (remainingCandidates.length === 0) {
-    return {
-      placements: placements.map((placement) => ({ ...placement })),
-      assembly,
-      joined: false,
-    };
-  }
-
   let mergedAssembly = assembly;
   let mergedPlacements = placements.map((placement) => ({ ...placement }));
   let currentTranslation = draggedTranslation;
   let joined = false;
+  let frameAnchored = false;
+
+  if (
+    snapToFrame &&
+    Math.hypot(currentTranslation.x, currentTranslation.y) <= snapThreshold
+  ) {
+    mergedPlacements = alignComponentToTranslation(
+      layout,
+      pieces,
+      mergedPlacements,
+      draggedIds,
+      0,
+      0,
+    );
+    currentTranslation = { x: 0, y: 0 };
+    frameAnchored = true;
+  }
 
   while (remainingCandidates.length > 0) {
     const nextCandidate = remainingCandidates
@@ -238,13 +252,16 @@ export const resolveJigsawComponentDrop = (
       mergedAssembly,
       draggedPieceId,
     );
+    const alignmentTranslation = frameAnchored
+      ? currentTranslation
+      : { x: candidate.translationX, y: candidate.translationY };
     const aligned = alignComponentToTranslation(
       layout,
       pieces,
       mergedPlacements,
       mergedIds,
-      candidate.translationX,
-      candidate.translationY,
+      alignmentTranslation.x,
+      alignmentTranslation.y,
     );
 
     mergedPlacements = moveJigsawComponent(
@@ -260,10 +277,7 @@ export const resolveJigsawComponentDrop = (
       piecesById,
       getPlacementById(mergedPlacements),
       draggedPieceId,
-    ) ?? {
-      x: candidate.translationX,
-      y: candidate.translationY,
-    };
+    ) ?? alignmentTranslation;
     joined = true;
   }
 

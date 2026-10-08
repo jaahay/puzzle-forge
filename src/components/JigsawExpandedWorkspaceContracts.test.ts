@@ -97,6 +97,10 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).toContain("aria-expanded={showFitMenu}");
     expect(jigsawPreviewSource).toContain("Restage pieces");
     expect(jigsawPreviewSource).toContain("restagePieces();");
+    expect(jigsawPreviewSource).toContain("Snap to frame");
+    expect(jigsawPreviewSource).toContain("aria-pressed={snapToFrame}");
+    expect(jigsawPreviewSource).toContain("snapToFrame,");
+    expect(jigsawCss).toContain('.tile-puzzle-tools button[aria-pressed="true"]');
     expect(jigsawPreviewSource).not.toContain("Scatter pieces");
 
     expect(immersiveToggleRule).toContain("display: grid;");
