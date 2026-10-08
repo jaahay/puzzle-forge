@@ -1,6 +1,8 @@
 # Changelog
 
-All notable Puzzle Forge changes should be documented here in a concise, reader-facing form. Dates use Pacific time.
+This is the pre-GA engineering changelog. It is project history, not the public release-note feed. Dates use Pacific time.
+
+Public release notes begin with the GA release; pre-GA development history is not retroactively republished as consumer release notes.
 
 ## 2026-06-16
 

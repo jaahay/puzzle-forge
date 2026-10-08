@@ -45,16 +45,6 @@ export const AppShell = ({ activeView, children, headerControls, onHomeSelect, o
         <nav class="app-nav" aria-label="Site links">
           <a href="https://github.com/jaahay/puzzle-forge">Source</a>
           <a
-            href="/updates"
-            aria-current={activeView === "changelog" ? "page" : undefined}
-            onClick={(event) => {
-              event.preventDefault();
-              onViewSelect("changelog");
-            }}
-          >
-            Updates
-          </a>
-          <a
             href="/about"
             aria-current={activeView === "about" ? "page" : undefined}
             onClick={(event) => {

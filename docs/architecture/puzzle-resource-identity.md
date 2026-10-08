@@ -64,6 +64,16 @@ Generated random seeds contain 96 bits of entropy and are represented as 16 URL-
 
 The compact ID remains self-contained. Regenerating an ordinary canonical URL requires no database, short-link service, alias registry, or network lookup.
 
+### Compatibility policy
+
+Puzzle resource locators are interpreted by the current Puzzle Forge release; they are not a permanent backwards-compatibility contract.
+
+Puzzle Forge may intentionally change generation identity, generator semantics, or local persistence formats without retaining legacy decoders, generator forks, migration layers, or compatibility aliases. This remains true after GA. Prefer one current model over parallel historical implementations.
+
+When an older resource can no longer be understood, the product should fail locally and recoverably: explain that the puzzle is no longer available and offer a fresh puzzle of the same type. When an identity still decodes but the regenerated baseline checksum changes, incompatible local progress is discarded rather than migrated onto a different puzzle.
+
+Local browser persistence is best-effort convenience rather than durable user data. Incompatible saved sessions may be dropped independently; one stale entry must not invalidate unrelated recent puzzles.
+
 ## Curated aliases
 
 Curated aliases provide memorable names for selected exact resources:

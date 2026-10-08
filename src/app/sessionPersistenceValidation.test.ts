@@ -30,14 +30,17 @@ const makeGridCells = (): PuzzleCell[] =>
     };
   });
 
-const makeSudokuPuzzle = (): GridGeneratedPuzzle => ({
-  id: "sudoku-validation",
+const makeSudokuPuzzle = (
+  seed = "validation-seed",
+  checksum = "checksum",
+): GridGeneratedPuzzle => ({
+  id: `sudoku-${seed}`,
   puzzleId: "sudoku",
   title: "Sudoku",
-  seed: "validation-seed",
+  seed,
   width: 9,
   height: 9,
-  checksum: "checksum",
+  checksum,
   createdAt: "2026-08-29T00:00:00.000Z",
   difficulty: "Medium",
   uniqueSolution: true,
@@ -46,9 +49,9 @@ const makeSudokuPuzzle = (): GridGeneratedPuzzle => ({
   cells: makeGridCells(),
 });
 
-const makeSudokuSession = (): PuzzleSession => ({
+const makeSudokuSession = (puzzle = makeSudokuPuzzle()): PuzzleSession => ({
   kind: "grid",
-  puzzle: makeSudokuPuzzle(),
+  puzzle,
   progress: {
     kind: "grid",
     cells: makeGridCells(),
@@ -116,6 +119,79 @@ describe("persisted session boundary validation", () => {
       const resourceKey = writeSession(storage, persisted);
 
       expect(loadPersistedPuzzleSessions()?.sessions[resourceKey]).toEqual(persisted);
+    });
+  });
+
+  it("keeps valid saved sessions when a sibling resource becomes incompatible", () => {
+    withMockWindowStorage((storage) => {
+      const firstPuzzle = makeSudokuPuzzle("first", "checksum-first");
+      const secondPuzzle = makeSudokuPuzzle("second", "checksum-second");
+      const first = buildPersistedPuzzleSession(makeSudokuResource(firstPuzzle), makeSudokuSession(firstPuzzle));
+      const second = buildPersistedPuzzleSession(makeSudokuResource(secondPuzzle), makeSudokuSession(secondPuzzle));
+      expect(first).not.toBeNull();
+      expect(second).not.toBeNull();
+      if (!first || !second) return;
+
+      const firstKey = makePuzzleResourceKey(first.puzzleId, first.generationId);
+      const secondKey = makePuzzleResourceKey(second.puzzleId, second.generationId);
+      storage.set(metadataStorageKey, JSON.stringify({
+        activeResourceKey: firstKey,
+        savedResourceKeys: [firstKey, secondKey],
+        updatedAt: "2026-10-07T00:00:00.000Z",
+      }));
+      storage.set(`puzzle-forge.session.${firstKey}`, JSON.stringify({
+        ...first,
+        generationId: "obsolete-resource-id",
+      }));
+      storage.set(`puzzle-forge.session.${secondKey}`, JSON.stringify(second));
+
+      const loaded = loadPersistedPuzzleSessions();
+
+      expect(loaded?.activeResourceKey).toBe(secondKey);
+      expect(Object.keys(loaded?.sessions ?? {})).toEqual([secondKey]);
+      expect(storage.has(`puzzle-forge.session.${firstKey}`)).toBe(false);
+      expect(JSON.parse(storage.get(metadataStorageKey) ?? "{}")).toMatchObject({
+        activeResourceKey: secondKey,
+        savedResourceKeys: [secondKey],
+      });
+    });
+  });
+
+  it("falls back to the most recently updated valid session when the former active session is invalid", () => {
+    withMockWindowStorage((storage) => {
+      const invalidPuzzle = makeSudokuPuzzle("invalid", "checksum-invalid");
+      const olderPuzzle = makeSudokuPuzzle("older", "checksum-older");
+      const newerPuzzle = makeSudokuPuzzle("newer", "checksum-newer");
+      const invalid = buildPersistedPuzzleSession(makeSudokuResource(invalidPuzzle), makeSudokuSession(invalidPuzzle));
+      const older = buildPersistedPuzzleSession(makeSudokuResource(olderPuzzle), makeSudokuSession(olderPuzzle));
+      const newer = buildPersistedPuzzleSession(makeSudokuResource(newerPuzzle), makeSudokuSession(newerPuzzle));
+      expect(invalid).not.toBeNull();
+      expect(older).not.toBeNull();
+      expect(newer).not.toBeNull();
+      if (!invalid || !older || !newer) return;
+
+      const invalidKey = makePuzzleResourceKey(invalid.puzzleId, invalid.generationId);
+      const olderKey = makePuzzleResourceKey(older.puzzleId, older.generationId);
+      const newerKey = makePuzzleResourceKey(newer.puzzleId, newer.generationId);
+      storage.set(metadataStorageKey, JSON.stringify({
+        activeResourceKey: invalidKey,
+        savedResourceKeys: [invalidKey, olderKey, newerKey],
+        updatedAt: "2026-10-07T00:00:00.000Z",
+      }));
+      storage.set(`puzzle-forge.session.${invalidKey}`, JSON.stringify({
+        ...invalid,
+        generationId: "obsolete-resource-id",
+      }));
+      storage.set(`puzzle-forge.session.${olderKey}`, JSON.stringify({
+        ...older,
+        updatedAt: "2026-10-05T00:00:00.000Z",
+      }));
+      storage.set(`puzzle-forge.session.${newerKey}`, JSON.stringify({
+        ...newer,
+        updatedAt: "2026-10-06T00:00:00.000Z",
+      }));
+
+      expect(loadPersistedPuzzleSessions()?.activeResourceKey).toBe(newerKey);
     });
   });
 

@@ -7,6 +7,7 @@ import { AppShell } from "./components/AppShell";
 import { ChangelogView } from "./components/ChangelogView";
 import { NotFoundView } from "./components/NotFoundView";
 import { PuzzleCatalog } from "./components/PuzzleCatalog";
+import { ResourceUnavailableView } from "./components/ResourceUnavailableView";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
 import { StartView } from "./components/StartView";
 import { getLocalDateStamp } from "./games/shared/daily";
@@ -405,23 +406,14 @@ export const App = () => {
     setIsHomeSelected(true);
   };
 
-  const selectPuzzle = (
+  const startFreshPuzzle = (
     puzzleId: PuzzleId,
     behavior: NavigationBehavior = {},
+    replaceBrokenRoute = false,
   ) => {
-    if (puzzleId === selectedPuzzleId && hasSelectedPuzzle && !isHomeSelected && puzzle) {
-      setPuzzleLinkError(null);
-      return;
-    }
-
-    const preferredResource = sessions.getPreferredResource(puzzleId);
-    if (preferredResource) {
-      selectResource({ kind: "resource", ...preferredResource }, behavior);
-      return;
-    }
-
     const nextRoute: AppRoute = { kind: "puzzle", puzzleId };
-    setAppRoute(nextRoute, behavior);
+    if (replaceBrokenRoute) replaceCurrentRoute(nextRoute);
+    else setAppRoute(nextRoute, behavior);
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
     cancelPendingGeneration();
     markPuzzleNavigation(puzzleId);
@@ -440,6 +432,24 @@ export const App = () => {
     );
   };
 
+  const selectPuzzle = (
+    puzzleId: PuzzleId,
+    behavior: NavigationBehavior = {},
+  ) => {
+    if (puzzleId === selectedPuzzleId && hasSelectedPuzzle && !isHomeSelected && puzzle) {
+      setPuzzleLinkError(null);
+      return;
+    }
+
+    const preferredResource = sessions.getPreferredResource(puzzleId);
+    if (preferredResource) {
+      selectResource({ kind: "resource", ...preferredResource }, behavior);
+      return;
+    }
+
+    startFreshPuzzle(puzzleId, behavior);
+  };
+
   const selectResource = (
     resourceRoute: Extract<AppRoute, { kind: "resource" }>,
     behavior: NavigationBehavior = {},
@@ -454,7 +464,7 @@ export const App = () => {
 
     const decoded = resolvePuzzleResourceSegment(resourceRoute.puzzleId, resourceRoute.generationId);
     if (!decoded.ok) {
-      const message = "This puzzle resource is invalid or unavailable.";
+      const message = "This puzzle is no longer available.";
       resetRuntimePuzzleState();
       setPuzzleLinkError(message);
       setStatusMessage(message);
@@ -765,9 +775,17 @@ export const App = () => {
     content = (
       <section class={`catalog-layout ${isCatalogCollapsed ? "catalog-collapsed" : ""}`}>
         {isHomeSelected || !hasSelectedPuzzle ? <StartView readyPuzzles={readyPuzzles} previewPuzzles={previewPuzzles} onSelectPuzzle={(puzzleId) => selectPuzzle(puzzleId)} /> : puzzleLinkError ? (
-          <section class="workspace-panel" aria-label="Puzzle link unavailable">
-            <p class="status-line" aria-live="polite">{puzzleLinkError}</p>
-          </section>
+          <ResourceUnavailableView
+            message={puzzleLinkError}
+            puzzleTitle={selectedDefinition.title}
+            onStartNew={() => startFreshPuzzle(selectedPuzzleId, {}, true)}
+            onHome={() => {
+              cancelPendingGeneration();
+              setPuzzleLinkError(null);
+              replaceCurrentRoute({ kind: "home" });
+              setIsHomeSelected(true);
+            }}
+          />
         ) : (
           <PuzzleWorkspace
             core={workspaceCore}
