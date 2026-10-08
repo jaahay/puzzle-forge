@@ -566,7 +566,7 @@ export const restorePuzzleSessionFromPersisted = (
   return null;
 };
 
-const sessionStorageKey = (resourceKey: PuzzleResourceKey) =>
+const sessionStorageKey = (resourceKey: string) =>
   `${persistenceSessionStorageKeyPrefix}${resourceKey}`;
 
 const readPersistedMetadata = (): PersistedPuzzleSessionMetadata | null => {
