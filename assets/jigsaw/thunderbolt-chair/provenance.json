@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "thunderbolt-chair",
+  "assetRevision": 1,
+  "work": {
+    "title": "Chair",
+    "creator": null,
+    "date": "ca. 1812",
+    "medium": "Mahogany, caning",
+    "dimensions": "H x W x D: 80.5 x 54.3 x 54 cm (31 11/16 x 21 3/8 x 21 1/4 in.)"
+  },
+  "source": {
+    "institution": "Cooper Hewitt, Smithsonian Design Museum",
+    "objectId": "chndm_1927-20-4",
+    "accessionNumber": "chndm_1927-20-4",
+    "recordUrl": "https://collection.cooperhewitt.org/view/objects/asitem/id/42890",
+    "apiRecordUrl": "https://api.si.edu/openaccess/api/v1.0/content/edanmdm:chndm_1927-20-4",
+    "sourceImageUrl": "https://ids.si.edu/ids/deliveryService?id=CHSDM-1927-20-4EllenMcDermott&max=2048",
+    "retrievedAt": "2026-10-08T22:38:11.982153+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 275610,
+    "sha256": "18f0a00a046d797d91c61e4f25d1b494e7c4a2ec45c1a3588697b56ec2a74d0f",
+    "width": 2048,
+    "height": 2048
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "Smithsonian Open Access",
+    "policyUrl": "https://www.si.edu/openaccess",
+    "verification": "Smithsonian Content API returned exact record chndm_1927-20-4, metadata access=CC0, and image media CHSDM-1927-20-4EllenMcDermott with usage.access=CC0.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "embedded ICC profile converted to sRGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/thunderbolt-chair/puzzle.webp",
+      "width": 2048,
+      "height": 2048,
+      "byteSize": 302002,
+      "sha256": "0383d0cc41953d2f2c537ce2180b7a80704877b66f433a996cf892f10dae64d1",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/thunderbolt-chair/preview.webp",
+      "width": 1024,
+      "height": 1024,
+      "byteSize": 75404,
+      "sha256": "414d906212ff259c8a85d4bceeb04cd705ab8f5d2347ea7920b23fb3ae135302",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/thunderbolt-chair/thumbnail.webp",
+      "width": 384,
+      "height": 384,
+      "byteSize": 11606,
+      "sha256": "55032f43b1bcc86b393ab13acd372cc42e0cb7ce69eb3c66da7ad0dd70d1e31b",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

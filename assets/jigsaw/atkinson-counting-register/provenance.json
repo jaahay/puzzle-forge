@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "atkinson-counting-register",
+  "assetRevision": 1,
+  "work": {
+    "title": "Atkinson Counting Register, U.S. Patent Office Model",
+    "creator": "Atkinson, Alexander P.",
+    "date": "1874",
+    "medium": "wood (overall material)",
+    "dimensions": "overall: 10 cm x 17.5 cm x 15.4 cm; 3 15/16 in x 6 7/8 in x 6 1/16 in"
+  },
+  "source": {
+    "institution": "National Museum of American History",
+    "objectId": "nmah_690840",
+    "accessionNumber": "nmah_690840",
+    "recordUrl": "https://www.si.edu/object/nmah_690840",
+    "apiRecordUrl": "https://api.si.edu/openaccess/api/v1.0/content/edanmdm:nmah_690840",
+    "sourceImageUrl": "https://ids.si.edu/ids/deliveryService?id=NMAH-DOR2012-1002-2279&max=2048",
+    "retrievedAt": "2026-10-08T22:38:11.982153+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 239191,
+    "sha256": "47b2c9cb99393d74600a2a3baf1a5995cfdbdcc29ce38c63f135c7b6bc8698ee",
+    "width": 2048,
+    "height": 1361
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "Smithsonian Open Access",
+    "policyUrl": "https://www.si.edu/openaccess",
+    "verification": "Smithsonian Content API returned exact record nmah_690840, metadata access=CC0, and image media NMAH-DOR2012-1002-2279 with usage.access=CC0.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "embedded ICC profile converted to sRGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/atkinson-counting-register/puzzle.webp",
+      "width": 2048,
+      "height": 1361,
+      "byteSize": 299194,
+      "sha256": "12e7c9b28ebf93ea6e22299087a4424146c7484eb66f32fa4750512ffddf85a7",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/atkinson-counting-register/preview.webp",
+      "width": 1024,
+      "height": 681,
+      "byteSize": 72586,
+      "sha256": "0a33e22ac6ae6e26b2ec6e055cb4cb8ba83ede131d839d2bae3061022e3e4f81",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/atkinson-counting-register/thumbnail.webp",
+      "width": 384,
+      "height": 255,
+      "byteSize": 9030,
+      "sha256": "1e7895f63717a60014d65de6b2349e1ffbc37361d1ef766bed6b1c447402ba32",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

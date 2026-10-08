@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "apollo-11-columbia",
+  "assetRevision": 1,
+  "work": {
+    "title": "Command Module, Apollo 11",
+    "creator": "North American Rockwell",
+    "date": null,
+    "medium": "Primary Materials: Aluminum alloy, Stainless steel, Titanium",
+    "dimensions": "Overall: 8 ft. 11 in. × 12 ft. 10 in., 9130lb. (271.8 × 391.2cm, 4141.3kg)"
+  },
+  "source": {
+    "institution": "National Air and Space Museum",
+    "objectId": "nasm_A19700102000",
+    "accessionNumber": "nasm_A19700102000",
+    "recordUrl": "https://www.si.edu/object/nasm_A19700102000",
+    "apiRecordUrl": "https://api.si.edu/openaccess/api/v1.0/content/edanmdm:nasm_A19700102000",
+    "sourceImageUrl": "https://ids.si.edu/ids/deliveryService?id=NASM-NASM2022-05013-000003&max=2048",
+    "retrievedAt": "2026-10-08T22:38:11.982153+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 561579,
+    "sha256": "d751319d5c848f614dfb4b53579049157cc3ff80b27ebbd9e42a04767aca0234",
+    "width": 1926,
+    "height": 2048
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "Smithsonian Open Access",
+    "policyUrl": "https://www.si.edu/openaccess",
+    "verification": "Smithsonian Content API returned exact record nasm_A19700102000, metadata access=CC0, and image media NASM-NASM2022-05013-000003 with usage.access=CC0.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "embedded ICC profile converted to sRGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/apollo-11-columbia/puzzle.webp",
+      "width": 1926,
+      "height": 2048,
+      "byteSize": 776258,
+      "sha256": "88b3f4f406dfa337a34a274e583d6aeb664728d3d3c874261e9f9868af502b98",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/apollo-11-columbia/preview.webp",
+      "width": 963,
+      "height": 1024,
+      "byteSize": 158198,
+      "sha256": "9f0fa31aa866d7dc3522e52735f126419774a8538492b1867a080e425555e720",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/apollo-11-columbia/thumbnail.webp",
+      "width": 361,
+      "height": 384,
+      "byteSize": 22206,
+      "sha256": "b49a298db20dfa48d311e68f9f087c33638eb71e534f4717c7e86ad34df38cec",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

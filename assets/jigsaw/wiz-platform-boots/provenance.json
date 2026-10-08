@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "wiz-platform-boots",
+  "assetRevision": 1,
+  "work": {
+    "title": "Costume boots for the Wizard in The Wiz on Broadway, worn by Carl Hall",
+    "creator": "Geoffrey Holder, Trinidadian American, 1930 - 2014",
+    "date": "ca. 1977",
+    "medium": "leather, wood, paint, and metal",
+    "dimensions": "H x W x D (left (a)): 10 1/2 × 3 1/2 × 11 in. (26.7 × 8.9 × 27.9 cm)"
+  },
+  "source": {
+    "institution": "National Museum of African American History and Culture",
+    "objectId": "nmaahc_2007.3.8.4ab",
+    "accessionNumber": "nmaahc_2007.3.8.4ab",
+    "recordUrl": "https://nmaahc.si.edu/object/nmaahc_2007.3.8.4ab",
+    "apiRecordUrl": "https://api.si.edu/openaccess/api/v1.0/content/edanmdm:nmaahc_2007.3.8.4ab",
+    "sourceImageUrl": "https://ids.si.edu/ids/deliveryService?id=NMAAHC-2007_3_8_4ab_001&max=2048",
+    "retrievedAt": "2026-10-08T22:38:11.982153+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 150792,
+    "sha256": "87749ba53a51102076d54189145c1e34ae6c6c6cef4eb3be91f0e9b013af9ea6",
+    "width": 2048,
+    "height": 1535
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "Smithsonian Open Access",
+    "policyUrl": "https://www.si.edu/openaccess",
+    "verification": "Smithsonian Content API returned exact record nmaahc_2007.3.8.4ab, metadata access=CC0, and image media NMAAHC-2007_3_8_4ab_001 with usage.access=CC0.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "embedded ICC profile converted to sRGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/wiz-platform-boots/puzzle.webp",
+      "width": 2048,
+      "height": 1535,
+      "byteSize": 155824,
+      "sha256": "fea108221fb7ca1fd367a0054b6fc3e8bf3ded5ff6cde7bf80eead21c41bda93",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/wiz-platform-boots/preview.webp",
+      "width": 1024,
+      "height": 768,
+      "byteSize": 36132,
+      "sha256": "c5ec017b1f2da35bd4016e16bac080c2febbfdf2dc868aade7dda8be582de49c",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/wiz-platform-boots/thumbnail.webp",
+      "width": 384,
+      "height": 288,
+      "byteSize": 5010,
+      "sha256": "9a143f8c5417cbab4fd28c591b051c25397068db2848580689d824b892e9c4ff",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}
