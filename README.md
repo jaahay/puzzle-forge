@@ -134,7 +134,11 @@ git diff -- assets/jigsaw
 pnpm build
 ```
 
-Trusted automation should invoke those same script commands rather than reproducing image-processing logic in workflow YAML. Use `python scripts/ingest_jigsaw_images.py --all --verify-only` to revalidate every configured source record without touching image bytes. Use `--overwrite` only for intentional regeneration after reviewing stable-identity implications; the script replaces generated directories rather than merging individual files.
+The permanent **Artwork assets** GitHub Actions workflow is the trusted network-capable harness for normal repository ingestion. Run it manually from the default branch, provide an existing non-default feature branch plus one or more manifest-declared asset IDs, and it will run the canonical source preflight, generate the assets, verify the resulting WebPs against provenance, and commit only those asset directories back to that branch. The workflow refuses a target branch that does not contain current `main`, never passes `--overwrite`, and never accepts arbitrary source URLs or shell commands.
+
+The same workflow runs a read-only verification job when artwork files or ingestion tooling change. That job calls `python scripts/verify_jigsaw_assets.py --all` and checks every committed derivative's SHA-256, byte size, dimensions, and WebP decoding without contacting artwork providers.
+
+Local ingestion remains supported and should invoke the same Python scripts rather than reproducing image-processing logic elsewhere. Use `python scripts/ingest_jigsaw_images.py --all --verify-only` to revalidate every configured source record without touching image bytes. Use `--overwrite` only for intentional regeneration after reviewing stable-identity implications; the script replaces generated directories rather than merging individual files.
 
 ## Product direction
 
