@@ -1,0 +1,175 @@
+name: Artwork assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: Existing feature branch that will receive generated artwork
+        required: true
+        type: string
+      asset_ids:
+        description: Space- or newline-separated manifest asset IDs
+        required: true
+        type: string
+  push:
+    paths:
+      - "assets/jigsaw/**"
+      - "public/jigsaw/**"
+      - "scripts/ingest_jigsaw_images.py"
+      - "scripts/verify_jigsaw_assets.py"
+      - ".github/workflows/artwork-assets.yml"
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+    paths:
+      - "assets/jigsaw/**"
+      - "public/jigsaw/**"
+      - "scripts/ingest_jigsaw_images.py"
+      - "scripts/verify_jigsaw_assets.py"
+      - ".github/workflows/artwork-assets.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify committed artwork
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install Pillow
+        run: python -m pip install "Pillow==12.3.0"
+
+      - name: Verify committed artwork
+        run: python scripts/verify_jigsaw_assets.py --all
+
+  ingest:
+    name: Ingest artwork
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: artwork-ingestion-${{ inputs.target_branch }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Require trusted workflow ref
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          WORKFLOW_REF: ${{ github.ref_name }}
+        run: |
+          if [ "$WORKFLOW_REF" != "$DEFAULT_BRANCH" ]; then
+            echo "Run this workflow from the default branch only." >&2
+            exit 1
+          fi
+
+      - name: Checkout target branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.target_branch }}
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install Pillow
+        run: python -m pip install "Pillow==12.3.0"
+
+      - name: Validate target branch
+        env:
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          if [ -z "$TARGET_BRANCH" ] || [ "$TARGET_BRANCH" = "$DEFAULT_BRANCH" ] || [ "$TARGET_BRANCH" = "main" ] || [ "$TARGET_BRANCH" = "master" ]; then
+            echo "Artwork ingestion requires an explicit non-default feature branch." >&2
+            exit 1
+          fi
+          git fetch origin "$DEFAULT_BRANCH" "$TARGET_BRANCH"
+          test "$(git rev-parse HEAD)" = "$(git rev-parse "origin/$TARGET_BRANCH")"
+          if ! git merge-base --is-ancestor "origin/$DEFAULT_BRANCH" HEAD; then
+            echo "Target branch is behind the current default branch." >&2
+            exit 1
+          fi
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Target checkout must be clean before ingestion." >&2
+            exit 1
+          fi
+
+      - name: Verify sources and ingest requested artwork
+        env:
+          ASSET_IDS: ${{ inputs.asset_ids }}
+        shell: python
+        run: |
+          import json
+          import os
+          import re
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          asset_ids = os.environ["ASSET_IDS"].split()
+          pattern = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+          if not asset_ids:
+              raise SystemExit("At least one asset ID is required.")
+          if len(asset_ids) != len(set(asset_ids)):
+              raise SystemExit("Duplicate asset IDs are not allowed.")
+          invalid = [asset_id for asset_id in asset_ids if not pattern.fullmatch(asset_id)]
+          if invalid:
+              raise SystemExit(f"Invalid asset IDs: {', '.join(invalid)}")
+
+          manifest = json.loads(Path("assets/jigsaw/sources.json").read_text(encoding="utf-8"))
+          known = {entry["assetId"] for entry in manifest["artworks"]}
+          unknown = [asset_id for asset_id in asset_ids if asset_id not in known]
+          if unknown:
+              raise SystemExit(f"Asset IDs are not declared in the manifest: {', '.join(unknown)}")
+
+          subprocess.run(
+              [sys.executable, "scripts/ingest_jigsaw_images.py", *asset_ids, "--verify-only"],
+              check=True,
+          )
+          subprocess.run(
+              [sys.executable, "scripts/ingest_jigsaw_images.py", *asset_ids],
+              check=True,
+          )
+          subprocess.run(
+              [sys.executable, "scripts/verify_jigsaw_assets.py", *asset_ids],
+              check=True,
+          )
+
+          Path(".artwork-ingestion-ids").write_text("\n".join(asset_ids) + "\n", encoding="utf-8")
+
+      - name: Commit generated artwork
+        env:
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+        run: |
+          while IFS= read -r asset_id; do
+            git add -- "assets/jigsaw/$asset_id" "public/jigsaw/$asset_id"
+          done < .artwork-ingestion-ids
+          rm .artwork-ingestion-ids
+
+          if git diff --cached --quiet; then
+            echo "No generated artwork changes found." >&2
+            exit 1
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Ingest artwork assets"
+          git push origin "HEAD:$TARGET_BRANCH"
