@@ -31,7 +31,7 @@ jobs:
             wheat-field-cypresses \
             la-grande-jatte \
             childs-bath \
-            american-gothic \
+            paris-street-rainy-day \
             coronation-stone-motecuhzoma \
             embroidered-picture \
             first-of-the-herring \
@@ -41,7 +41,7 @@ jobs:
           python scripts/ingest_jigsaw_images.py \
             la-grande-jatte \
             childs-bath \
-            american-gothic \
+            paris-street-rainy-day \
             coronation-stone-motecuhzoma \
             embroidered-picture \
             first-of-the-herring
