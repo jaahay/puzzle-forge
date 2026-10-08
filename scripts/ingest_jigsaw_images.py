@@ -59,9 +59,22 @@ NGA_OPEN_DATA_RAW = "https://raw.githubusercontent.com/NationalGalleryOfArt/open
 NGA_OPEN_DATA_REPO = "https://github.com/NationalGalleryOfArt/opendata"
 NGA_OPEN_ACCESS_POLICY = "https://www.nga.gov/artworks/free-images-and-open-access"
 _NGA_CSV_CACHE: dict[str, tuple[dict[str, str], ...]] = {}
+SMITHSONIAN_OBJECT_URL = "https://www.si.edu/object/{record_id}"
+SMITHSONIAN_CONTENT_API = (
+    "https://api.si.edu/openaccess/api/v1.0/content/edanmdm:{record_id}"
+)
+SMITHSONIAN_PUBLIC_DEMO_KEY = "DEMO_KEY"
+SMITHSONIAN_OPEN_ACCESS_POLICY = "https://www.si.edu/openaccess"
+SMITHSONIAN_INSTITUTIONS = {
+    "nasm": "National Air and Space Museum",
+    "nmah": "National Museum of American History",
+    "chndm": "Cooper Hewitt, Smithsonian Design Museum",
+    "nmnheducation": "National Museum of Natural History",
+    "nmnhpaleobiology": "National Museum of Natural History",
+}
 SOURCE_MANIFEST_PATH = Path("assets/jigsaw/sources.json")
 ASSET_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-SUPPORTED_PROVIDERS = frozenset({"met", "artic", "rijksmuseum", "nga"})
+SUPPORTED_PROVIDERS = frozenset({"met", "artic", "rijksmuseum", "nga", "smithsonian"})
 
 
 @dataclass(frozen=True)
@@ -165,6 +178,15 @@ def load_artworks(repo_root: Path) -> tuple[Artwork, ...]:
             source_id = entry.get("objectNumber")
             if not isinstance(source_id, str) or not source_id.strip():
                 raise RuntimeError(f"Invalid Rijksmuseum objectNumber for {asset_id}: {source_id!r}")
+        elif provider == "smithsonian":
+            source_id = entry.get("recordId")
+            if (
+                not isinstance(source_id, str)
+                or not re.fullmatch(r"[a-z0-9]+_[A-Za-z0-9._-]+", source_id)
+            ):
+                raise RuntimeError(
+                    f"Invalid Smithsonian recordId for {asset_id}: {source_id!r}"
+                )
         else:
             source_id = entry.get("objectId")
             if not isinstance(source_id, int) or source_id <= 0:
@@ -694,6 +716,178 @@ def resolve_nga_source(artwork: Artwork) -> SourceRecord:
     )
 
 
+def smithsonian_freetext_value(
+    content: dict,
+    field: str,
+    preferred_labels: tuple[str, ...] = (),
+) -> str | None:
+    freetext = content.get("freetext")
+    if not isinstance(freetext, dict):
+        return None
+    entries = freetext.get(field)
+    if not isinstance(entries, list):
+        return None
+
+    normalized_preferences = tuple(label.lower() for label in preferred_labels)
+    for preferred in normalized_preferences:
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            label = entry.get("label")
+            value = entry.get("content")
+            if (
+                isinstance(label, str)
+                and preferred in label.lower()
+                and isinstance(value, str)
+                and value.strip()
+            ):
+                return value.strip()
+
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        value = entry.get("content")
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return None
+
+
+def resolve_smithsonian_source(artwork: Artwork) -> SourceRecord:
+    if not isinstance(artwork.source_id, str):
+        raise RuntimeError(
+            f"Smithsonian source identifier must be a Record ID: {artwork.source_id!r}"
+        )
+    record_id = artwork.source_id
+    unit_code = record_id.split("_", 1)[0].lower()
+
+    encoded_record_id = urllib.parse.quote(record_id, safe="")
+    api_record_url = SMITHSONIAN_CONTENT_API.format(record_id=encoded_record_id)
+    request_url = api_record_url + "?" + urllib.parse.urlencode(
+        {"api_key": SMITHSONIAN_PUBLIC_DEMO_KEY}
+    )
+    response = fetch_json(request_url, artwork.provider)
+    record = response.get("response")
+    if not isinstance(record, dict):
+        raise RuntimeError(f"Smithsonian record {record_id} returned no response object")
+
+    expected_edan_url = f"edanmdm:{record_id}"
+    if record.get("url") != expected_edan_url:
+        raise RuntimeError(
+            f"Smithsonian record mismatch for {artwork.asset_id}: "
+            f"expected URL {expected_edan_url!r}, received {record.get('url')!r}"
+        )
+    if record.get("type") != "edanmdm":
+        raise RuntimeError(
+            f"Smithsonian record {record_id} is not an edanmdm collection object"
+        )
+
+    content = record.get("content")
+    if not isinstance(content, dict):
+        raise RuntimeError(f"Smithsonian record {record_id} returned no content object")
+    descriptive = content.get("descriptiveNonRepeating")
+    if not isinstance(descriptive, dict):
+        raise RuntimeError(
+            f"Smithsonian record {record_id} returned no descriptiveNonRepeating object"
+        )
+    if descriptive.get("record_ID") != record_id:
+        raise RuntimeError(
+            f"Smithsonian record payload did not identify requested Record ID {record_id}"
+        )
+
+    metadata_usage = descriptive.get("metadata_usage")
+    if (
+        not isinstance(metadata_usage, dict)
+        or metadata_usage.get("access") != "CC0"
+    ):
+        raise RuntimeError(
+            f"Smithsonian record {record_id} metadata is not marked CC0"
+        )
+
+    online_media = descriptive.get("online_media")
+    media = online_media.get("media") if isinstance(online_media, dict) else None
+    if not isinstance(media, list):
+        raise RuntimeError(f"Smithsonian record {record_id} exposes no online media list")
+
+    eligible_images: list[dict] = []
+    for item in media:
+        if not isinstance(item, dict) or item.get("type") != "Images":
+            continue
+        usage = item.get("usage")
+        ids_id = item.get("idsId")
+        if (
+            isinstance(usage, dict)
+            and usage.get("access") == "CC0"
+            and isinstance(ids_id, str)
+            and re.fullmatch(r"[A-Za-z0-9_.-]+", ids_id)
+        ):
+            eligible_images.append(item)
+
+    if not eligible_images:
+        raise RuntimeError(
+            f"Smithsonian record {record_id} has no image with media-level usage.access=CC0"
+        )
+
+    selected_media = eligible_images[0]
+    media_id = selected_media["idsId"]
+    source_image_url = (
+        "https://ids.si.edu/ids/deliveryService?"
+        + urllib.parse.urlencode({"id": media_id, "max": "2048"})
+    )
+
+    institution = descriptive.get("data_source")
+    if not isinstance(institution, str) or not institution.strip():
+        institution = SMITHSONIAN_INSTITUTIONS.get(unit_code, "Smithsonian Institution")
+
+    record_url = descriptive.get("record_link")
+    if not isinstance(record_url, str) or not record_url.startswith("https://"):
+        record_url = SMITHSONIAN_OBJECT_URL.format(record_id=encoded_record_id)
+
+    creator = smithsonian_freetext_value(
+        content,
+        "name",
+        (
+            "maker",
+            "manufacturer",
+            "artist",
+            "inventor",
+            "patentee",
+            "designed by",
+            "created by",
+        ),
+    )
+    date = smithsonian_freetext_value(content, "date")
+    medium = smithsonian_freetext_value(
+        content,
+        "physicalDescription",
+        ("medium", "materials", "physical description"),
+    )
+    dimensions = smithsonian_freetext_value(
+        content,
+        "physicalDescription",
+        ("dimensions", "measurements"),
+    )
+
+    return SourceRecord(
+        provider=artwork.provider,
+        title=record.get("title") if isinstance(record.get("title"), str) else None,
+        creator=creator,
+        date=date,
+        medium=medium,
+        dimensions=dimensions,
+        institution=institution.strip(),
+        accession_number=record_id,
+        record_url=record_url,
+        api_record_url=api_record_url,
+        source_image_url=source_image_url,
+        rights_policy="Smithsonian Open Access",
+        rights_policy_url=SMITHSONIAN_OPEN_ACCESS_POLICY,
+        rights_verification=(
+            f"Smithsonian Content API returned exact record {record_id}, metadata access=CC0, "
+            f"and image media {media_id} with usage.access=CC0."
+        ),
+    )
+
+
 def resolve_source_record(artwork: Artwork) -> SourceRecord:
     if artwork.provider == "met":
         return resolve_met_source(artwork)
@@ -703,6 +897,8 @@ def resolve_source_record(artwork: Artwork) -> SourceRecord:
         return resolve_rijksmuseum_source(artwork)
     if artwork.provider == "nga":
         return resolve_nga_source(artwork)
+    if artwork.provider == "smithsonian":
+        return resolve_smithsonian_source(artwork)
     raise RuntimeError(f"Unsupported source provider: {artwork.provider}")
 
 
@@ -869,6 +1065,7 @@ def provider_label(artwork: Artwork) -> str:
         "artic": "ARTIC",
         "rijksmuseum": "Rijksmuseum",
         "nga": "NGA",
+        "smithsonian": "Smithsonian",
     }[artwork.provider]
 
 

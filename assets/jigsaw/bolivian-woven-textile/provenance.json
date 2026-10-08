@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "bolivian-woven-textile",
+  "assetRevision": 1,
+  "work": {
+    "title": "Textile",
+    "creator": null,
+    "date": "19th century",
+    "medium": "Medium: wool Technique: warp rep with warp-patterned stripes",
+    "dimensions": "H x W: 117.5 × 89.9 cm (46 1/4 × 35 3/8 in.)"
+  },
+  "source": {
+    "institution": "Cooper Hewitt, Smithsonian Design Museum",
+    "objectId": "chndm_1955-157-7",
+    "accessionNumber": "chndm_1955-157-7",
+    "recordUrl": "https://collection.cooperhewitt.org/view/objects/asitem/id/112203",
+    "apiRecordUrl": "https://api.si.edu/openaccess/api/v1.0/content/edanmdm:chndm_1955-157-7",
+    "sourceImageUrl": "https://ids.si.edu/ids/deliveryService?id=CHSDM-67E8C673D4582-000001&max=2048",
+    "retrievedAt": "2026-10-08T22:38:11.982153+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 699047,
+    "sha256": "b25d4b2ea62dd40eb389df215dc5bca188bb326e493da54141bfa14eb80d230e",
+    "width": 1541,
+    "height": 2047
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "Smithsonian Open Access",
+    "policyUrl": "https://www.si.edu/openaccess",
+    "verification": "Smithsonian Content API returned exact record chndm_1955-157-7, metadata access=CC0, and image media CHSDM-67E8C673D4582-000001 with usage.access=CC0.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "embedded ICC profile converted to sRGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/bolivian-woven-textile/puzzle.webp",
+      "width": 1541,
+      "height": 2047,
+      "byteSize": 1079120,
+      "sha256": "145b9688da08d766e7727d5d376c03fdb2e36e3dfbfa4547d0a3401bd712851f",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/bolivian-woven-textile/preview.webp",
+      "width": 771,
+      "height": 1024,
+      "byteSize": 214238,
+      "sha256": "f2c42e7aa8e8be420478e0a23587a1ca7154dcdb79ac4a5ba9fe42e9c07760c8",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/bolivian-woven-textile/thumbnail.webp",
+      "width": 289,
+      "height": 384,
+      "byteSize": 21328,
+      "sha256": "4a11261802a5bd184e922ea8d278f59c25668924de9d5f30682a38db0139da55",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}
