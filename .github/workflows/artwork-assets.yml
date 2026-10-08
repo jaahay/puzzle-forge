@@ -11,6 +11,9 @@ on:
         description: Space- or newline-separated manifest asset IDs
         required: true
         type: string
+  issue_comment:
+    types:
+      - created
   push:
     paths:
       - "assets/jigsaw/**"
@@ -37,7 +40,7 @@ permissions:
 jobs:
   verify:
     name: Verify committed artwork
-    if: github.event_name != 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -59,29 +62,66 @@ jobs:
 
   ingest:
     name: Ingest artwork
-    if: github.event_name == 'workflow_dispatch'
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.comment.user.login == github.repository_owner &&
+        !github.event.issue.pull_request &&
+        startsWith(github.event.comment.body, '/ingest-artwork ')
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: write
     concurrency:
-      group: artwork-ingestion-${{ inputs.target_branch }}
+      group: artwork-ingestion
       cancel-in-progress: false
 
     steps:
-      - name: Require trusted workflow ref
+      - name: Resolve trusted ingestion request
+        id: request
         env:
+          EVENT_NAME: ${{ github.event_name }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           WORKFLOW_REF: ${{ github.ref_name }}
+          DISPATCH_TARGET_BRANCH: ${{ inputs.target_branch }}
+          DISPATCH_ASSET_IDS: ${{ inputs.asset_ids }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMENT_AUTHOR: ${{ github.event.comment.user.login }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+        shell: python
         run: |
-          if [ "$WORKFLOW_REF" != "$DEFAULT_BRANCH" ]; then
-            echo "Run this workflow from the default branch only." >&2
-            exit 1
-          fi
+          import os
+          from pathlib import Path
+
+          event_name = os.environ["EVENT_NAME"]
+          if event_name == "workflow_dispatch":
+              if os.environ["WORKFLOW_REF"] != os.environ["DEFAULT_BRANCH"]:
+                  raise SystemExit("Run this workflow from the default branch only.")
+              target_branch = os.environ["DISPATCH_TARGET_BRANCH"].strip()
+              asset_ids = os.environ["DISPATCH_ASSET_IDS"].split()
+          elif event_name == "issue_comment":
+              if os.environ["COMMENT_AUTHOR"] != os.environ["REPOSITORY_OWNER"]:
+                  raise SystemExit("Artwork ingestion comments are restricted to the repository owner.")
+              tokens = os.environ["COMMENT_BODY"].split()
+              if len(tokens) < 3 or tokens[0] != "/ingest-artwork":
+                  raise SystemExit(
+                      "Usage: /ingest-artwork <target-feature-branch> <asset-id> [asset-id ...]"
+                  )
+              target_branch = tokens[1]
+              asset_ids = tokens[2:]
+          else:
+              raise SystemExit(f"Unsupported ingestion event: {event_name}")
+
+          output_path = Path(os.environ["GITHUB_OUTPUT"])
+          with output_path.open("a", encoding="utf-8") as output:
+              output.write(f"target_branch={target_branch}\n")
+              output.write("asset_ids=" + " ".join(asset_ids) + "\n")
 
       - name: Checkout target branch
         uses: actions/checkout@v7
         with:
-          ref: ${{ inputs.target_branch }}
+          ref: ${{ steps.request.outputs.target_branch }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -95,7 +135,7 @@ jobs:
 
       - name: Validate target branch
         env:
-          TARGET_BRANCH: ${{ inputs.target_branch }}
+          TARGET_BRANCH: ${{ steps.request.outputs.target_branch }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           if [ -z "$TARGET_BRANCH" ] || [ "$TARGET_BRANCH" = "$DEFAULT_BRANCH" ] || [ "$TARGET_BRANCH" = "main" ] || [ "$TARGET_BRANCH" = "master" ]; then
@@ -138,7 +178,7 @@ jobs:
 
       - name: Verify sources and ingest requested artwork
         env:
-          ASSET_IDS: ${{ inputs.asset_ids }}
+          ASSET_IDS: ${{ steps.request.outputs.asset_ids }}
         shell: python
         run: |
           import json
@@ -206,7 +246,7 @@ jobs:
 
       - name: Commit generated artwork
         env:
-          TARGET_BRANCH: ${{ inputs.target_branch }}
+          TARGET_BRANCH: ${{ steps.request.outputs.target_branch }}
           GH_TOKEN: ${{ github.token }}
         run: |
           while IFS= read -r asset_id; do

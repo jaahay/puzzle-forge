@@ -134,7 +134,7 @@ git diff -- assets/jigsaw
 pnpm build
 ```
 
-The permanent **Artwork assets** GitHub Actions workflow is the trusted network-capable harness for normal repository ingestion. Run it manually from the default branch, provide an existing non-default feature branch plus one or more manifest-declared asset IDs, and it will run the canonical source preflight, generate the assets, verify the resulting WebPs against provenance, and commit only those asset directories back to that branch. The workflow refuses a target branch that does not contain current `main`, never passes `--overwrite`, and never accepts arbitrary source URLs or shell commands.
+The permanent **Artwork assets** GitHub Actions workflow is the trusted network-capable harness for normal repository ingestion. Run it manually from the default branch, or have the repository owner comment `/ingest-artwork <target-feature-branch> <asset-id> [asset-id ...]` on an issue. Both entry points use the same ingestion job: they require an existing non-default feature branch plus manifest-declared asset IDs, run the canonical source preflight, generate the assets, verify the resulting WebPs against provenance, and commit only those asset directories back to that branch. The issue-comment entry point ignores pull-request comments and non-owner comments. The workflow refuses a target branch that does not contain current `main`, never passes `--overwrite`, and never accepts arbitrary source URLs or shell commands.
 
 The same workflow runs a read-only verification job when artwork files or ingestion tooling change. That job calls `python scripts/verify_jigsaw_assets.py --all` and checks every committed derivative's SHA-256, byte size, dimensions, and WebP decoding without contacting artwork providers.
 
