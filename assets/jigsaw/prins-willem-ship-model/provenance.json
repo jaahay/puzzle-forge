@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "prins-willem-ship-model",
+  "assetRevision": 1,
+  "work": {
+    "title": "Scheepsmodel van de Prins Willem",
+    "creator": "anonymous",
+    "date": "1651",
+    "medium": null,
+    "dimensions": "height 115 cm x length 142 cm x width 60 cm"
+  },
+  "source": {
+    "institution": "Rijksmuseum",
+    "objectId": "NG-NM-11911",
+    "accessionNumber": "NG-NM-11911",
+    "recordUrl": "https://id.rijksmuseum.nl/200401032",
+    "apiRecordUrl": "https://data.rijksmuseum.nl/200401032",
+    "sourceImageUrl": "https://iiif.micr.io/hdNNp/full/2048,/0/default.jpg",
+    "retrievedAt": "2026-10-08T17:49:09.305642+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 342837,
+    "sha256": "b84bf54de5a7e09f1e2e0389acc92497a46d3122f597f5bb54659e64edc51fda",
+    "width": 2048,
+    "height": 1735
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "Rijksmuseum Public Domain / CC0 open data",
+    "policyUrl": "https://data.rijksmuseum.nl/policy/",
+    "verification": "Rijksmuseum EDM metadata returned open rights URI http://creativecommons.org/publicdomain/mark/1.0/ for object NG-NM-11911.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; assumed sRGB after RGB conversion",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/prins-willem-ship-model/puzzle.webp",
+      "width": 2048,
+      "height": 1735,
+      "byteSize": 275210,
+      "sha256": "3fef33fcd25b1c973de2c5d8aee990b8c9f6846330644b9691fb1293268373ec",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/prins-willem-ship-model/preview.webp",
+      "width": 1024,
+      "height": 868,
+      "byteSize": 71478,
+      "sha256": "7d6ee376105303c610992930fe79905022274946fd11ffceae3e8f0dddde13a9",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/prins-willem-ship-model/thumbnail.webp",
+      "width": 384,
+      "height": 325,
+      "byteSize": 11236,
+      "sha256": "404ffa98779cd1349c042ebfd40e18c659ea3ed1069c54a001b44b13ef859d72",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

@@ -70,6 +70,24 @@ const makeArticJigsawImageAsset = ({ objectId, ...input }: ArticJigsawImageAsset
     sourceQualifier: "Public Domain",
   });
 
+type RijksmuseumJigsawImageAssetInput = Omit<
+  JigsawImageAssetInput,
+  "sourceName" | "sourceRecordUrl" | "sourceQualifier"
+> & {
+  sourceRecordUrl: string;
+};
+
+const makeRijksmuseumJigsawImageAsset = ({
+  sourceRecordUrl,
+  ...input
+}: RijksmuseumJigsawImageAssetInput): JigsawImageAsset =>
+  makeJigsawImageAsset({
+    ...input,
+    sourceName: "Rijksmuseum",
+    sourceRecordUrl,
+    sourceQualifier: "Public Domain",
+  });
+
 export const jigsawImageCatalog = {
   "wheat-field-cypresses": makeMetJigsawImageAsset({
     id: "wheat-field-cypresses",
@@ -355,6 +373,72 @@ export const jigsawImageCatalog = {
     creator: "Peter Henry Emerson",
     date: "1887",
     objectId: 229759,
+  }),
+  "night-watch": makeRijksmuseumJigsawImageAsset({
+    id: "night-watch",
+    title: "The Night Watch",
+    alt: "A large civic guard company gathers in dramatic light as its captain and lieutenant step forward among weapons, banners, and figures.",
+    orientation: "landscape",
+    intrinsicWidth: 2048,
+    intrinsicHeight: 1700,
+    creator: "Rembrandt van Rijn",
+    date: "1642",
+    sourceRecordUrl: "https://id.rijksmuseum.nl/200107928",
+  }),
+  milkmaid: makeRijksmuseumJigsawImageAsset({
+    id: "milkmaid",
+    title: "The Milkmaid",
+    alt: "A maid stands in a quiet sunlit room pouring milk into a bowl beside bread, pottery, and a textured wall.",
+    orientation: "portrait",
+    intrinsicWidth: 1839,
+    intrinsicHeight: 2048,
+    creator: "Johannes Vermeer",
+    date: "ca. 1660",
+    sourceRecordUrl: "https://id.rijksmuseum.nl/200108369",
+  }),
+  "oortman-dolls-house": makeRijksmuseumJigsawImageAsset({
+    id: "oortman-dolls-house",
+    title: "Dolls’ House of Petronella Oortman",
+    alt: "An elaborate open cabinet reveals richly furnished miniature rooms filled with furniture, textiles, paintings, and household objects.",
+    orientation: "landscape",
+    intrinsicWidth: 2048,
+    intrinsicHeight: 1857,
+    creator: "Anonymous",
+    date: "ca. 1686–1710",
+    sourceRecordUrl: "https://id.rijksmuseum.nl/2002678",
+  }),
+  "prins-willem-ship-model": makeRijksmuseumJigsawImageAsset({
+    id: "prins-willem-ship-model",
+    title: "Ship’s Model of the Prins Willem",
+    alt: "A richly detailed seventeenth-century sailing-ship model displays masts, rigging, guns, carved decoration, and a painted stern.",
+    orientation: "landscape",
+    intrinsicWidth: 2048,
+    intrinsicHeight: 1735,
+    creator: "Anonymous",
+    date: "1651",
+    sourceRecordUrl: "https://id.rijksmuseum.nl/200401032",
+  }),
+  "sevres-vase": makeRijksmuseumJigsawImageAsset({
+    id: "sevres-vase",
+    title: "Vase",
+    alt: "A tall porcelain vase on a gilt bronze foot is decorated with pale floral vines, thistles, butterflies, and geometric accents.",
+    orientation: "portrait",
+    intrinsicWidth: 1155,
+    intrinsicHeight: 2048,
+    creator: "Sèvres porcelain factory; painted by Léonard Gébleux",
+    date: "1908",
+    sourceRecordUrl: "https://id.rijksmuseum.nl/200416101",
+  }),
+  "totomi-mountains": makeRijksmuseumJigsawImageAsset({
+    id: "totomi-mountains",
+    title: "In the Mountains in the Province of Tōtōmi",
+    alt: "Woodcutters work around a massive timber frame while Mount Fuji rises in the distance beneath a pale sky.",
+    orientation: "landscape",
+    intrinsicWidth: 2048,
+    intrinsicHeight: 1534,
+    creator: "Katsushika Hokusai",
+    date: "1829–33",
+    sourceRecordUrl: "https://id.rijksmuseum.nl/200414389",
   }),
 } as const satisfies Record<string, JigsawImageAsset>;
 

@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "totomi-mountains",
+  "assetRevision": 1,
+  "work": {
+    "title": "In de bergen in de provincie Totomi",
+    "creator": null,
+    "date": "1829 - 1833",
+    "medium": null,
+    "dimensions": "height 248 mm x width 366 mm"
+  },
+  "source": {
+    "institution": "Rijksmuseum",
+    "objectId": "AK-MAK-1213",
+    "accessionNumber": "AK-MAK-1213",
+    "recordUrl": "https://id.rijksmuseum.nl/200414389",
+    "apiRecordUrl": "https://data.rijksmuseum.nl/200414389",
+    "sourceImageUrl": "https://iiif.micr.io/yYJLJ/full/2048,/0/default.jpg",
+    "retrievedAt": "2026-10-08T17:49:09.305642+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 557842,
+    "sha256": "802f0cddb3887679484478b470c6243786584c98c4245e5ce486e53e5400099c",
+    "width": 2048,
+    "height": 1534
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "Rijksmuseum Public Domain / CC0 open data",
+    "policyUrl": "https://data.rijksmuseum.nl/policy/",
+    "verification": "Rijksmuseum EDM metadata returned open rights URI http://creativecommons.org/publicdomain/mark/1.0/ for object AK-MAK-1213.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; assumed sRGB after RGB conversion",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/totomi-mountains/puzzle.webp",
+      "width": 2048,
+      "height": 1534,
+      "byteSize": 553264,
+      "sha256": "da961835318891373e9149a4459690d6cc3e7e1499d7bcdd254a1b5a3c5a716e",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/totomi-mountains/preview.webp",
+      "width": 1024,
+      "height": 767,
+      "byteSize": 113052,
+      "sha256": "234c3118491a923c4f1db48d9460300feb130fed46cc063dec1a0c35935644af",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/totomi-mountains/thumbnail.webp",
+      "width": 384,
+      "height": 288,
+      "byteSize": 14734,
+      "sha256": "41cf7df2f7cba0e51c2eb1fb6fa543b242b339ddf95474982b47988012de141d",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

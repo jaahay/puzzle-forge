@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "night-watch",
+  "assetRevision": 1,
+  "work": {
+    "title": "De Nachtwacht",
+    "creator": "Rembrandt van Rijn",
+    "date": "1642",
+    "medium": null,
+    "dimensions": "height 379.5 cm x width 453.5 cm x weight 337 kg x weight 170 kg"
+  },
+  "source": {
+    "institution": "Rijksmuseum",
+    "objectId": "SK-C-5",
+    "accessionNumber": "SK-C-5",
+    "recordUrl": "https://id.rijksmuseum.nl/200107928",
+    "apiRecordUrl": "https://data.rijksmuseum.nl/200107928",
+    "sourceImageUrl": "https://iiif.micr.io/PJEZO/full/2048,/0/default.jpg",
+    "retrievedAt": "2026-10-08T17:49:09.305642+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 438838,
+    "sha256": "c65a1d62272e7163aa763c9dfa2c7d8e2bfe3c9223b486479212b06a00f2bacc",
+    "width": 2048,
+    "height": 1700
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "Rijksmuseum Public Domain / CC0 open data",
+    "policyUrl": "https://data.rijksmuseum.nl/policy/",
+    "verification": "Rijksmuseum EDM metadata returned open rights URI http://creativecommons.org/publicdomain/mark/1.0/ for object SK-C-5.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; assumed sRGB after RGB conversion",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/night-watch/puzzle.webp",
+      "width": 2048,
+      "height": 1700,
+      "byteSize": 364496,
+      "sha256": "d6b4f6b09929c5ccd85a35310c9229936f93a4983b327920f2dda804bfda2400",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/night-watch/preview.webp",
+      "width": 1024,
+      "height": 850,
+      "byteSize": 83648,
+      "sha256": "e536a984bc6a07df79b3e72ae8966ed42fa457365f790eb99b407d84d26fb025",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/night-watch/thumbnail.webp",
+      "width": 384,
+      "height": 319,
+      "byteSize": 13388,
+      "sha256": "e0a763952f70c30b8881dfc9049cca693679e1473e266558a82d8729ccab909b",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

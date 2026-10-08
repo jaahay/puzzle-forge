@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "sevres-vase",
+  "assetRevision": 1,
+  "work": {
+    "title": "Vaas",
+    "creator": "Léonard Gébleux",
+    "date": "1908",
+    "medium": null,
+    "dimensions": "height 104 cm x width 38 cm x width 20 cm x width 17.5 cm x width 26 cm"
+  },
+  "source": {
+    "institution": "Rijksmuseum",
+    "objectId": "BK-1970-55-A",
+    "accessionNumber": "BK-1970-55-A",
+    "recordUrl": "https://id.rijksmuseum.nl/200416101",
+    "apiRecordUrl": "https://data.rijksmuseum.nl/200416101",
+    "sourceImageUrl": "https://iiif.micr.io/zFyNT/full/,2048/0/default.jpg",
+    "retrievedAt": "2026-10-08T17:49:09.305642+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 187290,
+    "sha256": "70be5a99861da4b4c9a9cc2d3d2ebbc677af54f88a2c7b4de8a5db0d64f40f56",
+    "width": 1155,
+    "height": 2048
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "Rijksmuseum Public Domain / CC0 open data",
+    "policyUrl": "https://data.rijksmuseum.nl/policy/",
+    "verification": "Rijksmuseum EDM metadata returned open rights URI http://creativecommons.org/publicdomain/mark/1.0/ for object BK-1970-55-A.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; assumed sRGB after RGB conversion",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/sevres-vase/puzzle.webp",
+      "width": 1155,
+      "height": 2048,
+      "byteSize": 136332,
+      "sha256": "9dff40f02cfa9d1b03582afde959cb4fb80c2af0a25ca03bcb92f1d89c0de8ef",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/sevres-vase/preview.webp",
+      "width": 577,
+      "height": 1024,
+      "byteSize": 34424,
+      "sha256": "919e175e73dc4d7e4746acdcbeaa576842854cb01e9d54004ff9bf23d8a6dc67",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/sevres-vase/thumbnail.webp",
+      "width": 217,
+      "height": 384,
+      "byteSize": 5966,
+      "sha256": "a5819535cea6010e818a48fb195860df4084c102d23ca042ae92b758b19cf601",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

@@ -10,7 +10,10 @@ import shutil
 import sys
 import tempfile
 import time
+import urllib.error
+import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -39,16 +42,27 @@ ARTIC_FIELDS = (
     "image_id",
     "is_public_domain",
 )
+RIJKS_SEARCH_API = "https://data.rijksmuseum.nl/search/collection"
+RIJKS_OAI_API = "https://data.rijksmuseum.nl/oai"
+RIJKS_DATA_POLICY = "https://data.rijksmuseum.nl/policy/"
+RIJKS_PUBLIC_RIGHTS = frozenset(
+    {
+        "http://creativecommons.org/publicdomain/mark/1.0/",
+        "https://creativecommons.org/publicdomain/mark/1.0/",
+        "http://creativecommons.org/publicdomain/zero/1.0/",
+        "https://creativecommons.org/publicdomain/zero/1.0/",
+    }
+)
 SOURCE_MANIFEST_PATH = Path("assets/jigsaw/sources.json")
 ASSET_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-SUPPORTED_PROVIDERS = frozenset({"met", "artic"})
+SUPPORTED_PROVIDERS = frozenset({"met", "artic", "rijksmuseum"})
 
 
 @dataclass(frozen=True)
 class Artwork:
     asset_id: str
     provider: str
-    object_id: int
+    source_id: int | str
 
 
 @dataclass(frozen=True)
@@ -133,7 +147,6 @@ def load_artworks(repo_root: Path) -> tuple[Artwork, ...]:
 
         asset_id = entry.get("assetId")
         provider = entry.get("provider")
-        object_id = entry.get("objectId")
 
         if not isinstance(asset_id, str) or not ASSET_ID_PATTERN.fullmatch(asset_id):
             raise RuntimeError(f"Invalid Jigsaw assetId in source manifest: {asset_id!r}")
@@ -141,11 +154,18 @@ def load_artworks(repo_root: Path) -> tuple[Artwork, ...]:
             raise RuntimeError(f"Duplicate Jigsaw assetId in source manifest: {asset_id}")
         if provider not in SUPPORTED_PROVIDERS:
             raise RuntimeError(f"Unsupported Jigsaw source provider for {asset_id}: {provider!r}")
-        if not isinstance(object_id, int) or object_id <= 0:
-            raise RuntimeError(f"Invalid {provider} objectId for {asset_id}: {object_id!r}")
+
+        if provider == "rijksmuseum":
+            source_id = entry.get("objectNumber")
+            if not isinstance(source_id, str) or not source_id.strip():
+                raise RuntimeError(f"Invalid Rijksmuseum objectNumber for {asset_id}: {source_id!r}")
+        else:
+            source_id = entry.get("objectId")
+            if not isinstance(source_id, int) or source_id <= 0:
+                raise RuntimeError(f"Invalid {provider} objectId for {asset_id}: {source_id!r}")
 
         seen_ids.add(asset_id)
-        artworks.append(Artwork(asset_id=asset_id, provider=provider, object_id=object_id))
+        artworks.append(Artwork(asset_id=asset_id, provider=provider, source_id=source_id))
 
     return tuple(artworks)
 
@@ -174,31 +194,86 @@ def request_headers(provider: str) -> dict[str, str]:
 
 def fetch_json(url: str, provider: str) -> dict:
     request = urllib.request.Request(url, headers=request_headers(provider))
-    with urllib.request.urlopen(request, timeout=60) as response:
-        return json.load(response)
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            return json.load(response)
+    except urllib.error.HTTPError as exc:
+        raise RuntimeError(
+            f"{provider} request failed with HTTP {exc.code}: {url}"
+        ) from exc
 
 
 def fetch_bytes(url: str, provider: str) -> tuple[bytes, str]:
     request = urllib.request.Request(url, headers=request_headers(provider))
-    with urllib.request.urlopen(request, timeout=120) as response:
-        return response.read(), response.headers.get_content_type()
+    try:
+        with urllib.request.urlopen(request, timeout=120) as response:
+            return response.read(), response.headers.get_content_type()
+    except urllib.error.HTTPError as exc:
+        raise RuntimeError(
+            f"{provider} request failed with HTTP {exc.code}: {url}"
+        ) from exc
+
+
+def resolve_linked_art_creator(record: dict) -> str | None:
+    production = record.get("produced_by")
+    if not isinstance(production, dict):
+        return None
+    for part in production.get("part", []):
+        if not isinstance(part, dict):
+            continue
+        for actor in part.get("carried_out_by", []):
+            if not isinstance(actor, dict):
+                continue
+            for notation in actor.get("notation", []):
+                if (
+                    isinstance(notation, dict)
+                    and notation.get("@language") == "en"
+                    and isinstance(notation.get("@value"), str)
+                    and notation["@value"]
+                ):
+                    return notation["@value"]
+            label = actor.get("_label")
+            if isinstance(label, str) and label:
+                return label
+    return None
+
+
+def rijks_data_uri(uri: str) -> str:
+    prefix = "https://id.rijksmuseum.nl/"
+    if not uri.startswith(prefix):
+        raise RuntimeError(f"Unexpected Rijksmuseum persistent identifier: {uri}")
+    return "https://data.rijksmuseum.nl/" + uri.removeprefix(prefix)
+
+
+def first_linked_id(record: dict, field: str, label: str) -> str:
+    values = record.get(field)
+    if not isinstance(values, list):
+        raise RuntimeError(f"Rijksmuseum {label} has no {field} links")
+    for value in values:
+        if isinstance(value, dict):
+            linked_id = value.get("id")
+            if isinstance(linked_id, str) and linked_id:
+                return linked_id
+    raise RuntimeError(f"Rijksmuseum {label} has no usable {field} link")
 
 
 def resolve_met_source(artwork: Artwork) -> SourceRecord:
-    api_url = MET_OBJECT_API.format(object_id=artwork.object_id)
+    if not isinstance(artwork.source_id, int):
+        raise RuntimeError(f"Met source identifier must be an integer: {artwork.source_id!r}")
+    api_url = MET_OBJECT_API.format(object_id=artwork.source_id)
     record = fetch_json(api_url, artwork.provider)
 
-    if record.get("objectID") != artwork.object_id:
+    if record.get("objectID") != artwork.source_id:
         raise RuntimeError(
-            f"Met object mismatch for {artwork.asset_id}: expected {artwork.object_id}, "
+            f"Met object mismatch for {artwork.asset_id}: expected {artwork.source_id}, "
             f"received {record.get('objectID')!r}"
         )
     if record.get("isPublicDomain") is not True:
-        raise RuntimeError(f"Met object {artwork.object_id} is not marked public domain")
+        raise RuntimeError(f"Met object {artwork.source_id} is not marked public domain")
     if not record.get("primaryImage"):
-        raise RuntimeError(f"Met object {artwork.object_id} has no downloadable primary image")
+        raise RuntimeError(f"Met object {artwork.source_id} has no downloadable primary image")
     if not record.get("objectURL"):
-        raise RuntimeError(f"Met object {artwork.object_id} has no canonical object URL")
+        raise RuntimeError(f"Met object {artwork.source_id} has no canonical object URL")
 
     return SourceRecord(
         provider=artwork.provider,
@@ -215,35 +290,37 @@ def resolve_met_source(artwork: Artwork) -> SourceRecord:
         rights_policy="The Met Open Access",
         rights_policy_url=MET_OPEN_ACCESS_POLICY,
         rights_verification=(
-            f"The Met object API returned isPublicDomain=true for object {artwork.object_id}."
+            f"The Met object API returned isPublicDomain=true for object {artwork.source_id}."
         ),
     )
 
 
 def resolve_artic_source(artwork: Artwork) -> SourceRecord:
-    canonical_api_url = ARTIC_OBJECT_API.format(object_id=artwork.object_id)
+    if not isinstance(artwork.source_id, int):
+        raise RuntimeError(f"Art Institute source identifier must be an integer: {artwork.source_id!r}")
+    canonical_api_url = ARTIC_OBJECT_API.format(object_id=artwork.source_id)
     api_url = canonical_api_url + "?fields=" + ",".join(ARTIC_FIELDS)
     response = fetch_json(api_url, artwork.provider)
     record = response.get("data")
     config = response.get("config")
 
     if not isinstance(record, dict):
-        raise RuntimeError(f"Art Institute artwork {artwork.object_id} returned no data object")
-    if record.get("id") != artwork.object_id:
+        raise RuntimeError(f"Art Institute artwork {artwork.source_id} returned no data object")
+    if record.get("id") != artwork.source_id:
         raise RuntimeError(
-            f"Art Institute object mismatch for {artwork.asset_id}: expected {artwork.object_id}, "
+            f"Art Institute object mismatch for {artwork.asset_id}: expected {artwork.source_id}, "
             f"received {record.get('id')!r}"
         )
     if record.get("is_public_domain") is not True:
-        raise RuntimeError(f"Art Institute artwork {artwork.object_id} is not marked public domain")
+        raise RuntimeError(f"Art Institute artwork {artwork.source_id} is not marked public domain")
     image_id = record.get("image_id")
     if not isinstance(image_id, str) or not image_id:
-        raise RuntimeError(f"Art Institute artwork {artwork.object_id} has no downloadable primary image")
+        raise RuntimeError(f"Art Institute artwork {artwork.source_id} has no downloadable primary image")
     if not isinstance(config, dict):
-        raise RuntimeError(f"Art Institute artwork {artwork.object_id} returned no API config")
+        raise RuntimeError(f"Art Institute artwork {artwork.source_id} returned no API config")
     iiif_url = config.get("iiif_url")
     if not isinstance(iiif_url, str) or not iiif_url.startswith("https://"):
-        raise RuntimeError(f"Art Institute artwork {artwork.object_id} returned no HTTPS IIIF base URL")
+        raise RuntimeError(f"Art Institute artwork {artwork.source_id} returned no HTTPS IIIF base URL")
 
     source_image_url = f"{iiif_url.rstrip('/')}/{image_id}/full/1686,/0/default.jpg"
     return SourceRecord(
@@ -255,13 +332,199 @@ def resolve_artic_source(artwork: Artwork) -> SourceRecord:
         dimensions=record.get("dimensions"),
         institution="Art Institute of Chicago",
         accession_number=record.get("main_reference_number"),
-        record_url=f"https://www.artic.edu/artworks/{artwork.object_id}",
+        record_url=f"https://www.artic.edu/artworks/{artwork.source_id}",
         api_record_url=canonical_api_url,
         source_image_url=source_image_url,
         rights_policy="Art Institute of Chicago public-domain designation",
         rights_policy_url=ARTIC_COPYRIGHT_POLICY,
         rights_verification=(
-            f"Art Institute API returned is_public_domain=true for artwork {artwork.object_id}."
+            f"Art Institute API returned is_public_domain=true for artwork {artwork.source_id}."
+        ),
+    )
+
+
+def resolve_rijksmuseum_source(artwork: Artwork) -> SourceRecord:
+    if not isinstance(artwork.source_id, str):
+        raise RuntimeError(f"Rijksmuseum source identifier must be an object number: {artwork.source_id!r}")
+    object_number = artwork.source_id
+
+    search_url = RIJKS_SEARCH_API + "?" + urllib.parse.urlencode({"objectNumber": object_number})
+
+    oai_ns = "http://www.openarchives.org/OAI/2.0/"
+    dc_ns = "http://purl.org/dc/elements/1.1/"
+    dcterms_ns = "http://purl.org/dc/terms/"
+    edm_ns = "http://www.europeana.eu/schemas/edm/"
+    rdf_resource = "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}resource"
+
+    persistent_uri = None
+    object_data_uri = None
+    edm_root = None
+    candidate_identifiers: list[list[str]] = []
+    current_search_url: str | None = search_url
+
+    while current_search_url and edm_root is None:
+        search = fetch_json(current_search_url, artwork.provider)
+        items = search.get("orderedItems")
+        if not isinstance(items, list):
+            raise RuntimeError(
+                f"Rijksmuseum search returned invalid orderedItems for {object_number}"
+            )
+
+        for item in items:
+            candidate_uri = item.get("id") if isinstance(item, dict) else None
+            if not isinstance(candidate_uri, str):
+                continue
+
+            candidate_oai_url = RIJKS_OAI_API + "?" + urllib.parse.urlencode(
+                {
+                    "verb": "GetRecord",
+                    "metadataPrefix": "edm",
+                    "identifier": candidate_uri,
+                }
+            )
+            candidate_bytes, _ = fetch_bytes(candidate_oai_url, artwork.provider)
+            try:
+                candidate_root = ET.fromstring(candidate_bytes)
+            except ET.ParseError as exc:
+                raise RuntimeError(
+                    f"Could not parse Rijksmuseum EDM candidate for {object_number}"
+                ) from exc
+
+            error = candidate_root.find(f".//{{{oai_ns}}}error")
+            if error is not None:
+                continue
+
+            identifiers = [
+                element.text.strip()
+                for element in candidate_root.findall(f".//{{{dc_ns}}}identifier")
+                if isinstance(element.text, str) and element.text.strip()
+            ]
+            candidate_identifiers.append(identifiers)
+            if object_number not in identifiers:
+                continue
+
+            persistent_uri = candidate_uri
+            object_data_uri = rijks_data_uri(candidate_uri)
+            edm_root = candidate_root
+            break
+
+        if edm_root is not None:
+            break
+
+        next_page = search.get("next")
+        next_id = next_page.get("id") if isinstance(next_page, dict) else None
+        current_search_url = next_id if isinstance(next_id, str) and next_id else None
+
+    if persistent_uri is None or object_data_uri is None or edm_root is None:
+        raise RuntimeError(
+            f"Rijksmuseum search returned no exact object-number match for {object_number}; "
+            f"candidate identifiers were {candidate_identifiers!r}"
+        )
+
+    rights_element = edm_root.find(f".//{{{edm_ns}}}rights")
+    rights_uri = rights_element.get(rdf_resource) if rights_element is not None else None
+    if rights_uri not in RIJKS_PUBLIC_RIGHTS:
+        raise RuntimeError(
+            f"Rijksmuseum object {object_number} is not marked Public Domain/CC0: {rights_uri!r}"
+        )
+
+    title_elements = edm_root.findall(f".//{{{dc_ns}}}title")
+    title = None
+    for element in title_elements:
+        language = element.get("{http://www.w3.org/XML/1998/namespace}lang")
+        if language == "en" and isinstance(element.text, str) and element.text.strip():
+            title = element.text.strip()
+            break
+    if title is None:
+        title = next(
+            (
+                element.text.strip()
+                for element in title_elements
+                if isinstance(element.text, str) and element.text.strip()
+            ),
+            None,
+        )
+
+    date_element = edm_root.find(f".//{{{dcterms_ns}}}created")
+    date = date_element.text.strip() if date_element is not None and date_element.text else None
+    medium_element = edm_root.find(f".//{{{dcterms_ns}}}medium")
+    medium = medium_element.text.strip() if medium_element is not None and medium_element.text else None
+    extent_element = edm_root.find(f".//{{{dcterms_ns}}}extent")
+    dimensions = extent_element.text.strip() if extent_element is not None and extent_element.text else None
+
+    object_record = fetch_json(object_data_uri + "?_profile=la-framed", artwork.provider)
+    creator = resolve_linked_art_creator(object_record)
+    if creator is None:
+        creator_element = edm_root.find(f".//{{{dc_ns}}}creator")
+        if (
+            creator_element is not None
+            and isinstance(creator_element.text, str)
+            and creator_element.text.strip()
+        ):
+            creator = creator_element.text.strip()
+
+    visual_item_uri = first_linked_id(object_record, "shows", f"object {object_number}")
+    visual_item = fetch_json(
+        rijks_data_uri(visual_item_uri) + "?_profile=la-framed",
+        artwork.provider,
+    )
+    digital_object_uri = first_linked_id(
+        visual_item,
+        "digitally_shown_by",
+        f"visual item for {object_number}",
+    )
+    digital_object_data_uri = rijks_data_uri(digital_object_uri)
+    digital_object = fetch_json(
+        digital_object_data_uri + "?_profile=la-framed",
+        artwork.provider,
+    )
+    access_point = first_linked_id(
+        digital_object,
+        "access_point",
+        f"digital object for {object_number}",
+    )
+    parsed_access = urllib.parse.urlparse(access_point)
+    if parsed_access.scheme != "https" or parsed_access.netloc != "iiif.micr.io":
+        raise RuntimeError(
+            f"Rijksmuseum object {object_number} returned an unexpected IIIF access point: "
+            f"{access_point}"
+        )
+    path_parts = [part for part in parsed_access.path.split("/") if part]
+    if not path_parts:
+        raise RuntimeError(f"Rijksmuseum object {object_number} returned no IIIF identifier")
+    iiif_identifier = path_parts[0]
+    iiif_base = f"https://iiif.micr.io/{iiif_identifier}"
+
+    info = fetch_json(f"{iiif_base}/info.json", artwork.provider)
+    source_width = info.get("width")
+    source_height = info.get("height")
+    if (
+        not isinstance(source_width, int)
+        or source_width <= 0
+        or not isinstance(source_height, int)
+        or source_height <= 0
+    ):
+        raise RuntimeError(f"Rijksmuseum object {object_number} returned invalid IIIF dimensions")
+    size = "2048," if source_width >= source_height else ",2048"
+    source_image_url = f"{iiif_base}/full/{size}/0/default.jpg"
+
+    return SourceRecord(
+        provider=artwork.provider,
+        title=title,
+        creator=creator,
+        date=date,
+        medium=medium,
+        dimensions=dimensions,
+        institution="Rijksmuseum",
+        accession_number=object_number,
+        record_url=persistent_uri,
+        api_record_url=object_data_uri,
+        source_image_url=source_image_url,
+        rights_policy="Rijksmuseum Public Domain / CC0 open data",
+        rights_policy_url=RIJKS_DATA_POLICY,
+        rights_verification=(
+            f"Rijksmuseum EDM metadata returned open rights URI {rights_uri} "
+            f"for object {object_number}."
         ),
     )
 
@@ -271,6 +534,8 @@ def resolve_source_record(artwork: Artwork) -> SourceRecord:
         return resolve_met_source(artwork)
     if artwork.provider == "artic":
         return resolve_artic_source(artwork)
+    if artwork.provider == "rijksmuseum":
+        return resolve_rijksmuseum_source(artwork)
     raise RuntimeError(f"Unsupported source provider: {artwork.provider}")
 
 
@@ -360,7 +625,7 @@ def build_asset(
         },
         "source": {
             "institution": record.institution,
-            "objectId": artwork.object_id,
+            "objectId": artwork.source_id,
             "accessionNumber": record.accession_number,
             "recordUrl": record.record_url,
             "apiRecordUrl": record.api_record_url,
@@ -432,7 +697,11 @@ def ensure_targets_available(repo_root: Path, selected: list[Artwork], overwrite
 
 
 def provider_label(artwork: Artwork) -> str:
-    return "Met" if artwork.provider == "met" else "ARTIC"
+    return {
+        "met": "Met",
+        "artic": "ARTIC",
+        "rijksmuseum": "Rijksmuseum",
+    }[artwork.provider]
 
 
 def main() -> int:
@@ -453,7 +722,7 @@ def main() -> int:
         records[artwork.asset_id] = record
         print(
             f"  OK {artwork.asset_id}: {record.creator or 'Unknown creator'} — {record.title} "
-            f"({provider_label(artwork)} {artwork.object_id})"
+            f"({provider_label(artwork)} {artwork.source_id})"
         )
 
     if args.verify_only:
