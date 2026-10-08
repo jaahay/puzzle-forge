@@ -25,8 +25,22 @@ except ImportError as exc:
 
 MET_OBJECT_API = "https://collectionapi.metmuseum.org/public/collection/v1/objects/{object_id}"
 MET_OPEN_ACCESS_POLICY = "https://www.metmuseum.org/hubs/open-access"
+ARTIC_OBJECT_API = "https://api.artic.edu/api/v1/artworks/{object_id}"
+ARTIC_COPYRIGHT_POLICY = "https://api.artic.edu/docs/#copyright"
+ARTIC_FIELDS = (
+    "id",
+    "title",
+    "artist_display",
+    "date_display",
+    "medium_display",
+    "dimensions",
+    "main_reference_number",
+    "image_id",
+    "is_public_domain",
+)
 SOURCE_MANIFEST_PATH = Path("assets/jigsaw/sources.json")
 ASSET_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+SUPPORTED_PROVIDERS = frozenset({"met", "artic"})
 
 
 @dataclass(frozen=True)
@@ -34,6 +48,24 @@ class Artwork:
     asset_id: str
     provider: str
     object_id: int
+
+
+@dataclass(frozen=True)
+class SourceRecord:
+    provider: str
+    title: str | None
+    creator: str | None
+    date: str | None
+    medium: str | None
+    dimensions: str | None
+    institution: str
+    accession_number: str | None
+    record_url: str
+    api_record_url: str
+    source_image_url: str
+    rights_policy: str
+    rights_policy_url: str
+    rights_verification: str
 
 
 DERIVATIVES = {
@@ -45,10 +77,7 @@ DERIVATIVES = {
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description=(
-            "Manually ingest verified public-domain artwork into the bundled "
-            "Puzzle Forge Jigsaw image library."
-        )
+        description="Ingest verified public-domain artwork into the bundled Puzzle Forge image library."
     )
     parser.add_argument(
         "asset_ids",
@@ -109,10 +138,10 @@ def load_artworks(repo_root: Path) -> tuple[Artwork, ...]:
             raise RuntimeError(f"Invalid Jigsaw assetId in source manifest: {asset_id!r}")
         if asset_id in seen_ids:
             raise RuntimeError(f"Duplicate Jigsaw assetId in source manifest: {asset_id}")
-        if provider != "met":
+        if provider not in SUPPORTED_PROVIDERS:
             raise RuntimeError(f"Unsupported Jigsaw source provider for {asset_id}: {provider!r}")
         if not isinstance(object_id, int) or object_id <= 0:
-            raise RuntimeError(f"Invalid Met objectId for {asset_id}: {object_id!r}")
+            raise RuntimeError(f"Invalid {provider} objectId for {asset_id}: {object_id!r}")
 
         seen_ids.add(asset_id)
         artworks.append(Artwork(asset_id=asset_id, provider=provider, object_id=object_id))
@@ -135,21 +164,29 @@ def select_artworks(artworks: tuple[Artwork, ...], args: argparse.Namespace) -> 
     return [artwork for artwork in artworks if artwork.asset_id in requested]
 
 
-def fetch_json(url: str) -> dict:
-    request = urllib.request.Request(url, headers={"User-Agent": "puzzle-forge-artwork-ingestion/1"})
+def request_headers(provider: str) -> dict[str, str]:
+    headers = {"User-Agent": "puzzle-forge-artwork-ingestion/2"}
+    if provider == "artic":
+        headers["AIC-User-Agent"] = "puzzle-forge (https://github.com/jaahay/puzzle-forge)"
+    return headers
+
+
+def fetch_json(url: str, provider: str) -> dict:
+    request = urllib.request.Request(url, headers=request_headers(provider))
     with urllib.request.urlopen(request, timeout=60) as response:
         return json.load(response)
 
 
-def fetch_bytes(url: str) -> tuple[bytes, str]:
-    request = urllib.request.Request(url, headers={"User-Agent": "puzzle-forge-artwork-ingestion/1"})
+def fetch_bytes(url: str, provider: str) -> tuple[bytes, str]:
+    request = urllib.request.Request(url, headers=request_headers(provider))
     with urllib.request.urlopen(request, timeout=120) as response:
         return response.read(), response.headers.get_content_type()
 
 
-def validate_record(artwork: Artwork, record: dict) -> None:
-    if artwork.provider != "met":
-        raise RuntimeError(f"Unsupported source provider: {artwork.provider}")
+def resolve_met_source(artwork: Artwork) -> SourceRecord:
+    api_url = MET_OBJECT_API.format(object_id=artwork.object_id)
+    record = fetch_json(api_url, artwork.provider)
+
     if record.get("objectID") != artwork.object_id:
         raise RuntimeError(
             f"Met object mismatch for {artwork.asset_id}: expected {artwork.object_id}, "
@@ -161,6 +198,79 @@ def validate_record(artwork: Artwork, record: dict) -> None:
         raise RuntimeError(f"Met object {artwork.object_id} has no downloadable primary image")
     if not record.get("objectURL"):
         raise RuntimeError(f"Met object {artwork.object_id} has no canonical object URL")
+
+    return SourceRecord(
+        provider=artwork.provider,
+        title=record.get("title"),
+        creator=record.get("artistDisplayName"),
+        date=record.get("objectDate"),
+        medium=record.get("medium"),
+        dimensions=record.get("dimensions"),
+        institution="The Metropolitan Museum of Art",
+        accession_number=record.get("accessionNumber"),
+        record_url=record["objectURL"],
+        api_record_url=api_url,
+        source_image_url=record["primaryImage"],
+        rights_policy="The Met Open Access",
+        rights_policy_url=MET_OPEN_ACCESS_POLICY,
+        rights_verification=(
+            f"The Met object API returned isPublicDomain=true for object {artwork.object_id}."
+        ),
+    )
+
+
+def resolve_artic_source(artwork: Artwork) -> SourceRecord:
+    canonical_api_url = ARTIC_OBJECT_API.format(object_id=artwork.object_id)
+    api_url = canonical_api_url + "?fields=" + ",".join(ARTIC_FIELDS)
+    response = fetch_json(api_url, artwork.provider)
+    record = response.get("data")
+    config = response.get("config")
+
+    if not isinstance(record, dict):
+        raise RuntimeError(f"Art Institute artwork {artwork.object_id} returned no data object")
+    if record.get("id") != artwork.object_id:
+        raise RuntimeError(
+            f"Art Institute object mismatch for {artwork.asset_id}: expected {artwork.object_id}, "
+            f"received {record.get('id')!r}"
+        )
+    if record.get("is_public_domain") is not True:
+        raise RuntimeError(f"Art Institute artwork {artwork.object_id} is not marked public domain")
+    image_id = record.get("image_id")
+    if not isinstance(image_id, str) or not image_id:
+        raise RuntimeError(f"Art Institute artwork {artwork.object_id} has no downloadable primary image")
+    if not isinstance(config, dict):
+        raise RuntimeError(f"Art Institute artwork {artwork.object_id} returned no API config")
+    iiif_url = config.get("iiif_url")
+    if not isinstance(iiif_url, str) or not iiif_url.startswith("https://"):
+        raise RuntimeError(f"Art Institute artwork {artwork.object_id} returned no HTTPS IIIF base URL")
+
+    source_image_url = f"{iiif_url.rstrip('/')}/{image_id}/full/1686,/0/default.jpg"
+    return SourceRecord(
+        provider=artwork.provider,
+        title=record.get("title"),
+        creator=record.get("artist_display"),
+        date=record.get("date_display"),
+        medium=record.get("medium_display"),
+        dimensions=record.get("dimensions"),
+        institution="Art Institute of Chicago",
+        accession_number=record.get("main_reference_number"),
+        record_url=f"https://www.artic.edu/artworks/{artwork.object_id}",
+        api_record_url=canonical_api_url,
+        source_image_url=source_image_url,
+        rights_policy="Art Institute of Chicago public-domain designation",
+        rights_policy_url=ARTIC_COPYRIGHT_POLICY,
+        rights_verification=(
+            f"Art Institute API returned is_public_domain=true for artwork {artwork.object_id}."
+        ),
+    )
+
+
+def resolve_source_record(artwork: Artwork) -> SourceRecord:
+    if artwork.provider == "met":
+        return resolve_met_source(artwork)
+    if artwork.provider == "artic":
+        return resolve_artic_source(artwork)
+    raise RuntimeError(f"Unsupported source provider: {artwork.provider}")
 
 
 def to_srgb(opened: Image.Image) -> tuple[Image.Image, str]:
@@ -185,12 +295,11 @@ def to_srgb(opened: Image.Image) -> tuple[Image.Image, str]:
 
 def build_asset(
     artwork: Artwork,
-    record: dict,
+    record: SourceRecord,
     staging_root: Path,
     retrieved_at: datetime,
 ) -> dict:
-    source_url = record["primaryImage"]
-    source_bytes, mime_type = fetch_bytes(source_url)
+    source_bytes, mime_type = fetch_bytes(record.source_image_url, record.provider)
     source_sha256 = hashlib.sha256(source_bytes).hexdigest()
 
     public_dir = staging_root / "public" / "jigsaw" / artwork.asset_id
@@ -240,19 +349,19 @@ def build_asset(
         "assetId": artwork.asset_id,
         "assetRevision": 1,
         "work": {
-            "title": record.get("title"),
-            "creator": record.get("artistDisplayName"),
-            "date": record.get("objectDate"),
-            "medium": record.get("medium"),
-            "dimensions": record.get("dimensions"),
+            "title": record.title,
+            "creator": record.creator,
+            "date": record.date,
+            "medium": record.medium,
+            "dimensions": record.dimensions,
         },
         "source": {
-            "institution": "The Metropolitan Museum of Art",
+            "institution": record.institution,
             "objectId": artwork.object_id,
-            "accessionNumber": record.get("accessionNumber"),
-            "recordUrl": record.get("objectURL"),
-            "apiRecordUrl": MET_OBJECT_API.format(object_id=artwork.object_id),
-            "sourceImageUrl": source_url,
+            "accessionNumber": record.accession_number,
+            "recordUrl": record.record_url,
+            "apiRecordUrl": record.api_record_url,
+            "sourceImageUrl": record.source_image_url,
             "retrievedAt": retrieved_at.isoformat(),
             "mimeType": mime_type,
             "byteSize": len(source_bytes),
@@ -262,11 +371,9 @@ def build_asset(
         },
         "rights": {
             "isPublicDomain": True,
-            "policy": "The Met Open Access",
-            "policyUrl": MET_OPEN_ACCESS_POLICY,
-            "verification": (
-                f"The Met object API returned isPublicDomain=true for object {artwork.object_id}."
-            ),
+            "policy": record.rights_policy,
+            "policyUrl": record.rights_policy_url,
+            "verification": record.rights_verification,
             "reviewedAt": retrieved_at.date().isoformat(),
         },
         "generation": {
@@ -321,6 +428,10 @@ def ensure_targets_available(repo_root: Path, selected: list[Artwork], overwrite
                 )
 
 
+def provider_label(artwork: Artwork) -> str:
+    return "Met" if artwork.provider == "met" else "ARTIC"
+
+
 def main() -> int:
     args = parse_args()
     repo_root = Path(__file__).resolve().parents[1]
@@ -333,15 +444,13 @@ def main() -> int:
         ensure_targets_available(repo_root, selected, args.overwrite)
 
     print(f"Validating {len(selected)} source records...")
-    records: dict[str, dict] = {}
+    records: dict[str, SourceRecord] = {}
     for artwork in selected:
-        api_url = MET_OBJECT_API.format(object_id=artwork.object_id)
-        record = fetch_json(api_url)
-        validate_record(artwork, record)
+        record = resolve_source_record(artwork)
         records[artwork.asset_id] = record
         print(
-            f"  OK {artwork.asset_id}: {record.get('artistDisplayName')} — {record.get('title')} "
-            f"(Met {artwork.object_id})"
+            f"  OK {artwork.asset_id}: {record.creator or 'Unknown creator'} — {record.title} "
+            f"({provider_label(artwork)} {artwork.object_id})"
         )
 
     if args.verify_only:
