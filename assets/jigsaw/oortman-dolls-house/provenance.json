@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "oortman-dolls-house",
+  "assetRevision": 1,
+  "work": {
+    "title": "Dolls’ house of Petronella Oortman",
+    "creator": "anonymous",
+    "date": null,
+    "medium": null,
+    "dimensions": "height 255 cm x width 190 cm x depth 78 cm x depth 28 cm"
+  },
+  "source": {
+    "institution": "Rijksmuseum",
+    "objectId": "BK-NM-1010",
+    "accessionNumber": "BK-NM-1010",
+    "recordUrl": "https://id.rijksmuseum.nl/2002678",
+    "apiRecordUrl": "https://data.rijksmuseum.nl/2002678",
+    "sourceImageUrl": "https://iiif.micr.io/vacBr/full/2048,/0/default.jpg",
+    "retrievedAt": "2026-10-08T17:49:09.305642+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 1273626,
+    "sha256": "2db673fefaef1f049f66d551e3fe90a431fa8edc195d42ee5c17f41e882d7722",
+    "width": 2048,
+    "height": 1857
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "Rijksmuseum Public Domain / CC0 open data",
+    "policyUrl": "https://data.rijksmuseum.nl/policy/",
+    "verification": "Rijksmuseum EDM metadata returned open rights URI http://creativecommons.org/publicdomain/mark/1.0/ for object BK-NM-1010.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; assumed sRGB after RGB conversion",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/oortman-dolls-house/puzzle.webp",
+      "width": 2048,
+      "height": 1857,
+      "byteSize": 1486942,
+      "sha256": "58b33584fdb5f678b5ab2551f9a308a23e1b33a03690bb5c3a31487698a1185e",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/oortman-dolls-house/preview.webp",
+      "width": 1024,
+      "height": 929,
+      "byteSize": 265388,
+      "sha256": "215341a54b653459365df35910e8c0fe8dde5da152f7e94b9a7519495276276e",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/oortman-dolls-house/thumbnail.webp",
+      "width": 384,
+      "height": 348,
+      "byteSize": 31236,
+      "sha256": "f547a3a59ae59f77583c0e891878c0d7b1ae1747a5d0caaaa08fc81d6941a145",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

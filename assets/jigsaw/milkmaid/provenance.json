@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "milkmaid",
+  "assetRevision": 1,
+  "work": {
+    "title": "Het melkmeisje",
+    "creator": "Johannes Vermeer",
+    "date": null,
+    "medium": null,
+    "dimensions": "height 45.5 cm x width 41 cm"
+  },
+  "source": {
+    "institution": "Rijksmuseum",
+    "objectId": "SK-A-2344",
+    "accessionNumber": "SK-A-2344",
+    "recordUrl": "https://id.rijksmuseum.nl/200108369",
+    "apiRecordUrl": "https://data.rijksmuseum.nl/200108369",
+    "sourceImageUrl": "https://iiif.micr.io/QkOGy/full/,2048/0/default.jpg",
+    "retrievedAt": "2026-10-08T17:49:09.305642+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 718462,
+    "sha256": "1f79fd6c65d995316f7649eec5cba28e1e9b9029498c7eefda28267693f95c8d",
+    "width": 1839,
+    "height": 2048
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "Rijksmuseum Public Domain / CC0 open data",
+    "policyUrl": "https://data.rijksmuseum.nl/policy/",
+    "verification": "Rijksmuseum EDM metadata returned open rights URI http://creativecommons.org/publicdomain/mark/1.0/ for object SK-A-2344.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; assumed sRGB after RGB conversion",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/milkmaid/puzzle.webp",
+      "width": 1839,
+      "height": 2048,
+      "byteSize": 709582,
+      "sha256": "6cedd29103a1ae5a24dff3f654d6f0c1369114e6f2af524e07bc0bdcfd6bb480",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/milkmaid/preview.webp",
+      "width": 919,
+      "height": 1024,
+      "byteSize": 141514,
+      "sha256": "0b4b41ce36269602012112929f4a1de8dedb7445f0b49823b1961e9c076d1320",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/milkmaid/thumbnail.webp",
+      "width": 345,
+      "height": 384,
+      "byteSize": 16336,
+      "sha256": "5d39af11ba84aa364fb6692c9870d8b3fb1361ec2d7726b946f8c72e8b54ba10",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}
