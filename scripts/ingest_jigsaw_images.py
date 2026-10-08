@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import html as html_lib
 import io
 import json
 import platform
@@ -59,9 +60,18 @@ NGA_OPEN_DATA_RAW = "https://raw.githubusercontent.com/NationalGalleryOfArt/open
 NGA_OPEN_DATA_REPO = "https://github.com/NationalGalleryOfArt/opendata"
 NGA_OPEN_ACCESS_POLICY = "https://www.nga.gov/artworks/free-images-and-open-access"
 _NGA_CSV_CACHE: dict[str, tuple[dict[str, str], ...]] = {}
+SMITHSONIAN_OBJECT_URL = "https://www.si.edu/object/{record_id}"
+SMITHSONIAN_OPEN_ACCESS_POLICY = "https://www.si.edu/openaccess"
+SMITHSONIAN_INSTITUTIONS = {
+    "nasm": "National Air and Space Museum",
+    "nmah": "National Museum of American History",
+    "chndm": "Cooper Hewitt, Smithsonian Design Museum",
+    "nmnheducation": "National Museum of Natural History",
+    "nmnhpaleobiology": "National Museum of Natural History",
+}
 SOURCE_MANIFEST_PATH = Path("assets/jigsaw/sources.json")
 ASSET_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-SUPPORTED_PROVIDERS = frozenset({"met", "artic", "rijksmuseum", "nga"})
+SUPPORTED_PROVIDERS = frozenset({"met", "artic", "rijksmuseum", "nga", "smithsonian"})
 
 
 @dataclass(frozen=True)
@@ -165,6 +175,15 @@ def load_artworks(repo_root: Path) -> tuple[Artwork, ...]:
             source_id = entry.get("objectNumber")
             if not isinstance(source_id, str) or not source_id.strip():
                 raise RuntimeError(f"Invalid Rijksmuseum objectNumber for {asset_id}: {source_id!r}")
+        elif provider == "smithsonian":
+            source_id = entry.get("recordId")
+            if (
+                not isinstance(source_id, str)
+                or not re.fullmatch(r"[a-z0-9]+_[A-Za-z0-9._-]+", source_id)
+            ):
+                raise RuntimeError(
+                    f"Invalid Smithsonian recordId for {asset_id}: {source_id!r}"
+                )
         else:
             source_id = entry.get("objectId")
             if not isinstance(source_id, int) or source_id <= 0:
@@ -694,6 +713,122 @@ def resolve_nga_source(artwork: Artwork) -> SourceRecord:
     )
 
 
+def html_text(raw_html: str) -> str:
+    without_scripts = re.sub(
+        r"<(?:script|style)\\b[^>]*>.*?</(?:script|style)>",
+        " ",
+        raw_html,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    without_tags = re.sub(r"<[^>]+>", " ", without_scripts)
+    return re.sub(r"\\s+", " ", html_lib.unescape(without_tags)).strip()
+
+
+def smithsonian_title(raw_html: str, record_id: str) -> str | None:
+    match = re.search(
+        r"<h1\\b[^>]*>(.*?)</h1>",
+        raw_html,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    if match is None:
+        return None
+    title = html_text(match.group(1))
+    if not title or title == record_id:
+        return None
+    return title
+
+
+def smithsonian_media_ids(raw_html: str) -> list[str]:
+    decoded = html_lib.unescape(raw_html)
+    patterns = (
+        r"https://ids\\.si\\.edu/ids/deliveryService\\?[^\"'<>]*?\\bid=([A-Za-z0-9_.-]+)",
+        r"https://ids\\.si\\.edu/ids/iiif/([A-Za-z0-9_.-]+)(?:/|[\"'<>])",
+        r"https://ids\\.si\\.edu/ids/manifest/([A-Za-z0-9_.-]+)(?:[\"'<>]|$)",
+    )
+    media_ids: list[str] = []
+    for pattern in patterns:
+        for match in re.finditer(pattern, decoded, flags=re.IGNORECASE):
+            media_id = match.group(1)
+            if media_id not in media_ids:
+                media_ids.append(media_id)
+    return media_ids
+
+
+def resolve_smithsonian_source(artwork: Artwork) -> SourceRecord:
+    if not isinstance(artwork.source_id, str):
+        raise RuntimeError(
+            f"Smithsonian source identifier must be a Record ID: {artwork.source_id!r}"
+        )
+    record_id = artwork.source_id
+    unit_code = record_id.split("_", 1)[0].lower()
+    institution = SMITHSONIAN_INSTITUTIONS.get(unit_code, "Smithsonian Institution")
+
+    record_url = SMITHSONIAN_OBJECT_URL.format(
+        record_id=urllib.parse.quote(record_id, safe="")
+    )
+    page_bytes, content_type = fetch_bytes(record_url, artwork.provider)
+    if content_type not in {"text/html", "application/xhtml+xml"}:
+        raise RuntimeError(
+            f"Smithsonian record {record_id} returned unexpected content type: {content_type}"
+        )
+    try:
+        raw_html = page_bytes.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise RuntimeError(f"Smithsonian record {record_id} page is not UTF-8") from exc
+
+    page_text = html_text(raw_html)
+    if record_id not in page_text:
+        raise RuntimeError(
+            f"Smithsonian record page did not identify requested Record ID {record_id}"
+        )
+
+    public_domain_phrases = (
+        "this media is in the public domain (free of copyright restrictions)",
+        "this media file is in the public domain (free of copyright restrictions)",
+    )
+    lowered_text = page_text.lower()
+    matched_rights = next(
+        (phrase for phrase in public_domain_phrases if phrase in lowered_text),
+        None,
+    )
+    if matched_rights is None:
+        raise RuntimeError(
+            f"Smithsonian record {record_id} does not explicitly mark its media public domain"
+        )
+
+    media_ids = smithsonian_media_ids(raw_html)
+    if not media_ids:
+        raise RuntimeError(
+            f"Smithsonian record {record_id} exposed no Smithsonian IDS image identifier"
+        )
+    media_id = media_ids[0]
+
+    source_image_url = (
+        "https://ids.si.edu/ids/deliveryService?"
+        + urllib.parse.urlencode({"id": media_id, "max": "2048"})
+    )
+
+    return SourceRecord(
+        provider=artwork.provider,
+        title=smithsonian_title(raw_html, record_id),
+        creator=None,
+        date=None,
+        medium=None,
+        dimensions=None,
+        institution=institution,
+        accession_number=record_id,
+        record_url=record_url,
+        api_record_url=record_url,
+        source_image_url=source_image_url,
+        rights_policy="Smithsonian Open Access",
+        rights_policy_url=SMITHSONIAN_OPEN_ACCESS_POLICY,
+        rights_verification=(
+            f"Canonical Smithsonian record {record_id} explicitly stated that its media "
+            f"is in the public domain; IDS media {media_id} was resolved from that record page."
+        ),
+    )
+
+
 def resolve_source_record(artwork: Artwork) -> SourceRecord:
     if artwork.provider == "met":
         return resolve_met_source(artwork)
@@ -703,6 +838,8 @@ def resolve_source_record(artwork: Artwork) -> SourceRecord:
         return resolve_rijksmuseum_source(artwork)
     if artwork.provider == "nga":
         return resolve_nga_source(artwork)
+    if artwork.provider == "smithsonian":
+        return resolve_smithsonian_source(artwork)
     raise RuntimeError(f"Unsupported source provider: {artwork.provider}")
 
 
@@ -869,6 +1006,7 @@ def provider_label(artwork: Artwork) -> str:
         "artic": "ARTIC",
         "rijksmuseum": "Rijksmuseum",
         "nga": "NGA",
+        "smithsonian": "Smithsonian",
     }[artwork.provider]
 
 

@@ -185,6 +185,31 @@
       "assetId": "sumida-cherry-blossoms",
       "provider": "nga",
       "objectId": 183183
+    },
+    {
+      "assetId": "apollo-11-columbia",
+      "provider": "smithsonian",
+      "recordId": "nasm_A19700102000"
+    },
+    {
+      "assetId": "atkinson-counting-register",
+      "provider": "smithsonian",
+      "recordId": "nmah_690840"
+    },
+    {
+      "assetId": "bolivian-woven-textile",
+      "provider": "smithsonian",
+      "recordId": "chndm_1955-157-7"
+    },
+    {
+      "assetId": "fossil-nautilus",
+      "provider": "smithsonian",
+      "recordId": "nmnheducation_10021055"
+    },
+    {
+      "assetId": "stegosaurus-stenops",
+      "provider": "smithsonian",
+      "recordId": "nmnhpaleobiology_3450470"
     }
   ]
 }
