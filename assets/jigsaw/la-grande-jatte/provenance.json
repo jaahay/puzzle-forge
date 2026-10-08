@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "la-grande-jatte",
+  "assetRevision": 1,
+  "work": {
+    "title": "A Sunday on La Grande Jatte — 1884",
+    "creator": "Georges Seurat (French, 1859–1891)",
+    "date": "1884–86, border added 1888–89",
+    "medium": "Oil on canvas",
+    "dimensions": "207.5 × 308.1 cm (81 3/4 × 121 1/4 in.)"
+  },
+  "source": {
+    "institution": "Art Institute of Chicago",
+    "objectId": 27992,
+    "accessionNumber": "1926.224",
+    "recordUrl": "https://www.artic.edu/artworks/27992",
+    "apiRecordUrl": "https://api.artic.edu/api/v1/artworks/27992",
+    "sourceImageUrl": "https://www.artic.edu/iiif/2/2d484387-2509-5e8e-2c43-22f9981972eb/full/1686,/0/default.jpg",
+    "retrievedAt": "2026-10-08T08:28:15.761102+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 849983,
+    "sha256": "14a893bee0c73c9bae05508c1901e2cdf7940d4686988d17360d098dff561d7f",
+    "width": 1686,
+    "height": 1130
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "Art Institute of Chicago public-domain designation",
+    "policyUrl": "https://api.artic.edu/docs/#copyright",
+    "verification": "Art Institute API returned is_public_domain=true for artwork 27992.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.14",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; assumed sRGB after RGB conversion",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/la-grande-jatte/puzzle.webp",
+      "width": 1686,
+      "height": 1130,
+      "byteSize": 593422,
+      "sha256": "bb4973c775b1e343673f459c8e6318e6b1d926b3a567891404241fb33bcb778f",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/la-grande-jatte/preview.webp",
+      "width": 1024,
+      "height": 686,
+      "byteSize": 164674,
+      "sha256": "1e951fd38f69f2ff51b6df18fa7e80982841b8842d896090cbe41a1b350b32aa",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/la-grande-jatte/thumbnail.webp",
+      "width": 384,
+      "height": 257,
+      "byteSize": 15620,
+      "sha256": "d547abca81e6672ec5e63ed0cbc385672ff363ef46676b5e6fc8c7d97538eca3",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

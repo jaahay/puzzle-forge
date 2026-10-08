@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "first-of-the-herring",
+  "assetRevision": 1,
+  "work": {
+    "title": "The First of the Herring",
+    "creator": "Peter Henry Emerson\nEnglish, born Cuba, 1856–1936",
+    "date": "1887",
+    "medium": "Photoetching, pl. XXVII from the album \"Wild Life on a Tidal Water: The Adventures of a House-Boat and Her Crew\" (1890)",
+    "dimensions": "Image: 9 × 14.8 cm (3 9/16 × 5 7/8 in.); Paper: 25 × 30 cm (9 7/8 × 11 13/16 in.)"
+  },
+  "source": {
+    "institution": "Art Institute of Chicago",
+    "objectId": 229759,
+    "accessionNumber": "2006.196.27",
+    "recordUrl": "https://www.artic.edu/artworks/229759",
+    "apiRecordUrl": "https://api.artic.edu/api/v1/artworks/229759",
+    "sourceImageUrl": "https://www.artic.edu/iiif/2/fedafdbd-8f88-0767-fd37-f19e45bbf07f/full/1686,/0/default.jpg",
+    "retrievedAt": "2026-10-08T08:28:15.761102+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 760416,
+    "sha256": "467effc5cf2699c8317c8fe13cf6b2214e23321c0efafd0af44ac9f95ad04a02",
+    "width": 1686,
+    "height": 1038
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "Art Institute of Chicago public-domain designation",
+    "policyUrl": "https://api.artic.edu/docs/#copyright",
+    "verification": "Art Institute API returned is_public_domain=true for artwork 229759.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.14",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; assumed sRGB after RGB conversion",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/first-of-the-herring/puzzle.webp",
+      "width": 1686,
+      "height": 1038,
+      "byteSize": 466026,
+      "sha256": "323b48923ea632681b6e88fe89f188595bf3594b49fe0326ce0b52768e7edd6e",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/first-of-the-herring/preview.webp",
+      "width": 1024,
+      "height": 630,
+      "byteSize": 137660,
+      "sha256": "fa97ac3f4bbf0db609f088d1657faa0676d6140b9166adf0aa285afd25e6f2db",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/first-of-the-herring/thumbnail.webp",
+      "width": 384,
+      "height": 236,
+      "byteSize": 15586,
+      "sha256": "d671155845387aa855112c1d0571629fd8156478d29109b5dea5a262f568aeb3",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

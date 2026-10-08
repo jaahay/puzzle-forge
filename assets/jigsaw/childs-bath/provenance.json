@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "childs-bath",
+  "assetRevision": 1,
+  "work": {
+    "title": "The Child's Bath",
+    "creator": "Mary Cassatt (American, 1844–1926)",
+    "date": "1893",
+    "medium": "Oil on canvas",
+    "dimensions": "101.3 × 67.3 cm (39 15/16 × 26 1/2 in.)"
+  },
+  "source": {
+    "institution": "Art Institute of Chicago",
+    "objectId": 111442,
+    "accessionNumber": "1910.2",
+    "recordUrl": "https://www.artic.edu/artworks/111442",
+    "apiRecordUrl": "https://api.artic.edu/api/v1/artworks/111442",
+    "sourceImageUrl": "https://www.artic.edu/iiif/2/3b885ae0-4d46-5fe4-d70a-00474827f02c/full/1686,/0/default.jpg",
+    "retrievedAt": "2026-10-08T08:28:15.761102+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 1382866,
+    "sha256": "82b9ace5cdb81b74e0a6c83e2bdff56e6b683cb4248b4bd43ca83791203b58d6",
+    "width": 1686,
+    "height": 2558
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "Art Institute of Chicago public-domain designation",
+    "policyUrl": "https://api.artic.edu/docs/#copyright",
+    "verification": "Art Institute API returned is_public_domain=true for artwork 111442.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.14",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; assumed sRGB after RGB conversion",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/childs-bath/puzzle.webp",
+      "width": 1350,
+      "height": 2048,
+      "byteSize": 494710,
+      "sha256": "b1a28f569408be8d798fd47925bde4dd47d5779de86e9e56f0625e2dc1d9215d",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/childs-bath/preview.webp",
+      "width": 675,
+      "height": 1024,
+      "byteSize": 102588,
+      "sha256": "2c5f09c6e0c4e45f5448cadfadeea60bc076b14d242d991bf21265047e0bf1bd",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/childs-bath/thumbnail.webp",
+      "width": 253,
+      "height": 384,
+      "byteSize": 15852,
+      "sha256": "32081803d6067b502a8dd22dfec25300fc365e1ce71ea4d850a4a70a1205f3c9",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

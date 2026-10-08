@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "embroidered-picture",
+  "assetRevision": 1,
+  "work": {
+    "title": "Needlework Picture Depicting the Finding of Moses",
+    "creator": "England",
+    "date": "17th century",
+    "medium": "Linen, plain weave; embroidered with silk in tent stitches; edged with wool, plain weave",
+    "dimensions": "30.8 × 39.2 cm (12 1/8 × 15 3/8 in.)"
+  },
+  "source": {
+    "institution": "Art Institute of Chicago",
+    "objectId": 9765,
+    "accessionNumber": "1959.89",
+    "recordUrl": "https://www.artic.edu/artworks/9765",
+    "apiRecordUrl": "https://api.artic.edu/api/v1/artworks/9765",
+    "sourceImageUrl": "https://www.artic.edu/iiif/2/98c86cfd-a113-4d66-91fc-df6281aa927a/full/1686,/0/default.jpg",
+    "retrievedAt": "2026-10-08T08:28:15.761102+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 1789602,
+    "sha256": "da3e4a8c4abc3aec3b2cb0efca77edfaf1f995d28a9aae197750e9dbf0d7e537",
+    "width": 1686,
+    "height": 1319
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "Art Institute of Chicago public-domain designation",
+    "policyUrl": "https://api.artic.edu/docs/#copyright",
+    "verification": "Art Institute API returned is_public_domain=true for artwork 9765.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.14",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; assumed sRGB after RGB conversion",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/embroidered-picture/puzzle.webp",
+      "width": 1686,
+      "height": 1319,
+      "byteSize": 1187684,
+      "sha256": "7474610a9092f03d9d062727d42c02c754b29c941b18661ea00f564c87587d68",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/embroidered-picture/preview.webp",
+      "width": 1024,
+      "height": 801,
+      "byteSize": 353376,
+      "sha256": "2151fbbce7ec236e9dff46b3d1be4a50e81d922a1cd939f1dee86fb2a7ecfade",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/embroidered-picture/thumbnail.webp",
+      "width": 384,
+      "height": 300,
+      "byteSize": 38912,
+      "sha256": "3a9ec41851a357d6f7ad28a53401a6d9069d5855daa6ff4158a399c0f27e792c",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

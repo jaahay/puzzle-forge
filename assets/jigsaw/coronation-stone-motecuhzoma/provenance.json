@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "coronation-stone-motecuhzoma",
+  "assetRevision": 1,
+  "work": {
+    "title": "Coronation Stone of Moctezuma Xocoyotzin",
+    "creator": "Maker unknown (Mexica, Aztec)\nProbably Tenochtitlan (now Mexico City), Mexico",
+    "date": "c. 1503",
+    "medium": "Basalt",
+    "dimensions": "67.4 × 57.8 × 22.9 cm (26 1/2 × 22 3/4 × 9 in.)"
+  },
+  "source": {
+    "institution": "Art Institute of Chicago",
+    "objectId": 75644,
+    "accessionNumber": "1990.21",
+    "recordUrl": "https://www.artic.edu/artworks/75644",
+    "apiRecordUrl": "https://api.artic.edu/api/v1/artworks/75644",
+    "sourceImageUrl": "https://www.artic.edu/iiif/2/ea8c5d62-6ce8-88e8-feb1-e0053cf534c5/full/1686,/0/default.jpg",
+    "retrievedAt": "2026-10-08T08:28:15.761102+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 1670038,
+    "sha256": "c585df2e1eaa269465df3e6f40b25c82bcd2ab7d15a47420dd1a04005f3d1e7a",
+    "width": 1686,
+    "height": 2176
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "Art Institute of Chicago public-domain designation",
+    "policyUrl": "https://api.artic.edu/docs/#copyright",
+    "verification": "Art Institute API returned is_public_domain=true for artwork 75644.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.14",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "no embedded ICC profile; assumed sRGB after RGB conversion",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/coronation-stone-motecuhzoma/puzzle.webp",
+      "width": 1587,
+      "height": 2048,
+      "byteSize": 855450,
+      "sha256": "204c93b13bee5b836b00113db23dc2442a73762ce26898c4ea1cd1200efe8f24",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/coronation-stone-motecuhzoma/preview.webp",
+      "width": 793,
+      "height": 1024,
+      "byteSize": 183304,
+      "sha256": "970b1a683aeecafe1de607214f5840268ec53dc281da1f2b0c9fd2307246ceb2",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/coronation-stone-motecuhzoma/thumbnail.webp",
+      "width": 298,
+      "height": 384,
+      "byteSize": 20720,
+      "sha256": "54c372f2da63d01df84fb27b8ba6873483f57e6dd1361415c64adbcdf5c0538a",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}
