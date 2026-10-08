@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import io
 import json
@@ -13,6 +14,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import unicodedata
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -53,9 +55,13 @@ RIJKS_PUBLIC_RIGHTS = frozenset(
         "https://creativecommons.org/publicdomain/zero/1.0/",
     }
 )
+NGA_OPEN_DATA_RAW = "https://raw.githubusercontent.com/NationalGalleryOfArt/opendata/main/data"
+NGA_OPEN_DATA_REPO = "https://github.com/NationalGalleryOfArt/opendata"
+NGA_OPEN_ACCESS_POLICY = "https://www.nga.gov/artworks/free-images-and-open-access"
+_NGA_CSV_CACHE: dict[str, tuple[dict[str, str], ...]] = {}
 SOURCE_MANIFEST_PATH = Path("assets/jigsaw/sources.json")
 ASSET_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-SUPPORTED_PROVIDERS = frozenset({"met", "artic", "rijksmuseum"})
+SUPPORTED_PROVIDERS = frozenset({"met", "artic", "rijksmuseum", "nga"})
 
 
 @dataclass(frozen=True)
@@ -529,6 +535,165 @@ def resolve_rijksmuseum_source(artwork: Artwork) -> SourceRecord:
     )
 
 
+def nga_csv_rows(table_name: str) -> tuple[dict[str, str], ...]:
+    cached = _NGA_CSV_CACHE.get(table_name)
+    if cached is not None:
+        return cached
+
+    url = f"{NGA_OPEN_DATA_RAW}/{table_name}.csv"
+    payload, _ = fetch_bytes(url, "nga")
+    try:
+        text = payload.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise RuntimeError(f"NGA open-data table {table_name} is not UTF-8") from exc
+
+    reader = csv.DictReader(io.StringIO(text))
+    if reader.fieldnames is None:
+        raise RuntimeError(f"NGA open-data table {table_name} has no header")
+
+    rows = tuple(
+        {
+            key.strip().lower(): (value or "").strip()
+            for key, value in row.items()
+            if key is not None
+        }
+        for row in reader
+    )
+    _NGA_CSV_CACHE[table_name] = rows
+    return rows
+
+
+def nga_required_int(value: str | None, label: str) -> int:
+    try:
+        parsed = int(value or "")
+    except ValueError as exc:
+        raise RuntimeError(f"NGA {label} is not an integer: {value!r}") from exc
+    if parsed <= 0:
+        raise RuntimeError(f"NGA {label} must be positive: {parsed}")
+    return parsed
+
+
+def nga_sort_int(value: str | None) -> int:
+    try:
+        return int(value or "")
+    except ValueError:
+        return sys.maxsize
+
+
+def nga_record_url(object_id: int, title: str | None) -> str:
+    normalized = unicodedata.normalize("NFKD", title or "")
+    ascii_title = normalized.encode("ascii", "ignore").decode("ascii").lower()
+    slug = re.sub(r"[^a-z0-9]+", "-", ascii_title).strip("-")
+    return f"https://www.nga.gov/artworks/{object_id}" + (f"-{slug}" if slug else "")
+
+
+def resolve_nga_source(artwork: Artwork) -> SourceRecord:
+    if not isinstance(artwork.source_id, int):
+        raise RuntimeError(
+            f"National Gallery of Art source identifier must be an integer: {artwork.source_id!r}"
+        )
+    object_id = artwork.source_id
+    object_key = str(object_id)
+
+    object_rows = [
+        row for row in nga_csv_rows("objects")
+        if row.get("objectid") == object_key
+    ]
+    if len(object_rows) != 1:
+        raise RuntimeError(
+            f"NGA object {object_id} expected exactly one objects-table row; found {len(object_rows)}"
+        )
+    object_row = object_rows[0]
+
+    image_rows = [
+        row
+        for row in nga_csv_rows("published_images")
+        if row.get("depictstmsobjectid") == object_key
+        and row.get("viewtype", "").lower() == "primary"
+        and row.get("openaccess") == "1"
+        and row.get("iiifurl")
+    ]
+    if not image_rows:
+        raise RuntimeError(
+            f"NGA object {object_id} has no primary published image with openaccess=1"
+        )
+    image_rows.sort(
+        key=lambda row: (
+            nga_sort_int(row.get("sequence")),
+            row.get("uuid", ""),
+        )
+    )
+    image_row = image_rows[0]
+
+    iiif_base = image_row["iiifurl"].rstrip("/")
+    parsed_iiif = urllib.parse.urlparse(iiif_base)
+    if parsed_iiif.scheme != "https" or parsed_iiif.netloc != "api.nga.gov":
+        raise RuntimeError(
+            f"NGA object {object_id} returned an unexpected IIIF base URL: {iiif_base}"
+        )
+    if not parsed_iiif.path.startswith("/iiif/"):
+        raise RuntimeError(
+            f"NGA object {object_id} returned an unexpected IIIF path: {parsed_iiif.path}"
+        )
+
+    source_width = nga_required_int(image_row.get("width"), f"image width for object {object_id}")
+    source_height = nga_required_int(image_row.get("height"), f"image height for object {object_id}")
+    source_bound = min(2048, max(source_width, source_height))
+    source_image_url = f"{iiif_base}/full/!{source_bound},{source_bound}/0/default.jpg"
+
+    constituent_rows = {
+        row.get("constituentid"): row
+        for row in nga_csv_rows("constituents")
+        if row.get("constituentid")
+    }
+    artist_relationships = [
+        row
+        for row in nga_csv_rows("objects_constituents")
+        if row.get("objectid") == object_key
+        and row.get("roletype", "").lower() == "artist"
+    ]
+    artist_relationships.sort(
+        key=lambda row: (
+            nga_sort_int(row.get("displayorder")),
+            row.get("constituentid", ""),
+        )
+    )
+
+    creator_names: list[str] = []
+    for relationship in artist_relationships:
+        constituent = constituent_rows.get(relationship.get("constituentid"))
+        if not constituent:
+            continue
+        name = constituent.get("forwarddisplayname") or constituent.get("displayname")
+        if name and name not in creator_names:
+            creator_names.append(name)
+    creator = "; ".join(creator_names) or None
+
+    image_uuid = image_row.get("uuid")
+    if not image_uuid:
+        raise RuntimeError(f"NGA object {object_id} primary image has no persistent UUID")
+
+    return SourceRecord(
+        provider=artwork.provider,
+        title=object_row.get("title") or None,
+        creator=creator,
+        date=object_row.get("displaydate") or None,
+        medium=object_row.get("medium") or None,
+        dimensions=object_row.get("dimensions") or None,
+        institution="National Gallery of Art",
+        accession_number=object_row.get("accessionnum") or None,
+        record_url=nga_record_url(object_id, object_row.get("title")),
+        api_record_url=NGA_OPEN_DATA_REPO,
+        source_image_url=source_image_url,
+        rights_policy="National Gallery of Art Open Access",
+        rights_policy_url=NGA_OPEN_ACCESS_POLICY,
+        rights_verification=(
+            "NGA published_images returned openaccess=1 for primary image "
+            f"{image_uuid} depicting object {object_id}."
+        ),
+    )
+
+
 def resolve_source_record(artwork: Artwork) -> SourceRecord:
     if artwork.provider == "met":
         return resolve_met_source(artwork)
@@ -536,6 +701,8 @@ def resolve_source_record(artwork: Artwork) -> SourceRecord:
         return resolve_artic_source(artwork)
     if artwork.provider == "rijksmuseum":
         return resolve_rijksmuseum_source(artwork)
+    if artwork.provider == "nga":
+        return resolve_nga_source(artwork)
     raise RuntimeError(f"Unsupported source provider: {artwork.provider}")
 
 
@@ -701,6 +868,7 @@ def provider_label(artwork: Artwork) -> str:
         "met": "Met",
         "artic": "ARTIC",
         "rijksmuseum": "Rijksmuseum",
+        "nga": "NGA",
     }[artwork.provider]
 
 
