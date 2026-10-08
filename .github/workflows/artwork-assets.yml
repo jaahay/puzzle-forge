@@ -101,13 +101,32 @@ jobs:
             echo "Artwork ingestion requires an explicit non-default feature branch." >&2
             exit 1
           fi
+          case "$TARGET_BRANCH" in
+            refs/*|origin/*|HEAD)
+              echo "Target branch must be a short branch name, not a ref expression." >&2
+              exit 1
+              ;;
+          esac
           if ! git check-ref-format --branch "$TARGET_BRANCH" >/dev/null; then
             echo "Target branch is not a valid Git branch name." >&2
             exit 1
           fi
-          git fetch origin "$DEFAULT_BRANCH" "$TARGET_BRANCH"
-          test "$(git rev-parse HEAD)" = "$(git rev-parse "origin/$TARGET_BRANCH")"
-          if ! git merge-base --is-ancestor "origin/$DEFAULT_BRANCH" HEAD; then
+
+          CURRENT_BRANCH="$(git branch --show-current)"
+          if [ "$CURRENT_BRANCH" != "$TARGET_BRANCH" ]; then
+            echo "Checked-out branch does not match the requested target branch." >&2
+            exit 1
+          fi
+
+          REMOTE_TARGET_SHA="$(git ls-remote --exit-code --heads origin "$TARGET_BRANCH" | awk '{print $1}')"
+          if [ -z "$REMOTE_TARGET_SHA" ] || [ "$(git rev-parse HEAD)" != "$REMOTE_TARGET_SHA" ]; then
+            echo "Target branch moved or could not be resolved exactly." >&2
+            exit 1
+          fi
+
+          git fetch origin "$DEFAULT_BRANCH"
+          DEFAULT_SHA="$(git rev-parse FETCH_HEAD)"
+          if ! git merge-base --is-ancestor "$DEFAULT_SHA" HEAD; then
             echo "Target branch is behind the current default branch." >&2
             exit 1
           fi
