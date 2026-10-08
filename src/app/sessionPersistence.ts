@@ -89,8 +89,8 @@ export type PersistedPuzzleSessions = {
 };
 
 type PersistedPuzzleSessionMetadata = {
-  activeResourceKey: PuzzleResourceKey;
-  savedResourceKeys: PuzzleResourceKey[];
+  activeResourceKey: string;
+  savedResourceKeys: string[];
   updatedAt: string;
 };
 
@@ -306,20 +306,14 @@ const isPersistedPuzzleSession = (value: unknown): value is PersistedPuzzleSessi
   return decodeGenerationId(value.puzzleId, value.generationId).ok;
 };
 
-const isPuzzleResourceKey = (value: unknown): value is PuzzleResourceKey => {
-  if (typeof value !== "string") return false;
-  const separator = value.indexOf("/");
-  if (separator <= 0 || separator === value.length - 1) return false;
-  const puzzleId = value.slice(0, separator);
-  const generationId = value.slice(separator + 1);
-  return isPuzzleId(puzzleId) && decodeGenerationId(puzzleId, generationId).ok;
-};
+const isStoredResourceKey = (value: unknown): value is string =>
+  typeof value === "string" && value.length > 0;
 
 const isPersistedPuzzleSessionMetadata = (value: unknown): value is PersistedPuzzleSessionMetadata =>
   isRecord(value) &&
-  isPuzzleResourceKey(value.activeResourceKey) &&
+  isStoredResourceKey(value.activeResourceKey) &&
   Array.isArray(value.savedResourceKeys) &&
-  value.savedResourceKeys.every(isPuzzleResourceKey) &&
+  value.savedResourceKeys.every(isStoredResourceKey) &&
   typeof value.updatedAt === "string";
 
 const clonePersistedPuzzleProgress = (progress: PersistedPuzzleProgress): PersistedPuzzleProgress => {
@@ -572,7 +566,7 @@ export const restorePuzzleSessionFromPersisted = (
   return null;
 };
 
-const sessionStorageKey = (resourceKey: PuzzleResourceKey) =>
+const sessionStorageKey = (resourceKey: string) =>
   `${persistenceSessionStorageKeyPrefix}${resourceKey}`;
 
 const readPersistedMetadata = (): PersistedPuzzleSessionMetadata | null => {
@@ -587,7 +581,7 @@ const readPersistedMetadata = (): PersistedPuzzleSessionMetadata | null => {
   }
 };
 
-const readPersistedSession = (resourceKey: PuzzleResourceKey): PersistedPuzzleSession | null => {
+const readPersistedSession = (resourceKey: string): PersistedPuzzleSession | null => {
   const rawSession = window.localStorage.getItem(sessionStorageKey(resourceKey));
   if (!rawSession) return null;
 
@@ -602,6 +596,49 @@ const readPersistedSession = (resourceKey: PuzzleResourceKey): PersistedPuzzleSe
   }
 };
 
+const comparePersistedSessionRecency = (
+  left: [PuzzleResourceKey, PersistedPuzzleSession],
+  right: [PuzzleResourceKey, PersistedPuzzleSession],
+) => {
+  const updatedAtOrder = right[1].updatedAt.localeCompare(left[1].updatedAt);
+  return updatedAtOrder !== 0 ? updatedAtOrder : left[0].localeCompare(right[0]);
+};
+
+const repairPersistedPuzzleSessionMetadata = (
+  metadata: PersistedPuzzleSessionMetadata,
+  activeResourceKey: PuzzleResourceKey | null,
+  sessions: PersistedPuzzleSessionCache,
+) => {
+  const retainedResourceKeys = Object.keys(sessions) as PuzzleResourceKey[];
+  const retained = new Set<string>(retainedResourceKeys);
+
+  try {
+    for (const resourceKey of new Set([metadata.activeResourceKey, ...metadata.savedResourceKeys])) {
+      if (!retained.has(resourceKey)) window.localStorage.removeItem(sessionStorageKey(resourceKey));
+    }
+
+    if (!activeResourceKey) {
+      window.localStorage.removeItem(persistenceMetadataStorageKey);
+      return;
+    }
+
+    const metadataChanged =
+      activeResourceKey !== metadata.activeResourceKey ||
+      retainedResourceKeys.length !== metadata.savedResourceKeys.length ||
+      retainedResourceKeys.some((resourceKey, index) => resourceKey !== metadata.savedResourceKeys[index]);
+
+    if (metadataChanged) {
+      window.localStorage.setItem(persistenceMetadataStorageKey, JSON.stringify({
+        activeResourceKey,
+        savedResourceKeys: retainedResourceKeys,
+        updatedAt: metadata.updatedAt,
+      } satisfies PersistedPuzzleSessionMetadata));
+    }
+  } catch {
+    // Persistence cleanup is best-effort; valid in-memory sessions remain usable.
+  }
+};
+
 export const loadPersistedPuzzleSessions = (): PersistedPuzzleSessions | null => {
   if (typeof window === "undefined") return null;
 
@@ -609,13 +646,19 @@ export const loadPersistedPuzzleSessions = (): PersistedPuzzleSessions | null =>
   if (!metadata) return null;
 
   const sessions: PersistedPuzzleSessionCache = {};
-  for (const resourceKey of metadata.savedResourceKeys) {
+  for (const resourceKey of new Set([metadata.activeResourceKey, ...metadata.savedResourceKeys])) {
     const session = readPersistedSession(resourceKey);
-    if (session) sessions[resourceKey] = session;
+    if (session) sessions[resourceKey as PuzzleResourceKey] = session;
   }
 
-  if (!sessions[metadata.activeResourceKey]) return null;
-  return { activeResourceKey: metadata.activeResourceKey, sessions };
+  const requestedActiveResourceKey = metadata.activeResourceKey as PuzzleResourceKey;
+  const activeResourceKey = sessions[requestedActiveResourceKey]
+    ? requestedActiveResourceKey
+    : (Object.entries(sessions) as Array<[PuzzleResourceKey, PersistedPuzzleSession]>)
+        .sort(comparePersistedSessionRecency)[0]?.[0] ?? null;
+
+  repairPersistedPuzzleSessionMetadata(metadata, activeResourceKey, sessions);
+  return activeResourceKey ? { activeResourceKey, sessions } : null;
 };
 
 export const savePersistedPuzzleSessions = ({ activeResourceKey, sessions }: RuntimePuzzleSessions) => {

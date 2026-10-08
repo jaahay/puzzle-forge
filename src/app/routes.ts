@@ -14,6 +14,7 @@ export type AppRoute =
   | { kind: "home" }
   | { kind: "puzzle"; puzzleId: PuzzleId }
   | { kind: "resource"; puzzleId: PuzzleId; generationId: string }
+  | { kind: "unavailable-resource"; puzzleId: PuzzleId; pathname: string }
   | { kind: "updates" }
   | { kind: "about" }
   | { kind: "not-found"; pathname: string };
@@ -51,14 +52,14 @@ export const parseAppRoute = (
       const resolved = resolveDailyResource(puzzleId, todayDateStamp, activeSearch);
       return resolved.ok
         ? { kind: "resource", ...resolved.canonicalResource }
-        : { kind: "not-found", pathname: normalizedPath };
+        : { kind: "unavailable-resource", puzzleId, pathname: normalizedPath };
     }
 
     if (segments.length === 3 && segments[1] === "daily") {
       const resolved = resolveDailyResource(puzzleId, segments[2], activeSearch);
       return resolved.ok
         ? { kind: "resource", ...resolved.canonicalResource }
-        : { kind: "not-found", pathname: normalizedPath };
+        : { kind: "unavailable-resource", puzzleId, pathname: normalizedPath };
     }
 
     if (segments.length === 2 && segments[1] === "daily") {
@@ -85,6 +86,8 @@ export const appRoutePath = (route: AppRoute): string => {
       return `/${route.puzzleId}`;
     case "resource":
       return `/${route.puzzleId}/${encodeURIComponent(route.generationId)}`;
+    case "unavailable-resource":
+      return route.pathname;
     case "updates":
       return "/updates";
     case "about":
