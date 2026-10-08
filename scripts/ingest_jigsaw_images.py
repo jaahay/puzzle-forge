@@ -10,6 +10,7 @@ import shutil
 import sys
 import tempfile
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -193,14 +194,24 @@ def request_headers(provider: str) -> dict[str, str]:
 
 def fetch_json(url: str, provider: str) -> dict:
     request = urllib.request.Request(url, headers=request_headers(provider))
-    with urllib.request.urlopen(request, timeout=60) as response:
-        return json.load(response)
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            return json.load(response)
+    except urllib.error.HTTPError as exc:
+        raise RuntimeError(
+            f"{provider} request failed with HTTP {exc.code}: {url}"
+        ) from exc
 
 
 def fetch_bytes(url: str, provider: str) -> tuple[bytes, str]:
     request = urllib.request.Request(url, headers=request_headers(provider))
-    with urllib.request.urlopen(request, timeout=120) as response:
-        return response.read(), response.headers.get_content_type()
+    try:
+        with urllib.request.urlopen(request, timeout=120) as response:
+            return response.read(), response.headers.get_content_type()
+    except urllib.error.HTTPError as exc:
+        raise RuntimeError(
+            f"{provider} request failed with HTTP {exc.code}: {url}"
+        ) from exc
 
 
 def resolve_preferred_name(record: dict) -> str | None:
