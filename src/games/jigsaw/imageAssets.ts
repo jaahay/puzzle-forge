@@ -577,7 +577,7 @@ export const jigsawImageCatalog = {
     id: "thunderbolt-chair",
     title: "Chair",
     alt: "An early nineteenth-century mahogany chair with caned seating and a sculptural wooden frame is photographed against a plain background.",
-    orientation: "landscape",
+    orientation: "square",
     intrinsicWidth: 2048,
     intrinsicHeight: 2048,
     creator: "Unknown maker",
