@@ -61,6 +61,9 @@ NGA_OPEN_DATA_REPO = "https://github.com/NationalGalleryOfArt/opendata"
 NGA_OPEN_ACCESS_POLICY = "https://www.nga.gov/artworks/free-images-and-open-access"
 _NGA_CSV_CACHE: dict[str, tuple[dict[str, str], ...]] = {}
 SMITHSONIAN_OBJECT_URL = "https://www.si.edu/object/{record_id}"
+SMITHSONIAN_COLLECTIONS_RECORD_URL = (
+    "https://collections.si.edu/search/detail/edanmdm:{record_id}?print=yes"
+)
 SMITHSONIAN_OPEN_ACCESS_POLICY = "https://www.si.edu/openaccess"
 SMITHSONIAN_INSTITUTIONS = {
     "nasm": "National Air and Space Museum",
@@ -777,10 +780,12 @@ def resolve_smithsonian_source(artwork: Artwork) -> SourceRecord:
     unit_code = record_id.split("_", 1)[0].lower()
     institution = SMITHSONIAN_INSTITUTIONS.get(unit_code, "Smithsonian Institution")
 
-    record_url = SMITHSONIAN_OBJECT_URL.format(
-        record_id=urllib.parse.quote(record_id, safe="")
+    encoded_record_id = urllib.parse.quote(record_id, safe="")
+    record_url = SMITHSONIAN_OBJECT_URL.format(record_id=encoded_record_id)
+    verification_url = SMITHSONIAN_COLLECTIONS_RECORD_URL.format(
+        record_id=encoded_record_id
     )
-    page_bytes, content_type = fetch_bytes(record_url, artwork.provider)
+    page_bytes, content_type = fetch_bytes(verification_url, artwork.provider)
     if content_type not in {"text/html", "application/xhtml+xml"}:
         raise RuntimeError(
             f"Smithsonian record {record_id} returned unexpected content type: {content_type}"
@@ -805,9 +810,13 @@ def resolve_smithsonian_source(artwork: Artwork) -> SourceRecord:
         (phrase for phrase in public_domain_phrases if phrase in lowered_text),
         None,
     )
-    if matched_rights is None:
+    has_cc0_online_media = (
+        "online media" in lowered_text
+        and "creative commons zero (cc0)" in lowered_text
+    )
+    if matched_rights is None and not has_cc0_online_media:
         raise RuntimeError(
-            f"Smithsonian record {record_id} does not explicitly mark its media public domain"
+            f"Smithsonian record {record_id} does not explicitly mark its online media CC0/public domain"
         )
 
     media_ids = smithsonian_media_ids(raw_html)
@@ -832,13 +841,13 @@ def resolve_smithsonian_source(artwork: Artwork) -> SourceRecord:
         institution=institution,
         accession_number=record_id,
         record_url=record_url,
-        api_record_url=record_url,
+        api_record_url=verification_url,
         source_image_url=source_image_url,
         rights_policy="Smithsonian Open Access",
         rights_policy_url=SMITHSONIAN_OPEN_ACCESS_POLICY,
         rights_verification=(
-            f"Canonical Smithsonian record {record_id} explicitly stated that its media "
-            f"is in the public domain; IDS media {media_id} was resolved from that record page."
+            f"Smithsonian Collections record {record_id} explicitly marked its online media "
+            f"CC0/public domain; IDS media {media_id} was resolved from that verified record."
         ),
     )
 
