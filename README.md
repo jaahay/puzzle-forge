@@ -100,33 +100,33 @@ The UI posts a `PuzzleGenerationRequest` to `src/workers/puzzleWorker.ts` with a
 
 ## Jigsaw artwork ingestion
 
-Bundled Jigsaw images are source-controlled, same-origin assets with explicit provenance. Adding or regenerating artwork is deliberately a **manual local process**.
+Bundled artwork is source-controlled and served same-origin with explicit provenance. `scripts/ingest_jigsaw_images.py` is the canonical ingestion recipe for supported providers; it may be run locally or by trusted branch-scoped automation.
 
 Rules:
 
-- Original artwork bytes must be downloaded by a developer running the repository script locally on an explicit feature branch.
-- Do **not** fetch, read, transfer, or verify artwork binary bytes through the GitHub connector or other repository API tooling.
-- Do **not** create GitHub Actions workflows that download or commit Jigsaw artwork binaries.
-- Acquisition identifiers live in `assets/jigsaw/sources.json`; executable Python should not contain the artwork list.
-- Use `scripts/ingest_jigsaw_images.py` as the canonical ingestion path for supported source records.
-- The script must verify the official Met object record reports `isPublicDomain=true` and exposes a primary image before downloading it.
-- Generated derivatives normalize EXIF orientation, convert embedded ICC color profiles to sRGB when present, preserve aspect ratio without cropping, and write local WebP puzzle/preview/thumbnail files plus `provenance.json` hashes and source metadata.
+- Acquisition identifiers live in `assets/jigsaw/sources.json`; executable Python must not contain the durable artwork catalog.
+- Ingestion must start from an explicit feature branch and resolve only manifest-declared source records, never arbitrary user-supplied URLs.
+- The canonical script must verify the source provider's public-domain/open-access contract and downloadable primary image before acquiring bytes.
+- Connector/API or GitHub Actions ingestion is allowed when it executes the same canonical recipe and the resulting provenance and binary blobs are verified before catalog wiring or merge.
+- Never grant write-capable ingestion to untrusted pull-request code. Write-capable automation must be deliberately branch-scoped or manually dispatched from trusted repository code.
+- Generated derivatives normalize EXIF orientation, convert embedded ICC color profiles to sRGB when present, preserve aspect ratio without cropping, and write WebP puzzle/preview/thumbnail files plus `provenance.json` hashes and source metadata.
 - Treat an existing `imageId` as a stable logical artwork. Conservative re-encoding/resizing may keep the same ID; changing the artwork or materially changing its composition/crop requires a new ID.
 - Ingestion is create-only by default, not an upsert. Existing asset directories cause the script to stop unless `--overwrite` is explicitly supplied.
 
-To add a bundled image, first add its stable `assetId`, provider, and official source identifier to `assets/jigsaw/sources.json`. Then run the script for that explicit asset id:
+The current script supports The Met Open Access provider. Add provider support only when shipping real assets from that provider; keep provider-specific rights/API validation at the ingestion boundary while preserving the shared derivative/provenance contract.
+
+To add a bundled image, first add its stable `assetId`, provider, and official source identifier to `assets/jigsaw/sources.json`. Then run the canonical script for that explicit asset id:
 
 ```sh
-# Start on the feature branch that will contain the image addition.
 python -m pip install "Pillow==12.3.0"
 
 # Metadata/public-domain preflight only; no image bytes are downloaded.
 python scripts/ingest_jigsaw_images.py new-asset-id --verify-only
 
-# Download and generate only that asset locally.
+# Download and generate only that asset.
 python scripts/ingest_jigsaw_images.py new-asset-id
 
-# Review all generated files before staging them.
+# Review generated provenance/assets before committing or wiring the catalog.
 git status
 git diff -- assets/jigsaw
 
@@ -134,7 +134,7 @@ git diff -- assets/jigsaw
 pnpm build
 ```
 
-Use `python scripts/ingest_jigsaw_images.py --all --verify-only` to revalidate every configured source record without touching image bytes. Use `--overwrite` only for an intentional regeneration after reviewing the stable-identity implications; the script replaces generated directories rather than merging individual files.
+Trusted automation should invoke those same script commands rather than reproducing image-processing logic in workflow YAML. Use `python scripts/ingest_jigsaw_images.py --all --verify-only` to revalidate every configured source record without touching image bytes. Use `--overwrite` only for intentional regeneration after reviewing stable-identity implications; the script replaces generated directories rather than merging individual files.
 
 ## Product direction
 

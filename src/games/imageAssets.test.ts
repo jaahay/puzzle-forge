@@ -9,7 +9,7 @@ import {
 describe("shared puzzle artwork catalog", () => {
   it.each(imageBackedPuzzleIds)("resolves eligible concrete artwork for %s", (puzzleId) => {
     const eligibleAssets = getPuzzleImageAssetsFor(puzzleId);
-    expect(eligibleAssets.length).toBeGreaterThan(0);
+    expect(eligibleAssets).toHaveLength(20);
 
     const first = eligibleAssets[0];
     const last = eligibleAssets[eligibleAssets.length - 1];
