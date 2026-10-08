@@ -106,6 +106,19 @@ const makeNgaJigsawImageAsset = ({
     sourceQualifier: "Open Access",
   });
 
+type SmithsonianJigsawImageAssetInput = Omit<
+  JigsawImageAssetInput,
+  "sourceQualifier"
+>;
+
+const makeSmithsonianJigsawImageAsset = (
+  input: SmithsonianJigsawImageAssetInput,
+): JigsawImageAsset =>
+  makeJigsawImageAsset({
+    ...input,
+    sourceQualifier: "Smithsonian Open Access",
+  });
+
 export const jigsawImageCatalog = {
   "wheat-field-cypresses": makeMetJigsawImageAsset({
     id: "wheat-field-cypresses",
@@ -512,6 +525,65 @@ export const jigsawImageCatalog = {
     creator: "Andō Hiroshige",
     date: "1839-1842",
     sourceRecordUrl: "https://www.nga.gov/artworks/183183-cherry-blossoms-in-full-bloom-along-the-sumida-river-sumida-gawa-hana-zakari",
+  }),
+  "apollo-11-columbia": makeSmithsonianJigsawImageAsset({
+    id: "apollo-11-columbia",
+    title: "Command Module, Apollo 11",
+    alt: "The cone-shaped Apollo 11 command module Columbia shows its metallic exterior, windows, panels, and heat-shielded spacecraft surface.",
+    orientation: "portrait",
+    intrinsicWidth: 1926,
+    intrinsicHeight: 2048,
+    creator: "North American Rockwell",
+    sourceName: "National Air and Space Museum",
+    sourceRecordUrl: "https://www.si.edu/object/nasm_A19700102000",
+  }),
+  "atkinson-counting-register": makeSmithsonianJigsawImageAsset({
+    id: "atkinson-counting-register",
+    title: "Atkinson Counting Register, U.S. Patent Office Model",
+    alt: "A compact nineteenth-century wooden counting-register patent model presents its mechanical components against a plain background.",
+    orientation: "landscape",
+    intrinsicWidth: 2048,
+    intrinsicHeight: 1361,
+    creator: "Atkinson, Alexander P.",
+    date: "1874",
+    sourceName: "National Museum of American History",
+    sourceRecordUrl: "https://www.si.edu/object/nmah_690840",
+  }),
+  "bolivian-woven-textile": makeSmithsonianJigsawImageAsset({
+    id: "bolivian-woven-textile",
+    title: "Textile",
+    alt: "A nineteenth-century Bolivian wool textile fills the frame with dense warp-patterned stripes and repeating woven motifs.",
+    orientation: "portrait",
+    intrinsicWidth: 1541,
+    intrinsicHeight: 2047,
+    creator: "Unknown maker",
+    date: "19th century",
+    sourceName: "Cooper Hewitt, Smithsonian Design Museum",
+    sourceRecordUrl: "https://collection.cooperhewitt.org/view/objects/asitem/id/112203",
+  }),
+  "wiz-platform-boots": makeSmithsonianJigsawImageAsset({
+    id: "wiz-platform-boots",
+    title: "Costume boots for the Wizard in The Wiz on Broadway, worn by Carl Hall",
+    alt: "A pair of theatrical leather platform boots with tall wooden soles and painted costume detailing is shown as a museum object.",
+    orientation: "landscape",
+    intrinsicWidth: 2048,
+    intrinsicHeight: 1535,
+    creator: "Geoffrey Holder, Trinidadian American, 1930 - 2014",
+    date: "ca. 1977",
+    sourceName: "National Museum of African American History and Culture",
+    sourceRecordUrl: "https://nmaahc.si.edu/object/nmaahc_2007.3.8.4ab",
+  }),
+  "thunderbolt-chair": makeSmithsonianJigsawImageAsset({
+    id: "thunderbolt-chair",
+    title: "Chair",
+    alt: "An early nineteenth-century mahogany chair with caned seating and a sculptural wooden frame is photographed against a plain background.",
+    orientation: "landscape",
+    intrinsicWidth: 2048,
+    intrinsicHeight: 2048,
+    creator: "Unknown maker",
+    date: "ca. 1812",
+    sourceName: "Cooper Hewitt, Smithsonian Design Museum",
+    sourceRecordUrl: "https://collection.cooperhewitt.org/view/objects/asitem/id/42890",
   }),
 } as const satisfies Record<string, JigsawImageAsset>;
 
