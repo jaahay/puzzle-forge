@@ -1,0 +1,59 @@
+name: Temporary Rijksmuseum ingestion
+
+on:
+  push:
+    branches:
+      - feat/rijksmuseum-artwork-provider
+    paths:
+      - scripts/ingest_jigsaw_images.py
+      - assets/jigsaw/sources.json
+      - .github/workflows/temporary-rijksmuseum-ingestion.yml
+
+permissions:
+  contents: write
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/rijksmuseum-artwork-provider
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Pillow
+        run: python -m pip install "Pillow==12.3.0"
+      - name: Verify all active providers
+        run: |
+          python scripts/ingest_jigsaw_images.py \
+            wheat-field-cypresses \
+            la-grande-jatte \
+            night-watch \
+            milkmaid \
+            oortman-dolls-house \
+            prins-willem-ship-model \
+            sevres-vase \
+            totomi-mountains \
+            --verify-only
+      - name: Ingest Rijksmuseum batch
+        run: |
+          python scripts/ingest_jigsaw_images.py \
+            night-watch \
+            milkmaid \
+            oortman-dolls-house \
+            prins-willem-ship-model \
+            sevres-vase \
+            totomi-mountains
+      - name: Commit generated assets
+        run: |
+          git add assets/jigsaw public/jigsaw
+          if git diff --cached --quiet; then
+            echo "No generated artwork changes found." >&2
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Ingest Rijksmuseum artwork batch"
+          git push origin HEAD:feat/rijksmuseum-artwork-provider
