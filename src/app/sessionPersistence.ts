@@ -610,7 +610,7 @@ const repairPersistedPuzzleSessionMetadata = (
   sessions: PersistedPuzzleSessionCache,
 ) => {
   const retainedResourceKeys = Object.keys(sessions) as PuzzleResourceKey[];
-  const retained = new Set(retainedResourceKeys);
+  const retained = new Set<string>(retainedResourceKeys);
 
   try {
     for (const resourceKey of new Set([metadata.activeResourceKey, ...metadata.savedResourceKeys])) {
