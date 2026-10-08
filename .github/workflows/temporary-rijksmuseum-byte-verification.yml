@@ -1,0 +1,66 @@
+name: Temporary Rijksmuseum byte verification
+
+on:
+  push:
+    branches:
+      - feat/rijksmuseum-artwork-provider
+    paths:
+      - .github/workflows/temporary-rijksmuseum-byte-verification.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Pillow
+        run: python -m pip install "Pillow==12.3.0"
+      - name: Verify committed Rijksmuseum derivatives
+        shell: python
+        run: |
+          import hashlib
+          import json
+          from pathlib import Path
+          from PIL import Image
+
+          asset_ids = [
+              "night-watch",
+              "milkmaid",
+              "oortman-dolls-house",
+              "prins-willem-ship-model",
+              "sevres-vase",
+              "totomi-mountains",
+          ]
+
+          for asset_id in asset_ids:
+              provenance_path = Path("assets/jigsaw") / asset_id / "provenance.json"
+              provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+              if provenance["assetId"] != asset_id:
+                  raise SystemExit(f"{asset_id}: provenance asset id mismatch")
+              if provenance["source"]["institution"] != "Rijksmuseum":
+                  raise SystemExit(f"{asset_id}: wrong institution")
+              if provenance["rights"]["isPublicDomain"] is not True:
+                  raise SystemExit(f"{asset_id}: provenance is not public domain")
+
+              for derivative_name, metadata in provenance["derivatives"].items():
+                  path = Path("public") / metadata["path"].lstrip("/")
+                  payload = path.read_bytes()
+                  if hashlib.sha256(payload).hexdigest() != metadata["sha256"]:
+                      raise SystemExit(f"{asset_id}/{derivative_name}: sha256 mismatch")
+                  if len(payload) != metadata["byteSize"]:
+                      raise SystemExit(f"{asset_id}/{derivative_name}: byte size mismatch")
+                  with Image.open(path) as image:
+                      image.load()
+                      if image.format != "WEBP":
+                          raise SystemExit(f"{asset_id}/{derivative_name}: not WebP")
+                      if image.size != (metadata["width"], metadata["height"]):
+                          raise SystemExit(f"{asset_id}/{derivative_name}: dimensions mismatch")
+
+              print(f"VERIFIED {asset_id}")
+
+          print(f"VERIFIED {len(asset_ids)} artworks / {len(asset_ids) * 3} committed WebP derivatives")
