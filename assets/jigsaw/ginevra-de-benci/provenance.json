@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "ginevra-de-benci",
+  "assetRevision": 1,
+  "work": {
+    "title": "Ginevra de' Benci [obverse]",
+    "creator": "Leonardo da Vinci",
+    "date": "c. 1474/1478",
+    "medium": "oil on panel",
+    "dimensions": "overall (original panel only): 38.1 x 37 cm (15 x 14 9/16 in.)\r\noverall (thickness of original panel): 1.1 cm (7/16 in.)\r\noverall (with addition at bottom edge): 42.7 x 37 cm (16 13/16 x 14 9/16 in.)\r\noverall (thickness of addition at bottom edge): 1.9 cm (3/4 in.)\r\nframed: 59.7 x 57.8 x 3.8 cm (23 1/2 x 22 3/4 x 1 1/2 in.)"
+  },
+  "source": {
+    "institution": "National Gallery of Art",
+    "objectId": 50724,
+    "accessionNumber": "1967.6.1.a",
+    "recordUrl": "https://www.nga.gov/artworks/50724-ginevra-de-benci-obverse",
+    "apiRecordUrl": "https://github.com/NationalGalleryOfArt/opendata",
+    "sourceImageUrl": "https://api.nga.gov/iiif/8f29e3c9-a289-4d53-abf0-31a66e9e98fa/full/!2048,2048/0/default.jpg",
+    "retrievedAt": "2026-10-08T22:19:33.788710+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 1135785,
+    "sha256": "e65ac9f87b35f003945b2e057ad730aae21de6cc8ca53166a815780bd920c025",
+    "width": 1985,
+    "height": 2048
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "National Gallery of Art Open Access",
+    "policyUrl": "https://www.nga.gov/artworks/free-images-and-open-access",
+    "verification": "NGA published_images returned openaccess=1 for primary image 8f29e3c9-a289-4d53-abf0-31a66e9e98fa depicting object 50724.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "embedded ICC profile converted to sRGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/ginevra-de-benci/puzzle.webp",
+      "width": 1985,
+      "height": 2048,
+      "byteSize": 964952,
+      "sha256": "ff2a92f1ab08237b9a44331e6a92cef8f2d3d8e4b36922ae6578f32391bb029d",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/ginevra-de-benci/preview.webp",
+      "width": 992,
+      "height": 1024,
+      "byteSize": 188136,
+      "sha256": "142550050a4e34f7c420c9a65e834378b1913b636734ae8923975444fe8e08a5",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/ginevra-de-benci/thumbnail.webp",
+      "width": 372,
+      "height": 384,
+      "byteSize": 23306,
+      "sha256": "b2764dbe078b96c06421e36fd769e1f0ee7edeb0525ac5093bd45b000d287e40",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

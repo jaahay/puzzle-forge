@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "little-dancer",
+  "assetRevision": 1,
+  "work": {
+    "title": "Little Dancer Aged Fourteen",
+    "creator": "Edgar Degas",
+    "date": "1878-1881",
+    "medium": "pigmented beeswax, clay, metal armature, rope, paintbrushes, human hair, silk and linen ribbon, cotton faille bodice, cotton and silk tutu, linen slippers, on wooden base",
+    "dimensions": "overall without base: 98.9 x 34.7 x 35.2 cm (38 15/16 x 13 11/16 x 13 7/8 in)\r\nweight:  49 lb. (22.226 kg)"
+  },
+  "source": {
+    "institution": "National Gallery of Art",
+    "objectId": 110292,
+    "accessionNumber": "1999.80.28",
+    "recordUrl": "https://www.nga.gov/artworks/110292-little-dancer-aged-fourteen",
+    "apiRecordUrl": "https://github.com/NationalGalleryOfArt/opendata",
+    "sourceImageUrl": "https://api.nga.gov/iiif/7653abc0-4ae1-4f47-a10c-e58182106c4a/full/!2048,2048/0/default.jpg",
+    "retrievedAt": "2026-10-08T22:19:33.788710+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 291950,
+    "sha256": "d45659188ffce6a222db0f8e06391882efb1603295a88efed85dcf29457ca5e5",
+    "width": 1445,
+    "height": 2048
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "National Gallery of Art Open Access",
+    "policyUrl": "https://www.nga.gov/artworks/free-images-and-open-access",
+    "verification": "NGA published_images returned openaccess=1 for primary image 7653abc0-4ae1-4f47-a10c-e58182106c4a depicting object 110292.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "embedded ICC profile converted to sRGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/little-dancer/puzzle.webp",
+      "width": 1445,
+      "height": 2048,
+      "byteSize": 148684,
+      "sha256": "20eeb0cb40d81505b23281cf69d1d28d419f58ac091c496cc22667cf00540d95",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/little-dancer/preview.webp",
+      "width": 722,
+      "height": 1024,
+      "byteSize": 29346,
+      "sha256": "ea27be3123373cdb9e4c8e95e97af7ad81c4e5637dab0986a72e44521991bdd1",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/little-dancer/thumbnail.webp",
+      "width": 271,
+      "height": 384,
+      "byteSize": 5440,
+      "sha256": "2a4b3b4e9a854117f4cc557d64086563fb4c513c2eb1d2af2c960e06d6fa8be6",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

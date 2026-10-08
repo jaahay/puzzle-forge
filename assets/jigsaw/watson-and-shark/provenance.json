@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "watson-and-shark",
+  "assetRevision": 1,
+  "work": {
+    "title": "Watson and the Shark",
+    "creator": "John Singleton Copley",
+    "date": "1778",
+    "medium": "oil on canvas",
+    "dimensions": "overall: 182.1 x 229.7 cm (71 11/16 x 90 7/16 in.)\r\nframed: 241.3 x 264.2 x 10.1 cm (95 x 104 x 4 in.)"
+  },
+  "source": {
+    "institution": "National Gallery of Art",
+    "objectId": 46471,
+    "accessionNumber": "1963.6.1",
+    "recordUrl": "https://www.nga.gov/artworks/46471-watson-and-the-shark",
+    "apiRecordUrl": "https://github.com/NationalGalleryOfArt/opendata",
+    "sourceImageUrl": "https://api.nga.gov/iiif/b38ce693-ba56-4953-9c2c-d8139fe4b059/full/!2048,2048/0/default.jpg",
+    "retrievedAt": "2026-10-08T22:19:33.788710+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 696037,
+    "sha256": "0aa1f3d468cf6a295b0ce6f8aea784ad028a39128222090ceef3a8c61a878ca8",
+    "width": 2048,
+    "height": 1624
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "National Gallery of Art Open Access",
+    "policyUrl": "https://www.nga.gov/artworks/free-images-and-open-access",
+    "verification": "NGA published_images returned openaccess=1 for primary image b38ce693-ba56-4953-9c2c-d8139fe4b059 depicting object 46471.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "embedded ICC profile converted to sRGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/watson-and-shark/puzzle.webp",
+      "width": 2048,
+      "height": 1624,
+      "byteSize": 485610,
+      "sha256": "5e865ff2aec79994c8b6544f532509d853b367115d545629b0d466383a7ddf73",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/watson-and-shark/preview.webp",
+      "width": 1024,
+      "height": 812,
+      "byteSize": 95046,
+      "sha256": "a636fd16cbd58c182f915a0a60237ce392445d30ec3364fd7fd28c6f121e6e5c",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/watson-and-shark/thumbnail.webp",
+      "width": 384,
+      "height": 305,
+      "byteSize": 16092,
+      "sha256": "fb407649e49ed24fca478a241aad75b42a44928dcfd108a4ae41e4717183645e",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

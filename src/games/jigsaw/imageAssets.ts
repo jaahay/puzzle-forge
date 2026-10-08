@@ -88,6 +88,24 @@ const makeRijksmuseumJigsawImageAsset = ({
     sourceQualifier: "Public Domain",
   });
 
+type NgaJigsawImageAssetInput = Omit<
+  JigsawImageAssetInput,
+  "sourceName" | "sourceRecordUrl" | "sourceQualifier"
+> & {
+  sourceRecordUrl: string;
+};
+
+const makeNgaJigsawImageAsset = ({
+  sourceRecordUrl,
+  ...input
+}: NgaJigsawImageAssetInput): JigsawImageAsset =>
+  makeJigsawImageAsset({
+    ...input,
+    sourceName: "National Gallery of Art",
+    sourceRecordUrl,
+    sourceQualifier: "Open Access",
+  });
+
 export const jigsawImageCatalog = {
   "wheat-field-cypresses": makeMetJigsawImageAsset({
     id: "wheat-field-cypresses",
@@ -439,6 +457,61 @@ export const jigsawImageCatalog = {
     creator: "Katsushika Hokusai",
     date: "1829–33",
     sourceRecordUrl: "https://id.rijksmuseum.nl/200414389",
+  }),
+  "ginevra-de-benci": makeNgaJigsawImageAsset({
+    id: "ginevra-de-benci",
+    title: "Ginevra de' Benci [obverse]",
+    alt: "A young woman faces forward against dark juniper foliage, her pale face and patterned dress set against a distant watery landscape.",
+    orientation: "portrait",
+    intrinsicWidth: 1985,
+    intrinsicHeight: 2048,
+    creator: "Leonardo da Vinci",
+    date: "c. 1474/1478",
+    sourceRecordUrl: "https://www.nga.gov/artworks/50724-ginevra-de-benci-obverse",
+  }),
+  "watson-and-shark": makeNgaJigsawImageAsset({
+    id: "watson-and-shark",
+    title: "Watson and the Shark",
+    alt: "Sailors reach from a crowded boat toward a swimmer as a shark turns through turbulent blue-green water.",
+    orientation: "landscape",
+    intrinsicWidth: 2048,
+    intrinsicHeight: 1624,
+    creator: "John Singleton Copley",
+    date: "1778",
+    sourceRecordUrl: "https://www.nga.gov/artworks/46471-watson-and-the-shark",
+  }),
+  "little-dancer": makeNgaJigsawImageAsset({
+    id: "little-dancer",
+    title: "Little Dancer Aged Fourteen",
+    alt: "A young ballet dancer stands upright with her chin raised and hands clasped behind her, wearing a bodice, tutu, and ribbon.",
+    orientation: "portrait",
+    intrinsicWidth: 1445,
+    intrinsicHeight: 2048,
+    creator: "Edgar Degas",
+    date: "1878-1881",
+    sourceRecordUrl: "https://www.nga.gov/artworks/110292-little-dancer-aged-fourteen",
+  }),
+  "alfred-stieglitz-kasebier": makeNgaJigsawImageAsset({
+    id: "alfred-stieglitz-kasebier",
+    title: "Alfred Stieglitz",
+    alt: "A softly modeled monochrome portrait shows Alfred Stieglitz seated in profile, with his face and hands emerging from deep shadow.",
+    orientation: "portrait",
+    intrinsicWidth: 1430,
+    intrinsicHeight: 2048,
+    creator: "Gertrude Käsebier",
+    date: "1902",
+    sourceRecordUrl: "https://www.nga.gov/artworks/132864-alfred-stieglitz",
+  }),
+  "sumida-cherry-blossoms": makeNgaJigsawImageAsset({
+    id: "sumida-cherry-blossoms",
+    title: "Cherry Blossoms in Full Bloom Along the Sumida River [Sumida-gawa hana-zakari]",
+    alt: "Crowds stroll beneath arching cherry trees beside the Sumida River, with boats, blossoms, and distant buildings filling the panoramic scene.",
+    orientation: "landscape",
+    intrinsicWidth: 2048,
+    intrinsicHeight: 1385,
+    creator: "Andō Hiroshige",
+    date: "1839-1842",
+    sourceRecordUrl: "https://www.nga.gov/artworks/183183-cherry-blossoms-in-full-bloom-along-the-sumida-river-sumida-gawa-hana-zakari",
   }),
 } as const satisfies Record<string, JigsawImageAsset>;
 

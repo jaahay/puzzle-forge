@@ -149,10 +149,10 @@ describe("Jigsaw image library", () => {
     });
   });
 
-  it("exposes the thirty-two bundled images with unique ids and same-origin derivatives", () => {
+  it("exposes the thirty-seven bundled images with unique ids and same-origin derivatives", () => {
     const imageIds = jigsawImageAssets.map((asset) => asset.id);
 
-    expect(jigsawImageAssets).toHaveLength(32);
+    expect(jigsawImageAssets).toHaveLength(37);
     expect(new Set(imageIds).size).toBe(imageIds.length);
     expect(
       jigsawImageAssets.every(

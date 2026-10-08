@@ -160,6 +160,31 @@
       "assetId": "totomi-mountains",
       "provider": "rijksmuseum",
       "objectNumber": "AK-MAK-1213"
+    },
+    {
+      "assetId": "ginevra-de-benci",
+      "provider": "nga",
+      "objectId": 50724
+    },
+    {
+      "assetId": "watson-and-shark",
+      "provider": "nga",
+      "objectId": 46471
+    },
+    {
+      "assetId": "little-dancer",
+      "provider": "nga",
+      "objectId": 110292
+    },
+    {
+      "assetId": "alfred-stieglitz-kasebier",
+      "provider": "nga",
+      "objectId": 132864
+    },
+    {
+      "assetId": "sumida-cherry-blossoms",
+      "provider": "nga",
+      "objectId": 183183
     }
   ]
 }

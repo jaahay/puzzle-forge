@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "sumida-cherry-blossoms",
+  "assetRevision": 1,
+  "work": {
+    "title": "Cherry Blossoms in Full Bloom Along the Sumida River [Sumida-gawa hana-zakari]",
+    "creator": "Andō Hiroshige",
+    "date": "1839-1842",
+    "medium": "color woodcut on Japanese paper",
+    "dimensions": "sheet: 25.4 × 37.47 cm (10 × 14 3/4 in.)"
+  },
+  "source": {
+    "institution": "National Gallery of Art",
+    "objectId": 183183,
+    "accessionNumber": "2015.143.95",
+    "recordUrl": "https://www.nga.gov/artworks/183183-cherry-blossoms-in-full-bloom-along-the-sumida-river-sumida-gawa-hana-zakari",
+    "apiRecordUrl": "https://github.com/NationalGalleryOfArt/opendata",
+    "sourceImageUrl": "https://api.nga.gov/iiif/a0a08664-ba42-4d34-888d-3c19a52c66b4/full/!2048,2048/0/default.jpg",
+    "retrievedAt": "2026-10-08T22:19:33.788710+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 867113,
+    "sha256": "d06f442cd4dbfee3ab7c388a078c84a66b45eff97f866c643c7fc4b0267a7e5f",
+    "width": 2048,
+    "height": 1385
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "National Gallery of Art Open Access",
+    "policyUrl": "https://www.nga.gov/artworks/free-images-and-open-access",
+    "verification": "NGA published_images returned openaccess=1 for primary image a0a08664-ba42-4d34-888d-3c19a52c66b4 depicting object 183183.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "embedded ICC profile converted to sRGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/sumida-cherry-blossoms/puzzle.webp",
+      "width": 2048,
+      "height": 1385,
+      "byteSize": 777270,
+      "sha256": "d091b1279fce6a2cb5d6c66eb4fb617b1e154678b275cf0c813d926f304bbe05",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/sumida-cherry-blossoms/preview.webp",
+      "width": 1024,
+      "height": 693,
+      "byteSize": 150730,
+      "sha256": "794fe5b13bf0ec700f15448f2ff69d0f95d9f47d99f5d426c76ac4d56bec5e4c",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/sumida-cherry-blossoms/thumbnail.webp",
+      "width": 384,
+      "height": 260,
+      "byteSize": 17202,
+      "sha256": "058356af033b5c7474822d92a4e1cb9ccf5fb684603f495558e4a183ee730df3",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}

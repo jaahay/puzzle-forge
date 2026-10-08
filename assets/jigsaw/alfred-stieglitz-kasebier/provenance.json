@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assetId": "alfred-stieglitz-kasebier",
+  "assetRevision": 1,
+  "work": {
+    "title": "Alfred Stieglitz",
+    "creator": "Gertrude Käsebier",
+    "date": "1902",
+    "medium": "platinum print",
+    "dimensions": "image: 29.8 × 19.7 cm (11 3/4 × 7 3/4 in.)\r\nsheet: 30.6 × 21 cm (12 1/16 × 8 1/4 in.)"
+  },
+  "source": {
+    "institution": "National Gallery of Art",
+    "objectId": 132864,
+    "accessionNumber": "2005.123.1",
+    "recordUrl": "https://www.nga.gov/artworks/132864-alfred-stieglitz",
+    "apiRecordUrl": "https://github.com/NationalGalleryOfArt/opendata",
+    "sourceImageUrl": "https://api.nga.gov/iiif/130776b9-559d-4a90-bd2f-a7050a555767/full/!2048,2048/0/default.jpg",
+    "retrievedAt": "2026-10-08T22:19:33.788710+00:00",
+    "mimeType": "image/jpeg",
+    "byteSize": 809515,
+    "sha256": "fbc8c8f613cb573c1870d8663edd55141db83dfae00667d76f3fa094488a22cd",
+    "width": 1430,
+    "height": 2048
+  },
+  "rights": {
+    "isPublicDomain": true,
+    "policy": "National Gallery of Art Open Access",
+    "policyUrl": "https://www.nga.gov/artworks/free-images-and-open-access",
+    "verification": "NGA published_images returned openaccess=1 for primary image 130776b9-559d-4a90-bd2f-a7050a555767 depicting object 132864.",
+    "reviewedAt": "2026-10-08"
+  },
+  "generation": {
+    "pythonVersion": "3.12.15",
+    "encoder": "Pillow",
+    "encoderVersion": "12.3.0",
+    "exifOrientation": "normalized",
+    "colorManagement": "embedded ICC profile converted to sRGB",
+    "sourceColorConversion": "sRGB"
+  },
+  "derivatives": {
+    "puzzle": {
+      "path": "/jigsaw/alfred-stieglitz-kasebier/puzzle.webp",
+      "width": 1430,
+      "height": 2048,
+      "byteSize": 739038,
+      "sha256": "4e93623c223d87c21c1865dc78f70d372181dc83dee4d6c0e7127e0fbabde360",
+      "recipe": {
+        "maxDimension": 2048,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 90,
+        "method": 6
+      }
+    },
+    "preview": {
+      "path": "/jigsaw/alfred-stieglitz-kasebier/preview.webp",
+      "width": 715,
+      "height": 1024,
+      "byteSize": 107842,
+      "sha256": "6c57f449fa3f3fec744d3a923cb5ff7babc94a6195476141d52ee4c8396e0ee1",
+      "recipe": {
+        "maxDimension": 1024,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 86,
+        "method": 6
+      }
+    },
+    "thumbnail": {
+      "path": "/jigsaw/alfred-stieglitz-kasebier/thumbnail.webp",
+      "width": 268,
+      "height": 384,
+      "byteSize": 8454,
+      "sha256": "5ddcd81527dfb961321b5064e922db900d3f544089db10f1aff35b976966bb3f",
+      "recipe": {
+        "maxDimension": 384,
+        "resizeMode": "contain",
+        "resampling": "Lanczos",
+        "crop": "none",
+        "outputColorMode": "sRGB",
+        "format": "WebP",
+        "quality": 82,
+        "method": 6
+      }
+    }
+  }
+}
