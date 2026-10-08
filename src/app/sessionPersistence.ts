@@ -89,8 +89,8 @@ export type PersistedPuzzleSessions = {
 };
 
 type PersistedPuzzleSessionMetadata = {
-  activeResourceKey: PuzzleResourceKey;
-  savedResourceKeys: PuzzleResourceKey[];
+  activeResourceKey: string;
+  savedResourceKeys: string[];
   updatedAt: string;
 };
 
@@ -306,7 +306,7 @@ const isPersistedPuzzleSession = (value: unknown): value is PersistedPuzzleSessi
   return decodeGenerationId(value.puzzleId, value.generationId).ok;
 };
 
-const isStoredResourceKey = (value: unknown): value is PuzzleResourceKey =>
+const isStoredResourceKey = (value: unknown): value is string =>
   typeof value === "string" && value.length > 0;
 
 const isPersistedPuzzleSessionMetadata = (value: unknown): value is PersistedPuzzleSessionMetadata =>
@@ -581,7 +581,7 @@ const readPersistedMetadata = (): PersistedPuzzleSessionMetadata | null => {
   }
 };
 
-const readPersistedSession = (resourceKey: PuzzleResourceKey): PersistedPuzzleSession | null => {
+const readPersistedSession = (resourceKey: string): PersistedPuzzleSession | null => {
   const rawSession = window.localStorage.getItem(sessionStorageKey(resourceKey));
   if (!rawSession) return null;
 
@@ -648,11 +648,12 @@ export const loadPersistedPuzzleSessions = (): PersistedPuzzleSessions | null =>
   const sessions: PersistedPuzzleSessionCache = {};
   for (const resourceKey of new Set([metadata.activeResourceKey, ...metadata.savedResourceKeys])) {
     const session = readPersistedSession(resourceKey);
-    if (session) sessions[resourceKey] = session;
+    if (session) sessions[resourceKey as PuzzleResourceKey] = session;
   }
 
-  const activeResourceKey = sessions[metadata.activeResourceKey]
-    ? metadata.activeResourceKey
+  const requestedActiveResourceKey = metadata.activeResourceKey as PuzzleResourceKey;
+  const activeResourceKey = sessions[requestedActiveResourceKey]
+    ? requestedActiveResourceKey
     : (Object.entries(sessions) as Array<[PuzzleResourceKey, PersistedPuzzleSession]>)
         .sort(comparePersistedSessionRecency)[0]?.[0] ?? null;
 
