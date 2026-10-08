@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
-import html as html_lib
 import io
 import json
 import platform
@@ -61,9 +60,10 @@ NGA_OPEN_DATA_REPO = "https://github.com/NationalGalleryOfArt/opendata"
 NGA_OPEN_ACCESS_POLICY = "https://www.nga.gov/artworks/free-images-and-open-access"
 _NGA_CSV_CACHE: dict[str, tuple[dict[str, str], ...]] = {}
 SMITHSONIAN_OBJECT_URL = "https://www.si.edu/object/{record_id}"
-SMITHSONIAN_COLLECTIONS_RECORD_URL = (
-    "https://collections.si.edu/search/detail/edanmdm:{record_id}?print=yes"
+SMITHSONIAN_CONTENT_API = (
+    "https://api.si.edu/openaccess/api/v1.0/content/edanmdm:{record_id}"
 )
+SMITHSONIAN_PUBLIC_DEMO_KEY = "DEMO_KEY"
 SMITHSONIAN_OPEN_ACCESS_POLICY = "https://www.si.edu/openaccess"
 SMITHSONIAN_INSTITUTIONS = {
     "nasm": "National Air and Space Museum",
@@ -217,20 +217,6 @@ def request_headers(provider: str) -> dict[str, str]:
     headers = {"User-Agent": "puzzle-forge-artwork-ingestion/2"}
     if provider == "artic":
         headers["AIC-User-Agent"] = "puzzle-forge (https://github.com/jaahay/puzzle-forge)"
-    elif provider == "smithsonian":
-        headers.update(
-            {
-                "User-Agent": (
-                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-                    "(KHTML, like Gecko) Chrome/152.0 Safari/537.36"
-                ),
-                "Accept": (
-                    "text/html,application/xhtml+xml,application/xml;q=0.9,"
-                    "image/avif,image/webp,image/apng,*/*;q=0.8"
-                ),
-                "Accept-Language": "en-US,en;q=0.9",
-            }
-        )
     return headers
 
 
@@ -730,45 +716,40 @@ def resolve_nga_source(artwork: Artwork) -> SourceRecord:
     )
 
 
-def html_text(raw_html: str) -> str:
-    without_scripts = re.sub(
-        r"<(?:script|style)\\b[^>]*>.*?</(?:script|style)>",
-        " ",
-        raw_html,
-        flags=re.IGNORECASE | re.DOTALL,
-    )
-    without_tags = re.sub(r"<[^>]+>", " ", without_scripts)
-    return re.sub(r"\\s+", " ", html_lib.unescape(without_tags)).strip()
-
-
-def smithsonian_title(raw_html: str, record_id: str) -> str | None:
-    match = re.search(
-        r"<h1\\b[^>]*>(.*?)</h1>",
-        raw_html,
-        flags=re.IGNORECASE | re.DOTALL,
-    )
-    if match is None:
+def smithsonian_freetext_value(
+    content: dict,
+    field: str,
+    preferred_labels: tuple[str, ...] = (),
+) -> str | None:
+    freetext = content.get("freetext")
+    if not isinstance(freetext, dict):
         return None
-    title = html_text(match.group(1))
-    if not title or title == record_id:
+    entries = freetext.get(field)
+    if not isinstance(entries, list):
         return None
-    return title
 
+    normalized_preferences = tuple(label.lower() for label in preferred_labels)
+    for preferred in normalized_preferences:
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            label = entry.get("label")
+            value = entry.get("content")
+            if (
+                isinstance(label, str)
+                and preferred in label.lower()
+                and isinstance(value, str)
+                and value.strip()
+            ):
+                return value.strip()
 
-def smithsonian_media_ids(raw_html: str) -> list[str]:
-    decoded = html_lib.unescape(raw_html)
-    patterns = (
-        r"https://ids\\.si\\.edu/ids/deliveryService\\?[^\"'<>]*?\\bid=([A-Za-z0-9_.-]+)",
-        r"https://ids\\.si\\.edu/ids/iiif/([A-Za-z0-9_.-]+)(?:/|[\"'<>])",
-        r"https://ids\\.si\\.edu/ids/manifest/([A-Za-z0-9_.-]+)(?:[\"'<>]|$)",
-    )
-    media_ids: list[str] = []
-    for pattern in patterns:
-        for match in re.finditer(pattern, decoded, flags=re.IGNORECASE):
-            media_id = match.group(1)
-            if media_id not in media_ids:
-                media_ids.append(media_id)
-    return media_ids
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        value = entry.get("content")
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return None
 
 
 def resolve_smithsonian_source(artwork: Artwork) -> SourceRecord:
@@ -778,76 +759,131 @@ def resolve_smithsonian_source(artwork: Artwork) -> SourceRecord:
         )
     record_id = artwork.source_id
     unit_code = record_id.split("_", 1)[0].lower()
-    institution = SMITHSONIAN_INSTITUTIONS.get(unit_code, "Smithsonian Institution")
 
     encoded_record_id = urllib.parse.quote(record_id, safe="")
-    record_url = SMITHSONIAN_OBJECT_URL.format(record_id=encoded_record_id)
-    verification_url = SMITHSONIAN_COLLECTIONS_RECORD_URL.format(
-        record_id=encoded_record_id
+    api_record_url = SMITHSONIAN_CONTENT_API.format(record_id=encoded_record_id)
+    request_url = api_record_url + "?" + urllib.parse.urlencode(
+        {"api_key": SMITHSONIAN_PUBLIC_DEMO_KEY}
     )
-    page_bytes, content_type = fetch_bytes(verification_url, artwork.provider)
-    if content_type not in {"text/html", "application/xhtml+xml"}:
-        raise RuntimeError(
-            f"Smithsonian record {record_id} returned unexpected content type: {content_type}"
-        )
-    try:
-        raw_html = page_bytes.decode("utf-8")
-    except UnicodeDecodeError as exc:
-        raise RuntimeError(f"Smithsonian record {record_id} page is not UTF-8") from exc
+    response = fetch_json(request_url, artwork.provider)
+    record = response.get("response")
+    if not isinstance(record, dict):
+        raise RuntimeError(f"Smithsonian record {record_id} returned no response object")
 
-    page_text = html_text(raw_html)
-    if record_id not in page_text:
+    expected_api_id = f"edanmdm-{record_id}"
+    if record.get("id") != expected_api_id:
         raise RuntimeError(
-            f"Smithsonian record page did not identify requested Record ID {record_id}"
+            f"Smithsonian record mismatch for {artwork.asset_id}: "
+            f"expected {expected_api_id!r}, received {record.get('id')!r}"
         )
-
-    public_domain_phrases = (
-        "this media is in the public domain (free of copyright restrictions)",
-        "this media file is in the public domain (free of copyright restrictions)",
-    )
-    lowered_text = page_text.lower()
-    matched_rights = next(
-        (phrase for phrase in public_domain_phrases if phrase in lowered_text),
-        None,
-    )
-    has_cc0_online_media = (
-        "online media" in lowered_text
-        and "creative commons zero (cc0)" in lowered_text
-    )
-    if matched_rights is None and not has_cc0_online_media:
+    if record.get("type") != "edanmdm":
         raise RuntimeError(
-            f"Smithsonian record {record_id} does not explicitly mark its online media CC0/public domain"
+            f"Smithsonian record {record_id} is not an edanmdm collection object"
         )
 
-    media_ids = smithsonian_media_ids(raw_html)
-    if not media_ids:
+    content = record.get("content")
+    if not isinstance(content, dict):
+        raise RuntimeError(f"Smithsonian record {record_id} returned no content object")
+    descriptive = content.get("descriptiveNonRepeating")
+    if not isinstance(descriptive, dict):
         raise RuntimeError(
-            f"Smithsonian record {record_id} exposed no Smithsonian IDS image identifier"
+            f"Smithsonian record {record_id} returned no descriptiveNonRepeating object"
         )
-    media_id = media_ids[0]
+    if descriptive.get("record_ID") != record_id:
+        raise RuntimeError(
+            f"Smithsonian record payload did not identify requested Record ID {record_id}"
+        )
 
+    metadata_usage = descriptive.get("metadata_usage")
+    if (
+        not isinstance(metadata_usage, dict)
+        or metadata_usage.get("access") != "CC0"
+    ):
+        raise RuntimeError(
+            f"Smithsonian record {record_id} metadata is not marked CC0"
+        )
+
+    online_media = descriptive.get("online_media")
+    media = online_media.get("media") if isinstance(online_media, dict) else None
+    if not isinstance(media, list):
+        raise RuntimeError(f"Smithsonian record {record_id} exposes no online media list")
+
+    eligible_images: list[dict] = []
+    for item in media:
+        if not isinstance(item, dict) or item.get("type") != "Images":
+            continue
+        usage = item.get("usage")
+        ids_id = item.get("idsId")
+        if (
+            isinstance(usage, dict)
+            and usage.get("access") == "CC0"
+            and isinstance(ids_id, str)
+            and re.fullmatch(r"[A-Za-z0-9_.-]+", ids_id)
+        ):
+            eligible_images.append(item)
+
+    if not eligible_images:
+        raise RuntimeError(
+            f"Smithsonian record {record_id} has no image with media-level usage.access=CC0"
+        )
+
+    selected_media = eligible_images[0]
+    media_id = selected_media["idsId"]
     source_image_url = (
         "https://ids.si.edu/ids/deliveryService?"
         + urllib.parse.urlencode({"id": media_id, "max": "2048"})
     )
 
+    institution = descriptive.get("data_source")
+    if not isinstance(institution, str) or not institution.strip():
+        institution = SMITHSONIAN_INSTITUTIONS.get(unit_code, "Smithsonian Institution")
+
+    record_url = descriptive.get("record_link")
+    if not isinstance(record_url, str) or not record_url.startswith("https://"):
+        record_url = SMITHSONIAN_OBJECT_URL.format(record_id=encoded_record_id)
+
+    creator = smithsonian_freetext_value(
+        content,
+        "name",
+        (
+            "maker",
+            "manufacturer",
+            "artist",
+            "inventor",
+            "patentee",
+            "designed by",
+            "created by",
+        ),
+    )
+    date = smithsonian_freetext_value(content, "date")
+    medium = smithsonian_freetext_value(
+        content,
+        "physicalDescription",
+        ("medium", "materials", "physical description"),
+    )
+    dimensions = smithsonian_freetext_value(
+        content,
+        "physicalDescription",
+        ("dimensions", "measurements"),
+    )
+
     return SourceRecord(
         provider=artwork.provider,
-        title=smithsonian_title(raw_html, record_id),
-        creator=None,
-        date=None,
-        medium=None,
-        dimensions=None,
-        institution=institution,
+        title=record.get("title") if isinstance(record.get("title"), str) else None,
+        creator=creator,
+        date=date,
+        medium=medium,
+        dimensions=dimensions,
+        institution=institution.strip(),
         accession_number=record_id,
         record_url=record_url,
-        api_record_url=verification_url,
+        api_record_url=api_record_url,
         source_image_url=source_image_url,
         rights_policy="Smithsonian Open Access",
         rights_policy_url=SMITHSONIAN_OPEN_ACCESS_POLICY,
         rights_verification=(
-            f"Smithsonian Collections record {record_id} explicitly marked its online media "
-            f"CC0/public domain; IDS media {media_id} was resolved from that verified record."
+            f"Smithsonian Content API returned exact record {record_id}, metadata access=CC0, "
+            f"and image media {media_id} with usage.access=CC0."
         ),
     )
 
