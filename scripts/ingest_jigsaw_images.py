@@ -445,7 +445,7 @@ def resolve_rijksmuseum_source(artwork: Artwork) -> SourceRecord:
             None,
         )
 
-    date_element = edm_root.find(f".//{{{dc_ns}}}date")
+    date_element = edm_root.find(f".//{{{dcterms_ns}}}created")
     date = date_element.text.strip() if date_element is not None and date_element.text else None
     medium_element = edm_root.find(f".//{{{dcterms_ns}}}medium")
     medium = medium_element.text.strip() if medium_element is not None and medium_element.text else None
