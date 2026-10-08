@@ -770,11 +770,11 @@ def resolve_smithsonian_source(artwork: Artwork) -> SourceRecord:
     if not isinstance(record, dict):
         raise RuntimeError(f"Smithsonian record {record_id} returned no response object")
 
-    expected_api_id = f"edanmdm-{record_id}"
-    if record.get("id") != expected_api_id:
+    expected_edan_url = f"edanmdm:{record_id}"
+    if record.get("url") != expected_edan_url:
         raise RuntimeError(
             f"Smithsonian record mismatch for {artwork.asset_id}: "
-            f"expected {expected_api_id!r}, received {record.get('id')!r}"
+            f"expected URL {expected_edan_url!r}, received {record.get('url')!r}"
         )
     if record.get("type") != "edanmdm":
         raise RuntimeError(
