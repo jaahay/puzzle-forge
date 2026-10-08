@@ -415,11 +415,9 @@ export const App = () => {
   const startFreshPuzzle = (
     puzzleId: PuzzleId,
     behavior: NavigationBehavior = {},
-    replaceBrokenRoute = false,
   ) => {
     const nextRoute: AppRoute = { kind: "puzzle", puzzleId };
-    if (replaceBrokenRoute) replaceCurrentRoute(nextRoute);
-    else setAppRoute(nextRoute, behavior);
+    setAppRoute(nextRoute, behavior);
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
     cancelPendingGeneration();
     markPuzzleNavigation(puzzleId);
