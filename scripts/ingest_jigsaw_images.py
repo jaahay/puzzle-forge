@@ -334,44 +334,61 @@ def resolve_rijksmuseum_source(artwork: Artwork) -> SourceRecord:
     items = search.get("orderedItems")
     if not isinstance(items, list) or not items:
         raise RuntimeError(f"Rijksmuseum object {object_number} was not found")
-    persistent_uri = items[0].get("id") if isinstance(items[0], dict) else None
-    if not isinstance(persistent_uri, str):
-        raise RuntimeError(f"Rijksmuseum object {object_number} returned no persistent identifier")
-    object_data_uri = rijks_data_uri(persistent_uri)
-
-    oai_url = RIJKS_OAI_API + "?" + urllib.parse.urlencode(
-        {
-            "verb": "GetRecord",
-            "metadataPrefix": "edm",
-            "identifier": persistent_uri,
-        }
-    )
-    edm_bytes, _ = fetch_bytes(oai_url, artwork.provider)
-    try:
-        edm_root = ET.fromstring(edm_bytes)
-    except ET.ParseError as exc:
-        raise RuntimeError(f"Could not parse Rijksmuseum EDM record for {object_number}") from exc
 
     oai_ns = "http://www.openarchives.org/OAI/2.0/"
     dc_ns = "http://purl.org/dc/elements/1.1/"
     dcterms_ns = "http://purl.org/dc/terms/"
     edm_ns = "http://www.europeana.eu/schemas/edm/"
     rdf_resource = "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}resource"
-    error = edm_root.find(f".//{{{oai_ns}}}error")
-    if error is not None:
-        raise RuntimeError(
-            f"Rijksmuseum EDM lookup failed for {object_number}: {(error.text or '').strip()}"
-        )
 
-    identifiers = [
-        element.text.strip()
-        for element in edm_root.findall(f".//{{{dc_ns}}}identifier")
-        if isinstance(element.text, str) and element.text.strip()
-    ]
-    if object_number not in identifiers:
+    persistent_uri = None
+    object_data_uri = None
+    oai_url = None
+    edm_root = None
+    candidate_identifiers: list[list[str]] = []
+    for item in items:
+        candidate_uri = item.get("id") if isinstance(item, dict) else None
+        if not isinstance(candidate_uri, str):
+            continue
+
+        candidate_oai_url = RIJKS_OAI_API + "?" + urllib.parse.urlencode(
+            {
+                "verb": "GetRecord",
+                "metadataPrefix": "edm",
+                "identifier": candidate_uri,
+            }
+        )
+        candidate_bytes, _ = fetch_bytes(candidate_oai_url, artwork.provider)
+        try:
+            candidate_root = ET.fromstring(candidate_bytes)
+        except ET.ParseError as exc:
+            raise RuntimeError(
+                f"Could not parse Rijksmuseum EDM candidate for {object_number}"
+            ) from exc
+
+        error = candidate_root.find(f".//{{{oai_ns}}}error")
+        if error is not None:
+            continue
+
+        identifiers = [
+            element.text.strip()
+            for element in candidate_root.findall(f".//{{{dc_ns}}}identifier")
+            if isinstance(element.text, str) and element.text.strip()
+        ]
+        candidate_identifiers.append(identifiers)
+        if object_number not in identifiers:
+            continue
+
+        persistent_uri = candidate_uri
+        object_data_uri = rijks_data_uri(candidate_uri)
+        oai_url = candidate_oai_url
+        edm_root = candidate_root
+        break
+
+    if persistent_uri is None or object_data_uri is None or oai_url is None or edm_root is None:
         raise RuntimeError(
-            f"Rijksmuseum object mismatch for {artwork.asset_id}: expected {object_number}, "
-            f"received identifiers {identifiers!r}"
+            f"Rijksmuseum search returned no exact object-number match for {object_number}; "
+            f"candidate identifiers were {candidate_identifiers!r}"
         )
 
     rights_element = edm_root.find(f".//{{{edm_ns}}}rights")
