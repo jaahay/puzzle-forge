@@ -176,6 +176,31 @@ jobs:
               check=True,
           )
 
+          allowed_paths = {
+              *(f"assets/jigsaw/{asset_id}/provenance.json" for asset_id in asset_ids),
+              *(
+                  f"public/jigsaw/{asset_id}/{name}.webp"
+                  for asset_id in asset_ids
+                  for name in ("puzzle", "preview", "thumbnail")
+              ),
+          }
+          status = subprocess.run(
+              ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
+              check=True,
+              capture_output=True,
+          ).stdout.decode("utf-8").split("\0")
+          unexpected = []
+          for entry in status:
+              if not entry:
+                  continue
+              if len(entry) < 4 or entry[:2] != "??" or entry[3:] not in allowed_paths:
+                  unexpected.append(entry)
+          if unexpected:
+              raise SystemExit(
+                  "Ingestion changed files outside the requested create-only asset outputs: "
+                  + repr(unexpected)
+              )
+
           Path(".artwork-ingestion-ids").write_text("\n".join(asset_ids) + "\n", encoding="utf-8")
 
       - name: Commit generated artwork
