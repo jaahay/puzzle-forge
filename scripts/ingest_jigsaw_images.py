@@ -9,6 +9,7 @@ import re
 import shutil
 import sys
 import tempfile
+import time
 import urllib.request
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -299,6 +300,8 @@ def build_asset(
     staging_root: Path,
     retrieved_at: datetime,
 ) -> dict:
+    if record.provider == "artic":
+        time.sleep(1)
     source_bytes, mime_type = fetch_bytes(record.source_image_url, record.provider)
     source_sha256 = hashlib.sha256(source_bytes).hexdigest()
 

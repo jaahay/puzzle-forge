@@ -113,7 +113,7 @@ Rules:
 - Treat an existing `imageId` as a stable logical artwork. Conservative re-encoding/resizing may keep the same ID; changing the artwork or materially changing its composition/crop requires a new ID.
 - Ingestion is create-only by default, not an upsert. Existing asset directories cause the script to stop unless `--overwrite` is explicitly supplied.
 
-The current script supports The Met Open Access provider. Add provider support only when shipping real assets from that provider; keep provider-specific rights/API validation at the ingestion boundary while preserving the shared derivative/provenance contract.
+The current script supports The Met Open Access and Art Institute of Chicago providers. Provider-specific record, rights, and image resolution stay at the ingestion boundary while the derivative/provenance contract remains shared. Art Institute ingestion requires `is_public_domain=true`, resolves the IIIF base from API `config.iiif_url`, uses the public-domain `1686`-wide image variant for puzzle fidelity, and downloads sequentially with a one-second delay. Add another provider only when shipping real assets from it.
 
 To add a bundled image, first add its stable `assetId`, provider, and official source identifier to `assets/jigsaw/sources.json`. Then run the canonical script for that explicit asset id:
 

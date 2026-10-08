@@ -1,12 +1,14 @@
 import type { JigsawImageAsset } from "../../catalog/types";
 
-type MetJigsawImageAssetInput = Omit<JigsawImageAsset, "kind" | "files" | "credit"> & {
+type JigsawImageAssetInput = Omit<JigsawImageAsset, "kind" | "files" | "credit"> & {
   creator: string;
   date?: string;
-  objectId: number;
+  sourceName: string;
+  sourceRecordUrl: string;
+  sourceQualifier: string;
 };
 
-const makeMetJigsawImageAsset = ({
+const makeJigsawImageAsset = ({
   id,
   title,
   alt,
@@ -15,8 +17,10 @@ const makeMetJigsawImageAsset = ({
   intrinsicHeight,
   creator,
   date,
-  objectId,
-}: MetJigsawImageAssetInput): JigsawImageAsset => ({
+  sourceName,
+  sourceRecordUrl,
+  sourceQualifier,
+}: JigsawImageAssetInput): JigsawImageAsset => ({
   kind: "image",
   id,
   title,
@@ -30,11 +34,41 @@ const makeMetJigsawImageAsset = ({
     thumbnail: `/jigsaw/${id}/thumbnail.webp`,
   },
   credit: {
-    text: `${creator}, ${title}${date ? `, ${date}` : ""}. The Metropolitan Museum of Art, Open Access.`,
-    sourceName: "The Metropolitan Museum of Art",
-    sourceRecordUrl: `https://www.metmuseum.org/art/collection/search/${objectId}`,
+    text: `${creator}, ${title}${date ? `, ${date}` : ""}. ${sourceName}, ${sourceQualifier}.`,
+    sourceName,
+    sourceRecordUrl,
   },
 });
+
+type MetJigsawImageAssetInput = Omit<
+  JigsawImageAssetInput,
+  "sourceName" | "sourceRecordUrl" | "sourceQualifier"
+> & {
+  objectId: number;
+};
+
+const makeMetJigsawImageAsset = ({ objectId, ...input }: MetJigsawImageAssetInput): JigsawImageAsset =>
+  makeJigsawImageAsset({
+    ...input,
+    sourceName: "The Metropolitan Museum of Art",
+    sourceRecordUrl: `https://www.metmuseum.org/art/collection/search/${objectId}`,
+    sourceQualifier: "Open Access",
+  });
+
+type ArticJigsawImageAssetInput = Omit<
+  JigsawImageAssetInput,
+  "sourceName" | "sourceRecordUrl" | "sourceQualifier"
+> & {
+  objectId: number;
+};
+
+const makeArticJigsawImageAsset = ({ objectId, ...input }: ArticJigsawImageAssetInput): JigsawImageAsset =>
+  makeJigsawImageAsset({
+    ...input,
+    sourceName: "Art Institute of Chicago",
+    sourceRecordUrl: `https://www.artic.edu/artworks/${objectId}`,
+    sourceQualifier: "Public Domain",
+  });
 
 export const jigsawImageCatalog = {
   "wheat-field-cypresses": makeMetJigsawImageAsset({
@@ -255,6 +289,72 @@ export const jigsawImageCatalog = {
     creator: "Emanuel Leutze",
     date: "1851",
     objectId: 11417,
+  }),
+  "la-grande-jatte": makeArticJigsawImageAsset({
+    id: "la-grande-jatte",
+    title: "A Sunday on La Grande Jatte — 1884",
+    alt: "Figures relax along a sunlit riverbank beneath trees, rendered in dense fields of tiny colored dots.",
+    orientation: "landscape",
+    intrinsicWidth: 1686,
+    intrinsicHeight: 1130,
+    creator: "Georges Seurat",
+    date: "1884–86; border added 1888–89",
+    objectId: 27992,
+  }),
+  "childs-bath": makeArticJigsawImageAsset({
+    id: "childs-bath",
+    title: "The Child's Bath",
+    alt: "A seated woman gently bathes a child's feet beside a patterned basin, rug, and striped dress.",
+    orientation: "portrait",
+    intrinsicWidth: 1350,
+    intrinsicHeight: 2048,
+    creator: "Mary Cassatt",
+    date: "1893",
+    objectId: 111442,
+  }),
+  "paris-street-rainy-day": makeArticJigsawImageAsset({
+    id: "paris-street-rainy-day",
+    title: "Paris Street; Rainy Day",
+    alt: "Umbrella-carrying pedestrians cross a broad wet Parisian intersection beneath a pale gray sky.",
+    orientation: "landscape",
+    intrinsicWidth: 1686,
+    intrinsicHeight: 1309,
+    creator: "Gustave Caillebotte",
+    date: "1877",
+    objectId: 20684,
+  }),
+  "coronation-stone-motecuhzoma": makeArticJigsawImageAsset({
+    id: "coronation-stone-motecuhzoma",
+    title: "Coronation Stone of Moctezuma Xocoyotzin",
+    alt: "A dark carved basalt monument presents dense relief figures and symbols across its rectangular face.",
+    orientation: "portrait",
+    intrinsicWidth: 1587,
+    intrinsicHeight: 2048,
+    creator: "Mexica (Aztec), maker unknown",
+    date: "ca. 1503",
+    objectId: 75644,
+  }),
+  "embroidered-picture": makeArticJigsawImageAsset({
+    id: "embroidered-picture",
+    title: "Needlework Picture Depicting the Finding of Moses",
+    alt: "A richly embroidered seventeenth-century scene fills the surface with figures, architecture, foliage, and decorative stitching.",
+    orientation: "landscape",
+    intrinsicWidth: 1686,
+    intrinsicHeight: 1319,
+    creator: "Unknown maker, England",
+    date: "17th century",
+    objectId: 9765,
+  }),
+  "first-of-the-herring": makeArticJigsawImageAsset({
+    id: "first-of-the-herring",
+    title: "The First of the Herring",
+    alt: "A monochrome waterside scene shows fishing boats and figures working beneath a broad luminous sky.",
+    orientation: "landscape",
+    intrinsicWidth: 1686,
+    intrinsicHeight: 1038,
+    creator: "Peter Henry Emerson",
+    date: "1887",
+    objectId: 229759,
   }),
 } as const satisfies Record<string, JigsawImageAsset>;
 
