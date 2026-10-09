@@ -295,7 +295,7 @@ export const JigsawNewPuzzleControl = ({
             selectedAsset={selectedAsset}
             disabled={disabled}
             onSelectAsset={(asset) => onSettingsChange(makeJigsawImageSelectionSettings(asset, sizeSelection))}
-            onSurprise={onNewPuzzle}
+            onSurprise={() => onNewPuzzle()}
           />
         </>
       )}

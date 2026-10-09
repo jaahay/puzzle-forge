@@ -1,6 +1,7 @@
 import type { JSX } from "preact";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import type { ImageTileGeneratedPuzzle, TilePuzzlePiece } from "../catalog/types";
+import type { WorkspaceProgressReport } from "../app/abandonmentPolicy";
 import { getImageTileCrop } from "../games/imageTiles/geometry";
 import {
   applyImageTileHistoryAction,
@@ -40,6 +41,7 @@ type ImageTilePuzzlePreviewProps = {
   onCausativeInput?: () => void;
   onCompletionAnimationEnd?: () => void;
   onSolvedChange?: (solved: boolean) => void;
+  onProgressChange?: (report: WorkspaceProgressReport) => void;
   onHistoryAvailabilityChange?: (availability: ImageTileHistoryAvailability) => void;
   onHistoryControllerChange?: (controller: ImageTileHistoryController | null) => void;
 };
@@ -235,6 +237,7 @@ export const ImageTilePuzzlePreview = ({
   onCausativeInput,
   onCompletionAnimationEnd,
   onSolvedChange,
+  onProgressChange,
   onHistoryAvailabilityChange,
   onHistoryControllerChange,
 }: ImageTilePuzzlePreviewProps) => {
@@ -261,6 +264,15 @@ export const ImageTilePuzzlePreview = ({
     });
   }, [onHistoryAvailabilityChange]);
 
+  const publishProgress = (current: ImageTileRuntimeState) => {
+    const progress = current.progress;
+    const hasProgress = progress.tiles.some((tile) =>
+      puzzle.tiles.find((initial) => initial.id === tile.id)?.currentIndex !== tile.currentIndex) ||
+      (isSliding && progress.emptyIndex !== puzzle.emptyIndex);
+    const terminal = isImageTileSolved(progress.tiles, progress.emptyIndex, isSliding ? boardCellCount : undefined);
+    onProgressChange?.({ hasProgress, terminal });
+  };
+
   const commitRuntime = useCallback((
     transition: (current: ImageTileRuntimeState) => ImageTileRuntimeState,
   ) => {
@@ -271,6 +283,7 @@ export const ImageTilePuzzlePreview = ({
     runtimeRef.current = next;
     setRuntime(next);
     publishHistoryAvailability(next);
+    publishProgress(next);
     return next;
   }, [publishHistoryAvailability]);
 
@@ -304,6 +317,7 @@ export const ImageTilePuzzlePreview = ({
     runtimeRef.current = restored;
     setRuntime(restored);
     publishHistoryAvailability(restored);
+    publishProgress(restored);
     setSelectedTileId(null);
     return true;
   }, [canHistoryAction, publishHistoryAvailability]);
@@ -327,9 +341,14 @@ export const ImageTilePuzzlePreview = ({
     saveImageTileProgress(puzzle, progress);
   }, [progress, puzzle]);
 
+  const hasUnfinishedArrangement = progress.tiles.some((tile) =>
+    puzzle.tiles.find((original) => original.id === tile.id)?.currentIndex !== tile.currentIndex) ||
+    (isSliding && progress.emptyIndex !== puzzle.emptyIndex);
+
   useEffect(() => {
     onSolvedChange?.(isSolved);
-  }, [isSolved, onSolvedChange]);
+    onProgressChange?.({ hasProgress: hasUnfinishedArrangement, terminal: isSolved });
+  }, [isSolved, onSolvedChange, onProgressChange, hasUnfinishedArrangement]);
 
   const moveTile = (tile: TilePuzzlePiece) => {
     if (isSolved) return;

@@ -200,7 +200,7 @@ export const SudokuWorkspace = ({
         <button
           class="new-puzzle-primary"
           type="button"
-          onClick={onNewPuzzle}
+          onClick={() => onNewPuzzle()}
           disabled={isGenerating}
           tabIndex={isPresentationCompleted ? 0 : -1}
           aria-label="Start a new Sudoku with the remembered settings"
@@ -230,7 +230,7 @@ export const SudokuWorkspace = ({
           {digitPad}
           <div class="sudoku-current-actions" aria-label="Current Sudoku actions">
             <button class="sudoku-check-action" type="button" onClick={handleCheck} disabled={isSolved}>Check</button>
-            <button class="sudoku-reset-action" type="button" onClick={onReset} disabled={isGenerating}>Reset</button>
+            <button class="sudoku-reset-action" type="button" onClick={() => onReset()} disabled={isGenerating}>Reset</button>
           </div>
           {validation}
         </div>

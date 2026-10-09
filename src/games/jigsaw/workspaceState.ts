@@ -88,3 +88,24 @@ export const restageJigsawWorkspaceSubset = (
     assembly: cloneJigsawAssemblyProgress(assembly),
   };
 };
+
+/** Protect joined assemblies and deliberately organized loose pieces, not past actions. */
+export const hasMeaningfulJigsawWorkspaceProgress = (
+  layout: JigsawWorldLayout,
+  baseline: readonly JigsawPlacement[] | null,
+  placements: readonly JigsawPlacement[],
+  assembly: JigsawAssemblyProgress,
+): boolean => {
+  if (assembly.joinedComponents.length > 0) return true;
+  if (!baseline) return false;
+  if (baseline.length !== placements.length) return true;
+  const initialPositions = new Map(baseline.map((placement) => [placement.id, placement] as const));
+  return placements.some((placement) => {
+    const initial = initialPositions.get(placement.id);
+    if (!initial) return true;
+    const dx = (placement.worldX - initial.worldX) / layout.pieceWidth;
+    const dy = (placement.worldY - initial.worldY) / layout.pieceHeight;
+    // Less than 15% of a piece is pointer imprecision, not deliberate organization.
+    return Math.hypot(dx, dy) > 0.15;
+  });
+};

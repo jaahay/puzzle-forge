@@ -91,7 +91,7 @@ describe("image tile action history", () => {
     expect(secondUndo.history.redoStack).toHaveLength(2);
   });
 
-  it("treats Reset as one action that Undo restores exactly", () => {
+  it("treats Reset as a new baseline and clears both history stacks", () => {
     const initialState = makeState([2, 0, 1], 0);
     const progressed = requireTransition(
       swapImageTileAction({ state: initialState, history: makeEmptyImageTileHistoryState() }, "tile-0", "tile-1"),
@@ -100,8 +100,21 @@ describe("image tile action history", () => {
 
     expect(sameImageTileActionState(reset.state, initialState)).toBe(true);
 
-    const undone = requireTransition(applyImageTileHistoryAction(reset, "undo"));
-    expect(sameImageTileActionState(undone.state, progressed.state)).toBe(true);
+    expect(reset.history.undoStack).toHaveLength(0);
+    expect(reset.history.redoStack).toHaveLength(0);
+    expect(applyImageTileHistoryAction(reset, "undo")).toBeNull();
+    expect(applyImageTileHistoryAction(reset, "redo")).toBeNull();
+  });
+
+  it("clears a redo-only history when Reset is requested on a restored initial board", () => {
+    const initial = makeRuntime([2, 0, 1]);
+    const progressed = requireTransition(swapImageTileAction(initial, "tile-0", "tile-1"));
+    const undone = requireTransition(applyImageTileHistoryAction(progressed, "undo"));
+    expect(undone.history.redoStack).toHaveLength(1);
+    const reset = requireTransition(resetImageTileAction(undone, initial.state));
+    expect(reset.history.redoStack).toHaveLength(0);
+    expect(reset.history.undoStack).toHaveLength(0);
+    expect(resetImageTileAction(reset, initial.state)).toBeNull();
   });
 
   it("undoes the finishing swap back into an unsolved playing state", () => {
@@ -145,16 +158,17 @@ describe("image tile action history", () => {
     expect(sameImageTileActionState(redone.state, slid.state)).toBe(true);
   });
 
-  it("treats Sliding Puzzle Reset as one reversible action including the gap", () => {
+  it("resets Sliding Puzzle tiles and gap without retaining pre-reset history", () => {
     const initial = makeSlidingRuntime(4, 3, 7);
     const progressed = requireTransition(slideImageTileAction(initial, "tile-4", 4, 3));
     const reset = requireTransition(resetImageTileAction(progressed, initial.state));
 
     expect(sameImageTileActionState(reset.state, initial.state)).toBe(true);
 
-    const undone = requireTransition(applyImageTileHistoryAction(reset, "undo"));
-    expect(sameImageTileActionState(undone.state, progressed.state)).toBe(true);
-    expect(undone.state.emptyIndex).toBe(4);
+    expect(reset.state.emptyIndex).toBe(initial.state.emptyIndex);
+    expect(reset.history.undoStack).toHaveLength(0);
+    expect(reset.history.redoStack).toHaveLength(0);
+    expect(applyImageTileHistoryAction(reset, "undo")).toBeNull();
   });
 
   it("does not record an illegal Sliding Puzzle request", () => {

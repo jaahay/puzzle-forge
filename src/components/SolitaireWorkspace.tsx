@@ -78,13 +78,13 @@ export const SolitaireWorkspace = ({
       label={`Solved in ${solitaireStats.moveCount} ${solitaireStats.moveCount === 1 ? "move" : "moves"}`}
       ariaLabel="Klondike Solitaire solved"
       disabled={isGenerating}
-      onReset={onReset}
-      onNewPuzzle={onNewPuzzle}
+      onReset={() => onReset()}
+      onNewPuzzle={() => onNewPuzzle()}
     />
   ) : (
     <div class="solitaire-action-row" aria-label="Solitaire controls">
       <button type="button" onClick={onAutoMoveToFoundations} aria-label="Move all currently legal cards to foundations" title="Auto foundation">♣→</button>
-      <button type="button" onClick={onReset} disabled={isGenerating}>Reset</button>
+      <button type="button" onClick={() => onReset()} disabled={isGenerating}>Reset</button>
     </div>
   );
 

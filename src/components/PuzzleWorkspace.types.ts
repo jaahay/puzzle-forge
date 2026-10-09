@@ -1,4 +1,5 @@
 import type { GenerationSettings, NextPuzzleDraft } from "../app/generationSettings";
+import type { WorkspaceProgressReport } from "../app/abandonmentPolicy";
 import type { SolitaireStats } from "../app/session";
 import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition } from "../catalog/types";
 import type { CardSelection } from "../interactions/cardRules";
@@ -16,7 +17,8 @@ export type CoreWorkspaceProps = {
   statusMessage: string;
   onStatusMessageChange: (message: string) => void;
   isGenerating: boolean;
-  onReset: () => void;
+  onReset: (afterReset?: () => void) => void;
+  onRuntimeProgressChange: (puzzleInstanceId: string, report: WorkspaceProgressReport) => void;
 };
 
 export type ProspectiveGenerationProps = {
@@ -24,9 +26,9 @@ export type ProspectiveGenerationProps = {
   seedLoadInput: string;
   onNextPuzzleDraftChange: (settings: GenerationSettings) => void;
   onSeedLoadInputChange: (seed: string) => void;
-  onNewPuzzle: () => void;
-  onToday: () => void;
-  onLoadSeed: () => void;
+  onNewPuzzle: (afterStart?: () => void) => void;
+  onToday: (afterStart?: () => void) => void;
+  onLoadSeed: (afterStart?: () => void) => void;
 };
 
 export type GridInteractionProps = {

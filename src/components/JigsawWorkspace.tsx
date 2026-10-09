@@ -22,6 +22,7 @@ export const JigsawWorkspace = ({
   onStatusMessageChange,
   isGenerating,
   onReset,
+  onRuntimeProgressChange,
   onNextPuzzleDraftChange,
   onSeedLoadInputChange,
   onNewPuzzle,
@@ -96,13 +97,10 @@ export const JigsawWorkspace = ({
     );
   };
 
-  const resetJigsaw = () => {
-    onReset();
-    if (puzzleInstanceId) {
-      setCompletionState({ puzzleInstanceId, solved: false });
-    }
+  const resetJigsaw = () => onReset(() => {
+    if (puzzleInstanceId) setCompletionState({ puzzleInstanceId, solved: false });
     setResetVersion((current) => current + 1);
-  };
+  });
 
   const newPuzzleControl = jigsawPuzzle ? (
     <JigsawNewPuzzleControl
@@ -175,13 +173,16 @@ export const JigsawWorkspace = ({
         onAssemblyChange={onJigsawAssemblyChange}
         onSolvedChange={handleSolvedChange}
         onHistoryAvailabilityChange={handleHistoryAvailabilityChange}
+        onProgressChange={(report) => {
+          if (puzzleInstanceId) onRuntimeProgressChange(puzzleInstanceId, report);
+        }}
         onHistoryControllerChange={handleHistoryControllerChange}
         completionPhase={completion.phase}
         onCausativeInput={completion.recordCausativeInput}
         onCompletionAnimationEnd={completion.completePresentation}
         completionDisabled={isGenerating}
         onResetPuzzle={resetJigsaw}
-        onNewPuzzle={onNewPuzzle}
+        onNewPuzzle={() => onNewPuzzle()}
       />
     </section>
   ) : isGenerating ? loadingBoard : null;

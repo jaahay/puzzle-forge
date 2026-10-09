@@ -17,7 +17,6 @@ import {
   makeGridHistoryEntry,
   pushGridHistoryEntry,
   redoGridHistory,
-  sameGridPlayerState,
   undoGridHistory,
   type GridHistoryEntry,
   type GridHistoryState,
@@ -41,9 +40,6 @@ const GRID_CHECK_MESSAGE_FEEDBACK_MS = 1600;
 const usesNeutralNumericEntryTone = (puzzleId: PuzzleId) => puzzleId === "sudoku" || puzzleId === "futoshiki";
 export const supportsGridActionHistory = (puzzleId: PuzzleId) =>
   puzzleId === "sudoku" || puzzleId === "nonogram" || puzzleId === "futoshiki" || puzzleId === "word-guess";
-
-export const supportsReversibleGridReset = (puzzleId: PuzzleId) =>
-  supportsGridActionHistory(puzzleId) && puzzleId !== "word-guess";
 
 export const supportsAutomaticGridCompletion = (puzzleId: PuzzleId) =>
   puzzleId === "sudoku" || puzzleId === "nonogram" || puzzleId === "futoshiki";
@@ -179,23 +175,13 @@ export const useGridController = () => {
   ) => {
     if (puzzle.kind !== "grid") return;
 
-    const currentCells = gridCellsRef.current;
     const nextCells = prepareGridCells(puzzle);
-    const historyEntry = supportsReversibleGridReset(puzzle.puzzleId) &&
-      currentCells &&
-      !sameGridPlayerState(currentCells, nextCells)
-      ? captureGridHistoryEntry(puzzle.puzzleId)
-      : null;
 
     clearGridTransientFeedbackTimer();
     setGridCells(nextCells);
     clearGridInteraction();
     clearCheckFeedback();
-    if (supportsReversibleGridReset(puzzle.puzzleId)) {
-      recordGridHistoryEntry(historyEntry);
-    } else if (supportsGridActionHistory(puzzle.puzzleId)) {
-      clearGridHistory();
-    }
+    clearGridHistory();
     onStatusMessage(message);
   };
 

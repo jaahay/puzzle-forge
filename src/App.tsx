@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { getPuzzleAvailability } from "./catalog/puzzleAvailability";
+import { planAbandonmentAction, type IdentifiedWorkspaceProgress, type PendingAbandonmentAction, type WorkspaceProgressReport } from "./app/abandonmentPolicy";
 import { getPuzzleDefinition, isGeneratable } from "./catalog/puzzleCatalog";
 import type { GeneratedPuzzle, PuzzleId } from "./catalog/types";
 import { AboutView } from "./components/AboutView";
 import { AppShell } from "./components/AppShell";
+import { AbandonmentDialog } from "./components/AbandonmentDialog";
 import { ChangelogView } from "./components/ChangelogView";
 import { NotFoundView } from "./components/NotFoundView";
 import { PuzzleCatalog } from "./components/PuzzleCatalog";
@@ -116,6 +118,8 @@ export const App = () => {
   const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
   const [jigsawProgress, setJigsawProgress] = useState<{ puzzleInstanceId: string; assembly: JigsawAssemblyProgress } | null>(null);
   const [puzzleLinkError, setPuzzleLinkError] = useState<string | null>(null);
+  const [pendingAbandonment, setPendingAbandonment] = useState<PendingAbandonmentAction | null>(null);
+  const workspaceProgressRef = useRef<IdentifiedWorkspaceProgress | null>(null);
   const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(true);
   const [hasSelectedPuzzle, setHasSelectedPuzzle] = useState(shouldStartOnPuzzleSurface);
   const [isHomeSelected, setIsHomeSelected] = useState(!shouldStartOnPuzzleSurface);
@@ -176,11 +180,13 @@ export const App = () => {
   };
 
   const setAppRoute = (nextRoute: AppRoute, behavior: NavigationBehavior = {}) => {
+    setPendingAbandonment(null);
     if (behavior.pushHistory !== false) pushAppRoute(nextRoute);
     setRoute(nextRoute);
   };
 
   const replaceCurrentRoute = (nextRoute: AppRoute) => {
+    setPendingAbandonment(null);
     replaceAppRoute(nextRoute);
     setRoute(nextRoute);
   };
@@ -549,6 +555,7 @@ export const App = () => {
   };
 
   routeNavigationHandlerRef.current = (nextRoute) => {
+    setPendingAbandonment(null);
     if (nextRoute.kind === "puzzle") {
       selectPuzzle(nextRoute.puzzleId, { pushHistory: false });
     } else if (nextRoute.kind === "resource") {
@@ -657,6 +664,30 @@ export const App = () => {
     restoreScrollPosition();
   };
 
+  const reportWorkspaceProgress = (puzzleInstanceId: string, report: WorkspaceProgressReport) => {
+    workspaceProgressRef.current = { puzzleInstanceId, ...report };
+  };
+
+  const requestDestructiveAction = (action: "new" | "reset", proceed: () => void, targetIdentity?: GenerationIdentity) => {
+    const assembly = puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw" &&
+      jigsawProgress?.puzzleInstanceId === puzzle.id ? jigsawProgress.assembly : null;
+    const pending = planAbandonmentAction(puzzle, {
+      gridCells: grid.gridCells,
+      cardStacks: solitaire.cardStacks,
+      solitaireStats: solitaire.solitaireStats,
+      jigsawAssembly: assembly,
+      workspaceProgress: workspaceProgressRef.current,
+    }, action, proceed, targetIdentity);
+    if (pending) setPendingAbandonment(pending);
+  };
+
+  const requestResetCurrentPuzzle = (afterReset?: () => void) =>
+    requestDestructiveAction("reset", () => {
+      resetCurrentPuzzle();
+      afterReset?.();
+      workspaceProgressRef.current = null;
+    });
+
   const commitGenerationSettings = (
     settings: GenerationSettings = {},
     behavior: GenerationBehavior = { preserveScroll: true, resourceHistory: "push" },
@@ -701,35 +732,47 @@ export const App = () => {
     }, behavior);
   };
 
+  const requestNewSettings = (settings: GenerationSettings, afterStart?: () => void) => {
+    const identity = resolveGenerationIdentity({
+      puzzleId: selectedPuzzleId,
+      currentPuzzle: puzzle,
+      runtimeSettings: generationDefaults,
+      settings,
+      makeSeed: makeRandomSeed,
+    });
+    requestDestructiveAction("new", () => {
+      rememberNextPuzzleDraft();
+      commitGenerationSettings(settings);
+      afterStart?.();
+    }, identity);
+  };
+
   const createNewPuzzle = (behavior: GenerationBehavior) => {
     const randomizedDraft = randomizeNextPuzzleArtwork(selectedPuzzleId, nextPuzzleDraft);
     updateNextPuzzleDraft(randomizedDraft);
     commitGenerationSettings({ ...randomizedDraft, seed: makeRandomSeed() }, behavior);
   };
 
-  const generateNextPuzzle = () => {
+  const generateNextPuzzle = (afterStart?: () => void) => requestDestructiveAction("new", () => {
     createNewPuzzle({ preserveScroll: true, resourceHistory: "push" });
-  };
+    afterStart?.();
+  });
 
   const recoverUnavailablePuzzle = () => {
     replaceCurrentRoute({ kind: "puzzle", puzzleId: selectedPuzzleId });
     createNewPuzzle({ resourceHistory: "replace" });
   };
 
-  const loadSeededPuzzle = () => {
+  const loadSeededPuzzle = (afterStart?: () => void) => {
     const nextSeed = seedLoadInput.trim();
     if (!nextSeed) return;
-    rememberNextPuzzleDraft();
-    commitGenerationSettings({ ...nextPuzzleDraft, seed: nextSeed });
+    requestNewSettings({ ...nextPuzzleDraft, seed: nextSeed }, afterStart);
   };
 
-  const loadToday = () => {
-    rememberNextPuzzleDraft();
-    commitGenerationSettings({
-      ...nextPuzzleDraft,
-      provenance: { source: "daily", dateStamp: getLocalDateStamp() },
-    });
-  };
+  const loadToday = (afterStart?: () => void) => requestNewSettings({
+    ...nextPuzzleDraft,
+    provenance: { source: "daily", dateStamp: getLocalDateStamp() },
+  }, afterStart);
 
   const handleCheck = () => { if (!puzzle) return; puzzle.kind === "cards" ? solitaire.checkSolitaire() : grid.checkGrid(puzzle, setStatusMessage); };
   const workspaceIsGenerating = generation.isGenerating || (!puzzle && selectedPuzzleIsGeneratable && !isHomeSelected && !puzzleLinkError);
@@ -741,7 +784,8 @@ export const App = () => {
     statusMessage,
     onStatusMessageChange: setStatusMessage,
     isGenerating: workspaceIsGenerating,
-    onReset: resetCurrentPuzzle,
+    onReset: requestResetCurrentPuzzle,
+    onRuntimeProgressChange: reportWorkspaceProgress,
   };
   const workspaceProspective = {
     nextPuzzleDraft,
@@ -844,6 +888,17 @@ export const App = () => {
   return (
     <AppShell activeView={activeView} headerControls={puzzleNavigation} onHomeSelect={() => selectHome()} onViewSelect={(view) => selectSiteView(view)}>
       {content}
+      {pendingAbandonment ? (
+        <AbandonmentDialog
+          action={pendingAbandonment.action}
+          onCancel={() => setPendingAbandonment(null)}
+          onConfirm={() => {
+            const pending = pendingAbandonment;
+            setPendingAbandonment(null);
+            if (puzzle?.id === pending.puzzleInstanceId) pending.proceed();
+          }}
+        />
+      ) : null}
     </AppShell>
   );
 };

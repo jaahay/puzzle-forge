@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { failedTerminalState, playingTerminalState, solvedTerminalState, type PuzzleTerminalState } from "../app/puzzleTerminalState";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
+import type { WorkspaceProgressReport } from "../app/abandonmentPolicy";
 import { getWordGuessAnalysis } from "../games/wordGuess/analysis";
 import { scoreWordGuess } from "../games/wordGuess/feedback";
 import { readWordGuessProgress, writeWordGuessProgress, type WordGuessProgressStatus } from "../games/wordGuess/progress";
@@ -32,7 +33,8 @@ type WordGuessGameProps = {
   onCellInput: (cell: PuzzleCell, value: string) => void;
   onSubmitGuess: () => void;
   onCommitCurrentGuess: () => void;
-  onReset: () => void;
+  onReset: (afterReset?: () => void) => void;
+  onProgressChange?: (report: WorkspaceProgressReport) => void;
   onNewPuzzle: () => void;
   disabled?: boolean;
 };
@@ -103,7 +105,7 @@ export const getWordGuessActionPresentation = (status: WordGuessProgressStatus, 
 const formatRemainingAttempts = (count: number) =>
   `${count} ${count === 1 ? "attempt" : "attempts"} remain.`;
 
-export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSubmitGuess, onCommitCurrentGuess, onReset, onNewPuzzle, disabled = false }: WordGuessGameProps) => {
+export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSubmitGuess, onCommitCurrentGuess, onReset, onNewPuzzle, onProgressChange, disabled = false }: WordGuessGameProps) => {
   const answer = puzzle.answerKey?.join("").toUpperCase() ?? "";
   const wordBank = useMemo(() => getWordGuessBank(puzzle.width), [puzzle.width]);
   const rows = useMemo(() => getRows(cells, puzzle.height), [cells, puzzle.height]);
@@ -202,6 +204,13 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
       status,
     });
   }, [puzzle.id, puzzle.height, puzzle.width, rowGuesses, status, submittedGuesses, submittedRows]);
+
+  useEffect(() => {
+    onProgressChange?.({
+      hasProgress: submittedRows > 0 || rowGuesses.some((guess) => guess.length > 0),
+      terminal: status !== "playing",
+    });
+  }, [onProgressChange, rowGuesses.join("|"), status, submittedRows]);
 
   const submitGuess = () => {
     if (status !== "playing") {
@@ -306,8 +315,8 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
   };
 
   const resetGame = () => {
-    skipNextSave.current = true;
-    onReset();
+    onReset(() => {
+      skipNextSave.current = true;
     setSubmittedRows(0);
     setStatus("playing");
     setMessage(`Type a ${puzzle.width}-letter word.`);
@@ -320,9 +329,10 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
       guesses: [],
       status: "playing",
     });
-    window.setTimeout(() => {
-      skipNextSave.current = false;
-    }, 0);
+      window.setTimeout(() => {
+        skipNextSave.current = false;
+      }, 0);
+    });
   };
 
   useEffect(() => {

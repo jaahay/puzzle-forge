@@ -14,9 +14,9 @@ type CommandActionFactory = (options: {
   disabled: boolean;
   seedLoadInput: string;
   closeOptions: (restoreFocus?: boolean) => void;
-  onNewPuzzle: () => void;
-  onToday: () => void;
-  onLoadSeed: () => void;
+  onNewPuzzle: (afterStart?: () => void) => void;
+  onToday: (afterStart?: () => void) => void;
+  onLoadSeed: (afterStart?: () => void) => void;
   renewSeedCandidate: () => void;
 }) => CommandActions;
 
@@ -40,6 +40,7 @@ const requireCommandActionFactory = () => {
 
 describe("shared New puzzle command interactions", () => {
   const makeHarness = (overrides: Partial<Parameters<CommandActionFactory>[0]> = {}) => {
+    let afterStart: (() => void) | undefined;
     const calls = {
       closeOptions: [] as boolean[],
       newPuzzle: 0,
@@ -52,20 +53,23 @@ describe("shared New puzzle command interactions", () => {
       disabled: false,
       seedLoadInput: "candidate-seed",
       closeOptions: (restoreFocus = false) => calls.closeOptions.push(restoreFocus),
-      onNewPuzzle: () => { calls.newPuzzle += 1; },
-      onToday: () => { calls.today += 1; },
-      onLoadSeed: () => { calls.loadSeed += 1; },
+      onNewPuzzle: (callback) => { calls.newPuzzle += 1; afterStart = callback; },
+      onToday: (callback) => { calls.today += 1; afterStart = callback; },
+      onLoadSeed: (callback) => { calls.loadSeed += 1; afterStart = callback; },
       renewSeedCandidate: () => { calls.renewSeed += 1; },
       ...overrides,
     });
 
-    return { actions, calls };
+    return { actions, calls, confirmStart: () => afterStart?.() };
   };
 
-  it("starts an immediate random puzzle from primary New without restoring chooser focus", () => {
-    const { actions, calls } = makeHarness();
+  it("starts a random puzzle from primary New without restoring chooser focus after it starts", () => {
+    const { actions, calls, confirmStart } = makeHarness();
 
     actions.startRandomPuzzle(false);
+    expect(calls.closeOptions).toEqual([]);
+    expect(calls.renewSeed).toBe(0);
+    confirmStart();
 
     expect(calls).toEqual({
       closeOptions: [false],
@@ -76,10 +80,13 @@ describe("shared New puzzle command interactions", () => {
     });
   });
 
-  it("uses the same random creation action from the chooser and restores chooser focus", () => {
-    const { actions, calls } = makeHarness();
+  it("defers closing the chooser and renewing its seed until the random request is confirmed", () => {
+    const { actions, calls, confirmStart } = makeHarness();
 
     actions.startRandomPuzzle(true);
+    expect(calls.closeOptions).toEqual([]);
+    expect(calls.renewSeed).toBe(0);
+    confirmStart();
 
     expect(calls.closeOptions).toEqual([true]);
     expect(calls.newPuzzle).toBe(1);
@@ -90,12 +97,16 @@ describe("shared New puzzle command interactions", () => {
     const todayHarness = makeHarness();
     todayHarness.actions.startToday();
     expect(todayHarness.calls.today).toBe(1);
+    expect(todayHarness.calls.closeOptions).toEqual([]);
+    todayHarness.confirmStart();
     expect(todayHarness.calls.closeOptions).toEqual([true]);
     expect(todayHarness.calls.renewSeed).toBe(1);
 
     const seedHarness = makeHarness();
     seedHarness.actions.loadSeed();
     expect(seedHarness.calls.loadSeed).toBe(1);
+    expect(seedHarness.calls.closeOptions).toEqual([]);
+    seedHarness.confirmStart();
     expect(seedHarness.calls.closeOptions).toEqual([true]);
     expect(seedHarness.calls.renewSeed).toBe(1);
   });

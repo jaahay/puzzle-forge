@@ -44,6 +44,7 @@ export const GridPuzzleWorkspace = ({
   onRedoGrid,
   onCommitGridHistory,
   onReset,
+  onRuntimeProgressChange,
   onCheck,
   onNextPuzzleDraftChange,
   onSeedLoadInputChange,
@@ -194,10 +195,11 @@ export const GridPuzzleWorkspace = ({
           cells={gridCells}
           statusMessage={statusMessage}
           onCellInput={onCellInput}
+          onProgressChange={(report) => onRuntimeProgressChange(puzzle.id, report)}
           onSubmitGuess={onCheck}
           onCommitCurrentGuess={onCommitGridHistory}
           onReset={onReset}
-          onNewPuzzle={onNewPuzzle}
+          onNewPuzzle={() => onNewPuzzle()}
           disabled={isGenerating}
         />
       ) : puzzle.puzzleId === "futoshiki" && gridCells ? (
@@ -230,13 +232,13 @@ export const GridPuzzleWorkspace = ({
           label="Puzzle solved"
           ariaLabel={`${selectedDefinition.title} solved`}
           disabled={isGenerating}
-          onReset={onReset}
-          onNewPuzzle={onNewPuzzle}
+          onReset={() => onReset()}
+          onNewPuzzle={() => onNewPuzzle()}
         />
       ) : (
         <div class={`puzzle-actions ${isNonogram ? "nonogram-current-actions" : ""}`.trim()}>
           <button type="button" onClick={onCheck}>Check</button>
-          {isNonogram || isFutoshiki ? <button type="button" onClick={onReset} disabled={isGenerating}>Reset</button> : null}
+          {isNonogram || isFutoshiki ? <button type="button" onClick={() => onReset()} disabled={isGenerating}>Reset</button> : null}
         </div>
       )}
       {validation}

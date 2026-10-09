@@ -44,7 +44,8 @@ describe("Solitaire shared history integration", () => {
     expect(actionControls).toContain('class="solitaire-action-row"');
     expect(actionControls).toContain("onAutoMoveToFoundations");
     expect(actionControls).toContain('title="Auto foundation"');
-    expect(actionControls).toContain("onClick={onReset}");
+    expect(actionControls).toContain("onClick={() => onReset()}");
+    expect(actionControls).not.toContain("onClick={onReset}");
     expect(actionControls).toContain(">Reset</button>");
   });
 

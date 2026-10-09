@@ -36,6 +36,7 @@ export const ImageTilePuzzleWorkspace = ({
   onStatusMessageChange,
   isGenerating,
   onReset,
+  onRuntimeProgressChange,
   onNextPuzzleDraftChange,
   onSeedLoadInputChange,
   onNewPuzzle,
@@ -101,11 +102,10 @@ export const ImageTilePuzzleWorkspace = ({
     onStatusMessageChange(action === "undo" ? "Undid last puzzle action." : "Redid last puzzle action.");
   };
 
-  const resetPuzzle = () => {
-    onReset();
+  const resetPuzzle = () => onReset(() => {
     setResetVersion((current) => current + 1);
     setCompletionState({ puzzleInstanceId: imagePuzzle?.id ?? null, solved: false });
-  };
+  });
 
   const newPuzzleControl = imagePuzzle ? (
     <ImageTileNewPuzzleControl
@@ -178,6 +178,7 @@ export const ImageTilePuzzleWorkspace = ({
         onCausativeInput={completionPresentation.recordCausativeInput}
         onCompletionAnimationEnd={completionPresentation.completePresentation}
         onSolvedChange={handleSolvedChange}
+        onProgressChange={(report) => onRuntimeProgressChange(imagePuzzle.id, report)}
         onHistoryAvailabilityChange={handleHistoryAvailabilityChange}
         onHistoryControllerChange={handleHistoryControllerChange}
       />
@@ -191,7 +192,7 @@ export const ImageTilePuzzleWorkspace = ({
       ariaLabel={`${selectedDefinition.title} solved`}
       disabled={isGenerating}
       onReset={resetPuzzle}
-      onNewPuzzle={onNewPuzzle}
+      onNewPuzzle={() => onNewPuzzle()}
     />
   ) : imagePuzzle ? (
     <div class="puzzle-actions">
