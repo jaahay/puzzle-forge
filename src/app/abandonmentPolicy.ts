@@ -3,6 +3,7 @@ import type { JigsawAssemblyProgress } from "../games/jigsaw/assembly";
 import { isJigsawAssemblySolved } from "../games/jigsaw/assembly";
 import { isSolitaireSolved } from "./solitaireTerminal";
 import { isGridPuzzleSolved } from "../interactions/gridChecking";
+import { generatedPuzzleMatchesIdentity, type GenerationIdentity } from "./generationIdentity";
 
 export type WorkspaceProgressReport = { hasProgress: boolean; terminal: boolean };
 export type IdentifiedWorkspaceProgress = WorkspaceProgressReport & { puzzleInstanceId: string };
@@ -61,8 +62,10 @@ export const planAbandonmentAction = (
   runtime: AbandonmentRuntime,
   action: DestructivePuzzleAction,
   proceed: () => void,
+  targetIdentity?: GenerationIdentity,
 ): PendingAbandonmentAction | null => {
-  if (!puzzle || !needsAbandonmentConfirmation(puzzle, runtime)) {
+  const sameTarget = action === "new" && targetIdentity && generatedPuzzleMatchesIdentity(puzzle, targetIdentity);
+  if (!puzzle || sameTarget || !needsAbandonmentConfirmation(puzzle, runtime)) {
     proceed();
     return null;
   }

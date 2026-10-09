@@ -182,6 +182,9 @@ export const JigsawWorkspace = ({
         onAssemblyChange={onJigsawAssemblyChange}
         onSolvedChange={handleSolvedChange}
         onHistoryAvailabilityChange={handleHistoryAvailabilityChange}
+        onProgressChange={(report) => {
+          if (puzzleInstanceId) onRuntimeProgressChange(puzzleInstanceId, report);
+        }}
         onHistoryControllerChange={handleHistoryControllerChange}
         completionPhase={completion.phase}
         onCausativeInput={completion.recordCausativeInput}

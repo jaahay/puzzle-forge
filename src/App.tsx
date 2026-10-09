@@ -180,11 +180,13 @@ export const App = () => {
   };
 
   const setAppRoute = (nextRoute: AppRoute, behavior: NavigationBehavior = {}) => {
+    setPendingAbandonment(null);
     if (behavior.pushHistory !== false) pushAppRoute(nextRoute);
     setRoute(nextRoute);
   };
 
   const replaceCurrentRoute = (nextRoute: AppRoute) => {
+    setPendingAbandonment(null);
     replaceAppRoute(nextRoute);
     setRoute(nextRoute);
   };
@@ -553,6 +555,7 @@ export const App = () => {
   };
 
   routeNavigationHandlerRef.current = (nextRoute) => {
+    setPendingAbandonment(null);
     if (nextRoute.kind === "puzzle") {
       selectPuzzle(nextRoute.puzzleId, { pushHistory: false });
     } else if (nextRoute.kind === "resource") {
@@ -665,7 +668,7 @@ export const App = () => {
     workspaceProgressRef.current = { puzzleInstanceId, ...report };
   };
 
-  const requestDestructiveAction = (action: "new" | "reset", proceed: () => void) => {
+  const requestDestructiveAction = (action: "new" | "reset", proceed: () => void, targetIdentity?: GenerationIdentity) => {
     const assembly = puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw" &&
       jigsawProgress?.puzzleInstanceId === puzzle.id ? jigsawProgress.assembly : null;
     const pending = planAbandonmentAction(puzzle, {
@@ -673,7 +676,7 @@ export const App = () => {
       cardStacks: solitaire.cardStacks,
       jigsawAssembly: assembly,
       workspaceProgress: workspaceProgressRef.current,
-    }, action, proceed);
+    }, action, proceed, targetIdentity);
     if (pending) setPendingAbandonment(pending);
   };
 
@@ -728,6 +731,21 @@ export const App = () => {
     }, behavior);
   };
 
+  const requestNewSettings = (settings: GenerationSettings, afterStart?: () => void) => {
+    const identity = resolveGenerationIdentity({
+      puzzleId: selectedPuzzleId,
+      currentPuzzle: puzzle,
+      runtimeSettings: generationDefaults,
+      settings,
+      makeSeed: makeRandomSeed,
+    });
+    requestDestructiveAction("new", () => {
+      rememberNextPuzzleDraft();
+      commitGenerationSettings(settings);
+      afterStart?.();
+    }, identity);
+  };
+
   const createNewPuzzle = (behavior: GenerationBehavior) => {
     const randomizedDraft = randomizeNextPuzzleArtwork(selectedPuzzleId, nextPuzzleDraft);
     updateNextPuzzleDraft(randomizedDraft);
@@ -747,21 +765,13 @@ export const App = () => {
   const loadSeededPuzzle = (afterStart?: () => void) => {
     const nextSeed = seedLoadInput.trim();
     if (!nextSeed) return;
-    requestDestructiveAction("new", () => {
-      rememberNextPuzzleDraft();
-      commitGenerationSettings({ ...nextPuzzleDraft, seed: nextSeed });
-      afterStart?.();
-    });
+    requestNewSettings({ ...nextPuzzleDraft, seed: nextSeed }, afterStart);
   };
 
-  const loadToday = (afterStart?: () => void) => requestDestructiveAction("new", () => {
-    rememberNextPuzzleDraft();
-    commitGenerationSettings({
-      ...nextPuzzleDraft,
-      provenance: { source: "daily", dateStamp: getLocalDateStamp() },
-    });
-    afterStart?.();
-  });
+  const loadToday = (afterStart?: () => void) => requestNewSettings({
+    ...nextPuzzleDraft,
+    provenance: { source: "daily", dateStamp: getLocalDateStamp() },
+  }, afterStart);
 
   const handleCheck = () => { if (!puzzle) return; puzzle.kind === "cards" ? solitaire.checkSolitaire() : grid.checkGrid(puzzle, setStatusMessage); };
   const workspaceIsGenerating = generation.isGenerating || (!puzzle && selectedPuzzleIsGeneratable && !isHomeSelected && !puzzleLinkError);

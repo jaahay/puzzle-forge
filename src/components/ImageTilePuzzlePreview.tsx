@@ -264,6 +264,15 @@ export const ImageTilePuzzlePreview = ({
     });
   }, [onHistoryAvailabilityChange]);
 
+  const publishProgress = (current: ImageTileRuntimeState) => {
+    const progress = current.progress;
+    const hasProgress = progress.tiles.some((tile) =>
+      puzzle.tiles.find((initial) => initial.id === tile.id)?.currentIndex !== tile.currentIndex) ||
+      (isSliding && progress.emptyIndex !== puzzle.emptyIndex);
+    const terminal = isImageTileSolved(progress.tiles, progress.emptyIndex, isSliding ? boardCellCount : undefined);
+    onProgressChange?.({ hasProgress, terminal });
+  };
+
   const commitRuntime = useCallback((
     transition: (current: ImageTileRuntimeState) => ImageTileRuntimeState,
   ) => {
@@ -274,6 +283,7 @@ export const ImageTilePuzzlePreview = ({
     runtimeRef.current = next;
     setRuntime(next);
     publishHistoryAvailability(next);
+    publishProgress(next);
     return next;
   }, [publishHistoryAvailability]);
 
@@ -307,6 +317,7 @@ export const ImageTilePuzzlePreview = ({
     runtimeRef.current = restored;
     setRuntime(restored);
     publishHistoryAvailability(restored);
+    publishProgress(restored);
     setSelectedTileId(null);
     return true;
   }, [canHistoryAction, publishHistoryAvailability]);

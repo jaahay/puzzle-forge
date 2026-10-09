@@ -101,6 +101,7 @@ type TilePuzzlePreviewProps = {
   onAssemblyChange?: (assembly: JigsawAssemblyProgress) => void;
   onSolvedChange?: (solved: boolean) => void;
   onHistoryAvailabilityChange?: (availability: JigsawHistoryAvailability) => void;
+  onProgressChange?: (report: { hasProgress: boolean; terminal: boolean }) => void;
   onHistoryControllerChange?: (controller: JigsawHistoryController | null) => void;
   completionPhase: CompletionPresentationPhase;
   onCausativeInput: () => void;
@@ -191,6 +192,7 @@ export const TilePuzzlePreview = ({
   onAssemblyChange,
   onSolvedChange,
   onHistoryAvailabilityChange,
+  onProgressChange,
   onHistoryControllerChange,
   completionPhase,
   onCausativeInput,
@@ -262,7 +264,14 @@ export const TilePuzzlePreview = ({
     blocked = false,
   ) => {
     onHistoryAvailabilityChange?.(getJigsawHistoryAvailability(history, blocked));
-  }, [onHistoryAvailabilityChange]);
+    const current = placementStateRef.current;
+    if (current?.puzzleId === puzzle.id) {
+      onProgressChange?.({
+        hasProgress: current.assembly.joinedComponents.length > 0 || history.undoStack.length > 0,
+        terminal: isJigsawAssemblySolved(current.assembly, puzzle.tiles.length),
+      });
+    }
+  }, [onHistoryAvailabilityChange, onProgressChange, puzzle.id, puzzle.tiles.length]);
 
   const replaceHistory = useCallback((history: JigsawHistoryState) => {
     historyRef.current = history;
@@ -271,7 +280,11 @@ export const TilePuzzlePreview = ({
 
   const publishAssemblyProgress = useCallback((assembly: JigsawAssemblyProgress) => {
     onAssemblyChange?.(cloneJigsawAssemblyProgress(assembly));
-  }, [onAssemblyChange]);
+    onProgressChange?.({
+      hasProgress: assembly.joinedComponents.length > 0 || historyRef.current.undoStack.length > 0,
+      terminal: isJigsawAssemblySolved(assembly, puzzle.tiles.length),
+    });
+  }, [onAssemblyChange, onProgressChange, puzzle.tiles.length]);
 
   const updatePlacementState = useCallback((
     updater: (current: PlacementState | null) => PlacementState | null,

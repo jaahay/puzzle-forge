@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import type { GeneratedPuzzle, PuzzleCell, CardStack } from "../catalog/types";
 import { needsAbandonmentConfirmation, planAbandonmentAction, type AbandonmentRuntime } from "./abandonmentPolicy";
@@ -80,5 +81,38 @@ describe("abandonment action lifecycle", () => {
     expect(planAbandonmentAction(grid, runtime({ gridCells: [{ ...changed[0], value: "" }] }), "reset", () => { starts += 1; })).toBeNull();
     expect(planAbandonmentAction(grid, runtime({ gridCells: [{ ...changed[0], value: "1" }] }), "reset", () => { starts += 1; })).toBeNull();
     expect(starts).toBe(2);
+  });
+});
+
+describe("target identity and navigation lifecycle", () => {
+  const samePuzzle = { ...grid, puzzleId: "logic-grid", seed: "same", width: 1, height: 1 } as GeneratedPuzzle;
+  const currentCells = [{ row: 0, column: 0, value: "X", locked: false }] as PuzzleCell[];
+  const sameIdentity = { puzzleId: "logic-grid", seed: "same", width: 1, height: 1 } as Parameters<typeof planAbandonmentAction>[4];
+  it("does not request confirmation when a seeded or daily target is already active", () => {
+    let calls = 0;
+    const pending = planAbandonmentAction(samePuzzle, runtime({ gridCells: currentCells }), "new", () => { calls++; }, sameIdentity);
+    expect(pending).toBeNull();
+    expect(calls).toBe(1);
+  });
+  it("retains confirmation for a genuinely different target", () => {
+    let calls = 0;
+    const target = { ...sameIdentity!, seed: "different" };
+    const pending = planAbandonmentAction(samePuzzle, runtime({ gridCells: currentCells }), "new", () => { calls++; }, target);
+    expect(pending?.action).toBe("new");
+    expect(calls).toBe(0);
+  });
+  it("invalidates the pending dialog on route commits and browser navigation", () => {
+    const app = readFileSync(new URL("../App.tsx", import.meta.url), "utf8");
+    for (const start of [
+      "const setAppRoute = (",
+      "const replaceCurrentRoute = (",
+      "routeNavigationHandlerRef.current = (",
+    ]) {
+      const location = app.indexOf(start);
+      expect(location).toBeGreaterThanOrEqual(0);
+      expect(app.slice(location, location + 210)).toContain("setPendingAbandonment(null)");
+    }
+    expect(app).toContain("const requestNewSettings = (");
+    expect(app).toContain('}, identity);');
   });
 });
