@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "preact/hooks";
+import { useCallback, useRef, useState } from "preact/hooks";
 import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
 import { defaultJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
 import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
@@ -96,15 +96,6 @@ export const JigsawWorkspace = ({
       action === "undo" ? "Undid last puzzle action." : "Redid last puzzle action.",
     );
   };
-
-  useEffect(() => {
-    if (!puzzleInstanceId) return;
-    onRuntimeProgressChange(puzzleInstanceId, {
-      hasProgress: Boolean(jigsawAssembly?.joinedComponents.length) ||
-        (historyAvailability.puzzleInstanceId === puzzleInstanceId && historyAvailability.canUndo),
-      terminal: isSolved,
-    });
-  }, [puzzleInstanceId, jigsawAssembly, historyAvailability, isSolved, onRuntimeProgressChange]);
 
   const resetJigsaw = () => onReset(() => {
     if (puzzleInstanceId) setCompletionState({ puzzleInstanceId, solved: false });

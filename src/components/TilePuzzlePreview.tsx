@@ -54,6 +54,7 @@ import {
   type JigsawWorldLayout,
 } from "../games/jigsaw/placement";
 import {
+  hasMeaningfulJigsawWorkspaceProgress,
   resetJigsawWorkspaceState,
   resolveInitialJigsawWorkspaceState,
   restageJigsawWorkspaceState,
@@ -223,6 +224,7 @@ export const TilePuzzlePreview = ({
   const [placementState, setPlacementState] = useState<PlacementState | null>(null);
   const placementStateRef = useRef<PlacementState | null>(null);
   const historyRef = useRef<JigsawHistoryState>(makeEmptyJigsawHistoryState());
+  const baselinePlacementsRef = useRef<{ puzzleId: string; placements: JigsawPlacement[] } | null>(null);
   const progressChangeRef = useRef(onProgressChange);
   progressChangeRef.current = onProgressChange;
   const [cameraState, setCameraState] = useState<CameraState | null>(null);
@@ -261,19 +263,28 @@ export const TilePuzzlePreview = ({
     [puzzle.height, puzzle.tiles, puzzle.width],
   );
 
+  const publishCurrentProgress = useCallback(() => {
+    const current = placementStateRef.current;
+    if (current?.puzzleId !== puzzle.id) return;
+    const baseline = baselinePlacementsRef.current;
+    progressChangeRef.current?.({
+      hasProgress: hasMeaningfulJigsawWorkspaceProgress(
+        layout,
+        baseline?.puzzleId === puzzle.id ? baseline.placements : null,
+        current.placements,
+        current.assembly,
+      ),
+      terminal: isJigsawAssemblySolved(current.assembly, puzzle.tiles.length),
+    });
+  }, [layout, puzzle.id, puzzle.tiles.length]);
+
   const publishHistoryAvailability = useCallback((
     history: JigsawHistoryState,
     blocked = false,
   ) => {
     onHistoryAvailabilityChange?.(getJigsawHistoryAvailability(history, blocked));
-    const current = placementStateRef.current;
-    if (current?.puzzleId === puzzle.id) {
-      progressChangeRef.current?.({
-        hasProgress: current.assembly.joinedComponents.length > 0 || history.undoStack.length > 0,
-        terminal: isJigsawAssemblySolved(current.assembly, puzzle.tiles.length),
-      });
-    }
-  }, [onHistoryAvailabilityChange, puzzle.id, puzzle.tiles.length]);
+    publishCurrentProgress();
+  }, [onHistoryAvailabilityChange, publishCurrentProgress]);
 
   const replaceHistory = useCallback((history: JigsawHistoryState) => {
     historyRef.current = history;
@@ -282,11 +293,8 @@ export const TilePuzzlePreview = ({
 
   const publishAssemblyProgress = useCallback((assembly: JigsawAssemblyProgress) => {
     onAssemblyChange?.(cloneJigsawAssemblyProgress(assembly));
-    progressChangeRef.current?.({
-      hasProgress: assembly.joinedComponents.length > 0 || historyRef.current.undoStack.length > 0,
-      terminal: isJigsawAssemblySolved(assembly, puzzle.tiles.length),
-    });
-  }, [onAssemblyChange, puzzle.tiles.length]);
+    publishCurrentProgress();
+  }, [onAssemblyChange, publishCurrentProgress]);
 
   const updatePlacementState = useCallback((
     updater: (current: PlacementState | null) => PlacementState | null,
@@ -382,6 +390,7 @@ export const TilePuzzlePreview = ({
     touchPointsRef.current.clear();
     pinchRef.current = null;
     placementStateRef.current = null;
+    baselinePlacementsRef.current = null;
     replaceHistory(makeEmptyJigsawHistoryState());
     setActiveTileId(null);
     setRaisedTileId(null);
@@ -392,17 +401,20 @@ export const TilePuzzlePreview = ({
 
   useEffect(() => {
     if (initialAssembly === null) return;
-    updatePlacementState((current) => {
+    const initialized = updatePlacementState((current) => {
       if (current?.puzzleId === puzzle.id) return current;
-      const initial = resolveInitialJigsawWorkspaceState(
-        initialAssembly,
-        layout,
-        puzzle.tiles,
-        getMeasuredJigsawViewport(stageRef.current),
-      );
-      return initial ? { puzzleId: puzzle.id, ...initial } : current;
+      const stagingViewport = getMeasuredJigsawViewport(stageRef.current);
+      const initial = resolveInitialJigsawWorkspaceState(initialAssembly, layout, puzzle.tiles, stagingViewport);
+      if (!initial) return current;
+      const baseline = resetJigsawWorkspaceState(layout, puzzle.tiles, stagingViewport);
+      if (baseline) baselinePlacementsRef.current = {
+        puzzleId: puzzle.id,
+        placements: baseline.placements.map((placement) => ({ ...placement })),
+      };
+      return { puzzleId: puzzle.id, ...initial };
     });
-  }, [initialAssembly, layout, puzzle.id, puzzle.tiles, updatePlacementState, viewport.height, viewport.width]);
+    if (initialized?.puzzleId === puzzle.id) publishCurrentProgress();
+  }, [initialAssembly, layout, publishCurrentProgress, puzzle.id, puzzle.tiles, updatePlacementState, viewport.height, viewport.width]);
 
   useEffect(() => {
     if (!isUsableJigsawViewport(viewport) || !activePlacements) return;
@@ -587,6 +599,10 @@ export const TilePuzzlePreview = ({
     const next = resetJigsawWorkspaceState(layout, puzzle.tiles, stagingViewport);
     if (!next) return false;
 
+    baselinePlacementsRef.current = {
+      puzzleId: puzzle.id,
+      placements: next.placements.map((placement) => ({ ...placement })),
+    };
     const reset = applyStagedPlacements(
       next.placements,
       next.assembly,

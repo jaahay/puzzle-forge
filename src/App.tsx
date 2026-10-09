@@ -674,6 +674,7 @@ export const App = () => {
     const pending = planAbandonmentAction(puzzle, {
       gridCells: grid.gridCells,
       cardStacks: solitaire.cardStacks,
+      solitaireStats: solitaire.solitaireStats,
       jigsawAssembly: assembly,
       workspaceProgress: workspaceProgressRef.current,
     }, action, proceed, targetIdentity);

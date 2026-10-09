@@ -4,6 +4,7 @@ import { isJigsawAssemblySolved } from "../games/jigsaw/assembly";
 import { isSolitaireSolved } from "./solitaireTerminal";
 import { isGridPuzzleSolved } from "../interactions/gridChecking";
 import { generatedPuzzleMatchesIdentity, type GenerationIdentity } from "./generationIdentity";
+import type { SolitaireStats } from "./session";
 
 export type WorkspaceProgressReport = { hasProgress: boolean; terminal: boolean };
 export type IdentifiedWorkspaceProgress = WorkspaceProgressReport & { puzzleInstanceId: string };
@@ -16,6 +17,7 @@ export type PendingAbandonmentAction = {
 export type AbandonmentRuntime = {
   gridCells: PuzzleCell[] | null;
   cardStacks: CardStack[] | null;
+  solitaireStats: SolitaireStats | null;
   jigsawAssembly: JigsawAssemblyProgress | null;
   workspaceProgress: IdentifiedWorkspaceProgress | null;
 };
@@ -46,7 +48,10 @@ export const needsAbandonmentConfirmation = (puzzle: GeneratedPuzzle | null, run
   }
   if (puzzle.kind === "cards") {
     const stacks = runtime.cardStacks;
-    return Boolean(stacks && !sameCardLayout(stacks, puzzle.stacks) && !isSolitaireSolved(stacks));
+    if (!stacks || isSolitaireSolved(stacks)) return false;
+    const spentLimitedRedeal = puzzle.solitaireVariation.redeals !== "unlimited" &&
+      (runtime.solitaireStats?.recycleCount ?? 0) > 0;
+    return !sameCardLayout(stacks, puzzle.stacks) || spentLimitedRedeal;
   }
   if (puzzle.puzzleId === "jigsaw") {
     const assembly = runtime.jigsawAssembly;

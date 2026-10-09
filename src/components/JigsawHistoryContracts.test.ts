@@ -43,6 +43,12 @@ describe("Jigsaw history integration", () => {
     expect(previewSource.slice(restageStart)).toContain("getStagingActionBaseline()");
   });
 
+  it("reports meaningful current placements instead of treating Undo history as progress", () => {
+    expect(previewSource).toContain("hasMeaningfulJigsawWorkspaceProgress(");
+    expect(previewSource).toContain("baselinePlacementsRef.current = {");
+    expect(workspaceSource).not.toContain("historyAvailability.canUndo),");
+  });
+
   it("binds history commands to the active puzzle instance", () => {
     expect(previewSource).toContain("puzzleInstanceId: puzzle.id");
     expect(workspaceSource).toContain("controller?.puzzleInstanceId === puzzleInstanceId");

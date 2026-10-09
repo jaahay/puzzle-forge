@@ -1,13 +1,14 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import type { GeneratedPuzzle, PuzzleCell, CardStack } from "../catalog/types";
+import type { SolitaireStats } from "./session";
 import { needsAbandonmentConfirmation, planAbandonmentAction, type AbandonmentRuntime } from "./abandonmentPolicy";
 
 const grid = { id: "a", kind: "grid", puzzleId: "sudoku",
   cells: [{ row: 0, column: 0, value: "1", locked: false }],
   answerKey: ["1"] } as unknown as GeneratedPuzzle;
 const runtime = (overrides: Partial<AbandonmentRuntime> = {}): AbandonmentRuntime => ({
-  gridCells: null, cardStacks: null, jigsawAssembly: null, workspaceProgress: null, ...overrides,
+  gridCells: null, cardStacks: null, solitaireStats: null, jigsawAssembly: null, workspaceProgress: null, ...overrides,
 });
 
 describe("meaningful unfinished progress", () => {
@@ -27,10 +28,23 @@ describe("meaningful unfinished progress", () => {
     const stock: CardStack = { id: "stock", title: "Stock", role: "stock", cards: [
       { code: "AC", suit: "clubs", rank: "ace", color: "black", label: "Ace", faceUp: false },
     ] };
-    const card = { ...grid, kind: "cards", puzzleId: "klondike-solitaire", stacks: [stock] } as unknown as GeneratedPuzzle;
+    const card = { ...grid, kind: "cards", puzzleId: "klondike-solitaire", solitaireVariation: { redeals: "unlimited" }, stacks: [stock] } as unknown as GeneratedPuzzle;
     expect(needsAbandonmentConfirmation(card, runtime({ cardStacks: [stock] }))).toBe(false);
     expect(needsAbandonmentConfirmation(card, runtime({ cardStacks: [{ ...stock, cards: [{ ...stock.cards[0], faceUp: true }] }] }))).toBe(true);
     expect(needsAbandonmentConfirmation(card, runtime({ cardStacks: [{ ...stock, role: "foundation", cards: Array.from({ length: 52 }, () => ({ ...stock.cards[0], faceUp: true })) }] }))).toBe(false);
+  });
+  it("protects spent limited redeals, not harmless statistics or unlimited redeals", () => {
+    const cards = [{ id: "stock", title: "Stock", role: "stock", cards: [
+      { code: "AS", suit: "spades", rank: "ace", color: "black", label: "Ace", faceUp: false },
+    ] }] as CardStack[];
+    const stats: SolitaireStats = { moveCount: 20, drawCount: 10, recycleCount: 1, autoMoveCount: 0 };
+    const limited = { ...grid, kind: "cards", puzzleId: "klondike-solitaire",
+      solitaireVariation: { redeals: 1 }, stacks: cards } as unknown as GeneratedPuzzle;
+    const unlimited = { ...limited, solitaireVariation: { redeals: "unlimited" } } as GeneratedPuzzle;
+    expect(needsAbandonmentConfirmation(limited, runtime({ cardStacks: cards, solitaireStats: stats }))).toBe(true);
+    expect(needsAbandonmentConfirmation(unlimited, runtime({ cardStacks: cards, solitaireStats: stats }))).toBe(false);
+    expect(needsAbandonmentConfirmation(limited, runtime({ cardStacks: cards, solitaireStats: { ...stats, recycleCount: 0 } }))).toBe(false);
+    expect(needsAbandonmentConfirmation(limited, runtime({ cardStacks: cards, solitaireStats: { ...stats, moveCount: 0, recycleCount: 0 } }))).toBe(false);
   });
   it("guards joined or moved Jigsaw pieces, but not solved assemblies", () => {
     const jigsaw = { ...grid, kind: "tiles", puzzleId: "jigsaw", tiles: [{ id: "a" }, { id: "b" }, { id: "c" }] } as unknown as GeneratedPuzzle;

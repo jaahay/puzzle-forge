@@ -3,6 +3,7 @@ import type { JigsawPiece } from "../../catalog/types";
 import { getJigsawSolvedPosition, createJigsawWorldLayout } from "./placement";
 import {
   resetJigsawWorkspaceState,
+  hasMeaningfulJigsawWorkspaceProgress,
   resolveInitialJigsawWorkspaceState,
   restageJigsawWorkspaceState,
   restageJigsawWorkspaceSubset,
@@ -110,6 +111,23 @@ describe("Jigsaw workspace state", () => {
     expect(restaged.placements[1]).not.toEqual(placements[1]);
     expect(restaged.placements.slice(2)).toEqual(placements.slice(2));
     expect(restaged.placements[2]).not.toBe(placements[2]);
+  });
+
+  it("protects current piece organization, not historical actions", () => {
+    const layout = createJigsawWorldLayout({ imageWidth: 1200, imageHeight: 900, puzzleWidth: 4, puzzleHeight: 4 });
+    const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index));
+    const initial = resetJigsawWorkspaceState(layout, pieces, { width: 760, height: 560 })!;
+    const neutral = { joinedComponents: [] };
+    const hasProgress = (placements: typeof initial.placements, assembly = neutral) =>
+      hasMeaningfulJigsawWorkspaceProgress(layout, initial.placements, placements, assembly);
+    expect(hasProgress(initial.placements)).toBe(false);
+    const tiny = initial.placements.map((p, i) => i === 0 ? { ...p, worldX: p.worldX + layout.pieceWidth * 0.1 } : p);
+    expect(hasProgress(tiny)).toBe(false);
+    const organized = initial.placements.map((p, i) => i === 0 ? { ...p, worldX: p.worldX + layout.pieceWidth * 0.5 } : p);
+    expect(hasProgress(organized)).toBe(true);
+    expect(hasProgress(initial.placements.map(p => ({ ...p })))).toBe(false);
+    expect(hasProgress(initial.placements, { joinedComponents: [["tile-0", "tile-1"]] })).toBe(true);
+    expect(hasMeaningfulJigsawWorkspaceProgress(layout, null, initial.placements, neutral)).toBe(false);
   });
 
   it("makes Reset destructive while Restage preserves semantic assembly", () => {

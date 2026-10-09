@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { supportsAutomaticGridCompletion, supportsGridActionHistory, supportsReversibleGridReset, usesTransientGridValidation } from "./useGridController";
+import { readFileSync } from "node:fs";
+import { supportsAutomaticGridCompletion, supportsGridActionHistory, usesTransientGridValidation } from "./useGridController";
 
 describe("grid controller history policy", () => {
   it("enables shared action history for Sudoku, Nonogram, Futoshiki, and Word Guess editing", () => {
@@ -9,11 +10,12 @@ describe("grid controller history policy", () => {
     expect(supportsGridActionHistory("word-guess")).toBe(true);
   });
 
-  it("keeps Word Guess Reset outside reversible history", () => {
-    expect(supportsReversibleGridReset("sudoku")).toBe(true);
-    expect(supportsReversibleGridReset("nonogram")).toBe(true);
-    expect(supportsReversibleGridReset("futoshiki")).toBe(true);
-    expect(supportsReversibleGridReset("word-guess")).toBe(false);
+  it("clears both Undo and Redo on Reset for every grid type", () => {
+    const source = readFileSync(new URL("./useGridController.ts", import.meta.url), "utf8");
+    const reset = source.slice(source.indexOf("const resetCurrentGrid = ("), source.indexOf("const undoGridAction = ("));
+    expect(reset).toContain("clearGridHistory();");
+    expect(reset).not.toContain("recordGridHistoryEntry(");
+    expect(reset).not.toContain("supportsReversibleGridReset");
   });
 });
 
