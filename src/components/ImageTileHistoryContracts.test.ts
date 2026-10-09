@@ -54,7 +54,7 @@ describe("image tile history integration", () => {
     expect(previewSource).not.toContain("slideTileTowardGap(");
   });
 
-  it("treats Reset as one reversible action for both image-tile puzzle types", () => {
+  it("routes Reset through the shared state transition for both image-tile puzzle types", () => {
     expect(previewSource).toContain("resetImageTileAction(");
     expect(previewSource).not.toContain('puzzle.puzzleId !== "tile-swap"');
   });

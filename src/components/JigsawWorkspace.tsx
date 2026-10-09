@@ -188,7 +188,7 @@ export const JigsawWorkspace = ({
         onCompletionAnimationEnd={completion.completePresentation}
         completionDisabled={isGenerating}
         onResetPuzzle={resetJigsaw}
-        onNewPuzzle={onNewPuzzle}
+        onNewPuzzle={() => onNewPuzzle()}
       />
     </section>
   ) : isGenerating ? loadingBoard : null;

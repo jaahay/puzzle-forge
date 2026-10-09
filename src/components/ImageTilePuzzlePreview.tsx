@@ -330,10 +330,14 @@ export const ImageTilePuzzlePreview = ({
     saveImageTileProgress(puzzle, progress);
   }, [progress, puzzle]);
 
+  const hasUnfinishedArrangement = progress.tiles.some((tile) =>
+    puzzle.tiles.find((original) => original.id === tile.id)?.currentIndex !== tile.currentIndex) ||
+    (isSliding && progress.emptyIndex !== puzzle.emptyIndex);
+
   useEffect(() => {
     onSolvedChange?.(isSolved);
-    onProgressChange?.({ hasProgress: progress.moveCount > 0, terminal: isSolved });
-  }, [isSolved, onSolvedChange, onProgressChange, progress.moveCount]);
+    onProgressChange?.({ hasProgress: hasUnfinishedArrangement, terminal: isSolved });
+  }, [isSolved, onSolvedChange, onProgressChange, hasUnfinishedArrangement]);
 
   const moveTile = (tile: TilePuzzlePiece) => {
     if (isSolved) return;

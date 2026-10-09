@@ -31,6 +31,18 @@ describe("Jigsaw history integration", () => {
       .toBeGreaterThanOrEqual(3);
   });
 
+  it("makes Reset a history boundary rather than an undoable placement action", () => {
+    const resetStart = previewSource.indexOf("const resetPieces = () => {");
+    const restageStart = previewSource.indexOf("const restagePieces = () => {", resetStart);
+    expect(resetStart).toBeGreaterThan(-1);
+    expect(restageStart).toBeGreaterThan(resetStart);
+    const reset = previewSource.slice(resetStart, restageStart);
+    expect(reset).toContain("null,");
+    expect(reset).toContain("replaceHistory(makeEmptyJigsawHistoryState())");
+    expect(reset).not.toContain("getStagingActionBaseline()");
+    expect(previewSource.slice(restageStart)).toContain("getStagingActionBaseline()");
+  });
+
   it("binds history commands to the active puzzle instance", () => {
     expect(previewSource).toContain("puzzleInstanceId: puzzle.id");
     expect(workspaceSource).toContain("controller?.puzzleInstanceId === puzzleInstanceId");

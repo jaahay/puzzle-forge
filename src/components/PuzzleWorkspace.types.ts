@@ -26,9 +26,9 @@ export type ProspectiveGenerationProps = {
   seedLoadInput: string;
   onNextPuzzleDraftChange: (settings: GenerationSettings) => void;
   onSeedLoadInputChange: (seed: string) => void;
-  onNewPuzzle: () => void;
-  onToday: () => void;
-  onLoadSeed: () => void;
+  onNewPuzzle: (afterStart?: () => void) => void;
+  onToday: (afterStart?: () => void) => void;
+  onLoadSeed: (afterStart?: () => void) => void;
 };
 
 export type GridInteractionProps = {

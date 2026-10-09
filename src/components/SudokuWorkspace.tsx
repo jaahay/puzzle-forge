@@ -200,7 +200,7 @@ export const SudokuWorkspace = ({
         <button
           class="new-puzzle-primary"
           type="button"
-          onClick={onNewPuzzle}
+          onClick={() => onNewPuzzle()}
           disabled={isGenerating}
           tabIndex={isPresentationCompleted ? 0 : -1}
           aria-label="Start a new Sudoku with the remembered settings"

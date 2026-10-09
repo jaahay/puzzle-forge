@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { GeneratedPuzzle, PuzzleCell, CardStack } from "../catalog/types";
-import { needsAbandonmentConfirmation, type AbandonmentRuntime } from "./abandonmentPolicy";
+import { needsAbandonmentConfirmation, planAbandonmentAction, type AbandonmentRuntime } from "./abandonmentPolicy";
 
 const grid = { id: "a", kind: "grid", puzzleId: "sudoku",
   cells: [{ row: 0, column: 0, value: "1", locked: false }],
@@ -43,5 +43,42 @@ describe("meaningful unfinished progress", () => {
     expect(needsAbandonmentConfirmation(tiles, runtime({ workspaceProgress: { puzzleInstanceId: "stale", hasProgress: true, terminal: false } }))).toBe(false);
     expect(needsAbandonmentConfirmation(tiles, runtime({ workspaceProgress: { puzzleInstanceId: tiles.id, hasProgress: true, terminal: false } }))).toBe(true);
     expect(needsAbandonmentConfirmation(tiles, runtime({ workspaceProgress: { puzzleInstanceId: tiles.id, hasProgress: true, terminal: true } }))).toBe(false);
+  });
+});
+
+// Exercise the shared action boundary without relying on browser event timing.
+describe("abandonment action lifecycle", () => {
+  const changed = [{ row: 0, column: 0, value: "2", locked: false }] as PuzzleCell[];
+  it("runs New immediately when untouched", () => {
+    let starts = 0;
+    const pending = planAbandonmentAction(grid, runtime({ gridCells: [{ ...changed[0], value: "" }] }), "new", () => { starts += 1; });
+    expect(pending).toBeNull();
+    expect(starts).toBe(1);
+  });
+  it("cancelled New or Reset does not execute its pending action", () => {
+    for (const action of ["new", "reset"] as const) {
+      let starts = 0;
+      const pending = planAbandonmentAction(grid, runtime({ gridCells: changed }), action, () => { starts += 1; });
+      expect(pending?.action).toBe(action);
+      expect(pending?.puzzleInstanceId).toBe(grid.id);
+      expect(starts).toBe(0);
+      // Cancel drops the transient pending action without invoking proceed.
+      expect(starts).toBe(0);
+    }
+  });
+  it("confirmed New and Reset execute at most once", () => {
+    for (const action of ["new", "reset"] as const) {
+      let starts = 0;
+      const pending = planAbandonmentAction(grid, runtime({ gridCells: changed }), action, () => { starts += 1; });
+      pending?.proceed();
+      pending?.proceed();
+      expect(starts).toBe(1);
+    }
+  });
+  it("runs Reset immediately for an untouched or solved grid", () => {
+    let starts = 0;
+    expect(planAbandonmentAction(grid, runtime({ gridCells: [{ ...changed[0], value: "" }] }), "reset", () => { starts += 1; })).toBeNull();
+    expect(planAbandonmentAction(grid, runtime({ gridCells: [{ ...changed[0], value: "1" }] }), "reset", () => { starts += 1; })).toBeNull();
+    expect(starts).toBe(2);
   });
 });

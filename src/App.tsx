@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { getPuzzleAvailability } from "./catalog/puzzleAvailability";
-import { needsAbandonmentConfirmation, type IdentifiedWorkspaceProgress, type WorkspaceProgressReport } from "./app/abandonmentPolicy";
+import { planAbandonmentAction, type IdentifiedWorkspaceProgress, type PendingAbandonmentAction, type WorkspaceProgressReport } from "./app/abandonmentPolicy";
 import { getPuzzleDefinition, isGeneratable } from "./catalog/puzzleCatalog";
 import type { GeneratedPuzzle, PuzzleId } from "./catalog/types";
 import { AboutView } from "./components/AboutView";
 import { AppShell } from "./components/AppShell";
-import { AbandonmentDialog, type DestructivePuzzleAction } from "./components/AbandonmentDialog";
+import { AbandonmentDialog } from "./components/AbandonmentDialog";
 import { ChangelogView } from "./components/ChangelogView";
 import { NotFoundView } from "./components/NotFoundView";
 import { PuzzleCatalog } from "./components/PuzzleCatalog";
@@ -118,7 +118,7 @@ export const App = () => {
   const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
   const [jigsawProgress, setJigsawProgress] = useState<{ puzzleInstanceId: string; assembly: JigsawAssemblyProgress } | null>(null);
   const [puzzleLinkError, setPuzzleLinkError] = useState<string | null>(null);
-  const [pendingAbandonment, setPendingAbandonment] = useState<{ action: DestructivePuzzleAction; puzzleInstanceId: string; proceed: () => void } | null>(null);
+  const [pendingAbandonment, setPendingAbandonment] = useState<PendingAbandonmentAction | null>(null);
   const workspaceProgressRef = useRef<IdentifiedWorkspaceProgress | null>(null);
   const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(true);
   const [hasSelectedPuzzle, setHasSelectedPuzzle] = useState(shouldStartOnPuzzleSurface);
@@ -665,19 +665,16 @@ export const App = () => {
     workspaceProgressRef.current = { puzzleInstanceId, ...report };
   };
 
-  const requestDestructiveAction = (action: DestructivePuzzleAction, proceed: () => void) => {
+  const requestDestructiveAction = (action: "new" | "reset", proceed: () => void) => {
     const assembly = puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw" &&
       jigsawProgress?.puzzleInstanceId === puzzle.id ? jigsawProgress.assembly : null;
-    if (!needsAbandonmentConfirmation(puzzle, {
+    const pending = planAbandonmentAction(puzzle, {
       gridCells: grid.gridCells,
       cardStacks: solitaire.cardStacks,
       jigsawAssembly: assembly,
       workspaceProgress: workspaceProgressRef.current,
-    })) {
-      proceed();
-      return;
-    }
-    if (puzzle) setPendingAbandonment({ action, puzzleInstanceId: puzzle.id, proceed });
+    }, action, proceed);
+    if (pending) setPendingAbandonment(pending);
   };
 
   const requestResetCurrentPuzzle = (afterReset?: () => void) =>
@@ -737,28 +734,33 @@ export const App = () => {
     commitGenerationSettings({ ...randomizedDraft, seed: makeRandomSeed() }, behavior);
   };
 
-  const generateNextPuzzle = () => requestDestructiveAction("new", () => createNewPuzzle({ preserveScroll: true, resourceHistory: "push" }));
+  const generateNextPuzzle = (afterStart?: () => void) => requestDestructiveAction("new", () => {
+    createNewPuzzle({ preserveScroll: true, resourceHistory: "push" });
+    afterStart?.();
+  });
 
   const recoverUnavailablePuzzle = () => {
     replaceCurrentRoute({ kind: "puzzle", puzzleId: selectedPuzzleId });
     createNewPuzzle({ resourceHistory: "replace" });
   };
 
-  const loadSeededPuzzle = () => {
+  const loadSeededPuzzle = (afterStart?: () => void) => {
     const nextSeed = seedLoadInput.trim();
     if (!nextSeed) return;
     requestDestructiveAction("new", () => {
       rememberNextPuzzleDraft();
       commitGenerationSettings({ ...nextPuzzleDraft, seed: nextSeed });
+      afterStart?.();
     });
   };
 
-  const loadToday = () => requestDestructiveAction("new", () => {
+  const loadToday = (afterStart?: () => void) => requestDestructiveAction("new", () => {
     rememberNextPuzzleDraft();
     commitGenerationSettings({
       ...nextPuzzleDraft,
       provenance: { source: "daily", dateStamp: getLocalDateStamp() },
     });
+    afterStart?.();
   });
 
   const handleCheck = () => { if (!puzzle) return; puzzle.kind === "cards" ? solitaire.checkSolitaire() : grid.checkGrid(puzzle, setStatusMessage); };

@@ -6,6 +6,12 @@ import { isGridPuzzleSolved } from "../interactions/gridChecking";
 
 export type WorkspaceProgressReport = { hasProgress: boolean; terminal: boolean };
 export type IdentifiedWorkspaceProgress = WorkspaceProgressReport & { puzzleInstanceId: string };
+export type DestructivePuzzleAction = "new" | "reset";
+export type PendingAbandonmentAction = {
+  action: DestructivePuzzleAction;
+  puzzleInstanceId: string;
+  proceed: () => void;
+};
 export type AbandonmentRuntime = {
   gridCells: PuzzleCell[] | null;
   cardStacks: CardStack[] | null;
@@ -47,4 +53,27 @@ export const needsAbandonmentConfirmation = (puzzle: GeneratedPuzzle | null, run
       !(assembly && isJigsawAssemblySolved(assembly, puzzle.tiles.length)) && !reported?.terminal;
   }
   return Boolean(reported?.hasProgress && !reported.terminal);
+};
+
+// The transient request is discarded on cancellation and consumed at most once on confirmation.
+export const planAbandonmentAction = (
+  puzzle: GeneratedPuzzle | null,
+  runtime: AbandonmentRuntime,
+  action: DestructivePuzzleAction,
+  proceed: () => void,
+): PendingAbandonmentAction | null => {
+  if (!puzzle || !needsAbandonmentConfirmation(puzzle, runtime)) {
+    proceed();
+    return null;
+  }
+  let consumed = false;
+  return {
+    action,
+    puzzleInstanceId: puzzle.id,
+    proceed: () => {
+      if (consumed) return;
+      consumed = true;
+      proceed();
+    },
+  };
 };

@@ -199,7 +199,7 @@ export const GridPuzzleWorkspace = ({
           onSubmitGuess={onCheck}
           onCommitCurrentGuess={onCommitGridHistory}
           onReset={onReset}
-          onNewPuzzle={onNewPuzzle}
+          onNewPuzzle={() => onNewPuzzle()}
           disabled={isGenerating}
         />
       ) : puzzle.puzzleId === "futoshiki" && gridCells ? (
@@ -233,7 +233,7 @@ export const GridPuzzleWorkspace = ({
           ariaLabel={`${selectedDefinition.title} solved`}
           disabled={isGenerating}
           onReset={() => onReset()}
-          onNewPuzzle={onNewPuzzle}
+          onNewPuzzle={() => onNewPuzzle()}
         />
       ) : (
         <div class={`puzzle-actions ${isNonogram ? "nonogram-current-actions" : ""}`.trim()}>

@@ -572,12 +572,14 @@ export const TilePuzzlePreview = ({
     const next = resetJigsawWorkspaceState(layout, puzzle.tiles, stagingViewport);
     if (!next) return false;
 
-    return applyStagedPlacements(
+    const reset = applyStagedPlacements(
       next.placements,
       next.assembly,
-      getStagingActionBaseline(),
+      null,
       stagingViewport,
     );
+    if (reset) replaceHistory(makeEmptyJigsawHistoryState());
+    return reset;
   };
 
   const restagePieces = () => {

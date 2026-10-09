@@ -147,11 +147,12 @@ export const resetImageTileAction = (
   runtime: ImageTileActionRuntime,
   initialState: ImageTileActionState,
 ): ImageTileActionRuntime | null => {
-  if (sameImageTileActionState(runtime.state, initialState)) return null;
+  if (sameImageTileActionState(runtime.state, initialState) &&
+      runtime.history.undoStack.length === 0 && runtime.history.redoStack.length === 0) return null;
 
   return {
     state: cloneImageTileActionState(initialState),
-    history: pushImageTileHistoryEntry(runtime.history, runtime.state),
+    history: makeEmptyImageTileHistoryState(),
   };
 };
 

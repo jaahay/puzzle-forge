@@ -9,9 +9,9 @@ type NewPuzzleCommandActionOptions = {
   disabled: boolean;
   seedLoadInput: string;
   closeOptions: (restoreFocus?: boolean) => void;
-  onNewPuzzle: () => void;
-  onToday: () => void;
-  onLoadSeed: () => void;
+  onNewPuzzle: (afterStart?: () => void) => void;
+  onToday: (afterStart?: () => void) => void;
+  onLoadSeed: (afterStart?: () => void) => void;
   renewSeedCandidate: () => void;
 };
 
@@ -26,21 +26,24 @@ export const createNewPuzzleCommandActions = ({
 }: NewPuzzleCommandActionOptions) => ({
   startRandomPuzzle: (restoreMenuFocus = false) => {
     if (disabled) return;
-    closeOptions(restoreMenuFocus);
-    onNewPuzzle();
-    renewSeedCandidate();
+    onNewPuzzle(() => {
+      closeOptions(restoreMenuFocus);
+      renewSeedCandidate();
+    });
   },
   startToday: () => {
     if (disabled) return;
-    closeOptions(true);
-    onToday();
-    renewSeedCandidate();
+    onToday(() => {
+      closeOptions(true);
+      renewSeedCandidate();
+    });
   },
   loadSeed: () => {
     if (disabled || !seedLoadInput.trim()) return;
-    closeOptions(true);
-    onLoadSeed();
-    renewSeedCandidate();
+    onLoadSeed(() => {
+      closeOptions(true);
+      renewSeedCandidate();
+    });
   },
 });
 
@@ -56,9 +59,9 @@ type NewPuzzleCommandProps = {
   info?: ComponentChildren;
   panelClassName?: string;
   onSeedLoadInputChange: (seed: string) => void;
-  onNewPuzzle: () => void;
-  onToday: () => void;
-  onLoadSeed: () => void;
+  onNewPuzzle: (afterStart?: () => void) => void;
+  onToday: (afterStart?: () => void) => void;
+  onLoadSeed: (afterStart?: () => void) => void;
 };
 
 export const NewPuzzleCommand = ({
