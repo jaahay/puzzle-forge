@@ -117,7 +117,7 @@ describe("Jigsaw workspace state", () => {
     const layout = createJigsawWorldLayout({ imageWidth: 1200, imageHeight: 900, puzzleWidth: 4, puzzleHeight: 4 });
     const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index));
     const initial = resetJigsawWorkspaceState(layout, pieces, { width: 760, height: 560 })!;
-    const neutral = { joinedComponents: [] };
+    const neutral: { joinedComponents: string[][] } = { joinedComponents: [] };
     const hasProgress = (placements: typeof initial.placements, assembly = neutral) =>
       hasMeaningfulJigsawWorkspaceProgress(layout, initial.placements, placements, assembly);
     expect(hasProgress(initial.placements)).toBe(false);
