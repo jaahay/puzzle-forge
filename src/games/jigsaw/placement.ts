@@ -708,9 +708,9 @@ export const createJigsawWorkingFitCamera = (
 
   // The automatic camera is a working view, not Show all. Fit the available
   // neighborhood when possible, but don't shrink ordinary pieces to thumbnails
-  // to include an entire staging tray. Around 5-6 pieces across is a useful
+  // to include an entire staging tray. Around 4-5 pieces across is a useful
   // touch-scale target, regardless of the artwork's aspect ratio.
-  const readablePiecePixels = Math.min(64, usableWidth / 5.5, usableHeight / 4.5);
+  const readablePiecePixels = Math.min(72, usableWidth / 4.5, usableHeight / 4.5);
   const ordinaryPieceExtent = Math.sqrt(layout.pieceWidth * layout.pieceHeight);
   const minimumWorkingZoom = clamp(
     readablePiecePixels / Math.max(1, ordinaryPieceExtent),

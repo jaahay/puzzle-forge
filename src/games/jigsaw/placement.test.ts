@@ -441,7 +441,7 @@ describe("Jigsaw camera", () => {
     expect(workingBounds.height).toBeGreaterThanOrEqual(compactLayout.boardHeight);
     expect(workingCamera.zoom).toBeGreaterThan(occupiedCamera.zoom);
     expect(workingCamera.zoom).toBeLessThanOrEqual(1.25);
-    expect(workingCamera.zoom * Math.sqrt(compactLayout.pieceWidth * compactLayout.pieceHeight)).toBeGreaterThan(50);
+    expect(workingCamera.zoom * Math.sqrt(compactLayout.pieceWidth * compactLayout.pieceHeight)).toBeGreaterThan(68);
 
     // Working view is deliberately allowed to crop distant staging inventory.
     const allPieces = getScreenBounds(occupiedBounds, workingCamera, portraitViewport);
@@ -469,8 +469,8 @@ describe("Jigsaw camera", () => {
     const placements = createInitialJigsawPlacements(portraitLayout, pieces, size);
     const camera = createJigsawWorkingFitCamera(portraitLayout, size, placements, 28, insets, pieces);
     const targetPixels = Math.min(
-      64,
-      (size.width - (insets.left ?? 0) - (insets.right ?? 0) - 56) / 5.5,
+      72,
+      (size.width - (insets.left ?? 0) - (insets.right ?? 0) - 56) / 4.5,
       (size.height - (insets.top ?? 0) - (insets.bottom ?? 0) - 56) / 4.5,
     );
     expect(camera.zoom * Math.sqrt(portraitLayout.pieceWidth * portraitLayout.pieceHeight))

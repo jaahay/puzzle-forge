@@ -36,6 +36,17 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).not.toContain("displayMode.toggleBrowserFullscreen");
   });
 
+  it("stretches normal-mode board and panel to the full play-surface width before measuring the camera", () => {
+    // The shared play-surface grid centers children. Without explicit width,
+    // the Jigsaw board shrink-wraps to the control row (~220 CSS px on phones).
+    // That starves the working-fit camera even when the outer viewport is 390px.
+    const normalBoard = cssRule(jigsawCss, ".jigsaw-workspace:not(.is-immersive) .workspace-layout-board,");
+    expect(normalBoard).toContain(".jigsaw-workspace:not(.is-immersive) .jigsaw-puzzle-panel");
+    expect(normalBoard).toContain("width: 100%;");
+    expect(normalBoard).toContain("box-sizing: border-box;");
+    expect(jigsawPreviewSource).toContain('class="tile-puzzle-preview"');
+  });
+
   it("keeps the shared immersive shell generic while Jigsaw alone takes the one-row overlay composition", () => {
     expect(imageTileWorkspaceSource).toContain("enableImmersive");
     const sharedLayoutRule = cssRule(immersiveCss, ".puzzle-workspace-layout.is-immersive {");

@@ -5,6 +5,12 @@
   width: 100%;
 }
 
+.jigsaw-workspace:not(.is-immersive) .workspace-layout-board,
+.jigsaw-workspace:not(.is-immersive) .jigsaw-puzzle-panel {
+  box-sizing: border-box;
+  width: 100%;
+}
+
 .jigsaw-workspace:not(.is-immersive) .tile-puzzle-preview {
   position: relative;
   grid-template-columns: auto minmax(0, 1fr) auto;
