@@ -480,7 +480,7 @@ export const TilePuzzlePreview = ({
     setCamera(nextCamera);
   }, [layout, puzzle.id, viewport.height, viewport.width]);
 
-  const fitWorkingView = () => {
+  const fitVisiblePieces = () => {
     if (!isUsableJigsawViewport(viewport)) return;
     const current = placementStateRef.current;
     if (!current || current.puzzleId !== puzzle.id) return;
@@ -490,9 +490,9 @@ export const TilePuzzlePreview = ({
     if (placements.length === 0) return;
     cameraWasUserAdjustedRef.current = true;
     const insets = getCurrentFitInsets();
-    setCamera(focusedSection
-      ? createJigsawOccupiedFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles)
-      : createJigsawWorkingFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles));
+    // Fit means an overview of all staged pieces and board. The first click
+    // must differ from the intentionally cropped, readable opening work view.
+    setCamera(createJigsawOccupiedFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles));
   };
 
   const selectSectionFocus = (sectionId: JigsawCoarseSectionId | null) => {
@@ -661,11 +661,7 @@ export const TilePuzzlePreview = ({
   const placementById = new Map(placements.map((placement) => [placement.id, placement] as const));
   const connectedCount = getJigsawConnectedPieceCount(activeAssembly);
   const isSolved = isJigsawAssemblySolved(activeAssembly, puzzle.tiles.length);
-  const assemblySummary = isSolved
-    ? "Solved"
-    : connectedCount === 0
-      ? "No joins yet"
-      : `${connectedCount} joined`;
+  const assemblySummary = isSolved ? "Solved" : `${connectedCount} joined`;
 
   useEffect(() => {
     if (!isSolved) return;
@@ -1134,28 +1130,59 @@ export const TilePuzzlePreview = ({
 
   return (
     <section class="tile-puzzle-preview" aria-label={`${puzzle.title} jigsaw puzzle`}>
-      <div class="tile-puzzle-summary">
-        <span>{assemblySummary}</span>
-        {focusedSection ? (
-          <span class="jigsaw-section-summary">
-            {jigsawSectionLabels[focusedSection.id]}
-          </span>
+      <div class="jigsaw-workbench-toolbar">
+        {(isSolved || connectedCount > 0 || focusedSection) ? (
+          <div class="tile-puzzle-summary">
+            {(isSolved || connectedCount > 0) ? <span>{assemblySummary}</span> : null}
+            {focusedSection ? (
+              <span class="jigsaw-section-summary">
+                {jigsawSectionLabels[focusedSection.id]}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+        <div class="jigsaw-camera-tools" aria-label="Jigsaw view controls">
+          <button type="button" onClick={() => zoomView("out")} aria-label="Zoom out">−</button>
+          <output class="jigsaw-zoom-level" aria-label="Current zoom">
+            {Math.round(activeCamera.zoom * 100)}%
+          </output>
+          <button type="button" onClick={() => zoomView("in")} aria-label="Zoom in">+</button>
+          <button
+            class="jigsaw-fit-action"
+            type="button"
+            aria-label={focusedSection ? "Fit section" : "Fit all pieces"}
+            title={focusedSection ? "Fit section" : "Fit all pieces"}
+            onClick={fitVisiblePieces}
+          >
+            <JigsawFitIcon />
+          </button>
+          {!displayMode.isExpanded ? (
+            <button
+              class="jigsaw-expand-workspace"
+              type="button"
+              onClick={displayMode.enterExpanded}
+              aria-label="Expand workspace"
+              title="Expand workspace"
+            >
+              <JigsawExpandIcon />
+            </button>
+          ) : null}
+        </div>
+
+        {!isSolved ? (
+          <button
+            class="jigsaw-tools-toggle"
+            type="button"
+            aria-label="Jigsaw tools"
+            title="Jigsaw tools"
+            aria-expanded={showCompactTools}
+            aria-controls={toolsId}
+            onClick={() => setShowCompactTools((current) => !current)}
+          >
+            <JigsawToolsIcon />
+          </button>
         ) : null}
       </div>
-
-      {!isSolved ? (
-        <button
-          class="jigsaw-tools-toggle"
-          type="button"
-          aria-label="Jigsaw tools"
-          title="Jigsaw tools"
-          aria-expanded={showCompactTools}
-          aria-controls={toolsId}
-          onClick={() => setShowCompactTools((current) => !current)}
-        >
-          <JigsawToolsIcon />
-        </button>
-      ) : null}
 
       <div
         id={toolsId}
@@ -1232,34 +1259,6 @@ export const TilePuzzlePreview = ({
               })}
             </div>
           </div>
-        ) : null}
-      </div>
-
-      <div class="jigsaw-camera-tools" aria-label="Jigsaw view controls">
-        <button type="button" onClick={() => zoomView("out")} aria-label="Zoom out">−</button>
-        <output class="jigsaw-zoom-level" aria-label="Current zoom">
-          {Math.round(activeCamera.zoom * 100)}%
-        </output>
-        <button type="button" onClick={() => zoomView("in")} aria-label="Zoom in">+</button>
-        <button
-          class="jigsaw-fit-action"
-          type="button"
-          aria-label="Fit view"
-          title={focusedSection ? "Fit section" : "Return to working view"}
-          onClick={fitWorkingView}
-        >
-          <JigsawFitIcon />
-        </button>
-        {!displayMode.isExpanded ? (
-          <button
-            class="jigsaw-expand-workspace"
-            type="button"
-            onClick={displayMode.enterExpanded}
-            aria-label="Expand workspace"
-            title="Expand workspace"
-          >
-            <JigsawExpandIcon />
-          </button>
         ) : null}
       </div>
 

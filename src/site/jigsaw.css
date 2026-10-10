@@ -13,26 +13,35 @@
 
 .jigsaw-workspace:not(.is-immersive) .tile-puzzle-preview {
   position: relative;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 0.6rem 0.75rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.4rem;
+}
+
+.jigsaw-workspace:not(.is-immersive) .jigsaw-workbench-toolbar {
+  display: flex;
+  grid-column: 1;
+  width: 100%;
+  min-width: 0;
   align-items: center;
+  justify-content: space-between;
+  gap: 0.3rem;
 }
 
 .jigsaw-workspace:not(.is-immersive) .tile-puzzle-summary {
-  grid-column: 1;
-  justify-self: start;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 .jigsaw-workspace:not(.is-immersive) .jigsaw-tools-toggle {
   display: grid;
-  grid-column: 2;
+  flex: 0 0 auto;
   place-items: center;
-  justify-self: center;
+  margin-left: auto;
 }
 
 .jigsaw-workspace:not(.is-immersive) .jigsaw-camera-tools {
-  grid-column: 3;
-  justify-self: end;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 .jigsaw-workspace:not(.is-immersive) .tile-puzzle-art-preview,
@@ -975,8 +984,11 @@
   }
 
   .jigsaw-workspace:not(.is-immersive) .jigsaw-camera-tools {
-    width: 100%;
-    gap: 0.3rem;
+    gap: 0.2rem;
+  }
+
+  .jigsaw-workspace .jigsaw-zoom-level {
+    display: none;
   }
 
   .jigsaw-workspace:not(.is-immersive) .jigsaw-camera-tools button,

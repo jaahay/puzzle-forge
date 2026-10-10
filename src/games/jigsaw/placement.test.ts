@@ -232,6 +232,29 @@ describe("Jigsaw world layout", () => {
     }
   });
 
+  it("keeps perimeter-staged loose pieces near the board instead of scattering across the world", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 1200, imageHeight: 900, puzzleWidth: 4, puzzleHeight: 4,
+    });
+    const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index, 4));
+    const viewport = { width: 1000, height: 750 };
+    const placements = createInitialJigsawPlacements(layout, pieces, viewport);
+    expect(getJigsawStagingMode(layout, pieces.length, viewport)).toBe("perimeter");
+    const gaps = placements.map((placement) => {
+      const gapX = Math.max(0,
+        layout.boardX - (placement.worldX + layout.pieceWidth),
+        placement.worldX - (layout.boardX + layout.boardWidth),
+      );
+      const gapY = Math.max(0,
+        layout.boardY - (placement.worldY + layout.pieceHeight),
+        placement.worldY - (layout.boardY + layout.boardHeight),
+      );
+      return Math.hypot(gapX, gapY);
+    });
+    expect(Math.max(...gaps)).toBeLessThan(layout.pieceWidth * 1.5);
+    expect(createInitialJigsawPlacements(layout, pieces, viewport)).toEqual(placements);
+  });
+
   it.each([
     { orientation: "horizontal" as const, viewport: null, expectedMode: "perimeter" as const },
     { orientation: "vertical" as const, viewport: null, expectedMode: "perimeter" as const },

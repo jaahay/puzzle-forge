@@ -391,7 +391,21 @@ const createScatterSlots = (
 
   const stagingMode = getJigsawStagingMode(layout, pieceCount, viewport);
   if (stagingMode === "perimeter") {
-    return sortScatterSlots(slots);
+    // Perimeter staging should be an adjacent workbench, not a scatter across
+    // the entire world. Shuffled piece order already provides variety.
+    const boardRight = layout.boardX + layout.boardWidth;
+    const boardBottom = layout.boardY + layout.boardHeight;
+    const distance = (slot: ScatterSlot) => {
+      const gapX = Math.max(0, layout.boardX - (slot.left + size.width), slot.left - boardRight);
+      const gapY = Math.max(0, layout.boardY - (slot.top + size.height), slot.top - boardBottom);
+      return Math.hypot(gapX, gapY);
+    };
+    return [...slots].sort((left, right) => {
+      const gap = distance(left) - distance(right);
+      return Math.abs(gap) > 0.5
+        ? gap
+        : mixSlotIndex(left.index + 1) - mixSlotIndex(right.index + 1);
+    });
   }
 
   const preferred = createPreferredScatterSlots(

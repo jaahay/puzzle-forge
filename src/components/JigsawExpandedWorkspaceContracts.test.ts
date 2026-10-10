@@ -36,6 +36,16 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).not.toContain("displayMode.toggleBrowserFullscreen");
   });
 
+  it("puts normal Jigsaw camera and tools together above gameplay without a no-progress badge", () => {
+    expect(jigsawPreviewSource).toContain('class="jigsaw-workbench-toolbar"');
+    expect(jigsawPreviewSource).toContain('(isSolved || connectedCount > 0 || focusedSection) ?');
+    expect(jigsawPreviewSource).not.toContain("No joins yet");
+    expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .jigsaw-workbench-toolbar {");
+    expect(jigsawCss).toContain("justify-content: space-between;");
+    expect(jigsawCss).toContain(".jigsaw-workspace .jigsaw-zoom-level {");
+    expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .jigsaw-workbench-toolbar {\n  display: contents;");
+  });
+
   it("stretches normal-mode board and panel to the full play-surface width before measuring the camera", () => {
     // The shared play-surface grid centers children. Without explicit width,
     // the Jigsaw board shrink-wraps to the control row (~220 CSS px on phones).
@@ -102,9 +112,10 @@ describe("Jigsaw expanded workspace contracts", () => {
       'usesToolsDisclosure && element.classList.contains("tile-puzzle-tools")',
     );
     expect(jigsawPreviewSource).toContain('class="jigsaw-fit-action"');
-    expect(jigsawPreviewSource).toContain('aria-label="Fit view"');
+    expect(jigsawPreviewSource).toContain('aria-label={focusedSection ? "Fit section" : "Fit all pieces"}');
     expect(jigsawPreviewSource).toContain("<JigsawFitIcon />");
-    expect(jigsawPreviewSource).toContain("onClick={fitWorkingView}");
+    expect(jigsawPreviewSource).toContain("onClick={fitVisiblePieces}");
+    expect(jigsawPreviewSource).toContain("createJigsawOccupiedFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles)");
     expect(jigsawPreviewSource).toContain('class="jigsaw-zoom-level"');
     expect(jigsawPreviewSource).not.toContain("setZoomAtCenter(1)");
     expect(jigsawPreviewSource).not.toContain("jigsaw-fit-menu");

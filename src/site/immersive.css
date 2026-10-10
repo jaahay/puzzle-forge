@@ -118,6 +118,10 @@
   gap: 0;
 }
 
+.jigsaw-workspace.is-immersive .jigsaw-workbench-toolbar {
+  display: contents;
+}
+
 .jigsaw-workspace.is-immersive .tile-puzzle-summary {
   display: none;
 }
