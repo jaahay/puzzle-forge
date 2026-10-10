@@ -218,6 +218,21 @@ const getScatterSlotDistanceFromBoard = (
     : slot.top - (layout.boardY + layout.boardHeight);
 };
 
+const getScatterSlotLateralOverflow = (
+  layout: JigsawWorldLayout,
+  slot: ScatterSlot,
+  stagingMode: Exclude<JigsawStagingMode, "perimeter">,
+  pieceWidth: number,
+  pieceHeight: number,
+) => {
+  const center = stagingMode === "sides"
+    ? slot.top + pieceHeight / 2
+    : slot.left + pieceWidth / 2;
+  const start = stagingMode === "sides" ? layout.boardY : layout.boardX;
+  const end = start + (stagingMode === "sides" ? layout.boardHeight : layout.boardWidth);
+  return Math.max(0, start - center, center - end);
+};
+
 const sortPreferredScatterSlots = (
   layout: JigsawWorldLayout,
   slots: readonly ScatterSlot[],
@@ -225,7 +240,15 @@ const sortPreferredScatterSlots = (
   pieceWidth: number,
   pieceHeight: number,
   salt: number,
+  preferNearestLateralOverflow = false,
 ) => [...slots].sort((left, right) => {
+  if (preferNearestLateralOverflow) {
+    // Fill the nearest extra tray space before scattering an outlier far away.
+    const lateralDelta =
+      getScatterSlotLateralOverflow(layout, left, stagingMode, pieceWidth, pieceHeight) -
+      getScatterSlotLateralOverflow(layout, right, stagingMode, pieceWidth, pieceHeight);
+    if (Math.abs(lateralDelta) > 0.5) return lateralDelta;
+  }
   const distanceDelta =
     getScatterSlotDistanceFromBoard(layout, left, stagingMode, pieceWidth, pieceHeight) -
     getScatterSlotDistanceFromBoard(layout, right, stagingMode, pieceWidth, pieceHeight);
@@ -310,6 +333,7 @@ const createPreferredScatterSlots = (
     pieceWidth,
     pieceHeight,
     firstSalt + 101,
+    true,
   );
   const overflowSecond = sortPreferredScatterSlots(
     layout,
@@ -318,6 +342,7 @@ const createPreferredScatterSlots = (
     pieceWidth,
     pieceHeight,
     secondSalt + 101,
+    true,
   );
 
   return [

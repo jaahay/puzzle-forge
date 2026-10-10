@@ -317,6 +317,28 @@ describe("Jigsaw world layout", () => {
       .toBeLessThan(layout.pieceHeight * 2.75);
   });
 
+  it("keeps the first overflow piece adjacent to its top/bottom tray", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 1200, imageHeight: 900, puzzleWidth: 4, puzzleHeight: 3,
+    });
+    const viewport = { width: 390, height: 844 };
+    const placements = createInitialJigsawPlacements(
+      layout, Array.from({ length: 40 }, (_, index) => makePiece(index, 4)), viewport,
+    );
+    expect(getJigsawStagingMode(layout, placements.length, viewport)).toBe("top-bottom");
+    const firstOverflow = placements.find(
+      (piece) => !isBoardAlignedTopBottomSlot(layout, piece.worldX),
+    );
+    expect(firstOverflow).toBeDefined();
+    const center = firstOverflow!.worldX + layout.pieceWidth / 2;
+    const lateralOverhang = Math.max(
+      0,
+      layout.boardX - center,
+      center - (layout.boardX + layout.boardWidth),
+    );
+    expect(lateralOverhang).toBeLessThan(layout.pieceWidth * 1.5);
+  });
+
   it("uses piece count to decide when moderate extra side space should become trays", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1200,

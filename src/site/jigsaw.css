@@ -197,38 +197,25 @@
   outline: none;
 }
 
-.jigsaw-fit-control {
-  position: relative;
-  display: flex;
-}
-
-.jigsaw-fit-toggle {
+.jigsaw-fit-action {
   display: grid;
   width: 2.6rem;
   padding: 0;
   place-items: center;
 }
 
-.jigsaw-fit-menu {
-  display: none;
-  position: absolute;
-  z-index: 42;
-  flex-direction: column;
-  gap: 0.3rem;
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  border-radius: 0.75rem;
-  padding: 0.3rem;
-  background: rgba(8, 15, 30, 0.96);
-  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.34);
-}
-
-.jigsaw-fit-menu.is-open {
-  display: flex;
-}
-
-.jigsaw-workspace:not(.is-immersive) .jigsaw-fit-menu {
-  top: calc(100% + 0.35rem);
-  right: 0;
+.jigsaw-zoom-level {
+  display: grid;
+  min-width: 3.5rem;
+  min-height: 2.6rem;
+  place-items: center;
+  border: 1px solid rgba(147, 197, 253, 0.22);
+  border-radius: 999px;
+  padding: 0.48rem 0.68rem;
+  color: #dbeafe;
+  background: rgba(30, 64, 175, 0.32);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
 .jigsaw-camera-tools button {
@@ -260,7 +247,7 @@
 }
 
 .jigsaw-tools-toggle svg,
-.jigsaw-fit-toggle svg,
+.jigsaw-fit-action svg,
 .jigsaw-expand-workspace svg {
   width: 1.15rem;
   height: 1.15rem;

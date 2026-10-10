@@ -176,11 +176,6 @@
   transform: translateX(-50%);
 }
 
-.jigsaw-workspace.is-immersive .jigsaw-fit-menu {
-  right: 0;
-  bottom: calc(100% + 0.4rem);
-}
-
 .jigsaw-workspace.is-immersive .jigsaw-solved-presentation.is-completed {
   padding-top: 4.25rem;
 }

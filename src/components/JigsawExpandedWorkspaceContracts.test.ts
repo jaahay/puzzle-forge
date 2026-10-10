@@ -87,7 +87,6 @@ describe("Jigsaw expanded workspace contracts", () => {
     const immersiveToggleRule = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive .jigsaw-tools-toggle {");
     const immersiveToolRule = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive .tile-puzzle-tools {");
     const immersiveOpenRule = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive .tile-puzzle-tools.is-open {");
-    const immersiveFitRule = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive .jigsaw-fit-menu {");
     const mobileToolButtonRule = cssRule(mobileCss, ".jigsaw-workspace.is-immersive .tile-puzzle-tools button {");
     const mobileCameraRule = cssRule(mobileCss, ".jigsaw-workspace.is-immersive .jigsaw-camera-tools {");
     const mobileCameraButtonRule = cssRule(mobileCss, ".jigsaw-workspace.is-immersive .jigsaw-camera-tools button {");
@@ -102,10 +101,14 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).toContain(
       'usesToolsDisclosure && element.classList.contains("tile-puzzle-tools")',
     );
-    expect(jigsawPreviewSource).toContain('class="jigsaw-fit-toggle"');
+    expect(jigsawPreviewSource).toContain('class="jigsaw-fit-action"');
     expect(jigsawPreviewSource).toContain('aria-label="Fit view"');
     expect(jigsawPreviewSource).toContain("<JigsawFitIcon />");
-    expect(jigsawPreviewSource).toContain("aria-expanded={showFitMenu}");
+    expect(jigsawPreviewSource).toContain("onClick={fitWorkingView}");
+    expect(jigsawPreviewSource).toContain('class="jigsaw-zoom-level"');
+    expect(jigsawPreviewSource).not.toContain("setZoomAtCenter(1)");
+    expect(jigsawPreviewSource).not.toContain("jigsaw-fit-menu");
+    expect(jigsawPreviewSource).not.toContain("Fit board");
     expect(jigsawPreviewSource).toContain("Restage pieces");
     expect(jigsawPreviewSource).toContain("restagePieces();");
     expect(jigsawPreviewSource).toContain("Snap to frame");
@@ -118,12 +121,11 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(immersiveToolRule).toContain("display: none;");
     expect(immersiveToolRule).toContain("flex-direction: column;");
     expect(immersiveOpenRule).toContain("display: flex;");
-    expect(immersiveFitRule).toContain("bottom: calc(100% + 0.4rem);");
-    expect(immersiveFitRule).not.toContain("display:");
 
     expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .jigsaw-tools-toggle");
     expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .tile-puzzle-tools.is-open");
-    expect(jigsawCss).toContain(".jigsaw-fit-menu.is-open");
+    expect(jigsawCss).toContain(".jigsaw-fit-action");
+    expect(jigsawCss).not.toContain(".jigsaw-fit-menu");
     expect(jigsawCss).toContain(".jigsaw-tools-toggle svg,");
     expect(jigsawCss).toContain("flex-wrap: nowrap;");
     expect(layoutSource).toContain("ExpandWorkspaceIcon");
