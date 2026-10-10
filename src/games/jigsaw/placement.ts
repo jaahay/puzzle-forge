@@ -559,6 +559,13 @@ export const createInitialJigsawPlacements = (
   viewport: JigsawViewport | null = null,
 ): JigsawPlacement[] => {
   const orderedPieces = [...pieces].sort((left, right) => left.currentIndex - right.currentIndex);
+  // Reserve contiguous free space for multi-cell pieces before ordinary pieces
+  // fragment the available trays. Return placements in shuffle order below.
+  const stagingOrder = [...orderedPieces].sort((left, right) => {
+    const a = getJigsawPieceCellSpan(left);
+    const b = getJigsawPieceCellSpan(right);
+    return b.width * b.height - a.width * a.height || left.currentIndex - right.currentIndex;
+  });
   const placedBounds: Array<WorldPosition & { width: number; height: number }> = [];
   const separation = Math.min(layout.pieceWidth, layout.pieceHeight) * 0.2;
   const requiredCells = orderedPieces.reduce((total, piece) => {
@@ -567,11 +574,10 @@ export const createInitialJigsawPlacements = (
   }, 0);
   // Choose enough room *before* filling the trays. Waiting until the last
   // piece to use a denser grid fragments the free space beyond recovery.
-  const stepRatio = [1.26, 1.1, 0.95].find((ratio) =>
+  const stepRatio = [1.26, 1.12, 1].find((ratio) =>
     createScatterSlots(layout, pieces.length, viewport, null, ratio).length >= requiredCells * 1.12,
-  ) ?? 0.95;
-
-  return orderedPieces.map((piece) => {
+  ) ?? 1;
+  const placed = stagingOrder.map((piece) => {
     const size = getJigsawPieceWorldSize(layout, piece);
     const slots = createScatterSlots(layout, pieces.length, viewport, piece, stepRatio);
     const fits = (slot: ScatterSlot, gap: number) => {
@@ -597,6 +603,8 @@ export const createInitialJigsawPlacements = (
     placedBounds.push({ left: position.worldX, top: position.worldY, ...size });
     return { id: piece.id, ...position };
   });
+  const byId = new Map(placed.map((placement) => [placement.id, placement] as const));
+  return orderedPieces.map((piece) => byId.get(piece.id)!);
 };
 
 const clampCameraAxis = (center: number, worldSize: number, visibleSize: number) => {

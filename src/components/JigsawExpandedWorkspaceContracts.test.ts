@@ -124,9 +124,10 @@ describe("Jigsaw expanded workspace contracts", () => {
       'usesToolsDisclosure && element.classList.contains("tile-puzzle-tools")',
     );
     expect(jigsawPreviewSource).toContain('class="jigsaw-fit-action"');
-    expect(jigsawPreviewSource).toContain('aria-label={focusedSection ? "Fit section" : "Fit all pieces"}');
+    expect(jigsawPreviewSource).toContain('aria-label={fitIsOverview ? "Return to working view"');
+    expect(jigsawPreviewSource).toContain('focusedSection ? "Fit section" : "Show all pieces"');
     expect(jigsawPreviewSource).toContain("<JigsawFitIcon />");
-    expect(jigsawPreviewSource).toContain("onClick={fitVisiblePieces}");
+    expect(jigsawPreviewSource).toContain("onClick={toggleFitView}");
     expect(jigsawPreviewSource).toContain("createJigsawOccupiedFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles)");
     expect(jigsawPreviewSource).toContain('class="jigsaw-zoom-level"');
     expect(jigsawPreviewSource).not.toContain("setZoomAtCenter(1)");
