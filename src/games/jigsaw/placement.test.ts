@@ -486,6 +486,33 @@ describe("Jigsaw camera", () => {
     expect(board.bottom).toBeGreaterThan(insets.top ?? 0);
   });
 
+  it("does not open a blank center of a very large board with all pieces out of view", () => {
+    const largeLayout = createJigsawWorldLayout({
+      imageWidth: 1600, imageHeight: 1200, puzzleWidth: 32, puzzleHeight: 32,
+    });
+    const size = { width: 390, height: 844 };
+    const pieces = Array.from({ length: 64 }, (_, index) => makePiece(index, 32));
+    const placements = createInitialJigsawPlacements(largeLayout, pieces, size);
+    const camera = createJigsawWorkingFitCamera(largeLayout, size, placements);
+    const transform = getJigsawCameraTransform(camera, size);
+    const visiblePieces = placements.filter((placement) => {
+      const x = (placement.worldX + largeLayout.pieceWidth / 2) * transform.scale + transform.translateX;
+      const y = (placement.worldY + largeLayout.pieceHeight / 2) * transform.scale + transform.translateY;
+      return x >= 28 && x <= size.width - 28 && y >= 28 && y <= size.height - 28;
+    });
+    expect(camera.zoom * Math.sqrt(largeLayout.pieceWidth * largeLayout.pieceHeight))
+      .toBeGreaterThanOrEqual(50);
+    expect(visiblePieces.length).toBeGreaterThan(0);
+    const board = getScreenBounds({
+      x: largeLayout.boardX, y: largeLayout.boardY,
+      width: largeLayout.boardWidth, height: largeLayout.boardHeight,
+    }, camera, size);
+    expect(board.left).toBeLessThan(size.width);
+    expect(board.top).toBeLessThan(size.height);
+    expect(board.right).toBeGreaterThan(0);
+    expect(board.bottom).toBeGreaterThan(0);
+  });
+
   it("keeps explicit Fit board and Show all independent of the automatic readability floor", () => {
     const compactLayout = createJigsawWorldLayout({
       imageWidth: 1200, imageHeight: 900, puzzleWidth: 7, puzzleHeight: 5,

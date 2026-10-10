@@ -720,13 +720,53 @@ export const createJigsawWorkingFitCamera = (
   if (fitted.zoom >= minimumWorkingZoom) return fitted;
 
   const zoom = minimumWorkingZoom;
-  return clampJigsawCamera(layout, viewport, {
-    // Focus on the board and its adjacent pieces rather than on the centroid
-    // of a long, potentially asymmetric inventory of loose pieces.
-    centerX: layout.boardX + layout.boardWidth / 2 - (safe.left - safe.right) / (2 * zoom),
-    centerY: layout.boardY + layout.boardHeight / 2 - (safe.top - safe.bottom) / (2 * zoom),
-    zoom,
-  }, safe);
+  const boardCenterX = layout.boardX + layout.boardWidth / 2;
+  const boardCenterY = layout.boardY + layout.boardHeight / 2;
+  const cameraFor = (worldX: number, worldY: number) => clampJigsawCamera(
+    layout,
+    viewport,
+    {
+      centerX: worldX - (safe.left - safe.right) / (2 * zoom),
+      centerY: worldY - (safe.top - safe.bottom) / (2 * zoom),
+      zoom,
+    },
+    safe,
+  );
+
+  // The board center is a good anchor on ordinary puzzles. Very large boards
+  // can fill the entire screen with blank board, hiding every staged piece.
+  // If none is visible, center a work area straddling the nearest piece and
+  // the board perimeter, so the player can actually begin solving.
+  const centered = cameraFor(boardCenterX, boardCenterY);
+  const pieceById = new Map(pieces.map((piece) => [piece.id, piece] as const));
+  const positioned = placements.map((placement) => {
+    const piece = pieceById.get(placement.id);
+    const size = piece
+      ? getJigsawPieceWorldSize(layout, piece)
+      : { width: layout.pieceWidth, height: layout.pieceHeight };
+    return {
+      x: placement.worldX + size.width / 2,
+      y: placement.worldY + size.height / 2,
+    };
+  });
+  const isVisible = (center: WorldPoint) => {
+    const x = viewport.width / 2 + (center.x - centered.centerX) * zoom;
+    const y = viewport.height / 2 + (center.y - centered.centerY) * zoom;
+    return x >= safe.left + padding && x <= viewport.width - safe.right - padding &&
+      y >= safe.top + padding && y <= viewport.height - safe.bottom - padding;
+  };
+  if (positioned.length === 0 || positioned.some(isVisible)) return centered;
+
+  const nearest = positioned.reduce((best, candidate) => {
+    const distance = (candidate.x - boardCenterX) ** 2 + (candidate.y - boardCenterY) ** 2;
+    return distance < best.distance ? { ...candidate, distance } : best;
+  }, { x: boardCenterX, y: boardCenterY, distance: Number.POSITIVE_INFINITY });
+  const nearestBoardX = clamp(nearest.x, layout.boardX, layout.boardX + layout.boardWidth);
+  const nearestBoardY = clamp(nearest.y, layout.boardY, layout.boardY + layout.boardHeight);
+  return cameraFor(
+    (nearest.x + nearestBoardX) / 2,
+    (nearest.y + nearestBoardY) / 2,
+  );
 };
 
 export const screenToJigsawWorld = (
