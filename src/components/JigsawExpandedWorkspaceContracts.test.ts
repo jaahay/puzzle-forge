@@ -48,6 +48,13 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).toContain('class="jigsaw-tools-mobile-actions"');
     expect(jigsawPreviewSource).toContain('closest<HTMLElement>(".jigsaw-workspace")');
     expect(jigsawPreviewSource).not.toContain("No joins yet");
+    expect(jigsawPreviewSource).toContain("onClick={toggleFitView}");
+    expect(jigsawPreviewSource).toContain('fitIsOverview ? "Return to working view"');
+    expect(jigsawPreviewSource).toContain("createJigsawWorkingFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles)");
+    expect(jigsawPreviewSource).toContain("setFitIsOverview(false)");
+    expect(jigsawCss).not.toContain(".jigsaw-workspace:not(.is-immersive) .tile-puzzle-summary {\n    display: none;");
+    expect(jigsawPreviewSource).toContain(".tile-puzzle-summary, .puzzle-workspace-display-tools");
+    expect(jigsawPreviewSource).toContain("getCurrentFitInsets(),\n        ),");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .jigsaw-workbench-toolbar {\n  display: contents;");
   });
 

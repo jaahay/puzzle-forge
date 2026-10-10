@@ -235,9 +235,14 @@ export const TilePuzzlePreview = ({
   const [showEdgeSeams, setShowEdgeSeams] = useState(false);
   const [snapToFrame, setSnapToFrame] = useState(false);
   const [showCompactTools, setShowCompactTools] = useState(false);
+  const [fitIsOverview, setFitIsOverview] = useState(false);
   const [focusedSectionId, setFocusedSectionId] = useState<JigsawCoarseSectionId | null>(null);
   const cameraWasUserAdjustedRef = useRef(false);
   const displayMode = usePuzzleWorkspaceDisplayMode();
+  const markManualCameraAdjustment = () => {
+    cameraWasUserAdjustedRef.current = true;
+    setFitIsOverview(false);
+  };
 
   useEffect(() => {
     setShowCompactTools(false);
@@ -394,6 +399,7 @@ export const TilePuzzlePreview = ({
     setRaisedTileId(null);
     setIsPanning(false);
     setFocusedSectionId(null);
+    setFitIsOverview(false);
     cameraWasUserAdjustedRef.current = false;
   }, [puzzle.id, replaceHistory]);
 
@@ -426,6 +432,7 @@ export const TilePuzzlePreview = ({
           null,
           activePlacements,
           puzzle.tiles,
+          getCurrentFitInsets(),
         ),
       };
     });
@@ -442,7 +449,7 @@ export const TilePuzzlePreview = ({
     if (!stage || !workspace) return { top: 0, right: 0, bottom: 0, left: 0 };
 
     const overlayElements = Array.from(workspace.querySelectorAll<HTMLElement>(
-      ".jigsaw-tools-toggle, .tile-puzzle-tools, .jigsaw-camera-tools, .puzzle-workspace-display-tools",
+      ".jigsaw-tools-toggle, .tile-puzzle-tools, .jigsaw-camera-tools, .tile-puzzle-summary, .puzzle-workspace-display-tools",
     ));
     const view = stage.ownerDocument.defaultView;
     const isVisible = (element: HTMLElement) => {
@@ -480,7 +487,7 @@ export const TilePuzzlePreview = ({
     setCamera(nextCamera);
   }, [layout, puzzle.id, viewport.height, viewport.width]);
 
-  const fitVisiblePieces = () => {
+  const toggleFitView = () => {
     if (!isUsableJigsawViewport(viewport)) return;
     const current = placementStateRef.current;
     if (!current || current.puzzleId !== puzzle.id) return;
@@ -490,9 +497,10 @@ export const TilePuzzlePreview = ({
     if (placements.length === 0) return;
     cameraWasUserAdjustedRef.current = true;
     const insets = getCurrentFitInsets();
-    // Fit means an overview of all staged pieces and board. The first click
-    // must differ from the intentionally cropped, readable opening work view.
-    setCamera(createJigsawOccupiedFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles));
+    setCamera(fitIsOverview
+      ? createJigsawWorkingFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles)
+      : createJigsawOccupiedFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles));
+    setFitIsOverview(!fitIsOverview);
   };
 
   const selectSectionFocus = (sectionId: JigsawCoarseSectionId | null) => {
@@ -504,6 +512,7 @@ export const TilePuzzlePreview = ({
 
     setFocusedSectionId(sectionId);
     setShowCompactTools(false);
+    setFitIsOverview(false);
 
     const current = placementStateRef.current;
     if (
@@ -525,6 +534,7 @@ export const TilePuzzlePreview = ({
     if (placements.length === 0) return;
 
     cameraWasUserAdjustedRef.current = true;
+    setFitIsOverview(true);
     setCamera(createJigsawOccupiedFitCamera(
       layout,
       viewport,
@@ -577,6 +587,7 @@ export const TilePuzzlePreview = ({
       ));
     }
     cameraWasUserAdjustedRef.current = false;
+    setFitIsOverview(false);
     setCamera(createJigsawWorkingFitCamera(
       layout,
       stagingViewport,
@@ -747,7 +758,7 @@ export const TilePuzzlePreview = ({
       const pointerIds = Array.from(touchPointsRef.current.keys()).slice(0, 2) as [number, number];
       const startPoints = getPinchPair(pointerIds);
       if (startPoints) {
-        cameraWasUserAdjustedRef.current = true;
+        markManualCameraAdjustment();
         pinchRef.current = {
           pointerIds,
           startPoints,
@@ -862,7 +873,7 @@ export const TilePuzzlePreview = ({
         nextCamera.centerY !== current.camera.centerY ||
         nextCamera.zoom !== current.camera.zoom
       ) {
-        cameraWasUserAdjustedRef.current = true;
+        markManualCameraAdjustment();
         wheelStateRef.current = { ...current, camera: nextCamera };
         renderCameraImmediately(wheelStateRef.current);
       }
@@ -1022,7 +1033,7 @@ export const TilePuzzlePreview = ({
     const deltaY = event.clientY - pan.lastClientY;
     pan.lastClientX = event.clientX;
     pan.lastClientY = event.clientY;
-    if (deltaX !== 0 || deltaY !== 0) cameraWasUserAdjustedRef.current = true;
+    if (deltaX !== 0 || deltaY !== 0) markManualCameraAdjustment();
     setCamera(panJigsawCamera(layout, renderViewport, activeCamera, -deltaX, -deltaY));
     event.preventDefault();
   };
@@ -1042,7 +1053,7 @@ export const TilePuzzlePreview = ({
     const stagePoint = getStagePoint(event.clientX, event.clientY);
     if (!stagePoint) return;
     const current = wheelStateRef.current;
-    cameraWasUserAdjustedRef.current = true;
+    markManualCameraAdjustment();
 
     const nextCamera = event.ctrlKey || event.metaKey
       ? zoomJigsawCameraAtPoint(
@@ -1076,7 +1087,7 @@ export const TilePuzzlePreview = ({
 
   const setZoomAtCenter = (zoom: number) => {
     const current = wheelStateRef.current;
-    cameraWasUserAdjustedRef.current = true;
+    markManualCameraAdjustment();
     setCamera(zoomJigsawCameraAtPoint(
       current.layout,
       current.viewport,
@@ -1105,7 +1116,7 @@ export const TilePuzzlePreview = ({
     const deltaX = direction === "ArrowRight" ? step : direction === "ArrowLeft" ? -step : 0;
     const deltaY = direction === "ArrowDown" ? step : direction === "ArrowUp" ? -step : 0;
     const current = wheelStateRef.current;
-    cameraWasUserAdjustedRef.current = true;
+    markManualCameraAdjustment();
     setCamera(panJigsawCamera(current.layout, current.viewport, current.camera, deltaX, deltaY));
     event.preventDefault();
   };
@@ -1131,16 +1142,6 @@ export const TilePuzzlePreview = ({
   return (
     <section class="tile-puzzle-preview" aria-label={`${puzzle.title} jigsaw puzzle`}>
       <div class="jigsaw-workbench-toolbar">
-        {(isSolved || connectedCount > 0 || focusedSection) ? (
-          <div class="tile-puzzle-summary">
-            {(isSolved || connectedCount > 0) ? <span>{assemblySummary}</span> : null}
-            {focusedSection ? (
-              <span class="jigsaw-section-summary">
-                {jigsawSectionLabels[focusedSection.id]}
-              </span>
-            ) : null}
-          </div>
-        ) : null}
         <div class="jigsaw-camera-tools" aria-label="Jigsaw view controls">
           <button type="button" onClick={() => zoomView("out")} aria-label="Zoom out">−</button>
           <output class="jigsaw-zoom-level" aria-label="Current zoom">
@@ -1150,9 +1151,9 @@ export const TilePuzzlePreview = ({
           <button
             class="jigsaw-fit-action"
             type="button"
-            aria-label={focusedSection ? "Fit section" : "Fit all pieces"}
-            title={focusedSection ? "Fit section" : "Fit all pieces"}
-            onClick={fitVisiblePieces}
+            aria-label={fitIsOverview ? "Return to working view" : focusedSection ? "Fit section" : "Show all pieces"}
+            title={fitIsOverview ? "Return to working view" : focusedSection ? "Fit section" : "Show all pieces"}
+            onClick={toggleFitView}
           >
             <JigsawFitIcon />
           </button>
@@ -1183,6 +1184,16 @@ export const TilePuzzlePreview = ({
           </button>
         ) : null}
       </div>
+      {(isSolved || connectedCount > 0 || focusedSection) ? (
+        <div class="tile-puzzle-summary">
+          {(isSolved || connectedCount > 0) ? <span>{assemblySummary}</span> : null}
+          {focusedSection ? (
+            <span class="jigsaw-section-summary">
+              {jigsawSectionLabels[focusedSection.id]}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
 
       <div
         id={toolsId}

@@ -340,6 +340,30 @@ describe("Jigsaw world layout", () => {
       .toBeLessThan(layout.pieceHeight * 2.75);
   });
 
+  it("keeps all loose pieces non-overlapping as the staging grid fills", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 1200, imageHeight: 900, puzzleWidth: 8, puzzleHeight: 8,
+    });
+    const pieces = Array.from({ length: 64 }, (_, index) => makePiece(index, 8))
+      .concat([makeCapsulePiece("horizontal", 64), makeCapsulePiece("vertical", 65)]);
+    const placements = createInitialJigsawPlacements(layout, pieces, { width: 390, height: 844 });
+    expect(placements).toHaveLength(pieces.length);
+    for (let index = 0; index < placements.length; index++) {
+      const first = placements[index];
+      const firstSize = getJigsawPieceWorldSize(layout, pieces[index]);
+      for (let j = index + 1; j < placements.length; j++) {
+        const other = placements[j];
+        const secondSize = getJigsawPieceWorldSize(layout, pieces[j]);
+        expect(first.worldX + firstSize.width <= other.worldX ||
+          other.worldX + secondSize.width <= first.worldX ||
+          first.worldY + firstSize.height <= other.worldY ||
+          other.worldY + secondSize.height <= first.worldY).toBe(true);
+      }
+    }
+    expect(createInitialJigsawPlacements(layout, pieces, { width: 390, height: 844 }))
+      .toEqual(placements);
+  });
+
   it("stages ordinary and special pieces as distinct loose pieces rather than touching strips", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1200, imageHeight: 900, puzzleWidth: 7, puzzleHeight: 5,

@@ -356,10 +356,11 @@ const createScatterSlots = (
   pieceCount: number,
   viewport: JigsawViewport | null = null,
   piece: Pick<JigsawPiece, "specialShape"> | null = null,
+  stepRatio = 1.26,
 ): ScatterSlot[] => {
-  // Loose pieces should look loose, not like a pre-assembled puzzle strip.
-  const stepX = Math.max(18, layout.pieceWidth * 1.26);
-  const stepY = Math.max(18, layout.pieceHeight * 1.26);
+  // Start with generous gaps; search denser grids only for crowded workspaces.
+  const stepX = Math.max(12, layout.pieceWidth * stepRatio);
+  const stepY = Math.max(12, layout.pieceHeight * stepRatio);
   const slots: ScatterSlot[] = [];
   const size = piece
     ? getJigsawPieceWorldSize(layout, piece)
@@ -560,10 +561,19 @@ export const createInitialJigsawPlacements = (
   const orderedPieces = [...pieces].sort((left, right) => left.currentIndex - right.currentIndex);
   const placedBounds: Array<WorldPosition & { width: number; height: number }> = [];
   const separation = Math.min(layout.pieceWidth, layout.pieceHeight) * 0.2;
+  const requiredCells = orderedPieces.reduce((total, piece) => {
+    const span = getJigsawPieceCellSpan(piece);
+    return total + span.width * span.height;
+  }, 0);
+  // Choose enough room *before* filling the trays. Waiting until the last
+  // piece to use a denser grid fragments the free space beyond recovery.
+  const stepRatio = [1.26, 1.1, 0.95].find((ratio) =>
+    createScatterSlots(layout, pieces.length, viewport, null, ratio).length >= requiredCells * 1.12,
+  ) ?? 0.95;
 
-  return orderedPieces.map((piece, index) => {
+  return orderedPieces.map((piece) => {
     const size = getJigsawPieceWorldSize(layout, piece);
-    const slots = createScatterSlots(layout, pieces.length, viewport, piece);
+    const slots = createScatterSlots(layout, pieces.length, viewport, piece, stepRatio);
     const fits = (slot: ScatterSlot, gap: number) => {
       const position = normalizeJigsawPieceWorldPosition(layout, piece, slot.left, slot.top);
       return placedBounds.every((used) => !rectanglesOverlap(
@@ -572,15 +582,17 @@ export const createInitialJigsawPlacements = (
       ));
     };
     const availableSlot = slots.find((slot) => fits(slot, separation))
-      ?? slots.find((slot) => fits(slot, 0));
-    const fallbackSlots = slots.length > 0
-      ? slots
-      : [{ left: worldPadding, top: worldPadding, index: -1 }];
-    const slot = availableSlot ?? fallbackSlots[index % fallbackSlots.length];
-    const repeatedLayer = availableSlot ? 0 : Math.floor(index / fallbackSlots.length);
-    const offset = repeatedLayer * 6;
+      ?? slots.find((slot) => fits(slot, 0))
+      ?? createScatterSlots(layout, pieces.length, viewport, piece, 1.0)
+        .find((slot) => fits(slot, separation))
+      ?? createScatterSlots(layout, pieces.length, viewport, piece, 0.5)
+        .find((slot) => fits(slot, 0));
+    if (!availableSlot) {
+      // Never quietly pile a remaining piece on top of another.
+      throw new Error("Insufficient free Jigsaw staging space");
+    }
     const position = normalizeJigsawPieceWorldPosition(
-      layout, piece, slot.left + offset, slot.top + offset,
+      layout, piece, availableSlot.left, availableSlot.top,
     );
     placedBounds.push({ left: position.worldX, top: position.worldY, ...size });
     return { id: piece.id, ...position };

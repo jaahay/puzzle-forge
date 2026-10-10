@@ -48,9 +48,10 @@ export const initializeOrPreserveJigsawCamera = (
   currentCamera: JigsawCamera | null,
   placements: readonly JigsawPlacement[] | null = null,
   pieces: readonly JigsawPiece[] = [],
+  insets: Partial<JigsawViewportInsets> = {},
 ) => currentCamera ?? (
   placements
-    ? createJigsawWorkingFitCamera(layout, viewport, placements, 28, {}, pieces)
+    ? createJigsawWorkingFitCamera(layout, viewport, placements, 28, insets, pieces)
     : createJigsawFitCamera(layout, viewport, "workspace")
 );
 
