@@ -357,8 +357,9 @@ const createScatterSlots = (
   viewport: JigsawViewport | null = null,
   piece: Pick<JigsawPiece, "specialShape"> | null = null,
 ): ScatterSlot[] => {
-  const stepX = Math.max(18, layout.pieceWidth * 0.82);
-  const stepY = Math.max(18, layout.pieceHeight * 0.82);
+  // Loose pieces should look loose, not like a pre-assembled puzzle strip.
+  const stepX = Math.max(18, layout.pieceWidth * 1.26);
+  const stepY = Math.max(18, layout.pieceHeight * 1.26);
   const slots: ScatterSlot[] = [];
   const size = piece
     ? getJigsawPieceWorldSize(layout, piece)
@@ -557,25 +558,31 @@ export const createInitialJigsawPlacements = (
   viewport: JigsawViewport | null = null,
 ): JigsawPlacement[] => {
   const orderedPieces = [...pieces].sort((left, right) => left.currentIndex - right.currentIndex);
-  const usedSlotPositions = new Set<string>();
-  const slotPositionKey = (slot: WorldPosition) => `${slot.left.toFixed(6)}:${slot.top.toFixed(6)}`;
+  const placedBounds: Array<WorldPosition & { width: number; height: number }> = [];
+  const separation = Math.min(layout.pieceWidth, layout.pieceHeight) * 0.2;
 
   return orderedPieces.map((piece, index) => {
+    const size = getJigsawPieceWorldSize(layout, piece);
     const slots = createScatterSlots(layout, pieces.length, viewport, piece);
-    const availableSlot = slots.find((slot) => !usedSlotPositions.has(slotPositionKey(slot)));
+    const fits = (slot: ScatterSlot, gap: number) => {
+      const position = normalizeJigsawPieceWorldPosition(layout, piece, slot.left, slot.top);
+      return placedBounds.every((used) => !rectanglesOverlap(
+        position.worldX, position.worldY, size.width, size.height,
+        used.left, used.top, used.width, used.height, gap,
+      ));
+    };
+    const availableSlot = slots.find((slot) => fits(slot, separation))
+      ?? slots.find((slot) => fits(slot, 0));
     const fallbackSlots = slots.length > 0
       ? slots
       : [{ left: worldPadding, top: worldPadding, index: -1 }];
     const slot = availableSlot ?? fallbackSlots[index % fallbackSlots.length];
-    if (availableSlot) usedSlotPositions.add(slotPositionKey(availableSlot));
     const repeatedLayer = availableSlot ? 0 : Math.floor(index / fallbackSlots.length);
     const offset = repeatedLayer * 6;
     const position = normalizeJigsawPieceWorldPosition(
-      layout,
-      piece,
-      slot.left + offset,
-      slot.top + offset,
+      layout, piece, slot.left + offset, slot.top + offset,
     );
+    placedBounds.push({ left: position.worldX, top: position.worldY, ...size });
     return { id: piece.id, ...position };
   });
 };

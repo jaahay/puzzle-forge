@@ -340,6 +340,35 @@ describe("Jigsaw world layout", () => {
       .toBeLessThan(layout.pieceHeight * 2.75);
   });
 
+  it("stages ordinary and special pieces as distinct loose pieces rather than touching strips", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 1200, imageHeight: 900, puzzleWidth: 7, puzzleHeight: 5,
+    });
+    const pieces = Array.from({ length: 33 }, (_, index) => makePiece(index, 7))
+      .concat([makeCapsulePiece("horizontal", 33), makeCapsulePiece("vertical", 34)]);
+    const viewport = { width: 390, height: 844 };
+    const placed = createInitialJigsawPlacements(layout, pieces, viewport);
+    for (let index = 0; index < placed.length; index++) {
+      const first = placed[index];
+      const firstPiece = pieces.find(piece => piece.id === first.id)!;
+      const firstSize = getJigsawPieceWorldSize(layout, firstPiece);
+      for (const other of placed.slice(index + 1)) {
+        const otherPiece = pieces.find(piece => piece.id === other.id)!;
+        const otherSize = getJigsawPieceWorldSize(layout, otherPiece);
+        const horizontalGap = Math.max(
+          0, other.worldX - (first.worldX + firstSize.width),
+          first.worldX - (other.worldX + otherSize.width),
+        );
+        const verticalGap = Math.max(
+          0, other.worldY - (first.worldY + firstSize.height),
+          first.worldY - (other.worldY + otherSize.height),
+        );
+        expect(horizontalGap > 0 || verticalGap > 0).toBe(true);
+      }
+    }
+    expect(createInitialJigsawPlacements(layout, pieces, viewport)).toEqual(placed);
+  });
+
   it("keeps the first overflow piece adjacent to its top/bottom tray", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1200, imageHeight: 900, puzzleWidth: 4, puzzleHeight: 3,

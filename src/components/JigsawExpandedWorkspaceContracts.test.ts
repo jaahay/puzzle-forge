@@ -7,6 +7,7 @@ const imageTileWorkspaceSource = readFileSync(new URL("./ImageTilePuzzleWorkspac
 const jigsawPreviewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", import.meta.url), "utf8");
 const immersiveCss = readFileSync(new URL("../site/immersive.css", import.meta.url), "utf8");
 const jigsawCss = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
+const identitySource = readFileSync(new URL("./CurrentPuzzleIdentity.tsx", import.meta.url), "utf8");
 
 const cssRule = (source: string, selector: string) => {
   const start = source.indexOf(selector);
@@ -36,12 +37,17 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).not.toContain("displayMode.toggleBrowserFullscreen");
   });
 
-  it("puts normal Jigsaw camera and tools together above gameplay without a no-progress badge", () => {
+  it("uses the shared header to host normal controls while keeping expanded controls local", () => {
+    expect(jigsawWorkspaceSource).toContain('workspaceControls={<div class="jigsaw-crown-control-host" ref={registerToolbarHost} />}');
+    expect(identitySource).toContain('class="current-puzzle-workspace-controls"');
+    expect(jigsawPreviewSource).toContain("createPortal(workbenchToolbar, toolbarHost)");
+    expect(jigsawPreviewSource).toContain("displayMode.isExpanded ? workbenchToolbar");
+    expect(jigsawPreviewSource).toContain('class="jigsaw-tools-mobile-actions"');
     expect(jigsawPreviewSource).toContain('class="jigsaw-workbench-toolbar"');
     expect(jigsawPreviewSource).toContain('(isSolved || connectedCount > 0 || focusedSection) ?');
     expect(jigsawPreviewSource).not.toContain("No joins yet");
     expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .jigsaw-workbench-toolbar {");
-    expect(jigsawCss).toContain("justify-content: space-between;");
+    expect(jigsawCss).toContain("justify-content: flex-end;");
     expect(jigsawCss).toContain(".jigsaw-workspace .jigsaw-zoom-level {");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .jigsaw-workbench-toolbar {\n  display: contents;");
   });
