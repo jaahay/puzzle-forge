@@ -757,7 +757,7 @@ export const createJigsawWorkingFitCamera = (
   };
   if (positioned.length === 0 || positioned.some(isVisible)) return centered;
 
-  const nearest = positioned.reduce((best, candidate) => {
+  const nearest = positioned.reduce<{ x: number; y: number; distance: number }>((best, candidate) => {
     const distance = (candidate.x - boardCenterX) ** 2 + (candidate.y - boardCenterY) ** 2;
     return distance < best.distance ? { ...candidate, distance } : best;
   }, { x: boardCenterX, y: boardCenterY, distance: Number.POSITIVE_INFINITY });
