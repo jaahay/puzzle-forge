@@ -37,18 +37,17 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).not.toContain("displayMode.toggleBrowserFullscreen");
   });
 
-  it("uses the shared header to host normal controls while keeping expanded controls local", () => {
-    expect(jigsawWorkspaceSource).toContain('workspaceControls={<div class="jigsaw-crown-control-host" ref={registerToolbarHost} />}');
-    expect(identitySource).toContain('class="current-puzzle-workspace-controls"');
-    expect(jigsawPreviewSource).toContain("createPortal(workbenchToolbar, toolbarHost)");
-    expect(jigsawPreviewSource).toContain("displayMode.isExpanded ? workbenchToolbar");
-    expect(jigsawPreviewSource).toContain('class="jigsaw-tools-mobile-actions"');
+  it("keeps Jigsaw-only controls over the board without extending the shared header", () => {
+    expect(jigsawWorkspaceSource).not.toContain("workspaceControls=");
+    expect(identitySource).not.toContain("workspaceControls");
+    expect(jigsawPreviewSource).not.toContain("createPortal(");
     expect(jigsawPreviewSource).toContain('class="jigsaw-workbench-toolbar"');
-    expect(jigsawPreviewSource).toContain('(isSolved || connectedCount > 0 || focusedSection) ?');
-    expect(jigsawPreviewSource).not.toContain("No joins yet");
     expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .jigsaw-workbench-toolbar {");
-    expect(jigsawCss).toContain("justify-content: flex-end;");
-    expect(jigsawCss).toContain(".jigsaw-workspace .jigsaw-zoom-level {");
+    expect(cssRule(jigsawCss, ".jigsaw-workspace:not(.is-immersive) .jigsaw-workbench-toolbar {")).toContain("position: absolute;");
+    expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .jigsaw-tools-mobile-actions {");
+    expect(jigsawPreviewSource).toContain('class="jigsaw-tools-mobile-actions"');
+    expect(jigsawPreviewSource).toContain('closest<HTMLElement>(".jigsaw-workspace")');
+    expect(jigsawPreviewSource).not.toContain("No joins yet");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .jigsaw-workbench-toolbar {\n  display: contents;");
   });
 

@@ -24,7 +24,6 @@ type CurrentPuzzleHeaderProps = {
   puzzle: GeneratedPuzzle;
   historyControl?: ComponentChildren;
   newPuzzleControl?: ComponentChildren;
-  workspaceControls?: ComponentChildren;
   isArriving?: boolean;
 };
 
@@ -160,7 +159,6 @@ export const CurrentPuzzleHeader = ({
   puzzle,
   historyControl,
   newPuzzleControl,
-  workspaceControls,
   isArriving = false,
 }: CurrentPuzzleHeaderProps) => {
   const currentDateStamp = useLiveLocalDateStamp();
@@ -181,8 +179,8 @@ export const CurrentPuzzleHeader = ({
         >
           <strong class="current-puzzle-type">{identity.puzzleLabel}</strong>
           {identity.sourceLabel ? <span class="current-puzzle-source">{identity.sourceLabel}</span> : null}
-          {identity.details.map((detail, index) => (
-            <span key={detail} class={index === 0 ? "current-puzzle-primary-detail" : "current-puzzle-extra-detail"}>{detail}</span>
+          {identity.details.map((detail) => (
+            <span key={detail}>{detail}</span>
           ))}
           {identity.difficultyLabel ? (
             <span class="current-puzzle-difficulty">{identity.difficultyLabel}</span>
@@ -191,7 +189,6 @@ export const CurrentPuzzleHeader = ({
         {historyControl}
       </div>
       {newPuzzleControl ? <div class="current-puzzle-new-action">{newPuzzleControl}</div> : null}
-      {workspaceControls ? <div class="current-puzzle-workspace-controls">{workspaceControls}</div> : null}
     </div>
   );
 };

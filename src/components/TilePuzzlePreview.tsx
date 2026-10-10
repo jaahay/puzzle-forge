@@ -1,5 +1,4 @@
 import type { JSX } from "preact";
-import { createPortal } from "preact/compat";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { JigsawGeneratedPuzzle, JigsawPiece } from "../catalog/types";
 import { advanceJigsawEdgePanCamera } from "../games/jigsaw/autoPan";
@@ -105,11 +104,6 @@ type TilePuzzlePreviewProps = {
   onHistoryAvailabilityChange?: (availability: JigsawHistoryAvailability) => void;
   onProgressChange?: (report: { hasProgress: boolean; terminal: boolean }) => void;
   onHistoryControllerChange?: (controller: JigsawHistoryController | null) => void;
-  toolbarHost?: HTMLDivElement | null;
-  canUndo?: boolean;
-  canRedo?: boolean;
-  onUndo?: () => void;
-  onRedo?: () => void;
   completionPhase: CompletionPresentationPhase;
   onCausativeInput: () => void;
   onCompletionAnimationEnd: () => void;
@@ -201,11 +195,6 @@ export const TilePuzzlePreview = ({
   onHistoryAvailabilityChange,
   onProgressChange,
   onHistoryControllerChange,
-  toolbarHost = null,
-  canUndo = false,
-  canRedo = false,
-  onUndo,
-  onRedo,
   completionPhase,
   onCausativeInput,
   onCompletionAnimationEnd,
@@ -449,7 +438,7 @@ export const TilePuzzlePreview = ({
 
   const getCurrentFitInsets = (): JigsawViewportInsets => {
     const stage = stageRef.current;
-    const workspace = stage?.closest<HTMLElement>(".jigsaw-workspace.is-immersive");
+    const workspace = stage?.closest<HTMLElement>(".jigsaw-workspace");
     if (!stage || !workspace) return { top: 0, right: 0, bottom: 0, left: 0 };
 
     const overlayElements = Array.from(workspace.querySelectorAll<HTMLElement>(
@@ -1139,8 +1128,9 @@ export const TilePuzzlePreview = ({
     height: `${layout.boardHeight}px`,
   } as JSX.CSSProperties;
 
-  const workbenchToolbar = (
-    <div class="jigsaw-workbench-toolbar">
+  return (
+    <section class="tile-puzzle-preview" aria-label={`${puzzle.title} jigsaw puzzle`}>
+      <div class="jigsaw-workbench-toolbar">
         {(isSolved || connectedCount > 0 || focusedSection) ? (
           <div class="tile-puzzle-summary">
             {(isSolved || connectedCount > 0) ? <span>{assemblySummary}</span> : null}
@@ -1152,11 +1142,11 @@ export const TilePuzzlePreview = ({
           </div>
         ) : null}
         <div class="jigsaw-camera-tools" aria-label="Jigsaw view controls">
-          <button class="jigsaw-zoom-button" type="button" onClick={() => zoomView("out")} aria-label="Zoom out">−</button>
+          <button type="button" onClick={() => zoomView("out")} aria-label="Zoom out">−</button>
           <output class="jigsaw-zoom-level" aria-label="Current zoom">
             {Math.round(activeCamera.zoom * 100)}%
           </output>
-          <button class="jigsaw-zoom-button" type="button" onClick={() => zoomView("in")} aria-label="Zoom in">+</button>
+          <button type="button" onClick={() => zoomView("in")} aria-label="Zoom in">+</button>
           <button
             class="jigsaw-fit-action"
             type="button"
@@ -1192,23 +1182,16 @@ export const TilePuzzlePreview = ({
             <JigsawToolsIcon />
           </button>
         ) : null}
-    </div>
-  );
-
-  return (
-    <section class="tile-puzzle-preview" aria-label={`${puzzle.title} jigsaw puzzle`}>
-      {displayMode.isExpanded ? workbenchToolbar : toolbarHost ? createPortal(workbenchToolbar, toolbarHost) : null}
+      </div>
 
       <div
         id={toolsId}
         class={`tile-puzzle-tools ${showCompactTools ? "is-open" : ""}`}
         hidden={isSolved}
       >
-        <div class="jigsaw-tools-mobile-actions" role="group" aria-label="Additional puzzle controls">
+        <div class="jigsaw-tools-mobile-actions" role="group" aria-label="Zoom controls">
           <button type="button" onClick={() => zoomView("out")}>Zoom out</button>
           <button type="button" onClick={() => zoomView("in")}>Zoom in</button>
-          <button type="button" disabled={!canUndo} onClick={() => { onUndo?.(); setShowCompactTools(false); }}>Undo</button>
-          <button type="button" disabled={!canRedo} onClick={() => { onRedo?.(); setShowCompactTools(false); }}>Redo</button>
         </div>
         <button
           type="button"

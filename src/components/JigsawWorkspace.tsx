@@ -39,10 +39,6 @@ export const JigsawWorkspace = ({
     canRedo: boolean;
   }>({ puzzleInstanceId: null, canUndo: false, canRedo: false });
   const historyControllerRef = useRef<JigsawHistoryController | null>(null);
-  const [toolbarHost, setToolbarHost] = useState<HTMLDivElement | null>(null);
-  const registerToolbarHost = useCallback((element: HTMLDivElement | null) => {
-    setToolbarHost((current) => current === element ? current : element);
-  }, []);
   const jigsawPuzzle = puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw" ? puzzle : null;
   const puzzleInstanceId = jigsawPuzzle?.id ?? null;
   const puzzleArrivalIdentity = jigsawPuzzle ? getPuzzleArrivalIdentity(jigsawPuzzle) : null;
@@ -154,7 +150,6 @@ export const JigsawWorkspace = ({
       puzzle={jigsawPuzzle}
       historyControl={historyActions}
       newPuzzleControl={newPuzzleControl}
-      workspaceControls={<div class="jigsaw-crown-control-host" ref={registerToolbarHost} />}
       isArriving={isPuzzleArriving}
     />
   ) : null;
@@ -182,11 +177,6 @@ export const JigsawWorkspace = ({
           if (puzzleInstanceId) onRuntimeProgressChange(puzzleInstanceId, report);
         }}
         onHistoryControllerChange={handleHistoryControllerChange}
-        toolbarHost={toolbarHost}
-        canUndo={historyAvailability.puzzleInstanceId === jigsawPuzzle.id && historyAvailability.canUndo}
-        canRedo={historyAvailability.puzzleInstanceId === jigsawPuzzle.id && historyAvailability.canRedo}
-        onUndo={() => requestHistoryAction("undo")}
-        onRedo={() => requestHistoryAction("redo")}
         completionPhase={completion.phase}
         onCausativeInput={completion.recordCausativeInput}
         onCompletionAnimationEnd={completion.completePresentation}
