@@ -441,6 +441,66 @@ describe("Jigsaw camera", () => {
     expect(workingBounds.height).toBeGreaterThanOrEqual(compactLayout.boardHeight);
     expect(workingCamera.zoom).toBeGreaterThan(occupiedCamera.zoom);
     expect(workingCamera.zoom).toBeLessThanOrEqual(1.25);
+    expect(workingCamera.zoom * Math.sqrt(compactLayout.pieceWidth * compactLayout.pieceHeight)).toBeGreaterThan(50);
+
+    // Working view is deliberately allowed to crop distant staging inventory.
+    const allPieces = getScreenBounds(occupiedBounds, workingCamera, portraitViewport);
+    expect(allPieces.right - allPieces.left).toBeGreaterThan(portraitViewport.width);
+    const boardCenter = screenToJigsawWorld(
+      workingCamera, portraitViewport, portraitViewport.width / 2, portraitViewport.height / 2,
+    );
+    expect(boardCenter.x).toBeCloseTo(compactLayout.boardX + compactLayout.boardWidth / 2, 4);
+    expect(boardCenter.y).toBeCloseTo(compactLayout.boardY + compactLayout.boardHeight / 2, 4);
+  });
+
+  it.each([
+    { name: "portrait phone", viewport: { width: 390, height: 844 }, insets: {} },
+    { name: "compact portrait phone", viewport: { width: 320, height: 568 }, insets: {} },
+    { name: "expanded portrait with chrome", viewport: { width: 390, height: 1350 },
+      insets: { top: 64, bottom: 80, left: 68, right: 12 } },
+    { name: "landscape phone", viewport: { width: 740, height: 360 },
+      insets: { top: 36, bottom: 70, left: 52, right: 24 } },
+    { name: "desktop", viewport: { width: 1280, height: 760 }, insets: {} },
+  ])("starts with readable pieces and a board-centered $name workbench", ({ viewport: size, insets }) => {
+    const portraitLayout = createJigsawWorldLayout({
+      imageWidth: 1200, imageHeight: 900, puzzleWidth: 7, puzzleHeight: 5,
+    });
+    const pieces = Array.from({ length: 35 }, (_, index) => makePiece(index, 7));
+    const placements = createInitialJigsawPlacements(portraitLayout, pieces, size);
+    const camera = createJigsawWorkingFitCamera(portraitLayout, size, placements, 28, insets, pieces);
+    const targetPixels = Math.min(
+      64,
+      (size.width - (insets.left ?? 0) - (insets.right ?? 0) - 56) / 5.5,
+      (size.height - (insets.top ?? 0) - (insets.bottom ?? 0) - 56) / 4.5,
+    );
+    expect(camera.zoom * Math.sqrt(portraitLayout.pieceWidth * portraitLayout.pieceHeight))
+      .toBeGreaterThanOrEqual(targetPixels - 0.01);
+    expect(camera.zoom).toBeLessThanOrEqual(1.25);
+    const board = getScreenBounds({
+      x: portraitLayout.boardX, y: portraitLayout.boardY,
+      width: portraitLayout.boardWidth, height: portraitLayout.boardHeight,
+    }, camera, size);
+    expect(board.left).toBeLessThan(size.width - (insets.right ?? 0));
+    expect(board.right).toBeGreaterThan(insets.left ?? 0);
+    expect(board.top).toBeLessThan(size.height - (insets.bottom ?? 0));
+    expect(board.bottom).toBeGreaterThan(insets.top ?? 0);
+  });
+
+  it("keeps explicit Fit board and Show all independent of the automatic readability floor", () => {
+    const compactLayout = createJigsawWorldLayout({
+      imageWidth: 1200, imageHeight: 900, puzzleWidth: 7, puzzleHeight: 5,
+    });
+    const pieces = Array.from({ length: 35 }, (_, index) => makePiece(index, 7));
+    const portraitViewport = { width: 390, height: 844 };
+    const placements = createInitialJigsawPlacements(compactLayout, pieces, portraitViewport);
+    const working = createJigsawWorkingFitCamera(compactLayout, portraitViewport, placements);
+    const all = createJigsawOccupiedFitCamera(compactLayout, portraitViewport, placements);
+    const board = createJigsawFitCamera(compactLayout, portraitViewport, "board");
+    expect(working.zoom).toBeGreaterThan(all.zoom);
+    expect(board.zoom).toBeGreaterThan(all.zoom);
+    const bounds = getScreenBounds(getJigsawOccupiedBounds(compactLayout, placements), all, portraitViewport);
+    expect(bounds.left).toBeGreaterThanOrEqual(27.9);
+    expect(bounds.right).toBeLessThanOrEqual(portraitViewport.width - 27.9);
   });
 
   it("fits occupied board and loose-piece bounds instead of unused world space", () => {

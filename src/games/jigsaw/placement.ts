@@ -692,14 +692,42 @@ export const createJigsawWorkingFitCamera = (
   padding = 28,
   insets: Partial<JigsawViewportInsets> = {},
   pieces: readonly JigsawPiece[] = [],
-): JigsawCamera => createJigsawBoundsFitCamera(
-  layout,
-  viewport,
-  getJigsawWorkingBounds(layout, placements, pieces),
-  padding,
-  1.25,
-  insets,
-);
+): JigsawCamera => {
+  const fitted = createJigsawBoundsFitCamera(
+    layout,
+    viewport,
+    getJigsawWorkingBounds(layout, placements, pieces),
+    padding,
+    1.25,
+    insets,
+  );
+
+  const safe = normalizeViewportInsets(viewport, insets);
+  const usableWidth = Math.max(1, viewport.width - safe.left - safe.right - padding * 2);
+  const usableHeight = Math.max(1, viewport.height - safe.top - safe.bottom - padding * 2);
+
+  // The automatic camera is a working view, not Show all. Fit the available
+  // neighborhood when possible, but don't shrink ordinary pieces to thumbnails
+  // to include an entire staging tray. Around 5-6 pieces across is a useful
+  // touch-scale target, regardless of the artwork's aspect ratio.
+  const readablePiecePixels = Math.min(64, usableWidth / 5.5, usableHeight / 4.5);
+  const ordinaryPieceExtent = Math.sqrt(layout.pieceWidth * layout.pieceHeight);
+  const minimumWorkingZoom = clamp(
+    readablePiecePixels / Math.max(1, ordinaryPieceExtent),
+    jigsawCameraMinimumZoom,
+    1.25,
+  );
+  if (fitted.zoom >= minimumWorkingZoom) return fitted;
+
+  const zoom = minimumWorkingZoom;
+  return clampJigsawCamera(layout, viewport, {
+    // Focus on the board and its adjacent pieces rather than on the centroid
+    // of a long, potentially asymmetric inventory of loose pieces.
+    centerX: layout.boardX + layout.boardWidth / 2 - (safe.left - safe.right) / (2 * zoom),
+    centerY: layout.boardY + layout.boardHeight / 2 - (safe.top - safe.bottom) / (2 * zoom),
+    zoom,
+  }, safe);
+};
 
 export const screenToJigsawWorld = (
   camera: JigsawCamera,
