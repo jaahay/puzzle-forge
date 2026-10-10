@@ -7,6 +7,7 @@ const imageTileWorkspaceSource = readFileSync(new URL("./ImageTilePuzzleWorkspac
 const jigsawPreviewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", import.meta.url), "utf8");
 const immersiveCss = readFileSync(new URL("../site/immersive.css", import.meta.url), "utf8");
 const jigsawCss = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
+const identitySource = readFileSync(new URL("./CurrentPuzzleIdentity.tsx", import.meta.url), "utf8");
 
 const cssRule = (source: string, selector: string) => {
   const start = source.indexOf(selector);
@@ -34,6 +35,38 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawCss).toContain(".jigsaw-camera-tools .jigsaw-expand-workspace");
     expect(jigsawPreviewSource).not.toContain("displayMode.exitExpanded");
     expect(jigsawPreviewSource).not.toContain("displayMode.toggleBrowserFullscreen");
+  });
+
+  it("keeps Jigsaw-only controls over the board without extending the shared header", () => {
+    expect(jigsawWorkspaceSource).not.toContain("workspaceControls=");
+    expect(identitySource).not.toContain("workspaceControls");
+    expect(jigsawPreviewSource).not.toContain("createPortal(");
+    expect(jigsawPreviewSource).toContain('class="jigsaw-workbench-toolbar"');
+    expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .jigsaw-workbench-toolbar {");
+    expect(cssRule(jigsawCss, ".jigsaw-workspace:not(.is-immersive) .jigsaw-workbench-toolbar {")).toContain("position: absolute;");
+    expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .jigsaw-tools-mobile-actions {");
+    expect(jigsawPreviewSource).toContain('class="jigsaw-tools-mobile-actions"');
+    expect(jigsawPreviewSource).toContain('closest<HTMLElement>(".jigsaw-workspace")');
+    expect(jigsawPreviewSource).not.toContain("No joins yet");
+    expect(jigsawPreviewSource).toContain("onClick={toggleFitView}");
+    expect(jigsawPreviewSource).toContain('fitIsOverview ? "Return to working view"');
+    expect(jigsawPreviewSource).toContain("createJigsawWorkingFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles)");
+    expect(jigsawPreviewSource).toContain("setFitIsOverview(false)");
+    expect(jigsawCss).not.toContain(".jigsaw-workspace:not(.is-immersive) .tile-puzzle-summary {\n    display: none;");
+    expect(jigsawPreviewSource).toContain(".tile-puzzle-summary, .puzzle-workspace-display-tools");
+    expect(jigsawPreviewSource).toContain("getCurrentFitInsets(),\n        ),");
+    expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .jigsaw-workbench-toolbar {\n  display: contents;");
+  });
+
+  it("stretches normal-mode board and panel to the full play-surface width before measuring the camera", () => {
+    // The shared play-surface grid centers children. Without explicit width,
+    // the Jigsaw board shrink-wraps to the control row (~220 CSS px on phones).
+    // That starves the working-fit camera even when the outer viewport is 390px.
+    const normalBoard = cssRule(jigsawCss, ".jigsaw-workspace:not(.is-immersive) .workspace-layout-board,");
+    expect(normalBoard).toContain(".jigsaw-workspace:not(.is-immersive) .jigsaw-puzzle-panel");
+    expect(normalBoard).toContain("width: 100%;");
+    expect(normalBoard).toContain("box-sizing: border-box;");
+    expect(jigsawPreviewSource).toContain('class="tile-puzzle-preview"');
   });
 
   it("keeps the shared immersive shell generic while Jigsaw alone takes the one-row overlay composition", () => {
@@ -76,7 +109,6 @@ describe("Jigsaw expanded workspace contracts", () => {
     const immersiveToggleRule = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive .jigsaw-tools-toggle {");
     const immersiveToolRule = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive .tile-puzzle-tools {");
     const immersiveOpenRule = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive .tile-puzzle-tools.is-open {");
-    const immersiveFitRule = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive .jigsaw-fit-menu {");
     const mobileToolButtonRule = cssRule(mobileCss, ".jigsaw-workspace.is-immersive .tile-puzzle-tools button {");
     const mobileCameraRule = cssRule(mobileCss, ".jigsaw-workspace.is-immersive .jigsaw-camera-tools {");
     const mobileCameraButtonRule = cssRule(mobileCss, ".jigsaw-workspace.is-immersive .jigsaw-camera-tools button {");
@@ -91,10 +123,16 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).toContain(
       'usesToolsDisclosure && element.classList.contains("tile-puzzle-tools")',
     );
-    expect(jigsawPreviewSource).toContain('class="jigsaw-fit-toggle"');
-    expect(jigsawPreviewSource).toContain('aria-label="Fit view"');
+    expect(jigsawPreviewSource).toContain('class="jigsaw-fit-action"');
+    expect(jigsawPreviewSource).toContain('aria-label={fitIsOverview ? "Return to working view"');
+    expect(jigsawPreviewSource).toContain('focusedSection ? "Fit section" : "Show all pieces"');
     expect(jigsawPreviewSource).toContain("<JigsawFitIcon />");
-    expect(jigsawPreviewSource).toContain("aria-expanded={showFitMenu}");
+    expect(jigsawPreviewSource).toContain("onClick={toggleFitView}");
+    expect(jigsawPreviewSource).toContain("createJigsawOccupiedFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles)");
+    expect(jigsawPreviewSource).toContain('class="jigsaw-zoom-level"');
+    expect(jigsawPreviewSource).not.toContain("setZoomAtCenter(1)");
+    expect(jigsawPreviewSource).not.toContain("jigsaw-fit-menu");
+    expect(jigsawPreviewSource).not.toContain("Fit board");
     expect(jigsawPreviewSource).toContain("Restage pieces");
     expect(jigsawPreviewSource).toContain("restagePieces();");
     expect(jigsawPreviewSource).toContain("Snap to frame");
@@ -107,12 +145,11 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(immersiveToolRule).toContain("display: none;");
     expect(immersiveToolRule).toContain("flex-direction: column;");
     expect(immersiveOpenRule).toContain("display: flex;");
-    expect(immersiveFitRule).toContain("bottom: calc(100% + 0.4rem);");
-    expect(immersiveFitRule).not.toContain("display:");
 
     expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .jigsaw-tools-toggle");
     expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .tile-puzzle-tools.is-open");
-    expect(jigsawCss).toContain(".jigsaw-fit-menu.is-open");
+    expect(jigsawCss).toContain(".jigsaw-fit-action");
+    expect(jigsawCss).not.toContain(".jigsaw-fit-menu");
     expect(jigsawCss).toContain(".jigsaw-tools-toggle svg,");
     expect(jigsawCss).toContain("flex-wrap: nowrap;");
     expect(layoutSource).toContain("ExpandWorkspaceIcon");
