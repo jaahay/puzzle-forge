@@ -574,7 +574,7 @@ export const createInitialJigsawPlacements = (
   }, 0);
   // Choose enough room *before* filling the trays. Waiting until the last
   // piece to use a denser grid fragments the free space beyond recovery.
-  const stepRatio = [1.26, 1.12, 1].find((ratio) =>
+  const stepRatio = [1.4, 1.26, 1.12, 1].find((ratio) =>
     createScatterSlots(layout, pieces.length, viewport, null, ratio).length >= requiredCells * 1.12,
   ) ?? 1;
   const placed = stagingOrder.map((piece) => {

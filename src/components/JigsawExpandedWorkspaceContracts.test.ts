@@ -52,6 +52,10 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).toContain('fitIsOverview ? "Return to working view"');
     expect(jigsawPreviewSource).toContain("createJigsawWorkingFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles)");
     expect(jigsawPreviewSource).toContain("setFitIsOverview(false)");
+    expect(jigsawPreviewSource).not.toContain("coarseSections");
+    expect(jigsawPreviewSource).not.toContain("selectSectionFocus");
+    expect(jigsawPreviewSource).not.toContain("focusedSection");
+    expect(jigsawCss).not.toContain(".jigsaw-section-tools");
     expect(jigsawCss).not.toContain(".jigsaw-workspace:not(.is-immersive) .tile-puzzle-summary {\n    display: none;");
     expect(jigsawPreviewSource).toContain(".tile-puzzle-summary, .puzzle-workspace-display-tools");
     expect(jigsawPreviewSource).toContain("getCurrentFitInsets(),\n        ),");
@@ -117,6 +121,12 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).toContain('aria-label="Jigsaw tools"');
     expect(jigsawPreviewSource).toContain("<JigsawToolsIcon />");
     expect(jigsawPreviewSource).toContain("aria-expanded={showCompactTools}");
+    expect(jigsawPreviewSource).toContain('doc.addEventListener("pointerdown", onOutsidePointer, true)');
+    expect(jigsawPreviewSource).toContain('doc.addEventListener("focusin", onOutsideFocus, true)');
+    expect(jigsawPreviewSource).toContain('doc.addEventListener("keydown", onEscape)');
+    expect(jigsawPreviewSource).toContain("aria-pressed={showPreview}");
+    expect(jigsawPreviewSource).toContain('onClick={() => setShowPreview((current) => !current)}');
+    expect(jigsawPreviewSource).toContain('if (restagePieces()) setShowCompactTools(false)');
     expect(jigsawPreviewSource).toContain("if (!isSolved) return;");
     expect(jigsawPreviewSource).toContain("setShowCompactTools(false);");
     expect(jigsawPreviewSource).toContain(".jigsaw-tools-toggle, .tile-puzzle-tools");
@@ -125,7 +135,7 @@ describe("Jigsaw expanded workspace contracts", () => {
     );
     expect(jigsawPreviewSource).toContain('class="jigsaw-fit-action"');
     expect(jigsawPreviewSource).toContain('aria-label={fitIsOverview ? "Return to working view"');
-    expect(jigsawPreviewSource).toContain('focusedSection ? "Fit section" : "Show all pieces"');
+    expect(jigsawPreviewSource).toContain('fitIsOverview ? "Return to working view" : "Show all pieces"');
     expect(jigsawPreviewSource).toContain("<JigsawFitIcon />");
     expect(jigsawPreviewSource).toContain("onClick={toggleFitView}");
     expect(jigsawPreviewSource).toContain("createJigsawOccupiedFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles)");
