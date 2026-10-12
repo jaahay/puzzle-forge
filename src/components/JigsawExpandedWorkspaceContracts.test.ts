@@ -144,7 +144,7 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).not.toContain("jigsaw-fit-menu");
     expect(jigsawPreviewSource).not.toContain("Fit board");
     expect(jigsawPreviewSource).toContain("Restage pieces");
-    expect(jigsawPreviewSource).toContain("restagePieces();");
+    expect(jigsawPreviewSource).toContain("if (restagePieces()) setShowCompactTools(false)");
     expect(jigsawPreviewSource).toContain("Snap to frame");
     expect(jigsawPreviewSource).toContain("aria-pressed={snapToFrame}");
     expect(jigsawPreviewSource).toContain("snapToFrame,");
