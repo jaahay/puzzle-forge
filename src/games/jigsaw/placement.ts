@@ -577,9 +577,21 @@ const createPackedJigsawPlacements = (
   const stepRatio = [1.26, 1.12, 1].find((ratio) =>
     createScatterSlots(layout, pieces.length, viewport, null, ratio).length >= requiredCells * 1.12,
   ) ?? 1;
+  // Most pieces share the same footprint; keep each ordered candidate list once.
+  const slotCache = new Map<string, ScatterSlot[]>();
+  const slotsFor = (piece: JigsawPiece, ratio: number) => {
+    const span = getJigsawPieceCellSpan(piece);
+    const key = `${span.width}:${span.height}:${ratio}`;
+    let slots = slotCache.get(key);
+    if (!slots) {
+      slots = createScatterSlots(layout, pieces.length, viewport, piece, ratio);
+      slotCache.set(key, slots);
+    }
+    return slots;
+  };
   const placed = stagingOrder.map((piece) => {
     const size = getJigsawPieceWorldSize(layout, piece);
-    const slots = createScatterSlots(layout, pieces.length, viewport, piece, stepRatio);
+    const slots = slotsFor(piece, stepRatio);
     const fits = (slot: ScatterSlot, gap: number) => {
       const position = normalizeJigsawPieceWorldPosition(layout, piece, slot.left, slot.top);
       return placedBounds.every((used) => !rectanglesOverlap(
@@ -589,10 +601,8 @@ const createPackedJigsawPlacements = (
     };
     const availableSlot = slots.find((slot) => fits(slot, separation))
       ?? slots.find((slot) => fits(slot, 0))
-      ?? createScatterSlots(layout, pieces.length, viewport, piece, 1.0)
-        .find((slot) => fits(slot, separation))
-      ?? createScatterSlots(layout, pieces.length, viewport, piece, 0.5)
-        .find((slot) => fits(slot, 0));
+      ?? slotsFor(piece, 1.0).find((slot) => fits(slot, separation))
+      ?? slotsFor(piece, 0.5).find((slot) => fits(slot, 0));
     if (!availableSlot) {
       // Never quietly pile a remaining piece on top of another.
       throw new Error("Insufficient free Jigsaw staging space");
@@ -618,7 +628,7 @@ const createNaturalJigsawPlacements = (
   pieces: readonly JigsawPiece[],
   viewport: JigsawViewport | null,
 ): JigsawPlacement[] | null => {
-  if (pieces.length < 2 || pieces.length > 96) return null;
+  if (pieces.length < 2 || pieces.length >= 40) return null;
   const mode = getJigsawStagingMode(layout, pieces.length, viewport);
   const order = [...pieces].sort((a, b) => {
     const aSpan = getJigsawPieceCellSpan(a);
@@ -693,9 +703,11 @@ const createNaturalJigsawPlacements = (
       if (mode === "sides") {
         if (index % 2 === 0) { leftZone(); rightZone(); }
         else { rightZone(); leftZone(); }
+        topZone(); bottomZone();
       } else if (mode === "top-bottom") {
         if (index % 2 === 0) { topZone(); bottomZone(); }
         else { bottomZone(); topZone(); }
+        leftZone(); rightZone();
       } else {
         // Spread pieces across all four sides, not ordered rows or a solved-looking perimeter.
         const phase = index % 4;
