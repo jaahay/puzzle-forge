@@ -463,6 +463,37 @@ describe("Jigsaw world layout", () => {
     }
   });
 
+  it.each([
+    { name: "small with a special piece", width: 4, height: 4, count: 16, special: true, minimumVariations: 9 },
+    { name: "medium landscape", width: 7, height: 5, count: 35, special: false, minimumVariations: 18 },
+  ])("retains irregular staging on $name", ({ width, height, count, special, minimumVariations }) => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 1600, imageHeight: 900, puzzleWidth: width, puzzleHeight: height,
+    });
+    const pieces = Array.from({ length: count }, (_, index) => makePiece(index, width));
+    if (special) pieces.push(makeCapsulePiece("horizontal", count));
+    const placements = createInitialJigsawPlacements(layout, pieces, { width: 390, height: 844 });
+    const distinctFractions = new Set(placements.map((p) =>
+      Math.round(((p.worldX / layout.pieceWidth) % 1 + 1) % 1 * 100),
+    ));
+    expect(distinctFractions.size).toBeGreaterThan(minimumVariations);
+    expect(createInitialJigsawPlacements(layout, pieces, { width: 390, height: 844 })).toEqual(placements);
+    for (let index = 0; index < placements.length; index += 1) {
+      const a = placements[index]!;
+      const sizeA = getJigsawPieceWorldSize(layout, pieces[index]!);
+      for (let j = index + 1; j < placements.length; j += 1) {
+        const b = placements[j]!;
+        const sizeB = getJigsawPieceWorldSize(layout, pieces[j]!);
+        expect(
+          a.worldX + sizeA.width <= b.worldX ||
+          b.worldX + sizeB.width <= a.worldX ||
+          a.worldY + sizeA.height <= b.worldY ||
+          b.worldY + sizeB.height <= a.worldY,
+        ).toBe(true);
+      }
+    }
+  });
+
   it("treats world placement as workspace organization even when it lies over the board", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1200,
