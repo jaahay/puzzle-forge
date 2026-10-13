@@ -69,7 +69,7 @@ type WorldPoint = {
 
 const basePieceSize = 96;
 const worldPadding = 48;
-const worldScale = 1.55;
+const worldScale = 1.75;
 const minimumStagingPiecesPerAxis = 5;
 const jigsawPieceVisualOverhangRatio = jigsawEdgeMaximumDepth / 100;
 
@@ -787,7 +787,7 @@ const loosenPackedJigsawPlacements = (
   const gap = Math.min(layout.pieceWidth, layout.pieceHeight) * 0.14;
   const order = [...pieces].sort((a, b) => a.currentIndex - b.currentIndex);
 
-  for (let sweep = 0; sweep < 4; sweep += 1) {
+  for (let sweep = 0; sweep < 6; sweep += 1) {
     for (const piece of order) {
       const current = positions.get(piece.id);
       if (!current) continue;
@@ -796,7 +796,7 @@ const loosenPackedJigsawPlacements = (
       const rangeY = layout.worldHeight - size.height - 2 * worldPadding;
       if (rangeX <= 0 || rangeY <= 0) continue;
 
-      for (let attempt = 0; attempt < 35; attempt += 1) {
+      for (let attempt = 0; attempt < 45; attempt += 1) {
         const global = attempt % 3 === 0;
         const x = global
           ? worldPadding + random() * rangeX
