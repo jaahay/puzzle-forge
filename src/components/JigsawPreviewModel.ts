@@ -1,6 +1,7 @@
 import type { JigsawGeneratedPuzzle, JigsawPiece } from "../catalog/types";
 import {
   createJigsawFitCamera,
+  createJigsawOccupiedFitCamera,
   createJigsawWorkingFitCamera,
   isUsableJigsawViewport,
   jigsawCameraMaximumZoom,
@@ -63,9 +64,12 @@ export const resolveJigsawCameraForViewportResize = (
   userAdjusted: boolean,
   insets: Partial<JigsawViewportInsets> = {},
   pieces: readonly JigsawPiece[] = [],
+  isOverview = false,
 ) => userAdjusted
   ? currentCamera
-  : createJigsawWorkingFitCamera(layout, viewport, placements, 28, insets, pieces);
+  : isOverview
+    ? createJigsawOccupiedFitCamera(layout, viewport, placements, 28, insets, pieces)
+    : createJigsawWorkingFitCamera(layout, viewport, placements, 28, insets, pieces);
 
 export const getMeasuredJigsawViewport = (
   stage: Pick<HTMLElement, "clientWidth" | "clientHeight"> | null,

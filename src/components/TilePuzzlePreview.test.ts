@@ -159,6 +159,26 @@ describe("TilePuzzlePreview camera controls", () => {
     )).toEqual(createJigsawWorkingFitCamera(layout, viewport, placements, 28, insets));
   });
 
+  it("reframes overview after a display resize without overriding manual camera motion", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 1200, imageHeight: 900, puzzleWidth: 4, puzzleHeight: 4,
+    });
+    const pieces = Array.from({ length: 16 }, (_, index) => ({
+      id: `tile-${index}`, currentIndex: index, solvedIndex: index,
+      row: Math.floor(index / 4), column: index % 4, edges: [],
+    }));
+    const placements = createInitialJigsawPlacements(layout, pieces, { width: 390, height: 700 });
+    const desktop = { width: 1280, height: 850 };
+    const prior = { centerX: 100, centerY: 200, zoom: 0.8 };
+    const expected = createJigsawOccupiedFitCamera(layout, desktop, placements, 28, {}, pieces);
+    expect(resolveJigsawCameraForViewportResize(
+      layout, desktop, placements, prior, false, {}, pieces, true,
+    )).toEqual(expected);
+    expect(resolveJigsawCameraForViewportResize(
+      layout, desktop, placements, prior, true, {}, pieces, true,
+    )).toBe(prior);
+  });
+
   it("starts from a board-first working fit when a puzzle camera has not initialized yet", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 2048,

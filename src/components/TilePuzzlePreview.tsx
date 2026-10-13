@@ -468,10 +468,11 @@ export const TilePuzzlePreview = ({
       cameraWasUserAdjustedRef.current,
       getCurrentFitInsets(),
       puzzle.tiles,
+      fitIsOverview,
     );
     if (nextCamera === currentCameraState) return;
     setCamera(nextCamera);
-  }, [layout, puzzle.id, viewport.height, viewport.width]);
+  }, [layout, puzzle.id, viewport.height, viewport.width, fitIsOverview]);
 
   const toggleFitView = () => {
     if (!isUsableJigsawViewport(viewport)) return;
@@ -479,7 +480,7 @@ export const TilePuzzlePreview = ({
     if (!current || current.puzzleId !== puzzle.id) return;
     const placements = current.placements;
     if (placements.length === 0) return;
-    cameraWasUserAdjustedRef.current = true;
+    cameraWasUserAdjustedRef.current = false;
     const insets = getCurrentFitInsets();
     setCamera(fitIsOverview
       ? createJigsawWorkingFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles)

@@ -443,6 +443,26 @@ describe("Jigsaw world layout", () => {
     );
   });
 
+  it("scatters small puzzles at varied non-lattice positions without covering the board", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 1600, imageHeight: 900, puzzleWidth: 5, puzzleHeight: 4,
+    });
+    const pieces = Array.from({ length: 20 }, (_, index) => makePiece(index, 5));
+    const viewport = { width: 390, height: 844 };
+    const placements = createInitialJigsawPlacements(layout, pieces, viewport);
+    const distinctFractions = new Set(placements.map((p) =>
+      Math.round(((p.worldX / layout.pieceWidth) % 1 + 1) % 1 * 100),
+    ));
+    expect(distinctFractions.size).toBeGreaterThan(8);
+    expect(createInitialJigsawPlacements(layout, pieces, viewport)).toEqual(placements);
+    for (const placement of placements) {
+      expect(overlapsBoard(
+        placement.worldX, placement.worldY, layout.pieceWidth, layout.pieceHeight,
+        layout.boardX, layout.boardY, layout.boardWidth, layout.boardHeight,
+      )).toBe(false);
+    }
+  });
+
   it("treats world placement as workspace organization even when it lies over the board", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1200,
