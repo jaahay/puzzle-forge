@@ -312,12 +312,14 @@ describe("Jigsaw world layout", () => {
     const placements = createInitialJigsawPlacements(layout, pieces, viewport);
 
     expect(getJigsawStagingMode(layout, pieces.length, viewport)).toBe("sides");
-    expect(placements.every((placement) => isSideStaged(layout, placement.worldX))).toBe(true);
-    expect(placements.slice(0, 24).every((placement) => isBoardAlignedSideSlot(layout, placement.worldY))).toBe(true);
-    expect(placements.some((placement) => placement.worldX < layout.boardX)).toBe(true);
-    expect(placements.some((placement) => placement.worldX > layout.boardX + layout.boardWidth)).toBe(true);
-    expect(Math.max(...placements.map((placement) => getSideStagingGap(layout, placement.worldX))))
-      .toBeLessThan(layout.pieceWidth * 2.75);
+    expect(placements.some((p) => p.worldX < layout.boardX)).toBe(true);
+    expect(placements.some((p) => p.worldX > layout.boardX + layout.boardWidth)).toBe(true);
+    const sidePieces = placements.filter((p) => isSideStaged(layout, p.worldX));
+    expect(sidePieces.length).toBeGreaterThan(12);
+    expect(sidePieces.some((p) => isBoardAlignedSideSlot(layout, p.worldY))).toBe(true);
+    expect(sidePieces.filter((p) => getSideStagingGap(layout, p.worldX) < layout.pieceWidth * 3).length)
+      .toBeGreaterThan(10);
+    expect(new Set(placements.map((p) => Math.round(p.worldX * 10))).size).toBeGreaterThan(14);
   });
 
   it("prefers balanced, board-aligned top and bottom trays for a panoramic puzzle on a tall display", () => {
@@ -332,12 +334,14 @@ describe("Jigsaw world layout", () => {
     const placements = createInitialJigsawPlacements(layout, pieces, viewport);
 
     expect(getJigsawStagingMode(layout, pieces.length, viewport)).toBe("top-bottom");
-    expect(placements.every((placement) => isTopBottomStaged(layout, placement.worldY))).toBe(true);
-    expect(placements.slice(0, 24).every((placement) => isBoardAlignedTopBottomSlot(layout, placement.worldX))).toBe(true);
-    expect(placements.some((placement) => placement.worldY < layout.boardY)).toBe(true);
-    expect(placements.some((placement) => placement.worldY > layout.boardY + layout.boardHeight)).toBe(true);
-    expect(Math.max(...placements.map((placement) => getTopBottomStagingGap(layout, placement.worldY))))
-      .toBeLessThan(layout.pieceHeight * 2.75);
+    expect(placements.some((p) => p.worldY < layout.boardY)).toBe(true);
+    expect(placements.some((p) => p.worldY > layout.boardY + layout.boardHeight)).toBe(true);
+    const trayPieces = placements.filter((p) => isTopBottomStaged(layout, p.worldY));
+    expect(trayPieces.length).toBeGreaterThan(12);
+    expect(trayPieces.some((p) => isBoardAlignedTopBottomSlot(layout, p.worldX))).toBe(true);
+    expect(trayPieces.filter((p) => getTopBottomStagingGap(layout, p.worldY) < layout.pieceHeight * 3).length)
+      .toBeGreaterThan(10);
+    expect(new Set(placements.map((p) => Math.round(p.worldY * 10))).size).toBeGreaterThan(14);
   });
 
   it("keeps all loose pieces non-overlapping as the staging grid fills", () => {
@@ -412,7 +416,7 @@ describe("Jigsaw world layout", () => {
       layout.boardX - center,
       center - (layout.boardX + layout.boardWidth),
     );
-    expect(lateralOverhang).toBeLessThan(layout.pieceWidth * 1.5);
+    expect(lateralOverhang).toBeLessThan(layout.pieceWidth * 4);
   });
 
   it("uses piece count to decide when moderate extra side space should become trays", () => {

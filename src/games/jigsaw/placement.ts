@@ -628,7 +628,7 @@ const createNaturalJigsawPlacements = (
   pieces: readonly JigsawPiece[],
   viewport: JigsawViewport | null,
 ): JigsawPlacement[] | null => {
-  if (pieces.length < 2 || pieces.length >= 40) return null;
+  if (pieces.length < 2 || pieces.length > 96) return null;
   const mode = getJigsawStagingMode(layout, pieces.length, viewport);
   const order = [...pieces].sort((a, b) => {
     const aSpan = getJigsawPieceCellSpan(a);
@@ -849,7 +849,7 @@ export const createInitialJigsawPlacements = (
   const loose = natural ? createNaturalJigsawPlacements(layout, pieces, viewport) : null;
   if (loose) return loose;
   const packed = createPackedJigsawPlacements(layout, pieces, viewport);
-  return natural && pieces.length > 48 && pieces.length <= 256
+  return natural && pieces.length >= 40 && pieces.length <= 256
     ? loosenPackedJigsawPlacements(layout, pieces, packed)
     : packed;
 };
