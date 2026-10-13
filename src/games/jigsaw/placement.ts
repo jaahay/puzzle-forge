@@ -665,7 +665,7 @@ const createNaturalJigsawPlacements = (
         };
         if (clipped.left <= clipped.right && clipped.top <= clipped.bottom) zones.push(clipped);
       };
-      const aligned = mode !== "perimeter" && index < Math.min(24, order.length);
+      const aligned = mode !== "perimeter" && order.length >= 40 && index < 24;
       const lateral = aligned ? 0 : depth * 0.65;
       const sideTop = layout.boardY - size.height * (aligned ? 0.5 : lateral);
       const sideBottom = boardBottom - size.height * (aligned ? 0.5 : 1 - lateral);

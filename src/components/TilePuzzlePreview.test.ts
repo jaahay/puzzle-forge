@@ -8,6 +8,7 @@ import {
   clampJigsawCamera,
   createInitialJigsawPlacements,
   createJigsawFitCamera,
+  createJigsawOccupiedFitCamera,
   createJigsawWorkingFitCamera,
   createJigsawWorldLayout,
   getJigsawStagingMode,
