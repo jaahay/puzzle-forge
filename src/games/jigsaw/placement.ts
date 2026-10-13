@@ -849,7 +849,7 @@ export const createInitialJigsawPlacements = (
   const loose = natural ? createNaturalJigsawPlacements(layout, pieces, viewport) : null;
   if (loose) return loose;
   const packed = createPackedJigsawPlacements(layout, pieces, viewport);
-  return natural && pieces.length >= 40 && pieces.length <= 256
+  return natural && pieces.length >= 2 && pieces.length <= 256
     ? loosenPackedJigsawPlacements(layout, pieces, packed)
     : packed;
 };
@@ -1125,9 +1125,18 @@ export const zoomJigsawCameraAtPoint = (
   const worldPoint = screenToJigsawWorld(camera, viewport, screenX, screenY);
   const zoom = clamp(nextZoom, jigsawCameraMinimumZoom, jigsawCameraMaximumZoom);
 
-  return clampJigsawCamera(layout, viewport, {
+  const cameraAtAnchor = {
     centerX: worldPoint.x - (screenX - viewport.width / 2) / zoom,
     centerY: worldPoint.y - (screenY - viewport.height / 2) / zoom,
     zoom,
-  });
+  };
+  // The +/- controls use the screen center. Clamping that center to newly
+  // calculated visible-world limits makes the whole table slide as it zooms.
+  // Preserve the established world-space focus for a centered zoom; panning
+  // continues to enforce world limits independently.
+  if (Math.abs(screenX - viewport.width / 2) < 0.01 &&
+      Math.abs(screenY - viewport.height / 2) < 0.01) {
+    return cameraAtAnchor;
+  }
+  return clampJigsawCamera(layout, viewport, cameraAtAnchor);
 };

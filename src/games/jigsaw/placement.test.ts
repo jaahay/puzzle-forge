@@ -815,6 +815,61 @@ describe("Jigsaw camera", () => {
     expect(screenBounds.bottom).toBeLessThanOrEqual(caseViewport.height - insets.bottom - padding + 0.01);
   });
 
+  it("preserves the board center during repeated centered zoom steps on a tall phone", () => {
+    const portrait = createJigsawWorldLayout({
+      imageWidth: 1637, imageHeight: 2048, puzzleWidth: 5, puzzleHeight: 7,
+    });
+    const phone = { width: 390, height: 1100 };
+    const pieces = Array.from({ length: 35 }, (_, index) => makePiece(index, 5));
+    const placements = createInitialJigsawPlacements(portrait, pieces, phone);
+    const original = createJigsawWorkingFitCamera(portrait, phone, placements, 28, {}, pieces);
+    const first = zoomJigsawCameraAtPoint(
+      portrait, phone, original, original.zoom * 0.6, phone.width / 2, phone.height / 2,
+    );
+    const second = zoomJigsawCameraAtPoint(
+      portrait, phone, first, original.zoom * 1.15, phone.width / 2, phone.height / 2,
+    );
+    expect(first.centerX).toBeCloseTo(original.centerX);
+    expect(first.centerY).toBeCloseTo(original.centerY);
+    expect(second.centerX).toBeCloseTo(original.centerX);
+    expect(second.centerY).toBeCloseTo(original.centerY);
+    expect(first.zoom).toBeLessThan(original.zoom);
+  });
+
+  it("avoids the packed-grid fallback for a newly generated portrait 35-piece puzzle", () => {
+    const portrait = createJigsawWorldLayout({
+      imageWidth: 1637, imageHeight: 2048, puzzleWidth: 5, puzzleHeight: 7,
+    });
+    const phone = { width: 390, height: 1100 };
+    const pieces = Array.from({ length: 35 }, (_, index) => makePiece(index, 5));
+    const packed = createInitialJigsawPlacements(portrait, pieces, phone, false);
+    const scattered = createInitialJigsawPlacements(portrait, pieces, phone);
+    const shifted = scattered.filter((piece, index) =>
+      Math.hypot(
+        piece.worldX - packed[index]!.worldX,
+        piece.worldY - packed[index]!.worldY,
+      ) > Math.min(portrait.pieceWidth, portrait.pieceHeight) * 0.3,
+    );
+    expect(shifted.length).toBeGreaterThan(10);
+    const columns = new Set(scattered.map((p) => Math.round(p.worldX / 5)));
+    const rows = new Set(scattered.map((p) => Math.round(p.worldY / 5)));
+    expect(columns.size).toBeGreaterThan(12);
+    expect(rows.size).toBeGreaterThan(12);
+    expect(createInitialJigsawPlacements(portrait, pieces, phone)).toEqual(scattered);
+    for (let i = 0; i < scattered.length; i++) {
+      const a = scattered[i]!;
+      for (let j = i + 1; j < scattered.length; j++) {
+        const b = scattered[j]!;
+        expect(
+          a.worldX + portrait.pieceWidth <= b.worldX ||
+          b.worldX + portrait.pieceWidth <= a.worldX ||
+          a.worldY + portrait.pieceHeight <= b.worldY ||
+          b.worldY + portrait.pieceHeight <= a.worldY,
+        ).toBe(true);
+      }
+    }
+  });
+
   it("keeps the world point under the pointer stable while zooming", () => {
     const camera = createJigsawFitCamera(layout, viewport, "workspace");
     const pointer = { x: 730, y: 240 };
