@@ -160,10 +160,23 @@
 }
 
 .jigsaw-fit-action {
-  display: grid;
-  width: 2.6rem;
-  padding: 0;
-  place-items: center;
+  display: inline-flex;
+  width: auto;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0 0.7rem;
+}
+
+.jigsaw-view-action-label {
+  font-size: 0.73rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.jigsaw-camera-tools .jigsaw-fit-action[aria-pressed="true"] {
+  border-color: rgba(125, 211, 252, 0.64);
+  background: rgba(14, 116, 144, 0.48);
 }
 
 .jigsaw-zoom-level {
@@ -193,10 +206,12 @@
 }
 
 .jigsaw-camera-tools .jigsaw-expand-workspace {
-  display: grid;
-  width: 2.6rem;
-  padding: 0;
-  place-items: center;
+  display: inline-flex;
+  width: auto;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0 0.7rem;
   border-color: rgba(125, 211, 252, 0.58);
   color: #e0f2fe;
   background: linear-gradient(180deg, rgba(14, 116, 144, 0.82), rgba(30, 64, 175, 0.78));

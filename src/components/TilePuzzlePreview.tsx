@@ -147,13 +147,14 @@ const JigsawToolsIcon = () => (
   </svg>
 );
 
+// All-pieces is a collection *within* the view, not browser fullscreen.
+// Avoid corner brackets, which are already the convention for fullscreen.
 const JigsawFitIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M8 4H4v4" />
-    <path d="M16 4h4v4" />
-    <path d="M20 16v4h-4" />
-    <path d="M4 16v4h4" />
-    <circle cx="12" cy="12" r="2.5" />
+    <rect x="2.5" y="3.5" width="19" height="17" rx="2.5" />
+    <rect x="6" y="7" width="4" height="4" rx="0.5" />
+    <rect x="14" y="7" width="4" height="4" rx="0.5" />
+    <rect x="10" y="13" width="4" height="4" rx="0.5" />
   </svg>
 );
 
@@ -1060,9 +1061,11 @@ export const TilePuzzlePreview = ({
             type="button"
             aria-label={fitIsOverview ? "Return to working view" : "Show all pieces"}
             title={fitIsOverview ? "Return to working view" : "Show all pieces"}
+            aria-pressed={fitIsOverview}
             onClick={toggleFitView}
           >
             <JigsawFitIcon />
+            <span class="jigsaw-view-action-label">{fitIsOverview ? "Work view" : "All pieces"}</span>
           </button>
           {!displayMode.isExpanded ? (
             <button
@@ -1073,6 +1076,7 @@ export const TilePuzzlePreview = ({
               title="Expand workspace"
             >
               <JigsawExpandIcon />
+              <span class="jigsaw-view-action-label">Expand</span>
             </button>
           ) : null}
         </div>
