@@ -494,6 +494,34 @@ describe("Jigsaw world layout", () => {
     }
   });
 
+  it("redistributes dense medium puzzles without losing pieces or breaking stable placement", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 1200, imageHeight: 900, puzzleWidth: 12, puzzleHeight: 8,
+    });
+    const pieces = Array.from({ length: 97 }, (_, i) => makePiece(i, 12));
+    const viewport = { width: 1440, height: 900 };
+    const packed = createInitialJigsawPlacements(layout, pieces, viewport, false);
+    const scattered = createInitialJigsawPlacements(layout, pieces, viewport);
+    expect(scattered).toHaveLength(97);
+    expect(scattered.filter((p, i) =>
+      Math.hypot(p.worldX - packed[i]!.worldX, p.worldY - packed[i]!.worldY) >
+      Math.min(layout.pieceWidth, layout.pieceHeight) * 0.3,
+    ).length).toBeGreaterThan(20);
+    expect(createInitialJigsawPlacements(layout, pieces, viewport)).toEqual(scattered);
+    for (let i = 0; i < scattered.length; i += 1) {
+      const a = scattered[i]!;
+      for (let j = i + 1; j < scattered.length; j += 1) {
+        const b = scattered[j]!;
+        expect(
+          a.worldX + layout.pieceWidth <= b.worldX ||
+          b.worldX + layout.pieceWidth <= a.worldX ||
+          a.worldY + layout.pieceHeight <= b.worldY ||
+          b.worldY + layout.pieceHeight <= a.worldY,
+        ).toBe(true);
+      }
+    }
+  });
+
   it("treats world placement as workspace organization even when it lies over the board", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1200,

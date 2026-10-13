@@ -761,14 +761,98 @@ const createNaturalJigsawPlacements = (
   return null;
 };
 
+
+/**
+ * Crowded workspaces need the capacity guarantee of the packed baseline.
+ * Reinsert pieces into available irregular pockets without ever compromising it.
+ * Large moves (not cosmetic jitter) break up the unnatural row structure.
+ */
+const loosenPackedJigsawPlacements = (
+  layout: JigsawWorldLayout,
+  pieces: readonly JigsawPiece[],
+  packed: readonly JigsawPlacement[],
+): JigsawPlacement[] => {
+  const pieceById = new Map(pieces.map((piece) => [piece.id, piece] as const));
+  const positions = new Map(packed.map((placement) => [placement.id, { ...placement }] as const));
+  let state = pieces.reduce(
+    (seed, piece) => mixSlotIndex(seed ^ mixSlotIndex(piece.currentIndex + piece.solvedIndex * 31 + 1)),
+    mixSlotIndex(pieces.length * 131 + Math.round(layout.boardWidth)),
+  ) || 1;
+  const random = () => {
+    state ^= state << 13;
+    state ^= state >>> 17;
+    state ^= state << 5;
+    return (state >>> 0) / 4294967296;
+  };
+  const gap = Math.min(layout.pieceWidth, layout.pieceHeight) * 0.14;
+  const order = [...pieces].sort((a, b) => a.currentIndex - b.currentIndex);
+
+  for (let sweep = 0; sweep < 4; sweep += 1) {
+    for (const piece of order) {
+      const current = positions.get(piece.id);
+      if (!current) continue;
+      const size = getJigsawPieceWorldSize(layout, piece);
+      const rangeX = layout.worldWidth - size.width - 2 * worldPadding;
+      const rangeY = layout.worldHeight - size.height - 2 * worldPadding;
+      if (rangeX <= 0 || rangeY <= 0) continue;
+
+      for (let attempt = 0; attempt < 35; attempt += 1) {
+        const global = attempt % 3 === 0;
+        const x = global
+          ? worldPadding + random() * rangeX
+          : current.worldX + (random() - 0.5) * layout.pieceWidth * 4;
+        const y = global
+          ? worldPadding + random() * rangeY
+          : current.worldY + (random() - 0.5) * layout.pieceHeight * 4;
+        const candidate = normalizeJigsawPieceWorldPosition(layout, piece, x, y);
+        if (
+          Math.hypot(
+            (candidate.worldX - current.worldX) / layout.pieceWidth,
+            (candidate.worldY - current.worldY) / layout.pieceHeight,
+          ) < 0.3 ||
+          candidate.worldX < worldPadding ||
+          candidate.worldY < worldPadding ||
+          candidate.worldX + size.width > layout.worldWidth - worldPadding ||
+          candidate.worldY + size.height > layout.worldHeight - worldPadding ||
+          rectanglesOverlap(
+            candidate.worldX, candidate.worldY, size.width, size.height,
+            layout.boardX, layout.boardY, layout.boardWidth, layout.boardHeight, gap,
+          )
+        ) continue;
+
+        const collides = [...positions.values()].some((other) => {
+          if (other.id === piece.id) return false;
+          const neighbor = pieceById.get(other.id);
+          const otherSize = neighbor
+            ? getJigsawPieceWorldSize(layout, neighbor)
+            : { width: layout.pieceWidth, height: layout.pieceHeight };
+          return rectanglesOverlap(
+            candidate.worldX, candidate.worldY, size.width, size.height,
+            other.worldX, other.worldY, otherSize.width, otherSize.height, gap * 0.5,
+          );
+        });
+        if (collides) continue;
+        positions.set(piece.id, { id: piece.id, ...candidate });
+        break;
+      }
+    }
+  }
+  return packed.map((placement) => positions.get(placement.id)!);
+};
+
 export const createInitialJigsawPlacements = (
   layout: JigsawWorldLayout,
   pieces: readonly JigsawPiece[],
   viewport: JigsawViewport | null = null,
   natural = true,
-): JigsawPlacement[] => (
-  natural ? createNaturalJigsawPlacements(layout, pieces, viewport) : null
-) ?? createPackedJigsawPlacements(layout, pieces, viewport);
+): JigsawPlacement[] => {
+  const loose = natural ? createNaturalJigsawPlacements(layout, pieces, viewport) : null;
+  if (loose) return loose;
+  const packed = createPackedJigsawPlacements(layout, pieces, viewport);
+  return natural && pieces.length > 48 && pieces.length <= 256
+    ? loosenPackedJigsawPlacements(layout, pieces, packed)
+    : packed;
+};
 
 const clampCameraAxis = (center: number, worldSize: number, visibleSize: number) => {
   const halfVisible = visibleSize / 2;
