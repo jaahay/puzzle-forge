@@ -13,7 +13,6 @@ import {
   getJigsawPieceWorldSize,
   getJigsawPlacementPosition,
   getJigsawSolvedPosition,
-  getJigsawStagingMode,
   isUsableJigsawViewport,
   normalizeJigsawPieceWorldPosition,
   normalizeJigsawWorldPosition,
@@ -75,36 +74,6 @@ const isTopBottomStaged = (
   worldY: number,
 ) =>
   worldY + layout.pieceHeight <= layout.boardY || worldY >= layout.boardY + layout.boardHeight;
-
-const isBoardAlignedSideSlot = (
-  layout: ReturnType<typeof createJigsawWorldLayout>,
-  worldY: number,
-) => {
-  const centerY = worldY + layout.pieceHeight / 2;
-  return centerY >= layout.boardY && centerY <= layout.boardY + layout.boardHeight;
-};
-
-const isBoardAlignedTopBottomSlot = (
-  layout: ReturnType<typeof createJigsawWorldLayout>,
-  worldX: number,
-) => {
-  const centerX = worldX + layout.pieceWidth / 2;
-  return centerX >= layout.boardX && centerX <= layout.boardX + layout.boardWidth;
-};
-
-const getSideStagingGap = (
-  layout: ReturnType<typeof createJigsawWorldLayout>,
-  worldX: number,
-) => worldX < layout.boardX
-  ? layout.boardX - (worldX + layout.pieceWidth)
-  : worldX - (layout.boardX + layout.boardWidth);
-
-const getTopBottomStagingGap = (
-  layout: ReturnType<typeof createJigsawWorldLayout>,
-  worldY: number,
-) => worldY < layout.boardY
-  ? layout.boardY - (worldY + layout.pieceHeight)
-  : worldY - (layout.boardY + layout.boardHeight);
 
 const getScreenBounds = (
   bounds: ReturnType<typeof getJigsawOccupiedBounds>,
@@ -192,16 +161,15 @@ describe("Jigsaw world layout", () => {
     expect(isUsableJigsawViewport({ width: 1200, height: Number.POSITIVE_INFINITY })).toBe(false);
   });
 
-  it("falls back to neutral perimeter staging when no measured play surface is available", () => {
+  it("uses the same deterministic placement algorithm with or without a measured viewport", () => {
     const layout = createJigsawWorldLayout({
-      imageWidth: 1200,
-      imageHeight: 1200,
-      puzzleWidth: 8,
-      puzzleHeight: 8,
+      imageWidth: 1200, imageHeight: 1200, puzzleWidth: 8, puzzleHeight: 8,
     });
-
-    expect(getJigsawStagingMode(layout, 64, null)).toBe("perimeter");
-    expect(getJigsawStagingMode(layout, 64, { width: 0, height: 800 })).toBe("perimeter");
+    const pieces = Array.from({ length: 64 }, (_, index) => makePiece(index, 8));
+    const neutral = createInitialJigsawPlacements(layout, pieces);
+    expect(neutral).toEqual(createInitialJigsawPlacements(layout, pieces, null));
+    expect(neutral).toEqual(createInitialJigsawPlacements(layout, pieces, { width: 0, height: 800 }));
+    expect(neutral).toHaveLength(64);
   });
 
   it("scatters loose pieces around the board in logical world coordinates", () => {
@@ -232,40 +200,28 @@ describe("Jigsaw world layout", () => {
     }
   });
 
-  it("keeps perimeter-staged loose pieces near the board instead of scattering across the world", () => {
+  it("composes a broad, irregular table rather than a tight fixed-depth ring", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1200, imageHeight: 900, puzzleWidth: 4, puzzleHeight: 4,
     });
-    const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index, 4));
-    const viewport = { width: 1000, height: 750 };
-    const placements = createInitialJigsawPlacements(layout, pieces, viewport);
-    expect(getJigsawStagingMode(layout, pieces.length, viewport)).toBe("perimeter");
-    const gaps = placements.map((placement) => {
-      const gapX = Math.max(0,
-        layout.boardX - (placement.worldX + layout.pieceWidth),
-        placement.worldX - (layout.boardX + layout.boardWidth),
-      );
-      const gapY = Math.max(0,
-        layout.boardY - (placement.worldY + layout.pieceHeight),
-        placement.worldY - (layout.boardY + layout.boardHeight),
-      );
-      return Math.hypot(gapX, gapY);
-    });
-    expect(Math.max(...gaps)).toBeLessThan(layout.pieceWidth * 1.5);
-    expect(createInitialJigsawPlacements(layout, pieces, viewport)).toEqual(placements);
+    const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index));
+    const portrait = { width: 390, height: 844 };
+    const placements = createInitialJigsawPlacements(layout, pieces, portrait);
+    const bounds = getJigsawOccupiedBounds(layout, placements, pieces);
+    expect(bounds.height / bounds.width).toBeGreaterThan(0.9);
+    expect(bounds.height).toBeGreaterThan(layout.boardHeight * 1.8);
+    expect(createInitialJigsawPlacements(layout, pieces, portrait)).toEqual(placements);
   });
 
   it.each([
-    { orientation: "horizontal" as const, viewport: null, expectedMode: "perimeter" as const },
-    { orientation: "vertical" as const, viewport: null, expectedMode: "perimeter" as const },
-    { orientation: "horizontal" as const, viewport: { width: 1440, height: 800 }, expectedMode: "sides" as const },
-    { orientation: "vertical" as const, viewport: { width: 1440, height: 800 }, expectedMode: "sides" as const },
-    { orientation: "horizontal" as const, viewport: { width: 760, height: 1280 }, expectedMode: "top-bottom" as const },
-    { orientation: "vertical" as const, viewport: { width: 760, height: 1280 }, expectedMode: "top-bottom" as const },
-  ])("keeps a $orientation capsule clear of the board in $expectedMode staging", ({
-    orientation,
-    viewport,
-    expectedMode,
+    { orientation: "horizontal" as const, viewport: null },
+    { orientation: "vertical" as const, viewport: null },
+    { orientation: "horizontal" as const, viewport: { width: 1440, height: 800 } },
+    { orientation: "vertical" as const, viewport: { width: 1440, height: 800 } },
+    { orientation: "horizontal" as const, viewport: { width: 760, height: 1280 } },
+    { orientation: "vertical" as const, viewport: { width: 760, height: 1280 } },
+  ])("keeps a $orientation capsule clear of the board across viewport geometries", ({
+    orientation, viewport,
   }) => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1200,
@@ -283,7 +239,6 @@ describe("Jigsaw world layout", () => {
     const position = getJigsawPlacementPosition(layout, placement, capsule);
     const size = getJigsawPieceWorldSize(layout, capsule);
 
-    expect(getJigsawStagingMode(layout, pieces.length, viewport)).toBe(expectedMode);
     expect(overlapsBoard(
       position.left,
       position.top,
@@ -300,48 +255,29 @@ describe("Jigsaw world layout", () => {
     expect(position.top + size.height).toBeLessThanOrEqual(layout.worldHeight);
   });
 
-  it("prefers balanced, board-aligned side trays for a portrait puzzle on a wide display", () => {
+  it.each([
+    { imageWidth: 721, imageHeight: 2048, columns: 6, rows: 17, viewport: { width: 1440, height: 800 } },
+    { imageWidth: 2048, imageHeight: 721, columns: 17, rows: 6, viewport: { width: 760, height: 1280 } },
+  ])("composes the whole table for artwork and viewport with contrasting proportions", ({
+    imageWidth, imageHeight, columns, rows, viewport,
+  }) => {
     const layout = createJigsawWorldLayout({
-      imageWidth: 721,
-      imageHeight: 2048,
-      puzzleWidth: 6,
-      puzzleHeight: 17,
+      imageWidth, imageHeight, puzzleWidth: columns, puzzleHeight: rows,
     });
-    const pieces = Array.from({ length: 48 }, (_, index) => makePiece(index, 6));
-    const viewport = { width: 1440, height: 800 };
+    const pieces = Array.from({ length: 48 }, (_, index) => makePiece(index, columns));
     const placements = createInitialJigsawPlacements(layout, pieces, viewport);
-
-    expect(getJigsawStagingMode(layout, pieces.length, viewport)).toBe("sides");
+    const occupied = getJigsawOccupiedBounds(layout, placements, pieces);
+    const fit = createJigsawOccupiedFitCamera(layout, viewport, placements, 28, {}, pieces);
+    const screen = getScreenBounds(occupied, fit, viewport);
+    expect(screen.left).toBeGreaterThanOrEqual(27.9);
+    expect(screen.top).toBeGreaterThanOrEqual(27.9);
+    expect(screen.right).toBeLessThanOrEqual(viewport.width - 27.9);
+    expect(screen.bottom).toBeLessThanOrEqual(viewport.height - 27.9);
+    expect(placements).toHaveLength(48);
     expect(placements.some((p) => p.worldX < layout.boardX)).toBe(true);
     expect(placements.some((p) => p.worldX > layout.boardX + layout.boardWidth)).toBe(true);
-    const sidePieces = placements.filter((p) => isSideStaged(layout, p.worldX));
-    expect(sidePieces.length).toBeGreaterThan(12);
-    expect(sidePieces.some((p) => isBoardAlignedSideSlot(layout, p.worldY))).toBe(true);
-    expect(sidePieces.filter((p) => getSideStagingGap(layout, p.worldX) < layout.pieceWidth * 3).length)
-      .toBeGreaterThan(10);
-    expect(new Set(placements.map((p) => Math.round(p.worldX * 10))).size).toBeGreaterThan(14);
-  });
-
-  it("prefers balanced, board-aligned top and bottom trays for a panoramic puzzle on a tall display", () => {
-    const layout = createJigsawWorldLayout({
-      imageWidth: 2048,
-      imageHeight: 721,
-      puzzleWidth: 17,
-      puzzleHeight: 6,
-    });
-    const pieces = Array.from({ length: 48 }, (_, index) => makePiece(index, 17));
-    const viewport = { width: 760, height: 1280 };
-    const placements = createInitialJigsawPlacements(layout, pieces, viewport);
-
-    expect(getJigsawStagingMode(layout, pieces.length, viewport)).toBe("top-bottom");
     expect(placements.some((p) => p.worldY < layout.boardY)).toBe(true);
     expect(placements.some((p) => p.worldY > layout.boardY + layout.boardHeight)).toBe(true);
-    const trayPieces = placements.filter((p) => isTopBottomStaged(layout, p.worldY));
-    expect(trayPieces.length).toBeGreaterThan(12);
-    expect(trayPieces.some((p) => isBoardAlignedTopBottomSlot(layout, p.worldX))).toBe(true);
-    expect(trayPieces.filter((p) => getTopBottomStagingGap(layout, p.worldY) < layout.pieceHeight * 3).length)
-      .toBeGreaterThan(10);
-    expect(new Set(placements.map((p) => Math.round(p.worldY * 10))).size).toBeGreaterThan(14);
   });
 
   it("keeps all loose pieces non-overlapping as the staging grid fills", () => {
@@ -397,39 +333,22 @@ describe("Jigsaw world layout", () => {
     expect(createInitialJigsawPlacements(layout, pieces, viewport)).toEqual(placed);
   });
 
-  it("keeps the first overflow piece adjacent to its top/bottom tray", () => {
+  it("grows the occupied footprint with piece count using the same table algorithm", () => {
     const layout = createJigsawWorldLayout({
-      imageWidth: 1200, imageHeight: 900, puzzleWidth: 4, puzzleHeight: 3,
+      imageWidth: 1200, imageHeight: 1200, puzzleWidth: 8, puzzleHeight: 8,
     });
     const viewport = { width: 390, height: 844 };
-    const placements = createInitialJigsawPlacements(
-      layout, Array.from({ length: 40 }, (_, index) => makePiece(index, 4)), viewport,
+    const small = Array.from({ length: 4 }, (_, index) => makePiece(index, 8));
+    const large = Array.from({ length: 64 }, (_, index) => makePiece(index, 8));
+    const smallBounds = getJigsawOccupiedBounds(
+      layout, createInitialJigsawPlacements(layout, small, viewport), small,
     );
-    expect(getJigsawStagingMode(layout, placements.length, viewport)).toBe("top-bottom");
-    const firstOverflow = placements.find(
-      (piece) => !isBoardAlignedTopBottomSlot(layout, piece.worldX),
+    const largeBounds = getJigsawOccupiedBounds(
+      layout, createInitialJigsawPlacements(layout, large, viewport), large,
     );
-    expect(firstOverflow).toBeDefined();
-    const center = firstOverflow!.worldX + layout.pieceWidth / 2;
-    const lateralOverhang = Math.max(
-      0,
-      layout.boardX - center,
-      center - (layout.boardX + layout.boardWidth),
+    expect(largeBounds.height * largeBounds.width).toBeGreaterThan(
+      smallBounds.height * smallBounds.width,
     );
-    expect(lateralOverhang).toBeLessThan(layout.pieceWidth * 4);
-  });
-
-  it("uses piece count to decide when moderate extra side space should become trays", () => {
-    const layout = createJigsawWorldLayout({
-      imageWidth: 1200,
-      imageHeight: 1200,
-      puzzleWidth: 8,
-      puzzleHeight: 8,
-    });
-    const viewport = { width: 1200, height: 800 };
-
-    expect(getJigsawStagingMode(layout, 4, viewport)).toBe("perimeter");
-    expect(getJigsawStagingMode(layout, 64, viewport)).toBe("sides");
   });
 
   it("keeps adaptive staging deterministic for the same puzzle and play surface", () => {
@@ -573,20 +492,19 @@ describe("Jigsaw world layout", () => {
     }
   });
 
-  it("redistributes dense medium puzzles without losing pieces or breaking stable placement", () => {
+  it("handles dense medium puzzles through the same deterministic collision-free distribution", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1200, imageHeight: 900, puzzleWidth: 12, puzzleHeight: 8,
     });
     const pieces = Array.from({ length: 97 }, (_, i) => makePiece(i, 12));
     const viewport = { width: 1440, height: 900 };
-    const packed = createInitialJigsawPlacements(layout, pieces, viewport, false);
     const scattered = createInitialJigsawPlacements(layout, pieces, viewport);
     expect(scattered).toHaveLength(97);
-    expect(scattered.filter((p, i) =>
-      Math.hypot(p.worldX - packed[i]!.worldX, p.worldY - packed[i]!.worldY) >
-      Math.min(layout.pieceWidth, layout.pieceHeight) * 0.3,
-    ).length).toBeGreaterThan(20);
     expect(createInitialJigsawPlacements(layout, pieces, viewport)).toEqual(scattered);
+    const fractions = new Set(scattered.map((p) =>
+      Math.round(((p.worldX / layout.pieceWidth) % 1 + 1) % 1 * 100),
+    ));
+    expect(fractions.size).toBeGreaterThan(20);
     for (let i = 0; i < scattered.length; i += 1) {
       const a = scattered[i]!;
       for (let j = i + 1; j < scattered.length; j += 1) {
@@ -911,21 +829,13 @@ describe("Jigsaw camera", () => {
     expect(first.zoom).toBeLessThan(original.zoom);
   });
 
-  it("avoids the packed-grid fallback for a newly generated portrait 35-piece puzzle", () => {
+  it("stages a portrait 35-piece puzzle without repeated modes or an implicit grid", () => {
     const portrait = createJigsawWorldLayout({
       imageWidth: 1637, imageHeight: 2048, puzzleWidth: 5, puzzleHeight: 7,
     });
     const phone = { width: 390, height: 1100 };
     const pieces = Array.from({ length: 35 }, (_, index) => makePiece(index, 5));
-    const packed = createInitialJigsawPlacements(portrait, pieces, phone, false);
     const scattered = createInitialJigsawPlacements(portrait, pieces, phone);
-    const shifted = scattered.filter((piece, index) =>
-      Math.hypot(
-        piece.worldX - packed[index]!.worldX,
-        piece.worldY - packed[index]!.worldY,
-      ) > Math.min(portrait.pieceWidth, portrait.pieceHeight) * 0.3,
-    );
-    expect(shifted.length).toBeGreaterThan(10);
     const columns = new Set(scattered.map((p) => Math.round(p.worldX / 5)));
     const rows = new Set(scattered.map((p) => Math.round(p.worldY / 5)));
     expect(columns.size).toBeGreaterThan(12);
