@@ -629,7 +629,11 @@ const createNaturalJigsawPlacements = (
   viewport: JigsawViewport | null,
 ): JigsawPlacement[] | null => {
   if (pieces.length < 2 || pieces.length > 96) return null;
-  const mode = getJigsawStagingMode(layout, pieces.length, viewport);
+  // A tall play area makes space above/below the board more useful;
+  // a wide area favors its sides. Continuous bias, not orientation modes.
+  const verticalBias = isUsableJigsawViewport(viewport)
+    ? clamp(Math.sqrt(viewport.height / viewport.width), 0.55, 1.85)
+    : 1;
   const order = [...pieces].sort((a, b) => {
     const aSpan = getJigsawPieceCellSpan(a);
     const bSpan = getJigsawPieceCellSpan(b);
@@ -658,6 +662,7 @@ const createNaturalJigsawPlacements = (
     };
     const staged: JigsawPlacement[] = [];
     const occupied: Array<WorldPosition & { width: number; height: number }> = [];
+    const sideCounts = [0, 0, 0, 0]; // top, right, bottom, left
     let complete = true;
 
     for (let index = 0; index < order.length; index += 1) {
@@ -665,9 +670,11 @@ const createNaturalJigsawPlacements = (
       const size = getJigsawPieceWorldSize(layout, piece);
       const maxLeft = layout.worldWidth - size.width - worldPadding;
       const maxTop = layout.worldHeight - size.height - worldPadding;
-      const zones: Array<{ left: number; right: number; top: number; bottom: number }> = [];
-      const addZone = (left: number, right: number, top: number, bottom: number) => {
+      type SideZone = { side: number; left: number; right: number; top: number; bottom: number };
+      const zones: SideZone[] = [];
+      const addZone = (side: number, left: number, right: number, top: number, bottom: number) => {
         const clipped = {
+          side,
           left: Math.max(worldPadding, left),
           right: Math.min(maxLeft, right),
           top: Math.max(worldPadding, top),
@@ -675,49 +682,53 @@ const createNaturalJigsawPlacements = (
         };
         if (clipped.left <= clipped.right && clipped.top <= clipped.bottom) zones.push(clipped);
       };
-      const aligned = mode !== "perimeter" && order.length >= 40 && index < 24;
-      const lateral = aligned ? 0 : depth * 0.65;
-      const sideTop = layout.boardY - size.height * (aligned ? 0.5 : lateral);
-      const sideBottom = boardBottom - size.height * (aligned ? 0.5 : 1 - lateral);
-      const topLeft = layout.boardX - size.width * (aligned ? 0.5 : lateral);
-      const topRight = boardRight - size.width * (aligned ? 0.5 : 1 - lateral);
-      const leftZone = () => addZone(
-        layout.boardX - size.width * (1 + depth) - gap,
-        layout.boardX - size.width - gap,
-        sideTop, sideBottom,
-      );
-      const rightZone = () => addZone(
-        boardRight + gap, boardRight + gap + size.width * depth,
-        sideTop, sideBottom,
-      );
-      const topZone = () => addZone(
-        topLeft, topRight,
-        layout.boardY - size.height * (1 + depth) - gap,
-        layout.boardY - size.height - gap,
-      );
-      const bottomZone = () => addZone(
-        topLeft, topRight,
-        boardBottom + gap, boardBottom + gap + size.height * depth,
-      );
+      const lateral = depth * 0.65;
+      const sideTop = layout.boardY - size.height * lateral;
+      const sideBottom = boardBottom - size.height * (1 - lateral);
+      const topLeft = layout.boardX - size.width * lateral;
+      const topRight = boardRight - size.width * (1 - lateral);
 
-      if (mode === "sides") {
-        if (index % 2 === 0) { leftZone(); rightZone(); }
-        else { rightZone(); leftZone(); }
-        topZone(); bottomZone();
-      } else if (mode === "top-bottom") {
-        if (index % 2 === 0) { topZone(); bottomZone(); }
-        else { bottomZone(); topZone(); }
-        leftZone(); rightZone();
-      } else {
-        // Spread pieces across all four sides, not ordered rows or a solved-looking perimeter.
-        const phase = index % 4;
-        const sides = [topZone, rightZone, bottomZone, leftZone];
-        for (let side = 0; side < 4; side += 1) sides[(phase + side) % 4]!();
-      }
+      // Candidate rectangles are clipped to usable world space. Their areas
+      // encode actual staging capacity; the board dimensions influence that
+      // capacity continuously, without four-sided quotas or row alignment.
+      addZone(0, topLeft, topRight,
+        layout.boardY - size.height * (1 + depth) - gap,
+        layout.boardY - size.height - gap);
+      addZone(1, boardRight + gap, boardRight + gap + size.width * depth,
+        sideTop, sideBottom);
+      addZone(2, topLeft, topRight,
+        boardBottom + gap, boardBottom + gap + size.height * depth);
+      addZone(3, layout.boardX - size.width * (1 + depth) - gap,
+        layout.boardX - size.width - gap, sideTop, sideBottom);
+
+      // Crowded or unsuccessful sides become progressively less attractive.
+      // The sampler still explores every feasible side, so pieces can flow
+      // naturally into remaining room without predetermined tray positions.
+      const missed = [0, 0, 0, 0];
+      const selectZone = (): SideZone | null => {
+        const weights = zones.map((zone) => {
+          const area = Math.max(1, zone.right - zone.left + size.width) *
+            Math.max(1, zone.bottom - zone.top + size.height);
+          const capacity = area / Math.max(1, size.width * size.height);
+          const pressure = (sideCounts[zone.side] ?? 0) / Math.max(1, capacity);
+          const availability = Math.max(0.08, (1 - Math.min(1, pressure)) ** 2);
+          const orientation = zone.side % 2 === 0 ? verticalBias : 1 / verticalBias;
+          return area * orientation * availability / (1 + (missed[zone.side] ?? 0) / 8);
+        });
+        const total = weights.reduce((sum, weight) => sum + weight, 0);
+        if (total <= 0) return null;
+        let pick = random() * total;
+        for (let side = 0; side < zones.length; side += 1) {
+          pick -= weights[side]!;
+          if (pick < 0) return zones[side]!;
+        }
+        return zones[zones.length - 1] ?? null;
+      };
 
       let chosen: JigsawPlacement | null = null;
       for (let attempt = 0; attempt < 300 && zones.length > 0; attempt += 1) {
-        const zone = zones[Math.floor(attempt / 5 + random() * 1.5) % zones.length]!;
+        const zone = selectZone();
+        if (!zone) break;
         const candidate = normalizeJigsawPieceWorldPosition(
           layout,
           piece,
@@ -738,8 +749,12 @@ const createNaturalJigsawPlacements = (
             used.left, used.top, used.width, used.height,
             Math.min(layout.pieceWidth, layout.pieceHeight) * separation,
           ))
-        ) continue;
+        ) {
+          missed[zone.side]! += 1;
+          continue;
+        }
         chosen = { id: piece.id, ...candidate };
+        sideCounts[zone.side]! += 1;
         break;
       }
       if (!chosen) {

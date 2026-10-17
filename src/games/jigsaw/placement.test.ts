@@ -498,6 +498,51 @@ describe("Jigsaw world layout", () => {
     }
   });
 
+  it("biases the same square puzzle toward the taller dimension of its initial workspace", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 1000, imageHeight: 1000, puzzleWidth: 4, puzzleHeight: 4,
+    });
+    const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index, 4));
+    const tallViewport = { width: 390, height: 1100 };
+    const wideViewport = { width: 1100, height: 390 };
+    const tall = createInitialJigsawPlacements(layout, pieces, tallViewport);
+    const wide = createInitialJigsawPlacements(layout, pieces, wideViewport);
+    const directions = (placements: typeof tall) => ({
+      vertical: placements.filter((p) => isTopBottomStaged(layout, p.worldY)).length,
+      horizontal: placements.filter((p) => isSideStaged(layout, p.worldX)).length,
+    });
+    const portrait = directions(tall);
+    const landscape = directions(wide);
+    expect(portrait.vertical).toBeGreaterThan(landscape.vertical);
+    expect(landscape.horizontal).toBeGreaterThan(portrait.horizontal);
+    expect(createInitialJigsawPlacements(layout, pieces, tallViewport)).toEqual(tall);
+  });
+
+  it("favors board proportions without treating horizontal and vertical as exclusive modes", () => {
+    const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index, 4));
+    const viewport = { width: 850, height: 850 };
+    const wide = createJigsawWorldLayout({
+      imageWidth: 1800, imageHeight: 900, puzzleWidth: 4, puzzleHeight: 4,
+    });
+    const tall = createJigsawWorldLayout({
+      imageWidth: 900, imageHeight: 1800, puzzleWidth: 4, puzzleHeight: 4,
+    });
+    const widePieces = createInitialJigsawPlacements(wide, pieces, viewport);
+    const tallPieces = createInitialJigsawPlacements(tall, pieces, viewport);
+    expect(widePieces.filter((p) => isTopBottomStaged(wide, p.worldY)).length)
+      .toBeGreaterThan(tallPieces.filter((p) => isTopBottomStaged(tall, p.worldY)).length);
+    expect(tallPieces.filter((p) => isSideStaged(tall, p.worldX)).length)
+      .toBeGreaterThan(widePieces.filter((p) => isSideStaged(wide, p.worldX)).length);
+    for (const [layout, placements] of [[wide, widePieces], [tall, tallPieces]] as const) {
+      const fit = createJigsawOccupiedFitCamera(layout, viewport, placements, 28, {}, pieces);
+      const bounds = getScreenBounds(getJigsawOccupiedBounds(layout, placements, pieces), fit, viewport);
+      expect(bounds.left).toBeGreaterThanOrEqual(27.9);
+      expect(bounds.top).toBeGreaterThanOrEqual(27.9);
+      expect(bounds.right).toBeLessThanOrEqual(viewport.width - 27.9);
+      expect(bounds.bottom).toBeLessThanOrEqual(viewport.height - 27.9);
+    }
+  });
+
   it("redistributes dense medium puzzles without losing pieces or breaking stable placement", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1200, imageHeight: 900, puzzleWidth: 12, puzzleHeight: 8,
