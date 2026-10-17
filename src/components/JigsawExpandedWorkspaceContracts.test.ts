@@ -45,6 +45,12 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .jigsaw-workbench-toolbar {");
     expect(cssRule(jigsawCss, ".jigsaw-workspace:not(.is-immersive) .jigsaw-workbench-toolbar {")).toContain("position: absolute;");
     expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .jigsaw-tools-mobile-actions {");
+    const newMenuPriority = cssRule(
+      jigsawCss,
+      ".jigsaw-workspace:not(.is-immersive) .workspace-layout-crown:has(.new-puzzle-options[open]) {",
+    );
+    expect(newMenuPriority).toContain("z-index: 50;");
+    expect(cssRule(jigsawCss, ".jigsaw-workspace:not(.is-immersive) .jigsaw-workbench-toolbar {")).toContain("z-index: 35;");
     expect(jigsawPreviewSource).toContain('class="jigsaw-tools-mobile-actions"');
     expect(jigsawPreviewSource).toContain('closest<HTMLElement>(".jigsaw-workspace")');
     expect(jigsawPreviewSource).not.toContain("No joins yet");
@@ -139,13 +145,15 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).toContain("<JigsawFitIcon />");
     expect(jigsawPreviewSource).toContain("onClick={toggleFitView}");
     expect(jigsawPreviewSource).toContain('aria-pressed={fitIsOverview}');
-    expect(jigsawPreviewSource).toContain('fitIsOverview ? "Work view" : "All pieces"');
-    expect(jigsawPreviewSource).toContain('class="jigsaw-view-action-label"');
-    expect(jigsawPreviewSource).toContain('<span class="jigsaw-view-action-label">Expand</span>');
+    expect(jigsawPreviewSource).not.toContain("jigsaw-view-action-label");
+    expect(jigsawPreviewSource).toContain('title={fitIsOverview ? "Return to working view" : "Show all pieces"}');
+    expect(jigsawPreviewSource).toContain('title="Expand workspace"');
     expect(jigsawPreviewSource).toContain('<rect x="2.5" y="3.5" width="19" height="17" rx="2.5" />');
     expect(jigsawPreviewSource).not.toContain('<circle cx="12" cy="12" r="2.5" />');
     expect(jigsawCss).toContain('.jigsaw-camera-tools .jigsaw-fit-action[aria-pressed="true"]');
-    expect(jigsawCss).toContain('.jigsaw-view-action-label {');
+    expect(jigsawCss).not.toContain(".jigsaw-view-action-label");
+    expect(cssRule(jigsawCss, ".jigsaw-fit-action {")).toContain("width: 2.6rem;");
+    expect(cssRule(jigsawCss, ".jigsaw-camera-tools .jigsaw-expand-workspace {")).toContain("width: 2.6rem;");
     expect(jigsawPreviewSource).toContain("createJigsawOccupiedFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles)");
     expect(jigsawPreviewSource).toContain('class="jigsaw-zoom-level"');
     expect(jigsawPreviewSource).not.toContain("setZoomAtCenter(1)");

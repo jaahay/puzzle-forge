@@ -152,9 +152,9 @@ const JigsawToolsIcon = () => (
 const JigsawFitIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true">
     <rect x="2.5" y="3.5" width="19" height="17" rx="2.5" />
-    <rect x="6" y="7" width="4" height="4" rx="0.5" />
-    <rect x="14" y="7" width="4" height="4" rx="0.5" />
-    <rect x="10" y="13" width="4" height="4" rx="0.5" />
+    <rect x="5.5" y="8.5" width="5" height="4.5" rx="0.7" />
+    <rect x="14" y="6" width="4.5" height="4.5" rx="0.7" />
+    <rect x="12" y="14" width="5" height="4" rx="0.7" />
   </svg>
 );
 
@@ -1065,7 +1065,6 @@ export const TilePuzzlePreview = ({
             onClick={toggleFitView}
           >
             <JigsawFitIcon />
-            <span class="jigsaw-view-action-label">{fitIsOverview ? "Work view" : "All pieces"}</span>
           </button>
           {!displayMode.isExpanded ? (
             <button
@@ -1076,7 +1075,6 @@ export const TilePuzzlePreview = ({
               title="Expand workspace"
             >
               <JigsawExpandIcon />
-              <span class="jigsaw-view-action-label">Expand</span>
             </button>
           ) : null}
         </div>

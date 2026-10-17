@@ -17,6 +17,12 @@
   gap: 0.4rem;
 }
 
+/* A disclosed New-puzzle panel must cover the Jigsaw toolbar, not sit behind it.
+   Raise only the crown's stacking context while its options are open. */
+.jigsaw-workspace:not(.is-immersive) .workspace-layout-crown:has(.new-puzzle-options[open]) {
+  z-index: 50;
+}
+
 .jigsaw-workspace:not(.is-immersive) .jigsaw-workbench-toolbar {
   display: flex;
   position: absolute;
@@ -160,18 +166,10 @@
 }
 
 .jigsaw-fit-action {
-  display: inline-flex;
-  width: auto;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  padding: 0 0.7rem;
-}
-
-.jigsaw-view-action-label {
-  font-size: 0.73rem;
-  font-weight: 800;
-  white-space: nowrap;
+  display: grid;
+  width: 2.6rem;
+  place-items: center;
+  padding: 0;
 }
 
 .jigsaw-camera-tools .jigsaw-fit-action[aria-pressed="true"] {
@@ -206,12 +204,10 @@
 }
 
 .jigsaw-camera-tools .jigsaw-expand-workspace {
-  display: inline-flex;
-  width: auto;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  padding: 0 0.7rem;
+  display: grid;
+  width: 2.6rem;
+  place-items: center;
+  padding: 0;
   border-color: rgba(125, 211, 252, 0.58);
   color: #e0f2fe;
   background: linear-gradient(180deg, rgba(14, 116, 144, 0.82), rgba(30, 64, 175, 0.78));
@@ -234,6 +230,11 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   pointer-events: none;
+}
+
+.jigsaw-fit-action svg {
+  width: 1.3rem;
+  height: 1.3rem;
 }
 
 .tile-puzzle-art-preview {
