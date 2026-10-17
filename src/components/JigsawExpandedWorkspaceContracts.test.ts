@@ -152,7 +152,9 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).not.toContain('<circle cx="12" cy="12" r="2.5" />');
     expect(jigsawCss).toContain('.jigsaw-camera-tools .jigsaw-fit-action[aria-pressed="true"]');
     expect(jigsawCss).not.toContain(".jigsaw-view-action-label");
-    expect(cssRule(jigsawCss, ".jigsaw-fit-action {")).toContain("width: 2.6rem;");
+    const compactFitRule = cssRule(jigsawCss, ".jigsaw-camera-tools .jigsaw-fit-action {");
+    expect(compactFitRule).toContain("width: 2.6rem;");
+    expect(compactFitRule).toContain("padding: 0;");
     expect(cssRule(jigsawCss, ".jigsaw-camera-tools .jigsaw-expand-workspace {")).toContain("width: 2.6rem;");
     expect(jigsawPreviewSource).toContain("createJigsawOccupiedFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles)");
     expect(jigsawPreviewSource).toContain('class="jigsaw-zoom-level"');

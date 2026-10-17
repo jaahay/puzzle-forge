@@ -165,7 +165,7 @@
   outline: none;
 }
 
-.jigsaw-fit-action {
+.jigsaw-camera-tools .jigsaw-fit-action {
   display: grid;
   width: 2.6rem;
   place-items: center;
