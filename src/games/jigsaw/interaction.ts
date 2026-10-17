@@ -319,7 +319,7 @@ export const stageJigsawAssemblyPlacements = (
     return candidates[0] ? [candidates[0]] : [];
   });
   const representativePlacements = getPlacementById(
-    createInitialJigsawPlacements(layout, representatives, viewport, assembly.joinedComponents.length === 0),
+    createInitialJigsawPlacements(layout, representatives, viewport),
   );
 
   const staged: JigsawPlacement[] = [];
