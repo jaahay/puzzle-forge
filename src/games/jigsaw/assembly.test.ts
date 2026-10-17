@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { JigsawPiece } from "../../catalog/types";
 import {
+  anchorJigsawAssemblyComponent,
   getJigsawAssemblyComponents,
   getJigsawConnectedPieceCount,
   isJigsawAssemblySolved,
@@ -70,6 +71,27 @@ describe("Jigsaw assembly progress", () => {
       ["tile-2"],
       ["tile-3"],
     ]);
+  });
+
+  it("locks whole islands, carries anchors through joins, and rejects corrupt saved anchors", () => {
+    const joined = mergeJigsawAssemblyComponents({ joinedComponents: [] }, "tile-0", "tile-1");
+    const anchored = anchorJigsawAssemblyComponent(joined, "tile-0");
+    expect(anchored).toEqual({
+      joinedComponents: [["tile-0", "tile-1"]],
+      anchoredPieceIds: ["tile-0", "tile-1"],
+    });
+    const expanded = mergeJigsawAssemblyComponents(anchored, "tile-1", "tile-2");
+    expect(expanded.anchoredPieceIds).toEqual(["tile-0", "tile-1", "tile-2"]);
+    expect(parseJigsawAssemblyProgress(expanded, pieces)).toEqual(expanded);
+    expect(parseJigsawAssemblyProgress({
+      joinedComponents: [["tile-0", "tile-1"]], anchoredPieceIds: ["tile-0"],
+    }, pieces)).toBeNull();
+    expect(parseJigsawAssemblyProgress({
+      joinedComponents: [], anchoredPieceIds: ["foreign"],
+    }, pieces)).toBeNull();
+    expect(parseJigsawAssemblyProgress({
+      joinedComponents: [], anchoredPieceIds: ["tile-0", "tile-0"],
+    }, pieces)).toBeNull();
   });
 
   it("recognizes completion from one full component", () => {

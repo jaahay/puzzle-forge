@@ -267,7 +267,10 @@ const isPersistedTileProgress = (value: Record<string, unknown>): value is Persi
     isRecord(value.jigsawAssembly) &&
     Array.isArray(value.jigsawAssembly.joinedComponents) &&
     value.jigsawAssembly.joinedComponents.every((component) =>
-      Array.isArray(component) && component.every((pieceId) => typeof pieceId === "string"))
+      Array.isArray(component) && component.every((pieceId) => typeof pieceId === "string")) &&
+    (value.jigsawAssembly.anchoredPieceIds === undefined || (
+      Array.isArray(value.jigsawAssembly.anchoredPieceIds) &&
+      value.jigsawAssembly.anchoredPieceIds.every((pieceId) => typeof pieceId === "string")))
   ));
 
 const isPersistedGridProgress = (value: Record<string, unknown>): value is PersistedGridProgress =>

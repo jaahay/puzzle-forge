@@ -1,5 +1,6 @@
 import type { JigsawPiece } from "../../catalog/types";
 import {
+  anchorJigsawAssemblyComponent,
   getJigsawAssemblyComponents,
   getJigsawComponentPieceIds,
   mergeJigsawAssemblyComponents,
@@ -126,7 +127,9 @@ export const resolveJigsawComponentDrop = (
 ): JigsawDropResult => {
   const { eligiblePieceIds, snapToFrame = false } = options;
   const draggedIds = getJigsawComponentPieceIds(assembly, draggedPieceId);
-  if (eligiblePieceIds && draggedIds.some((pieceId) => !eligiblePieceIds.has(pieceId))) {
+  const anchoredIds = new Set(assembly.anchoredPieceIds ?? []);
+  if (draggedIds.some((pieceId) => anchoredIds.has(pieceId)) ||
+      (eligiblePieceIds && draggedIds.some((pieceId) => !eligiblePieceIds.has(pieceId)))) {
     return {
       placements: placements.map((placement) => ({ ...placement })),
       assembly,
@@ -238,6 +241,7 @@ export const resolveJigsawComponentDrop = (
     if (!nextCandidate) break;
 
     const { candidate } = nextCandidate;
+    if (anchoredIds.has(candidate.pieceId)) frameAnchored = true;
     const candidateIndex = remainingCandidates.findIndex(
       ({ componentKey }) => componentKey === candidate.componentKey,
     );
@@ -253,7 +257,7 @@ export const resolveJigsawComponentDrop = (
       draggedPieceId,
     );
     const alignmentTranslation = frameAnchored
-      ? currentTranslation
+      ? { x: 0, y: 0 }
       : { x: candidate.translationX, y: candidate.translationY };
     const aligned = alignComponentToTranslation(
       layout,
@@ -281,6 +285,14 @@ export const resolveJigsawComponentDrop = (
     joined = true;
   }
 
+  if (frameAnchored) {
+    mergedAssembly = anchorJigsawAssemblyComponent(mergedAssembly, draggedPieceId);
+    mergedPlacements = alignComponentToTranslation(
+      layout, pieces, mergedPlacements,
+      getJigsawComponentPieceIds(mergedAssembly, draggedPieceId), 0, 0,
+    );
+  }
+
   return {
     placements: mergedPlacements,
     assembly: mergedAssembly,
@@ -296,6 +308,7 @@ export const stageJigsawAssemblyPlacements = (
 ): JigsawPlacement[] => {
   const piecesById = getPieceById(pieces);
   const components = getJigsawAssemblyComponents(assembly, pieces);
+  const anchored = new Set(assembly.anchoredPieceIds ?? []);
   const representatives = components.flatMap((component) => {
     const candidates = component
       .flatMap((pieceId) => {
@@ -322,8 +335,9 @@ export const stageJigsawAssemblyPlacements = (
     const stagedRepresentative = representativePlacements.get(representative.id);
     if (!stagedRepresentative) continue;
     const solvedRepresentative = getJigsawSolvedPosition(layout, representative);
-    const translationX = stagedRepresentative.worldX - solvedRepresentative.left;
-    const translationY = stagedRepresentative.worldY - solvedRepresentative.top;
+    const isAnchored = component.some((pieceId) => anchored.has(pieceId));
+    const translationX = isAnchored ? 0 : stagedRepresentative.worldX - solvedRepresentative.left;
+    const translationY = isAnchored ? 0 : stagedRepresentative.worldY - solvedRepresentative.top;
 
     for (const pieceId of component) {
       const piece = piecesById.get(pieceId);

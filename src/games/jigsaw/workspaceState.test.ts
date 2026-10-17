@@ -111,5 +111,13 @@ describe("Jigsaw workspace state", () => {
     expect(restaged?.assembly).toEqual(assembly);
     expect(restaged?.assembly).not.toBe(assembly);
     expect(reset?.assembly).toEqual({ joinedComponents: [] });
+    const anchored = { joinedComponents: [], anchoredPieceIds: ["tile-0"] };
+    const retained = restageJigsawWorkspaceState(layout, pieces, anchored, viewport)!;
+    expect(retained.assembly).toEqual(anchored);
+    expect(retained.placements.find((p) => p.id === "tile-0")).toEqual({
+      id: "tile-0", worldX: getJigsawSolvedPosition(layout, pieces[0]!).left,
+      worldY: getJigsawSolvedPosition(layout, pieces[0]!).top,
+    });
+    expect(hasMeaningfulJigsawWorkspaceProgress(layout, null, retained.placements, retained.assembly)).toBe(true);
   });
 });

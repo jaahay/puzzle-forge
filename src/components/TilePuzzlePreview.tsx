@@ -800,6 +800,7 @@ export const TilePuzzlePreview = ({
     const currentPlacementState = placementStateRef.current;
     if (!currentPlacementState || currentPlacementState.puzzleId !== puzzle.id) return;
     const pieceIds = getJigsawComponentPieceIds(currentPlacementState.assembly, tile.id);
+    if (pieceIds.some((id) => currentPlacementState.assembly.anchoredPieceIds?.includes(id))) return;
     const pieceElements = pieceIds.flatMap((pieceId) => {
       const element = pieceElementsRef.current.get(pieceId);
       return element ? [element] : [];
@@ -1133,7 +1134,7 @@ export const TilePuzzlePreview = ({
             setSnapToFrame((current) => !current);
           }}
         >
-          Snap to frame
+          Snap and lock to frame
         </button>
       </div>
 
@@ -1170,6 +1171,7 @@ export const TilePuzzlePreview = ({
               activeDrag?.puzzleId === puzzle.id &&
               activeDrag.pieceIds.includes(tile.id);
             const raised = tile.id === raisedTileId;
+            const anchored = activeAssembly.anchoredPieceIds?.includes(tile.id) ?? false;
             const outlinePath = getJigsawPieceOutlinePath(tile, puzzle.edgeModel);
             const clipPathId = getJigsawPieceClipPathId(puzzle, tile);
             const pieceStyle = {
@@ -1182,7 +1184,7 @@ export const TilePuzzlePreview = ({
 
             return (
               <button
-                class={`tile-puzzle-piece ${getJigsawComponentPieceIds(activeAssembly, tile.id).length > 1 ? "joined" : "loose"} ${active ? "dragging" : ""}`}
+                class={`tile-puzzle-piece ${anchored ? "anchored" : getJigsawComponentPieceIds(activeAssembly, tile.id).length > 1 ? "joined" : "loose"} ${active ? "dragging" : ""}`}
                 key={tile.id}
                 ref={(element) => {
                   if (element) pieceElementsRef.current.set(tile.id, element);
@@ -1195,7 +1197,7 @@ export const TilePuzzlePreview = ({
                 onPointerCancel={cancelDrag}
                 type="button"
                 tabIndex={-1}
-                aria-label={`Piece ${tile.solvedIndex + 1}, ${getJigsawComponentPieceIds(activeAssembly, tile.id).length > 1 ? "joined" : "loose"}`}
+                aria-label={`Piece ${tile.solvedIndex + 1}, ${anchored ? "anchored to frame" : getJigsawComponentPieceIds(activeAssembly, tile.id).length > 1 ? "joined" : "loose"}`}
               >
                 <svg
                   class="tile-puzzle-piece-visual"

@@ -63,7 +63,7 @@ export const hasMeaningfulJigsawWorkspaceProgress = (
   placements: readonly JigsawPlacement[],
   assembly: JigsawAssemblyProgress,
 ): boolean => {
-  if (assembly.joinedComponents.length > 0) return true;
+  if (assembly.joinedComponents.length > 0 || (assembly.anchoredPieceIds?.length ?? 0) > 0) return true;
   if (!baseline) return false;
   if (baseline.length !== placements.length) return true;
   const initialPositions = new Map(baseline.map((placement) => [placement.id, placement] as const));

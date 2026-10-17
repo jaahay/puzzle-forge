@@ -59,6 +59,19 @@ describe("Jigsaw action history", () => {
     expect(sameJigsawSnapshot(redone!.snapshot, joined)).toBe(true);
   });
 
+  it("undoes and redoes a frame anchor independently of loose position", () => {
+    const before = snapshot([["a", 10, 20]]);
+    const anchored: JigsawWorkspaceSnapshot = {
+      placements: [{ id: "a", worldX: 0, worldY: 0 }],
+      assembly: { joinedComponents: [], anchoredPieceIds: ["a"] },
+    };
+    const history = commitJigsawPlacementAction(makeEmptyJigsawHistoryState(), before, anchored);
+    const undone = applyJigsawHistoryAction(history, anchored, "undo")!;
+    expect(undone.snapshot.assembly.anchoredPieceIds).toBeUndefined();
+    const redone = applyJigsawHistoryAction(undone.history, undone.snapshot, "redo")!;
+    expect(redone.snapshot.assembly.anchoredPieceIds).toEqual(["a"]);
+  });
+
   it("clears Redo after a divergent completed action", () => {
     const start = snapshot([["a", 10, 20]]);
     const first = snapshot([["a", 30, 40]]);

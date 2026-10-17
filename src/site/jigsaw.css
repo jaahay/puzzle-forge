@@ -815,6 +815,11 @@
   cursor: grab;
 }
 
+.tile-puzzle-piece.anchored,
+.tile-puzzle-piece.anchored .tile-puzzle-piece-hit-target {
+  cursor: default;
+}
+
 .tile-puzzle-piece-outline {
   fill: none;
   stroke: rgba(248, 250, 252, 0.5);
