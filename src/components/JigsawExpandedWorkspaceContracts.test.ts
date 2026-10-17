@@ -6,6 +6,8 @@ const jigsawWorkspaceSource = readFileSync(new URL("./JigsawWorkspace.tsx", impo
 const imageTileWorkspaceSource = readFileSync(new URL("./ImageTilePuzzleWorkspace.tsx", import.meta.url), "utf8");
 const jigsawPreviewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", import.meta.url), "utf8");
 const immersiveCss = readFileSync(new URL("../site/immersive.css", import.meta.url), "utf8");
+const mobileWorkspaceCss = readFileSync(new URL("../site/mobile-workspace.css", import.meta.url), "utf8");
+const hierarchyCss = readFileSync(new URL("../site/workspace-hierarchy.css", import.meta.url), "utf8");
 const jigsawCss = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
 const identitySource = readFileSync(new URL("./CurrentPuzzleIdentity.tsx", import.meta.url), "utf8");
 
@@ -17,6 +19,26 @@ const cssRule = (source: string, selector: string) => {
 };
 
 describe("Jigsaw expanded workspace contracts", () => {
+  it("keeps sticky mobile navigation above scrolling puzzle controls but below immersive play", () => {
+    const mobileHeaderStart = mobileWorkspaceCss.indexOf("  .app-header {");
+    const mobileHeaderEnd = mobileWorkspaceCss.indexOf("\n  }", mobileHeaderStart);
+    const mobileHeader = mobileWorkspaceCss.slice(mobileHeaderStart, mobileHeaderEnd);
+    const mobileLayer = Number(mobileHeader.match(/z-index:\s*(\d+)/)?.[1] ?? -1);
+    const crownLayer = Number(cssRule(hierarchyCss, ".workspace-layout-crown {").match(/z-index:\s*(\d+)/)?.[1] ?? -1);
+    const openMenuLayer = Number(cssRule(
+      jigsawCss, ".jigsaw-workspace:not(.is-immersive) .workspace-layout-crown:has(.new-puzzle-options[open]) {",
+    ).match(/z-index:\s*(\d+)/)?.[1] ?? -1);
+    const immersiveLayer = Number(cssRule(
+      immersiveCss, ".puzzle-workspace-layout.is-immersive {",
+    ).match(/z-index:\s*(\d+)/)?.[1] ?? -1);
+    expect(mobileHeader).toContain("position: sticky;");
+    expect(mobileHeader).toContain("background: #0f172a;");
+    expect(mobileHeader).toContain("box-shadow: 0 -0.5rem 0 #0f172a;");
+    expect(mobileLayer).toBeGreaterThan(crownLayer);
+    expect(mobileLayer).toBeGreaterThan(openMenuLayer);
+    expect(mobileLayer).toBeLessThan(immersiveLayer);
+  });
+
   it("keeps expanded entry local to Jigsaw while the shared shell owns persistent exit/fullscreen", () => {
     expect(layoutSource).toContain("usePuzzleWorkspaceDisplayMode");
     expect(layoutSource).toContain('immersiveEntry?: "workspace" | "descendant"');
