@@ -194,7 +194,7 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).not.toContain("Fit board");
     expect(jigsawPreviewSource).toContain("Restage pieces");
     expect(jigsawPreviewSource).toContain("if (restagePieces()) setShowCompactTools(false)");
-    expect(jigsawPreviewSource).toContain("Snap to frame");
+    expect(jigsawPreviewSource).toContain("Snap and lock to frame");
     expect(jigsawPreviewSource).toContain("aria-pressed={snapToFrame}");
     expect(jigsawPreviewSource).toContain("snapToFrame,");
     expect(jigsawCss).toContain('.tile-puzzle-tools button[aria-pressed="true"]');

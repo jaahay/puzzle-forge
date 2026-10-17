@@ -216,8 +216,7 @@ describe("Jigsaw session assembly persistence", () => {
       joinedComponents: [["tile-0", "tile-1"]],
       anchoredPieceIds: ["tile-0", "tile-1"],
     };
-    const resource = makeJigsawResource(session);
-    const persisted = buildPersistedPuzzleSession(session, resource.generationId);
+    const { persisted } = buildPersisted(session);
     expect(persisted?.progress.kind).toBe("tiles");
     if (!persisted || persisted.progress.kind !== "tiles") return;
     expect(persisted.progress.jigsawAssembly?.anchoredPieceIds).toEqual(["tile-0", "tile-1"]);
