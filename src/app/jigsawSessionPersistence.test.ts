@@ -209,6 +209,25 @@ describe("Jigsaw session assembly persistence", () => {
     });
   });
 
+  it("persists frame-anchored pieces without storing transient world coordinates", () => {
+    const session = makeJigsawSession([["tile-0", "tile-1"]]);
+    if (session.progress.kind !== "tiles") return;
+    session.progress.jigsawAssembly = {
+      joinedComponents: [["tile-0", "tile-1"]],
+      anchoredPieceIds: ["tile-0", "tile-1"],
+    };
+    const { persisted } = buildPersisted(session);
+    expect(persisted?.progress.kind).toBe("tiles");
+    if (!persisted || persisted.progress.kind !== "tiles") return;
+    expect(persisted.progress.jigsawAssembly?.anchoredPieceIds).toEqual(["tile-0", "tile-1"]);
+    const restored = restorePuzzleSessionFromPersisted(persisted, session.puzzle);
+    expect(restored?.progress.kind).toBe("tiles");
+    if (!restored || restored.progress.kind !== "tiles") return;
+    expect(restored.progress.jigsawAssembly?.anchoredPieceIds).toEqual(["tile-0", "tile-1"]);
+    expect(persisted.progress).not.toHaveProperty("worldX");
+    expect(persisted.progress).not.toHaveProperty("worldY");
+  });
+
   it("persists explicit empty assembly progress rather than treating it as missing", () => {
     const session = makeJigsawSession([]);
     const puzzle = session.puzzle;
