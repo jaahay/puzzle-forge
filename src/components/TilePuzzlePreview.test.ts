@@ -180,7 +180,7 @@ describe("TilePuzzlePreview camera controls", () => {
     )).toBe(prior);
   });
 
-  it("starts from a board-first working fit when a puzzle camera has not initialized yet", () => {
+  it("starts from an all-pieces overview when a puzzle camera has not initialized yet", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 2048,
       imageHeight: 1536,
@@ -194,7 +194,7 @@ describe("TilePuzzlePreview camera controls", () => {
     if (!placements) return;
 
     expect(initializeOrPreserveJigsawCamera(layout, viewport, null, placements)).toEqual(
-      createJigsawWorkingFitCamera(layout, viewport, placements),
+      createJigsawOccupiedFitCamera(layout, viewport, placements),
     );
   });
 });
