@@ -11,7 +11,7 @@ import {
   createJigsawOccupiedFitCamera,
   createJigsawWorkingFitCamera,
   createJigsawWorldLayout,
-  getJigsawStagingMode,
+  getJigsawOccupiedBounds,
 } from "../games/jigsaw/placement";
 import {
   getJigsawFitInsetsForOverlays,
@@ -300,10 +300,13 @@ describe("TilePuzzlePreview placement initialization", () => {
       veryTallStage,
     )?.placements ?? null;
 
-    expect(getJigsawStagingMode(layout, pieces.length, wideStage)).toBe("sides");
-    expect(getJigsawStagingMode(layout, pieces.length, veryTallStage)).toBe("top-bottom");
     expect(widePlacements).not.toBeNull();
     expect(tallPlacements).not.toBeNull();
+    const wideBounds = getJigsawOccupiedBounds(layout, widePlacements!, pieces);
+    const tallBounds = getJigsawOccupiedBounds(layout, tallPlacements!, pieces);
+    expect(wideBounds.width / wideBounds.height).toBeGreaterThan(
+      tallBounds.width / tallBounds.height,
+    );
     expect(widePlacements).not.toEqual(tallPlacements);
   });
 });
