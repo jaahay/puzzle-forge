@@ -632,7 +632,7 @@ const createNaturalJigsawPlacements = (
   // A tall play area makes space above/below the board more useful;
   // a wide area favors its sides. Continuous bias, not orientation modes.
   const verticalBias = isUsableJigsawViewport(viewport)
-    ? clamp(Math.sqrt(viewport.height / viewport.width), 0.55, 1.85)
+    ? clamp(viewport.height / viewport.width, 0.35, 3)
     : 1;
   const order = [...pieces].sort((a, b) => {
     const aSpan = getJigsawPieceCellSpan(a);

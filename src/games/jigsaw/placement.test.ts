@@ -505,17 +505,26 @@ describe("Jigsaw world layout", () => {
     const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index, 4));
     const tallViewport = { width: 390, height: 1100 };
     const wideViewport = { width: 1100, height: 390 };
-    const tall = createInitialJigsawPlacements(layout, pieces, tallViewport);
-    const wide = createInitialJigsawPlacements(layout, pieces, wideViewport);
-    const directions = (placements: typeof tall) => ({
-      vertical: placements.filter((p) => isTopBottomStaged(layout, p.worldY)).length,
-      horizontal: placements.filter((p) => isSideStaged(layout, p.worldX)).length,
-    });
-    const portrait = directions(tall);
-    const landscape = directions(wide);
-    expect(portrait.vertical).toBeGreaterThan(landscape.vertical);
-    expect(landscape.horizontal).toBeGreaterThan(portrait.horizontal);
-    expect(createInitialJigsawPlacements(layout, pieces, tallViewport)).toEqual(tall);
+    let tallVertical = 0;
+    let tallHorizontal = 0;
+    let wideVertical = 0;
+    let wideHorizontal = 0;
+    // Assess the directional tendency across several seeded permutations,
+    // not an accidental tie from a single 16-piece scatter.
+    for (const offset of [0, 1, 3, 5, 7, 11]) {
+      const shuffled = pieces.map((piece, index) => ({
+        ...piece, currentIndex: (index + offset) % pieces.length,
+      }));
+      const tall = createInitialJigsawPlacements(layout, shuffled, tallViewport);
+      const wide = createInitialJigsawPlacements(layout, shuffled, wideViewport);
+      tallVertical += tall.filter((placement) => isTopBottomStaged(layout, placement.worldY)).length;
+      tallHorizontal += tall.filter((placement) => isSideStaged(layout, placement.worldX)).length;
+      wideVertical += wide.filter((placement) => isTopBottomStaged(layout, placement.worldY)).length;
+      wideHorizontal += wide.filter((placement) => isSideStaged(layout, placement.worldX)).length;
+      expect(createInitialJigsawPlacements(layout, shuffled, tallViewport)).toEqual(tall);
+    }
+    expect(tallVertical).toBeGreaterThan(wideVertical);
+    expect(wideHorizontal).toBeGreaterThan(tallHorizontal);
   });
 
   it("favors board proportions without treating horizontal and vertical as exclusive modes", () => {
