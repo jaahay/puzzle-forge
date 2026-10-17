@@ -52,7 +52,7 @@ export const initializeOrPreserveJigsawCamera = (
   insets: Partial<JigsawViewportInsets> = {},
 ) => currentCamera ?? (
   placements
-    ? createJigsawWorkingFitCamera(layout, viewport, placements, 28, insets, pieces)
+    ? createJigsawOccupiedFitCamera(layout, viewport, placements, 28, insets, pieces)
     : createJigsawFitCamera(layout, viewport, "workspace")
 );
 

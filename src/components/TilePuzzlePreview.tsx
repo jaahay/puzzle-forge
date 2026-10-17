@@ -218,7 +218,7 @@ export const TilePuzzlePreview = ({
   const [showEdgeSeams, setShowEdgeSeams] = useState(false);
   const [snapToFrame, setSnapToFrame] = useState(false);
   const [showCompactTools, setShowCompactTools] = useState(false);
-  const [fitIsOverview, setFitIsOverview] = useState(false);
+  const [fitIsOverview, setFitIsOverview] = useState(true);
   const cameraWasUserAdjustedRef = useRef(false);
   const displayMode = usePuzzleWorkspaceDisplayMode();
   const markManualCameraAdjustment = () => {
@@ -323,14 +323,7 @@ export const TilePuzzlePreview = ({
   const activeCamera = cameraState?.puzzleId === puzzle.id
     ? cameraState.camera
     : activePlacements
-      ? createJigsawWorkingFitCamera(
-          layout,
-          renderViewport,
-          activePlacements,
-          28,
-          {},
-          puzzle.tiles,
-        )
+      ? createJigsawOccupiedFitCamera(layout, renderViewport, activePlacements, 28, {}, puzzle.tiles)
       : createJigsawFitCamera(layout, renderViewport, "workspace");
   const wheelStateRef = useRef({
     puzzleId: puzzle.id,
@@ -386,7 +379,7 @@ export const TilePuzzlePreview = ({
     setActiveTileId(null);
     setRaisedTileId(null);
     setIsPanning(false);
-    setFitIsOverview(false);
+    setFitIsOverview(true);
     cameraWasUserAdjustedRef.current = false;
   }, [puzzle.id, replaceHistory]);
 
@@ -531,8 +524,8 @@ export const TilePuzzlePreview = ({
       ));
     }
     cameraWasUserAdjustedRef.current = false;
-    setFitIsOverview(false);
-    setCamera(createJigsawWorkingFitCamera(
+    setFitIsOverview(true);
+    setCamera(createJigsawOccupiedFitCamera(
       layout,
       stagingViewport,
       fitPlacements,

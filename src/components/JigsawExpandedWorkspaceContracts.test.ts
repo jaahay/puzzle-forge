@@ -59,6 +59,14 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).not.toContain("displayMode.toggleBrowserFullscreen");
   });
 
+  it("opens a new or restaged puzzle in All pieces until the player chooses Work view", () => {
+    expect(jigsawPreviewSource).toContain("const [fitIsOverview, setFitIsOverview] = useState(true);");
+    expect(jigsawPreviewSource).toContain("setFitIsOverview(true);");
+    expect(jigsawPreviewSource).toContain("setFitIsOverview(false);");
+    expect(jigsawPreviewSource).toContain("setCamera(createJigsawOccupiedFitCamera(");
+    expect(jigsawPreviewSource).toContain("createJigsawWorkingFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles)");
+  });
+
   it("keeps Jigsaw-only controls over the board without extending the shared header", () => {
     expect(jigsawWorkspaceSource).not.toContain("workspaceControls=");
     expect(identitySource).not.toContain("workspaceControls");
