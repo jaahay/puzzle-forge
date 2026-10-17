@@ -71,6 +71,7 @@ const basePieceSize = 96;
 const worldPadding = 48;
 const worldScale = 1.75;
 const minimumStagingPiecesPerAxis = 5;
+const minimumVerticalStagingPieces = 9;
 const jigsawPieceVisualOverhangRatio = jigsawEdgeMaximumDepth / 100;
 
 export const jigsawCameraMinimumZoom = 0.05;
@@ -122,7 +123,7 @@ export const createJigsawWorldLayout = ({
   ) + worldPadding * 2;
   const worldHeight = Math.max(
     boardHeight * worldScale,
-    boardHeight + pieceHeight * minimumStagingPiecesPerAxis,
+    boardHeight + pieceHeight * minimumVerticalStagingPieces,
   ) + worldPadding * 2;
 
   return {
@@ -634,6 +635,9 @@ const createNaturalJigsawPlacements = (
   const verticalBias = isUsableJigsawViewport(viewport)
     ? clamp(viewport.height / viewport.width, 0.35, 3)
     : 1;
+  // Prefer depth, not just a greater piece count, along the long axis of
+  // the playable surface. World coordinates are established once at staging.
+  const verticalReach = clamp(Math.pow(verticalBias, 0.65), 0.7, 1.8);
   const order = [...pieces].sort((a, b) => {
     const aSpan = getJigsawPieceCellSpan(a);
     const bSpan = getJigsawPieceCellSpan(b);
@@ -683,6 +687,8 @@ const createNaturalJigsawPlacements = (
         if (clipped.left <= clipped.right && clipped.top <= clipped.bottom) zones.push(clipped);
       };
       const lateral = depth * 0.65;
+      const verticalDepth = depth * verticalReach;
+      const horizontalDepth = depth / verticalReach;
       const sideTop = layout.boardY - size.height * lateral;
       const sideBottom = boardBottom - size.height * (1 - lateral);
       const topLeft = layout.boardX - size.width * lateral;
@@ -692,13 +698,13 @@ const createNaturalJigsawPlacements = (
       // encode actual staging capacity; the board dimensions influence that
       // capacity continuously, without four-sided quotas or row alignment.
       addZone(0, topLeft, topRight,
-        layout.boardY - size.height * (1 + depth) - gap,
+        layout.boardY - size.height * (1 + verticalDepth) - gap,
         layout.boardY - size.height - gap);
-      addZone(1, boardRight + gap, boardRight + gap + size.width * depth,
+      addZone(1, boardRight + gap, boardRight + gap + size.width * horizontalDepth,
         sideTop, sideBottom);
       addZone(2, topLeft, topRight,
-        boardBottom + gap, boardBottom + gap + size.height * depth);
-      addZone(3, layout.boardX - size.width * (1 + depth) - gap,
+        boardBottom + gap, boardBottom + gap + size.height * verticalDepth);
+      addZone(3, layout.boardX - size.width * (1 + horizontalDepth) - gap,
         layout.boardX - size.width - gap, sideTop, sideBottom);
 
       // Crowded or unsuccessful sides become progressively less attractive.
@@ -713,7 +719,11 @@ const createNaturalJigsawPlacements = (
           const pressure = (sideCounts[zone.side] ?? 0) / Math.max(1, capacity);
           const availability = Math.max(0.08, (1 - Math.min(1, pressure)) ** 2);
           const orientation = zone.side % 2 === 0 ? verticalBias : 1 / verticalBias;
-          return area * orientation * availability / (1 + (missed[zone.side] ?? 0) / 8);
+          const opposite = sideCounts[(zone.side + 2) % 4] ?? 0;
+          const imbalance = Math.max(0, (sideCounts[zone.side] ?? 0) - opposite);
+          const balance = 1 / (1 + imbalance * 0.45);
+          return area * orientation * availability * balance /
+            (1 + (missed[zone.side] ?? 0) / 8);
         });
         const total = weights.reduce((sum, weight) => sum + weight, 0);
         if (total <= 0) return null;

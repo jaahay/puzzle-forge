@@ -498,6 +498,27 @@ describe("Jigsaw world layout", () => {
     }
   });
 
+  it("uses vertically available staging depth, not just a top/bottom piece count", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 1000, imageHeight: 1000, puzzleWidth: 6, puzzleHeight: 6,
+    });
+    const pieces = Array.from({ length: 36 }, (_, index) => makePiece(index, 6));
+    const measure = (viewport: { width: number; height: number }) => {
+      const placements = createInitialJigsawPlacements(layout, pieces, viewport);
+      const bounds = getJigsawOccupiedBounds(layout, placements, pieces);
+      const camera = createJigsawOccupiedFitCamera(layout, viewport, placements, 28, {}, pieces);
+      const screen = getScreenBounds(bounds, camera, viewport);
+      expect(screen.left).toBeGreaterThanOrEqual(27.9);
+      expect(screen.top).toBeGreaterThanOrEqual(27.9);
+      expect(screen.right).toBeLessThanOrEqual(viewport.width - 27.9);
+      expect(screen.bottom).toBeLessThanOrEqual(viewport.height - 27.9);
+      return bounds.height / bounds.width;
+    };
+    expect(measure({ width: 390, height: 1000 })).toBeGreaterThan(
+      measure({ width: 1000, height: 390 }),
+    );
+  });
+
   it("biases the same square puzzle toward the taller dimension of its initial workspace", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1000, imageHeight: 1000, puzzleWidth: 4, puzzleHeight: 4,

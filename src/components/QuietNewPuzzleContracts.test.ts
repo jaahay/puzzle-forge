@@ -44,6 +44,11 @@ describe("Quiet New Puzzle contracts", () => {
     expect(nextPuzzleCss).not.toMatch(/\.new-puzzle-info-panel\s*\{[^}]*position:\s*absolute/);
   });
 
+  it("restores New-puzzle focus without scrolling the game under the sticky selector", () => {
+    expect(commandSource).toContain('focus({ preventScroll: true })');
+    expect(commandSource).toContain('options.querySelector<HTMLElement>("summary")?.focus({ preventScroll: true })');
+  });
+
   it("keeps Jigsaw choices operational while putting their explanations behind info", () => {
     expect(jigsawSource).toContain("jigsawCutStyleDescriptions[cutStyle]");
     expect(jigsawSource).toContain("jigsawBoundaryModeDescriptions[boundaryMode]");

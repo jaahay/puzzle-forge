@@ -32,6 +32,7 @@ describe("Jigsaw expanded workspace contracts", () => {
       immersiveCss, ".puzzle-workspace-layout.is-immersive {",
     ).match(/z-index:\s*(\d+)/)?.[1] ?? -1);
     expect(mobileHeader).toContain("position: sticky;");
+    expect(mobileHeader).toContain("top: 0;");
     expect(mobileHeader).toContain("background: #0f172a;");
     expect(mobileHeader).toContain("box-shadow: 0 -0.5rem 0 #0f172a;");
     expect(mobileLayer).toBeGreaterThan(crownLayer);

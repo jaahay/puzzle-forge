@@ -6,7 +6,7 @@
 
   .app-header {
     position: sticky;
-    top: 0.5rem;
+    top: 0;
     /* Cover scrolling puzzle chrome, including open New options (50).
        Immersive play (1000) remains above the ordinary application header. */
     z-index: 60;
