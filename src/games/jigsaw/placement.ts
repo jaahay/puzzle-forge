@@ -63,7 +63,7 @@ type WorldPoint = {
 
 const basePieceSize = 96;
 const worldPadding = 48;
-const worldScale = 1.75;
+const worldScale = 1.95;
 const minimumStagingPiecesPerAxis = 5;
 const minimumVerticalStagingPieces = 9;
 const jigsawPieceVisualOverhangRatio = jigsawEdgeMaximumDepth / 100;
@@ -299,15 +299,14 @@ export const getJigsawWorkingBounds = (
 };
 
 /**
- * Compose one deterministic table for every Jigsaw size. A target footprint
- * establishes how much space the scatter ought to occupy; it is a soft
- * preference, not a hard capacity limit or a separate staging mode.
+ * One deterministic, continuously sampled table layout for every puzzle.
+ * Candidate coordinates are genuinely continuous, not jittered grid cells.
+ * Prefer an artwork/viewport-shaped region around the board, while spreading
+ * pieces into underused space rather than leaving large holes. That region is
+ * a soft preference: the same search can use the entire world when crowded.
  *
- * The same candidate search handles ordinary and multi-cell pieces. Grid
- * coordinates are only collision-safe candidate origins, not visible rows:
- * candidates are subtly jittered, then chosen in seeded spatially irregular
- * order. When the preferred footprint fills, the ranking automatically uses
- * more of the same world, without restarting or switching algorithms.
+ * This function is only called on initial staging and an explicit restage.
+ * Changing the camera never moves already staged pieces.
  */
 export const createInitialJigsawPlacements = (
   layout: JigsawWorldLayout,
@@ -353,65 +352,45 @@ export const createInitialJigsawPlacements = (
   );
   const centerX = layout.boardX + layout.boardWidth / 2;
   const centerY = layout.boardY + layout.boardHeight / 2;
-  const halfWidth = targetWidth / 2;
-  const halfHeight = targetHeight / 2;
-  const stepX = layout.pieceWidth * 1.1;
-  const stepY = layout.pieceHeight * 1.1;
-  const jitterX = layout.pieceWidth * 0.04;
-  const jitterY = layout.pieceHeight * 0.04;
+  const pieceGap = Math.min(layout.pieceWidth, layout.pieceHeight) * 0.03;
   const boardGap = Math.min(layout.pieceWidth, layout.pieceHeight) * 0.14;
-  const pieceGap = Math.min(layout.pieceWidth, layout.pieceHeight) * 0.02;
 
-  const unitRandom = (value: number) => mixSlotIndex(value) / 4294967296;
-  const candidates: Array<{ x: number; y: number; score: number; index: number }> = [];
-  const maxX = layout.worldWidth - layout.pieceWidth - worldPadding;
-  const maxY = layout.worldHeight - layout.pieceHeight - worldPadding;
-  let index = 0;
-  for (let y = worldPadding; y <= maxY + 0.001; y += stepY) {
-    for (let x = worldPadding; x <= maxX + 0.001; x += stepX) {
-      const id = index++;
-      const n = mixSlotIndex(seed ^ Math.imul(id + 1, 0x9e3779b9));
-      const candidateX = clamp(
-        x + (unitRandom(n ^ 0x8b1d) - 0.5) * 2 * jitterX,
-        worldPadding, maxX,
-      );
-      const candidateY = clamp(
-        y + (unitRandom(n ^ 0xb64e) - 0.5) * 2 * jitterY,
-        worldPadding, maxY,
-      );
-      const centerCandidateX = candidateX + layout.pieceWidth / 2;
-      const centerCandidateY = candidateY + layout.pieceHeight / 2;
-      const outsideX = Math.max(0, Math.abs(centerCandidateX - centerX) - halfWidth);
-      const outsideY = Math.max(0, Math.abs(centerCandidateY - centerY) - halfHeight);
-      // One score over the full world: fill the designed table first while
-      // retaining every remaining position as part of the same distribution.
-      const score = unitRandom(n ^ 0x3ac5) +
-        Math.hypot(outsideX / layout.pieceWidth, outsideY / layout.pieceHeight) * 2;
-      candidates.push({ x: candidateX, y: candidateY, score, index: id });
+  // Scrambled low-discrepancy coordinates cover the whole table without rows,
+  // columns, sectors, or prescribed rings. Each successive piece receives a
+  // different deterministic part of the same continuous candidate sequence.
+  const radicalInverse = (index: number, base: number) => {
+    let result = 0;
+    let factor = 1 / base;
+    for (let remaining = index; remaining > 0; remaining = Math.floor(remaining / base)) {
+      result += (remaining % base) * factor;
+      factor /= base;
     }
-  }
-  candidates.sort((a, b) => a.score - b.score || a.index - b.index);
+    return result;
+  };
+  const random = (value: number) => mixSlotIndex(value) / 4294967296;
+  const offsetX = random(seed ^ 0x9b72);
+  const offsetY = random(seed ^ 0xa512);
+  const sampleCount = Math.max(200, Math.ceil(pieces.length * 0.35));
 
   type UsedBounds = { x: number; y: number; width: number; height: number };
-  // Spatial buckets keep the same non-overlap check efficient at 32x32.
-  const bucketSize = Math.max(layout.pieceWidth, layout.pieceHeight) * 2.5;
+  const bucketSize = Math.max(layout.pieceWidth, layout.pieceHeight) * 2.8;
   const buckets = new Map<string, UsedBounds[]>();
   const bucketIndex = (coordinate: number) => Math.floor(coordinate / bucketSize);
   const bucketKey = (x: number, y: number) => `${x}:${y}`;
-  const inBuckets = (bounds: UsedBounds, visit: (used: UsedBounds) => boolean) => {
-    const left = bucketIndex(bounds.x - pieceGap);
-    const right = bucketIndex(bounds.x + bounds.width + pieceGap);
-    const top = bucketIndex(bounds.y - pieceGap);
-    const bottom = bucketIndex(bounds.y + bounds.height + pieceGap);
-    for (let iy = top; iy <= bottom; iy += 1) {
-      for (let ix = left; ix <= right; ix += 1) {
+  const visitNeighbors = (
+    bounds: UsedBounds,
+    radius: number,
+    visit: (used: UsedBounds) => boolean,
+  ) => {
+    for (let iy = bucketIndex(bounds.y - radius); iy <= bucketIndex(bounds.y + bounds.height + radius); iy += 1) {
+      for (let ix = bucketIndex(bounds.x - radius); ix <= bucketIndex(bounds.x + bounds.width + radius); ix += 1) {
         const entries = buckets.get(bucketKey(ix, iy)) ?? [];
         for (const entry of entries) if (visit(entry)) return true;
       }
     }
     return false;
   };
-  const addToBuckets = (bounds: UsedBounds) => {
+  const remember = (bounds: UsedBounds) => {
     for (let iy = bucketIndex(bounds.y); iy <= bucketIndex(bounds.y + bounds.height); iy += 1) {
       for (let ix = bucketIndex(bounds.x); ix <= bucketIndex(bounds.x + bounds.width); ix += 1) {
         const key = bucketKey(ix, iy);
@@ -423,29 +402,51 @@ export const createInitialJigsawPlacements = (
   };
 
   const staged = new Map<string, JigsawPlacement>();
+  let candidateIndex = 0;
   for (const piece of stagingOrder) {
     const size = getJigsawPieceWorldSize(layout, piece);
-    let position: JigsawPlacement | null = null;
-    for (const candidate of candidates) {
-      const x = candidate.x;
-      const y = candidate.y;
-      if (x + size.width > layout.worldWidth - worldPadding + 0.001 ||
-          y + size.height > layout.worldHeight - worldPadding + 0.001 ||
-          rectanglesOverlap(
-            x, y, size.width, size.height,
-            layout.boardX, layout.boardY, layout.boardWidth, layout.boardHeight, boardGap,
-          )) continue;
+    let best: UsedBounds | null = null;
+    let bestScore = Number.NEGATIVE_INFINITY;
+    for (let sample = 0; sample < sampleCount; sample += 1) {
+      const index = ++candidateIndex;
+      const x = worldPadding + (
+        (radicalInverse(index, 2) + offsetX) % 1
+      ) * (layout.worldWidth - 2 * worldPadding - size.width);
+      const y = worldPadding + (
+        (radicalInverse(index, 3) + offsetY) % 1
+      ) * (layout.worldHeight - 2 * worldPadding - size.height);
       const bounds = { x, y, ...size };
-      if (inBuckets(bounds, (used) => rectanglesOverlap(
+      if (rectanglesOverlap(
+        x, y, size.width, size.height,
+        layout.boardX, layout.boardY, layout.boardWidth, layout.boardHeight, boardGap,
+      )) continue;
+      if (visitNeighbors(bounds, pieceGap, (used) => rectanglesOverlap(
         x, y, size.width, size.height,
         used.x, used.y, used.width, used.height, pieceGap,
       ))) continue;
-      position = { id: piece.id, worldX: x, worldY: y };
-      addToBuckets(bounds);
-      break;
+
+      // Soft blue-noise spacing: resist clumps, but preserve variation in gaps.
+      // Pure farthest-point selection produces its own conspicuous lattice.
+      let nearest = 5.5;
+      visitNeighbors(bounds, Math.max(layout.pieceWidth, layout.pieceHeight) * 5.7, (used) => {
+        const dx = (x + size.width / 2 - used.x - used.width / 2) / layout.pieceWidth;
+        const dy = (y + size.height / 2 - used.y - used.height / 2) / layout.pieceHeight;
+        nearest = Math.min(nearest, Math.hypot(dx, dy));
+        return false;
+      });
+      const outsideX = Math.max(0, Math.abs(x + size.width / 2 - centerX) - targetWidth / 2);
+      const outsideY = Math.max(0, Math.abs(y + size.height / 2 - centerY) - targetHeight / 2);
+      const outside = Math.hypot(outsideX / layout.pieceWidth, outsideY / layout.pieceHeight);
+      const score = nearest * 0.55 - outside * 1.35 +
+        random(seed ^ Math.imul(index, 37)) * 1.7;
+      if (score > bestScore) {
+        bestScore = score;
+        best = bounds;
+      }
     }
-    if (!position) throw new Error("Insufficient free Jigsaw staging space");
-    staged.set(piece.id, position);
+    if (!best) throw new Error("Insufficient free Jigsaw staging space");
+    staged.set(piece.id, { id: piece.id, worldX: best.x, worldY: best.y });
+    remember(best);
   }
   return ordered.map((piece) => staged.get(piece.id)!);
 };
@@ -585,14 +586,24 @@ export const createJigsawOccupiedFitCamera = (
   padding = 28,
   insets: Partial<JigsawViewportInsets> = {},
   pieces: readonly JigsawPiece[] = [],
-): JigsawCamera => createJigsawBoundsFitCamera(
-  layout,
-  viewport,
-  getJigsawOccupiedBounds(layout, placements, pieces),
-  padding,
-  1.25,
-  insets,
-);
+): JigsawCamera => {
+  const bounds = getJigsawOccupiedBounds(layout, placements, pieces);
+  const centered = createJigsawBoundsFitCamera(
+    layout, viewport, bounds, padding, 1.25,
+  );
+  const safe = normalizeViewportInsets(viewport, insets);
+  // A floating toolbar in the upper corner need not push the entire table
+  // downward when the centered content already clears it.
+  const left = viewport.width / 2 + (bounds.x - centered.centerX) * centered.zoom;
+  const right = left + bounds.width * centered.zoom;
+  const top = viewport.height / 2 + (bounds.y - centered.centerY) * centered.zoom;
+  const bottom = top + bounds.height * centered.zoom;
+  if (left >= safe.left && right <= viewport.width - safe.right &&
+      top >= safe.top && bottom <= viewport.height - safe.bottom) return centered;
+  return createJigsawBoundsFitCamera(
+    layout, viewport, bounds, padding, 1.25, insets,
+  );
+};
 
 export const createJigsawWorkingFitCamera = (
   layout: JigsawWorldLayout,

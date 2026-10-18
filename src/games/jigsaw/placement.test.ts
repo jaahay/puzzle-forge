@@ -280,7 +280,7 @@ describe("Jigsaw world layout", () => {
     expect(placements.some((p) => p.worldY > layout.boardY + layout.boardHeight)).toBe(true);
   });
 
-  it("keeps all loose pieces non-overlapping as the staging grid fills", () => {
+  it("keeps all loose pieces non-overlapping as continuous staging fills", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1200, imageHeight: 900, puzzleWidth: 8, puzzleHeight: 8,
     });
@@ -364,6 +364,43 @@ describe("Jigsaw world layout", () => {
     expect(createInitialJigsawPlacements(layout, pieces, viewport)).toEqual(
       createInitialJigsawPlacements(layout, pieces, viewport),
     );
+  });
+
+  it.each([
+    { name: "square artwork", imageWidth: 1200, imageHeight: 1200, width: 4, height: 4, count: 16 },
+    { name: "landscape artwork", imageWidth: 1600, imageHeight: 900, width: 7, height: 5, count: 35 },
+    { name: "portrait artwork", imageWidth: 721, imageHeight: 2048, width: 5, height: 7, count: 35 },
+    { name: "dense artwork", imageWidth: 1400, imageHeight: 900, width: 10, height: 10, count: 100 },
+  ])("keeps the $name composition centered around its board without symmetric quotas", ({
+    imageWidth, imageHeight, width, height, count,
+  }) => {
+    const layout = createJigsawWorldLayout({
+      imageWidth, imageHeight, puzzleWidth: width, puzzleHeight: height,
+    });
+    const pieces = Array.from({ length: count }, (_, index) => makePiece(index, width));
+    const viewport = { width: 390, height: 1000 };
+    const placements = createInitialJigsawPlacements(layout, pieces, viewport);
+    const bounds = getJigsawOccupiedBounds(layout, placements, pieces);
+    const boardCenterX = layout.boardX + layout.boardWidth / 2;
+    const boardCenterY = layout.boardY + layout.boardHeight / 2;
+    expect(Math.abs(bounds.x + bounds.width / 2 - boardCenterX))
+      .toBeLessThan(layout.pieceWidth * 1.5);
+    expect(Math.abs(bounds.y + bounds.height / 2 - boardCenterY))
+      .toBeLessThan(layout.pieceHeight * 1.5);
+    expect(placements).toEqual(createInitialJigsawPlacements(layout, pieces, viewport));
+  });
+
+  it("does not align loose pieces into conspicuous grid columns", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 1600, imageHeight: 900, puzzleWidth: 7, puzzleHeight: 5,
+    });
+    const pieces = Array.from({ length: 35 }, (_, index) => makePiece(index, 7));
+    const placed = createInitialJigsawPlacements(layout, pieces, { width: 390, height: 1000 });
+    const nearlySharedColumns = placed.reduce((count, a, i) =>
+      count + placed.slice(i + 1).filter((b) =>
+        Math.abs(a.worldX - b.worldX) < layout.pieceWidth * 0.04,
+      ).length, 0);
+    expect(nearlySharedColumns).toBeLessThan(18);
   });
 
   it("scatters small puzzles at varied non-lattice positions without covering the board", () => {
@@ -702,6 +739,32 @@ describe("Jigsaw camera", () => {
     const bounds = getScreenBounds(getJigsawOccupiedBounds(compactLayout, placements), all, portraitViewport);
     expect(bounds.left).toBeGreaterThanOrEqual(27.9);
     expect(bounds.right).toBeLessThanOrEqual(portraitViewport.width - 27.9);
+  });
+
+  it("does not move a centered overview away from unused corner controls", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 1200, imageHeight: 900, puzzleWidth: 4, puzzleHeight: 4,
+    });
+    const viewport = { width: 390, height: 1000 };
+    const pieces = Array.from({ length: 16 }, (_, index) => makePiece(index, 4));
+    const placements = createInitialJigsawPlacements(layout, pieces, viewport);
+    const withoutControls = createJigsawOccupiedFitCamera(
+      layout, viewport, placements, 28, {}, pieces,
+    );
+    const withUpperControls = createJigsawOccupiedFitCamera(
+      layout, viewport, placements, 28, { top: 88 }, pieces,
+    );
+    const occupied = getScreenBounds(getJigsawOccupiedBounds(layout, placements, pieces), withoutControls, viewport);
+    expect(occupied.top).toBeGreaterThan(88);
+    expect(withUpperControls).toEqual(withoutControls);
+
+    const crowdedViewport = { width: 390, height: 520 };
+    const crowded = createJigsawOccupiedFitCamera(
+      layout, crowdedViewport, placements, 28, { top: 140 }, pieces,
+    );
+    const visible = getScreenBounds(getJigsawOccupiedBounds(layout, placements, pieces), crowded, crowdedViewport);
+    expect(visible.top).toBeGreaterThanOrEqual(139.9);
+    expect(visible.bottom).toBeLessThanOrEqual(crowdedViewport.height - 27.9);
   });
 
   it("fits occupied board and loose-piece bounds instead of unused world space", () => {
