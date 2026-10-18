@@ -47,6 +47,8 @@ describe("Quiet New Puzzle contracts", () => {
   it("restores New-puzzle focus without scrolling the game under the sticky selector", () => {
     expect(commandSource).toContain('focus({ preventScroll: true })');
     expect(commandSource).toContain('options.querySelector<HTMLElement>("summary")?.focus({ preventScroll: true })');
+    expect(albumSource).toContain('chooseButtonRef.current?.focus({ preventScroll: true })');
+    expect(albumSource).not.toContain('chooseButtonRef.current?.focus()');
   });
 
   it("keeps Jigsaw choices operational while putting their explanations behind info", () => {
