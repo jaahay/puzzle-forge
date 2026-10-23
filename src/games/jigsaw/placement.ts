@@ -308,17 +308,39 @@ export const getJigsawWorkingBounds = (
  * This function is only called on initial staging and an explicit restage.
  * Changing the camera never moves already staged pieces.
  */
+export type JigsawStagingFootprint = {
+  /** Bounds relative to the representative's solved top-left corner. */
+  offsetX: number;
+  offsetY: number;
+  width: number;
+  height: number;
+  /** A joined island can occupy the board if it cannot be staged outside. */
+  allowBoardOverlap?: boolean;
+};
+
+export type JigsawStagingOptions = {
+  footprints?: ReadonlyMap<string, JigsawStagingFootprint>;
+  /** Fixed, frame-anchored islands are already occupying these rectangles. */
+  reserved?: readonly JigsawWorldBounds[];
+};
+
 export const createInitialJigsawPlacements = (
   layout: JigsawWorldLayout,
   pieces: readonly JigsawPiece[],
   viewport: JigsawViewport | null = null,
+  options: JigsawStagingOptions = {},
 ): JigsawPlacement[] => {
   if (pieces.length === 0) return [];
 
   const ordered = [...pieces].sort((a, b) => a.currentIndex - b.currentIndex);
+  const footprintFor = (piece: JigsawPiece): JigsawStagingFootprint => {
+    const custom = options.footprints?.get(piece.id);
+    if (custom) return custom;
+    return { offsetX: 0, offsetY: 0, ...getJigsawPieceWorldSize(layout, piece) };
+  };
   const stagingOrder = [...ordered].sort((a, b) => {
-    const left = getJigsawPieceCellSpan(a);
-    const right = getJigsawPieceCellSpan(b);
+    const left = footprintFor(a);
+    const right = footprintFor(b);
     return right.width * right.height - left.width * left.height ||
       a.currentIndex - b.currentIndex;
   });
@@ -336,7 +358,7 @@ export const createInitialJigsawPlacements = (
     Math.pow(viewRatio, 0.7) * Math.pow(boardRatio, 0.3), 0.38, 2.6,
   );
   const pieceArea = pieces.reduce((area, piece) => {
-    const size = getJigsawPieceWorldSize(layout, piece);
+    const size = footprintFor(piece);
     return area + size.width * size.height;
   }, 0);
   const targetArea = layout.boardWidth * layout.boardHeight + pieceArea * 2.55;
@@ -401,10 +423,17 @@ export const createInitialJigsawPlacements = (
     }
   };
 
+  // Frame-anchored islands are fixed obstacles, not pieces to scatter.
+  for (const reserved of options.reserved ?? []) remember(reserved);
+
   const staged = new Map<string, JigsawPlacement>();
   let candidateIndex = 0;
   for (const piece of stagingOrder) {
-    const size = getJigsawPieceWorldSize(layout, piece);
+    const size = footprintFor(piece);
+    if (size.width > layout.worldWidth - 2 * worldPadding ||
+        size.height > layout.worldHeight - 2 * worldPadding) {
+      throw new Error("Jigsaw assembly exceeds available staging space");
+    }
     let best: UsedBounds | null = null;
     let bestScore = Number.NEGATIVE_INFINITY;
     for (let sample = 0; sample < sampleCount; sample += 1) {
@@ -416,10 +445,11 @@ export const createInitialJigsawPlacements = (
         (radicalInverse(index, 3) + offsetY) % 1
       ) * (layout.worldHeight - 2 * worldPadding - size.height);
       const bounds = { x, y, ...size };
-      if (rectanglesOverlap(
+      const coversBoard = rectanglesOverlap(
         x, y, size.width, size.height,
         layout.boardX, layout.boardY, layout.boardWidth, layout.boardHeight, boardGap,
-      )) continue;
+      );
+      if (coversBoard && !size.allowBoardOverlap) continue;
       if (visitNeighbors(bounds, pieceGap, (used) => rectanglesOverlap(
         x, y, size.width, size.height,
         used.x, used.y, used.width, used.height, pieceGap,
@@ -437,7 +467,10 @@ export const createInitialJigsawPlacements = (
       const outsideX = Math.max(0, Math.abs(x + size.width / 2 - centerX) - targetWidth / 2);
       const outsideY = Math.max(0, Math.abs(y + size.height / 2 - centerY) - targetHeight / 2);
       const outside = Math.hypot(outsideX / layout.pieceWidth, outsideY / layout.pieceHeight);
-      const score = nearest * 0.55 - outside * 1.35 +
+      // Keep the board clear whenever possible. A large joined island can
+      // use it as a table surface rather than making Restage impossible.
+      const score = nearest * 0.55 - outside * 1.35 -
+        (coversBoard ? 10000 : 0) +
         random(seed ^ Math.imul(index, 37)) * 1.7;
       if (score > bestScore) {
         bestScore = score;
@@ -445,7 +478,11 @@ export const createInitialJigsawPlacements = (
       }
     }
     if (!best) throw new Error("Insufficient free Jigsaw staging space");
-    staged.set(piece.id, { id: piece.id, worldX: best.x, worldY: best.y });
+    staged.set(piece.id, {
+      id: piece.id,
+      worldX: best.x - size.offsetX,
+      worldY: best.y - size.offsetY,
+    });
     remember(best);
   }
   return ordered.map((piece) => staged.get(piece.id)!);

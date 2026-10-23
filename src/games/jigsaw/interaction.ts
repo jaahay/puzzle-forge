@@ -307,38 +307,61 @@ export const stageJigsawAssemblyPlacements = (
   viewport: JigsawViewport | null = null,
 ): JigsawPlacement[] => {
   const piecesById = getPieceById(pieces);
-  const components = getJigsawAssemblyComponents(assembly, pieces);
   const anchored = new Set(assembly.anchoredPieceIds ?? []);
-  const representatives = components.flatMap((component) => {
-    const candidates = component
-      .flatMap((pieceId) => {
-        const piece = piecesById.get(pieceId);
-        return piece ? [piece] : [];
-      })
-      .sort((left, right) => left.currentIndex - right.currentIndex);
-    return candidates[0] ? [candidates[0]] : [];
+  // Every loose piece or joined island has one rectangular collision footprint.
+  // The same continuous placer stages both, instead of placing a single
+  // representative and letting the rest of an island overlap its neighbors.
+  const groups = getJigsawAssemblyComponents(assembly, pieces).flatMap((component) => {
+    const members = component.flatMap((id) => {
+      const piece = piecesById.get(id);
+      return piece ? [piece] : [];
+    }).sort((a, b) => a.currentIndex - b.currentIndex);
+    const representative = members[0];
+    if (!representative) return [];
+    const rectangles = members.map((piece) => {
+      const solved = getJigsawSolvedPosition(layout, piece);
+      return { ...solved, ...getJigsawPieceWorldSize(layout, piece) };
+    });
+    const left = Math.min(...rectangles.map((rect) => rect.left));
+    const top = Math.min(...rectangles.map((rect) => rect.top));
+    const right = Math.max(...rectangles.map((rect) => rect.left + rect.width));
+    const bottom = Math.max(...rectangles.map((rect) => rect.top + rect.height));
+    const representativeSolved = getJigsawSolvedPosition(layout, representative);
+    return [{
+      component,
+      representative,
+      anchored: component.some((id) => anchored.has(id)),
+      footprint: {
+        offsetX: left - representativeSolved.left,
+        offsetY: top - representativeSolved.top,
+        width: right - left,
+        height: bottom - top,
+        allowBoardOverlap: component.length > 1,
+      },
+      fixedBounds: { x: left, y: top, width: right - left, height: bottom - top },
+    }];
   });
-  const representativePlacements = getPlacementById(
-    createInitialJigsawPlacements(layout, representatives, viewport),
-  );
+  const movable = groups.filter((group) => !group.anchored);
+  const representativePlacements = getPlacementById(createInitialJigsawPlacements(
+    layout,
+    movable.map((group) => group.representative),
+    viewport,
+    {
+      footprints: new Map(movable.map((group) => [group.representative.id, group.footprint] as const)),
+      reserved: groups.filter((group) => group.anchored).map((group) => group.fixedBounds),
+    },
+  ));
 
   const staged: JigsawPlacement[] = [];
-  for (const component of components) {
-    const representative = component
-      .flatMap((pieceId) => {
-        const piece = piecesById.get(pieceId);
-        return piece ? [piece] : [];
-      })
-      .sort((left, right) => left.currentIndex - right.currentIndex)[0];
-    if (!representative) continue;
-
+  for (const group of groups) {
+    const { component, representative } = group;
     const stagedRepresentative = representativePlacements.get(representative.id);
-    if (!stagedRepresentative) continue;
+    if (!group.anchored && !stagedRepresentative) {
+      throw new Error("Missing Jigsaw assembly placement");
+    }
     const solvedRepresentative = getJigsawSolvedPosition(layout, representative);
-    const isAnchored = component.some((pieceId) => anchored.has(pieceId));
-    const translationX = isAnchored ? 0 : stagedRepresentative.worldX - solvedRepresentative.left;
-    const translationY = isAnchored ? 0 : stagedRepresentative.worldY - solvedRepresentative.top;
-
+    const translationX = group.anchored ? 0 : stagedRepresentative!.worldX - solvedRepresentative.left;
+    const translationY = group.anchored ? 0 : stagedRepresentative!.worldY - solvedRepresentative.top;
     for (const pieceId of component) {
       const piece = piecesById.get(pieceId);
       if (!piece) continue;
@@ -349,16 +372,6 @@ export const stageJigsawAssemblyPlacements = (
         worldY: solved.top + translationY,
       });
     }
-
-    const normalized = moveJigsawComponent(
-      layout,
-      staged,
-      component,
-      0,
-      0,
-      pieces,
-    );
-    staged.splice(0, staged.length, ...normalized);
   }
 
   const stagedById = getPlacementById(staged);
