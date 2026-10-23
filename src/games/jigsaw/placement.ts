@@ -625,21 +625,39 @@ export const createJigsawOccupiedFitCamera = (
   pieces: readonly JigsawPiece[] = [],
 ): JigsawCamera => {
   const bounds = getJigsawOccupiedBounds(layout, placements, pieces);
-  const centered = createJigsawBoundsFitCamera(
-    layout, viewport, bounds, padding, 1.25,
-  );
+  const boardCenterX = layout.boardX + layout.boardWidth / 2;
+  const boardCenterY = layout.boardY + layout.boardHeight / 2;
   const safe = normalizeViewportInsets(viewport, insets);
-  // A floating toolbar in the upper corner need not push the entire table
-  // downward when the centered content already clears it.
-  const left = viewport.width / 2 + (bounds.x - centered.centerX) * centered.zoom;
-  const right = left + bounds.width * centered.zoom;
-  const top = viewport.height / 2 + (bounds.y - centered.centerY) * centered.zoom;
-  const bottom = top + bounds.height * centered.zoom;
-  if (left >= safe.left && right <= viewport.width - safe.right &&
-      top >= safe.top && bottom <= viewport.height - safe.bottom) return centered;
-  return createJigsawBoundsFitCamera(
-    layout, viewport, bounds, padding, 1.25, insets,
-  );
+  const noInsets: JigsawViewportInsets = { top: 0, right: 0, bottom: 0, left: 0 };
+
+  // The board is the spatial anchor. Fit the asymmetrical loose-piece inventory
+  // around that fixed screen center instead of centering its bounding rectangle.
+  const fitZoom = (limits: JigsawViewportInsets) => clamp(Math.min(
+    (viewport.width / 2 - limits.left - padding) / Math.max(1, boardCenterX - bounds.x),
+    (viewport.width / 2 - limits.right - padding) /
+      Math.max(1, bounds.x + bounds.width - boardCenterX),
+    (viewport.height / 2 - limits.top - padding) / Math.max(1, boardCenterY - bounds.y),
+    (viewport.height / 2 - limits.bottom - padding) /
+      Math.max(1, bounds.y + bounds.height - boardCenterY),
+    1.25,
+  ), jigsawCameraMinimumZoom, 1.25);
+
+  let zoom = fitZoom(noInsets);
+  const screenLeft = viewport.width / 2 + (bounds.x - boardCenterX) * zoom;
+  const screenRight = viewport.width / 2 + (bounds.x + bounds.width - boardCenterX) * zoom;
+  const screenTop = viewport.height / 2 + (bounds.y - boardCenterY) * zoom;
+  const screenBottom = viewport.height / 2 + (bounds.y + bounds.height - boardCenterY) * zoom;
+  // Only reduce zoom for floating controls if the default centered view
+  // actually encroaches on them. Never shift the board to make room.
+  if (screenLeft < safe.left + padding || screenRight > viewport.width - safe.right - padding ||
+      screenTop < safe.top + padding || screenBottom > viewport.height - safe.bottom - padding) {
+    zoom = fitZoom(safe);
+  }
+  return clampJigsawCamera(layout, viewport, {
+    centerX: boardCenterX,
+    centerY: boardCenterY,
+    zoom,
+  });
 };
 
 export const createJigsawWorkingFitCamera = (

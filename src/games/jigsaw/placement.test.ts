@@ -741,6 +741,55 @@ describe("Jigsaw camera", () => {
     expect(bounds.right).toBeLessThanOrEqual(portraitViewport.width - 27.9);
   });
 
+  it("centers the board, not asymmetrically scattered pieces, in the overview", () => {
+    const asymmetricLayout = createJigsawWorldLayout({
+      imageWidth: 1200, imageHeight: 900, puzzleWidth: 4, puzzleHeight: 4,
+    });
+    const phone = { width: 390, height: 844 };
+    const placements = [
+      { id: "right", worldX: asymmetricLayout.worldWidth - asymmetricLayout.pieceWidth - 50,
+        worldY: asymmetricLayout.boardY + asymmetricLayout.boardHeight },
+      { id: "bottom", worldX: asymmetricLayout.boardX + asymmetricLayout.boardWidth,
+        worldY: asymmetricLayout.worldHeight - asymmetricLayout.pieceHeight - 50 },
+    ];
+    const boardBounds = {
+      x: asymmetricLayout.boardX, y: asymmetricLayout.boardY,
+      width: asymmetricLayout.boardWidth, height: asymmetricLayout.boardHeight,
+    };
+    const occupied = getJigsawOccupiedBounds(asymmetricLayout, placements);
+    const insets = { top: 78, right: 12, bottom: 32, left: 64 };
+    for (const limits of [{}, insets]) {
+      const camera = createJigsawOccupiedFitCamera(
+        asymmetricLayout, phone, placements, 28, limits,
+      );
+      const board = getScreenBounds(boardBounds, camera, phone);
+      const pieces = getScreenBounds(occupied, camera, phone);
+      expect((board.left + board.right) / 2).toBeCloseTo(phone.width / 2, 4);
+      expect((board.top + board.bottom) / 2).toBeCloseTo(phone.height / 2, 4);
+      expect(pieces.left).toBeGreaterThanOrEqual((limits.left ?? 0) + 28 - 0.01);
+      expect(pieces.right).toBeLessThanOrEqual(phone.width - (limits.right ?? 0) - 28 + 0.01);
+      expect(pieces.top).toBeGreaterThanOrEqual((limits.top ?? 0) + 28 - 0.01);
+      expect(pieces.bottom).toBeLessThanOrEqual(phone.height - (limits.bottom ?? 0) - 28 + 0.01);
+    }
+  });
+
+  it("keeps the board centered when re-fitting after a manual viewport change", () => {
+    const phone = { width: 390, height: 844 };
+    const placements = [
+      { id: "far-left", worldX: 50, worldY: layout.boardY },
+      { id: "bottom-right", worldX: layout.worldWidth - layout.pieceWidth - 50,
+        worldY: layout.worldHeight - layout.pieceHeight - 50 },
+    ];
+    for (const nextViewport of [phone, { width: 844, height: 390 }]) {
+      const camera = createJigsawOccupiedFitCamera(layout, nextViewport, placements);
+      const center = screenToJigsawWorld(
+        camera, nextViewport, nextViewport.width / 2, nextViewport.height / 2,
+      );
+      expect(center.x).toBeCloseTo(layout.boardX + layout.boardWidth / 2, 4);
+      expect(center.y).toBeCloseTo(layout.boardY + layout.boardHeight / 2, 4);
+    }
+  });
+
   it("does not move a centered overview away from unused corner controls", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 1200, imageHeight: 900, puzzleWidth: 4, puzzleHeight: 4,

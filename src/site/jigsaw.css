@@ -817,7 +817,12 @@
 
 .tile-puzzle-piece.anchored,
 .tile-puzzle-piece.anchored .tile-puzzle-piece-hit-target {
-  cursor: default;
+  cursor: grab;
+}
+
+.jigsaw-freeform-stage.panning .tile-puzzle-piece.anchored,
+.jigsaw-freeform-stage.panning .tile-puzzle-piece.anchored .tile-puzzle-piece-hit-target {
+  cursor: grabbing;
 }
 
 .tile-puzzle-piece-outline {

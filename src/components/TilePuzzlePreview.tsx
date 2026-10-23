@@ -913,7 +913,9 @@ export const TilePuzzlePreview = ({
   const beginPan = (event: StagePointerEvent) => {
     if (dragRef.current || pinchRef.current) return;
     const target = event.target as Element | null;
-    if (target?.closest(".tile-puzzle-piece")) return;
+    // A locked piece acts as a stable grip for panning; only loose pieces drag.
+    const piece = target?.closest(".tile-puzzle-piece");
+    if (piece && !piece.classList.contains("anchored")) return;
     if (event.pointerType === "mouse" && event.button !== 0 && event.button !== 1) return;
 
     panRef.current = {
