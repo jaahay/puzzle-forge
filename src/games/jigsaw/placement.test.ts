@@ -758,7 +758,7 @@ describe("Jigsaw camera", () => {
     };
     const occupied = getJigsawOccupiedBounds(asymmetricLayout, placements);
     const insets = { top: 78, right: 12, bottom: 32, left: 64 };
-    for (const limits of [{}, insets]) {
+    for (const limits of [{ top: 0, right: 0, bottom: 0, left: 0 }, insets]) {
       const camera = createJigsawOccupiedFitCamera(
         asymmetricLayout, phone, placements, 28, limits,
       );
