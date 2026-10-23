@@ -136,7 +136,10 @@ describe("Jigsaw drag action", () => {
 
     expect(completed.history.undoStack).toHaveLength(1);
     expect(completed.history.undoStack[0]).toEqual(drag.startSnapshot);
-    expect(completed.snapshot.assembly).toEqual({ joinedComponents: [] });
+    expect(completed.snapshot.assembly).toEqual({
+      joinedComponents: [],
+      anchoredPieceIds: ["tile-0"],
+    });
     expect(completed.snapshot.placements[0]).toMatchObject({
       worldX: solved.left,
       worldY: solved.top,

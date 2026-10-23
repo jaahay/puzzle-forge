@@ -56,39 +56,6 @@ export const restageJigsawWorkspaceState = (
   viewport: JigsawViewport | null,
 ) => stageJigsawWorkspaceState(assembly, layout, pieces, viewport);
 
-export const restageJigsawWorkspaceSubset = (
-  layout: JigsawWorldLayout,
-  pieces: readonly JigsawPiece[],
-  assembly: JigsawAssemblyProgress,
-  placements: readonly JigsawPlacement[],
-  pieceIds: readonly string[],
-  viewport: JigsawViewport | null,
-): JigsawWorkspaceState | null => {
-  if (!isUsableJigsawViewport(viewport)) return null;
-
-  const focusedIds = new Set(pieceIds);
-  const focusedPieces = pieces.filter((piece) => focusedIds.has(piece.id));
-  if (focusedPieces.length === 0) return null;
-
-  const restaged = stageJigsawAssemblyPlacements(
-    layout,
-    focusedPieces,
-    assembly,
-    viewport,
-  );
-  const restagedById = new Map(
-    restaged.map((placement) => [placement.id, placement] as const),
-  );
-
-  return {
-    placements: placements.map((placement) => {
-      const next = restagedById.get(placement.id);
-      return next ? { ...next } : { ...placement };
-    }),
-    assembly: cloneJigsawAssemblyProgress(assembly),
-  };
-};
-
 /** Protect joined assemblies and deliberately organized loose pieces, not past actions. */
 export const hasMeaningfulJigsawWorkspaceProgress = (
   layout: JigsawWorldLayout,
@@ -96,7 +63,7 @@ export const hasMeaningfulJigsawWorkspaceProgress = (
   placements: readonly JigsawPlacement[],
   assembly: JigsawAssemblyProgress,
 ): boolean => {
-  if (assembly.joinedComponents.length > 0) return true;
+  if (assembly.joinedComponents.length > 0 || (assembly.anchoredPieceIds?.length ?? 0) > 0) return true;
   if (!baseline) return false;
   if (baseline.length !== placements.length) return true;
   const initialPositions = new Map(baseline.map((placement) => [placement.id, placement] as const));

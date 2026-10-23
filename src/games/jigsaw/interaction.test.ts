@@ -563,6 +563,65 @@ describe("Jigsaw island interaction", () => {
     expect(result.assembly).toEqual(assembly);
   });
 
+  it("restages the full footprints of separate islands without overlap", () => {
+    const assembly = { joinedComponents: [["tile-0", "tile-1"], ["tile-2", "tile-3"]] };
+    const staged = stageJigsawAssemblyPlacements(
+      layout, pieces, assembly, { width: 390, height: 800 },
+    );
+    const byId = new Map(staged.map((placement) => [placement.id, placement] as const));
+    const bounds = assembly.joinedComponents.map((component) => {
+      const rectangles = component.map((id) => {
+        const piece = pieces.find((candidate) => candidate.id === id)!;
+        const placement = byId.get(id)!;
+        return { x: placement.worldX, y: placement.worldY, ...getJigsawPieceWorldSize(layout, piece) };
+      });
+      return {
+        left: Math.min(...rectangles.map((rect) => rect.x)),
+        top: Math.min(...rectangles.map((rect) => rect.y)),
+        right: Math.max(...rectangles.map((rect) => rect.x + rect.width)),
+        bottom: Math.max(...rectangles.map((rect) => rect.y + rect.height)),
+      };
+    });
+    const [first, second] = bounds;
+    expect(first && second).toBeTruthy();
+    expect(first!.right <= second!.left || second!.right <= first!.left ||
+      first!.bottom <= second!.top || second!.bottom <= first!.top).toBe(true);
+    for (const box of bounds) {
+      expect(box.left).toBeGreaterThanOrEqual(0);
+      expect(box.top).toBeGreaterThanOrEqual(0);
+      expect(box.right).toBeLessThanOrEqual(layout.worldWidth);
+      expect(box.bottom).toBeLessThanOrEqual(layout.worldHeight);
+    }
+  });
+
+  it("keeps frame-anchored islands fixed while excluding their entire footprint from restaging", () => {
+    const assembly = {
+      joinedComponents: [["tile-0", "tile-1"]],
+      anchoredPieceIds: ["tile-0", "tile-1"],
+    };
+    const staged = stageJigsawAssemblyPlacements(
+      layout, pieces, assembly, { width: 390, height: 800 },
+    );
+    const byId = new Map(staged.map((placement) => [placement.id, placement] as const));
+    for (const anchoredId of assembly.anchoredPieceIds) {
+      const piece = pieces.find((candidate) => candidate.id === anchoredId)!;
+      const solved = getJigsawSolvedPosition(layout, piece);
+      expect(byId.get(anchoredId)).toEqual({
+        id: anchoredId, worldX: solved.left, worldY: solved.top,
+      });
+    }
+    for (const looseId of ["tile-2", "tile-3"]) {
+      const placement = byId.get(looseId)!;
+      const size = getJigsawPieceWorldSize(layout, pieces.find((piece) => piece.id === looseId)!);
+      const boardRight = layout.boardX + layout.boardWidth;
+      const boardBottom = layout.boardY + layout.boardHeight;
+      expect(placement.worldX + size.width <= layout.boardX ||
+        placement.worldX >= boardRight ||
+        placement.worldY + size.height <= layout.boardY ||
+        placement.worldY >= boardBottom).toBe(true);
+    }
+  });
+
   it("restages a joined island rigidly without persisting its old translation", () => {
     const staged = stageJigsawAssemblyPlacements(
       layout,
@@ -644,10 +703,10 @@ describe("Jigsaw island interaction", () => {
     expect(getTranslation(ordinaryDrop.placements[0]!, pieces[0]!)).toEqual({ x: 8, y: 6 });
     expect(getTranslation(assistedDrop.placements[0]!, pieces[0]!)).toEqual({ x: 0, y: 0 });
     expect(assistedDrop.joined).toBe(false);
-    expect(assistedDrop.assembly).toEqual({ joinedComponents: [] });
+    expect(assistedDrop.assembly).toEqual({ joinedComponents: [], anchoredPieceIds: ["tile-0"] });
   });
 
-  it("snaps an existing island rigidly to the frame without creating progress", () => {
+  it("snaps and permanently anchors an existing island rigidly to the frame", () => {
     const placements = [
       placementAtTranslation(pieces[0]!, 9, 7),
       placementAtTranslation(pieces[1]!, 9, 7),
@@ -665,7 +724,9 @@ describe("Jigsaw island interaction", () => {
     );
 
     expect(result.joined).toBe(false);
-    expect(result.assembly).toEqual(assembly);
+    expect(result.assembly).toEqual({
+      ...assembly, anchoredPieceIds: ["tile-0", "tile-1"],
+    });
     expect(getTranslation(result.placements[0]!, pieces[0]!)).toEqual({ x: 0, y: 0 });
     expect(getTranslation(result.placements[1]!, pieces[1]!)).toEqual({ x: 0, y: 0 });
   });
@@ -687,9 +748,36 @@ describe("Jigsaw island interaction", () => {
     );
 
     expect(result.joined).toBe(true);
-    expect(result.assembly).toEqual({ joinedComponents: [["tile-0", "tile-1"]] });
+    expect(result.assembly).toEqual({
+      joinedComponents: [["tile-0", "tile-1"]],
+      anchoredPieceIds: ["tile-0", "tile-1"],
+    });
     expect(getTranslation(result.placements[0]!, pieces[0]!)).toEqual({ x: 0, y: 0 });
     expect(getTranslation(result.placements[1]!, pieces[1]!)).toEqual({ x: 0, y: 0 });
+  });
+
+  it("does not move anchored islands, and permanently fixes pieces joined to them", () => {
+    const placements = [
+      placementAtTranslation(pieces[0]!, 0, 0),
+      placementAtTranslation(pieces[1]!, 8, 6),
+      placementAtTranslation(pieces[2]!, 240, 120),
+      placementAtTranslation(pieces[3]!, 240, 120),
+    ];
+    const assembly = { joinedComponents: [], anchoredPieceIds: ["tile-0"] };
+    const locked = resolveJigsawComponentDrop(layout, pieces, placements, assembly, "tile-0");
+    expect(locked.placements).toEqual(placements);
+    expect(locked.assembly).toEqual(assembly);
+    const joined = resolveJigsawComponentDrop(layout, pieces, placements, assembly, "tile-1");
+    expect(joined.assembly).toEqual({
+      joinedComponents: [["tile-0", "tile-1"]],
+      anchoredPieceIds: ["tile-0", "tile-1"],
+    });
+    expect(getTranslation(joined.placements[1]!, pieces[1]!)).toEqual({ x: 0, y: 0 });
+    const restored = stageJigsawAssemblyPlacements(layout, pieces, joined.assembly, { width: 390, height: 844 });
+    for (const piece of pieces.slice(0, 2)) {
+      expect(getTranslation(restored.find((p) => p.id === piece.id)!, piece))
+        .toEqual({ x: 0, y: 0 });
+    }
   });
 
   it("does not treat correct absolute board placement as progress", () => {

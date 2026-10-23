@@ -118,6 +118,10 @@
   gap: 0;
 }
 
+.jigsaw-workspace.is-immersive .jigsaw-workbench-toolbar {
+  display: contents;
+}
+
 .jigsaw-workspace.is-immersive .tile-puzzle-summary {
   display: none;
 }
@@ -174,11 +178,6 @@
   left: 50%;
   bottom: 0.75rem;
   transform: translateX(-50%);
-}
-
-.jigsaw-workspace.is-immersive .jigsaw-fit-menu {
-  right: 0;
-  bottom: calc(100% + 0.4rem);
 }
 
 .jigsaw-workspace.is-immersive .jigsaw-solved-presentation.is-completed {
