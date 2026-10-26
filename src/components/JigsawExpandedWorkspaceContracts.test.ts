@@ -162,7 +162,8 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).toContain('doc.addEventListener("focusin", onOutsideFocus, true)');
     expect(jigsawPreviewSource).toContain('doc.addEventListener("keydown", onEscape)');
     expect(jigsawPreviewSource).toContain("aria-pressed={showPreview}");
-    expect(jigsawPreviewSource).toContain('onClick={() => setShowPreview((current) => !current)}');
+    expect(jigsawPreviewSource).toContain('onClick={() => setPlayerPreferences((current) => ({ ...current, showPreview: !current.showPreview }))}');
+    expect(jigsawPreviewSource).toContain('saveJigsawPlayerPreferences(playerPreferences)');
     expect(jigsawPreviewSource).toContain('if (restagePieces()) setShowCompactTools(false)');
     expect(jigsawPreviewSource).toContain("if (!isSolved) return;");
     expect(jigsawPreviewSource).toContain("setShowCompactTools(false);");
