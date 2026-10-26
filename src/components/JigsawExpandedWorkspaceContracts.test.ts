@@ -40,7 +40,7 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(mobileLayer).toBeLessThan(immersiveLayer);
   });
 
-  it("keeps expanded entry local to Jigsaw while the shared shell owns persistent exit/fullscreen", () => {
+  it("keeps Close in the shared shell but delegates fullscreen to Jigsaw's view dock", () => {
     expect(layoutSource).toContain("usePuzzleWorkspaceDisplayMode");
     expect(layoutSource).toContain('immersiveEntry?: "workspace" | "descendant"');
     expect(layoutSource).toContain('enableImmersive && (isExpanded || immersiveEntry === "workspace")');
@@ -50,6 +50,8 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(layoutSource).toContain("ExitExpandedIcon");
 
     expect(jigsawWorkspaceSource).toContain('immersiveEntry="descendant"');
+    expect(jigsawWorkspaceSource).toContain('immersiveFullscreenControl="descendant"');
+    expect(layoutSource).toContain('fullscreenAvailable && immersiveFullscreenControl === "workspace"');
     expect(jigsawPreviewSource).toContain("usePuzzleWorkspaceDisplayMode");
     expect(jigsawPreviewSource).toContain("displayMode.enterExpanded");
     expect(jigsawPreviewSource).toContain('aria-label="Expand workspace"');
@@ -57,7 +59,9 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).toContain('class="jigsaw-expand-workspace"');
     expect(jigsawCss).toContain(".jigsaw-camera-tools .jigsaw-expand-workspace");
     expect(jigsawPreviewSource).not.toContain("displayMode.exitExpanded");
-    expect(jigsawPreviewSource).not.toContain("displayMode.toggleBrowserFullscreen");
+    expect(jigsawPreviewSource).toContain("displayMode.toggleBrowserFullscreen()");
+    expect(jigsawPreviewSource).toContain('class="jigsaw-fullscreen-action"');
+    expect(jigsawPreviewSource).toContain('aria-label={displayMode.isBrowserFullscreen ? "Exit fullscreen" : "Enter fullscreen"}');
   });
 
   it("opens a new or restaged puzzle in All pieces until the player chooses Work view", () => {
@@ -74,15 +78,18 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).not.toContain("createPortal(");
     expect(jigsawPreviewSource).toContain('class="jigsaw-workbench-toolbar"');
     expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .jigsaw-workbench-toolbar {");
-    expect(cssRule(jigsawCss, ".jigsaw-workspace:not(.is-immersive) .jigsaw-workbench-toolbar {")).toContain("position: absolute;");
-    expect(jigsawCss).toContain(".jigsaw-workspace:not(.is-immersive) .jigsaw-tools-mobile-actions {");
+    expect(cssRule(jigsawCss, ".jigsaw-workspace:not(.is-immersive) .jigsaw-workbench-toolbar {")).toContain("display: contents;");
+    expect(jigsawCss).not.toContain(".jigsaw-tools-mobile-actions");
     const newMenuPriority = cssRule(
       jigsawCss,
       ".jigsaw-workspace:not(.is-immersive) .workspace-layout-crown:has(.new-puzzle-options[open]) {",
     );
     expect(newMenuPriority).toContain("z-index: 50;");
-    expect(cssRule(jigsawCss, ".jigsaw-workspace:not(.is-immersive) .jigsaw-workbench-toolbar {")).toContain("z-index: 35;");
-    expect(jigsawPreviewSource).toContain('class="jigsaw-tools-mobile-actions"');
+    expect(cssRule(jigsawCss, ".jigsaw-workspace:not(.is-immersive) .jigsaw-camera-tools {")).toContain("bottom: 0.6rem;");
+    expect(cssRule(jigsawCss, ".jigsaw-workspace:not(.is-immersive) .jigsaw-camera-tools {")).toContain("right: 0.6rem;");
+    expect(cssRule(jigsawCss, ".jigsaw-workspace:not(.is-immersive) .jigsaw-tools-toggle {")).toContain("left: 0.6rem;");
+    expect(cssRule(jigsawCss, ".jigsaw-workspace:not(.is-immersive) .tile-puzzle-tools {")).toContain("bottom: 3.85rem;");
+    expect(jigsawPreviewSource).not.toContain('class="jigsaw-tools-mobile-actions"');
     expect(jigsawPreviewSource).toContain('closest<HTMLElement>(".jigsaw-workspace")');
     expect(jigsawPreviewSource).not.toContain("No joins yet");
     expect(jigsawPreviewSource).toContain("onClick={toggleFitView}");
@@ -215,10 +222,15 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(layoutSource).toContain("ExpandWorkspaceIcon");
     expect(mobileToolButtonRule).toContain("min-height: 2.75rem;");
     expect(mobileToolButtonRule).toContain("max-width: 10.5rem;");
+    expect(immersiveToggleRule).toContain("bottom: 0.75rem;");
+    expect(immersiveToolRule).toContain("bottom: 4rem;");
+    expect(mobileCameraRule).toContain("right: 0.45rem;");
     expect(mobileCameraRule).toContain("bottom: 0.45rem;");
     expect(mobileCameraRule).toContain("flex-wrap: nowrap;");
     expect(mobileCameraButtonRule).toContain("min-width: 2.75rem;");
     expect(mobileCameraButtonRule).toContain("min-height: 2.75rem;");
+    expect(jigsawCss).toContain('.jigsaw-camera-tools button:focus-visible');
+    expect(jigsawPreviewSource).toContain('role="group" aria-label="Jigsaw view controls"');
     expect(immersiveCss).not.toContain("width: max-content;");
   });
 

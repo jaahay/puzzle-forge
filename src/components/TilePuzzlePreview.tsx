@@ -168,6 +168,26 @@ const JigsawExpandIcon = () => (
   </svg>
 );
 
+const JigsawFullscreenIcon = ({ active }: { active: boolean }) => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    {active ? (
+      <>
+        <path d="M8 3v5H3" />
+        <path d="M16 3v5h5" />
+        <path d="M21 16h-5v5" />
+        <path d="M3 16v5h5" />
+      </>
+    ) : (
+      <>
+        <path d="M8 3H3v5" />
+        <path d="M16 3h5v5" />
+        <path d="M21 16v5h-5" />
+        <path d="M3 16v5h5" />
+      </>
+    )}
+  </svg>
+);
+
 export const TilePuzzlePreview = ({
   puzzle,
   resetVersion = 0,
@@ -1076,12 +1096,11 @@ export const TilePuzzlePreview = ({
   return (
     <section class="tile-puzzle-preview" aria-label={`${puzzle.title} jigsaw puzzle`}>
       <div class="jigsaw-workbench-toolbar">
-        <div class="jigsaw-camera-tools" aria-label="Jigsaw view controls">
-          <button type="button" onClick={() => zoomView("out")} aria-label="Zoom out">−</button>
+        <div class="jigsaw-camera-tools" role="group" aria-label="Jigsaw view controls">
+          <button type="button" onClick={() => zoomView("out")} aria-label="Zoom out" title="Zoom out">−</button>
           <output class="jigsaw-zoom-level" aria-label="Current zoom">
             {Math.round(activeCamera.zoom * 100)}%
           </output>
-          <button type="button" onClick={() => zoomView("in")} aria-label="Zoom in">+</button>
           <button
             class="jigsaw-fit-action"
             type="button"
@@ -1092,6 +1111,7 @@ export const TilePuzzlePreview = ({
           >
             <JigsawFitIcon />
           </button>
+          <button type="button" onClick={() => zoomView("in")} aria-label="Zoom in" title="Zoom in">+</button>
           {!displayMode.isExpanded ? (
             <button
               class="jigsaw-expand-workspace"
@@ -1101,6 +1121,16 @@ export const TilePuzzlePreview = ({
               title="Expand workspace"
             >
               <JigsawExpandIcon />
+            </button>
+          ) : displayMode.fullscreenAvailable ? (
+            <button
+              class="jigsaw-fullscreen-action"
+              type="button"
+              onClick={() => void displayMode.toggleBrowserFullscreen()}
+              aria-label={displayMode.isBrowserFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+              title={displayMode.isBrowserFullscreen ? "Exit fullscreen" : "Fullscreen"}
+            >
+              <JigsawFullscreenIcon active={displayMode.isBrowserFullscreen} />
             </button>
           ) : null}
         </div>
@@ -1130,10 +1160,6 @@ export const TilePuzzlePreview = ({
         ref={toolsPanelRef}
         hidden={isSolved}
       >
-        <div class="jigsaw-tools-mobile-actions" role="group" aria-label="Zoom controls">
-          <button type="button" onClick={() => zoomView("out")}>Zoom out</button>
-          <button type="button" onClick={() => zoomView("in")}>Zoom in</button>
-        </div>
         <button
           type="button"
           aria-pressed={showPreview}

@@ -4,12 +4,16 @@ import { useContext, useEffect, useRef, useState } from "preact/hooks";
 export type PuzzleWorkspaceDisplayMode = {
   isExpanded: boolean;
   isBrowserFullscreen: boolean;
+  fullscreenAvailable: boolean;
+  toggleBrowserFullscreen: () => Promise<void>;
   enterExpanded: () => void;
 };
 
 const defaultDisplayMode: PuzzleWorkspaceDisplayMode = {
   isExpanded: false,
   isBrowserFullscreen: false,
+  fullscreenAvailable: false,
+  toggleBrowserFullscreen: async () => undefined,
   enterExpanded: () => undefined,
 };
 
@@ -63,6 +67,7 @@ type PuzzleWorkspaceLayoutProps = {
   generation?: ComponentChildren;
   enableImmersive?: boolean;
   immersiveEntry?: "workspace" | "descendant";
+  immersiveFullscreenControl?: "workspace" | "descendant";
   playColumnMax?: number;
 };
 
@@ -78,6 +83,7 @@ export const PuzzleWorkspaceLayout = ({
   generation,
   enableImmersive = false,
   immersiveEntry = "workspace",
+  immersiveFullscreenControl = "workspace",
   playColumnMax,
 }: PuzzleWorkspaceLayoutProps) => {
   const workspaceRef = useRef<HTMLElement>(null);
@@ -142,6 +148,8 @@ export const PuzzleWorkspaceLayout = ({
   const displayMode: PuzzleWorkspaceDisplayMode = {
     isExpanded,
     isBrowserFullscreen,
+    fullscreenAvailable,
+    toggleBrowserFullscreen,
     enterExpanded,
   };
 
@@ -157,7 +165,7 @@ export const PuzzleWorkspaceLayout = ({
         <div class="puzzle-workspace-display-tools" aria-label="Puzzle display controls">
           {isExpanded ? (
             <>
-              {fullscreenAvailable ? (
+              {fullscreenAvailable && immersiveFullscreenControl === "workspace" ? (
                 <button
                   type="button"
                   onClick={() => void toggleBrowserFullscreen()}
