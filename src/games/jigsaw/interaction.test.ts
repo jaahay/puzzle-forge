@@ -187,7 +187,7 @@ describe("Jigsaw proactive snap activation", () => {
       i === 0 ? 7 : i === 1 ? 9 : 190, i < 2 ? 4 : 90));
     const result = resolveJigsawAssistanceActivation(layout, pieces, placements, { joinedComponents: [] });
     expect(result.assembly.anchoredPieceIds).toEqual(["tile-0", "tile-1"]);
-    expect(result.assembly.joinedComponents).toEqual([["tile-0", "tile-1"]]);
+    expect(result.assembly.joinedComponents).toEqual([["tile-0", "tile-1"], ["tile-2", "tile-3"]]);
     expect(getTranslation(result.placements[0]!, pieces[0]!)).toEqual({ x: 0, y: 0 });
     expect(getTranslation(result.placements[1]!, pieces[1]!)).toEqual({ x: 0, y: 0 });
     expect(result.placements[2]).toEqual(placements[2]);
