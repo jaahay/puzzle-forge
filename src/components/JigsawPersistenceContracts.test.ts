@@ -16,10 +16,11 @@ describe("Jigsaw resource-session persistence integration", () => {
     expect(previewSource).toContain("if (initialAssembly === null) return;");
   });
 
-  it("publishes semantic assembly only through the three committed-state boundaries", () => {
-    expect((previewSource.match(/publishAssemblyProgress\(/g) ?? []).length).toBe(3);
+  it("publishes semantic assembly only through the four committed-state boundaries", () => {
+    expect((previewSource.match(/publishAssemblyProgress\(/g) ?? []).length).toBe(4);
     expect(previewSource).toContain("publishAssemblyProgress(nextAssembly);");
     expect(previewSource).toContain("publishAssemblyProgress(transition.snapshot.assembly);");
     expect(previewSource).toContain("publishAssemblyProgress(nextState.assembly);");
+    expect(previewSource).toContain("publishAssemblyProgress(after.assembly);");
   });
 });

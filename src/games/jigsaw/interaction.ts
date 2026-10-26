@@ -300,6 +300,58 @@ export const resolveJigsawComponentDrop = (
   };
 };
 
+/**
+ * Resolve already-eligible joins and frame anchors once when assistance is enabled.
+ * The existing drop resolver owns tolerances, neighbor topology and island geometry.
+ * Recheck each changed island so new alignments can expose further eligible joins.
+ */
+export const resolveJigsawAssistanceActivation = (
+  layout: JigsawWorldLayout,
+  pieces: readonly JigsawPiece[],
+  placements: readonly JigsawPlacement[],
+  assembly: JigsawAssemblyProgress,
+): JigsawDropResult => {
+  let currentPlacements = placements.map((placement) => ({ ...placement }));
+  let currentAssembly = assembly;
+  let changed = false;
+  const queue = getJigsawAssemblyComponents(assembly, pieces).map((group) => group[0]!);
+  const pending = new Set(queue);
+  const byId = getPieceById(pieces);
+  while (queue.length > 0) {
+    const pieceId = queue.shift()!;
+    pending.delete(pieceId);
+    if ((currentAssembly.anchoredPieceIds ?? []).includes(pieceId)) continue;
+    const group = getJigsawComponentPieceIds(currentAssembly, pieceId);
+    const result = resolveJigsawComponentDrop(layout, pieces, currentPlacements, currentAssembly, pieceId, {
+      snapToFrame: true,
+    });
+    const changedAssembly = JSON.stringify(result.assembly) !== JSON.stringify(currentAssembly);
+    const changedPlacements = result.placements.some((placement, index) => {
+      const previous = currentPlacements[index];
+      return previous && (placement.worldX !== previous.worldX || placement.worldY !== previous.worldY);
+    });
+    if (!changedAssembly && !changedPlacements) continue;
+    changed = true;
+    currentPlacements = result.placements;
+    currentAssembly = result.assembly;
+    const mergedGroup = getJigsawComponentPieceIds(currentAssembly, pieceId);
+    const candidateIds = new Set([...group, ...mergedGroup]);
+    for (const memberId of mergedGroup) {
+      const member = byId.get(memberId);
+      if (!member) continue;
+      for (const neighborId of getJigsawPieceNeighborIds(member)) candidateIds.add(neighborId);
+    }
+    for (const candidateId of candidateIds) {
+      if (!byId.has(candidateId) || pending.has(candidateId)) continue;
+      if ((currentAssembly.anchoredPieceIds ?? []).includes(candidateId)) continue;
+      pending.add(candidateId);
+      queue.push(candidateId);
+    }
+  }
+  return { placements: changed ? currentPlacements : placements.map((placement) => ({ ...placement })),
+    assembly: currentAssembly, joined: changed };
+};
+
 export const stageJigsawAssemblyPlacements = (
   layout: JigsawWorldLayout,
   pieces: readonly JigsawPiece[],

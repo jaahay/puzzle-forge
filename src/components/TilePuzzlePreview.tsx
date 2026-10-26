@@ -18,6 +18,7 @@ import {
   type JigsawDragAction,
 } from "../games/jigsaw/dragAction";
 import { getJigsawPieceOutlinePath, getJigsawPieceSeamPaths } from "../games/jigsaw/edgePaths";
+import { resolveJigsawAssistanceActivation } from "../games/jigsaw/interaction";
 import {
   applyJigsawHistoryAction,
   commitJigsawPlacementAction,
@@ -1189,6 +1190,22 @@ export const TilePuzzlePreview = ({
           type="button"
           aria-pressed={snapToFrame}
           onClick={() => {
+            if (!snapToFrame) {
+              const before = getCurrentSnapshot();
+              if (!dragRef.current && !pinchRef.current && before) {
+                const resolved = resolveJigsawAssistanceActivation(
+                  layout, puzzle.tiles, before.placements, before.assembly,
+                );
+                const after = { placements: resolved.placements, assembly: resolved.assembly };
+                const updatedHistory = commitJigsawPlacementAction(historyRef.current, before, after);
+                if (updatedHistory !== historyRef.current) {
+                  updatePlacementState(() => ({ puzzleId: puzzle.id, ...after }));
+                  publishAssemblyProgress(after.assembly);
+                  replaceHistory(updatedHistory);
+                  if (isJigsawAssemblySolved(after.assembly, puzzle.tiles.length)) onCausativeInput();
+                }
+              }
+            }
             setPlayerPreferences((current) => ({ ...current, snapToFrame: !current.snapToFrame }));
           }}
         >
