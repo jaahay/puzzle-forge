@@ -3,6 +3,7 @@ import type { JigsawPiece, JigsawPieceEdge } from "../../catalog/types";
 import {
   moveJigsawComponent,
   resolveJigsawComponentDrop,
+  resolveJigsawAssistanceActivation,
   stageJigsawAssemblyPlacements,
 } from "./interaction";
 import { generateJigsaw } from "./generate";
@@ -179,6 +180,48 @@ const getTranslation = (placement: JigsawPlacement, piece: JigsawPiece) => {
     y: placement.worldY - solved.top,
   };
 };
+
+describe("Jigsaw proactive snap activation", () => {
+  it("anchors every near-frame island, but leaves distant pieces unmoved", () => {
+    const placements = pieces.map((piece, i) => placementAtTranslation(piece,
+      i === 0 ? 7 : i === 1 ? 9 : 190, i < 2 ? 4 : 90));
+    const result = resolveJigsawAssistanceActivation(layout, pieces, placements, { joinedComponents: [] });
+    expect(result.assembly.anchoredPieceIds).toEqual(["tile-0", "tile-1"]);
+    expect(result.assembly.joinedComponents).toEqual([["tile-0", "tile-1"]]);
+    expect(getTranslation(result.placements[0]!, pieces[0]!)).toEqual({ x: 0, y: 0 });
+    expect(getTranslation(result.placements[1]!, pieces[1]!)).toEqual({ x: 0, y: 0 });
+    expect(result.placements[2]).toEqual(placements[2]);
+    expect(result.placements[3]).toEqual(placements[3]);
+  });
+
+  it("joins independently eligible neighbors and remains idempotent", () => {
+    const placements = [
+      placementAtTranslation(pieces[0]!, 110, 80),
+      placementAtTranslation(pieces[1]!, 116, 85),
+      placementAtTranslation(pieces[2]!, 240, 120),
+      placementAtTranslation(pieces[3]!, 249, 120),
+    ];
+    const first = resolveJigsawAssistanceActivation(layout, pieces, placements, { joinedComponents: [] });
+    expect(first.assembly.joinedComponents).toEqual([["tile-0", "tile-1"], ["tile-2", "tile-3"]]);
+    expect(first.assembly.anchoredPieceIds).toBeUndefined();
+    const second = resolveJigsawAssistanceActivation(layout, pieces, first.placements, first.assembly);
+    expect(second.assembly).toEqual(first.assembly);
+    expect(second.placements).toEqual(first.placements);
+  });
+
+  it("preserves existing anchored islands and absorbs nearby loose neighbors", () => {
+    const placements = [
+      placementAtTranslation(pieces[0]!, 0, 0),
+      placementAtTranslation(pieces[1]!, 8, 5),
+      placementAtTranslation(pieces[2]!, 220, 80),
+      placementAtTranslation(pieces[3]!, 220, 80),
+    ];
+    const result = resolveJigsawAssistanceActivation(layout, pieces, placements,
+      { joinedComponents: [], anchoredPieceIds: ["tile-0"] });
+    expect(result.assembly.anchoredPieceIds).toEqual(["tile-0", "tile-1"]);
+    expect(result.placements[0]).toEqual(placements[0]);
+  });
+});
 
 describe("Jigsaw island interaction", () => {
   it("moves a joined component rigidly", () => {
