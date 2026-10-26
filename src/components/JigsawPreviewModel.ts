@@ -97,24 +97,22 @@ export const getJigsawFitInsetsForOverlays = (
       rect.bottom > stageRect.top && rect.top < stageRect.bottom;
     if (!overlaps || rect.width <= 0 || rect.height <= 0) continue;
 
-    const horizontal = rect.width >= rect.height * 1.35;
-    if (horizontal) {
-      const topDistance = Math.abs(rect.top - stageRect.top);
-      const bottomDistance = Math.abs(stageRect.bottom - rect.bottom);
-      if (topDistance <= bottomDistance) {
-        insets.top = Math.max(insets.top, rect.bottom - stageRect.top + 8);
-      } else {
-        insets.bottom = Math.max(insets.bottom, stageRect.bottom - rect.top + 8);
-      }
-    } else {
-      const leftDistance = Math.abs(rect.left - stageRect.left);
-      const rightDistance = Math.abs(stageRect.right - rect.right);
-      if (leftDistance <= rightDistance) {
-        insets.left = Math.max(insets.left, rect.right - stageRect.left + 8);
-      } else {
-        insets.right = Math.max(insets.right, stageRect.right - rect.left + 8);
-      }
-    }
+    // A small corner control should not reserve an entire vertical strip on
+    // a narrow phone. Reserve the edge consuming the smallest fraction of the
+    // play surface; the board remains centered and all controls stay clear.
+    const candidates: { edge: keyof JigsawViewportInsets; inset: number; share: number }[] = [
+      { edge: "top", inset: Math.max(0, rect.bottom - stageRect.top + 8),
+        share: Math.max(0, rect.bottom - stageRect.top + 8) / stageHeight },
+      { edge: "right", inset: Math.max(0, stageRect.right - rect.left + 8),
+        share: Math.max(0, stageRect.right - rect.left + 8) / stageWidth },
+      { edge: "bottom", inset: Math.max(0, stageRect.bottom - rect.top + 8),
+        share: Math.max(0, stageRect.bottom - rect.top + 8) / stageHeight },
+      { edge: "left", inset: Math.max(0, rect.right - stageRect.left + 8),
+        share: Math.max(0, rect.right - stageRect.left + 8) / stageWidth },
+    ];
+    const nearestEdge = candidates.reduce((best, candidate) =>
+      candidate.share < best.share ? candidate : best);
+    insets[nearestEdge.edge] = Math.max(insets[nearestEdge.edge], nearestEdge.inset);
   }
 
   return {

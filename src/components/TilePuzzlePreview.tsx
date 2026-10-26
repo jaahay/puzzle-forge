@@ -29,6 +29,7 @@ import {
   type JigsawWorkspaceSnapshot,
 } from "../games/jigsaw/history";
 import { getJigsawPinchCamera, type JigsawPinchPair, type JigsawPinchPoint } from "../games/jigsaw/pinch";
+import { loadJigsawPlayerPreferences, saveJigsawPlayerPreferences } from "../games/jigsaw/playerPreferences";
 import {
   createJigsawFitCamera,
   createJigsawOccupiedFitCamera,
@@ -214,13 +215,20 @@ export const TilePuzzlePreview = ({
   const [activeTileId, setActiveTileId] = useState<string | null>(null);
   const [raisedTileId, setRaisedTileId] = useState<string | null>(null);
   const [isPanning, setIsPanning] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
-  const [showEdgeSeams, setShowEdgeSeams] = useState(false);
-  const [snapToFrame, setSnapToFrame] = useState(false);
+  const [playerPreferences, setPlayerPreferences] = useState(loadJigsawPlayerPreferences);
+  const { showPreview, showEdgeSeams, snapToFrame } = playerPreferences;
   const [showCompactTools, setShowCompactTools] = useState(false);
   const [fitIsOverview, setFitIsOverview] = useState(true);
   const cameraWasUserAdjustedRef = useRef(false);
   const displayMode = usePuzzleWorkspaceDisplayMode();
+  const previousDisplayModeRef = useRef({
+    puzzleId: puzzle.id,
+    isExpanded: displayMode.isExpanded,
+    isBrowserFullscreen: displayMode.isBrowserFullscreen,
+  });
+  useEffect(() => {
+    saveJigsawPlayerPreferences(playerPreferences);
+  }, [playerPreferences]);
   const markManualCameraAdjustment = () => {
     cameraWasUserAdjustedRef.current = true;
     setFitIsOverview(false);
@@ -467,6 +475,28 @@ export const TilePuzzlePreview = ({
     if (nextCamera === currentCameraState) return;
     setCamera(nextCamera);
   }, [layout, puzzle.id, viewport.height, viewport.width, fitIsOverview]);
+
+  // Entering/leaving Expanded or browser fullscreen is an explicit view change.
+  // Refit even after manual camera movement; ordinary resize still preserves it.
+  useEffect(() => {
+    const previous = previousDisplayModeRef.current;
+    previousDisplayModeRef.current = {
+      puzzleId: puzzle.id,
+      isExpanded: displayMode.isExpanded,
+      isBrowserFullscreen: displayMode.isBrowserFullscreen,
+    };
+    if (previous.puzzleId !== puzzle.id ||
+        (previous.isExpanded === displayMode.isExpanded &&
+         previous.isBrowserFullscreen === displayMode.isBrowserFullscreen)) return;
+    const current = placementStateRef.current;
+    const measured = getMeasuredJigsawViewport(stageRef.current);
+    if (!measured || current?.puzzleId !== puzzle.id) return;
+    cameraWasUserAdjustedRef.current = false;
+    setCamera(resolveJigsawCameraForViewportResize(
+      layout, measured, current.placements, wheelStateRef.current.camera,
+      false, getCurrentFitInsets(), puzzle.tiles, fitIsOverview,
+    ));
+  }, [displayMode.isExpanded, displayMode.isBrowserFullscreen, puzzle.id]);
 
   const toggleFitView = () => {
     if (!isUsableJigsawViewport(viewport)) return;
@@ -938,7 +968,7 @@ export const TilePuzzlePreview = ({
     pan.lastClientX = event.clientX;
     pan.lastClientY = event.clientY;
     if (deltaX !== 0 || deltaY !== 0) markManualCameraAdjustment();
-    setCamera(panJigsawCamera(layout, renderViewport, activeCamera, -deltaX, -deltaY));
+    setCamera(panJigsawCamera(layout, renderViewport, wheelStateRef.current.camera, -deltaX, -deltaY));
     event.preventDefault();
   };
 
@@ -1107,7 +1137,7 @@ export const TilePuzzlePreview = ({
         <button
           type="button"
           aria-pressed={showPreview}
-          onClick={() => setShowPreview((current) => !current)}
+          onClick={() => setPlayerPreferences((current) => ({ ...current, showPreview: !current.showPreview }))}
         >
           {showPreview ? "Hide preview" : "Preview image"}
         </button>
@@ -1124,7 +1154,7 @@ export const TilePuzzlePreview = ({
           type="button"
           aria-pressed={showEdgeSeams}
           onClick={() => {
-            setShowEdgeSeams((current) => !current);
+            setPlayerPreferences((current) => ({ ...current, showEdgeSeams: !current.showEdgeSeams }));
           }}
         >
           {showEdgeSeams ? "Hide edge guides" : "Show edge guides"}
@@ -1133,7 +1163,7 @@ export const TilePuzzlePreview = ({
           type="button"
           aria-pressed={snapToFrame}
           onClick={() => {
-            setSnapToFrame((current) => !current);
+            setPlayerPreferences((current) => ({ ...current, snapToFrame: !current.snapToFrame }));
           }}
         >
           Snap and lock to frame

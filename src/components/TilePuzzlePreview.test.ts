@@ -215,6 +215,23 @@ describe("TilePuzzlePreview fit safe areas", () => {
   });
 });
 
+describe("TilePuzzlePreview overlay fit on narrow screens", () => {
+  it("reserves the top rather than the full right strip for a top-right control", () => {
+    const viewport = { left: 0, top: 0, right: 390, bottom: 844, width: 390, height: 844 };
+    const overlay = { left: 310, top: 10, right: 380, bottom: 65, width: 70, height: 55 };
+    const fitInsets = getJigsawFitInsetsForOverlays(viewport, [overlay]);
+    expect(fitInsets).toEqual({ top: 73, right: 0, bottom: 0, left: 0 });
+  });
+
+  it("reserves a side for a corner control on a wide stage", () => {
+    const viewport = { left: 0, top: 0, right: 900, bottom: 390, width: 900, height: 390 };
+    const overlay = { left: 815, top: 10, right: 890, bottom: 65, width: 75, height: 55 };
+    const fitInsets = getJigsawFitInsetsForOverlays(viewport, [overlay]);
+    expect(fitInsets.right).toBe(93);
+    expect(fitInsets.top).toBe(0);
+  });
+});
+
 describe("TilePuzzlePreview placement initialization", () => {
   it("uses the measured play surface and rejects unavailable measurements", () => {
     expect(getMeasuredJigsawViewport(null)).toBeNull();
