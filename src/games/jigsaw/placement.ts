@@ -44,8 +44,6 @@ export type JigsawCamera = {
 };
 
 export type JigsawFitTarget = "workspace" | "board";
-export type JigsawStagingMode = "perimeter" | "sides" | "top-bottom";
-
 type JigsawWorldLayoutInput = {
   imageWidth: number;
   imageHeight: number;
@@ -58,10 +56,6 @@ type WorldPosition = {
   top: number;
 };
 
-type ScatterSlot = WorldPosition & {
-  index: number;
-};
-
 type WorldPoint = {
   x: number;
   y: number;
@@ -69,8 +63,9 @@ type WorldPoint = {
 
 const basePieceSize = 96;
 const worldPadding = 48;
-const worldScale = 1.55;
+const worldScale = 1.95;
 const minimumStagingPiecesPerAxis = 5;
+const minimumVerticalStagingPieces = 9;
 const jigsawPieceVisualOverhangRatio = jigsawEdgeMaximumDepth / 100;
 
 export const jigsawCameraMinimumZoom = 0.05;
@@ -119,10 +114,12 @@ export const createJigsawWorldLayout = ({
   const worldWidth = Math.max(
     boardWidth * worldScale,
     boardWidth + pieceWidth * minimumStagingPiecesPerAxis,
+    boardHeight * 1.32,
   ) + worldPadding * 2;
   const worldHeight = Math.max(
     boardHeight * worldScale,
-    boardHeight + pieceHeight * minimumStagingPiecesPerAxis,
+    boardHeight + pieceHeight * minimumVerticalStagingPieces,
+    boardWidth * 1.32,
   ) + worldPadding * 2;
 
   return {
@@ -147,34 +144,6 @@ export const isUsableJigsawViewport = (
   viewport.height > 0,
 );
 
-const getStagingAspectThreshold = (pieceCount: number) => {
-  if (pieceCount >= 64) return 1.2;
-  if (pieceCount >= 24) return 1.3;
-  if (pieceCount >= 8) return 1.45;
-  return 1.65;
-};
-
-export const getJigsawStagingMode = (
-  layout: JigsawWorldLayout,
-  pieceCount: number,
-  viewport: JigsawViewport | null = null,
-): JigsawStagingMode => {
-  if (!isUsableJigsawViewport(viewport)) return "perimeter";
-
-  const boardAspectRatio = layout.boardWidth / Math.max(1, layout.boardHeight);
-  const viewportAspectRatio = viewport.width / viewport.height;
-  const relativeAspectRatio = viewportAspectRatio / Math.max(0.01, boardAspectRatio);
-  const threshold = getStagingAspectThreshold(pieceCount);
-
-  if (relativeAspectRatio >= threshold) return "sides";
-  if (relativeAspectRatio <= 1 / threshold) return "top-bottom";
-  return "perimeter";
-};
-
-const sortScatterSlots = (slots: readonly ScatterSlot[], salt = 0) =>
-  [...slots].sort((left, right) =>
-    mixSlotIndex(left.index + 1 + salt) - mixSlotIndex(right.index + 1 + salt));
-
 export type JigsawPieceCellSpan = {
   width: number;
   height: number;
@@ -198,189 +167,6 @@ export const getJigsawPieceWorldSize = (
     width: layout.pieceWidth * span.width,
     height: layout.pieceHeight * span.height,
   };
-};
-
-const getScatterSlotDistanceFromBoard = (
-  layout: JigsawWorldLayout,
-  slot: ScatterSlot,
-  stagingMode: Exclude<JigsawStagingMode, "perimeter">,
-  pieceWidth: number,
-  pieceHeight: number,
-) => {
-  if (stagingMode === "sides") {
-    return slot.left + pieceWidth <= layout.boardX
-      ? layout.boardX - (slot.left + pieceWidth)
-      : slot.left - (layout.boardX + layout.boardWidth);
-  }
-
-  return slot.top + pieceHeight <= layout.boardY
-    ? layout.boardY - (slot.top + pieceHeight)
-    : slot.top - (layout.boardY + layout.boardHeight);
-};
-
-const sortPreferredScatterSlots = (
-  layout: JigsawWorldLayout,
-  slots: readonly ScatterSlot[],
-  stagingMode: Exclude<JigsawStagingMode, "perimeter">,
-  pieceWidth: number,
-  pieceHeight: number,
-  salt: number,
-) => [...slots].sort((left, right) => {
-  const distanceDelta =
-    getScatterSlotDistanceFromBoard(layout, left, stagingMode, pieceWidth, pieceHeight) -
-    getScatterSlotDistanceFromBoard(layout, right, stagingMode, pieceWidth, pieceHeight);
-  if (Math.abs(distanceDelta) > 0.5) return distanceDelta;
-
-  return mixSlotIndex(left.index + 1 + salt) - mixSlotIndex(right.index + 1 + salt);
-});
-
-const interleaveScatterSlots = (
-  first: readonly ScatterSlot[],
-  second: readonly ScatterSlot[],
-) => {
-  const slots: ScatterSlot[] = [];
-  const length = Math.max(first.length, second.length);
-
-  for (let index = 0; index < length; index += 1) {
-    const firstSlot = first[index];
-    const secondSlot = second[index];
-    if (firstSlot) slots.push(firstSlot);
-    if (secondSlot) slots.push(secondSlot);
-  }
-
-  return slots;
-};
-
-const isBoardAlignedScatterSlot = (
-  layout: JigsawWorldLayout,
-  slot: ScatterSlot,
-  stagingMode: Exclude<JigsawStagingMode, "perimeter">,
-  pieceWidth: number,
-  pieceHeight: number,
-) => {
-  if (stagingMode === "sides") {
-    const centerY = slot.top + pieceHeight / 2;
-    return centerY >= layout.boardY && centerY <= layout.boardY + layout.boardHeight;
-  }
-
-  const centerX = slot.left + pieceWidth / 2;
-  return centerX >= layout.boardX && centerX <= layout.boardX + layout.boardWidth;
-};
-
-const createPreferredScatterSlots = (
-  layout: JigsawWorldLayout,
-  slots: readonly ScatterSlot[],
-  stagingMode: Exclude<JigsawStagingMode, "perimeter">,
-  boardGap: number,
-  pieceWidth: number,
-  pieceHeight: number,
-) => {
-  const boardLeft = layout.boardX - boardGap;
-  const boardRight = layout.boardX + layout.boardWidth + boardGap;
-  const boardTop = layout.boardY - boardGap;
-  const boardBottom = layout.boardY + layout.boardHeight + boardGap;
-  const firstSide = stagingMode === "sides"
-    ? slots.filter((slot) => slot.left + pieceWidth <= boardLeft)
-    : slots.filter((slot) => slot.top + pieceHeight <= boardTop);
-  const secondSide = stagingMode === "sides"
-    ? slots.filter((slot) => slot.left >= boardRight)
-    : slots.filter((slot) => slot.top >= boardBottom);
-  const firstSalt = stagingMode === "sides" ? 17 : 29;
-  const secondSalt = stagingMode === "sides" ? 53 : 71;
-  const alignedFirst = sortPreferredScatterSlots(
-    layout,
-    firstSide.filter((slot) => isBoardAlignedScatterSlot(layout, slot, stagingMode, pieceWidth, pieceHeight)),
-    stagingMode,
-    pieceWidth,
-    pieceHeight,
-    firstSalt,
-  );
-  const alignedSecond = sortPreferredScatterSlots(
-    layout,
-    secondSide.filter((slot) => isBoardAlignedScatterSlot(layout, slot, stagingMode, pieceWidth, pieceHeight)),
-    stagingMode,
-    pieceWidth,
-    pieceHeight,
-    secondSalt,
-  );
-  const overflowFirst = sortPreferredScatterSlots(
-    layout,
-    firstSide.filter((slot) => !isBoardAlignedScatterSlot(layout, slot, stagingMode, pieceWidth, pieceHeight)),
-    stagingMode,
-    pieceWidth,
-    pieceHeight,
-    firstSalt + 101,
-  );
-  const overflowSecond = sortPreferredScatterSlots(
-    layout,
-    secondSide.filter((slot) => !isBoardAlignedScatterSlot(layout, slot, stagingMode, pieceWidth, pieceHeight)),
-    stagingMode,
-    pieceWidth,
-    pieceHeight,
-    secondSalt + 101,
-  );
-
-  return [
-    ...interleaveScatterSlots(alignedFirst, alignedSecond),
-    ...interleaveScatterSlots(overflowFirst, overflowSecond),
-  ];
-};
-
-const createScatterSlots = (
-  layout: JigsawWorldLayout,
-  pieceCount: number,
-  viewport: JigsawViewport | null = null,
-  piece: Pick<JigsawPiece, "specialShape"> | null = null,
-): ScatterSlot[] => {
-  const stepX = Math.max(18, layout.pieceWidth * 0.82);
-  const stepY = Math.max(18, layout.pieceHeight * 0.82);
-  const slots: ScatterSlot[] = [];
-  const size = piece
-    ? getJigsawPieceWorldSize(layout, piece)
-    : { width: layout.pieceWidth, height: layout.pieceHeight };
-  const maximumLeft = layout.worldWidth - size.width - worldPadding;
-  const maximumTop = layout.worldHeight - size.height - worldPadding;
-  const boardGap = Math.max(10, Math.min(layout.pieceWidth, layout.pieceHeight) * 0.14);
-
-  for (let top = worldPadding; top <= maximumTop + 0.5; top += stepY) {
-    for (let left = worldPadding; left <= maximumLeft + 0.5; left += stepX) {
-      if (
-        rectanglesOverlap(
-          left,
-          top,
-          size.width,
-          size.height,
-          layout.boardX,
-          layout.boardY,
-          layout.boardWidth,
-          layout.boardHeight,
-          boardGap,
-        )
-      ) {
-        continue;
-      }
-
-      slots.push({ left, top, index: slots.length });
-    }
-  }
-
-  const stagingMode = getJigsawStagingMode(layout, pieceCount, viewport);
-  if (stagingMode === "perimeter") {
-    return sortScatterSlots(slots);
-  }
-
-  const preferred = createPreferredScatterSlots(
-    layout,
-    slots,
-    stagingMode,
-    boardGap,
-    size.width,
-    size.height,
-  );
-  const preferredIds = new Set(preferred.map((slot) => slot.index));
-  const fallback = sortScatterSlots(slots.filter((slot) => !preferredIds.has(slot.index)), 97);
-
-  return [...preferred, ...fallback];
 };
 
 export const normalizeJigsawWorldPosition = (
@@ -512,33 +298,194 @@ export const getJigsawWorkingBounds = (
   };
 };
 
+/**
+ * One deterministic, continuously sampled table layout for every puzzle.
+ * Candidate coordinates are genuinely continuous, not jittered grid cells.
+ * Prefer an artwork/viewport-shaped region around the board, while spreading
+ * pieces into underused space rather than leaving large holes. That region is
+ * a soft preference: the same search can use the entire world when crowded.
+ *
+ * This function is only called on initial staging and an explicit restage.
+ * Changing the camera never moves already staged pieces.
+ */
+export type JigsawStagingFootprint = {
+  /** Bounds relative to the representative's solved top-left corner. */
+  offsetX: number;
+  offsetY: number;
+  width: number;
+  height: number;
+  /** A joined island can occupy the board if it cannot be staged outside. */
+  allowBoardOverlap?: boolean;
+};
+
+export type JigsawStagingOptions = {
+  footprints?: ReadonlyMap<string, JigsawStagingFootprint>;
+  /** Fixed, frame-anchored islands are already occupying these rectangles. */
+  reserved?: readonly JigsawWorldBounds[];
+};
+
 export const createInitialJigsawPlacements = (
   layout: JigsawWorldLayout,
   pieces: readonly JigsawPiece[],
   viewport: JigsawViewport | null = null,
+  options: JigsawStagingOptions = {},
 ): JigsawPlacement[] => {
-  const orderedPieces = [...pieces].sort((left, right) => left.currentIndex - right.currentIndex);
-  const usedSlotPositions = new Set<string>();
-  const slotPositionKey = (slot: WorldPosition) => `${slot.left.toFixed(6)}:${slot.top.toFixed(6)}`;
+  if (pieces.length === 0) return [];
 
-  return orderedPieces.map((piece, index) => {
-    const slots = createScatterSlots(layout, pieces.length, viewport, piece);
-    const availableSlot = slots.find((slot) => !usedSlotPositions.has(slotPositionKey(slot)));
-    const fallbackSlots = slots.length > 0
-      ? slots
-      : [{ left: worldPadding, top: worldPadding, index: -1 }];
-    const slot = availableSlot ?? fallbackSlots[index % fallbackSlots.length];
-    if (availableSlot) usedSlotPositions.add(slotPositionKey(availableSlot));
-    const repeatedLayer = availableSlot ? 0 : Math.floor(index / fallbackSlots.length);
-    const offset = repeatedLayer * 6;
-    const position = normalizeJigsawPieceWorldPosition(
-      layout,
-      piece,
-      slot.left + offset,
-      slot.top + offset,
-    );
-    return { id: piece.id, ...position };
+  const ordered = [...pieces].sort((a, b) => a.currentIndex - b.currentIndex);
+  const footprintFor = (piece: JigsawPiece): JigsawStagingFootprint => {
+    const custom = options.footprints?.get(piece.id);
+    if (custom) return custom;
+    return { offsetX: 0, offsetY: 0, ...getJigsawPieceWorldSize(layout, piece) };
+  };
+  const stagingOrder = [...ordered].sort((a, b) => {
+    const left = footprintFor(a);
+    const right = footprintFor(b);
+    return right.width * right.height - left.width * left.height ||
+      a.currentIndex - b.currentIndex;
   });
+  const seed = ordered.reduce(
+    (value, piece) => mixSlotIndex(value ^ mixSlotIndex(piece.currentIndex +
+      piece.solvedIndex * 37 + 1)),
+    mixSlotIndex(pieces.length * 131 + Math.round(layout.boardWidth) * 17),
+  );
+
+  const boardRatio = layout.boardWidth / layout.boardHeight;
+  const viewRatio = isUsableJigsawViewport(viewport)
+    ? clamp(viewport.width / viewport.height, 0.3, 3)
+    : boardRatio;
+  const targetRatio = clamp(
+    Math.pow(viewRatio, 0.7) * Math.pow(boardRatio, 0.3), 0.38, 2.6,
+  );
+  const pieceArea = pieces.reduce((area, piece) => {
+    const size = footprintFor(piece);
+    return area + size.width * size.height;
+  }, 0);
+  const targetArea = layout.boardWidth * layout.boardHeight + pieceArea * 2.55;
+  const targetWidth = Math.min(
+    layout.worldWidth - 2 * worldPadding,
+    Math.max(layout.boardWidth + layout.pieceWidth * 2.7,
+      Math.sqrt(targetArea * targetRatio)),
+  );
+  const targetHeight = Math.min(
+    layout.worldHeight - 2 * worldPadding,
+    Math.max(layout.boardHeight + layout.pieceHeight * 2.7,
+      Math.sqrt(targetArea / targetRatio)),
+  );
+  const centerX = layout.boardX + layout.boardWidth / 2;
+  const centerY = layout.boardY + layout.boardHeight / 2;
+  const pieceGap = Math.min(layout.pieceWidth, layout.pieceHeight) * 0.03;
+  const boardGap = Math.min(layout.pieceWidth, layout.pieceHeight) * 0.14;
+
+  // Scrambled low-discrepancy coordinates cover the whole table without rows,
+  // columns, sectors, or prescribed rings. Each successive piece receives a
+  // different deterministic part of the same continuous candidate sequence.
+  const radicalInverse = (index: number, base: number) => {
+    let result = 0;
+    let factor = 1 / base;
+    for (let remaining = index; remaining > 0; remaining = Math.floor(remaining / base)) {
+      result += (remaining % base) * factor;
+      factor /= base;
+    }
+    return result;
+  };
+  const random = (value: number) => mixSlotIndex(value) / 4294967296;
+  const offsetX = random(seed ^ 0x9b72);
+  const offsetY = random(seed ^ 0xa512);
+  const sampleCount = Math.max(200, Math.ceil(pieces.length * 0.35));
+
+  type UsedBounds = { x: number; y: number; width: number; height: number };
+  const bucketSize = Math.max(layout.pieceWidth, layout.pieceHeight) * 2.8;
+  const buckets = new Map<string, UsedBounds[]>();
+  const bucketIndex = (coordinate: number) => Math.floor(coordinate / bucketSize);
+  const bucketKey = (x: number, y: number) => `${x}:${y}`;
+  const visitNeighbors = (
+    bounds: UsedBounds,
+    radius: number,
+    visit: (used: UsedBounds) => boolean,
+  ) => {
+    for (let iy = bucketIndex(bounds.y - radius); iy <= bucketIndex(bounds.y + bounds.height + radius); iy += 1) {
+      for (let ix = bucketIndex(bounds.x - radius); ix <= bucketIndex(bounds.x + bounds.width + radius); ix += 1) {
+        const entries = buckets.get(bucketKey(ix, iy)) ?? [];
+        for (const entry of entries) if (visit(entry)) return true;
+      }
+    }
+    return false;
+  };
+  const remember = (bounds: UsedBounds) => {
+    for (let iy = bucketIndex(bounds.y); iy <= bucketIndex(bounds.y + bounds.height); iy += 1) {
+      for (let ix = bucketIndex(bounds.x); ix <= bucketIndex(bounds.x + bounds.width); ix += 1) {
+        const key = bucketKey(ix, iy);
+        const entries = buckets.get(key) ?? [];
+        entries.push(bounds);
+        buckets.set(key, entries);
+      }
+    }
+  };
+
+  // Frame-anchored islands are fixed obstacles, not pieces to scatter.
+  for (const reserved of options.reserved ?? []) remember(reserved);
+
+  const staged = new Map<string, JigsawPlacement>();
+  let candidateIndex = 0;
+  for (const piece of stagingOrder) {
+    const size = footprintFor(piece);
+    if (size.width > layout.worldWidth - 2 * worldPadding ||
+        size.height > layout.worldHeight - 2 * worldPadding) {
+      throw new Error("Jigsaw assembly exceeds available staging space");
+    }
+    let best: UsedBounds | null = null;
+    let bestScore = Number.NEGATIVE_INFINITY;
+    for (let sample = 0; sample < sampleCount; sample += 1) {
+      const index = ++candidateIndex;
+      const x = worldPadding + (
+        (radicalInverse(index, 2) + offsetX) % 1
+      ) * (layout.worldWidth - 2 * worldPadding - size.width);
+      const y = worldPadding + (
+        (radicalInverse(index, 3) + offsetY) % 1
+      ) * (layout.worldHeight - 2 * worldPadding - size.height);
+      const bounds = { x, y, ...size };
+      const coversBoard = rectanglesOverlap(
+        x, y, size.width, size.height,
+        layout.boardX, layout.boardY, layout.boardWidth, layout.boardHeight, boardGap,
+      );
+      if (coversBoard && !size.allowBoardOverlap) continue;
+      if (visitNeighbors(bounds, pieceGap, (used) => rectanglesOverlap(
+        x, y, size.width, size.height,
+        used.x, used.y, used.width, used.height, pieceGap,
+      ))) continue;
+
+      // Soft blue-noise spacing: resist clumps, but preserve variation in gaps.
+      // Pure farthest-point selection produces its own conspicuous lattice.
+      let nearest = 5.5;
+      visitNeighbors(bounds, Math.max(layout.pieceWidth, layout.pieceHeight) * 5.7, (used) => {
+        const dx = (x + size.width / 2 - used.x - used.width / 2) / layout.pieceWidth;
+        const dy = (y + size.height / 2 - used.y - used.height / 2) / layout.pieceHeight;
+        nearest = Math.min(nearest, Math.hypot(dx, dy));
+        return false;
+      });
+      const outsideX = Math.max(0, Math.abs(x + size.width / 2 - centerX) - targetWidth / 2);
+      const outsideY = Math.max(0, Math.abs(y + size.height / 2 - centerY) - targetHeight / 2);
+      const outside = Math.hypot(outsideX / layout.pieceWidth, outsideY / layout.pieceHeight);
+      // Keep the board clear whenever possible. A large joined island can
+      // use it as a table surface rather than making Restage impossible.
+      const score = nearest * 0.55 - outside * 1.35 -
+        (coversBoard ? 10000 : 0) +
+        random(seed ^ Math.imul(index, 37)) * 1.7;
+      if (score > bestScore) {
+        bestScore = score;
+        best = bounds;
+      }
+    }
+    if (!best) throw new Error("Insufficient free Jigsaw staging space");
+    staged.set(piece.id, {
+      id: piece.id,
+      worldX: best.x - size.offsetX,
+      worldY: best.y - size.offsetY,
+    });
+    remember(best);
+  }
+  return ordered.map((piece) => staged.get(piece.id)!);
 };
 
 const clampCameraAxis = (center: number, worldSize: number, visibleSize: number) => {
@@ -676,14 +623,42 @@ export const createJigsawOccupiedFitCamera = (
   padding = 28,
   insets: Partial<JigsawViewportInsets> = {},
   pieces: readonly JigsawPiece[] = [],
-): JigsawCamera => createJigsawBoundsFitCamera(
-  layout,
-  viewport,
-  getJigsawOccupiedBounds(layout, placements, pieces),
-  padding,
-  1.25,
-  insets,
-);
+): JigsawCamera => {
+  const bounds = getJigsawOccupiedBounds(layout, placements, pieces);
+  const boardCenterX = layout.boardX + layout.boardWidth / 2;
+  const boardCenterY = layout.boardY + layout.boardHeight / 2;
+  const safe = normalizeViewportInsets(viewport, insets);
+  const noInsets: JigsawViewportInsets = { top: 0, right: 0, bottom: 0, left: 0 };
+
+  // The board is the spatial anchor. Fit the asymmetrical loose-piece inventory
+  // around that fixed screen center instead of centering its bounding rectangle.
+  const fitZoom = (limits: JigsawViewportInsets) => clamp(Math.min(
+    (viewport.width / 2 - limits.left - padding) / Math.max(1, boardCenterX - bounds.x),
+    (viewport.width / 2 - limits.right - padding) /
+      Math.max(1, bounds.x + bounds.width - boardCenterX),
+    (viewport.height / 2 - limits.top - padding) / Math.max(1, boardCenterY - bounds.y),
+    (viewport.height / 2 - limits.bottom - padding) /
+      Math.max(1, bounds.y + bounds.height - boardCenterY),
+    1.25,
+  ), jigsawCameraMinimumZoom, 1.25);
+
+  let zoom = fitZoom(noInsets);
+  const screenLeft = viewport.width / 2 + (bounds.x - boardCenterX) * zoom;
+  const screenRight = viewport.width / 2 + (bounds.x + bounds.width - boardCenterX) * zoom;
+  const screenTop = viewport.height / 2 + (bounds.y - boardCenterY) * zoom;
+  const screenBottom = viewport.height / 2 + (bounds.y + bounds.height - boardCenterY) * zoom;
+  // Only reduce zoom for floating controls if the default centered view
+  // actually encroaches on them. Never shift the board to make room.
+  if (screenLeft < safe.left + padding || screenRight > viewport.width - safe.right - padding ||
+      screenTop < safe.top + padding || screenBottom > viewport.height - safe.bottom - padding) {
+    zoom = fitZoom(safe);
+  }
+  return clampJigsawCamera(layout, viewport, {
+    centerX: boardCenterX,
+    centerY: boardCenterY,
+    zoom,
+  });
+};
 
 export const createJigsawWorkingFitCamera = (
   layout: JigsawWorldLayout,
@@ -692,14 +667,82 @@ export const createJigsawWorkingFitCamera = (
   padding = 28,
   insets: Partial<JigsawViewportInsets> = {},
   pieces: readonly JigsawPiece[] = [],
-): JigsawCamera => createJigsawBoundsFitCamera(
-  layout,
-  viewport,
-  getJigsawWorkingBounds(layout, placements, pieces),
-  padding,
-  1.25,
-  insets,
-);
+): JigsawCamera => {
+  const fitted = createJigsawBoundsFitCamera(
+    layout,
+    viewport,
+    getJigsawWorkingBounds(layout, placements, pieces),
+    padding,
+    1.25,
+    insets,
+  );
+
+  const safe = normalizeViewportInsets(viewport, insets);
+  const usableWidth = Math.max(1, viewport.width - safe.left - safe.right - padding * 2);
+  const usableHeight = Math.max(1, viewport.height - safe.top - safe.bottom - padding * 2);
+
+  // The automatic camera is a working view, not Show all. Fit the available
+  // neighborhood when possible, but don't shrink ordinary pieces to thumbnails
+  // to include an entire staging tray. Around 4-5 pieces across is a useful
+  // touch-scale target, regardless of the artwork's aspect ratio.
+  const readablePiecePixels = Math.min(112, Math.max(72, usableWidth / 9), usableWidth / 4.5, usableHeight / 4.5);
+  const ordinaryPieceExtent = Math.sqrt(layout.pieceWidth * layout.pieceHeight);
+  const minimumWorkingZoom = clamp(
+    readablePiecePixels / Math.max(1, ordinaryPieceExtent),
+    jigsawCameraMinimumZoom,
+    1.25,
+  );
+  if (fitted.zoom >= minimumWorkingZoom) return fitted;
+
+  const zoom = minimumWorkingZoom;
+  const boardCenterX = layout.boardX + layout.boardWidth / 2;
+  const boardCenterY = layout.boardY + layout.boardHeight / 2;
+  const cameraFor = (worldX: number, worldY: number) => clampJigsawCamera(
+    layout,
+    viewport,
+    {
+      centerX: worldX - (safe.left - safe.right) / (2 * zoom),
+      centerY: worldY - (safe.top - safe.bottom) / (2 * zoom),
+      zoom,
+    },
+    safe,
+  );
+
+  // The board center is a good anchor on ordinary puzzles. Very large boards
+  // can fill the entire screen with blank board, hiding every staged piece.
+  // If none is visible, center a work area straddling the nearest piece and
+  // the board perimeter, so the player can actually begin solving.
+  const centered = cameraFor(boardCenterX, boardCenterY);
+  const pieceById = new Map(pieces.map((piece) => [piece.id, piece] as const));
+  const positioned = placements.map((placement) => {
+    const piece = pieceById.get(placement.id);
+    const size = piece
+      ? getJigsawPieceWorldSize(layout, piece)
+      : { width: layout.pieceWidth, height: layout.pieceHeight };
+    return {
+      x: placement.worldX + size.width / 2,
+      y: placement.worldY + size.height / 2,
+    };
+  });
+  const isVisible = (center: WorldPoint) => {
+    const x = viewport.width / 2 + (center.x - centered.centerX) * zoom;
+    const y = viewport.height / 2 + (center.y - centered.centerY) * zoom;
+    return x >= safe.left + padding && x <= viewport.width - safe.right - padding &&
+      y >= safe.top + padding && y <= viewport.height - safe.bottom - padding;
+  };
+  if (positioned.length === 0 || positioned.some(isVisible)) return centered;
+
+  const nearest = positioned.reduce<{ x: number; y: number; distance: number }>((best, candidate) => {
+    const distance = (candidate.x - boardCenterX) ** 2 + (candidate.y - boardCenterY) ** 2;
+    return distance < best.distance ? { ...candidate, distance } : best;
+  }, { x: boardCenterX, y: boardCenterY, distance: Number.POSITIVE_INFINITY });
+  const nearestBoardX = clamp(nearest.x, layout.boardX, layout.boardX + layout.boardWidth);
+  const nearestBoardY = clamp(nearest.y, layout.boardY, layout.boardY + layout.boardHeight);
+  return cameraFor(
+    (nearest.x + nearestBoardX) / 2,
+    (nearest.y + nearestBoardY) / 2,
+  );
+};
 
 export const screenToJigsawWorld = (
   camera: JigsawCamera,
@@ -744,9 +787,18 @@ export const zoomJigsawCameraAtPoint = (
   const worldPoint = screenToJigsawWorld(camera, viewport, screenX, screenY);
   const zoom = clamp(nextZoom, jigsawCameraMinimumZoom, jigsawCameraMaximumZoom);
 
-  return clampJigsawCamera(layout, viewport, {
+  const cameraAtAnchor = {
     centerX: worldPoint.x - (screenX - viewport.width / 2) / zoom,
     centerY: worldPoint.y - (screenY - viewport.height / 2) / zoom,
     zoom,
-  });
+  };
+  // The +/- controls use the screen center. Clamping that center to newly
+  // calculated visible-world limits makes the whole table slide as it zooms.
+  // Preserve the established world-space focus for a centered zoom; panning
+  // continues to enforce world limits independently.
+  if (Math.abs(screenX - viewport.width / 2) < 0.01 &&
+      Math.abs(screenY - viewport.height / 2) < 0.01) {
+    return cameraAtAnchor;
+  }
+  return clampJigsawCamera(layout, viewport, cameraAtAnchor);
 };

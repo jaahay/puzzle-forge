@@ -83,7 +83,9 @@ export const ArtworkAlbum = ({
         aria-labelledby={titleId}
         onClose={() => {
           setIsOpen(false);
-          chooseButtonRef.current?.focus();
+          // Closing the modal must not scroll the puzzle workspace to an
+          // offscreen control while a new puzzle is being prepared.
+          chooseButtonRef.current?.focus({ preventScroll: true });
         }}
       >
         <div class="artwork-album-shell">

@@ -8,9 +8,10 @@ import {
   clampJigsawCamera,
   createInitialJigsawPlacements,
   createJigsawFitCamera,
+  createJigsawOccupiedFitCamera,
   createJigsawWorkingFitCamera,
   createJigsawWorldLayout,
-  getJigsawStagingMode,
+  getJigsawOccupiedBounds,
 } from "../games/jigsaw/placement";
 import {
   getJigsawFitInsetsForOverlays,
@@ -159,7 +160,27 @@ describe("TilePuzzlePreview camera controls", () => {
     )).toEqual(createJigsawWorkingFitCamera(layout, viewport, placements, 28, insets));
   });
 
-  it("starts from a board-first working fit when a puzzle camera has not initialized yet", () => {
+  it("reframes overview after a display resize without overriding manual camera motion", () => {
+    const layout = createJigsawWorldLayout({
+      imageWidth: 1200, imageHeight: 900, puzzleWidth: 4, puzzleHeight: 4,
+    });
+    const pieces = Array.from({ length: 16 }, (_, index) => ({
+      id: `tile-${index}`, currentIndex: index, solvedIndex: index,
+      row: Math.floor(index / 4), column: index % 4, edges: [],
+    }));
+    const placements = createInitialJigsawPlacements(layout, pieces, { width: 390, height: 700 });
+    const desktop = { width: 1280, height: 850 };
+    const prior = { centerX: 100, centerY: 200, zoom: 0.8 };
+    const expected = createJigsawOccupiedFitCamera(layout, desktop, placements, 28, {}, pieces);
+    expect(resolveJigsawCameraForViewportResize(
+      layout, desktop, placements, prior, false, {}, pieces, true,
+    )).toEqual(expected);
+    expect(resolveJigsawCameraForViewportResize(
+      layout, desktop, placements, prior, true, {}, pieces, true,
+    )).toBe(prior);
+  });
+
+  it("starts from an all-pieces overview when a puzzle camera has not initialized yet", () => {
     const layout = createJigsawWorldLayout({
       imageWidth: 2048,
       imageHeight: 1536,
@@ -173,7 +194,7 @@ describe("TilePuzzlePreview camera controls", () => {
     if (!placements) return;
 
     expect(initializeOrPreserveJigsawCamera(layout, viewport, null, placements)).toEqual(
-      createJigsawWorkingFitCamera(layout, viewport, placements),
+      createJigsawOccupiedFitCamera(layout, viewport, placements),
     );
   });
 });
@@ -191,6 +212,23 @@ describe("TilePuzzlePreview fit safe areas", () => {
     expect(insets.bottom).toBe(66);
     expect(insets.left).toBe(98);
     expect(insets.right).toBe(0);
+  });
+});
+
+describe("TilePuzzlePreview overlay fit on narrow screens", () => {
+  it("reserves the top rather than the full right strip for a top-right control", () => {
+    const viewport = { left: 0, top: 0, right: 390, bottom: 844, width: 390, height: 844 };
+    const overlay = { left: 310, top: 10, right: 380, bottom: 65, width: 70, height: 55 };
+    const fitInsets = getJigsawFitInsetsForOverlays(viewport, [overlay]);
+    expect(fitInsets).toEqual({ top: 73, right: 0, bottom: 0, left: 0 });
+  });
+
+  it("reserves a side for a corner control on a wide stage", () => {
+    const viewport = { left: 0, top: 0, right: 900, bottom: 390, width: 900, height: 390 };
+    const overlay = { left: 815, top: 10, right: 890, bottom: 65, width: 75, height: 55 };
+    const fitInsets = getJigsawFitInsetsForOverlays(viewport, [overlay]);
+    expect(fitInsets.right).toBe(93);
+    expect(fitInsets.top).toBe(0);
   });
 });
 
@@ -279,10 +317,13 @@ describe("TilePuzzlePreview placement initialization", () => {
       veryTallStage,
     )?.placements ?? null;
 
-    expect(getJigsawStagingMode(layout, pieces.length, wideStage)).toBe("sides");
-    expect(getJigsawStagingMode(layout, pieces.length, veryTallStage)).toBe("top-bottom");
     expect(widePlacements).not.toBeNull();
     expect(tallPlacements).not.toBeNull();
+    const wideBounds = getJigsawOccupiedBounds(layout, widePlacements!, pieces);
+    const tallBounds = getJigsawOccupiedBounds(layout, tallPlacements!, pieces);
+    expect(wideBounds.width / wideBounds.height).toBeGreaterThan(
+      tallBounds.width / tallBounds.height,
+    );
     expect(widePlacements).not.toEqual(tallPlacements);
   });
 });

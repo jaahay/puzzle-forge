@@ -202,6 +202,7 @@ export const JigsawWorkspace = ({
       gameplay={gameplay}
       enableImmersive
       immersiveEntry="descendant"
+      immersiveFullscreenControl="descendant"
     />
   );
 };

@@ -88,7 +88,7 @@ export const NewPuzzleCommand = ({
   const closeInfo = (restoreFocus = false) => {
     if (!infoOpen) return false;
     setInfoOpen(false);
-    if (restoreFocus) infoButtonRef.current?.focus();
+    if (restoreFocus) infoButtonRef.current?.focus({ preventScroll: true });
     return true;
   };
 
@@ -98,7 +98,7 @@ export const NewPuzzleCommand = ({
     const wasOpen = options.open;
     setInfoOpen(false);
     options.open = false;
-    if (restoreFocus && wasOpen) options.querySelector("summary")?.focus();
+    if (restoreFocus && wasOpen) options.querySelector<HTMLElement>("summary")?.focus({ preventScroll: true });
   };
 
   const renewSeedCandidate = () => onSeedLoadInputChange(makeRandomSeed());

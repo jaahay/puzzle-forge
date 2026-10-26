@@ -6,8 +6,10 @@
 
   .app-header {
     position: sticky;
-    top: 0.5rem;
-    z-index: 12;
+    top: 0;
+    /* Cover scrolling puzzle chrome, including open New options (50).
+       Immersive play (1000) remains above the ordinary application header. */
+    z-index: 60;
     display: grid;
     width: calc(100% - 1.3rem);
     grid-template-columns: 1fr;
@@ -16,8 +18,8 @@
     border: 0;
     border-radius: 0;
     padding: 0;
-    background: transparent;
-    box-shadow: none;
+    background: #0f172a;
+    box-shadow: 0 -0.5rem 0 #0f172a;
   }
 
   .app-brand,

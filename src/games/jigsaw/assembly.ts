@@ -3,6 +3,8 @@ import { getJigsawPieceNeighborIds } from "./specialTopology";
 
 export type JigsawAssemblyProgress = {
   joinedComponents: string[][];
+  /** Locked pieces, including every member of a joined frame-anchored island. */
+  anchoredPieceIds?: string[];
 };
 
 export const makeEmptyJigsawAssemblyProgress = (): JigsawAssemblyProgress => ({
@@ -27,12 +29,18 @@ export const normalizeJigsawAssemblyProgress = (
     .filter((component) => component.length > 1)
     .map((component) => [...component].sort(comparePieceIds))
     .sort(compareComponents),
+  ...(progress.anchoredPieceIds?.length
+    ? { anchoredPieceIds: [...new Set(progress.anchoredPieceIds)].sort(comparePieceIds) }
+    : {}),
 });
 
 export const cloneJigsawAssemblyProgress = (
   progress: JigsawAssemblyProgress,
 ): JigsawAssemblyProgress => ({
   joinedComponents: progress.joinedComponents.map((component) => [...component]),
+  ...(progress.anchoredPieceIds?.length
+    ? { anchoredPieceIds: [...progress.anchoredPieceIds] }
+    : {}),
 });
 
 export const sameJigsawAssemblyProgress = (
@@ -41,7 +49,9 @@ export const sameJigsawAssemblyProgress = (
 ) => {
   const normalizedLeft = normalizeJigsawAssemblyProgress(left);
   const normalizedRight = normalizeJigsawAssemblyProgress(right);
-  return normalizedLeft.joinedComponents.length === normalizedRight.joinedComponents.length &&
+  return JSON.stringify(normalizedLeft.anchoredPieceIds ?? []) ===
+    JSON.stringify(normalizedRight.anchoredPieceIds ?? []) &&
+    normalizedLeft.joinedComponents.length === normalizedRight.joinedComponents.length &&
     normalizedLeft.joinedComponents.every((component, componentIndex) => {
       const other = normalizedRight.joinedComponents[componentIndex];
       return Boolean(
@@ -94,6 +104,11 @@ export const parseJigsawAssemblyProgress = (
   if (!Array.isArray(rawComponents)) return null;
 
   const piecesById = new Map(pieces.map((piece) => [piece.id, piece] as const));
+  const rawAnchors = (value as { anchoredPieceIds?: unknown }).anchoredPieceIds;
+  if (rawAnchors !== undefined && (!Array.isArray(rawAnchors) ||
+    rawAnchors.some((pieceId) => typeof pieceId !== "string" || !piecesById.has(pieceId)) ||
+    new Set(rawAnchors).size !== rawAnchors.length)) return null;
+  const anchored = new Set<string>((rawAnchors ?? []) as string[]);
   const seen = new Set<string>();
   const components: string[][] = [];
 
@@ -113,10 +128,15 @@ export const parseJigsawAssemblyProgress = (
     }
 
     if (!isTopologyConnected(component, piecesById)) return null;
+    const anchoredCount = component.filter((pieceId) => anchored.has(pieceId)).length;
+    if (anchoredCount > 0 && anchoredCount !== component.length) return null;
     components.push([...component]);
   }
 
-  return normalizeJigsawAssemblyProgress({ joinedComponents: components });
+  return normalizeJigsawAssemblyProgress({
+    joinedComponents: components,
+    ...(anchored.size ? { anchoredPieceIds: [...anchored] } : {}),
+  });
 };
 
 export const getJigsawComponentPieceIds = (
@@ -160,9 +180,28 @@ export const mergeJigsawAssemblyComponents = (
   const joinedComponents = normalized.joinedComponents
     .filter((component) => !component.some((pieceId) => replacedIds.has(pieceId)));
   joinedComponents.push([...replacedIds]);
-
-  return normalizeJigsawAssemblyProgress({ joinedComponents });
+  const anchored = new Set(normalized.anchoredPieceIds ?? []);
+  if (left.some((pieceId) => anchored.has(pieceId)) ||
+      right.some((pieceId) => anchored.has(pieceId))) {
+    for (const pieceId of replacedIds) anchored.add(pieceId);
+  }
+  return normalizeJigsawAssemblyProgress({
+    joinedComponents,
+    ...(anchored.size ? { anchoredPieceIds: [...anchored] } : {}),
+  });
 };
+
+/** Lock the complete joined component, not only the piece that was dropped. */
+export const anchorJigsawAssemblyComponent = (
+  progress: JigsawAssemblyProgress,
+  pieceId: string,
+): JigsawAssemblyProgress => normalizeJigsawAssemblyProgress({
+  ...progress,
+  anchoredPieceIds: [
+    ...(progress.anchoredPieceIds ?? []),
+    ...getJigsawComponentPieceIds(progress, pieceId),
+  ],
+});
 
 export const getJigsawConnectedPieceCount = (progress: JigsawAssemblyProgress) =>
   normalizeJigsawAssemblyProgress(progress).joinedComponents

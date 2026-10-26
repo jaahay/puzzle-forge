@@ -118,6 +118,10 @@
   gap: 0;
 }
 
+.jigsaw-workspace.is-immersive .jigsaw-workbench-toolbar {
+  display: contents;
+}
+
 .jigsaw-workspace.is-immersive .tile-puzzle-summary {
   display: none;
 }
@@ -135,15 +139,14 @@
   pointer-events: none;
 }
 
-.jigsaw-workspace.is-immersive .tile-puzzle-tools,
-.jigsaw-workspace.is-immersive .jigsaw-camera-tools {
+.jigsaw-workspace.is-immersive .tile-puzzle-tools {
   position: absolute;
   z-index: 30;
   max-width: calc(100% - 1.5rem);
   border: 1px solid rgba(148, 163, 184, 0.24);
-  border-radius: 999px;
+  border-radius: 0.85rem;
   padding: 0.36rem;
-  background: rgba(8, 15, 30, 0.82);
+  background: rgba(8, 15, 30, 0.94);
   box-shadow: 0 10px 26px rgba(2, 6, 23, 0.3);
   backdrop-filter: blur(10px);
 }
@@ -151,7 +154,7 @@
 .jigsaw-workspace.is-immersive .jigsaw-tools-toggle {
   display: grid;
   position: absolute;
-  top: 0.75rem;
+  bottom: 0.75rem;
   left: 0.75rem;
   z-index: 31;
   place-items: center;
@@ -159,8 +162,10 @@
 
 .jigsaw-workspace.is-immersive .tile-puzzle-tools {
   display: none;
-  top: 3.7rem;
+  bottom: 4rem;
   left: 0.75rem;
+  max-height: calc(100% - 4.75rem);
+  overflow-y: auto;
   flex-direction: column;
   flex-wrap: nowrap;
   align-items: stretch;
@@ -171,14 +176,11 @@
 }
 
 .jigsaw-workspace.is-immersive .jigsaw-camera-tools {
-  left: 50%;
+  position: absolute;
+  right: 0.75rem;
   bottom: 0.75rem;
-  transform: translateX(-50%);
-}
-
-.jigsaw-workspace.is-immersive .jigsaw-fit-menu {
-  right: 0;
-  bottom: calc(100% + 0.4rem);
+  z-index: 31;
+  max-width: calc(100% - 4.75rem);
 }
 
 .jigsaw-workspace.is-immersive .jigsaw-solved-presentation.is-completed {
@@ -201,15 +203,14 @@
     min-height: 2.75rem;
   }
 
-  .jigsaw-workspace.is-immersive .tile-puzzle-tools,
-  .jigsaw-workspace.is-immersive .jigsaw-camera-tools {
+  .jigsaw-workspace.is-immersive .tile-puzzle-tools {
     max-width: calc(100% - 0.9rem);
     gap: 0.3rem;
     padding: 0.3rem;
   }
 
   .jigsaw-workspace.is-immersive .jigsaw-tools-toggle {
-    top: 0.45rem;
+    bottom: 0.45rem;
     left: 0.45rem;
     width: 2.75rem;
     min-width: 2.75rem;
@@ -225,7 +226,7 @@
   }
 
   .jigsaw-workspace.is-immersive .tile-puzzle-tools {
-    top: 3.65rem;
+    bottom: 3.85rem;
     left: 0.45rem;
   }
 
@@ -239,6 +240,7 @@
   }
 
   .jigsaw-workspace.is-immersive .jigsaw-camera-tools {
+    right: 0.45rem;
     bottom: 0.45rem;
     flex-wrap: nowrap;
   }
@@ -246,6 +248,6 @@
   .jigsaw-workspace.is-immersive .jigsaw-camera-tools button {
     min-width: 2.75rem;
     min-height: 2.75rem;
-    padding: 0.45rem 0.65rem;
+    padding: 0.45rem 0.55rem;
   }
 }
