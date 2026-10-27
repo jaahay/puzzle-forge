@@ -19,11 +19,14 @@ describe("Jigsaw auto-pan controller boundary", () => {
     expect(previewSource).toContain('"--jigsaw-piece-x":');
     expect(previewSource).toContain('"--jigsaw-piece-y":');
 
-    expect(jigsawCss).toContain("calc(var(--jigsaw-piece-x, 0px) + var(--jigsaw-active-drag-x))");
-    expect(jigsawCss).toContain("calc(var(--jigsaw-piece-y, 0px) + var(--jigsaw-active-drag-y))");
-    expect(jigsawCss).toContain(".tile-puzzle-piece.dragging");
-    expect(jigsawCss).toContain("--jigsaw-active-drag-x: var(--jigsaw-drag-x, 0px)");
-    expect(jigsawCss).toContain("--jigsaw-active-drag-y: var(--jigsaw-drag-y, 0px)");
+    expect(jigsawCss).toContain(".jigsaw-island {");
+    expect(jigsawCss).toContain("calc(var(--jigsaw-piece-x, 0px) + var(--jigsaw-active-drag-x) + var(--jigsaw-drag-x, 0px))");
+    expect(jigsawCss).toContain("calc(var(--jigsaw-piece-y, 0px) + var(--jigsaw-active-drag-y) + var(--jigsaw-drag-y, 0px))");
+    expect(jigsawCss).toContain(".tile-puzzle-piece {");
+    expect(jigsawCss).toContain("var(--jigsaw-piece-x, 0px)");
+    expect(jigsawCss).toContain("var(--jigsaw-piece-y, 0px)");
+    expect(previewSource).toContain("projectJigsawDragOffset(");
+    expect(previewSource).toContain("islandElement");
   });
 
   it("clears transient interaction presentation when gestures terminate", () => {
