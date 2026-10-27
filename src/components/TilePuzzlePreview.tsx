@@ -1,4 +1,5 @@
 import type { JSX } from "preact";
+import { memo } from "preact/compat";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { JigsawGeneratedPuzzle, JigsawPiece } from "../catalog/types";
 import { advanceJigsawEdgePanCamera } from "../games/jigsaw/autoPan";
@@ -18,9 +19,15 @@ import {
   projectJigsawDragOffset,
   type JigsawDragAction,
 } from "../games/jigsaw/dragAction";
-import { getJigsawPieceSeamPaths } from "../games/jigsaw/edgePaths";
 import { resolveJigsawAssistanceActivation } from "../games/jigsaw/interaction";
-import { composeJigsawVisualIslands, prepareJigsawVisualGeometry } from "../games/jigsaw/visualIslands";
+import {
+  getJigsawVisualMembershipKey,
+  positionJigsawVisualIslands,
+  prepareJigsawVisualGeometry,
+  reconcileJigsawVisualScene,
+  type JigsawPositionedVisualIsland,
+  type JigsawVisualScene,
+} from "../games/jigsaw/visualIslands";
 import {
   applyJigsawHistoryAction,
   commitJigsawPlacementAction,
@@ -39,7 +46,6 @@ import {
   createJigsawWorkingFitCamera,
   createJigsawWorldLayout,
   getJigsawCameraTransform,
-  getJigsawPieceCellSpan,
   getJigsawPlacementPosition,
   isUsableJigsawViewport,
   panJigsawCamera,
@@ -123,6 +129,105 @@ type ActiveDrag = JigsawDragAction & {
   islandBounds: { left: number; top: number; right: number; bottom: number } | null;
 };
 
+
+type IslandPointerActions = {
+  beginDrag: (event: PiecePointerEvent, tile: JigsawPiece) => void;
+  moveDrag: (event: PiecePointerEvent) => void;
+  finishDrag: (event: PiecePointerEvent, tile: JigsawPiece) => void;
+  cancelDrag: (event: PiecePointerEvent) => void;
+};
+
+type IslandVisualProps = {
+  island: JigsawPositionedVisualIsland;
+  puzzle: JigsawGeneratedPuzzle;
+  layout: JigsawWorldLayout;
+  active: boolean;
+  raised: boolean;
+  anchored: boolean;
+  showEdgeSeams: boolean;
+  isSolved: boolean;
+  islandElements: { current: Map<string, HTMLDivElement> };
+  pointerActions: { current: IslandPointerActions | null };
+};
+
+/** Memoized by immutable membership and individual pose; camera changes do not re-render artwork. */
+const JigsawIslandVisual = memo(({
+  island, puzzle, layout, active, raised, anchored, showEdgeSeams, isSolved,
+  islandElements, pointerActions,
+}: IslandVisualProps) => {
+  const clipId = `island-${puzzle.id}-${island.key}`.replace(/[^a-zA-Z0-9_-]/g, "-");
+  const islandStyle = {
+    width: `${layout.pieceWidth * island.widthCells}px`,
+    height: `${layout.pieceHeight * island.heightCells}px`,
+    "--jigsaw-piece-x": `${island.worldX}px`,
+    "--jigsaw-piece-y": `${island.worldY}px`,
+    zIndex: active ? 1000 : raised ? 900 : Math.max(...island.members.map(({ piece }) => 10 + piece.currentIndex)),
+  } as JSX.CSSProperties;
+  return (
+    <div
+      class={`jigsaw-island ${anchored ? "anchored" : island.members.length > 1 ? "joined" : "loose"} ${active ? "dragging" : ""}`}
+      ref={(element) => {
+        if (element) islandElements.current.set(island.key, element);
+        else islandElements.current.delete(island.key);
+      }}
+      style={islandStyle}
+    >
+      <svg class="jigsaw-island-visual" viewBox={`0 0 ${island.widthCells * 100} ${island.heightCells * 100}`} preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
+            {island.members.map(({ piece, outline }) => (
+              <path key={piece.id} d={outline} transform={`translate(${(piece.column - island.minColumn) * 100} ${(piece.row - island.minRow) * 100})`} />
+            ))}
+          </clipPath>
+        </defs>
+        <g class="jigsaw-island-artwork">
+          <g clip-path={`url(#${clipId})`}>
+            <image
+              class="tile-puzzle-piece-image"
+              href={puzzle.asset.files.puzzle}
+              x={-island.minColumn * 100}
+              y={-island.minRow * 100}
+              width={puzzle.width * 100}
+              height={puzzle.height * 100}
+              preserveAspectRatio="none"
+            />
+          </g>
+        </g>
+        {island.members.map(({ piece, outline, seams }) => (
+          <g key={piece.id} transform={`translate(${(piece.column - island.minColumn) * 100} ${(piece.row - island.minRow) * 100})`}>
+            <path class="tile-puzzle-piece-outline" d={outline} />
+            {showEdgeSeams && !isSolved ? seams.map((seam) => (
+              <path class={`tile-puzzle-edge-seam ${seam.boundary ? "boundary" : "interior"} ${seam.polarity}`} d={seam.d} key={seam.edgeId} />
+            )) : null}
+          </g>
+        ))}
+      </svg>
+      {island.members.map(({ piece, outline, span }) => (
+        <button
+          class={`tile-puzzle-piece ${anchored ? "anchored" : island.members.length > 1 ? "joined" : "loose"} ${active ? "dragging" : ""}`}
+          key={piece.id}
+          style={{
+            width: `${layout.pieceWidth * span.width}px`,
+            height: `${layout.pieceHeight * span.height}px`,
+            "--jigsaw-piece-x": `${(piece.column - island.minColumn) * layout.pieceWidth}px`,
+            "--jigsaw-piece-y": `${(piece.row - island.minRow) * layout.pieceHeight}px`,
+          } as JSX.CSSProperties}
+          onPointerDown={(event) => pointerActions.current?.beginDrag(event, piece)}
+          onPointerMove={(event) => pointerActions.current?.moveDrag(event)}
+          onPointerUp={(event) => pointerActions.current?.finishDrag(event, piece)}
+          onPointerCancel={(event) => pointerActions.current?.cancelDrag(event)}
+          type="button"
+          tabIndex={-1}
+          aria-label={`Piece ${piece.solvedIndex + 1}, ${anchored ? "anchored to frame" : island.members.length > 1 ? "joined" : "loose"}`}
+        >
+          <svg class="tile-puzzle-piece-hit-visual" viewBox={`0 0 ${span.width * 100} ${span.height * 100}`} preserveAspectRatio="none">
+            <path class="tile-puzzle-piece-hit-target" d={outline} {...getPieceHitTargetProps()} />
+          </svg>
+        </button>
+      ))}
+    </div>
+  );
+});
 
 type ActivePan = {
   pointerId: number;
@@ -210,6 +315,9 @@ export const TilePuzzlePreview = ({
   const toolsPanelRef = useRef<HTMLDivElement>(null);
   const worldLayerRef = useRef<HTMLDivElement>(null);
   const islandElementsRef = useRef(new Map<string, HTMLDivElement>());
+  const islandSceneRef = useRef<{ puzzleId: string; scene: JigsawVisualScene } | null>(null);
+  const islandPosesRef = useRef<{ puzzleId: string; islands: JigsawPositionedVisualIsland[] } | null>(null);
+  const islandPointerActionsRef = useRef<IslandPointerActions | null>(null);
   const dragRef = useRef<ActiveDrag | null>(null);
   const dragAnimationFrameRef = useRef<number | null>(null);
   const dragAnimationTimeRef = useRef<number | null>(null);
@@ -291,6 +399,7 @@ export const TilePuzzlePreview = ({
 
   useEffect(() => () => {
     stopDragAnimation();
+    if (dragRef.current?.islandElement) resetJigsawDragOffset([dragRef.current.islandElement]);
     dragRef.current = null;
   }, []);
 
@@ -398,6 +507,7 @@ export const TilePuzzlePreview = ({
 
   useEffect(() => {
     stopDragAnimation();
+    if (dragRef.current?.islandElement) resetJigsawDragOffset([dragRef.current.islandElement]);
     dragRef.current = null;
     panRef.current = null;
     touchPointsRef.current.clear();
@@ -554,6 +664,7 @@ export const TilePuzzlePreview = ({
     fitPlacements: readonly JigsawPlacement[] = nextPlacements,
   ) => {
     stopDragAnimation();
+    if (dragRef.current?.islandElement) resetJigsawDragOffset([dragRef.current.islandElement]);
     updatePlacementState(() => ({
       puzzleId: puzzle.id,
       placements: nextPlacements,
@@ -624,10 +735,26 @@ export const TilePuzzlePreview = ({
 
   const preparedGeometry = useMemo(() => prepareJigsawVisualGeometry(puzzle.tiles, puzzle.edgeModel), [puzzle]);
   const placements = activePlacements ?? [];
-  const placementById = new Map(placements.map((placement) => [placement.id, placement] as const));
-  const visualIslands = useMemo(() => composeJigsawVisualIslands(layout, puzzle.tiles, placements, activeAssembly, preparedGeometry), [layout, puzzle.tiles, placements, activeAssembly, preparedGeometry]);
+  const membershipKey = getJigsawVisualMembershipKey(activeAssembly);
+  const visualScene = useMemo(() => {
+    const previous = islandSceneRef.current?.puzzleId === puzzle.id ? islandSceneRef.current.scene : null;
+    const scene = reconcileJigsawVisualScene(puzzle.tiles, activeAssembly, preparedGeometry, previous);
+    islandSceneRef.current = { puzzleId: puzzle.id, scene };
+    return scene;
+  // Membership is the sole assembly-dependent input: anchor changes and movement preserve geometry.
+  }, [puzzle.id, puzzle.tiles, membershipKey, preparedGeometry]);
+  const visualIslands = useMemo(() => {
+    const previous = islandPosesRef.current?.puzzleId === puzzle.id ? islandPosesRef.current.islands : [];
+    const islands = positionJigsawVisualIslands(visualScene, layout, placements, previous);
+    islandPosesRef.current = { puzzleId: puzzle.id, islands };
+    return islands;
+  }, [puzzle.id, visualScene, layout, placements]);
   const connectedCount = getJigsawConnectedPieceCount(activeAssembly);
   const isSolved = isJigsawAssemblySolved(activeAssembly, puzzle.tiles.length);
+  const activeIslandKey = activeTileId && dragRef.current?.puzzleId === puzzle.id
+    ? visualScene.byPieceId.get(activeTileId)?.key : null;
+  const raisedIslandKey = raisedTileId ? visualScene.byPieceId.get(raisedTileId)?.key : null;
+  const anchoredIslandIds = new Set(activeAssembly.anchoredPieceIds ?? []);
   const assemblySummary = isSolved ? "Solved" : `${connectedCount} joined`;
 
   useEffect(() => {
@@ -728,6 +855,7 @@ export const TilePuzzlePreview = ({
           } : current);
         }
         stopDragAnimation();
+        clearIslandDragOffset(interruptedDrag);
         dragRef.current = null;
         panRef.current = null;
         setActiveTileId(null);
@@ -782,6 +910,10 @@ export const TilePuzzlePreview = ({
       event.preventDefault();
       event.stopPropagation();
     }
+  };
+
+  const clearIslandDragOffset = (drag: ActiveDrag | null) => {
+    if (drag?.islandElement) resetJigsawDragOffset([drag.islandElement]);
   };
 
   const renderDraggedPieceImmediately = (drag: ActiveDrag, state = wheelStateRef.current) => {
@@ -910,6 +1042,7 @@ export const TilePuzzlePreview = ({
       layout, puzzle.tiles, wheelStateRef.current.camera, wheelStateRef.current.viewport, stagePoint, drag,
     )?.placements : null;
     setCamera(wheelStateRef.current.camera);
+    clearIslandDragOffset(drag);
     const target = event.currentTarget as HTMLButtonElement;
     if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId);
 
@@ -956,6 +1089,7 @@ export const TilePuzzlePreview = ({
     const drag = dragRef.current;
     if (!drag || drag.puzzleId !== puzzle.id || drag.pointerId !== event.pointerId) return;
     stopDragAnimation();
+    clearIslandDragOffset(drag);
     setCamera(wheelStateRef.current.camera);
     updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
       ...current,
@@ -965,6 +1099,18 @@ export const TilePuzzlePreview = ({
     setActiveTileId(null);
     publishHistoryAvailability(historyRef.current);
     event.stopPropagation();
+  };
+
+  islandPointerActionsRef.current = {
+    beginDrag: (event, tile) => {
+      const current = placementStateRef.current;
+      const placement = current?.puzzleId === puzzle.id
+        ? current.placements.find((candidate) => candidate.id === tile.id) : null;
+      if (placement) beginDrag(event, tile, placement);
+    },
+    moveDrag,
+    finishDrag,
+    cancelDrag,
   };
 
   const beginPan = (event: StagePointerEvent) => {
@@ -1241,90 +1387,21 @@ export const TilePuzzlePreview = ({
         <div class="jigsaw-world-layer" ref={worldLayerRef} style={worldStyle}>
           <div class="jigsaw-assembly-board" style={boardStyle} aria-hidden="true" />
 
-          {visualIslands.map((island) => {
-            const activeDrag = dragRef.current;
-            const active = activeTileId !== null && activeDrag?.puzzleId === puzzle.id &&
-              island.members.some(({ piece }) => activeDrag.pieceIds.includes(piece.id));
-            const raised = island.members.some(({ piece }) => piece.id === raisedTileId);
-            const clipId = `island-${puzzle.id}-${island.key}`.replace(/[^a-zA-Z0-9_-]/g, "-");
-            const islandStyle = {
-              width: `${layout.pieceWidth * island.widthCells}px`,
-              height: `${layout.pieceHeight * island.heightCells}px`,
-              "--jigsaw-piece-x": `${island.worldX}px`,
-              "--jigsaw-piece-y": `${island.worldY}px`,
-              zIndex: active ? 1000 : raised ? 900 : Math.max(...island.members.map(({piece}) => 10 + piece.currentIndex)),
-            } as JSX.CSSProperties;
-            return (
-              <div
-                class={`jigsaw-island ${island.anchored ? "anchored" : island.members.length > 1 ? "joined" : "loose"} ${active ? "dragging" : ""}`}
-                key={island.key}
-                ref={(element) => {
-                  if (element) islandElementsRef.current.set(island.key, element);
-                  else islandElementsRef.current.delete(island.key);
-                }}
-                style={islandStyle}
-              >
-                <svg class="jigsaw-island-visual" viewBox={`0 0 ${island.widthCells * 100} ${island.heightCells * 100}`} preserveAspectRatio="none" aria-hidden="true">
-                  <defs>
-                    <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
-                      {island.members.map(({piece, outline}) => (
-                        <path key={piece.id} d={outline} transform={`translate(${(piece.column - island.minColumn) * 100} ${(piece.row - island.minRow) * 100})`} />
-                      ))}
-                    </clipPath>
-                  </defs>
-                  <g class="jigsaw-island-artwork">
-                    <g clip-path={`url(#${clipId})`}>
-                      <image
-                        class="tile-puzzle-piece-image"
-                        href={puzzle.asset.files.puzzle}
-                        x={-island.minColumn * 100}
-                        y={-island.minRow * 100}
-                        width={puzzle.width * 100}
-                        height={puzzle.height * 100}
-                        preserveAspectRatio="none"
-                      />
-                    </g>
-                  </g>
-                  {island.members.map(({piece, outline}) => (
-                    <g key={piece.id} transform={`translate(${(piece.column - island.minColumn) * 100} ${(piece.row - island.minRow) * 100})`}>
-                      <path class="tile-puzzle-piece-outline" d={outline}/>
-                      {shouldRenderJigsawEdgeSeams(showEdgeSeams, isSolved) ? getJigsawPieceSeamPaths(piece, puzzle.edgeModel).map((seam) => (
-                        <path class={`tile-puzzle-edge-seam ${seam.boundary ? "boundary" : "interior"} ${seam.polarity}`} d={seam.d} key={seam.edgeId} />
-                      )) : null}
-                    </g>
-                  ))}
-                </svg>
-                {island.members.map(({piece, outline, span}) => {
-                  const placement = placementById.get(piece.id);
-                  if (!placement) return null;
-                  const position = getJigsawPlacementPosition(layout, placement, piece);
-                  return (
-                    <button
-                      class={`tile-puzzle-piece ${island.anchored ? "anchored" : island.members.length > 1 ? "joined" : "loose"} ${active ? "dragging" : ""}`}
-                      key={piece.id}
-                      style={{
-                        width: `${layout.pieceWidth * span.width}px`,
-                        height: `${layout.pieceHeight * span.height}px`,
-                        "--jigsaw-piece-x": `${position.left - island.worldX}px`,
-                        "--jigsaw-piece-y": `${position.top - island.worldY}px`,
-                      } as JSX.CSSProperties}
-                      onPointerDown={(event) => beginDrag(event, piece, placement)}
-                      onPointerMove={moveDrag}
-                      onPointerUp={(event) => finishDrag(event, piece)}
-                      onPointerCancel={cancelDrag}
-                      type="button"
-                      tabIndex={-1}
-                      aria-label={`Piece ${piece.solvedIndex + 1}, ${island.anchored ? "anchored to frame" : island.members.length > 1 ? "joined" : "loose"}`}
-                    >
-                      <svg class="tile-puzzle-piece-hit-visual" viewBox={`0 0 ${span.width * 100} ${span.height * 100}`} preserveAspectRatio="none">
-                        <path class="tile-puzzle-piece-hit-target" d={outline} {...getPieceHitTargetProps()} />
-                      </svg>
-                    </button>
-                  );
-                })}
-              </div>
-            );
-          })}
+          {visualIslands.map((island) => (
+            <JigsawIslandVisual
+              key={island.key}
+              island={island}
+              puzzle={puzzle}
+              layout={layout}
+              active={activeIslandKey === island.key}
+              raised={raisedIslandKey === island.key}
+              anchored={anchoredIslandIds.has(island.members[0]!.piece.id)}
+              showEdgeSeams={showEdgeSeams}
+              isSolved={isSolved}
+              islandElements={islandElementsRef}
+              pointerActions={islandPointerActionsRef}
+            />
+          ))}
         </div>
         {shouldShowJigsawCompletionCelebration(isSolved, completionPhase) ? (
           <div class="jigsaw-solved-presentation is-celebrating" aria-hidden="true">
