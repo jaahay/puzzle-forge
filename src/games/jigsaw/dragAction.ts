@@ -83,6 +83,29 @@ export const beginJigsawDragAction = ({
   };
 };
 
+export type JigsawDragBounds = { left: number; top: number; right: number; bottom: number };
+
+const clamp = (value: number, minimum: number, maximum: number) =>
+  Math.min(maximum, Math.max(minimum, value));
+
+/** A drag-frame projection must not walk all puzzle placements. */
+export const projectJigsawDragOffset = (
+  layout: JigsawWorldLayout,
+  camera: JigsawCamera,
+  viewport: JigsawViewport,
+  stagePoint: JigsawStagePoint,
+  drag: JigsawDragAction,
+  bounds: JigsawDragBounds,
+) => {
+  const pointerWorld = screenToJigsawWorld(camera, viewport, stagePoint.x, stagePoint.y);
+  return {
+    dragX: clamp(pointerWorld.x - drag.offsetWorldX - drag.originWorldX,
+      -bounds.left, layout.worldWidth - bounds.right),
+    dragY: clamp(pointerWorld.y - drag.offsetWorldY - drag.originWorldY,
+      -bounds.top, layout.worldHeight - bounds.bottom),
+  };
+};
+
 export type JigsawDragProjection = {
   placements: JigsawPlacement[];
   dragX: number;

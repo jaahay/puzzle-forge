@@ -5,6 +5,7 @@ import {
   cancelJigsawDragAction,
   completeJigsawDragAction,
   projectJigsawDragAction,
+  projectJigsawDragOffset,
 } from "./dragAction";
 import { makeEmptyJigsawHistoryState } from "./history";
 import { createJigsawWorldLayout, getJigsawSolvedPosition } from "./placement";
@@ -102,6 +103,30 @@ describe("Jigsaw drag action", () => {
     expect(projection).not.toBeNull();
     expect(projection?.placements[0]).not.toEqual(drag.startSnapshot.placements[0]);
     expect(drag.startSnapshot).toEqual(before);
+  });
+
+  it("projects a bounded island drag without updating other piece placements", () => {
+    const snapshot = makeSnapshot();
+    const origin = snapshot.placements[0]!;
+    const camera = { centerX: 400, centerY: 300, zoom: 1 };
+    const viewport = { width: 800, height: 600 };
+    const point = { x: 260, y: 250 };
+    const drag = beginJigsawDragAction({
+      puzzleId: "jigsaw-1", tileId: "tile-0", pieceIds: ["tile-0"], pointerId: 7,
+      camera, viewport, stagePoint: { x: 200, y: 200 },
+      origin: { left: origin.worldX, top: origin.worldY },
+      snapshot, clientX: 200, clientY: 200,
+    });
+    const bounds = {
+      left: origin.worldX, top: origin.worldY,
+      right: origin.worldX + layout.pieceWidth,
+      bottom: origin.worldY + layout.pieceHeight,
+    };
+    const offset = projectJigsawDragOffset(layout, camera, viewport, point, drag, bounds);
+    const full = projectJigsawDragAction(layout, pieces, camera, viewport, point, drag)!;
+    expect(offset.dragX).toBeCloseTo(full.dragX);
+    expect(offset.dragY).toBeCloseTo(full.dragY);
+    expect(drag.startSnapshot).toEqual(snapshot);
   });
 
   it("records a frame-assisted drop as one ordinary history action", () => {

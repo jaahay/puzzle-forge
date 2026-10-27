@@ -721,6 +721,47 @@
   }
 }
 
+.jigsaw-island {
+  --jigsaw-active-drag-x: 0px;
+  --jigsaw-active-drag-y: 0px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  transform: translate3d(
+    calc(var(--jigsaw-piece-x, 0px) + var(--jigsaw-active-drag-x)),
+    calc(var(--jigsaw-piece-y, 0px) + var(--jigsaw-active-drag-y)),
+    0
+  );
+}
+.jigsaw-island.dragging {
+  --jigsaw-active-drag-x: var(--jigsaw-drag-x, 0px);
+  --jigsaw-active-drag-y: var(--jigsaw-drag-y, 0px);
+}
+.jigsaw-island-visual {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.jigsaw-island-artwork {
+  filter: drop-shadow(0 8px 10px rgba(2, 6, 23, 0.38));
+}
+.jigsaw-island.joined .jigsaw-island-artwork,
+.jigsaw-island.anchored .jigsaw-island-artwork {
+  filter: drop-shadow(0 3px 4px rgba(2, 6, 23, 0.28));
+}
+.jigsaw-island.dragging .jigsaw-island-artwork {
+  filter: drop-shadow(0 14px 16px rgba(2, 6, 23, 0.52));
+}
+.tile-puzzle-piece-hit-visual {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
 .tile-puzzle-piece {
   --jigsaw-active-drag-x: 0px;
   --jigsaw-active-drag-y: 0px;
@@ -742,11 +783,10 @@
   user-select: none;
   -webkit-user-select: none;
   transform: translate3d(
-    calc(var(--jigsaw-piece-x, 0px) + var(--jigsaw-active-drag-x)),
-    calc(var(--jigsaw-piece-y, 0px) + var(--jigsaw-active-drag-y)),
+    var(--jigsaw-piece-x, 0px),
+    var(--jigsaw-piece-y, 0px),
     0
   );
-  will-change: transform;
 }
 
 .tile-puzzle-piece.dragging {
@@ -754,10 +794,8 @@
   --jigsaw-active-drag-y: var(--jigsaw-drag-y, 0px);
 }
 
-.tile-puzzle-piece.loose:hover,
-.tile-puzzle-piece.loose:focus-visible,
-.tile-puzzle-piece.joined:hover,
-.tile-puzzle-piece.joined:focus-visible {
+.jigsaw-island:has(.tile-puzzle-piece:hover) .jigsaw-island-visual,
+.jigsaw-island:has(.tile-puzzle-piece:focus-visible) .jigsaw-island-visual {
   filter: brightness(1.05);
 }
 
@@ -835,16 +873,14 @@
   transition: stroke 140ms ease, stroke-width 140ms ease;
 }
 
-.tile-puzzle-piece.loose:hover .tile-puzzle-piece-outline,
-.tile-puzzle-piece.loose:focus-visible .tile-puzzle-piece-outline,
-.tile-puzzle-piece.joined:hover .tile-puzzle-piece-outline,
-.tile-puzzle-piece.joined:focus-visible .tile-puzzle-piece-outline,
-.tile-puzzle-piece.dragging .tile-puzzle-piece-outline {
+.jigsaw-island:has(.tile-puzzle-piece:hover) .tile-puzzle-piece-outline,
+.jigsaw-island:has(.tile-puzzle-piece:focus-visible) .tile-puzzle-piece-outline,
+.jigsaw-island.dragging .tile-puzzle-piece-outline {
   stroke: rgba(125, 211, 252, 0.96);
   stroke-width: 1.75;
 }
 
-.tile-puzzle-piece.joined .tile-puzzle-piece-outline {
+.jigsaw-island.joined .tile-puzzle-piece-outline, .jigsaw-island.anchored .tile-puzzle-piece-outline {
   stroke: rgba(167, 243, 208, 0.72);
   stroke-width: 1.1;
 }
@@ -853,7 +889,7 @@
   animation: jigsaw-solved-world-settle 620ms ease-out both;
 }
 
-.jigsaw-freeform-stage.solved .tile-puzzle-piece-visual {
+.jigsaw-freeform-stage.solved .jigsaw-island-artwork {
   filter: none;
 }
 

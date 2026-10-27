@@ -74,11 +74,11 @@ describe("terminal interaction contracts", () => {
     expect(jigsawPreviewSource).toMatch(
       /if \(completed\.solved\) onCausativeInput\(\);/,
     );
-    expect(jigsawPreviewSource).toContain("shouldRenderJigsawEdgeSeams(showEdgeSeams, isSolved)");
+    expect(jigsawPreviewSource).toContain("showEdgeSeams && !isSolved ? seams.map(");
     expect(jigsawPreviewSource).toContain("hidden={isSolved}");
     expect(jigsawPreviewSource).not.toContain('isSolved ? "is-solved"');
     expect(jigsawCss).not.toContain(".tile-puzzle-tools.is-solved");
-    expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .tile-puzzle-piece-visual");
+    expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .jigsaw-island-artwork");
     expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .tile-puzzle-piece-outline");
     expect(jigsawCss).toContain(".jigsaw-freeform-stage.completion-celebrating .jigsaw-world-layer");
     expect(jigsawCss).toContain(".jigsaw-solved-card.is-completed");
