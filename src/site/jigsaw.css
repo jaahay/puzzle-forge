@@ -741,13 +741,15 @@
   height: 100%;
   overflow: visible;
   pointer-events: none;
+ }
+.jigsaw-island-artwork {
   filter: drop-shadow(0 8px 10px rgba(2, 6, 23, 0.38));
 }
-.jigsaw-island.joined .jigsaw-island-visual,
-.jigsaw-island.anchored .jigsaw-island-visual {
+.jigsaw-island.joined .jigsaw-island-artwork,
+.jigsaw-island.anchored .jigsaw-island-artwork {
   filter: drop-shadow(0 3px 4px rgba(2, 6, 23, 0.28));
 }
-.jigsaw-island.dragging .jigsaw-island-visual {
+.jigsaw-island.dragging .jigsaw-island-artwork {
   filter: drop-shadow(0 14px 16px rgba(2, 6, 23, 0.52));
 }
 .tile-puzzle-piece-hit-visual {
@@ -887,7 +889,7 @@
   animation: jigsaw-solved-world-settle 620ms ease-out both;
 }
 
-.jigsaw-freeform-stage.solved .jigsaw-island-visual {
+.jigsaw-freeform-stage.solved .jigsaw-island-artwork {
   filter: none;
 }
 

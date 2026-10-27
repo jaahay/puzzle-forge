@@ -15,6 +15,7 @@ import {
   cancelJigsawDragAction,
   completeJigsawDragAction,
   projectJigsawDragAction,
+  projectJigsawDragOffset,
   type JigsawDragAction,
 } from "../games/jigsaw/dragAction";
 import { getJigsawPieceSeamPaths } from "../games/jigsaw/edgePaths";
@@ -119,6 +120,7 @@ type StageKeyboardEvent = JSX.TargetedKeyboardEvent<HTMLDivElement>;
 
 type ActiveDrag = JigsawDragAction & {
   islandElement: HTMLDivElement | null;
+  islandBounds: { left: number; top: number; right: number; bottom: number } | null;
 };
 
 
@@ -785,17 +787,11 @@ export const TilePuzzlePreview = ({
   const renderDraggedPieceImmediately = (drag: ActiveDrag, state = wheelStateRef.current) => {
     const stagePoint = getStagePoint(drag.clientX, drag.clientY);
     if (!stagePoint) return null;
-    const projection = projectJigsawDragAction(
-      state.layout,
-      puzzle.tiles,
-      state.camera,
-      state.viewport,
-      stagePoint,
-      drag,
+    if (!drag.islandBounds) return;
+    const offset = projectJigsawDragOffset(
+      state.layout, state.camera, state.viewport, stagePoint, drag, drag.islandBounds,
     );
-    if (!projection) return null;
-    if (drag.islandElement) applyJigsawDragOffset([drag.islandElement], projection.dragX, projection.dragY);
-    return projection.placements;
+    if (drag.islandElement) applyJigsawDragOffset([drag.islandElement], offset.dragX, offset.dragY);
   };
 
   const runDragAnimationFrame = (time: number) => {
@@ -872,7 +868,15 @@ export const TilePuzzlePreview = ({
       clientX: event.clientX,
       clientY: event.clientY,
     });
-    dragRef.current = { ...action, islandElement };
+    dragRef.current = {
+      ...action, islandElement,
+      islandBounds: island ? {
+        left: island.worldX,
+        top: island.worldY,
+        right: island.worldX + island.widthCells * layout.pieceWidth,
+        bottom: island.worldY + island.heightCells * layout.pieceHeight,
+      } : null,
+    };
     publishHistoryAvailability(historyRef.current, true);
     stageRef.current?.focus({ preventScroll: true });
     target.setPointerCapture(event.pointerId);
@@ -900,7 +904,11 @@ export const TilePuzzlePreview = ({
     drag.clientX = event.clientX;
     drag.clientY = event.clientY;
     stopDragAnimation();
-    const movedPlacements = renderDraggedPieceImmediately(drag);
+    renderDraggedPieceImmediately(drag);
+    const stagePoint = getStagePoint(drag.clientX, drag.clientY);
+    const movedPlacements = stagePoint ? projectJigsawDragAction(
+      layout, puzzle.tiles, wheelStateRef.current.camera, wheelStateRef.current.viewport, stagePoint, drag,
+    )?.placements : null;
     setCamera(wheelStateRef.current.camera);
     const target = event.currentTarget as HTMLButtonElement;
     if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId);
@@ -1264,16 +1272,17 @@ export const TilePuzzlePreview = ({
                       ))}
                     </clipPath>
                   </defs>
-                  <image
-                    class="tile-puzzle-piece-image"
-                    href={puzzle.asset.files.puzzle}
-                    x={-island.minColumn * 100}
-                    y={-island.minRow * 100}
-                    width={puzzle.width * 100}
-                    height={puzzle.height * 100}
-                    preserveAspectRatio="none"
-                    clip-path={`url(#${clipId})`}
-                  />
+                  <g class="jigsaw-island-artwork" clip-path={`url(#${clipId})`}>
+                    <image
+                      class="tile-puzzle-piece-image"
+                      href={puzzle.asset.files.puzzle}
+                      x={-island.minColumn * 100}
+                      y={-island.minRow * 100}
+                      width={puzzle.width * 100}
+                      height={puzzle.height * 100}
+                      preserveAspectRatio="none"
+                    />
+                  </g>
                   {island.members.map(({piece, outline}) => (
                     <g key={piece.id} transform={`translate(${(piece.column - island.minColumn) * 100} ${(piece.row - island.minRow) * 100})`}>
                       <path class="tile-puzzle-piece-outline" d={outline}/>
