@@ -29,6 +29,15 @@ describe("Jigsaw auto-pan controller boundary", () => {
     expect(previewSource).toContain("islandElement");
   });
 
+  it("shadows clipped island artwork without clipping away the exterior shadow", () => {
+    expect(previewSource).toContain('<g class="jigsaw-island-artwork">');
+    expect(previewSource).toContain('<g clip-path={`url(#${clipId})`}>');
+    expect(jigsawCss).toContain(".jigsaw-island-artwork {");
+    expect(jigsawCss).toContain(".jigsaw-island.anchored .jigsaw-island-artwork");
+    expect(previewSource).toContain('class="tile-puzzle-piece-hit-visual"');
+    expect(previewSource).toContain('class="tile-puzzle-piece-outline"');
+  });
+
   it("clears transient interaction presentation when gestures terminate", () => {
     expect((previewSource.match(/setActiveTileId\(null\)/g) ?? []).length).toBeGreaterThanOrEqual(4);
     expect(previewSource).toContain("dragRef.current = null");

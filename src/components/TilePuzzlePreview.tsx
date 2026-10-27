@@ -1272,16 +1272,18 @@ export const TilePuzzlePreview = ({
                       ))}
                     </clipPath>
                   </defs>
-                  <g class="jigsaw-island-artwork" clip-path={`url(#${clipId})`}>
-                    <image
-                      class="tile-puzzle-piece-image"
-                      href={puzzle.asset.files.puzzle}
-                      x={-island.minColumn * 100}
-                      y={-island.minRow * 100}
-                      width={puzzle.width * 100}
-                      height={puzzle.height * 100}
-                      preserveAspectRatio="none"
-                    />
+                  <g class="jigsaw-island-artwork">
+                    <g clip-path={`url(#${clipId})`}>
+                      <image
+                        class="tile-puzzle-piece-image"
+                        href={puzzle.asset.files.puzzle}
+                        x={-island.minColumn * 100}
+                        y={-island.minRow * 100}
+                        width={puzzle.width * 100}
+                        height={puzzle.height * 100}
+                        preserveAspectRatio="none"
+                      />
+                    </g>
                   </g>
                   {island.members.map(({piece, outline}) => (
                     <g key={piece.id} transform={`translate(${(piece.column - island.minColumn) * 100} ${(piece.row - island.minRow) * 100})`}>
