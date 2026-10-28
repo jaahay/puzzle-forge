@@ -27,7 +27,7 @@ describe("Jigsaw player preferences", () => {
     expect(loadJigsawPlayerPreferences()).toEqual(defaultJigsawPlayerPreferences);
     stubStorage('{"snapToFrame":"yes","showEdgeSeams":true,"showPreview":0}');
     expect(loadJigsawPlayerPreferences()).toEqual({
-      appearance: "outlined", showPreview: false, showEdgeSeams: true, snapToFrame: false,
+      appearance: "inlaid", showPreview: false, showEdgeSeams: true, snapToFrame: false,
     });
   });
 
@@ -40,10 +40,12 @@ describe("Jigsaw player preferences", () => {
     expect(loadJigsawPlayerPreferences()).toEqual({ ...settings, snapToFrame: false });
   });
 
-  it("accepts only known appearances and loads existing preferences as Outlined", () => {
+  it("defaults missing or invalid appearance to Inlaid without overriding explicit choices", () => {
     stubStorage('{"appearance":"unknown","showPreview":true}');
-    expect(loadJigsawPlayerPreferences().appearance).toBe("outlined");
+    expect(loadJigsawPlayerPreferences().appearance).toBe("inlaid");
     stubStorage('{"showEdgeSeams":true}');
+    expect(loadJigsawPlayerPreferences().appearance).toBe("inlaid");
+    stubStorage('{"appearance":"outlined"}');
     expect(loadJigsawPlayerPreferences().appearance).toBe("outlined");
     stubStorage('{"appearance":"seamless"}');
     expect(loadJigsawPlayerPreferences().appearance).toBe("seamless");

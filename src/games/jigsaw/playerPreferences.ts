@@ -16,7 +16,7 @@ export type JigsawPlayerPreferences = {
 const storageKey = "puzzle-forge.jigsaw-player-preferences";
 
 export const defaultJigsawPlayerPreferences: JigsawPlayerPreferences = {
-  appearance: "outlined",
+  appearance: "inlaid",
   showPreview: false,
   showEdgeSeams: false,
   snapToFrame: false,
@@ -33,7 +33,7 @@ export const loadJigsawPlayerPreferences = (): JigsawPlayerPreferences => {
     }
     const values = stored as Record<string, unknown>;
     return {
-      appearance: jigsawPieceAppearances.find((candidate) => candidate === values.appearance) ?? "outlined",
+      appearance: jigsawPieceAppearances.find((candidate) => candidate === values.appearance) ?? defaultJigsawPlayerPreferences.appearance,
       showPreview: typeof values.showPreview === "boolean" ? values.showPreview : false,
       showEdgeSeams: typeof values.showEdgeSeams === "boolean" ? values.showEdgeSeams : false,
       snapToFrame: typeof values.snapToFrame === "boolean" ? values.snapToFrame : false,
