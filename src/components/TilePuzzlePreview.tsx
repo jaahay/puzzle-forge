@@ -39,7 +39,7 @@ import {
   type JigsawWorkspaceSnapshot,
 } from "../games/jigsaw/history";
 import { getJigsawPinchCamera, type JigsawPinchPair, type JigsawPinchPoint } from "../games/jigsaw/pinch";
-import { loadJigsawPlayerPreferences, saveJigsawPlayerPreferences } from "../games/jigsaw/playerPreferences";
+import { loadJigsawPlayerPreferences, resolveJigsawPieceAppearance, saveJigsawPlayerPreferences, type JigsawPieceAppearance } from "../games/jigsaw/playerPreferences";
 import {
   createJigsawFitCamera,
   createJigsawOccupiedFitCamera,
@@ -145,6 +145,7 @@ type IslandVisualProps = {
   raised: boolean;
   anchored: boolean;
   showEdgeSeams: boolean;
+  appearance: JigsawPieceAppearance;
   isSolved: boolean;
   islandElements: { current: Map<string, HTMLDivElement> };
   pointerActions: { current: IslandPointerActions | null };
@@ -152,10 +153,11 @@ type IslandVisualProps = {
 
 /** Memoized by immutable membership and individual pose; camera changes do not re-render artwork. */
 const JigsawIslandVisual = memo(({
-  island, puzzle, layout, active, raised, anchored, showEdgeSeams, isSolved,
+  island, puzzle, layout, active, raised, anchored, showEdgeSeams, appearance, isSolved,
   islandElements, pointerActions,
 }: IslandVisualProps) => {
   const clipId = `island-${puzzle.id}-${island.key}`.replace(/[^a-zA-Z0-9_-]/g, "-");
+  const treatment = resolveJigsawPieceAppearance(appearance, island.members.length > 1);
   const islandStyle = {
     width: `${layout.pieceWidth * island.widthCells}px`,
     height: `${layout.pieceHeight * island.heightCells}px`,
@@ -166,6 +168,7 @@ const JigsawIslandVisual = memo(({
   return (
     <div
       class={`jigsaw-island ${anchored ? "anchored" : island.members.length > 1 ? "joined" : "loose"} ${active ? "dragging" : ""}`}
+      data-piece-appearance={treatment}
       ref={(element) => {
         if (element) islandElements.current.set(island.key, element);
         else islandElements.current.delete(island.key);
@@ -196,6 +199,12 @@ const JigsawIslandVisual = memo(({
         {island.members.map(({ piece, outline, seams }) => (
           <g key={piece.id} transform={`translate(${(piece.column - island.minColumn) * 100} ${(piece.row - island.minRow) * 100})`}>
             <path class="tile-puzzle-piece-outline" d={outline} />
+            {treatment === "inlaid" ? (
+              <>
+                <path class="tile-puzzle-piece-inlaid-recess" d={outline} />
+                <path class="tile-puzzle-piece-inlaid-highlight" d={outline} transform="translate(-0.4 -0.4)" />
+              </>
+            ) : null}
             {showEdgeSeams && !isSolved ? seams.map((seam) => (
               <path class={`tile-puzzle-edge-seam ${seam.boundary ? "boundary" : "interior"} ${seam.polarity}`} d={seam.d} key={seam.edgeId} />
             )) : null}
@@ -345,7 +354,7 @@ export const TilePuzzlePreview = ({
   const [raisedTileId, setRaisedTileId] = useState<string | null>(null);
   const [isPanning, setIsPanning] = useState(false);
   const [playerPreferences, setPlayerPreferences] = useState(loadJigsawPlayerPreferences);
-  const { showPreview, showEdgeSeams, snapToFrame } = playerPreferences;
+  const { showPreview, showEdgeSeams, snapToFrame, appearance } = playerPreferences;
   const [showCompactTools, setShowCompactTools] = useState(false);
   const [fitIsOverview, setFitIsOverview] = useState(true);
   const cameraWasUserAdjustedRef = useRef(false);
@@ -1329,6 +1338,20 @@ export const TilePuzzlePreview = ({
         >
           Restage pieces
         </button>
+        <label class="jigsaw-appearance-setting">
+          Piece appearance
+          <select
+            aria-label="Piece appearance"
+            value={appearance}
+            onChange={(event) => setPlayerPreferences((current) => ({
+              ...current, appearance: event.currentTarget.value as JigsawPieceAppearance,
+            }))}
+          >
+            <option value="outlined">Outlined</option>
+            <option value="inlaid">Inlaid</option>
+            <option value="seamless">Seamless</option>
+          </select>
+        </label>
         <button
           type="button"
           aria-pressed={showEdgeSeams}
@@ -1397,6 +1420,7 @@ export const TilePuzzlePreview = ({
               raised={raisedIslandKey === island.key}
               anchored={anchoredIslandIds.has(island.members[0]!.piece.id)}
               showEdgeSeams={showEdgeSeams}
+              appearance={appearance}
               isSolved={isSolved}
               islandElements={islandElementsRef}
               pointerActions={islandPointerActionsRef}
