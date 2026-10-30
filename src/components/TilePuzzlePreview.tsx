@@ -195,20 +195,22 @@ const JigsawIslandVisual = memo(({
             />
           </g>
         </g>
-        {island.members.map(({ piece, outline, seams }) => (
-          <g key={piece.id} transform={`translate(${(piece.column - island.minColumn) * 100} ${(piece.row - island.minRow) * 100})`}>
-            {!isSolved && appearance === "outlined" ? (
-              <path class="tile-puzzle-piece-outline-halo" d={outline} />
-            ) : null}
-            {!isSolved && appearance === "inlaid" ? (
-              <path class="tile-puzzle-piece-inlaid-lip" d={outline} />
-            ) : null}
-            <path class="tile-puzzle-piece-outline" d={outline} />
-            {showEdgeSeams && !isSolved ? seams.map((seam) => (
-              <path class={`tile-puzzle-edge-seam ${seam.boundary ? "boundary" : "interior"} ${seam.polarity}`} d={seam.d} key={seam.edgeId} />
-            )) : null}
-          </g>
-        ))}
+        {!isSolved ? island.cuts.map((cut) => (
+          <path
+            key={cut.key}
+            class={`tile-puzzle-piece-outline ${cut.kind}`}
+            d={cut.d}
+            transform={`translate(${cut.offsetX} ${cut.offsetY})`}
+          />
+        )) : null}
+        {showEdgeSeams && !isSolved ? island.cuts.map((cut) => (
+          <path
+            key={`guide:${cut.key}`}
+            class={`tile-puzzle-edge-seam ${cut.kind}`}
+            d={cut.d}
+            transform={`translate(${cut.offsetX} ${cut.offsetY})`}
+          />
+        )) : null}
       </svg>
       {island.members.map(({ piece, outline, span }) => (
         <button

@@ -890,56 +890,55 @@
   cursor: grabbing;
 }
 
-/* Contours are screen-space strokes, so appearances remain legible at board-fit zoom. */
-.tile-puzzle-piece-outline,
-.tile-puzzle-piece-outline-halo,
-.tile-puzzle-piece-inlaid-lip {
+/* One screen-space stroke per physical cut; butt caps meet cleanly at T
+   junctions instead of layering complete piece perimeters. */
+.tile-puzzle-piece-outline {
   fill: none;
   pointer-events: none;
-  stroke-linecap: round;
+  stroke-linecap: butt;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
 }
 
-/* Outlined: a pale fine cut against a dark surround reads over any artwork. */
-.tile-puzzle-piece-outline {
-  stroke: rgba(248, 250, 252, 0.96);
-  stroke-width: 1.5;
-  transition: stroke 140ms ease, stroke-width 140ms ease;
+/* Outlined: a restrained neutral cut, not a bright contrasting halo. */
+.jigsaw-island[data-piece-appearance="outlined"] .tile-puzzle-piece-outline {
+  stroke: rgba(28, 32, 34, 0.78);
+  stroke-width: 1.35;
 }
 
-.tile-puzzle-piece-outline-halo {
-  stroke: rgba(5, 12, 22, 0.92);
-  stroke-width: 3.8;
+.jigsaw-island[data-piece-appearance="outlined"] .tile-puzzle-piece-outline.exterior {
+  stroke: rgba(224, 219, 203, 0.48);
+  stroke-width: 1;
+  filter: drop-shadow(0 0.5px 0.5px rgba(12, 17, 24, 0.42));
 }
 
-/* Inlaid: the inverse two-tone cut has a luminous lip and a dark recess. */
-.tile-puzzle-piece-inlaid-lip {
-  stroke: rgba(250, 252, 255, 0.62);
-  stroke-width: 3.5;
-}
-
+/* Inlaid: one narrow dark kerf with a slight directional reflected lip,
+   without a raised border or shadow per individual piece. */
 .jigsaw-island[data-piece-appearance="inlaid"] .tile-puzzle-piece-outline {
-  stroke: rgba(5, 14, 24, 0.88);
-  stroke-width: 2.1;
+  stroke: rgba(23, 23, 22, 0.72);
+  stroke-width: 0.95;
+  filter: drop-shadow(0.35px 0.65px 0 rgba(247, 241, 219, 0.28));
 }
 
-/* Seamless: joined surfaces lose all inner strokes; loose pieces keep a
-   subdued rim plus their independent exterior drop shadow for recognition. */
-.jigsaw-island[data-piece-appearance="seamless"] .tile-puzzle-piece-outline {
+.jigsaw-island[data-piece-appearance="inlaid"] .tile-puzzle-piece-outline.exterior {
+  stroke: rgba(233, 227, 211, 0.22);
+  stroke-width: 0.7;
+  filter: none;
+}
+
+/* Seamless: exterior contours remain faint; internal joined cuts disappear. */
+.jigsaw-island[data-piece-appearance="seamless"] .tile-puzzle-piece-outline.interior {
   stroke: transparent;
 }
 
-.jigsaw-island.loose[data-piece-appearance="seamless"] .tile-puzzle-piece-outline {
-  stroke: rgba(248, 250, 252, 0.38);
-  stroke-width: 0.85;
+.jigsaw-island[data-piece-appearance="seamless"] .tile-puzzle-piece-outline.exterior {
+  stroke: rgba(227, 229, 224, 0.16);
+  stroke-width: 0.65;
 }
 
-.jigsaw-island:has(.tile-puzzle-piece:hover) .tile-puzzle-piece-outline,
-.jigsaw-island:has(.tile-puzzle-piece:focus-visible) .tile-puzzle-piece-outline,
-.jigsaw-island.dragging .tile-puzzle-piece-outline {
-  stroke: rgba(125, 211, 252, 0.96);
-  stroke-width: 2.3;
+.jigsaw-island.loose[data-piece-appearance="seamless"] .tile-puzzle-piece-outline.exterior {
+  stroke: rgba(230, 232, 226, 0.28);
+  stroke-width: 0.8;
 }
 
 .jigsaw-freeform-stage.completion-celebrating .jigsaw-world-layer {
@@ -957,19 +956,15 @@
 .tile-puzzle-edge-seam {
   fill: none;
   stroke: rgba(248, 250, 252, 0.72);
-  stroke-width: 1.25;
-  stroke-linecap: round;
+  stroke-width: 1.1;
+  stroke-linecap: butt;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 1px 1px rgba(2, 6, 23, 0.9));
+  filter: drop-shadow(0 1px 1px rgba(2, 6, 23, 0.7));
 }
 
-.tile-puzzle-edge-seam.boundary {
-  stroke: rgba(248, 250, 252, 0.36);
-}
-
-.tile-puzzle-piece.joined .tile-puzzle-edge-seam.interior {
-  stroke: rgba(167, 243, 208, 0.82);
+.tile-puzzle-edge-seam.exterior {
+  stroke: rgba(248, 250, 252, 0.44);
 }
 
 @media (max-width: 700px) {

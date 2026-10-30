@@ -10,12 +10,11 @@ describe("Jigsaw piece appearance selection", () => {
     expect(jigsawPieceAppearances).toEqual(["outlined", "inlaid", "seamless"]);
   });
 
-  it("honors the selected appearance on every island, including a single loose piece", () => {
+  it("draws the same cached unique physical cuts for all modes, including loose pieces", () => {
     expect(preview).toContain("data-piece-appearance={appearance}");
+    expect(preview).toContain("island.cuts.map((cut)");
+    expect(preview).toContain('class={`tile-puzzle-piece-outline ${cut.kind}`}');
     expect(preview).not.toContain("resolveJigsawPieceAppearance(");
-    expect(preview).toContain('class="tile-puzzle-piece-outline-halo"');
-    expect(preview).toContain('class="tile-puzzle-piece-inlaid-lip"');
-    expect(preview).toContain('!isSolved && appearance === "outlined"');
-    expect(preview).toContain('!isSolved && appearance === "inlaid"');
+    expect(preview).not.toContain("tile-puzzle-piece-outline-halo");
   });
 });

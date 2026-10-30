@@ -74,7 +74,7 @@ describe("terminal interaction contracts", () => {
     expect(jigsawPreviewSource).toMatch(
       /if \(completed\.solved\) onCausativeInput\(\);/,
     );
-    expect(jigsawPreviewSource).toContain("showEdgeSeams && !isSolved ? seams.map(");
+    expect(jigsawPreviewSource).toContain("showEdgeSeams && !isSolved ? island.cuts.map(");
     expect(jigsawPreviewSource).toContain("hidden={isSolved}");
     expect(jigsawPreviewSource).not.toContain('isSolved ? "is-solved"');
     expect(jigsawCss).not.toContain(".tile-puzzle-tools.is-solved");

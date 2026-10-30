@@ -5,7 +5,7 @@ const preview = readFileSync(new URL("./TilePuzzlePreview.tsx", import.meta.url)
 const css = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
 
 describe("Jigsaw piece appearance integration", () => {
-  it("exposes an accessible preference in the existing tools, without workspace toolbar clutter", () => {
+  it("exposes one accessible preference in the existing Jigsaw tools", () => {
     expect(preview).toContain('class="jigsaw-appearance-setting"');
     expect(preview).toContain('aria-label="Piece appearance"');
     for (const name of ["outlined", "inlaid", "seamless"]) {
@@ -14,18 +14,21 @@ describe("Jigsaw piece appearance integration", () => {
     expect(preview).toContain('appearance={appearance}');
   });
 
-  it("switches seam presentation only, reusing common island artwork, masks, and hit targets", () => {
-    expect(preview).toContain('data-piece-appearance={appearance}');
-    expect(preview).toContain('appearance === "inlaid"');
-    expect(css).toContain('.jigsaw-island.loose[data-piece-appearance="seamless"] .tile-puzzle-piece-outline');
-    expect(css).toContain('.jigsaw-island[data-piece-appearance="seamless"] .tile-puzzle-piece-outline');
-    expect(css).toContain('.jigsaw-island[data-piece-appearance="inlaid"] .tile-puzzle-piece-outline');
-    expect(css).toContain('.tile-puzzle-piece-outline-halo {');
-    expect(css).toContain('.tile-puzzle-piece-inlaid-lip {');
-    expect(css).toContain('vector-effect: non-scaling-stroke;');
-    expect(css).toContain('.jigsaw-freeform-stage.solved .jigsaw-island .tile-puzzle-piece-outline');
+  it("draws each cut once with butt endpoints instead of doubled piece corners", () => {
+    expect(preview).toContain('class={`tile-puzzle-piece-outline ${cut.kind}`}');
+    expect(preview).toContain("island.cuts.map((cut)");
+    expect(css).toContain("stroke-linecap: butt;");
+    expect(css).toContain('data-piece-appearance="outlined"] .tile-puzzle-piece-outline');
+    expect(css).toContain('data-piece-appearance="inlaid"] .tile-puzzle-piece-outline');
+    expect(css).toContain('data-piece-appearance="seamless"] .tile-puzzle-piece-outline.interior');
+    expect(css).not.toContain("stroke: rgba(125, 211, 252, 0.96)");
     expect(preview).toContain('class="jigsaw-island-artwork"');
     expect(preview).toContain('class="tile-puzzle-piece-hit-target"');
-    expect(preview).toContain('showEdgeSeams && !isSolved ? seams.map(');
+  });
+
+  it("keeps edge guides separate from appearance and suppresses solved cuts", () => {
+    expect(preview).toContain("showEdgeSeams && !isSolved ? island.cuts.map(");
+    expect(css).toContain(".jigsaw-freeform-stage.solved .jigsaw-island .tile-puzzle-piece-outline");
+    expect(css).toContain("vector-effect: non-scaling-stroke;");
   });
 });
