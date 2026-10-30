@@ -890,51 +890,56 @@
   cursor: grabbing;
 }
 
-.tile-puzzle-piece-outline {
+/* Contours are screen-space strokes, so appearances remain legible at board-fit zoom. */
+.tile-puzzle-piece-outline,
+.tile-puzzle-piece-outline-halo,
+.tile-puzzle-piece-inlaid-lip {
   fill: none;
-  stroke: rgba(248, 250, 252, 0.5);
-  stroke-width: 1.15;
+  pointer-events: none;
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
+}
+
+/* Outlined: a pale fine cut against a dark surround reads over any artwork. */
+.tile-puzzle-piece-outline {
+  stroke: rgba(248, 250, 252, 0.96);
+  stroke-width: 1.5;
   transition: stroke 140ms ease, stroke-width 140ms ease;
+}
+
+.tile-puzzle-piece-outline-halo {
+  stroke: rgba(5, 12, 22, 0.92);
+  stroke-width: 3.8;
+}
+
+/* Inlaid: the inverse two-tone cut has a luminous lip and a dark recess. */
+.tile-puzzle-piece-inlaid-lip {
+  stroke: rgba(250, 252, 255, 0.62);
+  stroke-width: 3.5;
+}
+
+.jigsaw-island[data-piece-appearance="inlaid"] .tile-puzzle-piece-outline {
+  stroke: rgba(5, 14, 24, 0.88);
+  stroke-width: 2.1;
+}
+
+/* Seamless: joined surfaces lose all inner strokes; loose pieces keep a
+   subdued rim plus their independent exterior drop shadow for recognition. */
+.jigsaw-island[data-piece-appearance="seamless"] .tile-puzzle-piece-outline {
+  stroke: transparent;
+}
+
+.jigsaw-island.loose[data-piece-appearance="seamless"] .tile-puzzle-piece-outline {
+  stroke: rgba(248, 250, 252, 0.38);
+  stroke-width: 0.85;
 }
 
 .jigsaw-island:has(.tile-puzzle-piece:hover) .tile-puzzle-piece-outline,
 .jigsaw-island:has(.tile-puzzle-piece:focus-visible) .tile-puzzle-piece-outline,
 .jigsaw-island.dragging .tile-puzzle-piece-outline {
   stroke: rgba(125, 211, 252, 0.96);
-  stroke-width: 1.75;
-}
-
-.jigsaw-island.joined .tile-puzzle-piece-outline, .jigsaw-island.anchored .tile-puzzle-piece-outline {
-  stroke: rgba(167, 243, 208, 0.72);
-  stroke-width: 1.1;
-}
-
-/* Interior seams are presentation only; geometry, image clipping, and hit targets stay shared. */
-.jigsaw-island[data-piece-appearance="inlaid"] .tile-puzzle-piece-outline,
-.jigsaw-island[data-piece-appearance="seamless"] .tile-puzzle-piece-outline {
-  stroke: transparent;
-}
-
-.tile-puzzle-piece-inlaid-recess,
-.tile-puzzle-piece-inlaid-highlight {
-  fill: none;
-  pointer-events: none;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-}
-
-.tile-puzzle-piece-inlaid-recess {
-  stroke: rgba(8, 21, 31, 0.5);
-  stroke-width: 0.9;
-}
-
-.tile-puzzle-piece-inlaid-highlight {
-  stroke: rgba(255, 255, 255, 0.25);
-  stroke-width: 0.6;
+  stroke-width: 2.3;
 }
 
 .jigsaw-freeform-stage.completion-celebrating .jigsaw-world-layer {
@@ -945,7 +950,7 @@
   filter: none;
 }
 
-.jigsaw-freeform-stage.solved .tile-puzzle-piece-outline {
+.jigsaw-freeform-stage.solved .jigsaw-island .tile-puzzle-piece-outline {
   stroke: transparent;
 }
 

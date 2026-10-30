@@ -1,11 +1,6 @@
 export const jigsawPieceAppearances = ["outlined", "inlaid", "seamless"] as const;
 export type JigsawPieceAppearance = typeof jigsawPieceAppearances[number];
 
-export const resolveJigsawPieceAppearance = (
-  preference: JigsawPieceAppearance,
-  isJoined: boolean,
-): JigsawPieceAppearance => isJoined ? preference : "outlined";
-
 export type JigsawPlayerPreferences = {
   appearance: JigsawPieceAppearance;
   showPreview: boolean;

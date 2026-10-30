@@ -39,7 +39,7 @@ import {
   type JigsawWorkspaceSnapshot,
 } from "../games/jigsaw/history";
 import { getJigsawPinchCamera, type JigsawPinchPair, type JigsawPinchPoint } from "../games/jigsaw/pinch";
-import { loadJigsawPlayerPreferences, resolveJigsawPieceAppearance, saveJigsawPlayerPreferences, type JigsawPieceAppearance } from "../games/jigsaw/playerPreferences";
+import { loadJigsawPlayerPreferences, saveJigsawPlayerPreferences, type JigsawPieceAppearance } from "../games/jigsaw/playerPreferences";
 import {
   createJigsawFitCamera,
   createJigsawOccupiedFitCamera,
@@ -157,7 +157,6 @@ const JigsawIslandVisual = memo(({
   islandElements, pointerActions,
 }: IslandVisualProps) => {
   const clipId = `island-${puzzle.id}-${island.key}`.replace(/[^a-zA-Z0-9_-]/g, "-");
-  const treatment = resolveJigsawPieceAppearance(appearance, island.members.length > 1);
   const islandStyle = {
     width: `${layout.pieceWidth * island.widthCells}px`,
     height: `${layout.pieceHeight * island.heightCells}px`,
@@ -168,7 +167,7 @@ const JigsawIslandVisual = memo(({
   return (
     <div
       class={`jigsaw-island ${anchored ? "anchored" : island.members.length > 1 ? "joined" : "loose"} ${active ? "dragging" : ""}`}
-      data-piece-appearance={treatment}
+      data-piece-appearance={appearance}
       ref={(element) => {
         if (element) islandElements.current.set(island.key, element);
         else islandElements.current.delete(island.key);
@@ -198,13 +197,13 @@ const JigsawIslandVisual = memo(({
         </g>
         {island.members.map(({ piece, outline, seams }) => (
           <g key={piece.id} transform={`translate(${(piece.column - island.minColumn) * 100} ${(piece.row - island.minRow) * 100})`}>
-            <path class="tile-puzzle-piece-outline" d={outline} />
-            {treatment === "inlaid" ? (
-              <>
-                <path class="tile-puzzle-piece-inlaid-recess" d={outline} />
-                <path class="tile-puzzle-piece-inlaid-highlight" d={outline} transform="translate(-0.4 -0.4)" />
-              </>
+            {!isSolved && appearance === "outlined" ? (
+              <path class="tile-puzzle-piece-outline-halo" d={outline} />
             ) : null}
+            {!isSolved && appearance === "inlaid" ? (
+              <path class="tile-puzzle-piece-inlaid-lip" d={outline} />
+            ) : null}
+            <path class="tile-puzzle-piece-outline" d={outline} />
             {showEdgeSeams && !isSolved ? seams.map((seam) => (
               <path class={`tile-puzzle-edge-seam ${seam.boundary ? "boundary" : "interior"} ${seam.polarity}`} d={seam.d} key={seam.edgeId} />
             )) : null}
