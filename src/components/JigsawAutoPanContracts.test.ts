@@ -41,7 +41,7 @@ describe("Jigsaw auto-pan controller boundary", () => {
     expect(jigsawCss).toContain(".jigsaw-island-artwork {");
     expect(jigsawCss).toContain(".jigsaw-island.anchored .jigsaw-island-artwork");
     expect(previewSource).toContain('class="tile-puzzle-piece-hit-visual"');
-    expect(previewSource).toContain('class="tile-puzzle-piece-outline"');
+    expect(previewSource).toContain('class={`tile-puzzle-piece-outline ${cut.kind}`}');
   });
 
   it("clears transient interaction presentation when gestures terminate", () => {
