@@ -9,10 +9,12 @@ import {
 } from "./specialPieces";
 
 describe("Jigsaw special pieces policy", () => {
-  it("defaults to Rare and rejects unknown modes", () => {
-    expect(defaultJigsawSpecialPiecesMode).toBe("rare");
-    expect(normalizeJigsawSpecialPiecesMode(undefined)).toBe("rare");
-    expect(normalizeJigsawSpecialPiecesMode("unexpected")).toBe("rare");
+  it("defaults to ordinary pieces while retaining explicit special-piece modes", () => {
+    expect(defaultJigsawSpecialPiecesMode).toBe("off");
+    expect(normalizeJigsawSpecialPiecesMode(undefined)).toBe("off");
+    expect(normalizeJigsawSpecialPiecesMode("unexpected")).toBe("off");
+    expect(normalizeJigsawSpecialPiecesMode("rare")).toBe("rare");
+    expect(normalizeJigsawSpecialPiecesMode("always")).toBe("always");
     expect(jigsawRareSpecialPieceRate).toBe(0.25);
   });
 

@@ -18,7 +18,7 @@ export const jigsawSpecialPiecesModes = [
   "always",
 ] as const satisfies readonly JigsawSpecialPiecesMode[];
 
-export const defaultJigsawSpecialPiecesMode: JigsawSpecialPiecesMode = "rare";
+export const defaultJigsawSpecialPiecesMode: JigsawSpecialPiecesMode = "off";
 
 export const jigsawSpecialPiecesModeLabels = {
   off: "Off",
