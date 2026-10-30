@@ -16,7 +16,7 @@ import {
   isJigsawCutStyle,
 } from "../games/jigsaw/cutStyle";
 import {
-  defaultJigsawSpecialPiecesMode,
+  jigsawResourceIdentityFallbackSpecialPiecesMode,
   isJigsawSpecialPiecesMode,
 } from "../games/jigsaw/specialPieces";
 import { isDailyDateStamp } from "../games/shared/daily";
@@ -81,7 +81,7 @@ const makeDefaultRuntimeSettings = (puzzleId: PuzzleId): GenerationRuntimeSettin
     solitaireVariation: defaultSolitaireVariation,
     jigsawCutStyle: defaultJigsawCutStyle,
     jigsawBoundaryMode: defaultJigsawBoundaryMode,
-    jigsawSpecialPiecesMode: defaultJigsawSpecialPiecesMode,
+    jigsawSpecialPiecesMode: jigsawResourceIdentityFallbackSpecialPiecesMode,
   };
 };
 
@@ -173,7 +173,7 @@ const appendCanonicalQuery = (identity: GenerationIdentity) => {
       }
       if (
         identity.jigsawSpecialPiecesMode &&
-        identity.jigsawSpecialPiecesMode !== defaultJigsawSpecialPiecesMode
+        identity.jigsawSpecialPiecesMode !== jigsawResourceIdentityFallbackSpecialPiecesMode
       ) {
         values.set("special", identity.jigsawSpecialPiecesMode);
       }

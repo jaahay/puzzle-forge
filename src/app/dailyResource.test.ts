@@ -131,6 +131,13 @@ describe("Daily resource semantics", () => {
     expect(makeDailyResourceLocatorPath(always.identity))
       .toBe("/jigsaw/daily/2026-09-15?special=always");
 
+    const historicalDefault = resolveDailyResource("jigsaw", "2026-09-15");
+    expect(historicalDefault.ok).toBe(true);
+    if (historicalDefault.ok) {
+      expect(historicalDefault.query).toBe("");
+      expect(historicalDefault.identity.jigsawSpecialPiecesMode).toBe("rare");
+    }
+
     const rare = resolveDailyResource(
       "jigsaw",
       "2026-09-15",

@@ -20,6 +20,13 @@ export const jigsawSpecialPiecesModes = [
 
 export const defaultJigsawSpecialPiecesMode: JigsawSpecialPiecesMode = "off";
 
+/**
+ * Existing compact resource IDs and unqualified Daily URLs historically mean
+ * Rare. Never reinterpret those persisted identities when changing the
+ * preference for newly generated puzzles.
+ */
+export const jigsawResourceIdentityFallbackSpecialPiecesMode: JigsawSpecialPiecesMode = "rare";
+
 export const jigsawSpecialPiecesModeLabels = {
   off: "Off",
   rare: "Rare",
