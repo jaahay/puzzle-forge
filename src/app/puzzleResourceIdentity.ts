@@ -11,10 +11,7 @@ import type {
 import { getPuzzleImageAsset } from "../games/imageAssets";
 import { normalizeJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
 import { normalizeJigsawCutStyle } from "../games/jigsaw/cutStyle";
-import {
-  jigsawResourceIdentityFallbackSpecialPiecesMode,
-  normalizeJigsawSpecialPiecesMode,
-} from "../games/jigsaw/specialPieces";
+import { normalizeJigsawSpecialPiecesMode } from "../games/jigsaw/specialPieces";
 import { normalizeSeed } from "../games/shared";
 import { isDailyDateStamp } from "../games/shared/daily";
 import {
@@ -69,8 +66,8 @@ const jigsawBoundaryModeCodebook = [
   ["contoured", 1],
 ] as const satisfies readonly (readonly [JigsawBoundaryMode, number])[];
 const jigsawSpecialPiecesModeCodebook = [
-  ["rare", 0],
-  ["off", 1],
+  ["off", 0],
+  ["rare", 1],
   ["always", 2],
 ] as const satisfies readonly (readonly [JigsawSpecialPiecesMode, number])[];
 const textEncoder = new TextEncoder();
@@ -208,10 +205,7 @@ const pushPuzzlePayload = (bytes: number[], identity: GenerationIdentity) => {
       const boundaryMode = normalizeJigsawBoundaryMode(identity.jigsawBoundaryMode);
       const boundaryModeCode = jigsawBoundaryModeCodebook.find(([mode]) => mode === boundaryMode)?.[1];
       if (boundaryModeCode === undefined) throw new Error(`Unsupported Jigsaw boundary mode: ${boundaryMode}`);
-      // Missing mode in an existing resource ID historically encodes Rare (bit value 0).
-      const specialPiecesMode = normalizeJigsawSpecialPiecesMode(
-        identity.jigsawSpecialPiecesMode ?? jigsawResourceIdentityFallbackSpecialPiecesMode,
-      );
+      const specialPiecesMode = normalizeJigsawSpecialPiecesMode(identity.jigsawSpecialPiecesMode);
       const specialPiecesModeCode = jigsawSpecialPiecesModeCodebook.find(
         ([mode]) => mode === specialPiecesMode,
       )?.[1];

@@ -131,11 +131,11 @@ describe("Daily resource semantics", () => {
     expect(makeDailyResourceLocatorPath(always.identity))
       .toBe("/jigsaw/daily/2026-09-15?special=always");
 
-    const historicalDefault = resolveDailyResource("jigsaw", "2026-09-15");
-    expect(historicalDefault.ok).toBe(true);
-    if (historicalDefault.ok) {
-      expect(historicalDefault.query).toBe("");
-      expect(historicalDefault.identity.jigsawSpecialPiecesMode).toBe("rare");
+    const defaultDaily = resolveDailyResource("jigsaw", "2026-09-15");
+    expect(defaultDaily.ok).toBe(true);
+    if (defaultDaily.ok) {
+      expect(defaultDaily.query).toBe("");
+      expect(defaultDaily.identity.jigsawSpecialPiecesMode).toBe("off");
     }
 
     const rare = resolveDailyResource(
@@ -144,7 +144,7 @@ describe("Daily resource semantics", () => {
       "special=rare",
     );
     expect(rare.ok).toBe(true);
-    if (rare.ok) expect(rare.query).toBe("");
+    if (rare.ok) expect(rare.query).toBe("special=rare");
 
     const off = resolveDailyResource(
       "jigsaw",
@@ -153,7 +153,7 @@ describe("Daily resource semantics", () => {
     );
     expect(off.ok).toBe(true);
     if (off.ok) {
-      expect(off.query).toBe("cut=eclectic&boundary=contoured&special=off");
+      expect(off.query).toBe("cut=eclectic&boundary=contoured");
     }
   });
 

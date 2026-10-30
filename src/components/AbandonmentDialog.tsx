@@ -4,6 +4,10 @@ import type { DestructivePuzzleAction } from "../app/abandonmentPolicy";
 
 type Props = { action: DestructivePuzzleAction; onCancel: () => void; onConfirm: () => void };
 
+/** A click within the dialog must never dismiss the confirmation. */
+export const isAbandonmentBackdropClick = (target: EventTarget | null, backdrop: EventTarget | null): boolean =>
+  backdrop !== null && target === backdrop;
+
 export const AbandonmentDialog = ({ action, onCancel, onConfirm }: Props) => {
   const safe = useRef<HTMLButtonElement>(null);
   const destructive = useRef<HTMLButtonElement>(null);
@@ -16,7 +20,13 @@ export const AbandonmentDialog = ({ action, onCancel, onConfirm }: Props) => {
   }, []);
   const isNew = action === "new";
   return (
-    <div class="puzzle-abandon-backdrop" onPointerDown={(event) => event.stopPropagation()}>
+    <div
+      class="puzzle-abandon-backdrop"
+      onPointerDown={(event) => event.stopPropagation()}
+      onClick={(event) => {
+        if (isAbandonmentBackdropClick(event.target, event.currentTarget)) onCancel();
+      }}
+    >
       <section class="puzzle-abandon-dialog" role="alertdialog" aria-modal="true"
         aria-labelledby="puzzle-abandon-title" aria-describedby="puzzle-abandon-description"
         onKeyDown={(event) => {
