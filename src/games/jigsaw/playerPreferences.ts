@@ -1,4 +1,13 @@
+export const jigsawPieceAppearances = ["outlined", "inlaid", "seamless"] as const;
+export type JigsawPieceAppearance = typeof jigsawPieceAppearances[number];
+
+export const resolveJigsawPieceAppearance = (
+  preference: JigsawPieceAppearance,
+  isJoined: boolean,
+): JigsawPieceAppearance => isJoined ? preference : "outlined";
+
 export type JigsawPlayerPreferences = {
+  appearance: JigsawPieceAppearance;
   showPreview: boolean;
   showEdgeSeams: boolean;
   snapToFrame: boolean;
@@ -7,6 +16,7 @@ export type JigsawPlayerPreferences = {
 const storageKey = "puzzle-forge.jigsaw-player-preferences";
 
 export const defaultJigsawPlayerPreferences: JigsawPlayerPreferences = {
+  appearance: "inlaid",
   showPreview: false,
   showEdgeSeams: false,
   snapToFrame: false,
@@ -23,6 +33,7 @@ export const loadJigsawPlayerPreferences = (): JigsawPlayerPreferences => {
     }
     const values = stored as Record<string, unknown>;
     return {
+      appearance: jigsawPieceAppearances.find((candidate) => candidate === values.appearance) ?? defaultJigsawPlayerPreferences.appearance,
       showPreview: typeof values.showPreview === "boolean" ? values.showPreview : false,
       showEdgeSeams: typeof values.showEdgeSeams === "boolean" ? values.showEdgeSeams : false,
       snapToFrame: typeof values.snapToFrame === "boolean" ? values.snapToFrame : false,

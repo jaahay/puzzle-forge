@@ -27,17 +27,28 @@ describe("Jigsaw player preferences", () => {
     expect(loadJigsawPlayerPreferences()).toEqual(defaultJigsawPlayerPreferences);
     stubStorage('{"snapToFrame":"yes","showEdgeSeams":true,"showPreview":0}');
     expect(loadJigsawPlayerPreferences()).toEqual({
-      showPreview: false, showEdgeSeams: true, snapToFrame: false,
+      appearance: "inlaid", showPreview: false, showEdgeSeams: true, snapToFrame: false,
     });
   });
 
   it("retains every visual/assistance toggle across puzzle instances and reloads", () => {
     stubStorage();
-    const settings = { showPreview: true, showEdgeSeams: true, snapToFrame: true };
+    const settings = { appearance: "inlaid" as const, showPreview: true, showEdgeSeams: true, snapToFrame: true };
     saveJigsawPlayerPreferences(settings);
     expect(loadJigsawPlayerPreferences()).toEqual(settings);
     saveJigsawPlayerPreferences({ ...settings, snapToFrame: false });
     expect(loadJigsawPlayerPreferences()).toEqual({ ...settings, snapToFrame: false });
+  });
+
+  it("defaults missing or invalid appearance to Inlaid without overriding explicit choices", () => {
+    stubStorage('{"appearance":"unknown","showPreview":true}');
+    expect(loadJigsawPlayerPreferences().appearance).toBe("inlaid");
+    stubStorage('{"showEdgeSeams":true}');
+    expect(loadJigsawPlayerPreferences().appearance).toBe("inlaid");
+    stubStorage('{"appearance":"outlined"}');
+    expect(loadJigsawPlayerPreferences().appearance).toBe("outlined");
+    stubStorage('{"appearance":"seamless"}');
+    expect(loadJigsawPlayerPreferences().appearance).toBe("seamless");
   });
 
   it("remains usable when storage is inaccessible", () => {

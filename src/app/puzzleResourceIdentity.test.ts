@@ -121,7 +121,7 @@ describe("canonical puzzle generation identity", () => {
             imageId,
             jigsawCutStyle: "eclectic",
             jigsawBoundaryMode: "contoured",
-            jigsawSpecialPiecesMode: "rare",
+            jigsawSpecialPiecesMode: defaultJigsawSpecialPiecesMode,
           });
           break;
         case "tile-swap":
@@ -153,6 +153,7 @@ describe("canonical puzzle generation identity", () => {
       height: definition.defaultHeight,
       imageId: getPuzzleImageAsset(undefined, "jigsaw").id,
       jigsawCutStyle: defaultJigsawCutStyle,
+      jigsawSpecialPiecesMode: defaultJigsawSpecialPiecesMode,
     });
 
     const expectedCodes = [
@@ -186,6 +187,7 @@ describe("canonical puzzle generation identity", () => {
       imageId: getPuzzleImageAsset(undefined, "jigsaw").id,
       jigsawCutStyle: "classic",
       jigsawBoundaryMode: "flat",
+      jigsawSpecialPiecesMode: defaultJigsawSpecialPiecesMode,
     });
 
     const flat = encodeGenerationId(base);
@@ -209,6 +211,28 @@ describe("canonical puzzle generation identity", () => {
     expect(decoded.identity.jigsawBoundaryMode).toBe("contoured");
   });
 
+  it("encodes the default Off identically when omitted, and differs from explicit Rare", () => {
+    const definition = getPuzzleDefinition("jigsaw");
+    const base = makeIdentity({
+      puzzleId: "jigsaw",
+      width: definition.defaultWidth,
+      height: definition.defaultHeight,
+      imageId: getPuzzleImageAsset(undefined, "jigsaw").id,
+      jigsawCutStyle: "classic",
+      jigsawBoundaryMode: "flat",
+    });
+    const missingMode = encodeGenerationId({ ...base, jigsawSpecialPiecesMode: undefined });
+    const explicitRare = encodeGenerationId({ ...base, jigsawSpecialPiecesMode: "rare" });
+    const explicitOff = encodeGenerationId({ ...base, jigsawSpecialPiecesMode: "off" });
+    expect(missingMode).toBe(explicitOff);
+    expect(explicitRare).not.toBe(missingMode);
+    expect(decodeGenerationIdBytes(missingMode).at(-1)).toBe(0);
+    expect(decodeGenerationIdBytes(explicitRare).at(-1)).toBe(0x10);
+    const decoded = decodeGenerationId("jigsaw", missingMode);
+    expect(decoded.ok).toBe(true);
+    if (decoded.ok) expect(decoded.identity.jigsawSpecialPiecesMode).toBe("off");
+  });
+
   it("forks Jigsaw resource identity by Special pieces mode", () => {
     const definition = getPuzzleDefinition("jigsaw");
     const base = makeIdentity({
@@ -220,8 +244,8 @@ describe("canonical puzzle generation identity", () => {
       jigsawBoundaryMode: "flat",
     });
     const expectedCodes = [
-      ["rare", 0x00],
-      ["off", 0x10],
+      ["off", 0x00],
+      ["rare", 0x10],
       ["always", 0x20],
     ] as const;
     const ids = expectedCodes.map(([jigsawSpecialPiecesMode, expectedCode]) => {

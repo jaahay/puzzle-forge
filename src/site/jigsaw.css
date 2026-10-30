@@ -125,6 +125,33 @@
   background: #bfdbfe;
 }
 
+.jigsaw-appearance-setting {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.25rem 0.4rem;
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.jigsaw-appearance-setting select {
+  width: 100%;
+  min-height: 2.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.48);
+  border-radius: 0.6rem;
+  padding: 0.35rem 0.5rem;
+  color: #f8fafc;
+  background: #1e293b;
+  font: inherit;
+  cursor: pointer;
+}
+
+.jigsaw-appearance-setting select:focus-visible {
+  outline: 2px solid #7dd3fc;
+  outline-offset: 2px;
+}
+
 .jigsaw-camera-tools {
   display: flex;
   flex-wrap: nowrap;
@@ -883,6 +910,31 @@
 .jigsaw-island.joined .tile-puzzle-piece-outline, .jigsaw-island.anchored .tile-puzzle-piece-outline {
   stroke: rgba(167, 243, 208, 0.72);
   stroke-width: 1.1;
+}
+
+/* Interior seams are presentation only; geometry, image clipping, and hit targets stay shared. */
+.jigsaw-island[data-piece-appearance="inlaid"] .tile-puzzle-piece-outline,
+.jigsaw-island[data-piece-appearance="seamless"] .tile-puzzle-piece-outline {
+  stroke: transparent;
+}
+
+.tile-puzzle-piece-inlaid-recess,
+.tile-puzzle-piece-inlaid-highlight {
+  fill: none;
+  pointer-events: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.tile-puzzle-piece-inlaid-recess {
+  stroke: rgba(8, 21, 31, 0.5);
+  stroke-width: 0.9;
+}
+
+.tile-puzzle-piece-inlaid-highlight {
+  stroke: rgba(255, 255, 255, 0.25);
+  stroke-width: 0.6;
 }
 
 .jigsaw-freeform-stage.completion-celebrating .jigsaw-world-layer {
