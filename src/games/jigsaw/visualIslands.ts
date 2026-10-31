@@ -33,8 +33,6 @@ export type JigsawIslandCut = {
 export type JigsawVisualIslandGeometry = {
   /** Stable across absorption; a retired island is eligible for DOM/GC cleanup. */
   key: string;
-  /** Fresh clip definition whenever this island's membership changes, even if its DOM key survives. */
-  clipRevision: number;
   members: readonly PreparedJigsawPiece[];
   cuts: readonly JigsawIslandCut[];
   minColumn: number;
@@ -157,14 +155,13 @@ export const reconcileJigsawVisualScene = (
         survivor.members.every((entry, i) => entry === members[i])) {
       return [survivor];
     }
-    const clipRevision = nextId++;
-    const key = survivor?.key ?? `island-${clipRevision}`;
+    const key = survivor?.key ?? `island-${nextId++}`;
     const minColumn = Math.min(...members.map(({ piece }) => piece.column));
     const minRow = Math.min(...members.map(({ piece }) => piece.row));
     const maxColumn = Math.max(...members.map(({ piece, span }) => piece.column + span.width));
     const maxRow = Math.max(...members.map(({ piece, span }) => piece.row + span.height));
     return [{
-      key, clipRevision, members, cuts: composeJigsawIslandCuts(members, minColumn, minRow), minColumn, minRow,
+      key, members, cuts: composeJigsawIslandCuts(members, minColumn, minRow), minColumn, minRow,
       widthCells: maxColumn - minColumn,
       heightCells: maxRow - minRow,
     }];

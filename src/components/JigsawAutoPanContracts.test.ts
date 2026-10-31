@@ -21,6 +21,7 @@ describe("Jigsaw auto-pan controller boundary", () => {
     expect(islandVisualSource).toContain('"--jigsaw-piece-y":');
 
     expect(jigsawCss).toContain(".jigsaw-island {");
+    expect(jigsawCss).toContain("transform: translate(");
     expect(jigsawCss).toContain("calc(var(--jigsaw-piece-x, 0px) + var(--jigsaw-active-drag-x))");
     expect(jigsawCss).toContain(".jigsaw-island.dragging {");
     expect(jigsawCss).toContain("calc(var(--jigsaw-piece-y, 0px) + var(--jigsaw-active-drag-y))");
@@ -39,9 +40,10 @@ describe("Jigsaw auto-pan controller boundary", () => {
   it("keeps camera pan and drag-hover work outside per-pointer React reconciliation", () => {
     const pan = previewSource.slice(previewSource.indexOf("const movePan ="), previewSource.indexOf("const finishPan ="));
     expect(pan).toContain("wheelStateRef.current = {");
-    expect(pan).toContain("renderCameraImmediately()");
+    expect(pan).toContain("scheduleCameraRender()");
     expect(pan).not.toContain("setCamera(");
     const finish = previewSource.slice(previewSource.indexOf("const finishPan ="), previewSource.indexOf("const handleWheel ="));
+    expect(finish).toContain("flushCameraRender()");
     expect(finish).toContain("setCamera(wheelStateRef.current.camera)");
     expect(previewSource).toContain("panRef.current !== null || dragRef.current?");
     const dragMove = previewSource.slice(previewSource.indexOf("const moveDrag ="), previewSource.indexOf("const finishDrag ="));
@@ -51,11 +53,19 @@ describe("Jigsaw auto-pan controller boundary", () => {
     expect(previewSource).toContain("if (previousTime === null || panned || dragHoverNeedsUpdateRef.current)");
   });
 
-  it("shadows clipped island artwork without clipping away the exterior shadow", () => {
+  it("coalesces pinch transforms and cancels leftover camera frames on cleanup", () => {
+    const pinch = previewSource.slice(previewSource.indexOf("const moveTouchPinch ="), previewSource.indexOf("const endTouchPinch ="));
+    expect(pinch).toContain("scheduleCameraRender()");
+    const end = previewSource.slice(previewSource.indexOf("const endTouchPinch ="), previewSource.indexOf("const renderDraggedPieceImmediately ="));
+    expect(end).toContain("flushCameraRender()");
+    expect(previewSource).toContain("window.cancelAnimationFrame(cameraAnimationFrameRef.current)");
+  });
+
+  it("keeps the source image unfiltered while placing shadows on the physical silhouette", () => {
     expect(islandVisualSource).toContain('<g class="jigsaw-island-artwork">');
-    expect(islandVisualSource).toContain('clip-path={`url(#${clipId}-piece-${index})`}');
-    expect(jigsawCss).toContain(".jigsaw-island-artwork {");
-    expect(jigsawCss).toContain(".jigsaw-island.anchored .jigsaw-island-artwork");
+    expect(islandVisualSource).toContain('clip-path={`url(#${clipId}-piece-${piece.id})`}');
+    expect(jigsawCss).toContain(".jigsaw-island.anchored .jigsaw-island-sidewall");
+    expect(jigsawCss).not.toContain(".jigsaw-island.dragging .jigsaw-island-artwork");
     expect(islandVisualSource).toContain('class="tile-puzzle-piece-hit-visual"');
     expect(islandVisualSource).toContain('class={`tile-puzzle-piece-outline ${cut.kind}`}');
   });

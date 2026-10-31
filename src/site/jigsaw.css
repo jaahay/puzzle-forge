@@ -756,10 +756,9 @@
   left: 0;
   top: 0;
   pointer-events: none;
-  transform: translate3d(
+  transform: translate(
     calc(var(--jigsaw-piece-x, 0px) + var(--jigsaw-active-drag-x)),
-    calc(var(--jigsaw-piece-y, 0px) + var(--jigsaw-active-drag-y)),
-    0
+    calc(var(--jigsaw-piece-y, 0px) + var(--jigsaw-active-drag-y))
   );
 }
 .jigsaw-island.dragging {
@@ -782,7 +781,8 @@
   pointer-events: none;
   transform: translate(0.85px, 2.05px);
   transition: transform 160ms ease;
-  filter: drop-shadow(0 1px 1px rgba(15, 17, 19, 0.32));
+  filter: drop-shadow(0 1px 1px rgba(3, 8, 14, 0.48))
+    drop-shadow(0 5px 6px rgba(3, 8, 14, 0.21));
 }
 .jigsaw-material-finish,
 .jigsaw-material-gloss,
@@ -853,16 +853,14 @@
 
 /* A small contact shadow grounds loose pieces; joined islands have one shared
    soft outline shadow instead of per-piece elevation. */
-.jigsaw-island-artwork {
-  filter: drop-shadow(0 1px 1px rgba(3, 8, 14, 0.48))
-    drop-shadow(0 5px 6px rgba(3, 8, 14, 0.21));
-}
-.jigsaw-island.joined .jigsaw-island-artwork,
-.jigsaw-island.anchored .jigsaw-island-artwork {
+/* The physical silhouette owns the contact shadow, so lifting a piece
+   no longer re-filters its source artwork. */
+.jigsaw-island.joined .jigsaw-island-sidewall,
+.jigsaw-island.anchored .jigsaw-island-sidewall {
   filter: drop-shadow(0 1px 1px rgba(3, 8, 14, 0.42))
     drop-shadow(0 2px 3px rgba(3, 8, 14, 0.2));
 }
-.jigsaw-island.dragging .jigsaw-island-artwork {
+.jigsaw-island.dragging .jigsaw-island-sidewall {
   filter: drop-shadow(0 3px 4px rgba(3, 8, 14, 0.45))
     drop-shadow(0 12px 15px rgba(3, 8, 14, 0.36));
 }
@@ -1046,8 +1044,8 @@
   animation: jigsaw-solved-world-settle 620ms ease-out both;
 }
 
-.jigsaw-freeform-stage.solved .jigsaw-island-artwork {
-  filter: none;
+.jigsaw-freeform-stage.solved .jigsaw-island-sidewall {
+  filter: drop-shadow(0 1px 1px rgba(15, 17, 19, 0.32));
 }
 
 .jigsaw-freeform-stage.solved .jigsaw-island .tile-puzzle-piece-outline {

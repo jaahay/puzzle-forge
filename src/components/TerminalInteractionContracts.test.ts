@@ -87,7 +87,7 @@ describe("terminal interaction contracts", () => {
     expect(jigsawPreviewSource).toContain("hidden={isSolved}");
     expect(jigsawPreviewSource).not.toContain('isSolved ? "is-solved"');
     expect(jigsawCss).not.toContain(".tile-puzzle-tools.is-solved");
-    expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .jigsaw-island-artwork");
+    expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .jigsaw-island-sidewall");
     expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .jigsaw-island .tile-puzzle-piece-outline");
     expect(jigsawCss).toContain(".jigsaw-freeform-stage.completion-celebrating .jigsaw-world-layer");
     expect(jigsawCss).toContain(".jigsaw-solved-card.is-completed");

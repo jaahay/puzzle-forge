@@ -15,7 +15,7 @@ export type IslandPointerActions = {
 };
 
 /** Physical island surfaces stay independent of camera and workspace controls. */
-const JigsawIslandSurface = ({
+const JigsawIslandSurface = memo(({
   island, puzzle, showEdgeSeams, isSolved,
 }: {
   island: JigsawVisualIslandGeometry;
@@ -23,26 +23,28 @@ const JigsawIslandSurface = ({
   showEdgeSeams: boolean;
   isSolved: boolean;
 }) => {
-  const clipId = `island-${puzzle.id}-${island.key}-${island.clipRevision}`.replace(/[^a-zA-Z0-9_-]/g, "-");
+  const clipId = `island-${puzzle.id}-${island.key}`.replace(/[^a-zA-Z0-9_-]/g, "-");
+  const originX = island.minColumn * 100;
+  const originY = island.minRow * 100;
   const finishId = `${clipId}-finish`;
   const glossId = `${clipId}-gloss`;
   const textureId = `${clipId}-texture`;
   const fiberId = `${clipId}-fiber`;
   return (
-    <svg class="jigsaw-island-visual" viewBox={`0 0 ${island.widthCells * 100} ${island.heightCells * 100}`} preserveAspectRatio="none" aria-hidden="true">
+    <svg class="jigsaw-island-visual" viewBox={`${originX} ${originY} ${island.widthCells * 100} ${island.heightCells * 100}`} preserveAspectRatio="none" aria-hidden="true">
             <defs>
               {/* Keep artwork clipping local to each cached piece outline;
                   assembled membership must not make its image depend on a composite clip. */}
-              {island.members.map(({ piece, outline }, index) => (
-                <clipPath key={piece.id} id={`${clipId}-piece-${index}`} clipPathUnits="userSpaceOnUse">
-                  <path d={outline} transform={`translate(${(piece.column - island.minColumn) * 100} ${(piece.row - island.minRow) * 100})`} />
+              {island.members.map(({ piece, outline }) => (
+                <clipPath key={piece.id} id={`${clipId}-piece-${piece.id}`} clipPathUnits="userSpaceOnUse">
+                  <path d={outline} transform={`translate(${piece.column * 100} ${piece.row * 100})`} />
                 </clipPath>
               ))}
               {/* The composite coating is cosmetic; it never clips the artwork itself. */}
               <clipPath id={`${clipId}-coating`} clipPathUnits="userSpaceOnUse">
                 {island.members.map(({ piece, outline }) => (
                   <path key={piece.id} d={outline}
-                    transform={`translate(${(piece.column - island.minColumn) * 100} ${(piece.row - island.minRow) * 100})`} />
+                    transform={`translate(${piece.column * 100} ${piece.row * 100})`} />
                 ))}
               </clipPath>
               <linearGradient id={finishId} x1="0%" y1="0%" x2="95%" y2="100%">
@@ -68,17 +70,17 @@ const JigsawIslandSurface = ({
             <g class="jigsaw-island-sidewall" transform="translate(0.85 2.05)">
               {island.members.map(({ piece, outline }) => (
                 <path key={piece.id} d={outline}
-                  transform={`translate(${(piece.column - island.minColumn) * 100} ${(piece.row - island.minRow) * 100})`} />
+                  transform={`translate(${piece.column * 100} ${piece.row * 100})`} />
               ))}
             </g>
             <g class="jigsaw-island-artwork">
-              {island.members.map(({ piece }, index) => (
-                <g key={piece.id} clip-path={`url(#${clipId}-piece-${index})`}>
+              {island.members.map(({ piece }) => (
+                <g key={piece.id} clip-path={`url(#${clipId}-piece-${piece.id})`}>
                   <image
                     class="tile-puzzle-piece-image"
                     href={puzzle.asset.files.puzzle}
-                    x={-island.minColumn * 100}
-                    y={-island.minRow * 100}
+                    x={0}
+                    y={0}
                     width={puzzle.width * 100}
                     height={puzzle.height * 100}
                     preserveAspectRatio="none"
@@ -89,43 +91,43 @@ const JigsawIslandSurface = ({
             <g class="jigsaw-island-coating" clip-path={`url(#${clipId}-coating)`}>
                 <rect
                   class="jigsaw-material-finish"
-                  x={-48}
-                  y={-48}
+                  x={originX - 48}
+                  y={originY - 48}
                   width={island.widthCells * 100 + 96}
                   height={island.heightCells * 100 + 96}
                   fill={`url(#${finishId})`}
                 />
                 <rect
                   class="jigsaw-material-gloss"
-                  x={-48}
-                  y={-48}
+                  x={originX - 48}
+                  y={originY - 48}
                   width={island.widthCells * 100 + 96}
                   height={island.heightCells * 100 + 96}
                   fill={`url(#${glossId})`}
                 />
-                <rect class="jigsaw-material-texture" x={-48} y={-48}
+                <rect class="jigsaw-material-texture" x={originX - 48} y={originY - 48}
                   width={island.widthCells * 100 + 96} height={island.heightCells * 100 + 96}
                   fill={`url(#${textureId})`} />
-                <rect class="jigsaw-material-fibers" x={-48} y={-48}
+                <rect class="jigsaw-material-fibers" x={originX - 48} y={originY - 48}
                   width={island.widthCells * 100 + 96} height={island.heightCells * 100 + 96}
                   fill={`url(#${fiberId})`} />
             </g>
             {!isSolved ? island.cuts.filter((cut) => cut.kind === "exterior").map((cut) => (
               <path key={`edge:${cut.key}`} class="jigsaw-material-edge"
-                d={cut.d} transform={`translate(${cut.offsetX} ${cut.offsetY})`} />
+                d={cut.d} transform={`translate(${originX + cut.offsetX} ${originY + cut.offsetY})`} />
             )) : null}
             {!isSolved ? (
               <>
                 <g class="jigsaw-island-interior-cuts">
                   {island.cuts.filter((cut) => cut.kind === "interior").map((cut) => (
                     <path key={cut.key} class={`tile-puzzle-piece-outline ${cut.kind}`}
-                      d={cut.d} transform={`translate(${cut.offsetX} ${cut.offsetY})`} />
+                      d={cut.d} transform={`translate(${originX + cut.offsetX} ${originY + cut.offsetY})`} />
                   ))}
                 </g>
                 <g class="jigsaw-island-exterior-cuts">
                   {island.cuts.filter((cut) => cut.kind === "exterior").map((cut) => (
                     <path key={cut.key} class={`tile-puzzle-piece-outline ${cut.kind}`}
-                      d={cut.d} transform={`translate(${cut.offsetX} ${cut.offsetY})`} />
+                      d={cut.d} transform={`translate(${originX + cut.offsetX} ${originY + cut.offsetY})`} />
                   ))}
                 </g>
               </>
@@ -135,12 +137,16 @@ const JigsawIslandSurface = ({
                 key={`guide:${cut.key}`}
                 class={`tile-puzzle-edge-seam ${cut.kind}`}
                 d={cut.d}
-                transform={`translate(${cut.offsetX} ${cut.offsetY})`}
+                transform={`translate(${originX + cut.offsetX} ${originY + cut.offsetY})`}
               />
             )) : null}
           </svg>
   );
-};
+}, (before, after) =>
+  before.island.members === after.island.members &&
+  before.puzzle === after.puzzle &&
+  before.showEdgeSeams === after.showEdgeSeams &&
+  before.isSolved === after.isSolved);
 
 type IslandVisualProps = {
   island: JigsawPositionedVisualIsland;
@@ -180,7 +186,7 @@ export const JigsawIslandVisual = memo(({
       }}
       style={islandStyle}
     >
-      <JigsawIslandSurface key={island.clipRevision} island={island} puzzle={puzzle} showEdgeSeams={showEdgeSeams} isSolved={isSolved} />
+      <JigsawIslandSurface island={island} puzzle={puzzle} showEdgeSeams={showEdgeSeams} isSolved={isSolved} />
       {island.members.map(({ piece, outline, span }) => (
         <button
           class={`tile-puzzle-piece ${anchored ? "anchored" : island.members.length > 1 ? "joined" : "loose"} ${active ? "dragging" : ""}`}

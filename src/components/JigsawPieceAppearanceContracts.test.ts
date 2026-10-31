@@ -56,20 +56,26 @@ describe("Jigsaw piece appearance integration", () => {
     expect(css).not.toContain("stroke-width: 1.22;\n  filter:");
   });
 
-  it("remounts only the island clip when joined membership changes", () => {
-    expect(islandVisualSource).toContain("key={island.clipRevision}");
-    expect(islandVisualSource).toContain("${island.key}-${island.clipRevision}");
+  it("retains SVG artwork resources across pose changes and joins", () => {
+    expect(islandVisualSource).toContain("const JigsawIslandSurface = memo((");
+    expect(islandVisualSource).toContain("before.island.members === after.island.members");
+    expect(islandVisualSource).toContain("island-${puzzle.id}-${island.key}");
+    expect(islandVisualSource).not.toContain("key={island.clipRevision}");
+    expect(islandVisualSource).not.toContain("island.clipRevision");
     expect(preview).toContain("key={island.key}");
+    expect(islandVisualSource).toContain("viewBox={`${originX} ${originY}");
+    expect(islandVisualSource).toContain("x={0}");
+    expect(islandVisualSource).toContain("y={0}");
   });
 
-  it("isolates a growing joined region into independently clipped artwork pieces", () => {
+  it("grows joined regions without recreating the existing piece clips", () => {
     const surface = islandVisualSource.slice(
       islandVisualSource.indexOf("const JigsawIslandSurface ="),
       islandVisualSource.indexOf("type IslandVisualProps ="),
     );
-    expect(surface).toContain("island.members.map(({ piece, outline }, index)");
-    expect(surface).toContain('id={`${clipId}-piece-${index}`}');
-    expect(surface).toContain('clip-path={`url(#${clipId}-piece-${index})`}');
+    expect(surface).toContain("island.members.map(({ piece, outline })");
+    expect(surface).toContain('id={`${clipId}-piece-${piece.id}`}');
+    expect(surface).toContain('clip-path={`url(#${clipId}-piece-${piece.id})`}');
     expect(surface).not.toContain("<clipPath id={clipId}");
     expect(surface).not.toContain('clip-path={`url(#${clipId})`}');
     expect(surface).toContain('class="jigsaw-island-sidewall"');
@@ -83,15 +89,22 @@ describe("Jigsaw piece appearance integration", () => {
     expect(surface).toContain("island.cuts.map((cut)");
   });
 
+  it("shadows the cardboard without filtering the printed artwork", () => {
+    expect(css).toContain(".jigsaw-island.dragging .jigsaw-island-sidewall {");
+    expect(css).toContain(".jigsaw-island.anchored .jigsaw-island-sidewall");
+    expect(css).not.toContain(".jigsaw-island.dragging .jigsaw-island-artwork");
+    expect(css).not.toContain(".jigsaw-island.joined .jigsaw-island-artwork");
+  });
+
   it("grounds the island as one physical object without a texture overlay on every piece", () => {
     expect(islandVisualSource).toContain('class="jigsaw-island-sidewall"');
     expect(islandVisualSource).toContain('class="jigsaw-material-finish"');
     expect(islandVisualSource).toContain("<linearGradient id={finishId}");
-    expect(islandVisualSource).toContain('clip-path={`url(#${clipId}-piece-${index})`}');
+    expect(islandVisualSource).toContain('clip-path={`url(#${clipId}-piece-${piece.id})`}');
     expect(css).not.toContain('[data-piece-appearance="inlaid"] .jigsaw-island-sidewall');
     expect(css).not.toContain('[data-piece-appearance="inlaid"] .jigsaw-material-finish');
     expect(css).toContain('.jigsaw-island[data-physical-edition="heritage"] .jigsaw-island-sidewall');
-    expect(css).toContain(".jigsaw-island.joined .jigsaw-island-artwork");
+    expect(css).toContain(".jigsaw-island.joined .jigsaw-island-sidewall");
     expect(islandVisualSource).toContain('class="jigsaw-island-artwork"');
     expect(islandVisualSource).toContain('class="tile-puzzle-piece-hit-target"');
   });

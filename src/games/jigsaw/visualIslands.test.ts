@@ -52,7 +52,7 @@ describe("island-aware Jigsaw visual composition", () => {
     expect(new Set(joined.islands.map((island) => island.key)).size).toBe(joined.islands.length);
   });
 
-  it("refreshes clipping after a piece closes three edges of one joined island", () => {
+  it("reconciles multiple joins without replacing the surviving island identity", () => {
     const sample = generateJigsaw({
       puzzleId: "jigsaw", seed: "three-edge-island-join", width: 6, height: 6,
       imageId: defaultJigsawImageAsset.id, jigsawSpecialPiecesMode: "off",
@@ -73,10 +73,12 @@ describe("island-aware Jigsaw visual composition", () => {
     const after = joined.byPieceId.get(center.id)!;
 
     expect(after.key).toBe(before.key);
-    expect(after.clipRevision).not.toBe(before.clipRevision);
+    expect(after).not.toBe(before);
     expect(after.members).toHaveLength(4);
+    expect(after.members.find(({ piece }) => piece.id === center.id))
+      .toBe(before.members.find(({ piece }) => piece.id === center.id));
     expect(after.cuts.filter((cut) => cut.kind === "interior")).toHaveLength(3);
-    expect(new Set(joined.islands.map((island) => island.clipRevision)).size)
+    expect(new Set(joined.islands.map((island) => island.key)).size)
       .toBe(joined.islands.length);
 
     const unchanged = reconcileJigsawVisualScene(sample.tiles, progress, prepared, joined);

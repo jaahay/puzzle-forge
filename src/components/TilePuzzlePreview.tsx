@@ -221,6 +221,7 @@ export const TilePuzzlePreview = ({
   const islandPointerActionsRef = useRef<IslandPointerActions | null>(null);
   const dragRef = useRef<ActiveDrag | null>(null);
   const dragAnimationFrameRef = useRef<number | null>(null);
+  const cameraAnimationFrameRef = useRef<number | null>(null);
   const dragAnimationTimeRef = useRef<number | null>(null);
   const dragHoverIslandRef = useRef<HTMLElement | null>(null);
   const dragHoverNeedsUpdateRef = useRef(true);
@@ -317,6 +318,10 @@ export const TilePuzzlePreview = ({
 
   useEffect(() => () => {
     stopDragAnimation();
+    if (cameraAnimationFrameRef.current !== null) {
+      window.cancelAnimationFrame(cameraAnimationFrameRef.current);
+      cameraAnimationFrameRef.current = null;
+    }
     if (dragRef.current?.islandElement) resetJigsawDragOffset([dragRef.current.islandElement]);
     dragRef.current = null;
   }, []);
@@ -740,6 +745,22 @@ export const TilePuzzlePreview = ({
     applyJigsawCameraTransform(worldLayer, state.camera, state.viewport);
   };
 
+  // Only the most recent pointer position needs to reach the compositor each frame.
+  const scheduleCameraRender = () => {
+    if (cameraAnimationFrameRef.current !== null || typeof window === "undefined") return;
+    cameraAnimationFrameRef.current = window.requestAnimationFrame(() => {
+      cameraAnimationFrameRef.current = null;
+      renderCameraImmediately();
+    });
+  };
+  const flushCameraRender = () => {
+    if (cameraAnimationFrameRef.current !== null) {
+      window.cancelAnimationFrame(cameraAnimationFrameRef.current);
+      cameraAnimationFrameRef.current = null;
+    }
+    renderCameraImmediately();
+  };
+
   const beginTouchPinch = (event: StagePointerEvent) => {
     if (event.pointerType !== "touch") return;
     const target = event.target as Element | null;
@@ -796,7 +817,7 @@ export const TilePuzzlePreview = ({
         currentPoints,
       );
       wheelStateRef.current = { ...wheelStateRef.current, camera: nextCamera };
-      renderCameraImmediately();
+      scheduleCameraRender();
     }
 
     event.preventDefault();
@@ -811,6 +832,7 @@ export const TilePuzzlePreview = ({
 
     if (pinch?.pointerIds.includes(event.pointerId)) {
       pinchRef.current = null;
+      flushCameraRender();
       setCamera(wheelStateRef.current.camera);
       publishHistoryAvailability(historyRef.current);
     }
@@ -1064,7 +1086,7 @@ export const TilePuzzlePreview = ({
         ...current,
         camera: panJigsawCamera(current.layout, current.viewport, current.camera, -deltaX, -deltaY),
       };
-      renderCameraImmediately();
+      scheduleCameraRender();
     }
     event.preventDefault();
   };
@@ -1074,6 +1096,7 @@ export const TilePuzzlePreview = ({
     if (!pan || pan.pointerId !== event.pointerId) return;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
     panRef.current = null;
+    flushCameraRender();
     setCamera(wheelStateRef.current.camera);
     setIsPanning(false);
     event.preventDefault();
