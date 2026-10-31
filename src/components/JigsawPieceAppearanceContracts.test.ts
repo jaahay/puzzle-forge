@@ -32,11 +32,32 @@ describe("Jigsaw piece appearance integration", () => {
     expect(preview).toContain("key={island.key}");
   });
 
+  it("isolates a growing joined region into independently clipped artwork pieces", () => {
+    const surface = preview.slice(
+      preview.indexOf("const JigsawIslandSurface ="),
+      preview.indexOf("type IslandVisualProps ="),
+    );
+    expect(surface).toContain("island.members.map(({ piece, outline }, index)");
+    expect(surface).toContain('id={`${clipId}-piece-${index}`}');
+    expect(surface).toContain('clip-path={`url(#${clipId}-piece-${index})`}');
+    expect(surface).not.toContain("<clipPath id={clipId}");
+    expect(surface).not.toContain('clip-path={`url(#${clipId})`}');
+    expect(surface).toContain('class="jigsaw-island-sidewall"');
+    expect(surface).toContain('class="jigsaw-island-artwork"');
+    expect(surface).toContain('class="jigsaw-island-coating"');
+    expect(surface).toContain('clip-path={`url(#${clipId}-coating)`}');
+    expect((surface.match(/class="jigsaw-material-finish"/g) ?? [])).toHaveLength(1);
+    expect((surface.match(/class="jigsaw-material-texture"/g) ?? [])).toHaveLength(1);
+    expect(surface.indexOf('class="jigsaw-island-artwork"'))
+      .toBeLessThan(surface.indexOf('class="jigsaw-island-coating"'));
+    expect(surface).toContain("island.cuts.map((cut)");
+  });
+
   it("grounds the island as one physical object without a texture overlay on every piece", () => {
     expect(preview).toContain('class="jigsaw-island-sidewall"');
     expect(preview).toContain('class="jigsaw-material-finish"');
     expect(preview).toContain("<linearGradient id={finishId}");
-    expect(preview).toContain('clip-path={`url(#${clipId})`}');
+    expect(preview).toContain('clip-path={`url(#${clipId}-piece-${index})`}');
     expect(css).not.toContain('[data-piece-appearance="inlaid"] .jigsaw-island-sidewall');
     expect(css).not.toContain('[data-piece-appearance="inlaid"] .jigsaw-material-finish');
     expect(css).toContain('.jigsaw-island[data-physical-edition="heritage"] .jigsaw-island-sidewall');

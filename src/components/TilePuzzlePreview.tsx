@@ -158,9 +158,18 @@ const JigsawIslandSurface = ({
   return (
     <svg class="jigsaw-island-visual" viewBox={`0 0 ${island.widthCells * 100} ${island.heightCells * 100}`} preserveAspectRatio="none" aria-hidden="true">
             <defs>
-              <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
+              {/* Keep artwork clipping local to each cached piece outline;
+                  assembled membership must not make its image depend on a composite clip. */}
+              {island.members.map(({ piece, outline }, index) => (
+                <clipPath key={piece.id} id={`${clipId}-piece-${index}`} clipPathUnits="userSpaceOnUse">
+                  <path d={outline} transform={`translate(${(piece.column - island.minColumn) * 100} ${(piece.row - island.minRow) * 100})`} />
+                </clipPath>
+              ))}
+              {/* The composite coating is cosmetic; it never clips the artwork itself. */}
+              <clipPath id={`${clipId}-coating`} clipPathUnits="userSpaceOnUse">
                 {island.members.map(({ piece, outline }) => (
-                  <path key={piece.id} d={outline} transform={`translate(${(piece.column - island.minColumn) * 100} ${(piece.row - island.minRow) * 100})`} />
+                  <path key={piece.id} d={outline}
+                    transform={`translate(${(piece.column - island.minColumn) * 100} ${(piece.row - island.minRow) * 100})`} />
                 ))}
               </clipPath>
               <linearGradient id={finishId} x1="0%" y1="0%" x2="95%" y2="100%">
@@ -183,29 +192,28 @@ const JigsawIslandSurface = ({
                 <path d="M1 3 L5 2 M8 8 L12 7 M3 10 L7 9 M10 1 L12 2" stroke="#352b25" stroke-opacity="0.36" stroke-width="0.42" />
               </pattern>
             </defs>
-            <g
-              class="jigsaw-island-sidewall"
-              transform="translate(0.85 2.05)"
-              clip-path={`url(#${clipId})`}
-            >
-              <rect
-                x={-48}
-                y={-48}
-                width={island.widthCells * 100 + 96}
-                height={island.heightCells * 100 + 96}
-              />
+            <g class="jigsaw-island-sidewall" transform="translate(0.85 2.05)">
+              {island.members.map(({ piece, outline }) => (
+                <path key={piece.id} d={outline}
+                  transform={`translate(${(piece.column - island.minColumn) * 100} ${(piece.row - island.minRow) * 100})`} />
+              ))}
             </g>
             <g class="jigsaw-island-artwork">
-              <g clip-path={`url(#${clipId})`}>
-                <image
-                  class="tile-puzzle-piece-image"
-                  href={puzzle.asset.files.puzzle}
-                  x={-island.minColumn * 100}
-                  y={-island.minRow * 100}
-                  width={puzzle.width * 100}
-                  height={puzzle.height * 100}
-                  preserveAspectRatio="none"
-                />
+              {island.members.map(({ piece }, index) => (
+                <g key={piece.id} clip-path={`url(#${clipId}-piece-${index})`}>
+                  <image
+                    class="tile-puzzle-piece-image"
+                    href={puzzle.asset.files.puzzle}
+                    x={-island.minColumn * 100}
+                    y={-island.minRow * 100}
+                    width={puzzle.width * 100}
+                    height={puzzle.height * 100}
+                    preserveAspectRatio="none"
+                  />
+                </g>
+              ))}
+            </g>
+            <g class="jigsaw-island-coating" clip-path={`url(#${clipId}-coating)`}>
                 <rect
                   class="jigsaw-material-finish"
                   x={-48}
@@ -228,7 +236,6 @@ const JigsawIslandSurface = ({
                 <rect class="jigsaw-material-fibers" x={-48} y={-48}
                   width={island.widthCells * 100 + 96} height={island.heightCells * 100 + 96}
                   fill={`url(#${fiberId})`} />
-              </g>
             </g>
             {!isSolved ? island.cuts.filter((cut) => cut.kind === "exterior").map((cut) => (
               <path key={`edge:${cut.key}`} class="jigsaw-material-edge"

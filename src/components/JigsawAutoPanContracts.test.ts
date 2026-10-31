@@ -37,7 +37,7 @@ describe("Jigsaw auto-pan controller boundary", () => {
 
   it("shadows clipped island artwork without clipping away the exterior shadow", () => {
     expect(previewSource).toContain('<g class="jigsaw-island-artwork">');
-    expect(previewSource).toContain('<g clip-path={`url(#${clipId})`}>');
+    expect(previewSource).toContain('clip-path={`url(#${clipId}-piece-${index})`}');
     expect(jigsawCss).toContain(".jigsaw-island-artwork {");
     expect(jigsawCss).toContain(".jigsaw-island.anchored .jigsaw-island-artwork");
     expect(previewSource).toContain('class="tile-puzzle-piece-hit-visual"');
