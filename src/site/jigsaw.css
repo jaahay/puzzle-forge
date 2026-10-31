@@ -876,7 +876,8 @@
 }
 
 .jigsaw-island:has(.tile-puzzle-piece:hover) .jigsaw-island-visual,
-.jigsaw-island:has(.tile-puzzle-piece:focus-visible) .jigsaw-island-visual {
+.jigsaw-island:has(.tile-puzzle-piece:focus-visible) .jigsaw-island-visual,
+.jigsaw-island.drag-hover .jigsaw-island-visual {
   filter: brightness(1.05);
 }
 

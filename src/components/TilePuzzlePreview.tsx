@@ -71,7 +71,9 @@ import {
   resetJigsawDragOffset,
 } from "./JigsawImperativeRenderer";
 import {
+  findJigsawDragHoverIsland,
   getJigsawFitInsetsForOverlays,
+  getJigsawIslandStackOrder,
   getJigsawZoomStep,
   getMeasuredJigsawViewport,
   getPieceHitTargetProps,
@@ -277,7 +279,7 @@ const JigsawIslandVisual = memo(({
     height: `${layout.pieceHeight * island.heightCells}px`,
     "--jigsaw-piece-x": `${island.worldX}px`,
     "--jigsaw-piece-y": `${island.worldY}px`,
-    zIndex: active ? 1000 : raised ? 900 : Math.max(...island.members.map(({ piece }) => 10 + piece.currentIndex)),
+    zIndex: getJigsawIslandStackOrder(island, puzzle.tiles.length, active, raised, anchored),
   } as JSX.CSSProperties;
   return (
     <div
@@ -410,12 +412,15 @@ export const TilePuzzlePreview = ({
   const dragRef = useRef<ActiveDrag | null>(null);
   const dragAnimationFrameRef = useRef<number | null>(null);
   const dragAnimationTimeRef = useRef<number | null>(null);
+  const dragHoverIslandRef = useRef<HTMLElement | null>(null);
   const panRef = useRef<ActivePan | null>(null);
   const touchPointsRef = useRef(new Map<number, JigsawPinchPoint>());
   const pinchRef = useRef<ActivePinch | null>(null);
   const lastResetVersion = useRef(resetVersion);
 
   const stopDragAnimation = () => {
+    dragHoverIslandRef.current?.classList.remove("drag-hover");
+    dragHoverIslandRef.current = null;
     if (dragAnimationFrameRef.current !== null && typeof window !== "undefined") {
       window.cancelAnimationFrame(dragAnimationFrameRef.current);
     }
@@ -1017,6 +1022,18 @@ export const TilePuzzlePreview = ({
     if (drag.islandElement) applyJigsawDragOffset([drag.islandElement], offset.dragX, offset.dragY);
   };
 
+  const updateDragHover = (drag: ActiveDrag) => {
+    const stage = stageRef.current;
+    const candidate = stage ? findJigsawDragHoverIsland(
+      stage.ownerDocument.elementsFromPoint(drag.clientX, drag.clientY),
+      drag.islandElement, stage,
+    ) : null;
+    if (candidate === dragHoverIslandRef.current) return;
+    dragHoverIslandRef.current?.classList.remove("drag-hover");
+    candidate?.classList.add("drag-hover");
+    dragHoverIslandRef.current = candidate;
+  };
+
   const runDragAnimationFrame = (time: number) => {
     const drag = dragRef.current;
     if (!drag) {
@@ -1032,6 +1049,7 @@ export const TilePuzzlePreview = ({
       return;
     }
     const stagePoint = getStagePoint(drag.clientX, drag.clientY);
+    let panned = false;
     if (stagePoint && previousTime !== null) {
       const nextCamera = advanceJigsawEdgePanCamera(
         current.layout,
@@ -1048,10 +1066,12 @@ export const TilePuzzlePreview = ({
         markManualCameraAdjustment();
         wheelStateRef.current = { ...current, camera: nextCamera };
         renderCameraImmediately(wheelStateRef.current);
+        panned = true;
       }
     }
 
     renderDraggedPieceImmediately(drag, wheelStateRef.current);
+    if (previousTime === null || panned) updateDragHover(drag);
     dragAnimationFrameRef.current = window.requestAnimationFrame(runDragAnimationFrame);
   };
 
@@ -1117,6 +1137,7 @@ export const TilePuzzlePreview = ({
     drag.clientX = event.clientX;
     drag.clientY = event.clientY;
     renderDraggedPieceImmediately(drag);
+    updateDragHover(drag);
     event.stopPropagation();
     event.preventDefault();
   };
@@ -1144,6 +1165,7 @@ export const TilePuzzlePreview = ({
       } : current);
       dragRef.current = null;
       setActiveTileId(null);
+      setRaisedTileId(null);
       publishHistoryAvailability(historyRef.current);
       return;
     }
@@ -1165,6 +1187,7 @@ export const TilePuzzlePreview = ({
     } : current);
     dragRef.current = null;
     setActiveTileId(null);
+    setRaisedTileId(null);
     if (nextState?.puzzleId === puzzle.id) {
       if (completed.solved) onCausativeInput();
       publishAssemblyProgress(nextState.assembly);
@@ -1188,6 +1211,7 @@ export const TilePuzzlePreview = ({
     } : current);
     dragRef.current = null;
     setActiveTileId(null);
+    setRaisedTileId(null);
     publishHistoryAvailability(historyRef.current);
     event.stopPropagation();
   };

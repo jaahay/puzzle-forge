@@ -12,6 +12,7 @@ import {
   type JigsawViewportInsets,
   type JigsawWorldLayout,
 } from "../games/jigsaw/placement";
+import type { JigsawPositionedVisualIsland } from "../games/jigsaw/visualIslands";
 import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
 
 const jigsawZoomStops = [
@@ -158,3 +159,36 @@ export const shouldShowJigsawSolvedControls = (
   isSolved: boolean,
   phase: CompletionPresentationPhase,
 ) => isSolved && phase === "completed";
+
+/** Joined regions settle behind smaller, still-accessible pieces; raising is temporary. */
+export const getJigsawIslandStackOrder = (
+  island: Pick<JigsawPositionedVisualIsland, "members">,
+  pieceCount: number,
+  active: boolean,
+  raised: boolean,
+  anchored: boolean,
+): number => {
+  const stride = pieceCount + 1;
+  const aboveBoard = 10;
+  if (active) return aboveBoard + stride * (stride + 2);
+  if (raised) return aboveBoard + stride * (stride + 1);
+  if (anchored) return aboveBoard;
+  const sizeLayer = pieceCount - island.members.length + 1;
+  const originalOrder = island.members.reduce(
+    (highest, { piece }) => Math.max(highest, piece.currentIndex), 0);
+  return aboveBoard + sizeLayer * stride + originalOrder;
+};
+
+/** Pointer capture keeps events on the dragged piece; hit-test through it for hover feedback. */
+export const findJigsawDragHoverIsland = (
+  hitStack: readonly Element[],
+  draggedIsland: Element | null,
+  stage: Element,
+): HTMLElement | null => {
+  for (const element of hitStack) {
+    if (!element.matches(".tile-puzzle-piece-hit-target")) continue;
+    const island = element.closest<HTMLElement>(".jigsaw-island");
+    if (island && island !== draggedIsland && stage.contains(island)) return island;
+  }
+  return null;
+};
