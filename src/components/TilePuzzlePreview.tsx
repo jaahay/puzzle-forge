@@ -148,7 +148,7 @@ const JigsawIslandSurface = ({
   showEdgeSeams: boolean;
   isSolved: boolean;
 }) => {
-  const clipId = `island-${puzzle.id}-${island.key}`.replace(/[^a-zA-Z0-9_-]/g, "-");
+  const clipId = `island-${puzzle.id}-${island.key}-${island.clipRevision}`.replace(/[^a-zA-Z0-9_-]/g, "-");
   const finishId = `${clipId}-finish`;
   const glossId = `${clipId}-gloss`;
   const textureId = `${clipId}-texture`;
@@ -290,7 +290,7 @@ const JigsawIslandVisual = memo(({
       }}
       style={islandStyle}
     >
-      <JigsawIslandSurface island={island} puzzle={puzzle} showEdgeSeams={showEdgeSeams} isSolved={isSolved} />
+      <JigsawIslandSurface key={island.clipRevision} island={island} puzzle={puzzle} showEdgeSeams={showEdgeSeams} isSolved={isSolved} />
       {island.members.map(({ piece, outline, span }) => (
         <button
           class={`tile-puzzle-piece ${anchored ? "anchored" : island.members.length > 1 ? "joined" : "loose"} ${active ? "dragging" : ""}`}

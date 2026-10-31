@@ -26,6 +26,12 @@ describe("Jigsaw piece appearance integration", () => {
     expect(preview).toContain('class="tile-puzzle-piece-hit-target"');
   });
 
+  it("remounts only the island clip when joined membership changes", () => {
+    expect(preview).toContain("key={island.clipRevision}");
+    expect(preview).toContain("${island.key}-${island.clipRevision}");
+    expect(preview).toContain("key={island.key}");
+  });
+
   it("grounds the island as one physical object without a texture overlay on every piece", () => {
     expect(preview).toContain('class="jigsaw-island-sidewall"');
     expect(preview).toContain('class="jigsaw-material-finish"');

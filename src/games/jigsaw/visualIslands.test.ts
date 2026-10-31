@@ -52,6 +52,37 @@ describe("island-aware Jigsaw visual composition", () => {
     expect(new Set(joined.islands.map((island) => island.key)).size).toBe(joined.islands.length);
   });
 
+  it("refreshes clipping after a piece closes three edges of one joined island", () => {
+    const sample = generateJigsaw({
+      puzzleId: "jigsaw", seed: "three-edge-island-join", width: 6, height: 6,
+      imageId: defaultJigsawImageAsset.id, jigsawSpecialPiecesMode: "off",
+    });
+    const at = (row: number, column: number) =>
+      sample.tiles.find((piece) => piece.row === row && piece.column === column)!;
+    const center = at(2, 2);
+    const north = at(1, 2);
+    const west = at(2, 1);
+    const east = at(2, 3);
+    const prepared = prepareJigsawVisualGeometry(sample.tiles, sample.edgeModel);
+    const initial = reconcileJigsawVisualScene(sample.tiles, { joinedComponents: [] }, prepared);
+    const pair = reconcileJigsawVisualScene(sample.tiles,
+      { joinedComponents: [[center.id, north.id]] }, prepared, initial);
+    const before = pair.byPieceId.get(center.id)!;
+    const progress = { joinedComponents: [[center.id, north.id, west.id, east.id]] };
+    const joined = reconcileJigsawVisualScene(sample.tiles, progress, prepared, pair);
+    const after = joined.byPieceId.get(center.id)!;
+
+    expect(after.key).toBe(before.key);
+    expect(after.clipRevision).not.toBe(before.clipRevision);
+    expect(after.members).toHaveLength(4);
+    expect(after.cuts.filter((cut) => cut.kind === "interior")).toHaveLength(3);
+    expect(new Set(joined.islands.map((island) => island.clipRevision)).size)
+      .toBe(joined.islands.length);
+
+    const unchanged = reconcileJigsawVisualScene(sample.tiles, progress, prepared, joined);
+    expect(unchanged.byPieceId.get(center.id)).toBe(after);
+  });
+
   it("retains geometry and positioned identity for unaffected islands across moves", () => {
     const scene = reconcileJigsawVisualScene(puzzle.tiles, { joinedComponents: [] }, geometry);
     const firstPose = positionJigsawVisualIslands(scene, layout, placements);
