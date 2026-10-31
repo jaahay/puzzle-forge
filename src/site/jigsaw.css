@@ -773,15 +773,42 @@
   overflow: visible;
   pointer-events: none;
 }
+/* One matte top surface, with a thin cardboard sidewall underneath the
+   combined island silhouette. The sidewall does not run between joined pieces. */
+.jigsaw-island-sidewall {
+  fill: #84745f;
+  opacity: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 1px rgba(15, 17, 19, 0.32));
+}
+.jigsaw-island[data-piece-appearance="inlaid"] .jigsaw-island-sidewall {
+  opacity: 0.92;
+}
+.jigsaw-island[data-piece-appearance="seamless"] .jigsaw-island-sidewall {
+  opacity: 0.38;
+}
+.jigsaw-material-finish {
+  opacity: 0;
+  pointer-events: none;
+}
+.jigsaw-island[data-piece-appearance="inlaid"] .jigsaw-material-finish {
+  opacity: 0.85;
+}
+
+/* A small contact shadow grounds loose pieces; joined islands have one shared
+   soft outline shadow instead of per-piece elevation. */
 .jigsaw-island-artwork {
-  filter: drop-shadow(0 8px 10px rgba(2, 6, 23, 0.38));
+  filter: drop-shadow(0 1px 1px rgba(3, 8, 14, 0.48))
+    drop-shadow(0 5px 6px rgba(3, 8, 14, 0.21));
 }
 .jigsaw-island.joined .jigsaw-island-artwork,
 .jigsaw-island.anchored .jigsaw-island-artwork {
-  filter: drop-shadow(0 3px 4px rgba(2, 6, 23, 0.28));
+  filter: drop-shadow(0 1px 1px rgba(3, 8, 14, 0.42))
+    drop-shadow(0 2px 3px rgba(3, 8, 14, 0.2));
 }
 .jigsaw-island.dragging .jigsaw-island-artwork {
-  filter: drop-shadow(0 14px 16px rgba(2, 6, 23, 0.52));
+  filter: drop-shadow(0 3px 4px rgba(3, 8, 14, 0.45))
+    drop-shadow(0 12px 15px rgba(3, 8, 14, 0.36));
 }
 .tile-puzzle-piece-hit-visual {
   width: 100%;

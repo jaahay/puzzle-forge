@@ -26,6 +26,18 @@ describe("Jigsaw piece appearance integration", () => {
     expect(preview).toContain('class="tile-puzzle-piece-hit-target"');
   });
 
+  it("grounds the island as one physical object without a texture overlay on every piece", () => {
+    expect(preview).toContain('class="jigsaw-island-sidewall"');
+    expect(preview).toContain('class="jigsaw-material-finish"');
+    expect(preview).toContain("<linearGradient id={finishId}");
+    expect(preview).toContain('clip-path={`url(#${clipId})`}');
+    expect(css).toContain('.jigsaw-island[data-piece-appearance="inlaid"] .jigsaw-island-sidewall');
+    expect(css).toContain('.jigsaw-island[data-piece-appearance="inlaid"] .jigsaw-material-finish');
+    expect(css).toContain(".jigsaw-island.joined .jigsaw-island-artwork");
+    expect(preview).toContain('class="jigsaw-island-artwork"');
+    expect(preview).toContain('class="tile-puzzle-piece-hit-target"');
+  });
+
   it("keeps edge guides separate from appearance and suppresses solved cuts", () => {
     expect(preview).toContain("showEdgeSeams && !isSolved ? island.cuts.map(");
     expect(css).toContain(".jigsaw-freeform-stage.solved .jigsaw-island .tile-puzzle-piece-outline");

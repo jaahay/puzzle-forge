@@ -20,6 +20,7 @@ import {
   type JigsawDragAction,
 } from "../games/jigsaw/dragAction";
 import { resolveJigsawAssistanceActivation } from "../games/jigsaw/interaction";
+import { getJigsawWheelGesture } from "../games/jigsaw/wheelInput";
 import {
   getJigsawVisualMembershipKey,
   positionJigsawVisualIslands,
@@ -157,6 +158,7 @@ const JigsawIslandVisual = memo(({
   islandElements, pointerActions,
 }: IslandVisualProps) => {
   const clipId = `island-${puzzle.id}-${island.key}`.replace(/[^a-zA-Z0-9_-]/g, "-");
+  const finishId = `${clipId}-finish`;
   const islandStyle = {
     width: `${layout.pieceWidth * island.widthCells}px`,
     height: `${layout.pieceHeight * island.heightCells}px`,
@@ -181,7 +183,24 @@ const JigsawIslandVisual = memo(({
               <path key={piece.id} d={outline} transform={`translate(${(piece.column - island.minColumn) * 100} ${(piece.row - island.minRow) * 100})`} />
             ))}
           </clipPath>
+          <linearGradient id={finishId} x1="0%" y1="0%" x2="95%" y2="100%">
+            <stop offset="0%" stop-color="#fffdf1" stop-opacity="0.15" />
+            <stop offset="55%" stop-color="#fffdf1" stop-opacity="0" />
+            <stop offset="100%" stop-color="#121825" stop-opacity="0.10" />
+          </linearGradient>
         </defs>
+        <g
+          class="jigsaw-island-sidewall"
+          transform="translate(0.7 1.7)"
+          clip-path={`url(#${clipId})`}
+        >
+          <rect
+            x={-48}
+            y={-48}
+            width={island.widthCells * 100 + 96}
+            height={island.heightCells * 100 + 96}
+          />
+        </g>
         <g class="jigsaw-island-artwork">
           <g clip-path={`url(#${clipId})`}>
             <image
@@ -192,6 +211,14 @@ const JigsawIslandVisual = memo(({
               width={puzzle.width * 100}
               height={puzzle.height * 100}
               preserveAspectRatio="none"
+            />
+            <rect
+              class="jigsaw-material-finish"
+              x={-48}
+              y={-48}
+              width={island.widthCells * 100 + 96}
+              height={island.heightCells * 100 + 96}
+              fill={`url(#${finishId})`}
             />
           </g>
         </g>
@@ -1172,12 +1199,13 @@ export const TilePuzzlePreview = ({
     const current = wheelStateRef.current;
     markManualCameraAdjustment();
 
-    const nextCamera = event.ctrlKey || event.metaKey
+    const gesture = getJigsawWheelGesture(event, current.viewport.height);
+    const nextCamera = gesture.kind === "zoom"
       ? zoomJigsawCameraAtPoint(
           current.layout,
           current.viewport,
           current.camera,
-          current.camera.zoom * Math.exp(-event.deltaY * 0.002),
+          current.camera.zoom * gesture.factor,
           stagePoint.x,
           stagePoint.y,
         )
@@ -1185,8 +1213,8 @@ export const TilePuzzlePreview = ({
           current.layout,
           current.viewport,
           current.camera,
-          event.shiftKey && Math.abs(event.deltaX) < 1 ? event.deltaY : event.deltaX,
-          event.shiftKey && Math.abs(event.deltaX) < 1 ? 0 : event.deltaY,
+          gesture.deltaX,
+          gesture.deltaY,
         );
 
     wheelStateRef.current = { ...current, camera: nextCamera };
@@ -1406,7 +1434,7 @@ export const TilePuzzlePreview = ({
         onPointerCancel={finishPan}
         onKeyDown={handleStageKeyDown}
         tabIndex={0}
-        aria-label="Jigsaw workspace. Drag the background or use the mouse wheel or trackpad to pan. When focused, use the arrow keys to pan. Pinch or Control plus wheel to zoom."
+        aria-label="Jigsaw workspace. Scroll the mouse wheel to zoom toward the pointer. Drag the background or use the arrow keys to pan. Shift plus wheel or horizontal trackpad gestures pan. Pinch to zoom."
       >
         <div class="jigsaw-world-layer" ref={worldLayerRef} style={worldStyle}>
           <div class="jigsaw-assembly-board" style={boardStyle} aria-hidden="true" />

@@ -44,6 +44,17 @@ describe("Jigsaw auto-pan controller boundary", () => {
     expect(previewSource).toContain('class={`tile-puzzle-piece-outline ${cut.kind}`}');
   });
 
+  it("zooms at the pointer on ordinary wheel input, preserving directional pan and pinch", () => {
+    expect(previewSource).toContain("getJigsawWheelGesture(event, current.viewport.height)");
+    expect(previewSource).toContain('gesture.kind === "zoom"');
+    expect(previewSource).toContain("current.camera.zoom * gesture.factor");
+    expect(previewSource).toContain("stagePoint.x,");
+    expect(previewSource).toContain("stagePoint.y,");
+    expect(previewSource).toContain('stage.addEventListener("wheel", handleWheel, { passive: false })');
+    expect(previewSource).toContain("event.preventDefault()");
+    expect(previewSource).toContain("Scroll the mouse wheel to zoom toward the pointer");
+  });
+
   it("clears transient interaction presentation when gestures terminate", () => {
     expect((previewSource.match(/setActiveTileId\(null\)/g) ?? []).length).toBeGreaterThanOrEqual(4);
     expect(previewSource).toContain("dragRef.current = null");
