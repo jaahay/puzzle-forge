@@ -466,6 +466,8 @@ export const TilePuzzlePreview = ({
 
   useEffect(() => {
     setShowCompactTools(false);
+    setShowEditionComparison(false);
+    setComparisonLifted(false);
   }, [displayMode.isExpanded, puzzle.id]);
 
   useEffect(() => {
@@ -1570,7 +1572,8 @@ export const TilePuzzlePreview = ({
               <div class="jigsaw-comparison-card" key={edition}>
                 <div class="jigsaw-comparison-sample-frame" aria-hidden="true">
                   <div class={`jigsaw-island joined jigsaw-edition-sample ${comparisonLifted ? "is-lifted" : ""}`}
-                    data-physical-edition={edition} data-piece-appearance="inlaid">
+                    data-physical-edition={edition} data-piece-appearance="inlaid"
+                    style={{ aspectRatio: `${layout.pieceWidth * comparisonGeometry.widthCells} / ${layout.pieceHeight * comparisonGeometry.heightCells}` }}>
                     <JigsawIslandSurface island={comparisonGeometry} puzzle={puzzle}
                       showEdgeSeams={false} isSolved={false} idScope={`comparison-${edition}`} />
                   </div>
