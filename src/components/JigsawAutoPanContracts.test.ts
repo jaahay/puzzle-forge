@@ -27,6 +27,8 @@ describe("Jigsaw auto-pan controller boundary", () => {
     expect(jigsawCss).toContain("calc(var(--jigsaw-piece-y, 0px) + var(--jigsaw-active-drag-y))");
     expect(jigsawCss).toContain("--jigsaw-active-drag-x: var(--jigsaw-drag-x, 0px)");
     expect(jigsawCss).toContain(".tile-puzzle-piece {");
+    expect(jigsawCss).toContain("Hit targets need a local translation");
+    expect(jigsawCss).not.toContain("transform: translate3d(\n    var(--jigsaw-piece-x, 0px)");
     expect(jigsawCss).toContain("var(--jigsaw-piece-x, 0px)");
     expect(jigsawCss).toContain("var(--jigsaw-piece-y, 0px)");
     expect(previewSource).toContain("projectJigsawDragOffset(");
@@ -92,12 +94,16 @@ describe("Jigsaw auto-pan controller boundary", () => {
   });
 
   it("clears transient interaction presentation when gestures terminate", () => {
-    expect(previewSource).toContain("const endDragPresentation = (drag: ActiveDrag | null) => {");
+    expect(previewSource).toContain("const endDragPresentation = (drag: ActiveDrag | null, afterPlacementCommit = false) => {");
+    expect(previewSource).toContain("useLayoutEffect(() => {");
+    expect(previewSource).toContain("resetJigsawDragOffset([pending])");
+    expect(previewSource).toContain("if (afterPlacementCommit) pendingDragResetRef.current = drag.islandElement");
     expect((previewSource.match(/endDragPresentation\(/g) ?? []).length).toBeGreaterThanOrEqual(5);
     expect(previewSource).toContain("dragRef.current = null");
     expect(previewSource).toContain("pinchRef.current = null");
     expect(previewSource).toContain("panRef.current = null");
-    expect(previewSource).toContain("endDragPresentation(interruptedDrag)");
+    expect(previewSource).toContain("endDragPresentation(interruptedDrag, true)");
+    expect(previewSource).toContain("endDragPresentation(drag, true)");
   });
 
   it("quarantines transient drag work to the originating puzzle instance", () => {

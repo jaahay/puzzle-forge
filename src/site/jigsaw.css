@@ -890,10 +890,10 @@
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
-  transform: translate3d(
+  /* Hit targets need a local translation, not a separate GPU layer per piece. */
+  transform: translate(
     var(--jigsaw-piece-x, 0px),
-    var(--jigsaw-piece-y, 0px),
-    0
+    var(--jigsaw-piece-y, 0px)
   );
 }
 

@@ -1,5 +1,5 @@
 import type { ComponentChildren, JSX } from "preact";
-import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { JigsawGeneratedPuzzle, JigsawPhysicalEdition, JigsawPiece } from "../catalog/types";
 import { advanceJigsawEdgePanCamera } from "../games/jigsaw/autoPan";
 import {
@@ -221,6 +221,7 @@ export const TilePuzzlePreview = ({
   const islandPointerActionsRef = useRef<IslandPointerActions | null>(null);
   const dragRef = useRef<ActiveDrag | null>(null);
   const dragAnimationFrameRef = useRef<number | null>(null);
+  const pendingDragResetRef = useRef<HTMLDivElement | null>(null);
   const cameraAnimationFrameRef = useRef<number | null>(null);
   const dragAnimationTimeRef = useRef<number | null>(null);
   const dragHoverIslandRef = useRef<HTMLElement | null>(null);
@@ -250,10 +251,21 @@ export const TilePuzzlePreview = ({
   const [cameraState, setCameraState] = useState<CameraState | null>(null);
   const [activeTileId, setActiveTileId] = useState<string | null>(null);
   const [raisedTileId, setRaisedTileId] = useState<string | null>(null);
-  /** Every drag exit must restore the same transient visual state, including pinch interruption. */
-  const endDragPresentation = (drag: ActiveDrag | null) => {
+  /** A completed placement must reach the DOM before its temporary drag offset is removed.
+   *  Otherwise the piece briefly jumps back to its starting position on pointer release. */
+  useLayoutEffect(() => {
+    const pending = pendingDragResetRef.current;
+    if (!pending) return;
+    pendingDragResetRef.current = null;
+    resetJigsawDragOffset([pending]);
+  });
+
+  const endDragPresentation = (drag: ActiveDrag | null, afterPlacementCommit = false) => {
     stopDragAnimation();
-    if (drag?.islandElement) resetJigsawDragOffset([drag.islandElement]);
+    if (drag?.islandElement) {
+      if (afterPlacementCommit) pendingDragResetRef.current = drag.islandElement;
+      else resetJigsawDragOffset([drag.islandElement]);
+    }
     dragRef.current = null;
     setActiveTileId(null);
     setRaisedTileId(null);
@@ -323,6 +335,8 @@ export const TilePuzzlePreview = ({
       cameraAnimationFrameRef.current = null;
     }
     if (dragRef.current?.islandElement) resetJigsawDragOffset([dragRef.current.islandElement]);
+    if (pendingDragResetRef.current) resetJigsawDragOffset([pendingDragResetRef.current]);
+    pendingDragResetRef.current = null;
     dragRef.current = null;
   }, []);
 
@@ -787,7 +801,7 @@ export const TilePuzzlePreview = ({
             ...cancelJigsawDragAction(interruptedDrag),
           } : current);
         }
-        endDragPresentation(interruptedDrag);
+        endDragPresentation(interruptedDrag, true);
         panRef.current = null;
         setIsPanning(false);
       }
@@ -990,7 +1004,7 @@ export const TilePuzzlePreview = ({
     setCamera(wheelStateRef.current.camera);
     const target = event.currentTarget as HTMLButtonElement;
     if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId);
-    endDragPresentation(drag);
+    endDragPresentation(drag, true);
 
     if (!movedPlacements) {
       updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
@@ -1030,7 +1044,7 @@ export const TilePuzzlePreview = ({
   const cancelDrag = (event: PiecePointerEvent) => {
     const drag = dragRef.current;
     if (!drag || drag.puzzleId !== puzzle.id || drag.pointerId !== event.pointerId) return;
-    endDragPresentation(drag);
+    endDragPresentation(drag, true);
     setCamera(wheelStateRef.current.camera);
     updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
       ...current,
