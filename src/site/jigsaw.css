@@ -875,12 +875,6 @@
   --jigsaw-active-drag-y: var(--jigsaw-drag-y, 0px);
 }
 
-.jigsaw-island:has(.tile-puzzle-piece:hover) .jigsaw-island-visual,
-.jigsaw-island:has(.tile-puzzle-piece:focus-visible) .jigsaw-island-visual,
-.jigsaw-island.drag-hover .jigsaw-island-visual {
-  filter: brightness(1.05);
-}
-
 .tile-puzzle-piece:focus-visible {
   outline: 3px solid rgba(125, 211, 252, 0.72);
   outline-offset: 4px;
@@ -888,7 +882,6 @@
 
 .tile-puzzle-piece.dragging {
   cursor: grabbing;
-  filter: brightness(1.08);
 }
 
 .tile-puzzle-piece.joined {
@@ -994,6 +987,19 @@
 .jigsaw-island.loose[data-piece-appearance="seamless"] .tile-puzzle-piece-outline.exterior {
   stroke: rgba(230, 232, 226, 0.28);
   stroke-width: 0.8;
+}
+
+/* Hover reveals the physical boundary, never the printed artwork. Reuse
+   canonical exterior cuts so joined seams remain undisturbed. */
+.tile-puzzle-piece-outline.exterior {
+  transition: stroke 140ms ease-out, stroke-width 140ms ease-out;
+}
+
+.jigsaw-island:not(.dragging):has(.tile-puzzle-piece:hover) .tile-puzzle-piece-outline.exterior,
+.jigsaw-island:not(.dragging):has(.tile-puzzle-piece:focus-visible) .tile-puzzle-piece-outline.exterior,
+.jigsaw-island.drag-hover .tile-puzzle-piece-outline.exterior {
+  stroke: rgba(238, 235, 223, 0.60);
+  stroke-width: 1.08;
 }
 
 .jigsaw-freeform-stage.completion-celebrating .jigsaw-world-layer {

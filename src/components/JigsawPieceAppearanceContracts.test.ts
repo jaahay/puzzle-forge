@@ -26,6 +26,18 @@ describe("Jigsaw piece appearance integration", () => {
     expect(preview).toContain('class="tile-puzzle-piece-hit-target"');
   });
 
+  it("emphasizes only exterior cuts on hover, focus, and drag-over", () => {
+    expect(css).toContain(".tile-puzzle-piece-outline.exterior {");
+    expect(css).toContain("transition: stroke 140ms ease-out, stroke-width 140ms ease-out;");
+    expect(css).toContain(":has(.tile-puzzle-piece:hover) .tile-puzzle-piece-outline.exterior");
+    expect(css).toContain(":has(.tile-puzzle-piece:focus-visible) .tile-puzzle-piece-outline.exterior");
+    expect(css).toContain(".jigsaw-island.drag-hover .tile-puzzle-piece-outline.exterior");
+    expect(css).not.toContain(".jigsaw-island.drag-hover .jigsaw-island-visual");
+    expect(css).not.toContain("filter: brightness(1.05)");
+    expect(css).toContain(".tile-puzzle-piece.dragging {\n  cursor: grabbing;\n}");
+    expect(preview).toContain('class={`tile-puzzle-piece-outline ${cut.kind}`}');
+  });
+
   it("remounts only the island clip when joined membership changes", () => {
     expect(preview).toContain("key={island.clipRevision}");
     expect(preview).toContain("${island.key}-${island.clipRevision}");
