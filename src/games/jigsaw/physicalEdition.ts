@@ -6,14 +6,14 @@ export const jigsawEditionChoices = ["auto", ...jigsawPhysicalEditions] as const
 export const defaultJigsawEditionChoice: JigsawEditionChoice = "auto";
 export const jigsawEditionLabels: Record<JigsawEditionChoice, string> = {
   auto: "Auto",
-  heritage: "Heritage",
-  classic: "Classic",
-  vivid: "Vivid",
+  heritage: "Artisan",
+  classic: "Linen",
+  vivid: "Lustre",
 };
 export const jigsawEditionDescriptions: Record<JigsawPhysicalEdition, string> = {
-  heritage: "Warm, muted museum-style printing with an organic cut.",
-  classic: "Familiar satin cardboard with restrained print sheen.",
-  vivid: "Bright coated printing with a soft glossy reflection.",
+  heritage: "Warm matte printing with a hand-crafted, organic character.",
+  classic: "Fine linen-textured satin cardboard.",
+  vivid: "Smooth coated printing with a luminous glossy reflection.",
 };
 export const jigsawEditionSuggestedCuts: Record<JigsawPhysicalEdition, "flowing" | "classic"> = {
   heritage: "flowing",

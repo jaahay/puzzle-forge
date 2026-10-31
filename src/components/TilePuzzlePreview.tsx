@@ -21,7 +21,6 @@ import {
 import { resolveJigsawAssistanceActivation } from "../games/jigsaw/interaction";
 import { getJigsawWheelGesture } from "../games/jigsaw/wheelInput";
 import {
-  composeJigsawIslandCuts,
   getJigsawVisualMembershipKey,
   positionJigsawVisualIslands,
   prepareJigsawVisualGeometry,
@@ -42,7 +41,7 @@ import {
 } from "../games/jigsaw/history";
 import { getJigsawPinchCamera, type JigsawPinchPair, type JigsawPinchPoint } from "../games/jigsaw/pinch";
 import { loadJigsawPlayerPreferences, saveJigsawPlayerPreferences, type JigsawPieceAppearance } from "../games/jigsaw/playerPreferences";
-import { jigsawEditionLabels, jigsawPhysicalEditions, resolveJigsawPhysicalEdition } from "../games/jigsaw/physicalEdition";
+import { jigsawEditionLabels, resolveJigsawPhysicalEdition } from "../games/jigsaw/physicalEdition";
 import {
   createJigsawFitCamera,
   createJigsawOccupiedFitCamera,
@@ -142,15 +141,14 @@ type IslandPointerActions = {
 
 /** The same physical scene is used for play and for controlled edition comparison. */
 const JigsawIslandSurface = ({
-  island, puzzle, showEdgeSeams, isSolved, idScope,
+  island, puzzle, showEdgeSeams, isSolved,
 }: {
   island: JigsawVisualIslandGeometry;
   puzzle: JigsawGeneratedPuzzle;
   showEdgeSeams: boolean;
   isSolved: boolean;
-  idScope: string;
 }) => {
-  const clipId = `island-${puzzle.id}-${island.key}-${idScope}`.replace(/[^a-zA-Z0-9_-]/g, "-");
+  const clipId = `island-${puzzle.id}-${island.key}`.replace(/[^a-zA-Z0-9_-]/g, "-");
   const finishId = `${clipId}-finish`;
   const glossId = `${clipId}-gloss`;
   const textureId = `${clipId}-texture`;
@@ -292,7 +290,7 @@ const JigsawIslandVisual = memo(({
       }}
       style={islandStyle}
     >
-      <JigsawIslandSurface island={island} puzzle={puzzle} showEdgeSeams={showEdgeSeams} isSolved={isSolved} idScope="play" />
+      <JigsawIslandSurface island={island} puzzle={puzzle} showEdgeSeams={showEdgeSeams} isSolved={isSolved} />
       {island.members.map(({ piece, outline, span }) => (
         <button
           class={`tile-puzzle-piece ${anchored ? "anchored" : island.members.length > 1 ? "joined" : "loose"} ${active ? "dragging" : ""}`}
@@ -436,15 +434,12 @@ export const TilePuzzlePreview = ({
   const [raisedTileId, setRaisedTileId] = useState<string | null>(null);
   const [isPanning, setIsPanning] = useState(false);
   const [playerPreferences, setPlayerPreferences] = useState(loadJigsawPlayerPreferences);
-  const { showPreview, showEdgeSeams, snapToFrame, appearance } = playerPreferences;
+  const { showPreview, showEdgeSeams, snapToFrame, appearance, lockViewDragging } = playerPreferences;
   const [finishOverride, setFinishOverride] = useState<{ puzzleId: string; edition: JigsawPhysicalEdition } | null>(null);
   const generatedEdition = puzzle.physicalEdition ??
     resolveJigsawPhysicalEdition(puzzle.asset, puzzle.seed, puzzle.editionChoice ?? "auto");
   const visibleEdition = finishOverride?.puzzleId === puzzle.id ? finishOverride.edition : generatedEdition;
   const [showCompactTools, setShowCompactTools] = useState(false);
-  const [showEditionComparison, setShowEditionComparison] = useState(false);
-  const [comparisonLifted, setComparisonLifted] = useState(false);
-  const comparisonCloseRef = useRef<HTMLButtonElement>(null);
   const [fitIsOverview, setFitIsOverview] = useState(true);
   const cameraWasUserAdjustedRef = useRef(false);
   const displayMode = usePuzzleWorkspaceDisplayMode();
@@ -456,9 +451,6 @@ export const TilePuzzlePreview = ({
   useEffect(() => {
     saveJigsawPlayerPreferences(playerPreferences);
   }, [playerPreferences]);
-  useEffect(() => {
-    if (showEditionComparison) comparisonCloseRef.current?.focus({ preventScroll: true });
-  }, [showEditionComparison]);
   const markManualCameraAdjustment = () => {
     cameraWasUserAdjustedRef.current = true;
     setFitIsOverview(false);
@@ -466,8 +458,6 @@ export const TilePuzzlePreview = ({
 
   useEffect(() => {
     setShowCompactTools(false);
-    setShowEditionComparison(false);
-    setComparisonLifted(false);
   }, [displayMode.isExpanded, puzzle.id]);
 
   useEffect(() => {
@@ -837,45 +827,6 @@ export const TilePuzzlePreview = ({
   }, [layout, puzzle.id, puzzle.tiles, resetVersion, viewport.height, viewport.width]);
 
   const preparedGeometry = useMemo(() => prepareJigsawVisualGeometry(puzzle.tiles, puzzle.edgeModel), [puzzle]);
-  const comparisonGeometry = useMemo<JigsawVisualIslandGeometry>(() => {
-    // Prefer an interior 2x2 crop, so every edition shows identical art, cuts,
-    // and T-junctions without depending on the player's current progress.
-    const byCell = new Map(puzzle.tiles.map((piece) => [`${piece.column},${piece.row}`, piece]));
-    const choices: Array<{ row: number; column: number; distance: number }> = [];
-    for (let row = 0; row < puzzle.height - 1; row++) {
-      for (let column = 0; column < puzzle.width - 1; column++) {
-        choices.push({ row, column,
-          distance: Math.abs(column + 1 - puzzle.width / 2) + Math.abs(row + 1 - puzzle.height / 2) });
-      }
-    }
-    choices.sort((a, b) => a.distance - b.distance || a.row - b.row || a.column - b.column);
-    let members: JigsawVisualIslandGeometry["members"] = [];
-    for (const { row, column } of choices) {
-      const pieces = [[column, row], [column + 1, row], [column, row + 1], [column + 1, row + 1]]
-        .map(([x, y]) => byCell.get(`${x},${y}`));
-      if (pieces.some((piece) => !piece || piece.specialShape)) continue;
-      const prepared = pieces.flatMap((piece) => piece ? [preparedGeometry.get(piece.id)] : [])
-        .filter((piece): piece is NonNullable<typeof piece> => Boolean(piece));
-      if (prepared.length === 4 && prepared.every((piece) => piece.span.width === 1 && piece.span.height === 1)) {
-        members = prepared;
-        break;
-      }
-    }
-    if (!members.length) {
-      const fallback = puzzle.tiles.find((piece) => !piece.specialShape) ?? puzzle.tiles[0]!;
-      members = [preparedGeometry.get(fallback.id)!];
-    }
-    const minColumn = Math.min(...members.map(({ piece }) => piece.column));
-    const minRow = Math.min(...members.map(({ piece }) => piece.row));
-    return {
-      key: "edition-comparison",
-      members,
-      cuts: composeJigsawIslandCuts(members, minColumn, minRow),
-      minColumn, minRow,
-      widthCells: Math.max(...members.map(({ piece, span }) => piece.column + span.width)) - minColumn,
-      heightCells: Math.max(...members.map(({ piece, span }) => piece.row + span.height)) - minRow,
-    };
-  }, [puzzle, preparedGeometry]);
   const placements = activePlacements ?? [];
   const membershipKey = getJigsawVisualMembershipKey(activeAssembly);
   const visualScene = useMemo(() => {
@@ -900,7 +851,6 @@ export const TilePuzzlePreview = ({
   useEffect(() => {
     if (!isSolved) return;
     setShowCompactTools(false);
-    setShowEditionComparison(false);
   }, [isSolved, puzzle.id]);
 
   useEffect(() => {
@@ -1255,7 +1205,7 @@ export const TilePuzzlePreview = ({
   };
 
   const beginPan = (event: StagePointerEvent) => {
-    if (dragRef.current || pinchRef.current) return;
+    if (lockViewDragging || dragRef.current || pinchRef.current) return;
     const target = event.target as Element | null;
     // A locked piece acts as a stable grip for panning; only loose pieces drag.
     const piece = target?.closest(".tile-puzzle-piece");
@@ -1371,7 +1321,6 @@ export const TilePuzzlePreview = ({
   };
 
   const toolsId = `jigsaw-tools-${puzzle.id}`.replace(/[^a-zA-Z0-9_-]/g, "-");
-  const comparisonId = `jigsaw-editions-${puzzle.id}`.replace(/[^a-zA-Z0-9_-]/g, "-");
   const previewStyle = {
     backgroundImage: `url(${puzzle.asset.files.preview})`,
     aspectRatio: `${puzzle.asset.intrinsicWidth} / ${puzzle.asset.intrinsicHeight}`,
@@ -1497,24 +1446,11 @@ export const TilePuzzlePreview = ({
             }}
           >
             <option value="auto">{`Auto (${jigsawEditionLabels[generatedEdition]})`}</option>
-            <option value="heritage">Heritage · matte</option>
-            <option value="classic">Classic · satin</option>
-            <option value="vivid">Vivid · gloss</option>
+            <option value="heritage">Artisan · warm matte</option>
+            <option value="classic">Linen · satin</option>
+            <option value="vivid">Lustre · gloss</option>
           </select>
         </label>
-        <button
-          type="button"
-          class="jigsaw-compare-editions-action"
-          aria-expanded={showEditionComparison}
-          aria-controls={comparisonId}
-          onClick={() => {
-            setComparisonLifted(false);
-            setShowEditionComparison(true);
-            setShowCompactTools(false);
-          }}
-        >
-          Compare editions
-        </button>
         <button
           type="button"
           aria-pressed={showEdgeSeams}
@@ -1523,6 +1459,14 @@ export const TilePuzzlePreview = ({
           }}
         >
           {showEdgeSeams ? "Hide edge guides" : "Show edge guides"}
+        </button>
+        <button
+          type="button"
+          aria-pressed={lockViewDragging}
+          title="Prevent dragging the background or anchored pieces from panning the view; zoom still works"
+          onClick={() => setPlayerPreferences((current) => ({ ...current, lockViewDragging: !current.lockViewDragging }))}
+        >
+          {lockViewDragging ? "Unlock view dragging" : "Lock view dragging"}
         </button>
         <button
           type="button"
@@ -1550,45 +1494,6 @@ export const TilePuzzlePreview = ({
           Snap and lock to frame
         </button>
       </div>
-
-      {showEditionComparison && !isSolved ? (
-        <section id={comparisonId} class="jigsaw-edition-comparison" aria-label="Physical edition comparison"
-          onKeyDown={(event) => {
-            if (event.key !== "Escape") return;
-            event.stopPropagation();
-            setShowEditionComparison(false);
-            toolsToggleRef.current?.focus({ preventScroll: true });
-          }}>
-          <header class="jigsaw-comparison-header">
-            <strong>Physical editions</strong>
-            <button ref={comparisonCloseRef} type="button" aria-label="Close edition comparison"
-              onClick={() => {
-                setShowEditionComparison(false);
-                toolsToggleRef.current?.focus({ preventScroll: true });
-              }}>Close</button>
-          </header>
-          <div class="jigsaw-comparison-grid">
-            {jigsawPhysicalEditions.map((edition) => (
-              <div class="jigsaw-comparison-card" key={edition}>
-                <div class="jigsaw-comparison-sample-frame" aria-hidden="true">
-                  <div class={`jigsaw-island joined jigsaw-edition-sample ${comparisonLifted ? "is-lifted" : ""}`}
-                    data-physical-edition={edition} data-piece-appearance="inlaid"
-                    style={{ aspectRatio: `${layout.pieceWidth * comparisonGeometry.widthCells} / ${layout.pieceHeight * comparisonGeometry.heightCells}` }}>
-                    <JigsawIslandSurface island={comparisonGeometry} puzzle={puzzle}
-                      showEdgeSeams={false} isSolved={false} idScope={`comparison-${edition}`} />
-                  </div>
-                </div>
-                <strong>{jigsawEditionLabels[edition]}</strong>
-              </div>
-            ))}
-          </div>
-          <button type="button" class="jigsaw-comparison-lift" aria-pressed={comparisonLifted}
-            onClick={() => setComparisonLifted((lifted) => !lifted)}>
-            {comparisonLifted ? "Set pieces down" : "Lift pieces"}
-          </button>
-          <span class="jigsaw-comparison-note">Same artwork, cuts and light.</span>
-        </section>
-      ) : null}
 
       {shouldRenderJigsawReferencePreview(showPreview, isSolved) ? (
         <div class="tile-puzzle-art-preview" aria-label={puzzle.asset.alt} style={previewStyle} />

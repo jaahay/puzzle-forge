@@ -67,25 +67,17 @@ describe("Jigsaw piece appearance integration", () => {
     expect(preview).toContain("island.cuts.map((cut)");
   });
 
-  it("compares three physical editions using precisely the same scene surface and geometry", () => {
-    expect(preview).toContain("const JigsawIslandSurface =");
-    expect(preview).toContain("const comparisonGeometry = useMemo<JigsawVisualIslandGeometry>");
-    expect(preview).toContain("composeJigsawIslandCuts(members, minColumn, minRow)");
-    expect(preview).toContain("jigsawPhysicalEditions.map((edition)");
-    expect(preview).toContain('idScope={`comparison-${edition}`}');
-    expect(preview).toContain('idScope="play"');
-    expect(preview).toContain('data-piece-appearance="inlaid"');
-    expect(preview).toContain("setComparisonLifted((lifted) => !lifted)");
-    expect(preview).toContain('aria-label="Physical edition comparison"');
-    expect(preview).toContain('aria-label="Close edition comparison"');
+  it("compares finishes on the live puzzle without a duplicate sample renderer", () => {
+    expect(preview).toContain('aria-label="Physical finish"');
+    expect(preview).toContain('physicalEdition={visibleEdition}');
     expect(preview).toContain('class="jigsaw-material-texture"');
     expect(preview).toContain('class="jigsaw-material-fibers"');
     expect(preview).toContain('class="jigsaw-material-edge"');
-    expect(css).toContain(".jigsaw-edition-sample.is-lifted");
+    expect(preview).not.toContain("showEditionComparison");
+    expect(preview).not.toContain("comparisonGeometry");
+    expect(preview).not.toContain("Compare editions");
+    expect(css).not.toContain(".jigsaw-edition-comparison");
     expect(css).toContain('.jigsaw-island.dragging .jigsaw-material-gloss');
-    expect(css).toContain('data-physical-edition="classic"] .jigsaw-material-texture');
-    expect(css).toContain('data-physical-edition="heritage"] .jigsaw-material-fibers');
-    expect(css).toContain('data-physical-edition="vivid"] .jigsaw-material-gloss');
   });
 
   it("keeps edge guides separate from appearance and suppresses solved cuts", () => {

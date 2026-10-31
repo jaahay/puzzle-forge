@@ -55,6 +55,15 @@ describe("Jigsaw auto-pan controller boundary", () => {
     expect(previewSource).toContain("Scroll the mouse wheel to zoom toward the pointer");
   });
 
+  it("honors a persistent drag-to-pan lock without disabling piece dragging or wheel zoom", () => {
+    expect(previewSource).toContain("if (lockViewDragging || dragRef.current || pinchRef.current) return;");
+    expect(previewSource).toContain('aria-pressed={lockViewDragging}');
+    expect(previewSource).toContain('"Lock view dragging"');
+    expect(previewSource).toContain('"Unlock view dragging"');
+    expect(previewSource).toContain('onPointerDown={(event) => pointerActions.current?.beginDrag(event, piece)}');
+    expect(previewSource).toContain('stage.addEventListener("wheel", handleWheel, { passive: false })');
+  });
+
   it("clears transient interaction presentation when gestures terminate", () => {
     expect((previewSource.match(/setActiveTileId\(null\)/g) ?? []).length).toBeGreaterThanOrEqual(4);
     expect(previewSource).toContain("dragRef.current = null");

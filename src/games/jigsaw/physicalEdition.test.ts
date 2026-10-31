@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getJigsawImageAsset } from "./imageAssets";
 import {
-  jigsawPhysicalEditions, normalizeJigsawEditionChoice, resolveJigsawPhysicalEdition,
+  jigsawEditionLabels, jigsawPhysicalEditions, normalizeJigsawEditionChoice, resolveJigsawPhysicalEdition,
 } from "./physicalEdition";
 
 describe("artwork-informed Jigsaw physical editions", () => {
@@ -18,6 +18,12 @@ describe("artwork-informed Jigsaw physical editions", () => {
       }
       expect(results.size).toBeGreaterThan(1);
     }
+  });
+
+  it("labels styles by their recognizable material character, without changing stable identifiers", () => {
+    expect(jigsawEditionLabels.heritage).toBe("Artisan");
+    expect(jigsawEditionLabels.classic).toBe("Linen");
+    expect(jigsawEditionLabels.vivid).toBe("Lustre");
   });
 
   it("preserves explicit player choices and falls back to Classic on uncurated artwork", () => {
