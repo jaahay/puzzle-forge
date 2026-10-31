@@ -122,6 +122,7 @@ export const JigsawWorkspace = ({
       maxHeight={selectedDefinition.maxHeight}
       seedLoadInput={seedLoadInput}
       disabled={isGenerating || !selectedPuzzleIsGeneratable}
+      inCompletionPrompt={isSolved}
       onSettingsChange={onNextPuzzleDraftChange}
       onSeedLoadInputChange={onSeedLoadInputChange}
       onNewPuzzle={onNewPuzzle}
@@ -151,7 +152,7 @@ export const JigsawWorkspace = ({
       key={puzzleArrivalIdentity ?? undefined}
       puzzle={jigsawPuzzle}
       historyControl={historyActions}
-      newPuzzleControl={newPuzzleControl}
+      newPuzzleControl={isSolved ? null : newPuzzleControl}
       isArriving={isPuzzleArriving}
     />
   ) : null;
@@ -184,7 +185,7 @@ export const JigsawWorkspace = ({
         onCompletionAnimationEnd={completion.completePresentation}
         completionDisabled={isGenerating}
         onResetPuzzle={resetJigsaw}
-        onNewPuzzle={() => onNewPuzzle()}
+        nextPuzzleControl={isSolved ? newPuzzleControl : null}
       />
     </section>
   ) : isGenerating ? loadingBoard : null;

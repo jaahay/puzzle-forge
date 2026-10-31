@@ -71,6 +71,7 @@ type JigsawNewPuzzleControlProps = {
   maxHeight: number;
   seedLoadInput: string;
   disabled: boolean;
+  inCompletionPrompt?: boolean;
   onSettingsChange: (settings: {
     imageId?: string;
     width?: number;
@@ -103,6 +104,7 @@ export const JigsawNewPuzzleControl = ({
   maxHeight,
   seedLoadInput,
   disabled,
+  inCompletionPrompt = false,
   onSettingsChange,
   onSeedLoadInputChange,
   onNewPuzzle,
@@ -133,6 +135,7 @@ export const JigsawNewPuzzleControl = ({
       seedLoadInput={seedLoadInput}
       disabled={disabled}
       panelClassName="image-new-puzzle-options-panel jigsaw-new-puzzle-options-panel"
+      inCompletionPrompt={inCompletionPrompt}
       onSeedLoadInputChange={onSeedLoadInputChange}
       onNewPuzzle={onNewPuzzle}
       onToday={onToday}

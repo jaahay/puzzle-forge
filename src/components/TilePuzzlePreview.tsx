@@ -1,4 +1,4 @@
-import type { JSX } from "preact";
+import type { ComponentChildren, JSX } from "preact";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { JigsawGeneratedPuzzle, JigsawPhysicalEdition, JigsawPiece } from "../catalog/types";
 import { advanceJigsawEdgePanCamera } from "../games/jigsaw/autoPan";
@@ -109,7 +109,7 @@ type TilePuzzlePreviewProps = {
   onCompletionAnimationEnd: () => void;
   completionDisabled: boolean;
   onResetPuzzle: () => void;
-  onNewPuzzle: () => void;
+  nextPuzzleControl: ComponentChildren;
 };
 
 type PlacementState = JigsawWorkspaceState & {
@@ -209,7 +209,7 @@ export const TilePuzzlePreview = ({
   onCompletionAnimationEnd,
   completionDisabled,
   onResetPuzzle,
-  onNewPuzzle,
+  nextPuzzleControl,
 }: TilePuzzlePreviewProps) => {
   const stageRef = useRef<HTMLDivElement>(null);
   const toolsToggleRef = useRef<HTMLButtonElement>(null);
@@ -1380,15 +1380,15 @@ export const TilePuzzlePreview = ({
                 <strong>Solved</strong>
               </div>
               <div class="jigsaw-solved-actions" aria-label="Solved Jigsaw actions">
-                <button type="button" onClick={onResetPuzzle} disabled={completionDisabled}>Reset</button>
                 <button
-                  class="new-puzzle-primary"
                   type="button"
-                  onClick={onNewPuzzle}
+                  onClick={onResetPuzzle}
                   disabled={completionDisabled}
+                  title="Replay this puzzle from the beginning"
                 >
-                  New puzzle
+                  Replay
                 </button>
+                <div class="jigsaw-completed-next-puzzle">{nextPuzzleControl}</div>
               </div>
             </div>
           </div>
