@@ -15,12 +15,6 @@ export const jigsawEditionDescriptions: Record<JigsawPhysicalEdition, string> = 
   classic: "Fine linen-textured satin cardboard.",
   vivid: "Smooth coated printing with a luminous glossy reflection.",
 };
-export const jigsawEditionSuggestedCuts: Record<JigsawPhysicalEdition, "flowing" | "classic"> = {
-  heritage: "flowing",
-  classic: "classic",
-  vivid: "classic",
-};
-
 export const isJigsawEditionChoice = (value: unknown): value is JigsawEditionChoice =>
   jigsawEditionChoices.includes(value as JigsawEditionChoice);
 

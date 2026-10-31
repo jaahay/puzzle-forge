@@ -9,6 +9,7 @@ const futoshikiSource = readFileSync(new URL("./FutoshikiBoard.tsx", import.meta
 const wordGuessSource = readFileSync(new URL("./WordGuessGame.tsx", import.meta.url), "utf8");
 const jigsawSource = readFileSync(new URL("./JigsawWorkspace.tsx", import.meta.url), "utf8");
 const jigsawPreviewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", import.meta.url), "utf8");
+const jigsawVisualSource = readFileSync(new URL("./JigsawIslandVisual.tsx", import.meta.url), "utf8");
 const jigsawCss = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
 
 describe("terminal interaction contracts", () => {
@@ -74,7 +75,7 @@ describe("terminal interaction contracts", () => {
     expect(jigsawPreviewSource).toMatch(
       /if \(completed\.solved\) onCausativeInput\(\);/,
     );
-    expect(jigsawPreviewSource).toContain("showEdgeSeams && !isSolved ? island.cuts.map(");
+    expect(jigsawVisualSource).toContain("showEdgeSeams && !isSolved ? island.cuts.map(");
     expect(jigsawPreviewSource).toContain("hidden={isSolved}");
     expect(jigsawPreviewSource).not.toContain('isSolved ? "is-solved"');
     expect(jigsawCss).not.toContain(".tile-puzzle-tools.is-solved");

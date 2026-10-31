@@ -212,8 +212,9 @@ export const createGeneratedJigsawPuzzle = ({
   specialPiecesMode,
   physicalEdition,
   editionChoice,
+  // Session integrity tracks geometry, not the material printed on it.
+  // Keeping the original baseline checksum preserves pre-edition saved progress.
   checksum: makeChecksumFromParts([
-    `edition:${physicalEdition}`,
     makeJigsawEdgeModelChecksumPart(edgeModel),
     `special-pieces:${specialPiecesMode}`,
     ...tiles.map(makeJigsawTileChecksumPart),

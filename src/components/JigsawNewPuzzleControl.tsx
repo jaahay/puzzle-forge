@@ -20,7 +20,6 @@ import {
   jigsawEditionChoices,
   jigsawEditionDescriptions,
   jigsawEditionLabels,
-  jigsawEditionSuggestedCuts,
 } from "../games/jigsaw/physicalEdition";
 import {
   jigsawSpecialPiecesModeDescriptions,
@@ -140,7 +139,7 @@ export const JigsawNewPuzzleControl = ({
       onLoadSeed={onLoadSeed}
       info={(
         <>
-          <p><strong>Physical edition.</strong> Auto selects an artwork-compatible finish from the seed. Choosing an edition also starts with its suggested cut; customize the cut separately below.</p>
+          <p><strong>Physical edition.</strong> Auto selects an artwork-compatible finish from the seed. The cut style is an independent choice below.</p>
           <p><strong>Cut style.</strong> {jigsawCutStyleDescriptions[cutStyle]}</p>
           <p><strong>Outer boundary.</strong> {jigsawBoundaryModeDescriptions[boundaryMode]}</p>
           <p><strong>Special pieces.</strong> {jigsawSpecialPiecesModeDescriptions[specialPiecesMode]}</p>
@@ -163,7 +162,6 @@ export const JigsawNewPuzzleControl = ({
                   title={choice === "auto" ? "Choose from suitable editions using the puzzle seed" : jigsawEditionDescriptions[choice]}
                   onClick={() => onSettingsChange({
                     jigsawEditionChoice: choice,
-                    ...(choice === "auto" ? {} : { jigsawCutStyle: jigsawEditionSuggestedCuts[choice] }),
                   })}
                 >
                   {jigsawEditionLabels[choice]}

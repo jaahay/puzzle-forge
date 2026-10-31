@@ -77,6 +77,22 @@ describe("generateJigsaw", () => {
     expect(custom.checksum).not.toBe(one.checksum);
   });
 
+  it("preserves the structural checksum across physical editions and changes only presentation identity", () => {
+    const base = {
+      puzzleId: "jigsaw" as const, seed: "edition-preserves-progress",
+      width: 6, height: 5, imageId: "great-wave",
+      jigsawCutStyle: "classic" as const, jigsawSpecialPiecesMode: "off" as const,
+    };
+    const heritage = generateJigsaw({ ...base, jigsawEditionChoice: "heritage" });
+    const classic = generateJigsaw({ ...base, jigsawEditionChoice: "classic" });
+    const vivid = generateJigsaw({ ...base, jigsawEditionChoice: "vivid" });
+    expect(heritage.tiles).toEqual(classic.tiles);
+    expect(classic.tiles).toEqual(vivid.tiles);
+    expect(new Set([heritage.id, classic.id, vivid.id]).size).toBe(3);
+    expect(heritage.checksum).toBe(classic.checksum);
+    expect(vivid.checksum).toBe(classic.checksum);
+  });
+
   it("is deterministic for seed, dimensions, image id, cut style, and edge model", () => {
     const first = makeJigsaw();
     const second = makeJigsaw();

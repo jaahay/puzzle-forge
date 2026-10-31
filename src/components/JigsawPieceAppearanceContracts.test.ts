@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const preview = readFileSync(new URL("./TilePuzzlePreview.tsx", import.meta.url), "utf8");
+const islandVisualSource = readFileSync(new URL("./JigsawIslandVisual.tsx", import.meta.url), "utf8");
+const newPuzzleSource = readFileSync(new URL("./JigsawNewPuzzleControl.tsx", import.meta.url), "utf8");
 const css = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
 
 describe("Jigsaw piece appearance integration", () => {
@@ -14,16 +16,21 @@ describe("Jigsaw piece appearance integration", () => {
     expect(preview).toContain('appearance={appearance}');
   });
 
+  it("does not overwrite a manually selected cut when choosing an edition", () => {
+    expect(newPuzzleSource).toContain("jigsawEditionChoice: choice,");
+    expect(newPuzzleSource).not.toContain("jigsawEditionSuggestedCuts");
+  });
+
   it("draws each cut once with butt endpoints instead of doubled piece corners", () => {
-    expect(preview).toContain('class={`tile-puzzle-piece-outline ${cut.kind}`}');
-    expect(preview).toContain("island.cuts.map((cut)");
+    expect(islandVisualSource).toContain('class={`tile-puzzle-piece-outline ${cut.kind}`}');
+    expect(islandVisualSource).toContain("island.cuts.map((cut)");
     expect(css).toContain("stroke-linecap: butt;");
     expect(css).toContain('data-piece-appearance="outlined"] .tile-puzzle-piece-outline');
     expect(css).toContain('data-piece-appearance="inlaid"] .tile-puzzle-piece-outline');
     expect(css).toContain('data-piece-appearance="seamless"] .tile-puzzle-piece-outline.interior');
     expect(css).not.toContain("stroke: rgba(125, 211, 252, 0.96)");
-    expect(preview).toContain('class="jigsaw-island-artwork"');
-    expect(preview).toContain('class="tile-puzzle-piece-hit-target"');
+    expect(islandVisualSource).toContain('class="jigsaw-island-artwork"');
+    expect(islandVisualSource).toContain('class="tile-puzzle-piece-hit-target"');
   });
 
   it("emphasizes only exterior cuts on hover, focus, and drag-over", () => {
@@ -36,19 +43,19 @@ describe("Jigsaw piece appearance integration", () => {
     expect(css).not.toContain(".jigsaw-island.drag-hover .jigsaw-island-visual");
     expect(css).not.toContain("filter: brightness(1.05)");
     expect(css).toContain(".tile-puzzle-piece.dragging {\n  cursor: grabbing;\n}");
-    expect(preview).toContain('class={`tile-puzzle-piece-outline ${cut.kind}`}');
+    expect(islandVisualSource).toContain('class={`tile-puzzle-piece-outline ${cut.kind}`}');
   });
 
   it("remounts only the island clip when joined membership changes", () => {
-    expect(preview).toContain("key={island.clipRevision}");
-    expect(preview).toContain("${island.key}-${island.clipRevision}");
+    expect(islandVisualSource).toContain("key={island.clipRevision}");
+    expect(islandVisualSource).toContain("${island.key}-${island.clipRevision}");
     expect(preview).toContain("key={island.key}");
   });
 
   it("isolates a growing joined region into independently clipped artwork pieces", () => {
-    const surface = preview.slice(
-      preview.indexOf("const JigsawIslandSurface ="),
-      preview.indexOf("type IslandVisualProps ="),
+    const surface = islandVisualSource.slice(
+      islandVisualSource.indexOf("const JigsawIslandSurface ="),
+      islandVisualSource.indexOf("type IslandVisualProps ="),
     );
     expect(surface).toContain("island.members.map(({ piece, outline }, index)");
     expect(surface).toContain('id={`${clipId}-piece-${index}`}');
@@ -67,24 +74,24 @@ describe("Jigsaw piece appearance integration", () => {
   });
 
   it("grounds the island as one physical object without a texture overlay on every piece", () => {
-    expect(preview).toContain('class="jigsaw-island-sidewall"');
-    expect(preview).toContain('class="jigsaw-material-finish"');
-    expect(preview).toContain("<linearGradient id={finishId}");
-    expect(preview).toContain('clip-path={`url(#${clipId}-piece-${index})`}');
+    expect(islandVisualSource).toContain('class="jigsaw-island-sidewall"');
+    expect(islandVisualSource).toContain('class="jigsaw-material-finish"');
+    expect(islandVisualSource).toContain("<linearGradient id={finishId}");
+    expect(islandVisualSource).toContain('clip-path={`url(#${clipId}-piece-${index})`}');
     expect(css).not.toContain('[data-piece-appearance="inlaid"] .jigsaw-island-sidewall');
     expect(css).not.toContain('[data-piece-appearance="inlaid"] .jigsaw-material-finish');
     expect(css).toContain('.jigsaw-island[data-physical-edition="heritage"] .jigsaw-island-sidewall');
     expect(css).toContain(".jigsaw-island.joined .jigsaw-island-artwork");
-    expect(preview).toContain('class="jigsaw-island-artwork"');
-    expect(preview).toContain('class="tile-puzzle-piece-hit-target"');
+    expect(islandVisualSource).toContain('class="jigsaw-island-artwork"');
+    expect(islandVisualSource).toContain('class="tile-puzzle-piece-hit-target"');
   });
 
   it("renders an understated but legible Inlaid kerf and one shared cardboard silhouette", () => {
     expect(css).toContain("stroke-width: 1.22;");
     expect(css).toContain("drop-shadow(-0.65px -0.7px 0 rgba(251, 242, 218, 0.42))");
-    expect(preview).toContain('transform="translate(0.85 2.05)"');
-    expect(preview).toContain('class="jigsaw-island-sidewall"');
-    expect(preview).toContain("island.cuts.map((cut)");
+    expect(islandVisualSource).toContain('transform="translate(0.85 2.05)"');
+    expect(islandVisualSource).toContain('class="jigsaw-island-sidewall"');
+    expect(islandVisualSource).toContain("island.cuts.map((cut)");
   });
 
   it("keeps incidental join counts off the playing surface and out of fit calculations", () => {
@@ -96,23 +103,24 @@ describe("Jigsaw piece appearance integration", () => {
   });
 
   it("renders three distinct physical finishes without changing the canonical cut paths", () => {
-    expect(preview).toContain("data-physical-edition={physicalEdition}");
-    expect(preview).toContain('class="jigsaw-material-gloss"');
+    expect(islandVisualSource).toContain("data-physical-edition={physicalEdition}");
+    expect(islandVisualSource).toContain('class="jigsaw-material-gloss"');
     expect(preview).toContain('aria-label="Physical finish"');
+    expect(preview).toContain("As created (");
     expect(preview).toContain('physicalEdition={visibleEdition}');
     expect(preview).toContain('puzzleId: puzzle.id,');
     expect(css).toContain('data-physical-edition="heritage"');
     expect(css).toContain('data-physical-edition="classic"');
     expect(css).toContain('data-physical-edition="vivid"');
-    expect(preview).toContain("island.cuts.map((cut)");
+    expect(islandVisualSource).toContain("island.cuts.map((cut)");
   });
 
   it("compares finishes on the live puzzle without a duplicate sample renderer", () => {
     expect(preview).toContain('aria-label="Physical finish"');
     expect(preview).toContain('physicalEdition={visibleEdition}');
-    expect(preview).toContain('class="jigsaw-material-texture"');
-    expect(preview).toContain('class="jigsaw-material-fibers"');
-    expect(preview).toContain('class="jigsaw-material-edge"');
+    expect(islandVisualSource).toContain('class="jigsaw-material-texture"');
+    expect(islandVisualSource).toContain('class="jigsaw-material-fibers"');
+    expect(islandVisualSource).toContain('class="jigsaw-material-edge"');
     expect(preview).not.toContain("showEditionComparison");
     expect(preview).not.toContain("comparisonGeometry");
     expect(preview).not.toContain("Compare editions");
@@ -121,7 +129,7 @@ describe("Jigsaw piece appearance integration", () => {
   });
 
   it("keeps edge guides separate from appearance and suppresses solved cuts", () => {
-    expect(preview).toContain("showEdgeSeams && !isSolved ? island.cuts.map(");
+    expect(islandVisualSource).toContain("showEdgeSeams && !isSolved ? island.cuts.map(");
     expect(css).toContain(".jigsaw-freeform-stage.solved .jigsaw-island .tile-puzzle-piece-outline");
     expect(css).toContain("vector-effect: non-scaling-stroke;");
   });

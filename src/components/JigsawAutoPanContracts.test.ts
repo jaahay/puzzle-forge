@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const previewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", import.meta.url), "utf8");
+const islandVisualSource = readFileSync(new URL("./JigsawIslandVisual.tsx", import.meta.url), "utf8");
 const jigsawCss = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
 
 describe("Jigsaw auto-pan controller boundary", () => {
@@ -16,8 +17,8 @@ describe("Jigsaw auto-pan controller boundary", () => {
   });
 
   it("keeps canonical and transient piece motion on separate styling channels", () => {
-    expect(previewSource).toContain('"--jigsaw-piece-x":');
-    expect(previewSource).toContain('"--jigsaw-piece-y":');
+    expect(islandVisualSource).toContain('"--jigsaw-piece-x":');
+    expect(islandVisualSource).toContain('"--jigsaw-piece-y":');
 
     expect(jigsawCss).toContain(".jigsaw-island {");
     expect(jigsawCss).toContain("calc(var(--jigsaw-piece-x, 0px) + var(--jigsaw-active-drag-x))");
@@ -29,19 +30,19 @@ describe("Jigsaw auto-pan controller boundary", () => {
     expect(jigsawCss).toContain("var(--jigsaw-piece-y, 0px)");
     expect(previewSource).toContain("projectJigsawDragOffset(");
     expect(previewSource).toContain("islandElement");
-    expect(previewSource).toContain("clearIslandDragOffset(drag)");
+    expect(previewSource).toContain("endDragPresentation(drag)");
     expect(previewSource).toContain("positionJigsawVisualIslands(");
     expect(previewSource).toContain("reconcileJigsawVisualScene(");
-    expect(previewSource).toContain("const JigsawIslandVisual = memo(");
+    expect(islandVisualSource).toContain("export const JigsawIslandVisual = memo(");
   });
 
   it("shadows clipped island artwork without clipping away the exterior shadow", () => {
-    expect(previewSource).toContain('<g class="jigsaw-island-artwork">');
-    expect(previewSource).toContain('clip-path={`url(#${clipId}-piece-${index})`}');
+    expect(islandVisualSource).toContain('<g class="jigsaw-island-artwork">');
+    expect(islandVisualSource).toContain('clip-path={`url(#${clipId}-piece-${index})`}');
     expect(jigsawCss).toContain(".jigsaw-island-artwork {");
     expect(jigsawCss).toContain(".jigsaw-island.anchored .jigsaw-island-artwork");
-    expect(previewSource).toContain('class="tile-puzzle-piece-hit-visual"');
-    expect(previewSource).toContain('class={`tile-puzzle-piece-outline ${cut.kind}`}');
+    expect(islandVisualSource).toContain('class="tile-puzzle-piece-hit-visual"');
+    expect(islandVisualSource).toContain('class={`tile-puzzle-piece-outline ${cut.kind}`}');
   });
 
   it("zooms at the pointer on ordinary wheel input, preserving directional pan and pinch", () => {
@@ -58,17 +59,20 @@ describe("Jigsaw auto-pan controller boundary", () => {
   it("honors a persistent drag-to-pan lock without disabling piece dragging or wheel zoom", () => {
     expect(previewSource).toContain("if (lockViewDragging || dragRef.current || pinchRef.current) return;");
     expect(previewSource).toContain('aria-pressed={lockViewDragging}');
-    expect(previewSource).toContain('"Lock view dragging"');
-    expect(previewSource).toContain('"Unlock view dragging"');
-    expect(previewSource).toContain('onPointerDown={(event) => pointerActions.current?.beginDrag(event, piece)}');
+    expect(previewSource).toContain('"Lock panning"');
+    expect(previewSource).toContain('"Unlock panning"');
+    expect(previewSource).toContain('"Background dragging is locked."');
+    expect(islandVisualSource).toContain('onPointerDown={(event) => pointerActions.current?.beginDrag(event, piece)}');
     expect(previewSource).toContain('stage.addEventListener("wheel", handleWheel, { passive: false })');
   });
 
   it("clears transient interaction presentation when gestures terminate", () => {
-    expect((previewSource.match(/setActiveTileId\(null\)/g) ?? []).length).toBeGreaterThanOrEqual(4);
+    expect(previewSource).toContain("const endDragPresentation = (drag: ActiveDrag | null) => {");
+    expect((previewSource.match(/endDragPresentation\(/g) ?? []).length).toBeGreaterThanOrEqual(5);
     expect(previewSource).toContain("dragRef.current = null");
     expect(previewSource).toContain("pinchRef.current = null");
     expect(previewSource).toContain("panRef.current = null");
+    expect(previewSource).toContain("endDragPresentation(interruptedDrag)");
   });
 
   it("quarantines transient drag work to the originating puzzle instance", () => {
@@ -84,7 +88,7 @@ describe("Jigsaw auto-pan controller boundary", () => {
     expect(previewSource).toContain("panJigsawCamera(");
   });
   it("keeps active pieces above the board, drops completed islands behind loose pieces, and marks hover targets through pointer capture", () => {
-    expect(previewSource).toContain("getJigsawIslandStackOrder(island, puzzle.tiles.length, active, raised, anchored)");
+    expect(islandVisualSource).toContain("getJigsawIslandStackOrder(island, puzzle.tiles.length, active, raised, anchored)");
     expect(previewSource).toContain("setRaisedTileId(null)");
     expect(previewSource).toContain("findJigsawDragHoverIsland(");
     expect(previewSource).toContain("updateDragHover(drag)");
