@@ -122,10 +122,6 @@
   display: contents;
 }
 
-.jigsaw-workspace.is-immersive .tile-puzzle-summary {
-  display: none;
-}
-
 .jigsaw-workspace.is-immersive .tile-puzzle-art-preview {
   position: absolute;
   top: 4rem;
