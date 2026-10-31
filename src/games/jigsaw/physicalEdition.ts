@@ -38,5 +38,7 @@ export const resolveJigsawPhysicalEdition = (
     ? asset.editionRecommendations
     : (["classic"] as const);
   const random = createRandom(`jigsaw:physical-edition:${asset.id}:${seed}`);
+  // Adjacent text seeds give correlated first samples; mix once before selection.
+  random();
   return eligible[Math.floor(random() * eligible.length)] ?? "classic";
 };
