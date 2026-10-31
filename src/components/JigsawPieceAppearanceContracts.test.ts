@@ -54,6 +54,18 @@ describe("Jigsaw piece appearance integration", () => {
     expect(preview).toContain('class="jigsaw-solved-card is-completed"');
   });
 
+  it("renders three distinct physical finishes without changing the canonical cut paths", () => {
+    expect(preview).toContain("data-physical-edition={physicalEdition}");
+    expect(preview).toContain('class="jigsaw-material-gloss"');
+    expect(preview).toContain('aria-label="Physical finish"');
+    expect(preview).toContain('physicalEdition={visibleEdition}');
+    expect(preview).toContain('puzzleId: puzzle.id,');
+    expect(css).toContain('data-physical-edition="heritage"');
+    expect(css).toContain('data-physical-edition="classic"');
+    expect(css).toContain('data-physical-edition="vivid"');
+    expect(preview).toContain("island.cuts.map((cut)");
+  });
+
   it("keeps edge guides separate from appearance and suppresses solved cuts", () => {
     expect(preview).toContain("showEdgeSeams && !isSolved ? island.cuts.map(");
     expect(css).toContain(".jigsaw-freeform-stage.solved .jigsaw-island .tile-puzzle-piece-outline");

@@ -64,6 +64,19 @@ const generateAlwaysWithFamily = (
 };
 
 describe("generateJigsaw", () => {
+  it("resolves physical edition from artwork and seed without changing custom edge grammar", () => {
+    const source = { puzzleId: "jigsaw" as const, seed: "seeded-edition", width: 4, height: 3, imageId: "great-wave" };
+    const one = generateJigsaw({ ...source, jigsawEditionChoice: "auto", jigsawCutStyle: "classic" });
+    const repeat = generateJigsaw({ ...source, jigsawEditionChoice: "auto", jigsawCutStyle: "classic" });
+    expect(repeat.physicalEdition).toBe(one.physicalEdition);
+    expect(repeat.id).toBe(one.id);
+    const custom = generateJigsaw({ ...source, jigsawEditionChoice: "heritage", jigsawCutStyle: "flowing" });
+    expect(custom.physicalEdition).toBe("heritage");
+    expect(custom.edgeModel.cutStyle).toBe("flowing");
+    expect(custom.id).not.toBe(one.id);
+    expect(custom.checksum).not.toBe(one.checksum);
+  });
+
   it("is deterministic for seed, dimensions, image id, cut style, and edge model", () => {
     const first = makeJigsaw();
     const second = makeJigsaw();

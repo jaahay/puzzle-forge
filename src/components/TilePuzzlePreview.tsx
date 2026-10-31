@@ -1,7 +1,7 @@
 import type { JSX } from "preact";
 import { memo } from "preact/compat";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
-import type { JigsawGeneratedPuzzle, JigsawPiece } from "../catalog/types";
+import type { JigsawGeneratedPuzzle, JigsawPhysicalEdition, JigsawPiece } from "../catalog/types";
 import { advanceJigsawEdgePanCamera } from "../games/jigsaw/autoPan";
 import {
   cloneJigsawAssemblyProgress,
@@ -40,6 +40,7 @@ import {
 } from "../games/jigsaw/history";
 import { getJigsawPinchCamera, type JigsawPinchPair, type JigsawPinchPoint } from "../games/jigsaw/pinch";
 import { loadJigsawPlayerPreferences, saveJigsawPlayerPreferences, type JigsawPieceAppearance } from "../games/jigsaw/playerPreferences";
+import { jigsawEditionLabels, resolveJigsawPhysicalEdition } from "../games/jigsaw/physicalEdition";
 import {
   createJigsawFitCamera,
   createJigsawOccupiedFitCamera,
@@ -146,6 +147,7 @@ type IslandVisualProps = {
   anchored: boolean;
   showEdgeSeams: boolean;
   appearance: JigsawPieceAppearance;
+  physicalEdition: JigsawPhysicalEdition;
   isSolved: boolean;
   islandElements: { current: Map<string, HTMLDivElement> };
   pointerActions: { current: IslandPointerActions | null };
@@ -153,11 +155,12 @@ type IslandVisualProps = {
 
 /** Memoized by immutable membership and individual pose; camera changes do not re-render artwork. */
 const JigsawIslandVisual = memo(({
-  island, puzzle, layout, active, raised, anchored, showEdgeSeams, appearance, isSolved,
+  island, puzzle, layout, active, raised, anchored, showEdgeSeams, appearance, physicalEdition, isSolved,
   islandElements, pointerActions,
 }: IslandVisualProps) => {
   const clipId = `island-${puzzle.id}-${island.key}`.replace(/[^a-zA-Z0-9_-]/g, "-");
   const finishId = `${clipId}-finish`;
+  const glossId = `${clipId}-gloss`;
   const islandStyle = {
     width: `${layout.pieceWidth * island.widthCells}px`,
     height: `${layout.pieceHeight * island.heightCells}px`,
@@ -169,6 +172,7 @@ const JigsawIslandVisual = memo(({
     <div
       class={`jigsaw-island ${anchored ? "anchored" : island.members.length > 1 ? "joined" : "loose"} ${active ? "dragging" : ""}`}
       data-piece-appearance={appearance}
+      data-physical-edition={physicalEdition}
       ref={(element) => {
         if (element) islandElements.current.set(island.key, element);
         else islandElements.current.delete(island.key);
@@ -186,6 +190,13 @@ const JigsawIslandVisual = memo(({
             <stop offset="0%" stop-color="#fffdf1" stop-opacity="0.20" />
             <stop offset="55%" stop-color="#fffdf1" stop-opacity="0" />
             <stop offset="100%" stop-color="#121825" stop-opacity="0.12" />
+          </linearGradient>
+          <linearGradient id={glossId} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="17%" stop-color="#fffefa" stop-opacity="0" />
+            <stop offset="40%" stop-color="#fffefa" stop-opacity="0.03" />
+            <stop offset="52%" stop-color="#fffefa" stop-opacity="0.34" />
+            <stop offset="64%" stop-color="#fffefa" stop-opacity="0.035" />
+            <stop offset="84%" stop-color="#fffefa" stop-opacity="0" />
           </linearGradient>
         </defs>
         <g
@@ -218,6 +229,14 @@ const JigsawIslandVisual = memo(({
               width={island.widthCells * 100 + 96}
               height={island.heightCells * 100 + 96}
               fill={`url(#${finishId})`}
+            />
+            <rect
+              class="jigsaw-material-gloss"
+              x={-48}
+              y={-48}
+              width={island.widthCells * 100 + 96}
+              height={island.heightCells * 100 + 96}
+              fill={`url(#${glossId})`}
             />
           </g>
         </g>
@@ -382,6 +401,10 @@ export const TilePuzzlePreview = ({
   const [isPanning, setIsPanning] = useState(false);
   const [playerPreferences, setPlayerPreferences] = useState(loadJigsawPlayerPreferences);
   const { showPreview, showEdgeSeams, snapToFrame, appearance } = playerPreferences;
+  const [finishOverride, setFinishOverride] = useState<{ puzzleId: string; edition: JigsawPhysicalEdition } | null>(null);
+  const generatedEdition = puzzle.physicalEdition ??
+    resolveJigsawPhysicalEdition(puzzle.asset, puzzle.seed, puzzle.editionChoice ?? "auto");
+  const visibleEdition = finishOverride?.puzzleId === puzzle.id ? finishOverride.edition : generatedEdition;
   const [showCompactTools, setShowCompactTools] = useState(false);
   const [fitIsOverview, setFitIsOverview] = useState(true);
   const cameraWasUserAdjustedRef = useRef(false);
@@ -1374,6 +1397,26 @@ export const TilePuzzlePreview = ({
             <option value="seamless">Seamless</option>
           </select>
         </label>
+        <label class="jigsaw-appearance-setting">
+          Physical finish
+          <select
+            aria-label="Physical finish"
+            title="Compare material finishes without changing the puzzle's cuts or progress"
+            value={finishOverride?.puzzleId === puzzle.id ? finishOverride.edition : "auto"}
+            onChange={(event) => {
+              const selected = event.currentTarget.value;
+              setFinishOverride(selected === "auto" ? null : {
+                puzzleId: puzzle.id,
+                edition: selected as JigsawPhysicalEdition,
+              });
+            }}
+          >
+            <option value="auto">{`Auto (${jigsawEditionLabels[generatedEdition]})`}</option>
+            <option value="heritage">Heritage · matte</option>
+            <option value="classic">Classic · satin</option>
+            <option value="vivid">Vivid · gloss</option>
+          </select>
+        </label>
         <button
           type="button"
           aria-pressed={showEdgeSeams}
@@ -1443,6 +1486,7 @@ export const TilePuzzlePreview = ({
               anchored={anchoredIslandIds.has(island.members[0]!.piece.id)}
               showEdgeSeams={showEdgeSeams}
               appearance={appearance}
+              physicalEdition={visibleEdition}
               isSolved={isSolved}
               islandElements={islandElementsRef}
               pointerActions={islandPointerActionsRef}

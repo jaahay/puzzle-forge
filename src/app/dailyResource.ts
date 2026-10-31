@@ -15,6 +15,7 @@ import {
   defaultJigsawCutStyle,
   isJigsawCutStyle,
 } from "../games/jigsaw/cutStyle";
+import { defaultJigsawEditionChoice, isJigsawEditionChoice } from "../games/jigsaw/physicalEdition";
 import {
   defaultJigsawSpecialPiecesMode,
   isJigsawSpecialPiecesMode,
@@ -59,6 +60,7 @@ const queryKeyOrder = [
   "unique",
   "image",
   "cut",
+  "edition",
   "boundary",
   "special",
   "draw",
@@ -80,6 +82,7 @@ const makeDefaultRuntimeSettings = (puzzleId: PuzzleId): GenerationRuntimeSettin
     sudokuVariation: defaultSudokuVariation,
     solitaireVariation: defaultSolitaireVariation,
     jigsawCutStyle: defaultJigsawCutStyle,
+    jigsawEditionChoice: defaultJigsawEditionChoice,
     jigsawBoundaryMode: defaultJigsawBoundaryMode,
     jigsawSpecialPiecesMode: defaultJigsawSpecialPiecesMode,
   };
@@ -113,7 +116,7 @@ const allowedQueryKeys = (puzzleId: PuzzleId): ReadonlySet<string> => {
     case "logic-grid":
       return new Set(["size"]);
     case "jigsaw":
-      return new Set(["size", "image", "cut", "boundary", "special"]);
+      return new Set(["size", "image", "cut", "edition", "boundary", "special"]);
     case "tile-swap":
     case "sliding-puzzle":
       return new Set(["size", "image"]);
@@ -164,6 +167,9 @@ const appendCanonicalQuery = (identity: GenerationIdentity) => {
         identity.jigsawCutStyle !== defaultJigsawCutStyle
       ) {
         values.set("cut", identity.jigsawCutStyle);
+      }
+      if (identity.jigsawEditionChoice && identity.jigsawEditionChoice !== "auto") {
+        values.set("edition", identity.jigsawEditionChoice);
       }
       if (
         identity.jigsawBoundaryMode &&
@@ -274,6 +280,13 @@ export const canonicalizeDailyResourceQuery = (
     const cutStyle = params.get("cut");
     if (!isJigsawCutStyle(cutStyle)) return { ok: false, reason: "invalid-query" };
     settings.jigsawCutStyle = cutStyle;
+  }
+
+  if (params.has("edition")) {
+    if (puzzleId !== "jigsaw") return { ok: false, reason: "invalid-query" };
+    const edition = params.get("edition");
+    if (!isJigsawEditionChoice(edition)) return { ok: false, reason: "invalid-query" };
+    settings.jigsawEditionChoice = edition;
   }
 
   if (params.has("boundary")) {

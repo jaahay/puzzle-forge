@@ -16,6 +16,7 @@ import { getLocalDateStamp } from "./games/shared/daily";
 import { isImageBackedPuzzleId } from "./games/imageAssets";
 import { defaultJigsawBoundaryMode } from "./games/jigsaw/boundaryContours";
 import { defaultJigsawCutStyle } from "./games/jigsaw/cutStyle";
+import { defaultJigsawEditionChoice } from "./games/jigsaw/physicalEdition";
 import { defaultJigsawSpecialPiecesMode } from "./games/jigsaw/specialPieces";
 import {
   cloneJigsawAssemblyProgress,
@@ -67,6 +68,7 @@ const makeInitialGenerationDefaults = (): GenerationRuntimeSettings => ({
   sudokuVariation: defaultSudokuVariation,
   solitaireVariation: defaultSolitaireVariation,
   jigsawCutStyle: defaultJigsawCutStyle,
+  jigsawEditionChoice: defaultJigsawEditionChoice,
   jigsawBoundaryMode: defaultJigsawBoundaryMode,
   jigsawSpecialPiecesMode: defaultJigsawSpecialPiecesMode,
 });
@@ -137,6 +139,7 @@ export const App = () => {
     sudokuVariation,
     solitaireVariation,
     jigsawCutStyle,
+    jigsawEditionChoice,
     jigsawBoundaryMode,
     jigsawSpecialPiecesMode,
   } = generationDefaults;
@@ -321,6 +324,7 @@ export const App = () => {
         solitaireVariation: identity.puzzleId === "klondike-solitaire" ? identity.solitaireVariation : undefined,
         imageId: isImageBackedPuzzleId(identity.puzzleId) ? identity.imageId : undefined,
         jigsawCutStyle: identity.puzzleId === "jigsaw" ? identity.jigsawCutStyle : undefined,
+        jigsawEditionChoice: identity.puzzleId === "jigsaw" ? identity.jigsawEditionChoice : undefined,
         jigsawBoundaryMode: identity.puzzleId === "jigsaw" ? identity.jigsawBoundaryMode : undefined,
         jigsawSpecialPiecesMode:
           identity.puzzleId === "jigsaw" ? identity.jigsawSpecialPiecesMode : undefined,
@@ -362,6 +366,7 @@ export const App = () => {
       sudokuVariation: identity.sudokuVariation,
       solitaireVariation: identity.solitaireVariation,
       jigsawCutStyle: identity.jigsawCutStyle,
+      jigsawEditionChoice: identity.jigsawEditionChoice,
       jigsawBoundaryMode: identity.jigsawBoundaryMode,
       jigsawSpecialPiecesMode: identity.jigsawSpecialPiecesMode,
     });
@@ -507,6 +512,7 @@ export const App = () => {
       sudokuVariation: identity.sudokuVariation,
       solitaireVariation: identity.solitaireVariation,
       jigsawCutStyle: identity.jigsawCutStyle,
+      jigsawEditionChoice: identity.jigsawEditionChoice,
       jigsawBoundaryMode: identity.jigsawBoundaryMode,
       jigsawSpecialPiecesMode: identity.jigsawSpecialPiecesMode,
     });
@@ -522,6 +528,7 @@ export const App = () => {
         solitaireVariation: identity.solitaireVariation,
         imageId: identity.imageId,
         jigsawCutStyle: identity.puzzleId === "jigsaw" ? identity.jigsawCutStyle : undefined,
+        jigsawEditionChoice: identity.puzzleId === "jigsaw" ? identity.jigsawEditionChoice : undefined,
         jigsawBoundaryMode: identity.puzzleId === "jigsaw" ? identity.jigsawBoundaryMode : undefined,
         jigsawSpecialPiecesMode:
           identity.puzzleId === "jigsaw" ? identity.jigsawSpecialPiecesMode : undefined,
@@ -637,11 +644,12 @@ export const App = () => {
       sudokuVariation,
       solitaireVariation,
       jigsawCutStyle,
+      jigsawEditionChoice,
       jigsawBoundaryMode,
       jigsawSpecialPiecesMode,
       makeSeed: makeRandomSeed,
     }), { resourceHistory: "replace" });
-  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, puzzle, puzzleLinkError, selectedPuzzleId, selectedPuzzleIsGeneratable, selectedDefinition, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation, jigsawCutStyle, jigsawBoundaryMode, jigsawSpecialPiecesMode]);
+  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, puzzle, puzzleLinkError, selectedPuzzleId, selectedPuzzleIsGeneratable, selectedDefinition, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation, jigsawCutStyle, jigsawEditionChoice, jigsawBoundaryMode, jigsawSpecialPiecesMode]);
 
   useEffect(() => {
     if (!hasSelectedPuzzle || generation.isGenerating || isHomeSelected || !puzzle) return;
@@ -710,6 +718,7 @@ export const App = () => {
       sudokuVariation: identity.sudokuVariation,
       solitaireVariation: identity.solitaireVariation,
       jigsawCutStyle: identity.jigsawCutStyle,
+      jigsawEditionChoice: identity.jigsawEditionChoice,
       jigsawBoundaryMode: identity.jigsawBoundaryMode,
       jigsawSpecialPiecesMode: identity.jigsawSpecialPiecesMode,
     });
@@ -725,6 +734,7 @@ export const App = () => {
       solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? identity.solitaireVariation : undefined,
       imageId: isImageBackedPuzzleId(selectedPuzzleId) ? identity.imageId : undefined,
       jigsawCutStyle: selectedPuzzleId === "jigsaw" ? identity.jigsawCutStyle : undefined,
+      jigsawEditionChoice: selectedPuzzleId === "jigsaw" ? identity.jigsawEditionChoice : undefined,
       jigsawBoundaryMode: selectedPuzzleId === "jigsaw" ? identity.jigsawBoundaryMode : undefined,
       jigsawSpecialPiecesMode:
         selectedPuzzleId === "jigsaw" ? identity.jigsawSpecialPiecesMode : undefined,

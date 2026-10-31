@@ -178,6 +178,27 @@ describe("canonical puzzle generation identity", () => {
     });
   });
 
+  it("encodes physical edition selection in unused Jigsaw identity bits", () => {
+    const definition = getPuzzleDefinition("jigsaw");
+    const base = makeIdentity({
+      puzzleId: "jigsaw", seed: "edition-resource",
+      width: definition.defaultWidth, height: definition.defaultHeight,
+      imageId: getPuzzleImageAsset(undefined, "jigsaw").id,
+      jigsawCutStyle: "classic", jigsawEditionChoice: "auto",
+    });
+    const ids = (["auto", "heritage", "classic", "vivid"] as const).map((jigsawEditionChoice) =>
+      encodeGenerationId({ ...base, jigsawEditionChoice }));
+    expect(new Set(ids).size).toBe(4);
+    ids.forEach((id, index) => {
+      const decoded = decodeGenerationId("jigsaw", id);
+      expect(decoded.ok).toBe(true);
+      if (decoded.ok) expect(decoded.identity.jigsawEditionChoice).toBe(
+        (["auto", "heritage", "classic", "vivid"] as const)[index],
+      );
+    });
+    expect(encodeGenerationId({ ...base, jigsawEditionChoice: undefined })).toBe(ids[0]);
+  });
+
   it("forks Jigsaw resource identity by outer boundary while keeping flat canonical", () => {
     const definition = getPuzzleDefinition("jigsaw");
     const base = makeIdentity({

@@ -1,6 +1,7 @@
 import type {
   JigsawBoundaryMode,
   JigsawCutStyle,
+  JigsawEditionChoice,
   JigsawImageAsset,
   JigsawSpecialPiecesMode,
 } from "../catalog/types";
@@ -15,6 +16,12 @@ import {
   jigsawCutStyleLabels,
   jigsawCutStyles,
 } from "../games/jigsaw/cutStyle";
+import {
+  jigsawEditionChoices,
+  jigsawEditionDescriptions,
+  jigsawEditionLabels,
+  jigsawEditionSuggestedCuts,
+} from "../games/jigsaw/physicalEdition";
 import {
   jigsawSpecialPiecesModeDescriptions,
   jigsawSpecialPiecesModeLabels,
@@ -56,6 +63,7 @@ type JigsawNewPuzzleControlProps = {
   height: number;
   sizeSelection: JigsawSizeSelection;
   cutStyle: JigsawCutStyle;
+  editionChoice: JigsawEditionChoice;
   boundaryMode: JigsawBoundaryMode;
   specialPiecesMode: JigsawSpecialPiecesMode;
   minWidth: number;
@@ -70,6 +78,7 @@ type JigsawNewPuzzleControlProps = {
     height?: number;
     jigsawSizeSelection?: JigsawSizeSelection;
     jigsawCutStyle?: JigsawCutStyle;
+    jigsawEditionChoice?: JigsawEditionChoice;
     jigsawBoundaryMode?: JigsawBoundaryMode;
     jigsawSpecialPiecesMode?: JigsawSpecialPiecesMode;
   }) => void;
@@ -86,6 +95,7 @@ export const JigsawNewPuzzleControl = ({
   height,
   sizeSelection,
   cutStyle,
+  editionChoice,
   boundaryMode,
   specialPiecesMode,
   minWidth,
@@ -110,10 +120,10 @@ export const JigsawNewPuzzleControl = ({
     : null;
   const boundaryLabel = jigsawBoundaryModeLabels[boundaryMode];
   const specialPiecesLabel = jigsawSpecialPiecesModeLabels[specialPiecesMode];
-  const configurationSummary = `${selectedAsset.title} · ${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${specialPiecesLabel} special pieces · ${sizeSelection} · ~${pieceCount} pieces · ${width}×${height}`;
+  const configurationSummary = `${selectedAsset.title} · ${jigsawEditionLabels[editionChoice]} edition · ${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${specialPiecesLabel} special pieces · ${sizeSelection} · ~${pieceCount} pieces · ${width}×${height}`;
   const randomConfigurationSummary = sizeSelection === jigsawCustomSizeSelection
-    ? `${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${specialPiecesLabel} special pieces · Custom · ~${pieceCount} pieces · ${width}×${height}`
-    : `${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${specialPiecesLabel} special pieces · ${sizeSelection}`;
+    ? `${jigsawEditionLabels[editionChoice]} edition · ${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${specialPiecesLabel} special pieces · Custom · ~${pieceCount} pieces · ${width}×${height}`
+    : `${jigsawEditionLabels[editionChoice]} edition · ${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${specialPiecesLabel} special pieces · ${sizeSelection}`;
 
   return (
     <NewPuzzleCommand
@@ -130,6 +140,7 @@ export const JigsawNewPuzzleControl = ({
       onLoadSeed={onLoadSeed}
       info={(
         <>
+          <p><strong>Physical edition.</strong> Auto selects an artwork-compatible finish from the seed. Choosing an edition also starts with its suggested cut; customize the cut separately below.</p>
           <p><strong>Cut style.</strong> {jigsawCutStyleDescriptions[cutStyle]}</p>
           <p><strong>Outer boundary.</strong> {jigsawBoundaryModeDescriptions[boundaryMode]}</p>
           <p><strong>Special pieces.</strong> {jigsawSpecialPiecesModeDescriptions[specialPiecesMode]}</p>
@@ -139,6 +150,27 @@ export const JigsawNewPuzzleControl = ({
       )}
       settings={(
         <>
+          <div class="jigsaw-edition-settings" role="group" aria-label="Jigsaw physical edition">
+            <div class="jigsaw-size-heading"><strong>Physical edition</strong></div>
+            <div class="new-puzzle-segmented jigsaw-edition-options">
+              {jigsawEditionChoices.map((choice) => (
+                <button
+                  key={choice}
+                  type="button"
+                  class={editionChoice === choice ? "selected" : undefined}
+                  aria-pressed={editionChoice === choice}
+                  disabled={disabled}
+                  title={choice === "auto" ? "Choose from suitable editions using the puzzle seed" : jigsawEditionDescriptions[choice]}
+                  onClick={() => onSettingsChange({
+                    jigsawEditionChoice: choice,
+                    ...(choice === "auto" ? {} : { jigsawCutStyle: jigsawEditionSuggestedCuts[choice] }),
+                  })}
+                >
+                  {jigsawEditionLabels[choice]}
+                </button>
+              ))}
+            </div>
+          </div>
           <div class="jigsaw-cut-style-settings" role="group" aria-label="Jigsaw cut style">
             <div class="jigsaw-size-heading">
               <strong>Cut style</strong>

@@ -1,6 +1,7 @@
 import type {
   JigsawBoundaryMode,
   JigsawEdgePolarity,
+  JigsawEditionChoice,
   JigsawEdgeProfileId,
   JigsawEdgeSide,
   JigsawPiece,
@@ -11,6 +12,7 @@ import type {
 import { getPuzzleImageAsset } from "../imageAssets";
 import { createGeneratedJigsawPuzzle, createRandom, normalizeDimension, normalizeSeed } from "../shared";
 import { jigsawMaximumAxis, jigsawMinimumAxis } from "./size";
+import { normalizeJigsawEditionChoice, resolveJigsawPhysicalEdition } from "./physicalEdition";
 import {
   defaultJigsawCutStyle,
   deriveJigsawBaselineCoursePalette,
@@ -136,6 +138,7 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
   height,
   imageId,
   jigsawCutStyle = defaultJigsawCutStyle,
+  jigsawEditionChoice = "auto",
   jigsawBoundaryMode = defaultJigsawBoundaryMode,
   jigsawSpecialPiecesMode = defaultJigsawSpecialPiecesMode,
 }) => {
@@ -144,6 +147,8 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
   const boundedHeight = normalizeDimension(height, 4, jigsawMinimumAxis, jigsawMaximumAxis);
   const asset = getPuzzleImageAsset(imageId, "jigsaw");
   const imageIdentity = asset.id;
+  const editionChoice: JigsawEditionChoice = normalizeJigsawEditionChoice(jigsawEditionChoice);
+  const physicalEdition = resolveJigsawPhysicalEdition(asset, normalizedSeed, editionChoice);
   const cutStyle = normalizeJigsawCutStyle(jigsawCutStyle);
   const boundaryMode: JigsawBoundaryMode = normalizeJigsawBoundaryMode(jigsawBoundaryMode);
   const specialPiecesMode: JigsawSpecialPiecesMode =
@@ -236,7 +241,7 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
   }));
 
   return createGeneratedJigsawPuzzle({
-    id: `jigsaw-${imageIdentity}-${edgeIdentity}${boundaryIdentity}-special:${specialPiecesMode}-${normalizedSeed}-${boundedWidth}x${boundedHeight}`,
+    id: `jigsaw-${imageIdentity}-${edgeIdentity}${boundaryIdentity}-special:${specialPiecesMode}-edition:${editionChoice}:${physicalEdition}-${normalizedSeed}-${boundedWidth}x${boundedHeight}`,
     title: "Jigsaw",
     seed: normalizedSeed,
     width: boundedWidth,
@@ -245,6 +250,8 @@ export const generateJigsaw: JigsawPuzzleGenerator = ({
     asset,
     edgeModel,
     specialPiecesMode,
+    physicalEdition,
+    editionChoice,
   });
 };
 

@@ -749,7 +749,7 @@
    combined island silhouette. The sidewall does not run between joined pieces. */
 .jigsaw-island-sidewall {
   fill: #84745f;
-  opacity: 0;
+  opacity: 0.6;
   pointer-events: none;
   filter: drop-shadow(0 1px 1px rgba(15, 17, 19, 0.32));
 }
@@ -765,6 +765,33 @@
 }
 .jigsaw-island[data-piece-appearance="inlaid"] .jigsaw-material-finish {
   opacity: 0.94;
+}
+
+/* One coherent finish per physical island, not a highlight on every piece. */
+.jigsaw-material-gloss {
+  opacity: 0;
+  pointer-events: none;
+}
+.jigsaw-island[data-physical-edition="heritage"] .jigsaw-island-sidewall {
+  fill: #83664c;
+}
+.jigsaw-island[data-physical-edition="heritage"] .jigsaw-material-finish {
+  opacity: 0.56;
+}
+.jigsaw-island[data-physical-edition="classic"] .jigsaw-material-finish {
+  opacity: 0.82;
+}
+.jigsaw-island[data-physical-edition="classic"] .jigsaw-material-gloss {
+  opacity: 0.10;
+}
+.jigsaw-island[data-physical-edition="vivid"] .jigsaw-island-sidewall {
+  fill: #687381;
+}
+.jigsaw-island[data-physical-edition="vivid"] .jigsaw-material-finish {
+  opacity: 0.92;
+}
+.jigsaw-island[data-physical-edition="vivid"] .jigsaw-material-gloss {
+  opacity: 0.92;
 }
 
 /* A small contact shadow grounds loose pieces; joined islands have one shared
