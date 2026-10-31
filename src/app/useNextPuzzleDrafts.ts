@@ -15,6 +15,7 @@ import {
   defaultJigsawCutStyle,
   normalizeJigsawCutStyle,
 } from "../games/jigsaw/cutStyle";
+import { defaultJigsawEditionChoice, normalizeJigsawEditionChoice } from "../games/jigsaw/physicalEdition";
 import {
   defaultJigsawSpecialPiecesMode,
   normalizeJigsawSpecialPiecesMode,
@@ -67,6 +68,15 @@ export const buildNextPuzzleDraft = ({
             : defaultJigsawCutStyle,
       )
     : undefined;
+  const jigsawEditionChoice = puzzleId === "jigsaw"
+    ? normalizeJigsawEditionChoice(
+        puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw"
+          ? puzzle.editionChoice
+          : useRuntimeFallback
+            ? runtimeSettings.jigsawEditionChoice
+            : defaultJigsawEditionChoice,
+      )
+    : undefined;
   const jigsawBoundaryMode = puzzleId === "jigsaw"
     ? normalizeJigsawBoundaryMode(
         puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw"
@@ -106,6 +116,7 @@ export const buildNextPuzzleDraft = ({
     ...(imageId ? { imageId } : {}),
     ...(jigsawSizeSelection ? { jigsawSizeSelection } : {}),
     ...(jigsawCutStyle ? { jigsawCutStyle } : {}),
+    ...(jigsawEditionChoice ? { jigsawEditionChoice } : {}),
     ...(jigsawBoundaryMode ? { jigsawBoundaryMode } : {}),
     ...(jigsawSpecialPiecesMode ? { jigsawSpecialPiecesMode } : {}),
   };
@@ -158,6 +169,7 @@ export const applyNextPuzzleDraftSettings = (
   imageId: settings.imageId ?? base.imageId,
   jigsawSizeSelection: settings.jigsawSizeSelection ?? base.jigsawSizeSelection,
   jigsawCutStyle: settings.jigsawCutStyle ?? base.jigsawCutStyle,
+  jigsawEditionChoice: settings.jigsawEditionChoice ?? base.jigsawEditionChoice,
   jigsawBoundaryMode: settings.jigsawBoundaryMode ?? base.jigsawBoundaryMode,
   jigsawSpecialPiecesMode:
     settings.jigsawSpecialPiecesMode ?? base.jigsawSpecialPiecesMode,

@@ -64,6 +64,35 @@ const generateAlwaysWithFamily = (
 };
 
 describe("generateJigsaw", () => {
+  it("resolves physical edition from artwork and seed without changing custom edge grammar", () => {
+    const source = { puzzleId: "jigsaw" as const, seed: "seeded-edition", width: 4, height: 3, imageId: "great-wave" };
+    const one = generateJigsaw({ ...source, jigsawEditionChoice: "auto", jigsawCutStyle: "classic" });
+    const repeat = generateJigsaw({ ...source, jigsawEditionChoice: "auto", jigsawCutStyle: "classic" });
+    expect(repeat.physicalEdition).toBe(one.physicalEdition);
+    expect(repeat.id).toBe(one.id);
+    const custom = generateJigsaw({ ...source, jigsawEditionChoice: "heritage", jigsawCutStyle: "flowing" });
+    expect(custom.physicalEdition).toBe("heritage");
+    expect(custom.edgeModel.cutStyle).toBe("flowing");
+    expect(custom.id).not.toBe(one.id);
+    expect(custom.checksum).not.toBe(one.checksum);
+  });
+
+  it("preserves the structural checksum across physical editions and changes only presentation identity", () => {
+    const base = {
+      puzzleId: "jigsaw" as const, seed: "edition-preserves-progress",
+      width: 6, height: 5, imageId: "great-wave",
+      jigsawCutStyle: "classic" as const, jigsawSpecialPiecesMode: "off" as const,
+    };
+    const heritage = generateJigsaw({ ...base, jigsawEditionChoice: "heritage" });
+    const classic = generateJigsaw({ ...base, jigsawEditionChoice: "classic" });
+    const vivid = generateJigsaw({ ...base, jigsawEditionChoice: "vivid" });
+    expect(heritage.tiles).toEqual(classic.tiles);
+    expect(classic.tiles).toEqual(vivid.tiles);
+    expect(new Set([heritage.id, classic.id, vivid.id]).size).toBe(3);
+    expect(heritage.checksum).toBe(classic.checksum);
+    expect(vivid.checksum).toBe(classic.checksum);
+  });
+
   it("is deterministic for seed, dimensions, image id, cut style, and edge model", () => {
     const first = makeJigsaw();
     const second = makeJigsaw();

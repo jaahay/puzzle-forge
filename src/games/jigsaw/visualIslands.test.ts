@@ -3,7 +3,7 @@ import { generateJigsaw } from "./generate";
 import { defaultJigsawImageAsset } from "./imageAssets";
 import { createJigsawWorldLayout, getJigsawSolvedPosition } from "./placement";
 import {
-  getJigsawVisualMembershipKey, positionJigsawVisualIslands,
+  composeJigsawIslandCuts, getJigsawVisualMembershipKey, positionJigsawVisualIslands,
   prepareJigsawVisualGeometry, reconcileJigsawVisualScene,
 } from "./visualIslands";
 
@@ -52,6 +52,37 @@ describe("island-aware Jigsaw visual composition", () => {
     expect(new Set(joined.islands.map((island) => island.key)).size).toBe(joined.islands.length);
   });
 
+  it("refreshes clipping after a piece closes three edges of one joined island", () => {
+    const sample = generateJigsaw({
+      puzzleId: "jigsaw", seed: "three-edge-island-join", width: 6, height: 6,
+      imageId: defaultJigsawImageAsset.id, jigsawSpecialPiecesMode: "off",
+    });
+    const at = (row: number, column: number) =>
+      sample.tiles.find((piece) => piece.row === row && piece.column === column)!;
+    const center = at(2, 2);
+    const north = at(1, 2);
+    const west = at(2, 1);
+    const east = at(2, 3);
+    const prepared = prepareJigsawVisualGeometry(sample.tiles, sample.edgeModel);
+    const initial = reconcileJigsawVisualScene(sample.tiles, { joinedComponents: [] }, prepared);
+    const pair = reconcileJigsawVisualScene(sample.tiles,
+      { joinedComponents: [[center.id, north.id]] }, prepared, initial);
+    const before = pair.byPieceId.get(center.id)!;
+    const progress = { joinedComponents: [[center.id, north.id, west.id, east.id]] };
+    const joined = reconcileJigsawVisualScene(sample.tiles, progress, prepared, pair);
+    const after = joined.byPieceId.get(center.id)!;
+
+    expect(after.key).toBe(before.key);
+    expect(after.clipRevision).not.toBe(before.clipRevision);
+    expect(after.members).toHaveLength(4);
+    expect(after.cuts.filter((cut) => cut.kind === "interior")).toHaveLength(3);
+    expect(new Set(joined.islands.map((island) => island.clipRevision)).size)
+      .toBe(joined.islands.length);
+
+    const unchanged = reconcileJigsawVisualScene(sample.tiles, progress, prepared, joined);
+    expect(unchanged.byPieceId.get(center.id)).toBe(after);
+  });
+
   it("retains geometry and positioned identity for unaffected islands across moves", () => {
     const scene = reconcileJigsawVisualScene(puzzle.tiles, { joinedComponents: [] }, geometry);
     const firstPose = positionJigsawVisualIslands(scene, layout, placements);
@@ -92,6 +123,45 @@ describe("island-aware Jigsaw visual composition", () => {
     expect(joined.heightCells).toBe(1);
     expect(joined.worldX).toBeCloseTo(layout.boardX + 15);
     expect(joined.worldY).toBeCloseTo(layout.boardY + 19);
+  });
+
+  it("draws each shared cut once, with T junction endpoints meeting rather than overlapping outlines", () => {
+    const square = puzzle.tiles.filter((piece) => piece.row < 2 && piece.column < 2);
+    const group = reconcileJigsawVisualScene(puzzle.tiles,
+      { joinedComponents: [square.map((piece) => piece.id)] }, geometry);
+    const island = group.byPieceId.get(first.id)!;
+    expect(island.cuts.filter((cut) => cut.kind === "interior")).toHaveLength(4);
+    expect(island.cuts.filter((cut) => cut.kind === "exterior")).toHaveLength(8);
+    expect(new Set(island.cuts.map((cut) => cut.key)).size).toBe(island.cuts.length);
+    expect(island.cuts.every((cut) => cut.d.startsWith("M "))).toBe(true);
+    const shared = first.edges.find((edge) => !edge.boundary && edge.neighborPieceId === second.id)!;
+    expect(island.cuts.filter((cut) =>
+      cut.key === [shared.edgeId, shared.neighborEdgeId].sort().join("|"))).toHaveLength(1);
+    const originalPoses = positionJigsawVisualIslands(group, layout, placements);
+    const moved = positionJigsawVisualIslands(group, layout, placements.map((placement) =>
+      placement.id === first.id ? { ...placement, worldX: placement.worldX + 15 } : placement), originalPoses);
+    expect(moved.find((entry) => entry.key === island.key)!.cuts).toBe(island.cuts);
+  });
+
+  it("retains each special hub contour exactly once without rebuilding it", () => {
+    for (const family of ["medallion", "capsule"] as const) {
+      const candidate = Array.from({ length: 128 }, (_, index) => generateJigsaw({
+        puzzleId: "jigsaw", seed: `joined-special-${family}-${index}`, width: 6, height: 6,
+        imageId: defaultJigsawImageAsset.id, jigsawSpecialPiecesMode: "always",
+      })).find((sample) => sample.tiles.some((piece) => piece.specialShape?.kind === family));
+      expect(candidate).toBeDefined();
+      const special = candidate!.tiles.find((piece) => piece.specialShape?.kind === family)!;
+      const socket = candidate!.tiles.find((piece) => piece.specialShape?.kind === `${family}-socket`)!;
+      const prepared = prepareJigsawVisualGeometry(candidate!.tiles, candidate!.edgeModel);
+      const joined = reconcileJigsawVisualScene(candidate!.tiles,
+        { joinedComponents: [[special.id, socket.id]] }, prepared);
+      const cuts = joined.byPieceId.get(special.id)!.cuts;
+      expect(cuts.filter((cut) => cut.key === `special:${special.id}`)).toHaveLength(1);
+      expect(cuts.find((cut) => cut.key === `special:${special.id}`)!.d)
+        .toBe(prepared.get(special.id)!.outline);
+      const loose = composeJigsawIslandCuts([prepared.get(special.id)!], special.column, special.row);
+      expect(loose).toHaveLength(1);
+    }
   });
 
   it("retains exact canonical special-piece contours", () => {

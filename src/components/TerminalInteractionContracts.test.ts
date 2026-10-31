@@ -9,6 +9,8 @@ const futoshikiSource = readFileSync(new URL("./FutoshikiBoard.tsx", import.meta
 const wordGuessSource = readFileSync(new URL("./WordGuessGame.tsx", import.meta.url), "utf8");
 const jigsawSource = readFileSync(new URL("./JigsawWorkspace.tsx", import.meta.url), "utf8");
 const jigsawPreviewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", import.meta.url), "utf8");
+const jigsawVisualSource = readFileSync(new URL("./JigsawIslandVisual.tsx", import.meta.url), "utf8");
+const jigsawNewCommandSource = readFileSync(new URL("./NewPuzzleCommand.tsx", import.meta.url), "utf8");
 const jigsawCss = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
 
 describe("terminal interaction contracts", () => {
@@ -66,7 +68,14 @@ describe("terminal interaction contracts", () => {
     expect(jigsawPreviewSource).toContain('class="jigsaw-solved-card is-celebrating"');
     expect(jigsawPreviewSource).toContain('class="jigsaw-solved-card is-completed"');
     expect(jigsawPreviewSource).toContain("onClick={onResetPuzzle}");
-    expect(jigsawPreviewSource).toContain("onClick={onNewPuzzle}");
+    expect(jigsawPreviewSource).toContain('<div class="jigsaw-completed-next-puzzle">{nextPuzzleControl}</div>');
+    expect(jigsawSource).toContain("nextPuzzleControl={isSolved ? newPuzzleControl : null}");
+    expect(jigsawSource).toContain("newPuzzleControl={isSolved ? null : newPuzzleControl}");
+    expect(jigsawSource).toContain("inCompletionPrompt={isSolved}");
+    expect(jigsawNewCommandSource).toContain('inCompletionPrompt ? "Surprise me" : "New"');
+    expect(jigsawNewCommandSource).toContain("new-puzzle-command-choice");
+    expect(jigsawCss).toContain(".jigsaw-solved-presentation .new-puzzle-options-panel");
+    expect(jigsawCss).toContain("overscroll-behavior: contain;");
     expect(jigsawPreviewSource).toContain('if (target?.closest(".jigsaw-solved-card")) return;');
   });
 
@@ -74,12 +83,12 @@ describe("terminal interaction contracts", () => {
     expect(jigsawPreviewSource).toMatch(
       /if \(completed\.solved\) onCausativeInput\(\);/,
     );
-    expect(jigsawPreviewSource).toContain("showEdgeSeams && !isSolved ? seams.map(");
+    expect(jigsawVisualSource).toContain("showEdgeSeams && !isSolved ? island.cuts.map(");
     expect(jigsawPreviewSource).toContain("hidden={isSolved}");
     expect(jigsawPreviewSource).not.toContain('isSolved ? "is-solved"');
     expect(jigsawCss).not.toContain(".tile-puzzle-tools.is-solved");
     expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .jigsaw-island-artwork");
-    expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .tile-puzzle-piece-outline");
+    expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .jigsaw-island .tile-puzzle-piece-outline");
     expect(jigsawCss).toContain(".jigsaw-freeform-stage.completion-celebrating .jigsaw-world-layer");
     expect(jigsawCss).toContain(".jigsaw-solved-card.is-completed");
     expect(jigsawCss).toContain("animation: jigsaw-solved-card-arrive 620ms ease-out both;");

@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from "preact/hooks";
 import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from "./CurrentPuzzleIdentity";
 import { defaultJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
 import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
+import { defaultJigsawEditionChoice } from "../games/jigsaw/physicalEdition";
 import { defaultJigsawSpecialPiecesMode } from "../games/jigsaw/specialPieces";
 import type { JigsawHistoryAction } from "../games/jigsaw/history";
 import { jigsawCustomSizeSelection } from "../games/jigsaw/size";
@@ -110,6 +111,7 @@ export const JigsawWorkspace = ({
       height={nextPuzzleDraft.height}
       sizeSelection={nextPuzzleDraft.jigsawSizeSelection ?? jigsawCustomSizeSelection}
       cutStyle={nextPuzzleDraft.jigsawCutStyle ?? defaultJigsawCutStyle}
+      editionChoice={nextPuzzleDraft.jigsawEditionChoice ?? defaultJigsawEditionChoice}
       boundaryMode={nextPuzzleDraft.jigsawBoundaryMode ?? defaultJigsawBoundaryMode}
       specialPiecesMode={
         nextPuzzleDraft.jigsawSpecialPiecesMode ?? defaultJigsawSpecialPiecesMode
@@ -120,6 +122,7 @@ export const JigsawWorkspace = ({
       maxHeight={selectedDefinition.maxHeight}
       seedLoadInput={seedLoadInput}
       disabled={isGenerating || !selectedPuzzleIsGeneratable}
+      inCompletionPrompt={isSolved}
       onSettingsChange={onNextPuzzleDraftChange}
       onSeedLoadInputChange={onSeedLoadInputChange}
       onNewPuzzle={onNewPuzzle}
@@ -149,7 +152,7 @@ export const JigsawWorkspace = ({
       key={puzzleArrivalIdentity ?? undefined}
       puzzle={jigsawPuzzle}
       historyControl={historyActions}
-      newPuzzleControl={newPuzzleControl}
+      newPuzzleControl={isSolved ? null : newPuzzleControl}
       isArriving={isPuzzleArriving}
     />
   ) : null;
@@ -182,7 +185,7 @@ export const JigsawWorkspace = ({
         onCompletionAnimationEnd={completion.completePresentation}
         completionDisabled={isGenerating}
         onResetPuzzle={resetJigsaw}
-        onNewPuzzle={() => onNewPuzzle()}
+        nextPuzzleControl={isSolved ? newPuzzleControl : null}
       />
     </section>
   ) : isGenerating ? loadingBoard : null;

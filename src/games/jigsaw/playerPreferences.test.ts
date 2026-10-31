@@ -28,16 +28,26 @@ describe("Jigsaw player preferences", () => {
     stubStorage('{"snapToFrame":"yes","showEdgeSeams":true,"showPreview":0}');
     expect(loadJigsawPlayerPreferences()).toEqual({
       appearance: "inlaid", showPreview: false, showEdgeSeams: true, snapToFrame: false,
+      lockViewDragging: false,
     });
   });
 
   it("retains every visual/assistance toggle across puzzle instances and reloads", () => {
     stubStorage();
-    const settings = { appearance: "inlaid" as const, showPreview: true, showEdgeSeams: true, snapToFrame: true };
+    const settings = { appearance: "inlaid" as const, showPreview: true, showEdgeSeams: true, snapToFrame: true, lockViewDragging: true };
     saveJigsawPlayerPreferences(settings);
     expect(loadJigsawPlayerPreferences()).toEqual(settings);
     saveJigsawPlayerPreferences({ ...settings, snapToFrame: false });
     expect(loadJigsawPlayerPreferences()).toEqual({ ...settings, snapToFrame: false });
+    saveJigsawPlayerPreferences({ ...settings, lockViewDragging: false });
+    expect(loadJigsawPlayerPreferences().lockViewDragging).toBe(false);
+  });
+
+  it("keeps the view drag lock off for malformed or legacy stored preferences", () => {
+    stubStorage('{"lockViewDragging":"yes","showPreview":true}');
+    expect(loadJigsawPlayerPreferences().lockViewDragging).toBe(false);
+    stubStorage('{"lockViewDragging":true}');
+    expect(loadJigsawPlayerPreferences().lockViewDragging).toBe(true);
   });
 
   it("defaults missing or invalid appearance to Inlaid without overriding explicit choices", () => {

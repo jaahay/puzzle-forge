@@ -240,6 +240,23 @@ describe("resolveGenerationIdentity", () => {
     expect(changed.jigsawCutStyle).toBe("classic");
   });
 
+  it("keeps the physical edition while allowing an explicit prospective override", () => {
+    const currentPuzzle = generateJigsaw({
+      puzzleId: "jigsaw", seed: "edition-inherit", width: 4, height: 4,
+      imageId: "great-wave", jigsawEditionChoice: "heritage",
+    });
+    const inherited = resolveGenerationIdentity({
+      puzzleId: "jigsaw", currentPuzzle, runtimeSettings, makeSeed: () => "unused",
+    });
+    const changed = resolveGenerationIdentity({
+      puzzleId: "jigsaw", currentPuzzle, runtimeSettings,
+      settings: { jigsawEditionChoice: "vivid" }, makeSeed: () => "unused",
+    });
+    expect(inherited.jigsawEditionChoice).toBe("heritage");
+    expect(changed.jigsawEditionChoice).toBe("vivid");
+    expect(changed.jigsawCutStyle).toBe(inherited.jigsawCutStyle);
+  });
+
   it("uses current Jigsaw boundary mode unless another mode is explicitly requested", () => {
     const currentPuzzle = generateJigsaw({
       puzzleId: "jigsaw",

@@ -58,6 +58,7 @@ type NewPuzzleCommandProps = {
   settings?: ComponentChildren;
   info?: ComponentChildren;
   panelClassName?: string;
+  inCompletionPrompt?: boolean;
   onSeedLoadInputChange: (seed: string) => void;
   onNewPuzzle: (afterStart?: () => void) => void;
   onToday: (afterStart?: () => void) => void;
@@ -75,6 +76,7 @@ export const NewPuzzleCommand = ({
   settings,
   info,
   panelClassName,
+  inCompletionPrompt = false,
   onSeedLoadInputChange,
   onNewPuzzle,
   onToday,
@@ -142,7 +144,7 @@ export const NewPuzzleCommand = ({
   const panelClass = ["new-puzzle-options-panel", panelClassName].filter(Boolean).join(" ");
 
   return (
-    <div class="new-puzzle-command" aria-label={`New ${puzzleTitle}: ${configurationSummary}`} ref={commandRef}>
+    <div class={`new-puzzle-command${inCompletionPrompt ? " is-completion" : ""}`} aria-label={`New ${puzzleTitle}: ${configurationSummary}`} ref={commandRef}>
       <div class="new-puzzle-split-control">
         <button
           class="new-puzzle-command-primary"
@@ -152,7 +154,7 @@ export const NewPuzzleCommand = ({
           aria-label={`New random ${puzzleTitle}, ${randomConfigurationSummary}`}
           title={`New random puzzle — ${randomConfigurationSummary}`}
         >
-          New
+          {inCompletionPrompt ? "Surprise me" : "New"}
         </button>
         <details
           class="new-puzzle-options"
@@ -178,7 +180,7 @@ export const NewPuzzleCommand = ({
               if (disabled) event.preventDefault();
             }}
           >
-            <span class="new-puzzle-command-caret" aria-hidden="true">▾</span>
+            {inCompletionPrompt ? <span class="new-puzzle-command-choice">Choose…</span> : <span class="new-puzzle-command-caret" aria-hidden="true">▾</span>}
           </summary>
           <div class={panelClass} aria-label="New puzzle options">
             <div class="new-puzzle-info">
