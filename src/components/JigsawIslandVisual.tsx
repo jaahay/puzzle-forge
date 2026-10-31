@@ -114,14 +114,22 @@ const JigsawIslandSurface = ({
               <path key={`edge:${cut.key}`} class="jigsaw-material-edge"
                 d={cut.d} transform={`translate(${cut.offsetX} ${cut.offsetY})`} />
             )) : null}
-            {!isSolved ? island.cuts.map((cut) => (
-              <path
-                key={cut.key}
-                class={`tile-puzzle-piece-outline ${cut.kind}`}
-                d={cut.d}
-                transform={`translate(${cut.offsetX} ${cut.offsetY})`}
-              />
-            )) : null}
+            {!isSolved ? (
+              <>
+                <g class="jigsaw-island-interior-cuts">
+                  {island.cuts.filter((cut) => cut.kind === "interior").map((cut) => (
+                    <path key={cut.key} class={`tile-puzzle-piece-outline ${cut.kind}`}
+                      d={cut.d} transform={`translate(${cut.offsetX} ${cut.offsetY})`} />
+                  ))}
+                </g>
+                <g class="jigsaw-island-exterior-cuts">
+                  {island.cuts.filter((cut) => cut.kind === "exterior").map((cut) => (
+                    <path key={cut.key} class={`tile-puzzle-piece-outline ${cut.kind}`}
+                      d={cut.d} transform={`translate(${cut.offsetX} ${cut.offsetY})`} />
+                  ))}
+                </g>
+              </>
+            ) : null}
             {showEdgeSeams && !isSolved ? island.cuts.map((cut) => (
               <path
                 key={`guide:${cut.key}`}

@@ -36,6 +36,21 @@ describe("Jigsaw auto-pan controller boundary", () => {
     expect(islandVisualSource).toContain("export const JigsawIslandVisual = memo(");
   });
 
+  it("keeps camera pan and drag-hover work outside per-pointer React reconciliation", () => {
+    const pan = previewSource.slice(previewSource.indexOf("const movePan ="), previewSource.indexOf("const finishPan ="));
+    expect(pan).toContain("wheelStateRef.current = {");
+    expect(pan).toContain("renderCameraImmediately()");
+    expect(pan).not.toContain("setCamera(");
+    const finish = previewSource.slice(previewSource.indexOf("const finishPan ="), previewSource.indexOf("const handleWheel ="));
+    expect(finish).toContain("setCamera(wheelStateRef.current.camera)");
+    expect(previewSource).toContain("panRef.current !== null || dragRef.current?");
+    const dragMove = previewSource.slice(previewSource.indexOf("const moveDrag ="), previewSource.indexOf("const finishDrag ="));
+    expect(dragMove).toContain("dragHoverNeedsUpdateRef.current = true");
+    expect(dragMove).not.toContain("updateDragHover(drag)");
+    expect(dragMove).not.toContain("renderDraggedPieceImmediately(drag)");
+    expect(previewSource).toContain("if (previousTime === null || panned || dragHoverNeedsUpdateRef.current)");
+  });
+
   it("shadows clipped island artwork without clipping away the exterior shadow", () => {
     expect(islandVisualSource).toContain('<g class="jigsaw-island-artwork">');
     expect(islandVisualSource).toContain('clip-path={`url(#${clipId}-piece-${index})`}');

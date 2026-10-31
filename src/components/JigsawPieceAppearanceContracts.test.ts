@@ -46,6 +46,16 @@ describe("Jigsaw piece appearance integration", () => {
     expect(islandVisualSource).toContain('class={`tile-puzzle-piece-outline ${cut.kind}`}');
   });
 
+  it("shares kerf shadow work by cut type instead of filtering every seam", () => {
+    expect(islandVisualSource).toContain('class="jigsaw-island-interior-cuts"');
+    expect(islandVisualSource).toContain('class="jigsaw-island-exterior-cuts"');
+    expect(islandVisualSource).toContain('island.cuts.filter((cut) => cut.kind === "interior").map((cut)');
+    expect(islandVisualSource).toContain('island.cuts.filter((cut) => cut.kind === "exterior").map((cut)');
+    expect(css).toContain('.jigsaw-island[data-piece-appearance="inlaid"] .jigsaw-island-interior-cuts');
+    expect(css).toContain('.jigsaw-island[data-piece-appearance="outlined"] .jigsaw-island-exterior-cuts');
+    expect(css).not.toContain("stroke-width: 1.22;\n  filter:");
+  });
+
   it("remounts only the island clip when joined membership changes", () => {
     expect(islandVisualSource).toContain("key={island.clipRevision}");
     expect(islandVisualSource).toContain("${island.key}-${island.clipRevision}");

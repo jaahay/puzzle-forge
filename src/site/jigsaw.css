@@ -986,6 +986,8 @@
 .jigsaw-island[data-piece-appearance="outlined"] .tile-puzzle-piece-outline.exterior {
   stroke: rgba(224, 219, 203, 0.48);
   stroke-width: 1;
+}
+.jigsaw-island[data-piece-appearance="outlined"] .jigsaw-island-exterior-cuts {
   filter: drop-shadow(0 0.5px 0.5px rgba(12, 17, 24, 0.42));
 }
 
@@ -994,13 +996,14 @@
 .jigsaw-island[data-piece-appearance="inlaid"] .tile-puzzle-piece-outline {
   stroke: rgba(22, 24, 22, 0.82);
   stroke-width: 1.22;
+}
+.jigsaw-island[data-piece-appearance="inlaid"] .jigsaw-island-interior-cuts {
   filter: drop-shadow(-0.65px -0.7px 0 rgba(251, 242, 218, 0.42));
 }
 
 .jigsaw-island[data-piece-appearance="inlaid"] .tile-puzzle-piece-outline.exterior {
   stroke: rgba(231, 224, 205, 0.36);
   stroke-width: 0.86;
-  filter: none;
 }
 
 /* Seamless: exterior contours remain faint; internal joined cuts disappear. */

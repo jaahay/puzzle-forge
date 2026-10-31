@@ -223,6 +223,7 @@ export const TilePuzzlePreview = ({
   const dragAnimationFrameRef = useRef<number | null>(null);
   const dragAnimationTimeRef = useRef<number | null>(null);
   const dragHoverIslandRef = useRef<HTMLElement | null>(null);
+  const dragHoverNeedsUpdateRef = useRef(true);
   const panRef = useRef<ActivePan | null>(null);
   const touchPointsRef = useRef(new Map<number, JigsawPinchPoint>());
   const pinchRef = useRef<ActivePinch | null>(null);
@@ -231,6 +232,7 @@ export const TilePuzzlePreview = ({
   const stopDragAnimation = () => {
     dragHoverIslandRef.current?.classList.remove("drag-hover");
     dragHoverIslandRef.current = null;
+    dragHoverNeedsUpdateRef.current = true;
     if (dragAnimationFrameRef.current !== null && typeof window !== "undefined") {
       window.cancelAnimationFrame(dragAnimationFrameRef.current);
     }
@@ -386,7 +388,7 @@ export const TilePuzzlePreview = ({
     viewport: renderViewport,
   });
   const preserveImperativeCamera =
-    (pinchRef.current !== null || dragRef.current?.puzzleId === puzzle.id) &&
+    (pinchRef.current !== null || panRef.current !== null || dragRef.current?.puzzleId === puzzle.id) &&
     wheelStateRef.current.puzzleId === puzzle.id;
   const renderCamera = preserveImperativeCamera ? wheelStateRef.current.camera : activeCamera;
   wheelStateRef.current = {
@@ -878,7 +880,10 @@ export const TilePuzzlePreview = ({
     }
 
     renderDraggedPieceImmediately(drag, wheelStateRef.current);
-    if (previousTime === null || panned) updateDragHover(drag);
+    if (previousTime === null || panned || dragHoverNeedsUpdateRef.current) {
+      updateDragHover(drag);
+      dragHoverNeedsUpdateRef.current = false;
+    }
     dragAnimationFrameRef.current = window.requestAnimationFrame(runDragAnimationFrame);
   };
 
@@ -943,8 +948,8 @@ export const TilePuzzlePreview = ({
     if (!drag || drag.puzzleId !== puzzle.id || drag.pointerId !== event.pointerId) return;
     drag.clientX = event.clientX;
     drag.clientY = event.clientY;
-    renderDraggedPieceImmediately(drag);
-    updateDragHover(drag);
+    // Render and hit-test the latest pointer position in the existing animation frame.
+    dragHoverNeedsUpdateRef.current = true;
     event.stopPropagation();
     event.preventDefault();
   };
@@ -1052,8 +1057,15 @@ export const TilePuzzlePreview = ({
     const deltaY = event.clientY - pan.lastClientY;
     pan.lastClientX = event.clientX;
     pan.lastClientY = event.clientY;
-    if (deltaX !== 0 || deltaY !== 0) markManualCameraAdjustment();
-    setCamera(panJigsawCamera(layout, renderViewport, wheelStateRef.current.camera, -deltaX, -deltaY));
+    if (deltaX !== 0 || deltaY !== 0) {
+      markManualCameraAdjustment();
+      const current = wheelStateRef.current;
+      wheelStateRef.current = {
+        ...current,
+        camera: panJigsawCamera(current.layout, current.viewport, current.camera, -deltaX, -deltaY),
+      };
+      renderCameraImmediately();
+    }
     event.preventDefault();
   };
 
@@ -1062,6 +1074,7 @@ export const TilePuzzlePreview = ({
     if (!pan || pan.pointerId !== event.pointerId) return;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
     panRef.current = null;
+    setCamera(wheelStateRef.current.camera);
     setIsPanning(false);
     event.preventDefault();
   };
