@@ -31,8 +31,9 @@ describe("Jigsaw piece appearance integration", () => {
     expect(preview).toContain('class="jigsaw-material-finish"');
     expect(preview).toContain("<linearGradient id={finishId}");
     expect(preview).toContain('clip-path={`url(#${clipId})`}');
-    expect(css).toContain('.jigsaw-island[data-piece-appearance="inlaid"] .jigsaw-island-sidewall');
-    expect(css).toContain('.jigsaw-island[data-piece-appearance="inlaid"] .jigsaw-material-finish');
+    expect(css).not.toContain('[data-piece-appearance="inlaid"] .jigsaw-island-sidewall');
+    expect(css).not.toContain('[data-piece-appearance="inlaid"] .jigsaw-material-finish');
+    expect(css).toContain('.jigsaw-island[data-physical-edition="heritage"] .jigsaw-island-sidewall');
     expect(css).toContain(".jigsaw-island.joined .jigsaw-island-artwork");
     expect(preview).toContain('class="jigsaw-island-artwork"');
     expect(preview).toContain('class="tile-puzzle-piece-hit-target"');
@@ -64,6 +65,27 @@ describe("Jigsaw piece appearance integration", () => {
     expect(css).toContain('data-physical-edition="classic"');
     expect(css).toContain('data-physical-edition="vivid"');
     expect(preview).toContain("island.cuts.map((cut)");
+  });
+
+  it("compares three physical editions using precisely the same scene surface and geometry", () => {
+    expect(preview).toContain("const JigsawIslandSurface =");
+    expect(preview).toContain("const comparisonGeometry = useMemo<JigsawVisualIslandGeometry>");
+    expect(preview).toContain("composeJigsawIslandCuts(members, minColumn, minRow)");
+    expect(preview).toContain("jigsawPhysicalEditions.map((edition)");
+    expect(preview).toContain('idScope={`comparison-${edition}`}');
+    expect(preview).toContain('idScope="play"');
+    expect(preview).toContain('data-piece-appearance="inlaid"');
+    expect(preview).toContain("setComparisonLifted((lifted) => !lifted)");
+    expect(preview).toContain('aria-label="Physical edition comparison"');
+    expect(preview).toContain('aria-label="Close edition comparison"');
+    expect(preview).toContain('class="jigsaw-material-texture"');
+    expect(preview).toContain('class="jigsaw-material-fibers"');
+    expect(preview).toContain('class="jigsaw-material-edge"');
+    expect(css).toContain(".jigsaw-edition-sample.is-lifted");
+    expect(css).toContain('.jigsaw-island.dragging .jigsaw-material-gloss');
+    expect(css).toContain('data-physical-edition="classic"] .jigsaw-material-texture');
+    expect(css).toContain('data-physical-edition="heritage"] .jigsaw-material-fibers');
+    expect(css).toContain('data-physical-edition="vivid"] .jigsaw-material-gloss');
   });
 
   it("keeps edge guides separate from appearance and suppresses solved cuts", () => {
