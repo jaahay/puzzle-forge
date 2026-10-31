@@ -6,7 +6,6 @@ import { advanceJigsawEdgePanCamera } from "../games/jigsaw/autoPan";
 import {
   cloneJigsawAssemblyProgress,
   getJigsawComponentPieceIds,
-  getJigsawConnectedPieceCount,
   isJigsawAssemblySolved,
   makeEmptyJigsawAssemblyProgress,
   type JigsawAssemblyProgress,
@@ -184,14 +183,14 @@ const JigsawIslandVisual = memo(({
             ))}
           </clipPath>
           <linearGradient id={finishId} x1="0%" y1="0%" x2="95%" y2="100%">
-            <stop offset="0%" stop-color="#fffdf1" stop-opacity="0.15" />
+            <stop offset="0%" stop-color="#fffdf1" stop-opacity="0.20" />
             <stop offset="55%" stop-color="#fffdf1" stop-opacity="0" />
-            <stop offset="100%" stop-color="#121825" stop-opacity="0.10" />
+            <stop offset="100%" stop-color="#121825" stop-opacity="0.12" />
           </linearGradient>
         </defs>
         <g
           class="jigsaw-island-sidewall"
-          transform="translate(0.7 1.7)"
+          transform="translate(0.85 2.05)"
           clip-path={`url(#${clipId})`}
         >
           <rect
@@ -605,7 +604,7 @@ export const TilePuzzlePreview = ({
     if (!stage || !workspace) return { top: 0, right: 0, bottom: 0, left: 0 };
 
     const overlayElements = Array.from(workspace.querySelectorAll<HTMLElement>(
-      ".jigsaw-tools-toggle, .tile-puzzle-tools, .jigsaw-camera-tools, .tile-puzzle-summary, .puzzle-workspace-display-tools",
+      ".jigsaw-tools-toggle, .tile-puzzle-tools, .jigsaw-camera-tools, .puzzle-workspace-display-tools",
     ));
     const view = stage.ownerDocument.defaultView;
     const isVisible = (element: HTMLElement) => {
@@ -786,13 +785,11 @@ export const TilePuzzlePreview = ({
     islandPosesRef.current = { puzzleId: puzzle.id, islands };
     return islands;
   }, [puzzle.id, visualScene, layout, placements]);
-  const connectedCount = getJigsawConnectedPieceCount(activeAssembly);
   const isSolved = isJigsawAssemblySolved(activeAssembly, puzzle.tiles.length);
   const activeIslandKey = activeTileId && dragRef.current?.puzzleId === puzzle.id
     ? visualScene.byPieceId.get(activeTileId)?.key : null;
   const raisedIslandKey = raisedTileId ? visualScene.byPieceId.get(raisedTileId)?.key : null;
   const anchoredIslandIds = new Set(activeAssembly.anchoredPieceIds ?? []);
-  const assemblySummary = isSolved ? "Solved" : `${connectedCount} joined`;
 
   useEffect(() => {
     if (!isSolved) return;
@@ -1341,10 +1338,6 @@ export const TilePuzzlePreview = ({
           </button>
         ) : null}
       </div>
-      {(isSolved || connectedCount > 0) ? (
-        <div class="tile-puzzle-summary"><span>{assemblySummary}</span></div>
-      ) : null}
-
       <div
         id={toolsId}
         class={`tile-puzzle-tools ${showCompactTools ? "is-open" : ""}`}

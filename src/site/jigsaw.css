@@ -27,15 +27,6 @@
   display: contents;
 }
 
-.jigsaw-workspace:not(.is-immersive) .tile-puzzle-summary {
-  position: absolute;
-  top: 0.7rem;
-  left: 0.6rem;
-  z-index: 30;
-  min-width: 0;
-  pointer-events: none;
-}
-
 .jigsaw-workspace:not(.is-immersive) .jigsaw-tools-toggle {
   display: grid;
   position: absolute;
@@ -56,13 +47,6 @@
 .jigsaw-workspace:not(.is-immersive) .tile-puzzle-art-preview,
 .jigsaw-workspace:not(.is-immersive) .jigsaw-freeform-stage {
   grid-column: 1 / -1;
-}
-
-.tile-puzzle-summary {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem;
 }
 
 .tile-puzzle-tools {
@@ -92,18 +76,6 @@
 
 .jigsaw-workspace:not(.is-immersive) .tile-puzzle-tools.is-open {
   display: flex;
-}
-
-.tile-puzzle-summary span {
-  border: 1px solid rgba(167, 243, 208, 0.22);
-  border-radius: 999px;
-  padding: 0.35rem 0.65rem;
-  color: #d1fae5;
-  background: rgba(6, 78, 59, 0.28);
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
 }
 
 .tile-puzzle-tools button {
@@ -782,7 +754,7 @@
   filter: drop-shadow(0 1px 1px rgba(15, 17, 19, 0.32));
 }
 .jigsaw-island[data-piece-appearance="inlaid"] .jigsaw-island-sidewall {
-  opacity: 0.92;
+  opacity: 0.97;
 }
 .jigsaw-island[data-piece-appearance="seamless"] .jigsaw-island-sidewall {
   opacity: 0.38;
@@ -792,7 +764,7 @@
   pointer-events: none;
 }
 .jigsaw-island[data-piece-appearance="inlaid"] .jigsaw-material-finish {
-  opacity: 0.85;
+  opacity: 0.94;
 }
 
 /* A small contact shadow grounds loose pieces; joined islands have one shared
@@ -939,17 +911,17 @@
   filter: drop-shadow(0 0.5px 0.5px rgba(12, 17, 24, 0.42));
 }
 
-/* Inlaid: one narrow dark kerf with a slight directional reflected lip,
-   without a raised border or shadow per individual piece. */
+/* Inlaid: slightly deeper matte kerf with a soft upper-left light-catching
+   lip. Both derive from one physical cut, never duplicate piece perimeters. */
 .jigsaw-island[data-piece-appearance="inlaid"] .tile-puzzle-piece-outline {
-  stroke: rgba(23, 23, 22, 0.72);
-  stroke-width: 0.95;
-  filter: drop-shadow(0.35px 0.65px 0 rgba(247, 241, 219, 0.28));
+  stroke: rgba(22, 24, 22, 0.82);
+  stroke-width: 1.22;
+  filter: drop-shadow(-0.65px -0.7px 0 rgba(251, 242, 218, 0.42));
 }
 
 .jigsaw-island[data-piece-appearance="inlaid"] .tile-puzzle-piece-outline.exterior {
-  stroke: rgba(233, 227, 211, 0.22);
-  stroke-width: 0.7;
+  stroke: rgba(231, 224, 205, 0.36);
+  stroke-width: 0.86;
   filter: none;
 }
 
@@ -995,16 +967,6 @@
 }
 
 @media (max-width: 700px) {
-  .jigsaw-workspace:not(.is-immersive) .tile-puzzle-summary span {
-    border-color: rgba(148, 163, 184, 0.18);
-    padding: 0.3rem 0.45rem;
-    background: rgba(8, 15, 30, 0.7);
-    color: #cbd5e1;
-    font-size: 0.68rem;
-    letter-spacing: 0;
-    text-transform: none;
-  }
-
   .jigsaw-solved-card.is-celebrating {
     max-width: min(100%, 24rem);
     border-radius: 1rem;

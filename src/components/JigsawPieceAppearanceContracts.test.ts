@@ -38,6 +38,22 @@ describe("Jigsaw piece appearance integration", () => {
     expect(preview).toContain('class="tile-puzzle-piece-hit-target"');
   });
 
+  it("renders an understated but legible Inlaid kerf and one shared cardboard silhouette", () => {
+    expect(css).toContain("stroke-width: 1.22;");
+    expect(css).toContain("drop-shadow(-0.65px -0.7px 0 rgba(251, 242, 218, 0.42))");
+    expect(preview).toContain('transform="translate(0.85 2.05)"');
+    expect(preview).toContain('class="jigsaw-island-sidewall"');
+    expect(preview).toContain("island.cuts.map((cut)");
+  });
+
+  it("keeps incidental join counts off the playing surface and out of fit calculations", () => {
+    expect(preview).not.toContain("tile-puzzle-summary");
+    expect(preview).not.toContain("getJigsawConnectedPieceCount");
+    expect(preview).not.toContain("assemblySummary");
+    expect(css).not.toContain(".tile-puzzle-summary");
+    expect(preview).toContain('class="jigsaw-solved-card is-completed"');
+  });
+
   it("keeps edge guides separate from appearance and suppresses solved cuts", () => {
     expect(preview).toContain("showEdgeSeams && !isSolved ? island.cuts.map(");
     expect(css).toContain(".jigsaw-freeform-stage.solved .jigsaw-island .tile-puzzle-piece-outline");
