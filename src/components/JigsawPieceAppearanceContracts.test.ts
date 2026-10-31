@@ -29,6 +29,7 @@ describe("Jigsaw piece appearance integration", () => {
   it("emphasizes only exterior cuts on hover, focus, and drag-over", () => {
     expect(css).toContain(".tile-puzzle-piece-outline.exterior {");
     expect(css).toContain("transition: stroke 140ms ease-out, stroke-width 140ms ease-out;");
+    expect(css).toContain("@media (hover: hover) {");
     expect(css).toContain(":has(.tile-puzzle-piece:hover) .tile-puzzle-piece-outline.exterior");
     expect(css).toContain(":has(.tile-puzzle-piece:focus-visible) .tile-puzzle-piece-outline.exterior");
     expect(css).toContain(".jigsaw-island.drag-hover .tile-puzzle-piece-outline.exterior");

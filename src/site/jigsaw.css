@@ -995,11 +995,19 @@
   transition: stroke 140ms ease-out, stroke-width 140ms ease-out;
 }
 
-.jigsaw-island:not(.dragging):has(.tile-puzzle-piece:hover) .tile-puzzle-piece-outline.exterior,
 .jigsaw-island:not(.dragging):has(.tile-puzzle-piece:focus-visible) .tile-puzzle-piece-outline.exterior,
 .jigsaw-island.drag-hover .tile-puzzle-piece-outline.exterior {
   stroke: rgba(238, 235, 223, 0.60);
   stroke-width: 1.08;
+}
+
+/* Touch taps must not leave a persistent pseudo-hover on assembled islands.
+   Direct drag-over feedback still works on touch through the drag-hover class. */
+@media (hover: hover) {
+  .jigsaw-island:not(.dragging):has(.tile-puzzle-piece:hover) .tile-puzzle-piece-outline.exterior {
+    stroke: rgba(238, 235, 223, 0.60);
+    stroke-width: 1.08;
+  }
 }
 
 .jigsaw-freeform-stage.completion-celebrating .jigsaw-world-layer {
