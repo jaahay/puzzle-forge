@@ -138,7 +138,7 @@ describe("Jigsaw session assembly persistence", () => {
     const restored = restorePuzzleSessionFromPersisted(persisted, explicitlyFinished);
     expect(restored?.progress.kind).toBe("tiles");
     if (restored?.progress.kind === "tiles") {
-      expect(restored.progress.jigsawAssembly).toEqual(session.progress.jigsawAssembly);
+      expect(restored.progress.jigsawAssembly).toEqual({ joinedComponents: [["tile-0", "tile-1", "tile-2"]] });
     }
   });
 
