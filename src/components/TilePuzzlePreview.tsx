@@ -80,7 +80,7 @@ import {
   shouldShowJigsawCompletionCelebration,
   shouldShowJigsawSolvedControls,
 } from "./JigsawPreviewModel";
-import { JigsawIslandVisual, type IslandPointerActions } from "./JigsawIslandVisual";
+import { JigsawIslandVisual, type IslandPointerActions, type PiecePointerEvent } from "./JigsawIslandVisual";
 import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
 import { usePuzzleWorkspaceDisplayMode } from "./PuzzleWorkspaceLayout";
 

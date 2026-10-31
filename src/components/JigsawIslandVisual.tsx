@@ -6,7 +6,7 @@ import type { JigsawPieceAppearance } from "../games/jigsaw/playerPreferences";
 import type { JigsawWorldLayout } from "../games/jigsaw/placement";
 import { getJigsawIslandStackOrder, getPieceHitTargetProps } from "./JigsawPreviewModel";
 
-type PiecePointerEvent = JSX.TargetedPointerEvent<HTMLButtonElement>;
+export type PiecePointerEvent = JSX.TargetedPointerEvent<HTMLButtonElement>;
 export type IslandPointerActions = {
   beginDrag: (event: PiecePointerEvent, tile: JigsawPiece) => void;
   moveDrag: (event: PiecePointerEvent) => void;
