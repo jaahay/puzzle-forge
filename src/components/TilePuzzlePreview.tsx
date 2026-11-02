@@ -49,6 +49,7 @@ import {
   getJigsawPlacementPosition,
   isUsableJigsawViewport,
   panJigsawCamera,
+  screenToJigsawWorld,
   zoomJigsawCameraAtPoint,
   type JigsawCamera,
   type JigsawPlacement,
@@ -70,6 +71,7 @@ import {
 } from "./JigsawImperativeRenderer";
 import {
   findJigsawDragHoverIsland,
+  findJigsawDragHoverIslandAtWorldPoint,
   getJigsawFitInsetsForOverlays,
   getJigsawZoomStep,
   getMeasuredJigsawViewport,
@@ -125,6 +127,8 @@ type StagePointerEvent = JSX.TargetedPointerEvent<HTMLDivElement>;
 type StageKeyboardEvent = JSX.TargetedKeyboardEvent<HTMLDivElement>;
 
 type ActiveDrag = JigsawDragAction & {
+  stageLeft: number;
+  stageTop: number;
   islandElement: HTMLDivElement | null;
   islandBounds: { left: number; top: number; right: number; bottom: number } | null;
 };
@@ -424,6 +428,11 @@ export const TilePuzzlePreview = ({
     const measure = () => {
       const measuredViewport = getMeasuredJigsawViewport(stage);
       if (!measuredViewport) return;
+      if (dragRef.current) {
+        const rect = stage.getBoundingClientRect();
+        dragRef.current.stageLeft = rect.left;
+        dragRef.current.stageTop = rect.top;
+      }
       setViewport((current) =>
         current.width === measuredViewport.width && current.height === measuredViewport.height
           ? current
@@ -667,6 +676,23 @@ export const TilePuzzlePreview = ({
   }, [layout, puzzle.id, puzzle.tiles, resetVersion, viewport.height, viewport.width]);
 
   const preparedGeometry = useMemo(() => prepareJigsawVisualGeometry(puzzle.tiles, puzzle.edgeModel), [puzzle]);
+  // Browser-native Path2D uses the same canonical SVG outlines as the piece hit
+  // targets. Prepared once per puzzle: no document hit-stack or new path per frame.
+  const hoverPathTester = useMemo(() => {
+    if (typeof document === "undefined" || typeof Path2D === "undefined") return null;
+    const context = document.createElement("canvas").getContext("2d");
+    if (!context) return null;
+    const paths = new Map<string, Path2D>();
+    try {
+      for (const [id, entry] of preparedGeometry) paths.set(id, new Path2D(entry.outline));
+    } catch {
+      return null; // Retain native DOM hit testing on browsers lacking this path syntax.
+    }
+    return (id: string, x: number, y: number) => {
+      const path = paths.get(id);
+      return path !== undefined && context.isPointInPath(path, x, y);
+    };
+  }, [preparedGeometry]);
   const placements = activePlacements ?? [];
   const membershipKey = getJigsawVisualMembershipKey(activeAssembly);
   const visualScene = useMemo(() => {
@@ -857,9 +883,13 @@ export const TilePuzzlePreview = ({
     }
   };
 
+  const getDragStagePoint = (drag: ActiveDrag) => ({
+    x: drag.clientX - drag.stageLeft,
+    y: drag.clientY - drag.stageTop,
+  });
+
   const renderDraggedPieceImmediately = (drag: ActiveDrag, state = wheelStateRef.current) => {
-    const stagePoint = getStagePoint(drag.clientX, drag.clientY);
-    if (!stagePoint) return null;
+    const stagePoint = getDragStagePoint(drag);
     if (!drag.islandBounds) return;
     const offset = projectJigsawDragOffset(
       state.layout, state.camera, state.viewport, stagePoint, drag, drag.islandBounds,
@@ -869,10 +899,24 @@ export const TilePuzzlePreview = ({
 
   const updateDragHover = (drag: ActiveDrag) => {
     const stage = stageRef.current;
-    const candidate = stage ? findJigsawDragHoverIsland(
-      stage.ownerDocument.elementsFromPoint(drag.clientX, drag.clientY),
-      drag.islandElement, stage,
-    ) : null;
+    let candidate: HTMLElement | null = null;
+    if (stage && hoverPathTester) {
+      const current = wheelStateRef.current;
+      const stagePoint = getDragStagePoint(drag);
+      const worldPoint = screenToJigsawWorld(current.camera, current.viewport, stagePoint.x, stagePoint.y);
+      const draggedKey = visualScene.byPieceId.get(drag.tileId)?.key ?? null;
+      const matchedKey = findJigsawDragHoverIslandAtWorldPoint(
+        visualIslands, worldPoint, draggedKey, current.layout,
+        anchoredIslandIds, puzzle.tiles.length, hoverPathTester,
+      );
+      candidate = matchedKey ? islandElementsRef.current.get(matchedKey) ?? null : null;
+    } else if (stage) {
+      // Unsupported Path2D/canvas: preserve exact native hit testing as a fallback.
+      candidate = findJigsawDragHoverIsland(
+        stage.ownerDocument.elementsFromPoint(drag.clientX, drag.clientY),
+        drag.islandElement, stage,
+      );
+    }
     if (candidate === dragHoverIslandRef.current) return;
     dragHoverIslandRef.current?.classList.remove("drag-hover");
     candidate?.classList.add("drag-hover");
@@ -893,7 +937,7 @@ export const TilePuzzlePreview = ({
       endDragPresentation(drag);
       return;
     }
-    const stagePoint = getStagePoint(drag.clientX, drag.clientY);
+    const stagePoint = getDragStagePoint(drag);
     let panned = false;
     if (stagePoint && previousTime !== null) {
       const nextCamera = advanceJigsawEdgePanCamera(
@@ -931,8 +975,9 @@ export const TilePuzzlePreview = ({
 
   const beginDrag = (event: PiecePointerEvent, tile: JigsawPiece, placement: JigsawPlacement) => {
     if (isSolved || pinchRef.current) return;
-    const stagePoint = getStagePoint(event.clientX, event.clientY);
-    if (!stagePoint) return;
+    const stageRect = stageRef.current?.getBoundingClientRect();
+    if (!stageRect) return;
+    const stagePoint = { x: event.clientX - stageRect.left, y: event.clientY - stageRect.top };
     const current = wheelStateRef.current;
     const position = getJigsawPlacementPosition(current.layout, placement, tile);
     const currentPlacementState = placementStateRef.current;
@@ -961,6 +1006,8 @@ export const TilePuzzlePreview = ({
     });
     dragRef.current = {
       ...action, islandElement,
+      stageLeft: stageRect.left,
+      stageTop: stageRect.top,
       islandBounds: island ? {
         left: island.worldX,
         top: island.worldY,
@@ -997,7 +1044,7 @@ export const TilePuzzlePreview = ({
     drag.clientY = event.clientY;
     stopDragAnimation();
     renderDraggedPieceImmediately(drag);
-    const stagePoint = getStagePoint(drag.clientX, drag.clientY);
+    const stagePoint = getDragStagePoint(drag);
     const movedPlacements = stagePoint ? projectJigsawDragAction(
       layout, puzzle.tiles, wheelStateRef.current.camera, wheelStateRef.current.viewport, stagePoint, drag,
     )?.placements : null;

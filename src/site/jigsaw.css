@@ -1021,8 +1021,10 @@
 
 /* Hover reveals the physical boundary, never the printed artwork. Reuse
    canonical exterior cuts so joined seams remain undisturbed. */
+/* Drag-over Edge Awareness remains immediate; animating both stroke properties
+   on every hover switch creates thousands of SVG animations during dragging. */
 .tile-puzzle-piece-outline.exterior {
-  transition: stroke 140ms ease-out, stroke-width 140ms ease-out;
+  transition: none;
 }
 
 .jigsaw-island:not(.dragging):has(.tile-puzzle-piece:focus-visible) .tile-puzzle-piece-outline.exterior,

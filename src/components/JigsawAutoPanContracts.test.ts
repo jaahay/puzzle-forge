@@ -53,6 +53,11 @@ describe("Jigsaw auto-pan controller boundary", () => {
     expect(dragMove).not.toContain("updateDragHover(drag)");
     expect(dragMove).not.toContain("renderDraggedPieceImmediately(drag)");
     expect(previewSource).toContain("if (previousTime === null || panned || dragHoverNeedsUpdateRef.current)");
+    expect(previewSource).toContain("new Path2D(entry.outline)");
+    expect(previewSource).toContain("context.isPointInPath(path, x, y)");
+    expect(previewSource).toContain("findJigsawDragHoverIslandAtWorldPoint(");
+    expect(previewSource).toContain("getDragStagePoint(drag)");
+    expect(jigsawCss).toContain(".tile-puzzle-piece-outline.exterior {\n  transition: none;");
   });
 
   it("coalesces pinch transforms and cancels leftover camera frames on cleanup", () => {
