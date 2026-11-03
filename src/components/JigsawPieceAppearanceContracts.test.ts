@@ -90,8 +90,9 @@ describe("Jigsaw piece appearance integration", () => {
   });
 
   it("shadows the cardboard without filtering the printed artwork", () => {
-    expect(css).toContain(".jigsaw-island.dragging .jigsaw-island-sidewall {");
+    expect(css).toContain(".jigsaw-island.dragging .jigsaw-island-sidewall {\n  transform: translate(1.75px, 4.6px)");
     expect(css).toContain(".jigsaw-island.anchored .jigsaw-island-sidewall");
+    expect(css).not.toContain("filter: drop-shadow(0 3px 4px rgba(3, 8, 14, 0.45))");
     expect(css).not.toContain(".jigsaw-island.dragging .jigsaw-island-artwork");
     expect(css).not.toContain(".jigsaw-island.joined .jigsaw-island-artwork");
   });

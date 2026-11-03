@@ -22,10 +22,10 @@ describe("Jigsaw auto-pan controller boundary", () => {
 
     expect(jigsawCss).toContain(".jigsaw-island {");
     expect(jigsawCss).toContain("transform: translate(");
-    expect(jigsawCss).toContain("calc(var(--jigsaw-piece-x, 0px) + var(--jigsaw-active-drag-x))");
-    expect(jigsawCss).toContain(".jigsaw-island.dragging {");
-    expect(jigsawCss).toContain("calc(var(--jigsaw-piece-y, 0px) + var(--jigsaw-active-drag-y))");
-    expect(jigsawCss).toContain("--jigsaw-active-drag-x: var(--jigsaw-drag-x, 0px)");
+    expect(jigsawCss).toContain("var(--jigsaw-piece-x, 0px)");
+    expect(jigsawCss).toContain("var(--jigsaw-piece-y, 0px)");
+    expect(jigsawCss).not.toContain("--jigsaw-active-drag-x");
+    expect(jigsawCss).toContain("drag motion uses style.translate");
     expect(jigsawCss).toContain(".tile-puzzle-piece {");
     expect(jigsawCss).toContain("Hit targets need a local translation");
     expect(jigsawCss).not.toContain("transform: translate3d(\n    var(--jigsaw-piece-x, 0px)");
@@ -103,6 +103,9 @@ describe("Jigsaw auto-pan controller boundary", () => {
     expect(previewSource).toContain("useLayoutEffect(() => {");
     expect(previewSource).toContain("resetJigsawDragOffset([pending])");
     expect(previewSource).toContain("if (afterPlacementCommit) pendingDragResetRef.current = drag.islandElement");
+    // The transient transform is retained until placement has committed;
+    // an unsnapped drop does not depend on the dragging CSS class for its pose.
+    expect(jigsawCss).not.toContain("--jigsaw-active-drag-x");
     expect((previewSource.match(/endDragPresentation\(/g) ?? []).length).toBeGreaterThanOrEqual(5);
     expect(previewSource).toContain("dragRef.current = null");
     expect(previewSource).toContain("pinchRef.current = null");

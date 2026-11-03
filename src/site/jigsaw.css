@@ -750,20 +750,15 @@
 }
 
 .jigsaw-island {
-  --jigsaw-active-drag-x: 0px;
-  --jigsaw-active-drag-y: 0px;
   position: absolute;
   left: 0;
   top: 0;
   pointer-events: none;
+  /* Settled pose belongs to Preact; drag motion uses style.translate. */
   transform: translate(
-    calc(var(--jigsaw-piece-x, 0px) + var(--jigsaw-active-drag-x)),
-    calc(var(--jigsaw-piece-y, 0px) + var(--jigsaw-active-drag-y))
+    var(--jigsaw-piece-x, 0px),
+    var(--jigsaw-piece-y, 0px)
   );
-}
-.jigsaw-island.dragging {
-  --jigsaw-active-drag-x: var(--jigsaw-drag-x, 0px);
-  --jigsaw-active-drag-y: var(--jigsaw-drag-y, 0px);
 }
 .jigsaw-island-visual {
   position: absolute;
@@ -860,10 +855,8 @@
   filter: drop-shadow(0 1px 1px rgba(3, 8, 14, 0.42))
     drop-shadow(0 2px 3px rgba(3, 8, 14, 0.2));
 }
-.jigsaw-island.dragging .jigsaw-island-sidewall {
-  filter: drop-shadow(0 3px 4px rgba(3, 8, 14, 0.45))
-    drop-shadow(0 12px 15px rgba(3, 8, 14, 0.36));
-}
+/* Contact shadows stay stable across pointer release. The physical lift is
+   conveyed by raised cardboard thickness and a shifted material reflection. */
 .tile-puzzle-piece-hit-visual {
   width: 100%;
   height: 100%;
@@ -871,8 +864,6 @@
   pointer-events: none;
 }
 .tile-puzzle-piece {
-  --jigsaw-active-drag-x: 0px;
-  --jigsaw-active-drag-y: 0px;
   position: absolute;
   left: 0;
   top: 0;
@@ -895,11 +886,6 @@
     var(--jigsaw-piece-x, 0px),
     var(--jigsaw-piece-y, 0px)
   );
-}
-
-.tile-puzzle-piece.dragging {
-  --jigsaw-active-drag-x: var(--jigsaw-drag-x, 0px);
-  --jigsaw-active-drag-y: var(--jigsaw-drag-y, 0px);
 }
 
 .tile-puzzle-piece:focus-visible {
