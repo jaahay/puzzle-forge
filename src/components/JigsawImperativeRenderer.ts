@@ -42,6 +42,12 @@ export const applyJigsawDragOffset = (
   }
 };
 
+/** Remove the entire temporary transform at rest: even a zero translate
+ * establishes a CSS transform context in browsers and can pressure the GPU. */
 export const resetJigsawDragOffset = (
   targets: readonly JigsawDragTransformTarget[],
-) => applyJigsawDragOffset(targets, 0, 0);
+) => {
+  for (const target of targets) {
+    if (target.style.translate !== "") target.style.translate = "";
+  }
+};

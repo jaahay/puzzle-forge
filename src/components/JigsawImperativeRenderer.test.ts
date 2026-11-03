@@ -55,8 +55,10 @@ describe("Jigsaw imperative renderer", () => {
     // untouched by active drag movement or by the release reset.
     applyJigsawDragOffset([member.target], 14, 9);
     resetJigsawDragOffset([member.target]);
-    expect(member.translate).toBe("0px 0px");
+    expect(member.translate).toBe("");
     expect(member.target.style.transform).toBe("translate(var(--jigsaw-piece-x), var(--jigsaw-piece-y))");
     expect(member.writes).toBe(2);
+    resetJigsawDragOffset([member.target]);
+    expect(member.writes).toBe(2); // Already at rest: no DOM mutation.
   });
 });
