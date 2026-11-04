@@ -183,6 +183,7 @@ export const JigsawWorkspace = ({
         completionDisabled={isGenerating}
         onResetPuzzle={resetJigsaw}
         onNewPuzzle={() => onNewPuzzle()}
+        onChoosePuzzle={() => document.querySelector<HTMLElement>(".jigsaw-workspace .new-puzzle-options > summary")?.click()}
       />
     </section>
   ) : isGenerating ? loadingBoard : null;

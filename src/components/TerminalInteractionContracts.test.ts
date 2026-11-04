@@ -67,6 +67,12 @@ describe("terminal interaction contracts", () => {
     expect(jigsawPreviewSource).toContain('class="jigsaw-solved-card is-completed"');
     expect(jigsawPreviewSource).toContain("onClick={onResetPuzzle}");
     expect(jigsawPreviewSource).toContain("onClick={onNewPuzzle}");
+    expect(jigsawPreviewSource).toContain("onChoosePuzzle();");
+    expect(jigsawPreviewSource).toContain("setDismissedCompletionKey(completionKey)");
+    expect(jigsawPreviewSource).toContain("event.target === event.currentTarget");
+    expect(jigsawPreviewSource).toContain('event.key === "Escape"');
+    expect(jigsawSource).toContain("onChoosePuzzle={() => document.querySelector<HTMLElement>");
+    expect(jigsawSource).toContain("newPuzzleControl={newPuzzleControl}");
     expect(jigsawPreviewSource).toContain('if (target?.closest(".jigsaw-solved-card")) return;');
   });
 
