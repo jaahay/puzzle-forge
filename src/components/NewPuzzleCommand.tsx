@@ -2,7 +2,7 @@ import type { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { makeRandomSeed, maxPuzzleSeedLength } from "../app/runtime";
 import { InfoIcon } from "./InfoIcon";
-import { PlayIcon, RandomIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
+import { PlayIcon, PuzzleOptionsIcon, RandomIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
 import { CurrentSeedDisplay } from "./SeedControl";
 
 type NewPuzzleCommandActionOptions = {
@@ -59,6 +59,7 @@ type NewPuzzleCommandProps = {
   info?: ComponentChildren;
   panelClassName?: string;
   openOptionsRequest?: number;
+  compactActions?: boolean;
   onSeedLoadInputChange: (seed: string) => void;
   onNewPuzzle: (afterStart?: () => void) => void;
   onToday: (afterStart?: () => void) => void;
@@ -77,6 +78,7 @@ export const NewPuzzleCommand = ({
   info,
   panelClassName,
   openOptionsRequest = 0,
+  compactActions = false,
   onSeedLoadInputChange,
   onNewPuzzle,
   onToday,
@@ -156,7 +158,7 @@ export const NewPuzzleCommand = ({
   const panelClass = ["new-puzzle-options-panel", panelClassName].filter(Boolean).join(" ");
 
   return (
-    <div class="new-puzzle-command" aria-label={`New ${puzzleTitle}: ${configurationSummary}`} ref={commandRef}>
+    <div class={`new-puzzle-command${compactActions ? " is-icon-only" : ""}`} aria-label={`New ${puzzleTitle}: ${configurationSummary}`} ref={commandRef}>
       <div class="new-puzzle-split-control">
         <button
           class="new-puzzle-command-primary"
@@ -166,7 +168,7 @@ export const NewPuzzleCommand = ({
           aria-label={`New random ${puzzleTitle}, ${randomConfigurationSummary}`}
           title={`New random puzzle — ${randomConfigurationSummary}`}
         >
-          New
+          {compactActions ? <RandomIcon /> : "New"}
         </button>
         <details
           class="new-puzzle-options"
@@ -187,12 +189,12 @@ export const NewPuzzleCommand = ({
             aria-label={`Change new puzzle options. Current selection: ${configurationSummary}`}
             aria-disabled={disabled || undefined}
             tabIndex={disabled ? -1 : 0}
-            title="New puzzle options"
+            title={compactActions ? "Choose puzzle and settings" : "New puzzle options"}
             onClick={(event) => {
               if (disabled) event.preventDefault();
             }}
           >
-            <span class="new-puzzle-command-caret" aria-hidden="true">▾</span>
+            {compactActions ? <PuzzleOptionsIcon /> : <span class="new-puzzle-command-caret" aria-hidden="true">▾</span>}
           </summary>
           <div class={panelClass} aria-label="New puzzle options">
             <div class="new-puzzle-info">

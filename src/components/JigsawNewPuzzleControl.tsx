@@ -127,6 +127,7 @@ export const JigsawNewPuzzleControl = ({
       disabled={disabled}
       panelClassName="image-new-puzzle-options-panel jigsaw-new-puzzle-options-panel"
       openOptionsRequest={openOptionsRequest}
+      compactActions
       onSeedLoadInputChange={onSeedLoadInputChange}
       onNewPuzzle={onNewPuzzle}
       onToday={onToday}

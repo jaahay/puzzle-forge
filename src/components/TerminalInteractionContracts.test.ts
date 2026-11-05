@@ -70,8 +70,13 @@ describe("terminal interaction contracts", () => {
     expect(jigsawPreviewSource).toContain('class="jigsaw-solved-card is-completed"');
     expect(jigsawPreviewSource).toContain("onClick={onResetPuzzle}");
     expect(jigsawPreviewSource).toContain('class="jigsaw-solved-header"');
-    expect(jigsawPreviewSource).toContain("Choose puzzle…");
-    expect(jigsawPreviewSource).toContain("Play again");
+    expect(jigsawPreviewSource).toContain('aria-label="Choose another puzzle and settings"');
+    expect(jigsawPreviewSource).toContain('aria-label="Restart this puzzle"');
+    expect(jigsawPreviewSource).toContain("<RandomIcon />");
+    expect(jigsawPreviewSource).toContain("<PuzzleOptionsIcon />");
+    expect(jigsawPreviewSource).toContain("<RestartPuzzleIcon />");
+    expect(newCommandSource).toContain("compactActions ? <RandomIcon />");
+    expect(newCommandSource).toContain("compactActions ? <PuzzleOptionsIcon />");
     expect(jigsawPreviewSource).toContain("onClick={onNewPuzzle}");
     expect(jigsawPreviewSource).toContain("onChoosePuzzle();");
     expect(jigsawPreviewSource).toContain("setDismissedCompletionKey(completionKey)");
@@ -86,6 +91,9 @@ describe("terminal interaction contracts", () => {
     expect(immersiveCss).toContain(".workspace-layout-header.workspace-layout-crown");
     expect(jigsawCss).toContain(".jigsaw-solved-card.is-completed");
     expect(jigsawCss).toContain("background: #111827");
+    expect(jigsawCss).toContain(".jigsaw-workspace .current-puzzle-new-action .new-puzzle-split-control");
+    expect(jigsawCss).toContain(".jigsaw-workspace.is-immersive .new-puzzle-options-panel");
+    expect(jigsawCss).not.toContain("max-height: min(72dvh, 36rem)");
     expect(jigsawSource).toContain("newPuzzleControl={newPuzzleControl}");
     expect(jigsawPreviewSource).toContain('if (target?.closest(".jigsaw-solved-card")) return;');
   });

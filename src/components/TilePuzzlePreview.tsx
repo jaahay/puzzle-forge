@@ -82,6 +82,7 @@ import {
 } from "./JigsawPreviewModel";
 import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
 import { usePuzzleWorkspaceDisplayMode } from "./PuzzleWorkspaceLayout";
+import { PuzzleOptionsIcon, RandomIcon, RestartPuzzleIcon } from "./NewPuzzleActionVisuals";
 
 export type JigsawHistoryAvailability = {
   canUndo: boolean;
@@ -1488,7 +1489,9 @@ export const TilePuzzlePreview = ({
                   type="button"
                   onClick={onNewPuzzle}
                   disabled={completionDisabled}
-                >Surprise me</button>
+                  aria-label="Surprise me with a new random puzzle"
+                  title="Surprise me — new random puzzle"
+                ><RandomIcon /></button>
                 <button
                   class="jigsaw-solved-choose"
                   type="button"
@@ -1497,13 +1500,17 @@ export const TilePuzzlePreview = ({
                     onChoosePuzzle();
                   }}
                   disabled={completionDisabled}
-                >Choose puzzle…</button>
+                  aria-label="Choose another puzzle and settings"
+                  title="Choose puzzle and settings"
+                ><PuzzleOptionsIcon /></button>
                 <button
                   class="jigsaw-solved-replay"
                   type="button"
                   onClick={onResetPuzzle}
                   disabled={completionDisabled}
-                >Play again</button>
+                  aria-label="Restart this puzzle"
+                  title="Restart this puzzle"
+                ><RestartPuzzleIcon /></button>
               </div>
             </div>
           </div>

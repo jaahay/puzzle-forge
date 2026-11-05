@@ -13,6 +13,23 @@ export const RandomIcon = () => (
   </svg>
 );
 
+/* Shared visual vocabulary for Jigsaw navigation and completion actions. */
+export const PuzzleOptionsIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M4 7h16M4 12h16M4 17h16" />
+    <circle cx="9" cy="7" r="2" />
+    <circle cx="16" cy="12" r="2" />
+    <circle cx="11" cy="17" r="2" />
+  </svg>
+);
+
+export const RestartPuzzleIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M20 7v5h-5" />
+    <path d="M19 12a7.5 7.5 0 1 0-2.3 5.4" />
+  </svg>
+);
+
 export const PlayIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true">
     <path d="M8 5l11 7-11 7z" />
