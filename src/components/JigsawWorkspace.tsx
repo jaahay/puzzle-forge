@@ -194,7 +194,7 @@ export const JigsawWorkspace = ({
 
   const gameplay = jigsawPuzzle && !isSolved ? (
     <div class="puzzle-actions">
-      <button type="button" onClick={resetJigsaw} disabled={isGenerating}>Reset</button>
+      <button type="button" onClick={() => resetJigsaw()} disabled={isGenerating}>Reset</button>
     </div>
   ) : null;
 
