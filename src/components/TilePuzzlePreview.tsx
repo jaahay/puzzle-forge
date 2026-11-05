@@ -1465,36 +1465,45 @@ export const TilePuzzlePreview = ({
           >
             <div
               class="jigsaw-solved-card is-completed"
+              role="group"
+              aria-label="Puzzle complete actions"
               onPointerDown={(event) => event.stopPropagation()}
             >
-              <button
-                class="jigsaw-solved-dismiss"
-                type="button"
-                aria-label="Dismiss completion actions"
-                title="Dismiss"
-                onClick={() => setDismissedCompletionKey(completionKey)}
-              >×</button>
-              <div class="jigsaw-solved-copy" role="status" aria-live="polite" aria-atomic="true">
-                <span class="jigsaw-solved-mark" aria-hidden="true">✓</span>
-                <strong>Solved</strong>
+              <div class="jigsaw-solved-header">
+                <div class="jigsaw-solved-copy" role="status" aria-live="polite" aria-atomic="true">
+                  <span class="jigsaw-solved-mark" aria-hidden="true">✓</span>
+                  <strong>Puzzle complete</strong>
+                </div>
+                <button
+                  class="jigsaw-solved-dismiss"
+                  type="button"
+                  aria-label="Dismiss completion actions"
+                  title="Dismiss"
+                  onClick={() => setDismissedCompletionKey(completionKey)}
+                >×</button>
               </div>
               <div class="jigsaw-solved-actions" aria-label="Solved Jigsaw actions">
-                <button type="button" onClick={onResetPuzzle} disabled={completionDisabled}>Replay</button>
                 <button
-                  class="new-puzzle-primary"
+                  class="jigsaw-solved-surprise"
                   type="button"
                   onClick={onNewPuzzle}
                   disabled={completionDisabled}
                 >Surprise me</button>
                 <button
-                  class="new-puzzle-primary"
+                  class="jigsaw-solved-choose"
                   type="button"
                   onClick={() => {
                     setDismissedCompletionKey(completionKey);
                     onChoosePuzzle();
                   }}
                   disabled={completionDisabled}
-                >Choose…</button>
+                >Choose puzzle…</button>
+                <button
+                  class="jigsaw-solved-replay"
+                  type="button"
+                  onClick={onResetPuzzle}
+                  disabled={completionDisabled}
+                >Play again</button>
               </div>
             </div>
           </div>

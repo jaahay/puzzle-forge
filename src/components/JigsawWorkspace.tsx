@@ -32,6 +32,7 @@ export const JigsawWorkspace = ({
   onJigsawAssemblyChange,
 }: JigsawWorkspaceProps) => {
   const [resetVersion, setResetVersion] = useState(0);
+  const [openNewPuzzleRequest, setOpenNewPuzzleRequest] = useState(0);
   const [completionState, setCompletionState] = useState<{ puzzleInstanceId: string; solved: boolean } | null>(null);
   const [historyAvailability, setHistoryAvailability] = useState<{
     puzzleInstanceId: string | null;
@@ -120,6 +121,7 @@ export const JigsawWorkspace = ({
       maxHeight={selectedDefinition.maxHeight}
       seedLoadInput={seedLoadInput}
       disabled={isGenerating || !selectedPuzzleIsGeneratable}
+      openOptionsRequest={openNewPuzzleRequest}
       onSettingsChange={onNextPuzzleDraftChange}
       onSeedLoadInputChange={onSeedLoadInputChange}
       onNewPuzzle={onNewPuzzle}
@@ -183,7 +185,7 @@ export const JigsawWorkspace = ({
         completionDisabled={isGenerating}
         onResetPuzzle={resetJigsaw}
         onNewPuzzle={() => onNewPuzzle()}
-        onChoosePuzzle={() => document.querySelector<HTMLElement>(".jigsaw-workspace .new-puzzle-options > summary")?.click()}
+        onChoosePuzzle={() => setOpenNewPuzzleRequest((request) => request + 1)}
       />
     </section>
   ) : isGenerating ? loadingBoard : null;

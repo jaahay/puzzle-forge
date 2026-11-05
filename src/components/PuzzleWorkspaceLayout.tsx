@@ -112,6 +112,10 @@ export const PuzzleWorkspaceLayout = ({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape" || document.fullscreenElement) return;
+      // An open puzzle menu or solved-puzzle continuation owns Escape first.
+      if (event.defaultPrevented || workspaceRef.current?.querySelector(
+        ".new-puzzle-options[open], .jigsaw-solved-presentation.is-completed",
+      )) return;
       setIsExpanded(false);
     };
     document.addEventListener("keydown", handleKeyDown);

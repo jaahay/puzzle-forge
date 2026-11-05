@@ -10,6 +10,9 @@ const wordGuessSource = readFileSync(new URL("./WordGuessGame.tsx", import.meta.
 const jigsawSource = readFileSync(new URL("./JigsawWorkspace.tsx", import.meta.url), "utf8");
 const jigsawPreviewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", import.meta.url), "utf8");
 const jigsawCss = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
+const immersiveCss = readFileSync(new URL("../site/immersive.css", import.meta.url), "utf8");
+const newCommandSource = readFileSync(new URL("./NewPuzzleCommand.tsx", import.meta.url), "utf8");
+const layoutSource = readFileSync(new URL("./PuzzleWorkspaceLayout.tsx", import.meta.url), "utf8");
 
 describe("terminal interaction contracts", () => {
   it("keeps the reserved grid validation lane mounted after completion", () => {
@@ -66,12 +69,23 @@ describe("terminal interaction contracts", () => {
     expect(jigsawPreviewSource).toContain('class="jigsaw-solved-card is-celebrating"');
     expect(jigsawPreviewSource).toContain('class="jigsaw-solved-card is-completed"');
     expect(jigsawPreviewSource).toContain("onClick={onResetPuzzle}");
+    expect(jigsawPreviewSource).toContain('class="jigsaw-solved-header"');
+    expect(jigsawPreviewSource).toContain("Choose puzzle…");
+    expect(jigsawPreviewSource).toContain("Play again");
     expect(jigsawPreviewSource).toContain("onClick={onNewPuzzle}");
     expect(jigsawPreviewSource).toContain("onChoosePuzzle();");
     expect(jigsawPreviewSource).toContain("setDismissedCompletionKey(completionKey)");
     expect(jigsawPreviewSource).toContain("event.target === event.currentTarget");
     expect(jigsawPreviewSource).toContain('event.key === "Escape"');
-    expect(jigsawSource).toContain("onChoosePuzzle={() => document.querySelector<HTMLElement>");
+    expect(jigsawSource).toContain("onChoosePuzzle={() => setOpenNewPuzzleRequest");
+    expect(jigsawSource).toContain("openOptionsRequest={openNewPuzzleRequest}");
+    expect(newCommandSource).toContain("previousOpenRequestRef.current === openOptionsRequest");
+    expect(newCommandSource).toContain("optionsRef.current.open = true");
+    expect(newCommandSource).toContain('document.addEventListener("keydown", handleKeyDown, true)');
+    expect(layoutSource).toContain(".new-puzzle-options[open], .jigsaw-solved-presentation.is-completed");
+    expect(immersiveCss).toContain(".workspace-layout-header.workspace-layout-crown");
+    expect(jigsawCss).toContain(".jigsaw-solved-card.is-completed");
+    expect(jigsawCss).toContain("background: #111827");
     expect(jigsawSource).toContain("newPuzzleControl={newPuzzleControl}");
     expect(jigsawPreviewSource).toContain('if (target?.closest(".jigsaw-solved-card")) return;');
   });

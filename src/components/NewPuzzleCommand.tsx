@@ -58,6 +58,7 @@ type NewPuzzleCommandProps = {
   settings?: ComponentChildren;
   info?: ComponentChildren;
   panelClassName?: string;
+  openOptionsRequest?: number;
   onSeedLoadInputChange: (seed: string) => void;
   onNewPuzzle: (afterStart?: () => void) => void;
   onToday: (afterStart?: () => void) => void;
@@ -75,6 +76,7 @@ export const NewPuzzleCommand = ({
   settings,
   info,
   panelClassName,
+  openOptionsRequest = 0,
   onSeedLoadInputChange,
   onNewPuzzle,
   onToday,
@@ -83,6 +85,7 @@ export const NewPuzzleCommand = ({
   const commandRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDetailsElement>(null);
   const infoButtonRef = useRef<HTMLButtonElement>(null);
+  const previousOpenRequestRef = useRef(openOptionsRequest);
   const [infoOpen, setInfoOpen] = useState(false);
 
   const closeInfo = (restoreFocus = false) => {
@@ -100,6 +103,16 @@ export const NewPuzzleCommand = ({
     options.open = false;
     if (restoreFocus && wasOpen) options.querySelector<HTMLElement>("summary")?.focus({ preventScroll: true });
   };
+
+  // The header menu is the only configuration surface. Completion actions request
+  // opening it without simulating a click on an element that may be offscreen.
+  useEffect(() => {
+    if (previousOpenRequestRef.current === openOptionsRequest) return;
+    previousOpenRequestRef.current = openOptionsRequest;
+    if (disabled || !optionsRef.current) return;
+    optionsRef.current.open = true;
+    optionsRef.current.querySelector<HTMLElement>("summary")?.focus({ preventScroll: true });
+  }, [openOptionsRequest, disabled]);
 
   const renewSeedCandidate = () => onSeedLoadInputChange(makeRandomSeed());
   const { startRandomPuzzle, startToday, loadSeed } = createNewPuzzleCommandActions({
@@ -124,6 +137,7 @@ export const NewPuzzleCommand = ({
       if (event.key !== "Escape" || !optionsRef.current?.open) return;
 
       event.preventDefault();
+      event.stopPropagation();
       if (infoOpen) {
         closeInfo(true);
         return;
@@ -132,10 +146,10 @@ export const NewPuzzleCommand = ({
     };
 
     document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown, true);
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown, true);
     };
   }, [infoOpen]);
 
