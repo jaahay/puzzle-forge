@@ -69,7 +69,10 @@ describe("terminal interaction contracts", () => {
     expect(jigsawPreviewSource).toContain('class="jigsaw-solved-card is-celebrating"');
     expect(jigsawPreviewSource).toContain('class="jigsaw-solved-card is-completed"');
     expect(jigsawPreviewSource).toContain("onClick={onResetPuzzle}");
-    expect(jigsawPreviewSource).toContain('class="jigsaw-solved-header"');
+    expect(jigsawPreviewSource).not.toContain('class="jigsaw-solved-header"');
+    expect(jigsawPreviewSource).not.toContain('class="jigsaw-solved-dismiss"');
+    expect(jigsawCss).not.toContain(".jigsaw-solved-header {");
+    expect(jigsawCss).not.toContain(".jigsaw-solved-dismiss {");
     expect(jigsawPreviewSource).toContain('aria-label="Choose another puzzle and settings"');
     expect(jigsawPreviewSource).toContain('aria-label="Restart this puzzle"');
     expect(jigsawPreviewSource).toContain("<RandomIcon />");

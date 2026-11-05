@@ -1470,19 +1470,6 @@ export const TilePuzzlePreview = ({
               aria-label="Puzzle complete actions"
               onPointerDown={(event) => event.stopPropagation()}
             >
-              <div class="jigsaw-solved-header">
-                <div class="jigsaw-solved-copy" role="status" aria-live="polite" aria-atomic="true">
-                  <span class="jigsaw-solved-mark" aria-hidden="true">✓</span>
-                  <strong>Puzzle complete</strong>
-                </div>
-                <button
-                  class="jigsaw-solved-dismiss"
-                  type="button"
-                  aria-label="Dismiss completion actions"
-                  title="Dismiss"
-                  onClick={() => setDismissedCompletionKey(completionKey)}
-                >×</button>
-              </div>
               <div class="jigsaw-solved-actions" aria-label="Solved Jigsaw actions">
                 <button
                   class="jigsaw-solved-surprise"

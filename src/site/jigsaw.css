@@ -682,12 +682,11 @@
 .jigsaw-solved-card.is-completed {
   box-sizing: border-box;
   display: grid;
-  width: min(100%, 16rem);
-  max-width: 16rem;
+  width: min(100%, 11.5rem);
+  max-width: 11.5rem;
   max-height: calc(100% - 4.5rem);
-  gap: 0.65rem;
-  border-radius: 1rem;
-  padding: 0.8rem 0.95rem 0.65rem;
+  border-radius: 0.85rem;
+  padding: 0.55rem 0.65rem;
   color: #ecfdf5;
   background: #091b2b;
   box-shadow:
@@ -698,27 +697,6 @@
   pointer-events: auto;
 }
 
-.jigsaw-solved-header {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.6rem;
-}
-
-.jigsaw-solved-dismiss {
-  display: grid;
-  flex: 0 0 auto;
-  place-items: center;
-  width: 2rem;
-  height: 2rem;
-  min-width: 2rem;
-  border: 1px solid rgba(148, 163, 184, 0.32);
-  border-radius: 999px;
-  color: #d1d5db;
-  background: #20364c;
-  cursor: pointer;
-}
 .jigsaw-solved-copy {
   display: inline-flex;
   align-items: center;
@@ -728,11 +706,6 @@
 
 .jigsaw-solved-card.is-celebrating .jigsaw-solved-copy {
   font-size: 1rem;
-}
-
-.jigsaw-solved-card.is-completed .jigsaw-solved-copy {
-  gap: 0.5rem;
-  font-size: 0.92rem;
 }
 
 .jigsaw-solved-mark {
@@ -746,11 +719,6 @@
   background: rgba(6, 78, 59, 0.44);
   font-size: 0.88rem;
   font-weight: 900;
-}
-
-.jigsaw-solved-card.is-completed .jigsaw-solved-mark {
-  width: 1.45rem;
-  font-size: 0.72rem;
 }
 
 .jigsaw-solved-actions {
