@@ -360,15 +360,6 @@ export const TilePuzzlePreview = ({
   const [showCompactTools, setShowCompactTools] = useState(false);
   const [dismissedCompletionKey, setDismissedCompletionKey] = useState<string | null>(null);
   const completionKey = `${puzzle.id}:${resetVersion ?? 0}`;
-  const showCompletionControls = shouldShowJigsawSolvedControls(isSolved, completionPhase) && dismissedCompletionKey !== completionKey;
-  useEffect(() => {
-    if (!showCompletionControls) return;
-    const dismissOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setDismissedCompletionKey(completionKey);
-    };
-    window.addEventListener("keydown", dismissOnEscape);
-    return () => window.removeEventListener("keydown", dismissOnEscape);
-  }, [showCompletionControls, completionKey]);
   const [fitIsOverview, setFitIsOverview] = useState(true);
   const cameraWasUserAdjustedRef = useRef(false);
   const displayMode = usePuzzleWorkspaceDisplayMode();
@@ -773,6 +764,15 @@ export const TilePuzzlePreview = ({
   }, [puzzle.id, visualScene, layout, placements]);
   const connectedCount = getJigsawConnectedPieceCount(activeAssembly);
   const isSolved = isJigsawAssemblySolved(activeAssembly, puzzle.tiles.length);
+  const showCompletionControls = shouldShowJigsawSolvedControls(isSolved, completionPhase) && dismissedCompletionKey !== completionKey;
+  useEffect(() => {
+    if (!showCompletionControls) return;
+    const dismissOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setDismissedCompletionKey(completionKey);
+    };
+    window.addEventListener("keydown", dismissOnEscape);
+    return () => window.removeEventListener("keydown", dismissOnEscape);
+  }, [showCompletionControls, completionKey]);
   const activeIslandKey = activeTileId && dragRef.current?.puzzleId === puzzle.id
     ? visualScene.byPieceId.get(activeTileId)?.key : null;
   const raisedIslandKey = raisedTileId ? visualScene.byPieceId.get(raisedTileId)?.key : null;
