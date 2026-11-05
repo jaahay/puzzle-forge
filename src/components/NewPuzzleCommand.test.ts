@@ -12,6 +12,7 @@ describe("New puzzle command confirmation lifecycle", () => {
       onNewPuzzle: (callback) => { effects.push("request:new"); afterStart = callback; },
       onToday: (callback) => { effects.push("request:today"); afterStart = callback; },
       onLoadSeed: (callback) => { effects.push("request:seed"); afterStart = callback; },
+      onRestartPuzzle: (callback) => { effects.push("request:restart"); afterStart = callback; },
       renewSeedCandidate: () => { effects.push("renew:seed"); },
     });
     return { actions, effects, confirm: () => { afterStart?.(); } };
@@ -43,11 +44,22 @@ describe("New puzzle command confirmation lifecycle", () => {
     }
   });
 
+  it("only closes the options after confirming a restart of the current puzzle", () => {
+    const { actions, effects, confirm } = setup();
+    actions.restartPuzzle();
+    expect(effects).toEqual(["request:restart"]);
+    // Cancelled restart: no callback, so the configuration remains open.
+    expect(effects).toEqual(["request:restart"]);
+    confirm();
+    expect(effects).toEqual(["request:restart", "close:true"]);
+  });
+
   it("performs no request or cleanup when disabled or seed input is blank", () => {
     const disabled = setup(true);
     disabled.actions.startRandomPuzzle();
     disabled.actions.startToday();
     disabled.actions.loadSeed();
+    disabled.actions.restartPuzzle();
     expect(disabled.effects).toEqual([]);
     const empty = setup(false, "  ");
     empty.actions.loadSeed();

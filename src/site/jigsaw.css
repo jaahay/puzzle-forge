@@ -55,6 +55,42 @@
   border-radius: 0.72rem;
   padding: 0;
 }
+.jigsaw-workspace .new-puzzle-restart-current {
+  display: flex;
+  width: 100%;
+  min-height: 2.65rem;
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid rgba(148, 163, 184, 0.23);
+  border-radius: 0.7rem;
+  padding: 0.55rem 0.75rem;
+  color: #cbd5e1;
+  background: #17283b;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.81rem;
+  font-weight: 700;
+}
+.jigsaw-workspace .new-puzzle-restart-current svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.jigsaw-workspace .new-puzzle-restart-current:hover:not(:disabled),
+.jigsaw-workspace .new-puzzle-restart-current:focus-visible {
+  border-color: rgba(125, 211, 252, 0.5);
+  background: #203b55;
+  outline: 2px solid rgba(125, 211, 252, 0.5);
+  outline-offset: 1px;
+}
+.jigsaw-workspace .new-puzzle-restart-current:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
 .jigsaw-workspace .new-puzzle-command.is-icon-only .new-puzzle-command-primary svg,
 .jigsaw-workspace .new-puzzle-command.is-icon-only .new-puzzle-options > summary svg {
   width: 1.3rem;
@@ -636,6 +672,17 @@
   opacity: 0;
 }
 
+.jigsaw-completion-announcement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .jigsaw-solved-presentation {
   position: absolute;
   inset: 0;
@@ -685,6 +732,7 @@
   width: min(100%, 11.5rem);
   max-width: 11.5rem;
   max-height: calc(100% - 4.5rem);
+  border-color: rgba(148, 163, 184, 0.3);
   border-radius: 0.85rem;
   padding: 0.55rem 0.65rem;
   color: #ecfdf5;
@@ -752,23 +800,6 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.8;
-}
-
-.jigsaw-solved-actions .jigsaw-solved-surprise {
-  border-color: #7dd3fc;
-  color: #082f49;
-  background: linear-gradient(180deg, #bae6fd, #7dd3fc);
-}
-
-.jigsaw-solved-actions .jigsaw-solved-choose {
-  border-color: rgba(148, 163, 184, 0.38);
-  background: #24384d;
-}
-
-.jigsaw-solved-actions .jigsaw-solved-replay {
-  border-color: rgba(148, 163, 184, 0.22);
-  color: #bacde2;
-  background: #122638;
 }
 
 .jigsaw-solved-actions button:hover:not(:disabled),

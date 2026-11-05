@@ -114,7 +114,7 @@ export const PuzzleWorkspaceLayout = ({
       if (event.key !== "Escape" || document.fullscreenElement) return;
       // An open puzzle menu or solved-puzzle continuation owns Escape first.
       if (event.defaultPrevented || workspaceRef.current?.querySelector(
-        ".new-puzzle-options[open], .jigsaw-solved-presentation.is-completed",
+        ".new-puzzle-options[open], [data-workspace-escape-layer]",
       )) return;
       setIsExpanded(false);
     };

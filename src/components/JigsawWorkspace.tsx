@@ -98,9 +98,10 @@ export const JigsawWorkspace = ({
     );
   };
 
-  const resetJigsaw = () => onReset(() => {
+  const resetJigsaw = (afterReset?: () => void) => onReset(() => {
     if (puzzleInstanceId) setCompletionState({ puzzleInstanceId, solved: false });
     setResetVersion((current) => current + 1);
+    afterReset?.();
   });
 
   const newPuzzleControl = jigsawPuzzle ? (
@@ -121,6 +122,7 @@ export const JigsawWorkspace = ({
       maxHeight={selectedDefinition.maxHeight}
       seedLoadInput={seedLoadInput}
       disabled={isGenerating || !selectedPuzzleIsGeneratable}
+      onRestartPuzzle={isSolved ? resetJigsaw : undefined}
       openOptionsRequest={openNewPuzzleRequest}
       onSettingsChange={onNextPuzzleDraftChange}
       onSeedLoadInputChange={onSeedLoadInputChange}

@@ -10,16 +10,16 @@ export const RandomIcon = () => (
     <circle cx="15" cy="15" r="1" />
     <circle cx="15" cy="9" r="1" />
     <circle cx="9" cy="15" r="1" />
+    <circle cx="12" cy="12" r="1" />
   </svg>
 );
 
 /* Shared visual vocabulary for Jigsaw navigation and completion actions. */
-export const PuzzleOptionsIcon = () => (
+export const PuzzlePickerIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M4 7h16M4 12h16M4 17h16" />
-    <circle cx="9" cy="7" r="2" />
-    <circle cx="16" cy="12" r="2" />
-    <circle cx="11" cy="17" r="2" />
+    <rect x="3" y="4" width="18" height="16" rx="2.5" />
+    <circle cx="9" cy="9" r="1.6" />
+    <path d="m5 17 5-5 3.2 3 2.7-2.8L19 16" />
   </svg>
 );
 

@@ -1,6 +1,6 @@
 import type { JSX } from "preact";
 import { memo } from "preact/compat";
-import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { JigsawGeneratedPuzzle, JigsawPiece } from "../catalog/types";
 import { advanceJigsawEdgePanCamera } from "../games/jigsaw/autoPan";
 import {
@@ -82,7 +82,8 @@ import {
 } from "./JigsawPreviewModel";
 import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
 import { usePuzzleWorkspaceDisplayMode } from "./PuzzleWorkspaceLayout";
-import { PuzzleOptionsIcon, RandomIcon, RestartPuzzleIcon } from "./NewPuzzleActionVisuals";
+import { PuzzlePickerIcon, RandomIcon, RestartPuzzleIcon } from "./NewPuzzleActionVisuals";
+import { dismissJigsawCompletionDockSession, reconcileJigsawCompletionDockSession, type JigsawCompletionDockSession } from "./JigsawCompletionDockSession";
 
 export type JigsawHistoryAvailability = {
   canUndo: boolean;
@@ -323,6 +324,7 @@ export const TilePuzzlePreview = ({
   onChoosePuzzle,
 }: TilePuzzlePreviewProps) => {
   const stageRef = useRef<HTMLDivElement>(null);
+  const completionDockRef = useRef<HTMLDivElement>(null);
   const toolsToggleRef = useRef<HTMLButtonElement>(null);
   const toolsPanelRef = useRef<HTMLDivElement>(null);
   const worldLayerRef = useRef<HTMLDivElement>(null);
@@ -359,8 +361,10 @@ export const TilePuzzlePreview = ({
   const [playerPreferences, setPlayerPreferences] = useState(loadJigsawPlayerPreferences);
   const { showPreview, showEdgeSeams, snapToFrame, appearance } = playerPreferences;
   const [showCompactTools, setShowCompactTools] = useState(false);
-  const [dismissedCompletionKey, setDismissedCompletionKey] = useState<string | null>(null);
-  const completionKey = `${puzzle.id}:${resetVersion ?? 0}`;
+  const completionKey = `${puzzle.id}:${resetVersion}`;
+  const [completionDockSession, setCompletionDockSession] = useState<JigsawCompletionDockSession>(
+    () => reconcileJigsawCompletionDockSession(null, completionKey, false),
+  );
   const [fitIsOverview, setFitIsOverview] = useState(true);
   const cameraWasUserAdjustedRef = useRef(false);
   const displayMode = usePuzzleWorkspaceDisplayMode();
@@ -765,15 +769,45 @@ export const TilePuzzlePreview = ({
   }, [puzzle.id, visualScene, layout, placements]);
   const connectedCount = getJigsawConnectedPieceCount(activeAssembly);
   const isSolved = isJigsawAssemblySolved(activeAssembly, puzzle.tiles.length);
-  const showCompletionControls = shouldShowJigsawSolvedControls(isSolved, completionPhase) && dismissedCompletionKey !== completionKey;
+  const completionSession = reconcileJigsawCompletionDockSession(completionDockSession, completionKey, isSolved);
+  useLayoutEffect(() => {
+    setCompletionDockSession((current) =>
+      reconcileJigsawCompletionDockSession(current, completionKey, isSolved));
+  }, [completionKey, isSolved]);
+  const showCompletionControls = shouldShowJigsawSolvedControls(isSolved, completionPhase) && !completionSession.dismissed;
+
+  const dismissCompletion = (restoreStageFocus = false) => {
+    setCompletionDockSession((current) => dismissJigsawCompletionDockSession(
+      reconcileJigsawCompletionDockSession(current, completionKey, isSolved),
+    ));
+    if (restoreStageFocus) stageRef.current?.focus({ preventScroll: true });
+  };
+
   useEffect(() => {
     if (!showCompletionControls) return;
-    const dismissOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setDismissedCompletionKey(completionKey);
+    const doc = stageRef.current?.ownerDocument;
+    if (!doc) return;
+
+    const onOutsidePointer = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Node && (
+        completionDockRef.current?.contains(target) || stageRef.current?.contains(target)
+      )) return;
+      dismissCompletion();
     };
-    window.addEventListener("keydown", dismissOnEscape);
-    return () => window.removeEventListener("keydown", dismissOnEscape);
-  }, [showCompletionControls, completionKey]);
+    const onEscape = (event: KeyboardEvent) => {
+      // Preserve the browser's native Escape-to-exit-fullscreen behavior.
+      if (event.key !== "Escape" || event.defaultPrevented || doc.fullscreenElement) return;
+      event.preventDefault();
+      dismissCompletion(true);
+    };
+    doc.addEventListener("pointerdown", onOutsidePointer, true);
+    doc.defaultView?.addEventListener("keydown", onEscape);
+    return () => {
+      doc.removeEventListener("pointerdown", onOutsidePointer, true);
+      doc.defaultView?.removeEventListener("keydown", onEscape);
+    };
+  }, [showCompletionControls, completionKey, isSolved]);
   const activeIslandKey = activeTileId && dragRef.current?.puzzleId === puzzle.id
     ? visualScene.byPieceId.get(activeTileId)?.key : null;
   const raisedIslandKey = raisedTileId ? visualScene.byPieceId.get(raisedTileId)?.key : null;
@@ -1234,6 +1268,8 @@ export const TilePuzzlePreview = ({
 
   const handleStageKeyDown = (event: StageKeyboardEvent) => {
     if (event.key === "Escape" && event.target === event.currentTarget) {
+      // While the completion dock is showing, Escape belongs to that overlay.
+      if (showCompletionControls) return;
       event.currentTarget.blur();
       event.preventDefault();
       return;
@@ -1271,6 +1307,9 @@ export const TilePuzzlePreview = ({
 
   return (
     <section class="tile-puzzle-preview" aria-label={`${puzzle.title} jigsaw puzzle`}>
+      <span class="jigsaw-completion-announcement" role="status" aria-live="polite" aria-atomic="true">
+        {isSolved ? "Jigsaw puzzle solved." : ""}
+      </span>
       <div class="jigsaw-workbench-toolbar">
         <div class="jigsaw-camera-tools" role="group" aria-label="Jigsaw view controls">
           <button type="button" onClick={() => zoomView("out")} aria-label="Zoom out" title="Zoom out">−</button>
@@ -1457,15 +1496,18 @@ export const TilePuzzlePreview = ({
         {showCompletionControls ? (
           <div
             class="jigsaw-solved-presentation is-completed"
+            data-workspace-escape-layer="completion"
             onPointerDown={(event) => {
               if (event.target === event.currentTarget) {
-                setDismissedCompletionKey(completionKey);
+                dismissCompletion();
+                event.preventDefault();
                 event.stopPropagation();
               }
             }}
           >
             <div
               class="jigsaw-solved-card is-completed"
+              ref={completionDockRef}
               role="group"
               aria-label="Puzzle complete actions"
               onPointerDown={(event) => event.stopPropagation()}
@@ -1483,13 +1525,13 @@ export const TilePuzzlePreview = ({
                   class="jigsaw-solved-choose"
                   type="button"
                   onClick={() => {
-                    setDismissedCompletionKey(completionKey);
+                    dismissCompletion();
                     onChoosePuzzle();
                   }}
                   disabled={completionDisabled}
                   aria-label="Choose another puzzle and settings"
                   title="Choose puzzle and settings"
-                ><PuzzleOptionsIcon /></button>
+                ><PuzzlePickerIcon /></button>
                 <button
                   class="jigsaw-solved-replay"
                   type="button"

@@ -2,7 +2,7 @@ import type { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { makeRandomSeed, maxPuzzleSeedLength } from "../app/runtime";
 import { InfoIcon } from "./InfoIcon";
-import { PlayIcon, PuzzleOptionsIcon, RandomIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
+import { PlayIcon, PuzzlePickerIcon, RandomIcon, RestartPuzzleIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
 import { CurrentSeedDisplay } from "./SeedControl";
 
 type NewPuzzleCommandActionOptions = {
@@ -12,6 +12,7 @@ type NewPuzzleCommandActionOptions = {
   onNewPuzzle: (afterStart?: () => void) => void;
   onToday: (afterStart?: () => void) => void;
   onLoadSeed: (afterStart?: () => void) => void;
+  onRestartPuzzle?: (afterRestart?: () => void) => void;
   renewSeedCandidate: () => void;
 };
 
@@ -22,6 +23,7 @@ export const createNewPuzzleCommandActions = ({
   onNewPuzzle,
   onToday,
   onLoadSeed,
+  onRestartPuzzle,
   renewSeedCandidate,
 }: NewPuzzleCommandActionOptions) => ({
   startRandomPuzzle: (restoreMenuFocus = false) => {
@@ -45,6 +47,10 @@ export const createNewPuzzleCommandActions = ({
       renewSeedCandidate();
     });
   },
+  restartPuzzle: () => {
+    if (disabled || !onRestartPuzzle) return;
+    onRestartPuzzle(() => closeOptions(true));
+  },
 });
 
 type NewPuzzleCommandProps = {
@@ -64,6 +70,7 @@ type NewPuzzleCommandProps = {
   onNewPuzzle: (afterStart?: () => void) => void;
   onToday: (afterStart?: () => void) => void;
   onLoadSeed: (afterStart?: () => void) => void;
+  onRestartPuzzle?: (afterRestart?: () => void) => void;
 };
 
 export const NewPuzzleCommand = ({
@@ -83,6 +90,7 @@ export const NewPuzzleCommand = ({
   onNewPuzzle,
   onToday,
   onLoadSeed,
+  onRestartPuzzle,
 }: NewPuzzleCommandProps) => {
   const commandRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDetailsElement>(null);
@@ -117,13 +125,14 @@ export const NewPuzzleCommand = ({
   }, [openOptionsRequest, disabled]);
 
   const renewSeedCandidate = () => onSeedLoadInputChange(makeRandomSeed());
-  const { startRandomPuzzle, startToday, loadSeed } = createNewPuzzleCommandActions({
+  const { startRandomPuzzle, startToday, loadSeed, restartPuzzle } = createNewPuzzleCommandActions({
     disabled,
     seedLoadInput,
     closeOptions,
     onNewPuzzle,
     onToday,
     onLoadSeed,
+    onRestartPuzzle,
     renewSeedCandidate,
   });
 
@@ -194,7 +203,7 @@ export const NewPuzzleCommand = ({
               if (disabled) event.preventDefault();
             }}
           >
-            {compactActions ? <PuzzleOptionsIcon /> : <span class="new-puzzle-command-caret" aria-hidden="true">▾</span>}
+            {compactActions ? <PuzzlePickerIcon /> : <span class="new-puzzle-command-caret" aria-hidden="true">▾</span>}
           </summary>
           <div class={panelClass} aria-label="New puzzle options">
             <div class="new-puzzle-info">
@@ -244,6 +253,19 @@ export const NewPuzzleCommand = ({
                   <span class="new-puzzle-quick-action-copy"><strong>Today</strong></span>
                 </button>
               </div>
+
+              {onRestartPuzzle ? (
+                <button
+                  class="new-puzzle-restart-current"
+                  type="button"
+                  onClick={restartPuzzle}
+                  disabled={disabled}
+                  title="Restart the current puzzle from the beginning"
+                >
+                  <RestartPuzzleIcon />
+                  <span>Restart this puzzle</span>
+                </button>
+              ) : null}
 
               {settings}
 
