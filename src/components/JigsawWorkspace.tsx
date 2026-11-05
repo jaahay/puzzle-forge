@@ -185,7 +185,7 @@ export const JigsawWorkspace = ({
         onCausativeInput={completion.recordCausativeInput}
         onCompletionAnimationEnd={completion.completePresentation}
         completionDisabled={isGenerating}
-        onResetPuzzle={resetJigsaw}
+        onResetPuzzle={() => resetJigsaw()}
         onNewPuzzle={() => onNewPuzzle()}
         onChoosePuzzle={() => setOpenNewPuzzleRequest((request) => request + 1)}
       />
