@@ -89,12 +89,12 @@
   top: clamp(0.7rem, 1.5vw, 1rem);
   left: clamp(0.7rem, 1.5vw, 1rem);
   z-index: 2100;
-  width: auto;
+  width: fit-content;
   justify-items: start;
 }
 
 .jigsaw-workspace.is-immersive .current-puzzle-header {
-  width: auto;
+  width: fit-content;
   min-height: 0;
   opacity: 1;
 }
