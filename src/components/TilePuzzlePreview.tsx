@@ -1365,7 +1365,7 @@ export const TilePuzzlePreview = ({
           </button>
         ) : null}
       </div>
-      {(isSolved || connectedCount > 0) ? (
+      {(!isSolved && connectedCount > 0) ? (
         <div class="tile-puzzle-summary"><span>{assemblySummary}</span></div>
       ) : null}
 
@@ -1504,6 +1504,13 @@ export const TilePuzzlePreview = ({
                 event.stopPropagation();
               }
             }}
+            onClick={(event) => {
+              // Assistive technology may synthesize a click without pointerdown.
+              if (event.target !== event.currentTarget) return;
+              dismissCompletion();
+              event.preventDefault();
+              event.stopPropagation();
+            }}
           >
             <div
               class="jigsaw-solved-card is-completed"
@@ -1541,6 +1548,13 @@ export const TilePuzzlePreview = ({
                   title="Restart this puzzle"
                 ><RestartPuzzleIcon /></button>
               </div>
+              <button
+                class="jigsaw-solved-dismiss-accessible"
+                type="button"
+                onClick={() => dismissCompletion(true)}
+              >
+                Dismiss completion actions
+              </button>
             </div>
           </div>
         ) : null}

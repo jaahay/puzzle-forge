@@ -5,6 +5,15 @@ import { InfoIcon } from "./InfoIcon";
 import { PlayIcon, PuzzlePickerIcon, RandomIcon, RestartPuzzleIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
 import { CurrentSeedDisplay } from "./SeedControl";
 
+/** Reuse the existing options menu while making a remote open request visible. */
+export const revealNewPuzzleOptions = (options: HTMLDetailsElement | null) => {
+  if (!options) return;
+  options.open = true;
+  const summary = options.querySelector<HTMLElement>("summary");
+  summary?.focus({ preventScroll: true });
+  summary?.scrollIntoView({ block: "start", inline: "nearest" });
+};
+
 type NewPuzzleCommandActionOptions = {
   disabled: boolean;
   seedLoadInput: string;
@@ -119,9 +128,8 @@ export const NewPuzzleCommand = ({
   useEffect(() => {
     if (previousOpenRequestRef.current === openOptionsRequest) return;
     previousOpenRequestRef.current = openOptionsRequest;
-    if (disabled || !optionsRef.current) return;
-    optionsRef.current.open = true;
-    optionsRef.current.querySelector<HTMLElement>("summary")?.focus({ preventScroll: true });
+    if (disabled) return;
+    revealNewPuzzleOptions(optionsRef.current);
   }, [openOptionsRequest, disabled]);
 
   const renewSeedCandidate = () => onSeedLoadInputChange(makeRandomSeed());

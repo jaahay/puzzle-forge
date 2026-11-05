@@ -97,7 +97,7 @@ describe("terminal interaction contracts", () => {
     expect(jigsawSource).toContain("onChoosePuzzle={() => setOpenNewPuzzleRequest");
     expect(jigsawSource).toContain("openOptionsRequest={openNewPuzzleRequest}");
     expect(newCommandSource).toContain("previousOpenRequestRef.current === openOptionsRequest");
-    expect(newCommandSource).toContain("optionsRef.current.open = true");
+    expect(newCommandSource).toContain("revealNewPuzzleOptions(optionsRef.current)");
     expect(newCommandSource).toContain('document.addEventListener("keydown", handleKeyDown, true)');
     expect(layoutSource).toContain(".new-puzzle-options[open], [data-workspace-escape-layer]");
     expect(immersiveCss).toContain(".workspace-layout-header.workspace-layout-crown");
