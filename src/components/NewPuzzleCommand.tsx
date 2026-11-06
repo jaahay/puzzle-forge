@@ -133,6 +133,8 @@ export const NewPuzzleCommand = ({
     };
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape" || !optionsRef.current?.open) return;
+      // Let an active confirmation own Escape before the underlying menu.
+      if (event.target instanceof Element && event.target.closest('[role="alertdialog"][aria-modal="true"]')) return;
 
       event.preventDefault();
       event.stopPropagation();
