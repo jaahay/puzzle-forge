@@ -112,9 +112,9 @@ export const PuzzleWorkspaceLayout = ({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape" || document.fullscreenElement) return;
-      // An open puzzle menu or solved-puzzle continuation owns Escape first.
+      // An open puzzle menu handles Escape before the workspace exits expanded mode.
       if (event.defaultPrevented || workspaceRef.current?.querySelector(
-        ".new-puzzle-options[open], [data-workspace-escape-layer]",
+        ".new-puzzle-options[open]",
       )) return;
       setIsExpanded(false);
     };

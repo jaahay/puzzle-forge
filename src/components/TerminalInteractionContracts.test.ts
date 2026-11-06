@@ -58,56 +58,34 @@ describe("terminal interaction contracts", () => {
     expect(wordGuessSource).toMatch(/<PuzzleTerminalDock[\s\S]*?announce=\{false\}[\s\S]*?\/>|<PuzzleTerminalDock[\s\S]*?announce=\{false\}[\s\S]*?>/);
   });
 
-  it("keeps Jigsaw completion stage-native while separating live celebration from restored solved state", () => {
+  it("keeps Jigsaw navigation in its header without duplicating completion actions on the board", () => {
     expect(jigsawSource).toContain("usePuzzleCompletionPresentation");
     expect(jigsawSource).not.toContain("PuzzleTerminalDock");
+    expect(jigsawSource).toContain('const crown = jigsawPuzzle ? (');
+    expect(jigsawSource).toContain("newPuzzleControl={newPuzzleControl}");
+    expect(jigsawSource).toContain("onRestartPuzzle={isSolved ? resetJigsaw : undefined}");
     expect(jigsawSource).toContain("completionPhase={completion.phase}");
     expect(jigsawSource).toContain("onCausativeInput={completion.recordCausativeInput}");
     expect(jigsawSource).toContain("onCompletionAnimationEnd={completion.completePresentation}");
     expect(jigsawPreviewSource).toContain("shouldShowJigsawCompletionCelebration(isSolved, completionPhase)");
-    expect(jigsawPreviewSource).toContain("shouldShowJigsawSolvedControls(isSolved, completionPhase)");
     expect(jigsawPreviewSource).toContain('class="jigsaw-solved-card is-celebrating"');
-    expect(jigsawPreviewSource).toContain('class="jigsaw-solved-card is-completed"');
-    expect(jigsawPreviewSource).toContain("onClick={onResetPuzzle}");
-    expect(jigsawPreviewSource).not.toContain('class="jigsaw-solved-header"');
-    expect(jigsawPreviewSource).not.toContain('class="jigsaw-solved-dismiss"');
-    expect(jigsawCss).not.toContain(".jigsaw-solved-header {");
-    expect(jigsawCss).not.toContain(".jigsaw-solved-dismiss {");
-    expect(jigsawPreviewSource).toContain('aria-label="Choose another puzzle and settings"');
-    expect(jigsawPreviewSource).toContain('aria-label="Restart this puzzle"');
-    expect(jigsawPreviewSource).toContain("<RandomIcon />");
-    expect(jigsawPreviewSource).toContain("<PuzzlePickerIcon />");
-    expect(jigsawPreviewSource).toContain("<RestartPuzzleIcon />");
+    expect(jigsawPreviewSource).toContain('class="jigsaw-completion-announcement" role="status" aria-live="polite"');
+    expect(jigsawPreviewSource).not.toContain("showCompletionControls");
+    expect(jigsawPreviewSource).not.toContain("onChoosePuzzle");
+    expect(jigsawPreviewSource).not.toContain('class="jigsaw-solved-card is-completed"');
+    expect(jigsawCss).not.toContain(".jigsaw-solved-actions {");
+    expect(jigsawCss).not.toContain(".jigsaw-solved-card.is-completed");
     expect(newCommandSource).toContain("compactActions ? <RandomIcon />");
     expect(newCommandSource).toContain("compactActions ? <PuzzlePickerIcon />");
-    expect(jigsawPreviewSource).toContain("onClick={onNewPuzzle}");
-    expect(jigsawPreviewSource).toContain("onChoosePuzzle();");
-    expect(jigsawPreviewSource).toContain("reconcileJigsawCompletionDockSession");
-    expect(jigsawPreviewSource).toContain("dismissJigsawCompletionDockSession");
-    expect(jigsawPreviewSource).toContain('class="jigsaw-completion-announcement" role="status" aria-live="polite"');
-    expect(jigsawPreviewSource).toContain('doc.addEventListener("pointerdown", onOutsidePointer, true)');
-    expect(jigsawPreviewSource).toContain('data-workspace-escape-layer="completion"');
-    expect(jigsawPreviewSource).toContain("event.defaultPrevented || doc.fullscreenElement");
-    expect(jigsawSource).toContain("onRestartPuzzle={isSolved ? resetJigsaw : undefined}");
     expect(newCommandSource).toContain('class="new-puzzle-restart-current"');
-    expect(jigsawCss).not.toContain(".jigsaw-solved-actions .jigsaw-solved-surprise {");
-    expect(jigsawPreviewSource).toContain("event.target === event.currentTarget");
-    expect(jigsawPreviewSource).toContain("ref={completionDockRef}");
-    expect(jigsawPreviewSource).toContain('event.key === "Escape"');
-    expect(jigsawSource).toContain("onChoosePuzzle={() => setOpenNewPuzzleRequest");
-    expect(jigsawSource).toContain("openOptionsRequest={openNewPuzzleRequest}");
-    expect(newCommandSource).toContain("previousOpenRequestRef.current === openOptionsRequest");
-    expect(newCommandSource).toContain("revealNewPuzzleOptions(optionsRef.current)");
+    expect(newCommandSource).not.toContain("openOptionsRequest");
     expect(newCommandSource).toContain('document.addEventListener("keydown", handleKeyDown, true)');
-    expect(layoutSource).toContain(".new-puzzle-options[open], [data-workspace-escape-layer]");
+    expect(layoutSource).toContain(".new-puzzle-options[open]");
+    expect(layoutSource).not.toContain("[data-workspace-escape-layer]");
     expect(immersiveCss).toContain(".workspace-layout-header.workspace-layout-crown");
-    expect(jigsawCss).toContain(".jigsaw-solved-card.is-completed");
     expect(jigsawCss).toContain("background: #111827");
     expect(jigsawCss).toContain(".jigsaw-workspace .current-puzzle-new-action .new-puzzle-split-control");
     expect(jigsawCss).toContain(".jigsaw-workspace.is-immersive .new-puzzle-options-panel");
-    expect(jigsawCss).not.toContain("max-height: min(72dvh, 36rem)");
-    expect(jigsawSource).toContain("newPuzzleControl={newPuzzleControl}");
-    expect(jigsawPreviewSource).toContain('if (target?.closest(".jigsaw-solved-card")) return;');
   });
 
   it("celebrates only the causative final drop and keeps solved artwork visually quiet afterward", () => {
@@ -121,7 +99,6 @@ describe("terminal interaction contracts", () => {
     expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .jigsaw-island-artwork");
     expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .tile-puzzle-piece-outline");
     expect(jigsawCss).toContain(".jigsaw-freeform-stage.completion-celebrating .jigsaw-world-layer");
-    expect(jigsawCss).toContain(".jigsaw-solved-card.is-completed");
     expect(jigsawCss).toContain("animation: jigsaw-solved-card-arrive 620ms ease-out both;");
     expect(jigsawCss).toContain("animation: jigsaw-solved-world-settle 620ms ease-out both;");
     expect(jigsawCss).not.toContain(".jigsaw-freeform-stage.solved .jigsaw-world-layer");

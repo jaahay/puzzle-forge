@@ -28,11 +28,6 @@
   opacity: 1;
 }
 
-/* A dock-originated menu opening must not leave its header behind the sticky navigation. */
-.jigsaw-workspace:not(.is-immersive) .new-puzzle-options > summary {
-  scroll-margin-block-start: 5.5rem;
-}
-
 /* Constrain dropdown scrolling only where the viewport requires it. */
 .jigsaw-workspace.is-immersive .new-puzzle-options-panel {
   overflow-y: auto;
@@ -701,13 +696,6 @@
   place-items: center;
 }
 
-.jigsaw-solved-presentation.is-completed {
-  align-items: end;
-  justify-items: center;
-  padding-bottom: clamp(4.6rem, 8vh, 5.7rem);
-  pointer-events: auto;
-}
-
 .jigsaw-solved-card {
   display: flex;
   max-width: min(100%, 30rem);
@@ -729,26 +717,6 @@
   padding: 0.68rem 0.95rem;
   pointer-events: none;
   animation: jigsaw-solved-card-arrive 620ms ease-out both;
-}
-
-.jigsaw-solved-card.is-completed {
-  position: relative;
-  box-sizing: border-box;
-  display: grid;
-  width: min(100%, 11.5rem);
-  max-width: 11.5rem;
-  max-height: calc(100% - 4.5rem);
-  border-color: rgba(148, 163, 184, 0.3);
-  border-radius: 0.85rem;
-  padding: 0.55rem 0.65rem;
-  color: #ecfdf5;
-  background: #091b2b;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    0 10px 28px rgba(2, 6, 23, 0.42);
-  backdrop-filter: none;
-  overflow-y: auto;
-  pointer-events: auto;
 }
 
 .jigsaw-solved-copy {
@@ -773,80 +741,6 @@
   background: rgba(6, 78, 59, 0.44);
   font-size: 0.88rem;
   font-weight: 900;
-}
-
-.jigsaw-solved-actions {
-  display: grid;
-  width: 100%;
-  grid-template-columns: repeat(3, 2.75rem);
-  justify-content: center;
-  gap: 0.7rem;
-}
-
-.jigsaw-solved-actions button {
-  box-sizing: border-box;
-  display: grid;
-  place-items: center;
-  width: 2.75rem;
-  min-width: 2.75rem;
-  min-height: 2.75rem;
-  border: 1px solid rgba(96, 165, 250, 0.38);
-  border-radius: 0.7rem;
-  padding: 0;
-  color: #dbeafe;
-  background: #1a3147;
-  cursor: pointer;
-}
-
-.jigsaw-solved-actions button svg {
-  width: 1.35rem;
-  height: 1.35rem;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
-}
-
-.jigsaw-solved-actions button:hover:not(:disabled),
-.jigsaw-solved-actions button:focus-visible {
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 0 0 3px rgba(125, 211, 252, 0.22);
-  outline: none;
-}
-
-.jigsaw-solved-actions button:disabled {
-  cursor: wait;
-  opacity: 0.62;
-}
-
-.jigsaw-solved-dismiss-accessible {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  border: 0;
-  padding: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-/* The exit remains available to screen readers and appears for keyboard focus. */
-.jigsaw-solved-dismiss-accessible:focus {
-  position: static;
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 2.75rem;
-  margin: 0;
-  border: 1px solid rgba(125, 211, 252, 0.5);
-  border-radius: 0.7rem;
-  padding: 0.55rem 0.65rem;
-  clip-path: none;
-  white-space: normal;
-  color: #dbeafe;
-  background: #203b55;
-  outline: 2px solid rgba(125, 211, 252, 0.5);
-  outline-offset: 1px;
 }
 
 @keyframes jigsaw-solved-card-arrive {
@@ -1117,11 +1011,6 @@
   .jigsaw-solved-card.is-celebrating {
     max-width: min(100%, 24rem);
     border-radius: 1rem;
-  }
-
-  .jigsaw-solved-card.is-completed {
-    max-width: min(100%, 22rem);
-    border-radius: 0.9rem;
   }
 
   .jigsaw-workspace .puzzle-panel,

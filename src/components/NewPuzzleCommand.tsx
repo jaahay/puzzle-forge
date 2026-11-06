@@ -5,15 +5,6 @@ import { InfoIcon } from "./InfoIcon";
 import { PlayIcon, PuzzlePickerIcon, RandomIcon, RestartPuzzleIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
 import { CurrentSeedDisplay } from "./SeedControl";
 
-/** Reuse the existing options menu while making a remote open request visible. */
-export const revealNewPuzzleOptions = (options: HTMLDetailsElement | null) => {
-  if (!options) return;
-  options.open = true;
-  const summary = options.querySelector<HTMLElement>("summary");
-  summary?.focus({ preventScroll: true });
-  summary?.scrollIntoView({ block: "start", inline: "nearest" });
-};
-
 type NewPuzzleCommandActionOptions = {
   disabled: boolean;
   seedLoadInput: string;
@@ -73,7 +64,6 @@ type NewPuzzleCommandProps = {
   settings?: ComponentChildren;
   info?: ComponentChildren;
   panelClassName?: string;
-  openOptionsRequest?: number;
   compactActions?: boolean;
   onSeedLoadInputChange: (seed: string) => void;
   onNewPuzzle: (afterStart?: () => void) => void;
@@ -93,7 +83,6 @@ export const NewPuzzleCommand = ({
   settings,
   info,
   panelClassName,
-  openOptionsRequest = 0,
   compactActions = false,
   onSeedLoadInputChange,
   onNewPuzzle,
@@ -104,7 +93,6 @@ export const NewPuzzleCommand = ({
   const commandRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDetailsElement>(null);
   const infoButtonRef = useRef<HTMLButtonElement>(null);
-  const previousOpenRequestRef = useRef(openOptionsRequest);
   const [infoOpen, setInfoOpen] = useState(false);
 
   const closeInfo = (restoreFocus = false) => {
@@ -122,15 +110,6 @@ export const NewPuzzleCommand = ({
     options.open = false;
     if (restoreFocus && wasOpen) options.querySelector<HTMLElement>("summary")?.focus({ preventScroll: true });
   };
-
-  // The header menu is the only configuration surface. Completion actions request
-  // opening it without simulating a click on an element that may be offscreen.
-  useEffect(() => {
-    if (previousOpenRequestRef.current === openOptionsRequest) return;
-    previousOpenRequestRef.current = openOptionsRequest;
-    if (disabled) return;
-    revealNewPuzzleOptions(optionsRef.current);
-  }, [openOptionsRequest, disabled]);
 
   const renewSeedCandidate = () => onSeedLoadInputChange(makeRandomSeed());
   const { startRandomPuzzle, startToday, loadSeed, restartPuzzle } = createNewPuzzleCommandActions({

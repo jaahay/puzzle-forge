@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createNewPuzzleCommandActions, revealNewPuzzleOptions } from "./NewPuzzleCommand";
+import { createNewPuzzleCommandActions } from "./NewPuzzleCommand";
 
 describe("New puzzle command confirmation lifecycle", () => {
   const setup = (disabled = false, seedLoadInput = "chosen-seed") => {
@@ -64,32 +64,5 @@ describe("New puzzle command confirmation lifecycle", () => {
     const empty = setup(false, "  ");
     empty.actions.loadSeed();
     expect(empty.effects).toEqual([]);
-  });
-});
-
-describe("Remote New Puzzle chooser", () => {
-  it("opens the existing menu, focuses its trigger, and reveals it in the viewport", () => {
-    const calls: string[] = [];
-    const summary = {
-      focus: (options: FocusOptions) => calls.push(`focus:${options.preventScroll}`),
-      scrollIntoView: (options: ScrollIntoViewOptions) =>
-        calls.push(`scroll:${options.block}:${options.inline}`),
-    };
-    const options = {
-      open: false,
-      querySelector: (selector: string) => {
-        calls.push(`query:${selector}`);
-        return summary;
-      },
-    } as unknown as HTMLDetailsElement;
-
-    revealNewPuzzleOptions(options);
-
-    expect(options.open).toBe(true);
-    expect(calls).toEqual(["query:summary", "focus:true", "scroll:start:nearest"]);
-  });
-
-  it("tolerates an unmounted menu", () => {
-    expect(() => revealNewPuzzleOptions(null)).not.toThrow();
   });
 });
