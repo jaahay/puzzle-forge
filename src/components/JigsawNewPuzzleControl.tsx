@@ -64,6 +64,7 @@ type JigsawNewPuzzleControlProps = {
   maxHeight: number;
   seedLoadInput: string;
   disabled: boolean;
+  onRestartPuzzle?: (afterRestart?: () => void) => void;
   onSettingsChange: (settings: {
     imageId?: string;
     width?: number;
@@ -94,6 +95,7 @@ export const JigsawNewPuzzleControl = ({
   maxHeight,
   seedLoadInput,
   disabled,
+  onRestartPuzzle,
   onSettingsChange,
   onSeedLoadInputChange,
   onNewPuzzle,
@@ -124,6 +126,8 @@ export const JigsawNewPuzzleControl = ({
       seedLoadInput={seedLoadInput}
       disabled={disabled}
       panelClassName="image-new-puzzle-options-panel jigsaw-new-puzzle-options-panel"
+      compactActions
+      onRestartPuzzle={onRestartPuzzle}
       onSeedLoadInputChange={onSeedLoadInputChange}
       onNewPuzzle={onNewPuzzle}
       onToday={onToday}

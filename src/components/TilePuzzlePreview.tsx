@@ -78,7 +78,6 @@ import {
   shouldRenderJigsawEdgeSeams,
   shouldRenderJigsawReferencePreview,
   shouldShowJigsawCompletionCelebration,
-  shouldShowJigsawSolvedControls,
 } from "./JigsawPreviewModel";
 import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
 import { usePuzzleWorkspaceDisplayMode } from "./PuzzleWorkspaceLayout";
@@ -106,9 +105,6 @@ type TilePuzzlePreviewProps = {
   completionPhase: CompletionPresentationPhase;
   onCausativeInput: () => void;
   onCompletionAnimationEnd: () => void;
-  completionDisabled: boolean;
-  onResetPuzzle: () => void;
-  onNewPuzzle: () => void;
 };
 
 type PlacementState = JigsawWorkspaceState & {
@@ -315,9 +311,6 @@ export const TilePuzzlePreview = ({
   completionPhase,
   onCausativeInput,
   onCompletionAnimationEnd,
-  completionDisabled,
-  onResetPuzzle,
-  onNewPuzzle,
 }: TilePuzzlePreviewProps) => {
   const stageRef = useRef<HTMLDivElement>(null);
   const toolsToggleRef = useRef<HTMLButtonElement>(null);
@@ -840,7 +833,6 @@ export const TilePuzzlePreview = ({
   const beginTouchPinch = (event: StagePointerEvent) => {
     if (event.pointerType !== "touch") return;
     const target = event.target as Element | null;
-    if (target?.closest(".jigsaw-solved-card")) return;
     const point = getStagePoint(event.clientX, event.clientY);
     if (!point) return;
     touchPointsRef.current.set(event.pointerId, point);
@@ -1165,7 +1157,6 @@ export const TilePuzzlePreview = ({
 
   const handleWheel = (event: WheelEvent) => {
     const target = event.target as Element | null;
-    if (target?.closest(".jigsaw-solved-card")) return;
     const stagePoint = getStagePoint(event.clientX, event.clientY);
     if (!stagePoint) return;
     const current = wheelStateRef.current;
@@ -1257,6 +1248,9 @@ export const TilePuzzlePreview = ({
 
   return (
     <section class="tile-puzzle-preview" aria-label={`${puzzle.title} jigsaw puzzle`}>
+      <span class="jigsaw-completion-announcement" role="status" aria-live="polite" aria-atomic="true">
+        {isSolved ? "Jigsaw puzzle solved." : ""}
+      </span>
       <div class="jigsaw-workbench-toolbar">
         <div class="jigsaw-camera-tools" role="group" aria-label="Jigsaw view controls">
           <button type="button" onClick={() => zoomView("out")} aria-label="Zoom out" title="Zoom out">−</button>
@@ -1312,7 +1306,7 @@ export const TilePuzzlePreview = ({
           </button>
         ) : null}
       </div>
-      {(isSolved || connectedCount > 0) ? (
+      {(!isSolved && connectedCount > 0) ? (
         <div class="tile-puzzle-summary"><span>{assemblySummary}</span></div>
       ) : null}
 
@@ -1436,30 +1430,6 @@ export const TilePuzzlePreview = ({
               <div class="jigsaw-solved-copy">
                 <span class="jigsaw-solved-mark" aria-hidden="true">✓</span>
                 <strong>Puzzle solved</strong>
-              </div>
-            </div>
-          </div>
-        ) : null}
-        {shouldShowJigsawSolvedControls(isSolved, completionPhase) ? (
-          <div class="jigsaw-solved-presentation is-completed">
-            <div
-              class="jigsaw-solved-card is-completed"
-              onPointerDown={(event) => event.stopPropagation()}
-            >
-              <div class="jigsaw-solved-copy" role="status" aria-live="polite" aria-atomic="true">
-                <span class="jigsaw-solved-mark" aria-hidden="true">✓</span>
-                <strong>Solved</strong>
-              </div>
-              <div class="jigsaw-solved-actions" aria-label="Solved Jigsaw actions">
-                <button type="button" onClick={onResetPuzzle} disabled={completionDisabled}>Reset</button>
-                <button
-                  class="new-puzzle-primary"
-                  type="button"
-                  onClick={onNewPuzzle}
-                  disabled={completionDisabled}
-                >
-                  New puzzle
-                </button>
               </div>
             </div>
           </div>

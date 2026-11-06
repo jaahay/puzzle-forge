@@ -154,7 +154,3 @@ export const shouldShowJigsawCompletionCelebration = (
   phase: CompletionPresentationPhase,
 ) => isSolved && phase === "celebrating";
 
-export const shouldShowJigsawSolvedControls = (
-  isSolved: boolean,
-  phase: CompletionPresentationPhase,
-) => isSolved && phase === "completed";
