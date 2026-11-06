@@ -142,8 +142,14 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(panelRule).toContain("margin: 0;");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .tile-puzzle-tools");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .jigsaw-camera-tools");
-    expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .jigsaw-solved-presentation.is-completed");
-    expect(immersiveCss).toContain("padding-top: 4.25rem;");
+    const persistentNavigation = cssRule(
+      immersiveCss,
+      ".puzzle-workspace-layout.jigsaw-workspace.is-immersive .workspace-layout-header.workspace-layout-crown {",
+    );
+    expect(persistentNavigation).toContain("display: grid;");
+    expect(persistentNavigation).toContain("z-index: 2100;");
+    expect(jigsawWorkspaceSource).toContain("newPuzzleControl={newPuzzleControl}");
+    expect(immersiveCss).not.toContain(".jigsaw-solved-presentation.is-completed");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .jigsaw-freeform-stage");
     const stageRule = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive .jigsaw-freeform-stage {");
     expect(stageRule).toContain("height: 100%;");
