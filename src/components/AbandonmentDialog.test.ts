@@ -24,6 +24,15 @@ describe("abandonment dialog backdrop cancellation", () => {
     expect(app).toContain('onCancel={() => setPendingAbandonment(null)}');
   });
 
+  it("places the shared confirmation inside the fullscreen subtree and follows fullscreen changes", () => {
+    expect(source).toContain('import { createPortal } from "preact/compat"');
+    expect(source).toContain("document.fullscreenElement");
+    expect(source).toContain('document.addEventListener("fullscreenchange", syncFullscreenHost)');
+    expect(source).toContain('document.removeEventListener("fullscreenchange", syncFullscreenHost)');
+    expect(source).toContain("return fullscreenHost ? createPortal(dialog, fullscreenHost) : dialog;");
+    expect(source).toContain("safe.current?.focus();");
+  });
+
   it("keeps New and Reset confirmation behind explicit destructive buttons", () => {
     expect(source).toContain('onClick={onConfirm}');
     expect(source).toContain('{isNew ? "New puzzle" : "Reset"}');
