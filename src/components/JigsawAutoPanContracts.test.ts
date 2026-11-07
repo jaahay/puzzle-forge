@@ -127,8 +127,9 @@ describe("Jigsaw auto-pan controller boundary", () => {
     expect(previewSource).toContain("panJigsawCamera(");
   });
   it("keeps active pieces above the board, drops completed islands behind loose pieces, and marks hover targets through pointer capture", () => {
-    expect(islandVisualSource).toContain("getJigsawIslandStackOrder(island, puzzle.tiles.length, active, raised, anchored)");
-    expect(previewSource).toContain("setRaisedTileId(null)");
+    expect(islandVisualSource).toContain("getJigsawIslandStackOrder(island, puzzle.tiles.length, active, anchored)");
+    expect(previewSource).not.toContain("setRaisedTileId(");
+    expect(previewSource).toContain("setActiveTileId(null)");
     expect(previewSource).toContain("findJigsawDragHoverIsland(");
     expect(previewSource).toContain("updateDragHover(drag)");
     expect(previewSource).toContain('classList.remove("drag-hover")');
