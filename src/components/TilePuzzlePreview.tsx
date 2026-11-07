@@ -247,7 +247,6 @@ export const TilePuzzlePreview = ({
   progressChangeRef.current = onProgressChange;
   const [cameraState, setCameraState] = useState<CameraState | null>(null);
   const [activeTileId, setActiveTileId] = useState<string | null>(null);
-  const [raisedTileId, setRaisedTileId] = useState<string | null>(null);
   /** A completed placement must reach the DOM before its temporary drag offset is removed.
    *  Otherwise the piece briefly jumps back to its starting position on pointer release. */
   useLayoutEffect(() => {
@@ -265,7 +264,6 @@ export const TilePuzzlePreview = ({
     }
     dragRef.current = null;
     setActiveTileId(null);
-    setRaisedTileId(null);
   };
   const [isPanning, setIsPanning] = useState(false);
   const [playerPreferences, setPlayerPreferences] = useState(loadJigsawPlayerPreferences);
@@ -455,7 +453,6 @@ export const TilePuzzlePreview = ({
     baselinePlacementsRef.current = null;
     replaceHistory(makeEmptyJigsawHistoryState());
     setActiveTileId(null);
-    setRaisedTileId(null);
     setIsPanning(false);
     setFitIsOverview(true);
     cameraWasUserAdjustedRef.current = false;
@@ -704,7 +701,6 @@ export const TilePuzzlePreview = ({
   const isSolved = isJigsawAssemblySolved(activeAssembly, puzzle.tiles.length);
   const activeIslandKey = activeTileId && dragRef.current?.puzzleId === puzzle.id
     ? visualScene.byPieceId.get(activeTileId)?.key : null;
-  const raisedIslandKey = raisedTileId ? visualScene.byPieceId.get(raisedTileId)?.key : null;
   const anchoredIslandIds = new Set(activeAssembly.anchoredPieceIds ?? []);
 
   useEffect(() => {
@@ -741,7 +737,6 @@ export const TilePuzzlePreview = ({
     publishAssemblyProgress(transition.snapshot.assembly);
     replaceHistory(transition.history);
     setActiveTileId(null);
-    setRaisedTileId(null);
     return true;
   }, [canHistoryAction, publishAssemblyProgress, puzzle.id, replaceHistory, updatePlacementState]);
 
@@ -1010,7 +1005,6 @@ export const TilePuzzlePreview = ({
     publishHistoryAvailability(historyRef.current, true);
     stageRef.current?.focus({ preventScroll: true });
     target.setPointerCapture(event.pointerId);
-    setRaisedTileId(tile.id);
     setActiveTileId(tile.id);
     startDragAnimation();
     event.stopPropagation();
@@ -1436,7 +1430,6 @@ export const TilePuzzlePreview = ({
               puzzle={puzzle}
               layout={layout}
               active={activeIslandKey === island.key}
-              raised={raisedIslandKey === island.key}
               anchored={anchoredIslandIds.has(island.members[0]!.piece.id)}
               showEdgeSeams={showEdgeSeams}
               appearance={appearance}

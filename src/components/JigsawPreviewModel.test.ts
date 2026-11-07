@@ -53,21 +53,25 @@ describe("Jigsaw selection and settled layer order", () => {
 
   it("settles joined islands behind loose pieces, larger joins behind smaller joins", () => {
     const count = 64;
-    const loose = getJigsawIslandStackOrder(layer([0]), count, false, false, false);
-    const highLoose = getJigsawIslandStackOrder(layer([63]), count, false, false, false);
-    const pair = getJigsawIslandStackOrder(layer([61, 62]), count, false, false, false);
-    const triple = getJigsawIslandStackOrder(layer([0, 1, 63]), count, false, false, false);
+    const loose = getJigsawIslandStackOrder(layer([0]), count, false, false);
+    const highLoose = getJigsawIslandStackOrder(layer([63]), count, false, false);
+    const pair = getJigsawIslandStackOrder(layer([61, 62]), count, false, false);
+    const triple = getJigsawIslandStackOrder(layer([0, 1, 63]), count, false, false);
     expect(highLoose).toBeGreaterThan(loose);
     expect(loose).toBeGreaterThan(pair);
     expect(pair).toBeGreaterThan(triple);
-    expect(getJigsawIslandStackOrder(layer([63]), count, false, false, true))
-      .toBeGreaterThan(2); // The board occupies z-index 2.
-    expect(getJigsawIslandStackOrder(layer([63]), count, false, false, true))
-      .toBeLessThan(triple);
-    expect(getJigsawIslandStackOrder(layer([0, 1, 63]), count, false, true, false))
-      .toBeGreaterThan(highLoose);
-    expect(getJigsawIslandStackOrder(layer([0, 1, 63]), count, true, true, false))
-      .toBeGreaterThan(getJigsawIslandStackOrder(layer([0]), count, false, true, false));
+    const anchored = getJigsawIslandStackOrder(layer([63]), count, false, true);
+    expect(anchored).toBeGreaterThan(2); // The board occupies z-index 2.
+    expect(anchored).toBeLessThan(triple);
+  });
+
+  it("lifts only the active island, then restores settled stacking on drop", () => {
+    const count = 64;
+    const loose = getJigsawIslandStackOrder(layer([63]), count, false, false);
+    const active = getJigsawIslandStackOrder(layer([0, 1, 2]), count, true, false);
+    const dropped = getJigsawIslandStackOrder(layer([0, 1, 2]), count, false, false);
+    expect(active).toBeGreaterThan(loose);
+    expect(dropped).toBeLessThan(loose);
   });
 
   const positioned = (

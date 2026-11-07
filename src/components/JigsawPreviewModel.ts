@@ -156,18 +156,16 @@ export const shouldShowJigsawCompletionCelebration = (
 ) => isSolved && phase === "celebrating";
 
 
-/** Joined regions settle behind smaller, still-accessible pieces; raising is temporary. */
+/** Joined regions settle behind smaller, still-accessible pieces; only the active drag rises. */
 export const getJigsawIslandStackOrder = (
   island: Pick<JigsawPositionedVisualIsland, "members">,
   pieceCount: number,
   active: boolean,
-  raised: boolean,
   anchored: boolean,
 ): number => {
   const stride = pieceCount + 1;
   const aboveBoard = 10;
   if (active) return aboveBoard + stride * (stride + 2);
-  if (raised) return aboveBoard + stride * (stride + 1);
   if (anchored) return aboveBoard;
   const sizeLayer = pieceCount - island.members.length + 1;
   const originalOrder = island.members.reduce(
@@ -203,7 +201,7 @@ export const findJigsawDragHoverIslandAtWorldPoint = (
         worldPoint.y > island.worldY + island.heightCells * layout.pieceHeight + paddingY) continue;
 
     const anchored = island.members.some(({ piece }) => anchoredPieceIds.has(piece.id));
-    const layer = getJigsawIslandStackOrder(island, pieceCount, false, false, anchored);
+    const layer = getJigsawIslandStackOrder(island, pieceCount, false, anchored);
     if (layer <= topLayer) continue;
     const xInCells = (worldPoint.x - island.worldX) / layout.pieceWidth;
     const yInCells = (worldPoint.y - island.worldY) / layout.pieceHeight;
