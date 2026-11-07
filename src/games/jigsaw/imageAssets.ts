@@ -20,6 +20,7 @@ const makeJigsawImageAsset = ({
   sourceName,
   sourceRecordUrl,
   sourceQualifier,
+  editionRecommendations,
 }: JigsawImageAssetInput): JigsawImageAsset => ({
   kind: "image",
   id,
@@ -28,6 +29,7 @@ const makeJigsawImageAsset = ({
   orientation,
   intrinsicWidth,
   intrinsicHeight,
+  ...(editionRecommendations ? { editionRecommendations } : {}),
   files: {
     puzzle: `/jigsaw/${id}/puzzle.webp`,
     preview: `/jigsaw/${id}/preview.webp`,
@@ -122,6 +124,7 @@ const makeSmithsonianJigsawImageAsset = (
 export const jigsawImageCatalog = {
   "wheat-field-cypresses": makeMetJigsawImageAsset({
     id: "wheat-field-cypresses",
+    editionRecommendations: ["heritage", "classic"],
     title: "Wheat Field with Cypresses",
     alt: "A golden wheat field beneath swirling clouds, with dark green cypresses rising beside distant blue hills.",
     orientation: "landscape",
@@ -133,6 +136,7 @@ export const jigsawImageCatalog = {
   }),
   "great-wave": makeMetJigsawImageAsset({
     id: "great-wave",
+    editionRecommendations: ["heritage", "classic", "vivid"],
     title: "The Great Wave",
     alt: "A towering blue wave curls over boats with Mount Fuji visible in the distance.",
     orientation: "landscape",
@@ -155,6 +159,7 @@ export const jigsawImageCatalog = {
   }),
   "gulf-stream": makeMetJigsawImageAsset({
     id: "gulf-stream",
+    editionRecommendations: ["classic", "vivid"],
     title: "The Gulf Stream",
     alt: "A man lies in a damaged boat on rough tropical seas, with sharks nearby and a ship on the horizon.",
     orientation: "landscape",

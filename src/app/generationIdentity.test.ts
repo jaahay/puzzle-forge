@@ -176,6 +176,21 @@ describe("generated puzzle identity matching", () => {
     ).toBe(false);
   });
 
+  it("treats a physical edition selection as part of Jigsaw identity", () => {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw", seed: "edition-identity", width: 5, height: 4,
+      imageId: "great-wave", jigsawEditionChoice: "vivid", jigsawCutStyle: "classic",
+    });
+    const identity: GenerationIdentity = {
+      ...baseIdentity("jigsaw"), seed: puzzle.seed, width: puzzle.width,
+      height: puzzle.height, imageId: puzzle.asset.id,
+      jigsawCutStyle: "classic", jigsawEditionChoice: "vivid",
+    };
+    expect(generatedPuzzleMatchesIdentity(puzzle, identity)).toBe(true);
+    expect(generatedPuzzleMatchesIdentity(puzzle, { ...identity, jigsawEditionChoice: "heritage" })).toBe(false);
+    expect(getGeneratedPuzzleRuntimeSettings(puzzle, baseRuntimeSettings).jigsawEditionChoice).toBe("vivid");
+  });
+
   it("includes Jigsaw outer boundary mode in generated identity matching", () => {
     const puzzle = generateJigsaw({
       puzzleId: "jigsaw",

@@ -9,6 +9,7 @@ const futoshikiSource = readFileSync(new URL("./FutoshikiBoard.tsx", import.meta
 const wordGuessSource = readFileSync(new URL("./WordGuessGame.tsx", import.meta.url), "utf8");
 const jigsawSource = readFileSync(new URL("./JigsawWorkspace.tsx", import.meta.url), "utf8");
 const jigsawPreviewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", import.meta.url), "utf8");
+const jigsawVisualSource = readFileSync(new URL("./JigsawIslandVisual.tsx", import.meta.url), "utf8");
 const jigsawCss = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
 const immersiveCss = readFileSync(new URL("../site/immersive.css", import.meta.url), "utf8");
 const newCommandSource = readFileSync(new URL("./NewPuzzleCommand.tsx", import.meta.url), "utf8");
@@ -92,12 +93,12 @@ describe("terminal interaction contracts", () => {
     expect(jigsawPreviewSource).toMatch(
       /if \(completed\.solved\) onCausativeInput\(\);/,
     );
-    expect(jigsawPreviewSource).toContain("showEdgeSeams && !isSolved ? seams.map(");
+    expect(jigsawVisualSource).toContain("showEdgeSeams && !isSolved ? island.cuts.map(");
     expect(jigsawPreviewSource).toContain("hidden={isSolved}");
     expect(jigsawPreviewSource).not.toContain('isSolved ? "is-solved"');
     expect(jigsawCss).not.toContain(".tile-puzzle-tools.is-solved");
-    expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .jigsaw-island-artwork");
-    expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .tile-puzzle-piece-outline");
+    expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .jigsaw-island-sidewall");
+    expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .jigsaw-island .tile-puzzle-piece-outline");
     expect(jigsawCss).toContain(".jigsaw-freeform-stage.completion-celebrating .jigsaw-world-layer");
     expect(jigsawCss).toContain("animation: jigsaw-solved-card-arrive 620ms ease-out both;");
     expect(jigsawCss).toContain("animation: jigsaw-solved-world-settle 620ms ease-out both;");

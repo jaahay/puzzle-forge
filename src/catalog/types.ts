@@ -120,6 +120,7 @@ export type PuzzleVariationSettings = {
   solitaireVariation?: SolitaireVariation;
   imageId?: string;
   jigsawCutStyle?: JigsawCutStyle;
+  jigsawEditionChoice?: JigsawEditionChoice;
   jigsawBoundaryMode?: JigsawBoundaryMode;
   jigsawSpecialPiecesMode?: JigsawSpecialPiecesMode;
 };
@@ -131,6 +132,9 @@ export type GeneratedTilePuzzleAsset = {
   palette: string[];
 };
 
+export type JigsawPhysicalEdition = "heritage" | "classic" | "vivid";
+export type JigsawEditionChoice = "auto" | JigsawPhysicalEdition;
+
 export type PuzzleImageAsset = {
   kind: "image";
   id: string;
@@ -140,6 +144,7 @@ export type PuzzleImageAsset = {
   intrinsicWidth: number;
   intrinsicHeight: number;
   eligiblePuzzleIds?: readonly ImageBackedPuzzleId[];
+  editionRecommendations?: readonly JigsawPhysicalEdition[];
   files: {
     puzzle: string;
     preview: string;
@@ -369,6 +374,9 @@ export type JigsawGeneratedPuzzle = Omit<TileGeneratedPuzzle, "puzzleId" | "tile
   asset: PuzzleImageAsset;
   edgeModel: JigsawEdgeModel;
   specialPiecesMode: JigsawSpecialPiecesMode;
+  /** The resolved physical material and its selected policy. */
+  physicalEdition?: JigsawPhysicalEdition;
+  editionChoice?: JigsawEditionChoice;
 };
 
 export type TileSwapGeneratedPuzzle = Omit<TileGeneratedPuzzle, "puzzleId" | "asset"> & {

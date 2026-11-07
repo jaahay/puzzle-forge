@@ -6,6 +6,8 @@ import type {
   JigsawEdgeModel,
   JigsawGeneratedPuzzle,
   JigsawImageAsset,
+  JigsawEditionChoice,
+  JigsawPhysicalEdition,
   JigsawPiece,
   JigsawSpecialPiecesMode,
   PuzzleCell,
@@ -182,6 +184,8 @@ export const createGeneratedJigsawPuzzle = ({
   asset,
   edgeModel,
   specialPiecesMode,
+  physicalEdition = "classic",
+  editionChoice = "auto",
 }: {
   id: string;
   title: string;
@@ -192,6 +196,8 @@ export const createGeneratedJigsawPuzzle = ({
   asset: JigsawImageAsset;
   edgeModel: JigsawEdgeModel;
   specialPiecesMode: JigsawSpecialPiecesMode;
+  physicalEdition?: JigsawPhysicalEdition;
+  editionChoice?: JigsawEditionChoice;
 }): JigsawGeneratedPuzzle => ({
   kind: "tiles",
   id,
@@ -204,6 +210,10 @@ export const createGeneratedJigsawPuzzle = ({
   asset,
   edgeModel,
   specialPiecesMode,
+  physicalEdition,
+  editionChoice,
+  // Session integrity tracks geometry, not the material printed on it.
+  // Keeping the original baseline checksum preserves pre-edition saved progress.
   checksum: makeChecksumFromParts([
     makeJigsawEdgeModelChecksumPart(edgeModel),
     `special-pieces:${specialPiecesMode}`,

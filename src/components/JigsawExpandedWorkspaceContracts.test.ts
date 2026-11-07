@@ -100,8 +100,8 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).not.toContain("selectSectionFocus");
     expect(jigsawPreviewSource).not.toContain("focusedSection");
     expect(jigsawCss).not.toContain(".jigsaw-section-tools");
-    expect(jigsawCss).not.toContain(".jigsaw-workspace:not(.is-immersive) .tile-puzzle-summary {\n    display: none;");
-    expect(jigsawPreviewSource).toContain(".tile-puzzle-summary, .puzzle-workspace-display-tools");
+    expect(jigsawCss).not.toContain(".tile-puzzle-summary");
+    expect(jigsawPreviewSource).toContain(".jigsaw-camera-tools, .puzzle-workspace-display-tools");
     expect(jigsawPreviewSource).toContain("getCurrentFitInsets(),\n        ),");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .jigsaw-workbench-toolbar {\n  display: contents;");
   });
@@ -129,7 +129,7 @@ describe("Jigsaw expanded workspace contracts", () => {
   });
 
   it("gives the expanded Jigsaw stage the layout while moving controls into overlay chrome", () => {
-    expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .tile-puzzle-summary");
+    expect(immersiveCss).not.toContain(".tile-puzzle-summary");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .tile-puzzle-art-preview");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .workspace-layout-play-surface");
     const previewRule = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive .tile-puzzle-art-preview {");

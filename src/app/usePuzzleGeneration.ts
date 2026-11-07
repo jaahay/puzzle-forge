@@ -4,6 +4,7 @@ import type {
   GeneratedPuzzle,
   JigsawBoundaryMode,
   JigsawCutStyle,
+  JigsawEditionChoice,
   JigsawSpecialPiecesMode,
   PuzzleDefinition,
   PuzzleDifficulty,
@@ -16,6 +17,7 @@ import type {
 import { isImageBackedPuzzleId } from "../games/imageAssets";
 import { defaultJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
 import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
+import { defaultJigsawEditionChoice } from "../games/jigsaw/physicalEdition";
 import { defaultJigsawSpecialPiecesMode } from "../games/jigsaw/specialPieces";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation } from "../games/sudoku/variation";
@@ -57,6 +59,7 @@ type MissingPuzzleGenerationInput = {
   sudokuVariation: SudokuVariation;
   solitaireVariation: SolitaireVariation;
   jigsawCutStyle?: JigsawCutStyle;
+  jigsawEditionChoice?: JigsawEditionChoice;
   jigsawBoundaryMode?: JigsawBoundaryMode;
   jigsawSpecialPiecesMode?: JigsawSpecialPiecesMode;
   makeSeed: () => string;
@@ -127,6 +130,9 @@ export const makeInitialPuzzleGenerationOptions = ({
     jigsawCutStyle: puzzleId === "jigsaw"
       ? rememberedDraft?.jigsawCutStyle ?? defaultJigsawCutStyle
       : undefined,
+    jigsawEditionChoice: puzzleId === "jigsaw"
+      ? rememberedDraft?.jigsawEditionChoice ?? defaultJigsawEditionChoice
+      : undefined,
     jigsawBoundaryMode: puzzleId === "jigsaw"
       ? rememberedDraft?.jigsawBoundaryMode ?? defaultJigsawBoundaryMode
       : undefined,
@@ -147,6 +153,7 @@ export const makeMissingPuzzleGenerationOptions = ({
   sudokuVariation,
   solitaireVariation,
   jigsawCutStyle,
+  jigsawEditionChoice,
   jigsawBoundaryMode,
   jigsawSpecialPiecesMode,
   makeSeed,
@@ -160,6 +167,7 @@ export const makeMissingPuzzleGenerationOptions = ({
   sudokuVariation: selectedPuzzleId === "sudoku" ? sudokuVariation : undefined,
   solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? solitaireVariation : undefined,
   jigsawCutStyle: selectedPuzzleId === "jigsaw" ? jigsawCutStyle : undefined,
+  jigsawEditionChoice: selectedPuzzleId === "jigsaw" ? jigsawEditionChoice : undefined,
   jigsawBoundaryMode: selectedPuzzleId === "jigsaw" ? jigsawBoundaryMode : undefined,
   jigsawSpecialPiecesMode:
     selectedPuzzleId === "jigsaw" ? jigsawSpecialPiecesMode : undefined,
@@ -215,6 +223,9 @@ export const usePuzzleGeneration = () => {
       imageId: isImageBackedPuzzleId(puzzleId) ? options.imageId : undefined,
       jigsawCutStyle: puzzleId === "jigsaw"
         ? options.jigsawCutStyle ?? defaultJigsawCutStyle
+        : undefined,
+      jigsawEditionChoice: puzzleId === "jigsaw"
+        ? options.jigsawEditionChoice ?? defaultJigsawEditionChoice
         : undefined,
       jigsawBoundaryMode: puzzleId === "jigsaw"
         ? options.jigsawBoundaryMode ?? defaultJigsawBoundaryMode

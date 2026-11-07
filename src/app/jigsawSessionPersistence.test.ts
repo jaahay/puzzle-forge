@@ -123,6 +123,25 @@ const withAssembly = (
 };
 
 describe("Jigsaw session assembly persistence", () => {
+  it("accepts the pre-edition geometry baseline for an Auto Jigsaw session", () => {
+    const session = makeJigsawSession();
+    const { persisted } = buildPersisted(session);
+    const baseline = session.puzzle;
+    if (baseline.puzzleId !== "jigsaw") return;
+    const explicitlyFinished = generateJigsaw({
+      puzzleId: "jigsaw", seed: baseline.seed,
+      width: baseline.width, height: baseline.height, imageId: baseline.asset.id,
+      jigsawCutStyle: baseline.edgeModel.cutStyle, jigsawEditionChoice: "heritage",
+    });
+    expect(explicitlyFinished.id).not.toBe(baseline.id);
+    expect(explicitlyFinished.checksum).toBe(persisted.baselineChecksum);
+    const restored = restorePuzzleSessionFromPersisted(persisted, explicitlyFinished);
+    expect(restored?.progress.kind).toBe("tiles");
+    if (restored?.progress.kind === "tiles") {
+      expect(restored.progress.jigsawAssembly).toEqual({ joinedComponents: [["tile-0", "tile-1", "tile-2"]] });
+    }
+  });
+
   it("round-trips canonical component progress through browser session storage", () => {
     withMemoryStorage(() => {
       const session = makeJigsawSession();
