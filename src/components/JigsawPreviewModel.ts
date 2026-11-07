@@ -12,6 +12,7 @@ import {
   type JigsawViewportInsets,
   type JigsawWorldLayout,
 } from "../games/jigsaw/placement";
+import type { JigsawPositionedVisualIsland } from "../games/jigsaw/visualIslands";
 import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
 
 const jigsawZoomStops = [
@@ -154,3 +155,20 @@ export const shouldShowJigsawCompletionCelebration = (
   phase: CompletionPresentationPhase,
 ) => isSolved && phase === "celebrating";
 
+
+/** Stable settled layers keep loose pieces accessible as groups grow. */
+export const getJigsawIslandStackOrder = (
+  island: Pick<JigsawPositionedVisualIsland, "members">,
+  pieceCount: number,
+  active: boolean,
+  anchored: boolean,
+): number => {
+  const stride = pieceCount + 1;
+  const aboveBoard = 10;
+  if (active) return aboveBoard + stride * (stride + 2);
+  if (anchored) return aboveBoard;
+  const sizeLayer = pieceCount - island.members.length + 1;
+  const originalOrder = island.members.reduce(
+    (highest, { piece }) => Math.max(highest, piece.currentIndex), 0);
+  return aboveBoard + sizeLayer * stride + originalOrder;
+};

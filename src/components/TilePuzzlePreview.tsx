@@ -71,6 +71,7 @@ import {
 } from "./JigsawImperativeRenderer";
 import {
   getJigsawFitInsetsForOverlays,
+  getJigsawIslandStackOrder,
   getJigsawZoomStep,
   getMeasuredJigsawViewport,
   getPieceHitTargetProps,
@@ -139,7 +140,6 @@ type IslandVisualProps = {
   puzzle: JigsawGeneratedPuzzle;
   layout: JigsawWorldLayout;
   active: boolean;
-  raised: boolean;
   anchored: boolean;
   showEdgeSeams: boolean;
   appearance: JigsawPieceAppearance;
@@ -150,7 +150,7 @@ type IslandVisualProps = {
 
 /** Memoized by immutable membership and individual pose; camera changes do not re-render artwork. */
 const JigsawIslandVisual = memo(({
-  island, puzzle, layout, active, raised, anchored, showEdgeSeams, appearance, isSolved,
+  island, puzzle, layout, active, anchored, showEdgeSeams, appearance, isSolved,
   islandElements, pointerActions,
 }: IslandVisualProps) => {
   const clipId = `island-${puzzle.id}-${island.key}`.replace(/[^a-zA-Z0-9_-]/g, "-");
@@ -160,7 +160,7 @@ const JigsawIslandVisual = memo(({
     height: `${layout.pieceHeight * island.heightCells}px`,
     "--jigsaw-piece-x": `${island.worldX}px`,
     "--jigsaw-piece-y": `${island.worldY}px`,
-    zIndex: active ? 1000 : raised ? 900 : Math.max(...island.members.map(({ piece }) => 10 + piece.currentIndex)),
+    zIndex: getJigsawIslandStackOrder(island, puzzle.tiles.length, active, anchored),
   } as JSX.CSSProperties;
   return (
     <div
@@ -345,7 +345,6 @@ export const TilePuzzlePreview = ({
   progressChangeRef.current = onProgressChange;
   const [cameraState, setCameraState] = useState<CameraState | null>(null);
   const [activeTileId, setActiveTileId] = useState<string | null>(null);
-  const [raisedTileId, setRaisedTileId] = useState<string | null>(null);
   const [isPanning, setIsPanning] = useState(false);
   const [playerPreferences, setPlayerPreferences] = useState(loadJigsawPlayerPreferences);
   const { showPreview, showEdgeSeams, snapToFrame, appearance, lockViewDragging } = playerPreferences;
@@ -519,7 +518,6 @@ export const TilePuzzlePreview = ({
     baselinePlacementsRef.current = null;
     replaceHistory(makeEmptyJigsawHistoryState());
     setActiveTileId(null);
-    setRaisedTileId(null);
     setIsPanning(false);
     setFitIsOverview(true);
     cameraWasUserAdjustedRef.current = false;
@@ -678,7 +676,6 @@ export const TilePuzzlePreview = ({
     touchPointsRef.current.clear();
     pinchRef.current = null;
     setActiveTileId(null);
-    setRaisedTileId(null);
     setIsPanning(false);
     publishAssemblyProgress(nextAssembly);
     if (baseline) {
@@ -756,7 +753,6 @@ export const TilePuzzlePreview = ({
   const isSolved = isJigsawAssemblySolved(activeAssembly, puzzle.tiles.length);
   const activeIslandKey = activeTileId && dragRef.current?.puzzleId === puzzle.id
     ? visualScene.byPieceId.get(activeTileId)?.key : null;
-  const raisedIslandKey = raisedTileId ? visualScene.byPieceId.get(raisedTileId)?.key : null;
   const anchoredIslandIds = new Set(activeAssembly.anchoredPieceIds ?? []);
   const assemblySummary = isSolved ? "Solved" : `${connectedCount} joined`;
 
@@ -794,7 +790,6 @@ export const TilePuzzlePreview = ({
     publishAssemblyProgress(transition.snapshot.assembly);
     replaceHistory(transition.history);
     setActiveTileId(null);
-    setRaisedTileId(null);
     return true;
   }, [canHistoryAction, publishAssemblyProgress, puzzle.id, replaceHistory, updatePlacementState]);
 
@@ -1014,7 +1009,6 @@ export const TilePuzzlePreview = ({
     publishHistoryAvailability(historyRef.current, true);
     stageRef.current?.focus({ preventScroll: true });
     target.setPointerCapture(event.pointerId);
-    setRaisedTileId(tile.id);
     setActiveTileId(tile.id);
     startDragAnimation();
     event.stopPropagation();
@@ -1420,7 +1414,6 @@ export const TilePuzzlePreview = ({
               puzzle={puzzle}
               layout={layout}
               active={activeIslandKey === island.key}
-              raised={raisedIslandKey === island.key}
               anchored={anchoredIslandIds.has(island.members[0]!.piece.id)}
               showEdgeSeams={showEdgeSeams}
               appearance={appearance}
