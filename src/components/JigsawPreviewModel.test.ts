@@ -53,27 +53,27 @@ describe("Jigsaw settled island layer order", () => {
 
   it("places loose pieces above joined islands, with larger joins behind smaller joins", () => {
     const pieceCount = 64;
-    const loose = getJigsawIslandStackOrder(island(0), pieceCount, false, false, false);
-    const laterLoose = getJigsawIslandStackOrder(island(63), pieceCount, false, false, false);
-    const joined = getJigsawIslandStackOrder(island(61, 62), pieceCount, false, false, false);
-    const larger = getJigsawIslandStackOrder(island(0, 1, 63), pieceCount, false, false, false);
+    const loose = getJigsawIslandStackOrder(island(0), pieceCount, false, false);
+    const laterLoose = getJigsawIslandStackOrder(island(63), pieceCount, false, false);
+    const joined = getJigsawIslandStackOrder(island(61, 62), pieceCount, false, false);
+    const larger = getJigsawIslandStackOrder(island(0, 1, 63), pieceCount, false, false);
     expect(laterLoose).toBeGreaterThan(loose);
     expect(loose).toBeGreaterThan(joined);
     expect(joined).toBeGreaterThan(larger);
   });
 
   it("keeps anchored islands above the board but below free pieces", () => {
-    const anchored = getJigsawIslandStackOrder(island(63), 64, false, false, true);
-    const joined = getJigsawIslandStackOrder(island(1, 2, 3), 64, false, false, false);
+    const anchored = getJigsawIslandStackOrder(island(63), 64, false, true);
+    const joined = getJigsawIslandStackOrder(island(1, 2, 3), 64, false, false);
     expect(anchored).toBeGreaterThan(2); // The assembly board is layer 2.
     expect(anchored).toBeLessThan(joined);
   });
 
-  it("temporarily raises an island for interaction regardless of its settled size", () => {
-    const loose = getJigsawIslandStackOrder(island(63), 64, false, false, false);
-    const raised = getJigsawIslandStackOrder(island(1, 2, 3), 64, false, true, false);
-    const active = getJigsawIslandStackOrder(island(1, 2, 3), 64, true, true, false);
-    expect(raised).toBeGreaterThan(loose);
-    expect(active).toBeGreaterThan(raised);
+  it("lifts only the active drag, settling immediately after release", () => {
+    const loose = getJigsawIslandStackOrder(island(63), 64, false, false);
+    const dragging = getJigsawIslandStackOrder(island(1, 2, 3), 64, true, false);
+    const afterDrop = getJigsawIslandStackOrder(island(1, 2, 3), 64, false, false);
+    expect(dragging).toBeGreaterThan(loose);
+    expect(afterDrop).toBeLessThan(loose);
   });
 });

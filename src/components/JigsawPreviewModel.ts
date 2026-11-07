@@ -161,13 +161,11 @@ export const getJigsawIslandStackOrder = (
   island: Pick<JigsawPositionedVisualIsland, "members">,
   pieceCount: number,
   active: boolean,
-  raised: boolean,
   anchored: boolean,
 ): number => {
   const stride = pieceCount + 1;
   const aboveBoard = 10;
   if (active) return aboveBoard + stride * (stride + 2);
-  if (raised) return aboveBoard + stride * (stride + 1);
   if (anchored) return aboveBoard;
   const sizeLayer = pieceCount - island.members.length + 1;
   const originalOrder = island.members.reduce(
