@@ -71,6 +71,7 @@ import {
 } from "./JigsawImperativeRenderer";
 import {
   getJigsawFitInsetsForOverlays,
+  getJigsawIslandStackOrder,
   getJigsawZoomStep,
   getMeasuredJigsawViewport,
   getPieceHitTargetProps,
@@ -160,7 +161,7 @@ const JigsawIslandVisual = memo(({
     height: `${layout.pieceHeight * island.heightCells}px`,
     "--jigsaw-piece-x": `${island.worldX}px`,
     "--jigsaw-piece-y": `${island.worldY}px`,
-    zIndex: active ? 1000 : raised ? 900 : Math.max(...island.members.map(({ piece }) => 10 + piece.currentIndex)),
+    zIndex: getJigsawIslandStackOrder(island, puzzle.tiles.length, active, raised, anchored),
   } as JSX.CSSProperties;
   return (
     <div
