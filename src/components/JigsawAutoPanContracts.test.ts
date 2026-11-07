@@ -57,6 +57,15 @@ describe("Jigsaw auto-pan controller boundary", () => {
     expect(previewSource).toContain("drag.puzzleId !== puzzle.id");
   });
 
+  it("isolates the persistent panning lock to pointer dragging, retaining other camera controls", () => {
+    expect(previewSource).toContain("if (lockViewDragging || dragRef.current || pinchRef.current) return;");
+    expect(previewSource).toContain("aria-pressed={lockViewDragging}");
+    expect(previewSource).toContain('lockViewDragging ? "Unlock panning" : "Lock panning"');
+    expect(previewSource).toContain("getJigsawWheelGesture(event, current.viewport.height)");
+    expect(previewSource).toContain("getJigsawPinchCamera(");
+    expect(previewSource).toContain("const handleStageKeyDown =");
+  });
+
   it("derives keyboard and zoom camera commands from the live camera ref", () => {
     expect(previewSource).toContain("getJigsawZoomStep(wheelStateRef.current.camera.zoom");
     expect(previewSource).toContain("const current = wheelStateRef.current");
