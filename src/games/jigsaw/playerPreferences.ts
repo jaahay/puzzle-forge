@@ -11,6 +11,7 @@ export type JigsawPlayerPreferences = {
   showPreview: boolean;
   showEdgeSeams: boolean;
   snapToFrame: boolean;
+  lockViewDragging: boolean;
 };
 
 const storageKey = "puzzle-forge.jigsaw-player-preferences";
@@ -20,6 +21,7 @@ export const defaultJigsawPlayerPreferences: JigsawPlayerPreferences = {
   showPreview: false,
   showEdgeSeams: false,
   snapToFrame: false,
+  lockViewDragging: false,
 };
 
 export const loadJigsawPlayerPreferences = (): JigsawPlayerPreferences => {
@@ -37,6 +39,7 @@ export const loadJigsawPlayerPreferences = (): JigsawPlayerPreferences => {
       showPreview: typeof values.showPreview === "boolean" ? values.showPreview : false,
       showEdgeSeams: typeof values.showEdgeSeams === "boolean" ? values.showEdgeSeams : false,
       snapToFrame: typeof values.snapToFrame === "boolean" ? values.snapToFrame : false,
+      lockViewDragging: typeof values.lockViewDragging === "boolean" ? values.lockViewDragging : false,
     };
   } catch {
     return { ...defaultJigsawPlayerPreferences };

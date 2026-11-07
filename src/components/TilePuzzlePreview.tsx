@@ -20,6 +20,7 @@ import {
   type JigsawDragAction,
 } from "../games/jigsaw/dragAction";
 import { resolveJigsawAssistanceActivation } from "../games/jigsaw/interaction";
+import { getJigsawWheelGesture } from "../games/jigsaw/wheelInput";
 import {
   getJigsawVisualMembershipKey,
   positionJigsawVisualIslands,
@@ -347,7 +348,7 @@ export const TilePuzzlePreview = ({
   const [raisedTileId, setRaisedTileId] = useState<string | null>(null);
   const [isPanning, setIsPanning] = useState(false);
   const [playerPreferences, setPlayerPreferences] = useState(loadJigsawPlayerPreferences);
-  const { showPreview, showEdgeSeams, snapToFrame, appearance } = playerPreferences;
+  const { showPreview, showEdgeSeams, snapToFrame, appearance, lockViewDragging } = playerPreferences;
   const [showCompactTools, setShowCompactTools] = useState(false);
   const [fitIsOverview, setFitIsOverview] = useState(true);
   const cameraWasUserAdjustedRef = useRef(false);
@@ -1115,7 +1116,7 @@ export const TilePuzzlePreview = ({
   };
 
   const beginPan = (event: StagePointerEvent) => {
-    if (dragRef.current || pinchRef.current) return;
+    if (lockViewDragging || dragRef.current || pinchRef.current) return;
     const target = event.target as Element | null;
     // A locked piece acts as a stable grip for panning; only loose pieces drag.
     const piece = target?.closest(".tile-puzzle-piece");
@@ -1156,18 +1157,18 @@ export const TilePuzzlePreview = ({
   };
 
   const handleWheel = (event: WheelEvent) => {
-    const target = event.target as Element | null;
     const stagePoint = getStagePoint(event.clientX, event.clientY);
     if (!stagePoint) return;
     const current = wheelStateRef.current;
     markManualCameraAdjustment();
 
-    const nextCamera = event.ctrlKey || event.metaKey
+    const gesture = getJigsawWheelGesture(event, current.viewport.height);
+    const nextCamera = gesture.kind === "zoom"
       ? zoomJigsawCameraAtPoint(
           current.layout,
           current.viewport,
           current.camera,
-          current.camera.zoom * Math.exp(-event.deltaY * 0.002),
+          current.camera.zoom * gesture.factor,
           stagePoint.x,
           stagePoint.y,
         )
@@ -1175,8 +1176,8 @@ export const TilePuzzlePreview = ({
           current.layout,
           current.viewport,
           current.camera,
-          event.shiftKey && Math.abs(event.deltaX) < 1 ? event.deltaY : event.deltaX,
-          event.shiftKey && Math.abs(event.deltaX) < 1 ? 0 : event.deltaY,
+          gesture.deltaX,
+          gesture.deltaY,
         );
 
     wheelStateRef.current = { ...current, camera: nextCamera };
@@ -1357,6 +1358,14 @@ export const TilePuzzlePreview = ({
         </button>
         <button
           type="button"
+          aria-pressed={lockViewDragging}
+          title="Prevent accidental background and anchored-piece drag panning; wheel zoom, pinch, and view controls still work"
+          onClick={() => setPlayerPreferences((current) => ({ ...current, lockViewDragging: !current.lockViewDragging }))}
+        >
+          {lockViewDragging ? "Unlock panning" : "Lock panning"}
+        </button>
+        <button
+          type="button"
           aria-pressed={snapToFrame}
           onClick={() => {
             if (!snapToFrame) {
@@ -1399,7 +1408,7 @@ export const TilePuzzlePreview = ({
         onPointerCancel={finishPan}
         onKeyDown={handleStageKeyDown}
         tabIndex={0}
-        aria-label="Jigsaw workspace. Drag the background or use the mouse wheel or trackpad to pan. When focused, use the arrow keys to pan. Pinch or Control plus wheel to zoom."
+        aria-label={`Jigsaw workspace. Scroll the mouse wheel to zoom toward the pointer. ${lockViewDragging ? "Background dragging is locked." : "Drag the background to pan."} Arrow keys, Shift plus wheel, or horizontal trackpad gestures pan. Pinch to zoom.`}
       >
         <div class="jigsaw-world-layer" ref={worldLayerRef} style={worldStyle}>
           <div class="jigsaw-assembly-board" style={boardStyle} aria-hidden="true" />
