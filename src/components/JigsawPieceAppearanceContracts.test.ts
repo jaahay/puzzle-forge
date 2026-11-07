@@ -123,7 +123,8 @@ describe("Jigsaw piece appearance integration", () => {
     expect(preview).not.toContain("getJigsawConnectedPieceCount");
     expect(preview).not.toContain("assemblySummary");
     expect(css).not.toContain(".tile-puzzle-summary");
-    expect(preview).toContain('class="jigsaw-solved-card is-completed"');
+    expect(preview).not.toContain('class="jigsaw-solved-card is-completed"');
+    expect(preview).toContain('class="jigsaw-completion-announcement" role="status" aria-live="polite"');
   });
 
   it("renders three distinct physical finishes without changing the canonical cut paths", () => {

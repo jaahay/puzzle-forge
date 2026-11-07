@@ -92,7 +92,9 @@ describe("Quiet New Puzzle contracts", () => {
     expect(albumSource).not.toContain("puzzleTitle:");
     expect(jigsawSource.match(/puzzleTitle="Jigsaw"/g)?.length).toBe(1);
     expect(jigsawWorkspaceSource.match(/<JigsawNewPuzzleControl/g)?.length).toBe(1);
-    expect(jigsawWorkspaceSource).toContain("nextPuzzleControl={isSolved ? newPuzzleControl : null}");
+    expect(jigsawWorkspaceSource).toContain("newPuzzleControl={newPuzzleControl}");
+    expect(jigsawWorkspaceSource).toContain("onRestartPuzzle={isSolved ? resetJigsaw : undefined}");
+    expect(jigsawWorkspaceSource).not.toContain("nextPuzzleControl=");
     expect(imageTileSource.match(/puzzleTitle=\{puzzleTitle\}/g)?.length).toBe(1);
     expect(artworkCss).not.toContain(".artwork-control-credit");
     expect(artworkCss).toContain(".artwork-album-credit");
