@@ -155,10 +155,6 @@ export const shouldShowJigsawCompletionCelebration = (
   phase: CompletionPresentationPhase,
 ) => isSolved && phase === "celebrating";
 
-export const shouldShowJigsawSolvedControls = (
-  isSolved: boolean,
-  phase: CompletionPresentationPhase,
-) => isSolved && phase === "completed";
 
 /** Joined regions settle behind smaller, still-accessible pieces; raising is temporary. */
 export const getJigsawIslandStackOrder = (

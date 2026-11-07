@@ -98,9 +98,10 @@ export const JigsawWorkspace = ({
     );
   };
 
-  const resetJigsaw = () => onReset(() => {
+  const resetJigsaw = (afterReset?: () => void) => onReset(() => {
     if (puzzleInstanceId) setCompletionState({ puzzleInstanceId, solved: false });
     setResetVersion((current) => current + 1);
+    afterReset?.();
   });
 
   const newPuzzleControl = jigsawPuzzle ? (
@@ -122,7 +123,7 @@ export const JigsawWorkspace = ({
       maxHeight={selectedDefinition.maxHeight}
       seedLoadInput={seedLoadInput}
       disabled={isGenerating || !selectedPuzzleIsGeneratable}
-      inCompletionPrompt={isSolved}
+      onRestartPuzzle={isSolved ? resetJigsaw : undefined}
       onSettingsChange={onNextPuzzleDraftChange}
       onSeedLoadInputChange={onSeedLoadInputChange}
       onNewPuzzle={onNewPuzzle}
@@ -152,7 +153,7 @@ export const JigsawWorkspace = ({
       key={puzzleArrivalIdentity ?? undefined}
       puzzle={jigsawPuzzle}
       historyControl={historyActions}
-      newPuzzleControl={isSolved ? null : newPuzzleControl}
+      newPuzzleControl={newPuzzleControl}
       isArriving={isPuzzleArriving}
     />
   ) : null;
@@ -183,16 +184,13 @@ export const JigsawWorkspace = ({
         completionPhase={completion.phase}
         onCausativeInput={completion.recordCausativeInput}
         onCompletionAnimationEnd={completion.completePresentation}
-        completionDisabled={isGenerating}
-        onResetPuzzle={resetJigsaw}
-        nextPuzzleControl={isSolved ? newPuzzleControl : null}
       />
     </section>
   ) : isGenerating ? loadingBoard : null;
 
   const gameplay = jigsawPuzzle && !isSolved ? (
     <div class="puzzle-actions">
-      <button type="button" onClick={resetJigsaw} disabled={isGenerating}>Reset</button>
+      <button type="button" onClick={() => resetJigsaw()} disabled={isGenerating}>Reset</button>
     </div>
   ) : null;
 

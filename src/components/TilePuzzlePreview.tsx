@@ -1,4 +1,4 @@
-import type { ComponentChildren, JSX } from "preact";
+import type { JSX } from "preact";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { JigsawGeneratedPuzzle, JigsawPhysicalEdition, JigsawPiece } from "../catalog/types";
 import { advanceJigsawEdgePanCamera } from "../games/jigsaw/autoPan";
@@ -80,7 +80,6 @@ import {
   shouldRenderJigsawEdgeSeams,
   shouldRenderJigsawReferencePreview,
   shouldShowJigsawCompletionCelebration,
-  shouldShowJigsawSolvedControls,
 } from "./JigsawPreviewModel";
 import { JigsawIslandVisual, type IslandPointerActions, type PiecePointerEvent } from "./JigsawIslandVisual";
 import type { CompletionPresentationPhase } from "./usePuzzleCompletionPresentation";
@@ -109,9 +108,6 @@ type TilePuzzlePreviewProps = {
   completionPhase: CompletionPresentationPhase;
   onCausativeInput: () => void;
   onCompletionAnimationEnd: () => void;
-  completionDisabled: boolean;
-  onResetPuzzle: () => void;
-  nextPuzzleControl: ComponentChildren;
 };
 
 type PlacementState = JigsawWorkspaceState & {
@@ -211,9 +207,6 @@ export const TilePuzzlePreview = ({
   completionPhase,
   onCausativeInput,
   onCompletionAnimationEnd,
-  completionDisabled,
-  onResetPuzzle,
-  nextPuzzleControl,
 }: TilePuzzlePreviewProps) => {
   const stageRef = useRef<HTMLDivElement>(null);
   const toolsToggleRef = useRef<HTMLButtonElement>(null);
@@ -804,7 +797,6 @@ export const TilePuzzlePreview = ({
   const beginTouchPinch = (event: StagePointerEvent) => {
     if (event.pointerType !== "touch") return;
     const target = event.target as Element | null;
-    if (target?.closest(".jigsaw-solved-card")) return;
     const point = getStagePoint(event.clientX, event.clientY);
     if (!point) return;
     touchPointsRef.current.set(event.pointerId, point);
@@ -1165,7 +1157,6 @@ export const TilePuzzlePreview = ({
 
   const handleWheel = (event: WheelEvent) => {
     const target = event.target as Element | null;
-    if (target?.closest(".jigsaw-solved-card")) return;
     const stagePoint = getStagePoint(event.clientX, event.clientY);
     if (!stagePoint) return;
     const current = wheelStateRef.current;
@@ -1258,6 +1249,9 @@ export const TilePuzzlePreview = ({
 
   return (
     <section class="tile-puzzle-preview" aria-label={`${puzzle.title} jigsaw puzzle`}>
+      <span class="jigsaw-completion-announcement" role="status" aria-live="polite" aria-atomic="true">
+        {isSolved ? "Jigsaw puzzle solved." : ""}
+      </span>
       <div class="jigsaw-workbench-toolbar">
         <div class="jigsaw-camera-tools" role="group" aria-label="Jigsaw view controls">
           <button type="button" onClick={() => zoomView("out")} aria-label="Zoom out" title="Zoom out">−</button>
@@ -1462,30 +1456,6 @@ export const TilePuzzlePreview = ({
               <div class="jigsaw-solved-copy">
                 <span class="jigsaw-solved-mark" aria-hidden="true">✓</span>
                 <strong>Puzzle solved</strong>
-              </div>
-            </div>
-          </div>
-        ) : null}
-        {shouldShowJigsawSolvedControls(isSolved, completionPhase) ? (
-          <div class="jigsaw-solved-presentation is-completed">
-            <div
-              class="jigsaw-solved-card is-completed"
-              onPointerDown={(event) => event.stopPropagation()}
-            >
-              <div class="jigsaw-solved-copy" role="status" aria-live="polite" aria-atomic="true">
-                <span class="jigsaw-solved-mark" aria-hidden="true">✓</span>
-                <strong>Solved</strong>
-              </div>
-              <div class="jigsaw-solved-actions" aria-label="Solved Jigsaw actions">
-                <button
-                  type="button"
-                  onClick={onResetPuzzle}
-                  disabled={completionDisabled}
-                  title="Replay this puzzle from the beginning"
-                >
-                  Replay
-                </button>
-                <div class="jigsaw-completed-next-puzzle">{nextPuzzleControl}</div>
               </div>
             </div>
           </div>

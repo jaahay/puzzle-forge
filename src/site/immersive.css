@@ -81,6 +81,39 @@
   overflow: hidden;
 }
 
+/* Keep the one real New Puzzle control available in expanded and fullscreen
+   views. Only its crown action stays visible; the identity band is hidden. */
+.puzzle-workspace-layout.jigsaw-workspace.is-immersive .workspace-layout-header.workspace-layout-crown {
+  display: grid;
+  position: absolute;
+  top: clamp(0.7rem, 1.5vw, 1rem);
+  left: clamp(0.7rem, 1.5vw, 1rem);
+  z-index: 2100;
+  width: fit-content;
+  justify-items: start;
+}
+
+.jigsaw-workspace.is-immersive .current-puzzle-header {
+  width: fit-content;
+  min-height: 0;
+  opacity: 1;
+}
+
+.jigsaw-workspace.is-immersive .current-puzzle-context {
+  display: none;
+}
+
+.jigsaw-workspace.is-immersive .current-puzzle-new-action {
+  margin-left: 0;
+}
+
+.jigsaw-workspace.is-immersive .new-puzzle-options-panel {
+  right: auto;
+  left: 0;
+  max-width: calc(100dvw - 1.5rem);
+  max-height: calc(100dvh - 5.5rem);
+}
+
 .jigsaw-workspace.is-immersive > .puzzle-workspace-display-tools {
   position: absolute;
   top: clamp(0.7rem, 1.5vw, 1rem);
@@ -177,10 +210,6 @@
   bottom: 0.75rem;
   z-index: 31;
   max-width: calc(100% - 4.75rem);
-}
-
-.jigsaw-workspace.is-immersive .jigsaw-solved-presentation.is-completed {
-  padding-top: 4.25rem;
 }
 
 .jigsaw-workspace.is-immersive .jigsaw-freeform-stage {

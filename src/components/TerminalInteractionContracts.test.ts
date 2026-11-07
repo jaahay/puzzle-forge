@@ -10,8 +10,10 @@ const wordGuessSource = readFileSync(new URL("./WordGuessGame.tsx", import.meta.
 const jigsawSource = readFileSync(new URL("./JigsawWorkspace.tsx", import.meta.url), "utf8");
 const jigsawPreviewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", import.meta.url), "utf8");
 const jigsawVisualSource = readFileSync(new URL("./JigsawIslandVisual.tsx", import.meta.url), "utf8");
-const jigsawNewCommandSource = readFileSync(new URL("./NewPuzzleCommand.tsx", import.meta.url), "utf8");
 const jigsawCss = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
+const immersiveCss = readFileSync(new URL("../site/immersive.css", import.meta.url), "utf8");
+const newCommandSource = readFileSync(new URL("./NewPuzzleCommand.tsx", import.meta.url), "utf8");
+const layoutSource = readFileSync(new URL("./PuzzleWorkspaceLayout.tsx", import.meta.url), "utf8");
 
 describe("terminal interaction contracts", () => {
   it("keeps the reserved grid validation lane mounted after completion", () => {
@@ -57,26 +59,34 @@ describe("terminal interaction contracts", () => {
     expect(wordGuessSource).toMatch(/<PuzzleTerminalDock[\s\S]*?announce=\{false\}[\s\S]*?\/>|<PuzzleTerminalDock[\s\S]*?announce=\{false\}[\s\S]*?>/);
   });
 
-  it("keeps Jigsaw completion stage-native while separating live celebration from restored solved state", () => {
+  it("keeps Jigsaw navigation in its header without duplicating completion actions on the board", () => {
     expect(jigsawSource).toContain("usePuzzleCompletionPresentation");
     expect(jigsawSource).not.toContain("PuzzleTerminalDock");
+    expect(jigsawSource).toContain('const crown = jigsawPuzzle ? (');
+    expect(jigsawSource).toContain("newPuzzleControl={newPuzzleControl}");
+    expect(jigsawSource).toContain("onRestartPuzzle={isSolved ? resetJigsaw : undefined}");
     expect(jigsawSource).toContain("completionPhase={completion.phase}");
     expect(jigsawSource).toContain("onCausativeInput={completion.recordCausativeInput}");
     expect(jigsawSource).toContain("onCompletionAnimationEnd={completion.completePresentation}");
     expect(jigsawPreviewSource).toContain("shouldShowJigsawCompletionCelebration(isSolved, completionPhase)");
-    expect(jigsawPreviewSource).toContain("shouldShowJigsawSolvedControls(isSolved, completionPhase)");
     expect(jigsawPreviewSource).toContain('class="jigsaw-solved-card is-celebrating"');
-    expect(jigsawPreviewSource).toContain('class="jigsaw-solved-card is-completed"');
-    expect(jigsawPreviewSource).toContain("onClick={onResetPuzzle}");
-    expect(jigsawPreviewSource).toContain('<div class="jigsaw-completed-next-puzzle">{nextPuzzleControl}</div>');
-    expect(jigsawSource).toContain("nextPuzzleControl={isSolved ? newPuzzleControl : null}");
-    expect(jigsawSource).toContain("newPuzzleControl={isSolved ? null : newPuzzleControl}");
-    expect(jigsawSource).toContain("inCompletionPrompt={isSolved}");
-    expect(jigsawNewCommandSource).toContain('inCompletionPrompt ? "Surprise me" : "New"');
-    expect(jigsawNewCommandSource).toContain("new-puzzle-command-choice");
-    expect(jigsawCss).toContain(".jigsaw-solved-presentation .new-puzzle-options-panel");
-    expect(jigsawCss).toContain("overscroll-behavior: contain;");
-    expect(jigsawPreviewSource).toContain('if (target?.closest(".jigsaw-solved-card")) return;');
+    expect(jigsawPreviewSource).toContain('class="jigsaw-completion-announcement" role="status" aria-live="polite"');
+    expect(jigsawPreviewSource).not.toContain("showCompletionControls");
+    expect(jigsawPreviewSource).not.toContain("onChoosePuzzle");
+    expect(jigsawPreviewSource).not.toContain('class="jigsaw-solved-card is-completed"');
+    expect(jigsawCss).not.toContain(".jigsaw-solved-actions {");
+    expect(jigsawCss).not.toContain(".jigsaw-solved-card.is-completed");
+    expect(newCommandSource).toContain("compactActions ? <RandomIcon />");
+    expect(newCommandSource).toContain("compactActions ? <PuzzlePickerIcon />");
+    expect(newCommandSource).toContain('class="new-puzzle-restart-current"');
+    expect(newCommandSource).not.toContain("openOptionsRequest");
+    expect(newCommandSource).toContain('document.addEventListener("keydown", handleKeyDown, true)');
+    expect(layoutSource).toContain(".new-puzzle-options[open]");
+    expect(layoutSource).not.toContain("[data-workspace-escape-layer]");
+    expect(immersiveCss).toContain(".workspace-layout-header.workspace-layout-crown");
+    expect(jigsawCss).toContain("background: #111827");
+    expect(jigsawCss).toContain(".jigsaw-workspace .current-puzzle-new-action .new-puzzle-split-control");
+    expect(jigsawCss).toContain(".jigsaw-workspace.is-immersive .new-puzzle-options-panel");
   });
 
   it("celebrates only the causative final drop and keeps solved artwork visually quiet afterward", () => {
@@ -90,7 +100,6 @@ describe("terminal interaction contracts", () => {
     expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .jigsaw-island-sidewall");
     expect(jigsawCss).toContain(".jigsaw-freeform-stage.solved .jigsaw-island .tile-puzzle-piece-outline");
     expect(jigsawCss).toContain(".jigsaw-freeform-stage.completion-celebrating .jigsaw-world-layer");
-    expect(jigsawCss).toContain(".jigsaw-solved-card.is-completed");
     expect(jigsawCss).toContain("animation: jigsaw-solved-card-arrive 620ms ease-out both;");
     expect(jigsawCss).toContain("animation: jigsaw-solved-world-settle 620ms ease-out both;");
     expect(jigsawCss).not.toContain(".jigsaw-freeform-stage.solved .jigsaw-world-layer");

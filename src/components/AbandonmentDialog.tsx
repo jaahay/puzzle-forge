@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "preact/hooks";
+import { createPortal } from "preact/compat";
+import { useEffect, useRef, useState } from "preact/hooks";
 
 import type { DestructivePuzzleAction } from "../app/abandonmentPolicy";
 
@@ -11,15 +12,28 @@ export const isAbandonmentBackdropClick = (target: EventTarget | null, backdrop:
 export const AbandonmentDialog = ({ action, onCancel, onConfirm }: Props) => {
   const safe = useRef<HTMLButtonElement>(null);
   const destructive = useRef<HTMLButtonElement>(null);
+  const [fullscreenHost, setFullscreenHost] = useState<Element | null>(
+    () => typeof document === "undefined" ? null : document.fullscreenElement,
+  );
+
+  useEffect(() => {
+    const syncFullscreenHost = () => setFullscreenHost(document.fullscreenElement);
+    document.addEventListener("fullscreenchange", syncFullscreenHost);
+    syncFullscreenHost();
+    return () => document.removeEventListener("fullscreenchange", syncFullscreenHost);
+  }, []);
+
   useEffect(() => {
     const previous = document.activeElement;
-    safe.current?.focus();
     return () => {
       if (previous instanceof HTMLElement && previous.isConnected) previous.focus();
     };
   }, []);
+
+  // Focus may need to be restored when the portal moves on entering or exiting fullscreen.
+  useEffect(() => { safe.current?.focus(); }, [fullscreenHost]);
   const isNew = action === "new";
-  return (
+  const dialog = (
     <div
       class="puzzle-abandon-backdrop"
       onPointerDown={(event) => event.stopPropagation()}
@@ -59,4 +73,7 @@ export const AbandonmentDialog = ({ action, onCancel, onConfirm }: Props) => {
       </section>
     </div>
   );
+
+  // Only descendants of the fullscreen element are visible above its top-layer surface.
+  return fullscreenHost ? createPortal(dialog, fullscreenHost) : dialog;
 };
