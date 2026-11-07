@@ -10,9 +10,9 @@ type JigsawTransformTarget = {
   };
 };
 
-type JigsawCssVariableTarget = {
+type JigsawDragTransformTarget = {
   style: {
-    setProperty: (property: string, value: string) => void;
+    translate: string;
   };
 };
 
@@ -26,17 +26,28 @@ export const applyJigsawCameraTransform = (
     `translate3d(${transform.translateX}px, ${transform.translateY}px, 0) scale(${transform.scale})`;
 };
 
+/**
+ * Move just the island's transform. Unlike inherited CSS variables, the
+ * independent translate property does not invalidate styles in every clipped
+ * SVG descendant. The canonical world transform remains owned by Preact.
+ */
 export const applyJigsawDragOffset = (
-  targets: readonly JigsawCssVariableTarget[],
+  targets: readonly JigsawDragTransformTarget[],
   dragX: number,
   dragY: number,
 ) => {
+  const translate = `${dragX}px ${dragY}px`;
   for (const target of targets) {
-    target.style.setProperty("--jigsaw-drag-x", `${dragX}px`);
-    target.style.setProperty("--jigsaw-drag-y", `${dragY}px`);
+    if (target.style.translate !== translate) target.style.translate = translate;
   }
 };
 
+/** Remove the entire temporary transform at rest: even a zero translate
+ * establishes a CSS transform context in browsers and can pressure the GPU. */
 export const resetJigsawDragOffset = (
-  targets: readonly JigsawCssVariableTarget[],
-) => applyJigsawDragOffset(targets, 0, 0);
+  targets: readonly JigsawDragTransformTarget[],
+) => {
+  for (const target of targets) {
+    if (target.style.translate !== "") target.style.translate = "";
+  }
+};

@@ -1,6 +1,6 @@
 import type { JSX } from "preact";
 import { memo } from "preact/compat";
-import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { JigsawGeneratedPuzzle, JigsawPiece } from "../catalog/types";
 import { advanceJigsawEdgePanCamera } from "../games/jigsaw/autoPan";
 import {
@@ -322,6 +322,7 @@ export const TilePuzzlePreview = ({
   const islandPosesRef = useRef<{ puzzleId: string; islands: JigsawPositionedVisualIsland[] } | null>(null);
   const islandPointerActionsRef = useRef<IslandPointerActions | null>(null);
   const dragRef = useRef<ActiveDrag | null>(null);
+  const pendingDragResetRef = useRef<HTMLDivElement | null>(null);
   const dragAnimationFrameRef = useRef<number | null>(null);
   const dragAnimationTimeRef = useRef<number | null>(null);
   const panRef = useRef<ActivePan | null>(null);
@@ -345,6 +346,23 @@ export const TilePuzzlePreview = ({
   progressChangeRef.current = onProgressChange;
   const [cameraState, setCameraState] = useState<CameraState | null>(null);
   const [activeTileId, setActiveTileId] = useState<string | null>(null);
+  // Wait until Preact renders the new placement before clearing the live drag translation.
+  useLayoutEffect(() => {
+    const pending = pendingDragResetRef.current;
+    if (!pending) return;
+    pendingDragResetRef.current = null;
+    resetJigsawDragOffset([pending]);
+  });
+
+  const endDragPresentation = (drag: ActiveDrag | null, afterPlacementCommit = false) => {
+    stopDragAnimation();
+    if (drag?.islandElement) {
+      if (afterPlacementCommit) pendingDragResetRef.current = drag.islandElement;
+      else resetJigsawDragOffset([drag.islandElement]);
+    }
+    dragRef.current = null;
+    setActiveTileId(null);
+  };
   const [isPanning, setIsPanning] = useState(false);
   const [playerPreferences, setPlayerPreferences] = useState(loadJigsawPlayerPreferences);
   const { showPreview, showEdgeSeams, snapToFrame, appearance, lockViewDragging } = playerPreferences;
@@ -402,6 +420,8 @@ export const TilePuzzlePreview = ({
   useEffect(() => () => {
     stopDragAnimation();
     if (dragRef.current?.islandElement) resetJigsawDragOffset([dragRef.current.islandElement]);
+    if (pendingDragResetRef.current) resetJigsawDragOffset([pendingDragResetRef.current]);
+    pendingDragResetRef.current = null;
     dragRef.current = null;
   }, []);
 
@@ -508,16 +528,15 @@ export const TilePuzzlePreview = ({
   }, []);
 
   useEffect(() => {
-    stopDragAnimation();
-    if (dragRef.current?.islandElement) resetJigsawDragOffset([dragRef.current.islandElement]);
-    dragRef.current = null;
+    endDragPresentation(dragRef.current);
+    if (pendingDragResetRef.current) resetJigsawDragOffset([pendingDragResetRef.current]);
+    pendingDragResetRef.current = null;
     panRef.current = null;
     touchPointsRef.current.clear();
     pinchRef.current = null;
     placementStateRef.current = null;
     baselinePlacementsRef.current = null;
     replaceHistory(makeEmptyJigsawHistoryState());
-    setActiveTileId(null);
     setIsPanning(false);
     setFitIsOverview(true);
     cameraWasUserAdjustedRef.current = false;
@@ -664,18 +683,15 @@ export const TilePuzzlePreview = ({
     stagingViewport: JigsawViewport,
     fitPlacements: readonly JigsawPlacement[] = nextPlacements,
   ) => {
-    stopDragAnimation();
-    if (dragRef.current?.islandElement) resetJigsawDragOffset([dragRef.current.islandElement]);
+    endDragPresentation(dragRef.current);
     updatePlacementState(() => ({
       puzzleId: puzzle.id,
       placements: nextPlacements,
       assembly: cloneJigsawAssemblyProgress(nextAssembly),
     }));
-    dragRef.current = null;
     panRef.current = null;
     touchPointsRef.current.clear();
     pinchRef.current = null;
-    setActiveTileId(null);
     setIsPanning(false);
     publishAssemblyProgress(nextAssembly);
     if (baseline) {
@@ -851,11 +867,8 @@ export const TilePuzzlePreview = ({
             ...cancelJigsawDragAction(interruptedDrag),
           } : current);
         }
-        stopDragAnimation();
-        clearIslandDragOffset(interruptedDrag);
-        dragRef.current = null;
+        endDragPresentation(interruptedDrag, true);
         panRef.current = null;
-        setActiveTileId(null);
         setIsPanning(false);
       }
     }
@@ -907,10 +920,6 @@ export const TilePuzzlePreview = ({
       event.preventDefault();
       event.stopPropagation();
     }
-  };
-
-  const clearIslandDragOffset = (drag: ActiveDrag | null) => {
-    if (drag?.islandElement) resetJigsawDragOffset([drag.islandElement]);
   };
 
   const renderDraggedPieceImmediately = (drag: ActiveDrag, state = wheelStateRef.current) => {
@@ -1038,17 +1047,15 @@ export const TilePuzzlePreview = ({
       layout, puzzle.tiles, wheelStateRef.current.camera, wheelStateRef.current.viewport, stagePoint, drag,
     )?.placements : null;
     setCamera(wheelStateRef.current.camera);
-    clearIslandDragOffset(drag);
     const target = event.currentTarget as HTMLButtonElement;
     if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId);
+    endDragPresentation(drag, true);
 
     if (!movedPlacements) {
       updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
         ...current,
         ...cancelJigsawDragAction(drag),
       } : current);
-      dragRef.current = null;
-      setActiveTileId(null);
       publishHistoryAvailability(historyRef.current);
       return;
     }
@@ -1068,8 +1075,6 @@ export const TilePuzzlePreview = ({
       ...current,
       ...nextSnapshot,
     } : current);
-    dragRef.current = null;
-    setActiveTileId(null);
     if (nextState?.puzzleId === puzzle.id) {
       if (completed.solved) onCausativeInput();
       publishAssemblyProgress(nextState.assembly);
@@ -1084,15 +1089,12 @@ export const TilePuzzlePreview = ({
   const cancelDrag = (event: PiecePointerEvent) => {
     const drag = dragRef.current;
     if (!drag || drag.puzzleId !== puzzle.id || drag.pointerId !== event.pointerId) return;
-    stopDragAnimation();
-    clearIslandDragOffset(drag);
+    endDragPresentation(drag, true);
     setCamera(wheelStateRef.current.camera);
     updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
       ...current,
       ...cancelJigsawDragAction(drag),
     } : current);
-    dragRef.current = null;
-    setActiveTileId(null);
     publishHistoryAvailability(historyRef.current);
     event.stopPropagation();
   };
