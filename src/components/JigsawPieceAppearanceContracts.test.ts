@@ -15,8 +15,8 @@ describe("Jigsaw piece appearance integration", () => {
   });
 
   it("switches seam presentation only, reusing common island artwork, masks, and hit targets", () => {
-    expect(preview).toContain('data-piece-appearance={treatment}');
-    expect(preview).toContain('treatment === "inlaid"');
+    expect(preview).toContain('data-piece-appearance={appearance}');
+    expect(preview).toContain('appearance === "inlaid"');
     expect(css).toContain('.jigsaw-island[data-piece-appearance="seamless"] .tile-puzzle-piece-outline');
     expect(css).toContain('.jigsaw-island[data-piece-appearance="inlaid"] .tile-puzzle-piece-outline');
     expect(preview).toContain('class="jigsaw-island-artwork"');
