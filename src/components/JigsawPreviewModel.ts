@@ -156,17 +156,28 @@ export const shouldShowJigsawCompletionCelebration = (
 ) => isSolved && phase === "celebrating";
 
 
-/** Stable settled layers keep loose pieces accessible as groups grow. */
+/** Identify a free island by membership, not its transient world position. */
+export const getJigsawIslandLayerIdentity = (
+  island: Pick<JigsawPositionedVisualIsland, "key" | "members">,
+): string => JSON.stringify([
+  island.key,
+  ...island.members.map(({ piece }) => piece.id).sort(),
+]);
+
+/** Joined groups settle; freely placed islands retain their interaction order. */
 export const getJigsawIslandStackOrder = (
   island: Pick<JigsawPositionedVisualIsland, "members">,
   pieceCount: number,
   active: boolean,
   anchored: boolean,
+  freeDropRank = -1,
 ): number => {
   const stride = pieceCount + 1;
   const aboveBoard = 10;
   if (active) return aboveBoard + stride * (stride + 2);
   if (anchored) return aboveBoard;
+  // A free drop is newer than all resting layers but below the active drag.
+  if (freeDropRank >= 0) return aboveBoard + stride * (stride + 1) + Math.min(freeDropRank, pieceCount);
   const sizeLayer = pieceCount - island.members.length + 1;
   const originalOrder = island.members.reduce(
     (highest, { piece }) => Math.max(highest, piece.currentIndex), 0);

@@ -8,7 +8,7 @@ import {
   getJigsawCameraTransform,
   getJigsawOccupiedBounds,
 } from "../games/jigsaw/placement";
-import { getJigsawIslandStackOrder, initializeOrPreserveJigsawCamera, resolveJigsawCameraForViewportResize } from "./JigsawPreviewModel";
+import { getJigsawIslandLayerIdentity, getJigsawIslandStackOrder, initializeOrPreserveJigsawCamera, resolveJigsawCameraForViewportResize } from "./JigsawPreviewModel";
 
 describe("Jigsaw initial All pieces view", () => {
   it.each([
@@ -75,5 +75,47 @@ describe("Jigsaw settled island layer order", () => {
     const afterDrop = getJigsawIslandStackOrder(island(1, 2, 3), 64, false, false);
     expect(dragging).toBeGreaterThan(loose);
     expect(afterDrop).toBeLessThan(loose);
+  });
+
+  const keyed = (key: string, ...indices: number[]) => ({
+    key,
+    members: indices.map((currentIndex) => ({
+      piece: { id: `tile-${currentIndex}`, currentIndex },
+    })),
+  }) as unknown as Parameters<typeof getJigsawIslandLayerIdentity>[0];
+
+  it("preserves free-drop stacking across multiple moves without losing earlier overlaps", () => {
+    const first = keyed("first", 0, 1, 2);
+    const second = keyed("second", 3);
+    const third = keyed("third", 9);
+    const order = [
+      getJigsawIslandLayerIdentity(first),
+      getJigsawIslandLayerIdentity(second),
+      getJigsawIslandLayerIdentity(third),
+    ];
+    const rank = (candidate: typeof first) =>
+      order.indexOf(getJigsawIslandLayerIdentity(candidate));
+    const firstLayer = getJigsawIslandStackOrder(first, 64, false, false, rank(first));
+    const secondLayer = getJigsawIslandStackOrder(second, 64, false, false, rank(second));
+    const thirdLayer = getJigsawIslandStackOrder(third, 64, false, false, rank(third));
+    const untouchedLoose = getJigsawIslandStackOrder(island(63), 64, false, false);
+
+    expect(firstLayer).toBeGreaterThan(untouchedLoose);
+    expect(secondLayer).toBeGreaterThan(firstLayer);
+    expect(thirdLayer).toBeGreaterThan(secondLayer);
+    expect(getJigsawIslandStackOrder(first, 64, true, false, rank(first))).toBeGreaterThan(thirdLayer);
+  });
+
+  it("invalidates a free-drop lift when membership changes after a join", () => {
+    const moved = keyed("island-a", 2, 3);
+    const order = [getJigsawIslandLayerIdentity(moved)];
+    const joined = keyed("island-a", 2, 3, 4);
+    const unchangedPose = { ...moved, worldX: 1234 };
+
+    expect(order.indexOf(getJigsawIslandLayerIdentity(unchangedPose))).toBe(0);
+    expect(order.indexOf(getJigsawIslandLayerIdentity(joined))).toBe(-1);
+    expect(getJigsawIslandStackOrder(joined, 64, false, false, -1))
+      .toBeLessThan(getJigsawIslandStackOrder(island(63), 64, false, false));
+    expect(getJigsawIslandStackOrder(moved, 64, false, true, 0)).toBe(10);
   });
 });
