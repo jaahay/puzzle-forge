@@ -90,7 +90,8 @@ describe("Jigsaw selection and settled layer order", () => {
     expect(firstLayer).toBeGreaterThan(getJigsawIslandStackOrder(layer([63]), 64, false, false));
     expect(secondLayer).toBeGreaterThan(firstLayer);
     expect(getJigsawIslandStackOrder(first, 64, true, false, firstRank)).toBeGreaterThan(secondLayer);
-    expect(getJigsawIslandLayerIdentity({ ...first, worldX: 20 })).toBe(order[0]);
+    const movedPose = { ...first, worldX: 20 };
+    expect(getJigsawIslandLayerIdentity(movedPose)).toBe(order[0]);
     const joined = keyed("first", 0, 1, 2, 4);
     expect(order.indexOf(getJigsawIslandLayerIdentity(joined))).toBe(-1);
     expect(getJigsawIslandStackOrder(joined, 64, false, false)).toBeLessThan(secondLayer);
