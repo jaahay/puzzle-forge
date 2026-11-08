@@ -73,6 +73,7 @@ import {
   findJigsawDragHoverIsland,
   findJigsawDragHoverIslandAtWorldPoint,
   getJigsawFitInsetsForOverlays,
+  getJigsawIslandLayerIdentity,
   getJigsawZoomStep,
   getMeasuredJigsawViewport,
   initializeOrPreserveJigsawCamera,
@@ -247,6 +248,10 @@ export const TilePuzzlePreview = ({
   progressChangeRef.current = onProgressChange;
   const [cameraState, setCameraState] = useState<CameraState | null>(null);
   const [activeTileId, setActiveTileId] = useState<string | null>(null);
+  const [freeDropStack, setFreeDropStack] = useState<{ puzzleId: string; order: string[] }>({
+    puzzleId: puzzle.id,
+    order: [],
+  });
   /** A completed placement must reach the DOM before its temporary drag offset is removed.
    *  Otherwise the piece briefly jumps back to its starting position on pointer release. */
   useLayoutEffect(() => {
@@ -453,6 +458,7 @@ export const TilePuzzlePreview = ({
     baselinePlacementsRef.current = null;
     replaceHistory(makeEmptyJigsawHistoryState());
     setActiveTileId(null);
+    setFreeDropStack({ puzzleId: puzzle.id, order: [] });
     setIsPanning(false);
     setFitIsOverview(true);
     cameraWasUserAdjustedRef.current = false;
@@ -608,6 +614,7 @@ export const TilePuzzlePreview = ({
     panRef.current = null;
     touchPointsRef.current.clear();
     pinchRef.current = null;
+    setFreeDropStack({ puzzleId: puzzle.id, order: [] });
     setIsPanning(false);
     publishAssemblyProgress(nextAssembly);
     if (baseline) {
@@ -702,6 +709,7 @@ export const TilePuzzlePreview = ({
   const activeIslandKey = activeTileId && dragRef.current?.puzzleId === puzzle.id
     ? visualScene.byPieceId.get(activeTileId)?.key : null;
   const anchoredIslandIds = new Set(activeAssembly.anchoredPieceIds ?? []);
+  const freeDropOrder = freeDropStack.puzzleId === puzzle.id ? freeDropStack.order : [];
 
   useEffect(() => {
     if (!isSolved) return;
@@ -737,6 +745,7 @@ export const TilePuzzlePreview = ({
     publishAssemblyProgress(transition.snapshot.assembly);
     replaceHistory(transition.history);
     setActiveTileId(null);
+    setFreeDropStack({ puzzleId: puzzle.id, order: [] });
     return true;
   }, [canHistoryAction, publishAssemblyProgress, puzzle.id, replaceHistory, updatePlacementState]);
 
@@ -895,6 +904,7 @@ export const TilePuzzlePreview = ({
       const matchedKey = findJigsawDragHoverIslandAtWorldPoint(
         visualIslands, worldPoint, draggedKey, current.layout,
         anchoredIslandIds, puzzle.tiles.length, hoverPathTester,
+        (island) => freeDropOrder.indexOf(getJigsawIslandLayerIdentity(island)),
       );
       candidate = matchedKey ? islandElementsRef.current.get(matchedKey) ?? null : null;
     } else if (stage) {
@@ -1059,11 +1069,31 @@ export const TilePuzzlePreview = ({
       },
     );
     const nextSnapshot = completed.snapshot;
+    const changed = completed.history !== historyRef.current;
     const nextState = updatePlacementState((current) => current?.puzzleId === puzzle.id ? {
       ...current,
       ...nextSnapshot,
     } : current);
     if (nextState?.puzzleId === puzzle.id) {
+      if (changed) {
+        const finalMembers = getJigsawComponentPieceIds(nextSnapshot.assembly, drag.tileId);
+        const joined = finalMembers.some((id) => !drag.pieceIds.includes(id));
+        const anchored = finalMembers.some((id) => nextSnapshot.assembly.anchoredPieceIds?.includes(id));
+        const affectedIdentities = new Set(finalMembers.flatMap((id) => {
+          const island = visualScene.byPieceId.get(id);
+          return island ? [getJigsawIslandLayerIdentity(island)] : [];
+        }));
+        const availableIdentities = new Set(visualScene.islands.map(getJigsawIslandLayerIdentity));
+        const draggedIsland = visualScene.byPieceId.get(drag.tileId);
+        const freeIdentity = draggedIsland ? getJigsawIslandLayerIdentity(draggedIsland) : null;
+        setFreeDropStack((current) => {
+          const prior = current.puzzleId === puzzle.id ? current.order : [];
+          const order = prior.filter((id) =>
+            availableIdentities.has(id) && !affectedIdentities.has(id));
+          if (!joined && !anchored && freeIdentity) order.push(freeIdentity);
+          return { puzzleId: puzzle.id, order };
+        });
+      }
       if (completed.solved) onCausativeInput();
       publishAssemblyProgress(nextState.assembly);
       replaceHistory(completed.history);
@@ -1394,6 +1424,7 @@ export const TilePuzzlePreview = ({
                 }
               }
             }
+            setFreeDropStack({ puzzleId: puzzle.id, order: [] });
             setPlayerPreferences((current) => ({ ...current, snapToFrame: !current.snapToFrame }));
           }}
         >
@@ -1431,6 +1462,7 @@ export const TilePuzzlePreview = ({
               layout={layout}
               active={activeIslandKey === island.key}
               anchored={anchoredIslandIds.has(island.members[0]!.piece.id)}
+              freeDropRank={freeDropOrder.indexOf(getJigsawIslandLayerIdentity(island))}
               showEdgeSeams={showEdgeSeams}
               appearance={appearance}
               physicalEdition={visibleEdition}

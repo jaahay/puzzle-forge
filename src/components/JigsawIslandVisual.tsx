@@ -154,6 +154,7 @@ type IslandVisualProps = {
   layout: JigsawWorldLayout;
   active: boolean;
   anchored: boolean;
+  freeDropRank: number;
   showEdgeSeams: boolean;
   appearance: JigsawPieceAppearance;
   physicalEdition: JigsawPhysicalEdition;
@@ -164,7 +165,7 @@ type IslandVisualProps = {
 
 /** Memoized by immutable membership and individual pose; camera changes do not re-render artwork. */
 export const JigsawIslandVisual = memo(({
-  island, puzzle, layout, active, anchored, showEdgeSeams, appearance, physicalEdition, isSolved,
+  island, puzzle, layout, active, anchored, freeDropRank, showEdgeSeams, appearance, physicalEdition, isSolved,
   islandElements, pointerActions,
 }: IslandVisualProps) => {
   const islandStyle = {
@@ -172,7 +173,7 @@ export const JigsawIslandVisual = memo(({
     height: `${layout.pieceHeight * island.heightCells}px`,
     "--jigsaw-piece-x": `${island.worldX}px`,
     "--jigsaw-piece-y": `${island.worldY}px`,
-    zIndex: getJigsawIslandStackOrder(island, puzzle.tiles.length, active, anchored),
+    zIndex: getJigsawIslandStackOrder(island, puzzle.tiles.length, active, anchored, freeDropRank),
   } as JSX.CSSProperties;
   return (
     <div

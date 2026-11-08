@@ -8,7 +8,7 @@ import {
   getJigsawCameraTransform,
   getJigsawOccupiedBounds,
 } from "../games/jigsaw/placement";
-import { findJigsawDragHoverIsland, findJigsawDragHoverIslandAtWorldPoint, getJigsawIslandStackOrder, initializeOrPreserveJigsawCamera, resolveJigsawCameraForViewportResize } from "./JigsawPreviewModel";
+import { findJigsawDragHoverIsland, findJigsawDragHoverIslandAtWorldPoint, getJigsawIslandLayerIdentity, getJigsawIslandStackOrder, initializeOrPreserveJigsawCamera, resolveJigsawCameraForViewportResize } from "./JigsawPreviewModel";
 
 describe("Jigsaw initial All pieces view", () => {
   it.each([
@@ -72,6 +72,29 @@ describe("Jigsaw selection and settled layer order", () => {
     const dropped = getJigsawIslandStackOrder(layer([0, 1, 2]), count, false, false);
     expect(active).toBeGreaterThan(loose);
     expect(dropped).toBeLessThan(loose);
+  });
+
+  const keyed = (key: string, ...indices: number[]) => ({
+    key,
+    members: indices.map((currentIndex) => ({ piece: { id: `tile-${currentIndex}`, currentIndex } })),
+  }) as unknown as Parameters<typeof getJigsawIslandLayerIdentity>[0];
+
+  it("preserves free-drop stacking across moves without lifting newly joined groups", () => {
+    const first = keyed("first", 0, 1, 2);
+    const second = keyed("second", 3);
+    const order = [getJigsawIslandLayerIdentity(first), getJigsawIslandLayerIdentity(second)];
+    const firstRank = order.indexOf(getJigsawIslandLayerIdentity(first));
+    const secondRank = order.indexOf(getJigsawIslandLayerIdentity(second));
+    const firstLayer = getJigsawIslandStackOrder(first, 64, false, false, firstRank);
+    const secondLayer = getJigsawIslandStackOrder(second, 64, false, false, secondRank);
+    expect(firstLayer).toBeGreaterThan(getJigsawIslandStackOrder(layer([63]), 64, false, false));
+    expect(secondLayer).toBeGreaterThan(firstLayer);
+    expect(getJigsawIslandStackOrder(first, 64, true, false, firstRank)).toBeGreaterThan(secondLayer);
+    expect(getJigsawIslandLayerIdentity({ ...first, worldX: 20 })).toBe(order[0]);
+    const joined = keyed("first", 0, 1, 2, 4);
+    expect(order.indexOf(getJigsawIslandLayerIdentity(joined))).toBe(-1);
+    expect(getJigsawIslandStackOrder(joined, 64, false, false)).toBeLessThan(secondLayer);
+    expect(getJigsawIslandStackOrder(first, 64, false, true, firstRank)).toBe(10);
   });
 
   const positioned = (
@@ -138,6 +161,19 @@ describe("Jigsaw selection and settled layer order", () => {
       { pieceWidth: 100, pieceHeight: 100 }, new Set(), 100,
       (_id, x, y) => x >= 0 && x <= 100 && y >= 0 && y <= 100,
     )).toBe("loose");
+  });
+
+  it("uses the visible free-drop order for geometric hover targeting", () => {
+    const first = positioned("first", 10, 20, 5);
+    const second = positioned("second", 10, 20, 6);
+    const firstIdentity = getJigsawIslandLayerIdentity(first);
+    const order = [getJigsawIslandLayerIdentity(second), firstIdentity];
+    const rank = (candidate: typeof first) => order.indexOf(getJigsawIslandLayerIdentity(candidate));
+    expect(findJigsawDragHoverIslandAtWorldPoint(
+      [first, second], { x: 60, y: 60 }, null,
+      { pieceWidth: 100, pieceHeight: 100 }, new Set(), 20,
+      () => true, rank,
+    )).toBe("first");
   });
 
   it("discovers an underlying island through the dragged hit target, not empty bounds", () => {

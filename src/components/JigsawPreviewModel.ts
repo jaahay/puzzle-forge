@@ -156,17 +156,27 @@ export const shouldShowJigsawCompletionCelebration = (
 ) => isSolved && phase === "celebrating";
 
 
-/** Joined regions settle behind smaller, still-accessible pieces; only the active drag rises. */
+/** Identify an island by membership rather than its transient world position. */
+export const getJigsawIslandLayerIdentity = (
+  island: Pick<JigsawPositionedVisualIsland, "key" | "members">,
+): string => JSON.stringify([
+  island.key,
+  ...island.members.map(({ piece }) => piece.id).sort(),
+]);
+
+/** Joined groups settle; freely placed islands retain their interaction order. */
 export const getJigsawIslandStackOrder = (
   island: Pick<JigsawPositionedVisualIsland, "members">,
   pieceCount: number,
   active: boolean,
   anchored: boolean,
+  freeDropRank = -1,
 ): number => {
   const stride = pieceCount + 1;
   const aboveBoard = 10;
   if (active) return aboveBoard + stride * (stride + 2);
   if (anchored) return aboveBoard;
+  if (freeDropRank >= 0) return aboveBoard + stride * (stride + 1) + Math.min(freeDropRank, pieceCount);
   const sizeLayer = pieceCount - island.members.length + 1;
   const originalOrder = island.members.reduce(
     (highest, { piece }) => Math.max(highest, piece.currentIndex), 0);
@@ -187,6 +197,7 @@ export const findJigsawDragHoverIslandAtWorldPoint = (
   anchoredPieceIds: ReadonlySet<string>,
   pieceCount: number,
   containsPieceOutlinePoint: (pieceId: string, x: number, y: number) => boolean,
+  freeDropRankForIsland: (island: JigsawPositionedVisualIsland) => number = () => -1,
 ): string | null => {
   let topKey: string | null = null;
   let topLayer = -Infinity;
@@ -201,7 +212,7 @@ export const findJigsawDragHoverIslandAtWorldPoint = (
         worldPoint.y > island.worldY + island.heightCells * layout.pieceHeight + paddingY) continue;
 
     const anchored = island.members.some(({ piece }) => anchoredPieceIds.has(piece.id));
-    const layer = getJigsawIslandStackOrder(island, pieceCount, false, anchored);
+    const layer = getJigsawIslandStackOrder(island, pieceCount, false, anchored, freeDropRankForIsland(island));
     if (layer <= topLayer) continue;
     const xInCells = (worldPoint.x - island.worldX) / layout.pieceWidth;
     const yInCells = (worldPoint.y - island.worldY) / layout.pieceHeight;
