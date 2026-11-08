@@ -930,9 +930,9 @@
   transition: stroke 140ms ease, stroke-width 140ms ease;
 }
 
-.jigsaw-island:has(.tile-puzzle-piece:hover) .tile-puzzle-piece-outline,
-.jigsaw-island:has(.tile-puzzle-piece:focus-visible) .tile-puzzle-piece-outline,
-.jigsaw-island.dragging .tile-puzzle-piece-outline {
+.jigsaw-island:has(.tile-puzzle-piece:hover) .tile-puzzle-piece-outline:not(.interior),
+.jigsaw-island:has(.tile-puzzle-piece:focus-visible) .tile-puzzle-piece-outline:not(.interior),
+.jigsaw-island.dragging .tile-puzzle-piece-outline:not(.interior) {
   stroke: rgba(125, 211, 252, 0.96);
   stroke-width: 1.75;
 }
@@ -940,6 +940,10 @@
 .jigsaw-island.joined .tile-puzzle-piece-outline, .jigsaw-island.anchored .tile-puzzle-piece-outline {
   stroke: rgba(167, 243, 208, 0.72);
   stroke-width: 1.1;
+}
+/* Joined islands use one open path per cut, without doubled round endpoints. */
+.jigsaw-island.joined .tile-puzzle-piece-outline {
+  stroke-linecap: butt;
 }
 
 /* Interior seams are presentation only; geometry, image clipping, and hit targets stay shared. */
