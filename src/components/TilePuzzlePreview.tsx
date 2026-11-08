@@ -194,7 +194,7 @@ const JigsawIslandVisual = memo(({
             />
           </g>
         </g>
-        {island.members.map(({ piece, outline, seams }) => (
+        {island.members.length === 1 ? island.members.map(({ piece, outline, seams }) => (
           <g key={piece.id} transform={`translate(${(piece.column - island.minColumn) * 100} ${(piece.row - island.minRow) * 100})`}>
             <path class="tile-puzzle-piece-outline" d={outline} />
             {appearance === "inlaid" ? (
@@ -207,7 +207,29 @@ const JigsawIslandVisual = memo(({
               <path class={`tile-puzzle-edge-seam ${seam.boundary ? "boundary" : "interior"} ${seam.polarity}`} d={seam.d} key={seam.edgeId} />
             )) : null}
           </g>
-        ))}
+        )) : (
+          <>
+            {island.cuts.map((cut) => (
+              <g key={cut.key} transform={`translate(${cut.offsetX} ${cut.offsetY})`}>
+                <path class={`tile-puzzle-piece-outline ${cut.kind}`} d={cut.d} />
+                {appearance === "inlaid" ? (
+                  <>
+                    <path class="tile-puzzle-piece-inlaid-recess" d={cut.d} />
+                    <path class="tile-puzzle-piece-inlaid-highlight" d={cut.d} transform="translate(-0.4 -0.4)" />
+                  </>
+                ) : null}
+              </g>
+            ))}
+            {showEdgeSeams && !isSolved ? island.cuts.map((cut) => (
+              <path
+                key={`guide:${cut.key}`}
+                class={`tile-puzzle-edge-seam ${cut.kind === "exterior" ? "boundary" : "interior"}`}
+                d={cut.d}
+                transform={`translate(${cut.offsetX} ${cut.offsetY})`}
+              />
+            )) : null}
+          </>
+        )}
       </svg>
       {island.members.map(({ piece, outline, span }) => (
         <button

@@ -23,4 +23,14 @@ describe("Jigsaw piece appearance integration", () => {
     expect(preview).toContain('class="tile-puzzle-piece-hit-target"');
     expect(preview).toContain('showEdgeSeams && !isSolved ? seams.map(');
   });
+  it("draws joined physical cuts once while leaving loose artwork clips and edge guides intact", () => {
+    expect(preview).toContain("island.members.length === 1 ? island.members.map");
+    expect(preview).toContain("island.cuts.map((cut)");
+    expect(preview).toContain('class={`tile-puzzle-piece-outline ${cut.kind}`}');
+    expect(preview).toContain("showEdgeSeams && !isSolved ? island.cuts.map(");
+    expect(preview).toContain('class="jigsaw-island-artwork"');
+    expect(preview).toContain('clip-path={`url(#${clipId})`}');
+    expect(css).toContain(".jigsaw-island.joined .tile-puzzle-piece-outline {");
+    expect(css).toContain(".tile-puzzle-piece-outline:not(.interior)");
+  });
 });
