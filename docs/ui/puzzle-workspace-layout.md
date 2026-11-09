@@ -151,7 +151,7 @@ The presentation of a control should fit its meaning and context. Use explicit l
 
 Keep choices, values, and modes legible; prioritize the puzzle surface; disclose secondary actions where useful. Icons should form a coherent visual family, but identical-looking toolbars are not required across different puzzle mechanics. Accessible names, visible labels, control states, and behavior must tell the same story.
 
-See [Control Communication Principles](../principles/control-communication.md) and the companion [research notes](../research/control-communication.md).
+See the [Control Communication Principles](../principles/control-communication.md#principles) and [research and rationale](../principles/control-communication.md#research-and-rationale).
 
 ## Terminal state and completion
 
