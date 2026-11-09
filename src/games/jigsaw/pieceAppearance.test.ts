@@ -3,17 +3,19 @@ import { describe, expect, it } from "vitest";
 import { defaultJigsawPlayerPreferences, jigsawPieceAppearances } from "./playerPreferences";
 
 const preview = readFileSync(new URL("../../components/TilePuzzlePreview.tsx", import.meta.url), "utf8");
+const visual = readFileSync(new URL("../../components/JigsawIslandVisual.tsx", import.meta.url), "utf8");
 
-describe("Jigsaw piece appearance treatment", () => {
-  it("retains Inlaid as the initial preference and all three appearance choices", () => {
+describe("Jigsaw piece appearance selection", () => {
+  it("uses Inlaid by default while offering all three treatments", () => {
     expect(defaultJigsawPlayerPreferences.appearance).toBe("inlaid");
     expect(jigsawPieceAppearances).toEqual(["outlined", "inlaid", "seamless"]);
   });
 
-  it("applies the selected appearance to both loose and joined islands", () => {
-    expect(preview).toContain("data-piece-appearance={appearance}");
-    expect(preview).toContain('appearance === "inlaid"');
+  it("draws the same cached unique physical cuts for all modes, including loose pieces", () => {
+    expect(visual).toContain("data-piece-appearance={appearance}");
+    expect(visual).toContain("island.cuts.map((cut)");
+    expect(visual).toContain('class={`tile-puzzle-piece-outline ${cut.kind}`}');
     expect(preview).not.toContain("resolveJigsawPieceAppearance(");
-    expect(preview).not.toContain('isJoined ? preference : "outlined"');
+    expect(preview).not.toContain("tile-puzzle-piece-outline-halo");
   });
 });

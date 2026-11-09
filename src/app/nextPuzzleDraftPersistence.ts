@@ -3,6 +3,7 @@ import type { PuzzleDifficulty, PuzzleId, SolitaireRedealLimit, SolitaireVariati
 import { getPuzzleImageAssetsFor, isImageBackedPuzzleId } from "../games/imageAssets";
 import { isJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
 import { isJigsawCutStyle } from "../games/jigsaw/cutStyle";
+import { isJigsawEditionChoice } from "../games/jigsaw/physicalEdition";
 import { isJigsawSpecialPiecesMode } from "../games/jigsaw/specialPieces";
 import { isJigsawSizeSelection } from "../games/jigsaw/size";
 import { solitaireRedealLimits } from "../games/solitaire/variation";
@@ -59,6 +60,9 @@ const isJigsawSizeSelectionForPuzzle = (puzzleId: PuzzleId, value: unknown) =>
 const isJigsawCutStyleForPuzzle = (puzzleId: PuzzleId, value: unknown) =>
   puzzleId === "jigsaw" ? isJigsawCutStyle(value) : value === undefined;
 
+const isJigsawEditionForPuzzle = (puzzleId: PuzzleId, value: unknown) =>
+  puzzleId === "jigsaw" ? value === undefined || isJigsawEditionChoice(value) : value === undefined;
+
 const isJigsawBoundaryModeForPuzzle = (puzzleId: PuzzleId, value: unknown) =>
   puzzleId === "jigsaw" ? isJigsawBoundaryMode(value) : value === undefined;
 
@@ -77,6 +81,7 @@ const parseDraft = (puzzleId: PuzzleId, value: unknown): NextPuzzleDraft | null 
     !isImageIdForPuzzle(puzzleId, value.imageId) ||
     !isJigsawSizeSelectionForPuzzle(puzzleId, value.jigsawSizeSelection) ||
     !isJigsawCutStyleForPuzzle(puzzleId, value.jigsawCutStyle) ||
+    !isJigsawEditionForPuzzle(puzzleId, value.jigsawEditionChoice) ||
     !isJigsawBoundaryModeForPuzzle(puzzleId, value.jigsawBoundaryMode) ||
     !isJigsawSpecialPiecesModeForPuzzle(puzzleId, value.jigsawSpecialPiecesMode)
   ) {
@@ -95,6 +100,7 @@ const parseDraft = (puzzleId: PuzzleId, value: unknown): NextPuzzleDraft | null 
       ? {
           jigsawSizeSelection: value.jigsawSizeSelection as NextPuzzleDraft["jigsawSizeSelection"],
           jigsawCutStyle: value.jigsawCutStyle as NextPuzzleDraft["jigsawCutStyle"],
+          jigsawEditionChoice: value.jigsawEditionChoice as NextPuzzleDraft["jigsawEditionChoice"],
           jigsawBoundaryMode: value.jigsawBoundaryMode as NextPuzzleDraft["jigsawBoundaryMode"],
           jigsawSpecialPiecesMode:
             value.jigsawSpecialPiecesMode as NextPuzzleDraft["jigsawSpecialPiecesMode"],

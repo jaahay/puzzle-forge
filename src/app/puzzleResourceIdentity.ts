@@ -2,6 +2,7 @@ import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type {
   JigsawBoundaryMode,
   JigsawCutStyle,
+  JigsawEditionChoice,
   JigsawSpecialPiecesMode,
   PuzzleDifficulty,
   PuzzleId,
@@ -11,6 +12,7 @@ import type {
 import { getPuzzleImageAsset } from "../games/imageAssets";
 import { normalizeJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
 import { normalizeJigsawCutStyle } from "../games/jigsaw/cutStyle";
+import { normalizeJigsawEditionChoice } from "../games/jigsaw/physicalEdition";
 import { normalizeJigsawSpecialPiecesMode } from "../games/jigsaw/specialPieces";
 import { normalizeSeed } from "../games/shared";
 import { isDailyDateStamp } from "../games/shared/daily";
@@ -60,6 +62,13 @@ const jigsawCutStyleCodebook = [
   ["intricate", 3],
   ["eclectic", 4],
 ] as const satisfies readonly (readonly [JigsawCutStyle, number])[];
+
+const jigsawEditionCodebook = [
+  ["auto", 0],
+  ["heritage", 1],
+  ["classic", 2],
+  ["vivid", 3],
+] as const satisfies readonly (readonly [JigsawEditionChoice, number])[];
 
 const jigsawBoundaryModeCodebook = [
   ["flat", 0],
@@ -212,9 +221,11 @@ const pushPuzzlePayload = (bytes: number[], identity: GenerationIdentity) => {
       if (specialPiecesModeCode === undefined) {
         throw new Error(`Unsupported Jigsaw special pieces mode: ${specialPiecesMode}`);
       }
+      const editionChoice = normalizeJigsawEditionChoice(identity.jigsawEditionChoice);
+      const editionCode = jigsawEditionCodebook.find(([edition]) => edition === editionChoice)?.[1] ?? 0;
       pushByte(
         bytes,
-        cutStyleCode | (boundaryModeCode << 3) | (specialPiecesModeCode << 4),
+        cutStyleCode | (boundaryModeCode << 3) | (specialPiecesModeCode << 4) | (editionCode << 6),
       );
       return;
     }
@@ -292,6 +303,7 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
     let sudokuVariation: SudokuVariation = defaultSudokuVariation;
     let solitaireVariation: SolitaireVariation = defaultSolitaireVariation;
     let jigsawCutStyle: JigsawCutStyle | undefined;
+    let jigsawEditionChoice: JigsawEditionChoice | undefined;
     let jigsawBoundaryMode: JigsawBoundaryMode | undefined;
     let jigsawSpecialPiecesMode: JigsawSpecialPiecesMode | undefined;
     let imageId: string | undefined;
@@ -328,19 +340,21 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
         height = reader.readByte();
         imageId = getPuzzleImageAsset(reader.readText(), puzzleId).id;
         const flags = reader.readByte();
-        if ((flags & 0xc0) !== 0) return { ok: false, reason: "invalid-identity" };
+        const editionCode = (flags >>> 6) & 0x03;
         const cutStyleCode = flags & 0x07;
         const boundaryModeCode = (flags >>> 3) & 0x01;
         const specialPiecesModeCode = (flags >>> 4) & 0x03;
         const decodedCutStyle = jigsawCutStyleCodebook.find(([, code]) => code === cutStyleCode)?.[0];
+        const decodedEdition = jigsawEditionCodebook.find(([, code]) => code === editionCode)?.[0];
         const decodedBoundaryMode = jigsawBoundaryModeCodebook.find(([, code]) => code === boundaryModeCode)?.[0];
         const decodedSpecialPiecesMode = jigsawSpecialPiecesModeCodebook.find(
           ([, code]) => code === specialPiecesModeCode,
         )?.[0];
-        if (!decodedCutStyle || !decodedBoundaryMode || !decodedSpecialPiecesMode) {
+        if (!decodedCutStyle || !decodedEdition || !decodedBoundaryMode || !decodedSpecialPiecesMode) {
           return { ok: false, reason: "invalid-identity" };
         }
         jigsawCutStyle = decodedCutStyle;
+        jigsawEditionChoice = decodedEdition;
         jigsawBoundaryMode = decodedBoundaryMode;
         jigsawSpecialPiecesMode = decodedSpecialPiecesMode;
         break;
@@ -402,6 +416,7 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
       sudokuVariation,
       solitaireVariation,
       ...(jigsawCutStyle ? { jigsawCutStyle } : {}),
+      ...(jigsawEditionChoice ? { jigsawEditionChoice } : {}),
       ...(jigsawBoundaryMode ? { jigsawBoundaryMode } : {}),
       ...(jigsawSpecialPiecesMode ? { jigsawSpecialPiecesMode } : {}),
       ...(imageId ? { imageId } : {}),

@@ -156,7 +156,7 @@ export const shouldShowJigsawCompletionCelebration = (
 ) => isSolved && phase === "celebrating";
 
 
-/** Identify a free island by membership, not its transient world position. */
+/** Identify an island by membership rather than its transient world position. */
 export const getJigsawIslandLayerIdentity = (
   island: Pick<JigsawPositionedVisualIsland, "key" | "members">,
 ): string => JSON.stringify([
@@ -176,10 +176,70 @@ export const getJigsawIslandStackOrder = (
   const aboveBoard = 10;
   if (active) return aboveBoard + stride * (stride + 2);
   if (anchored) return aboveBoard;
-  // A free drop is newer than all resting layers but below the active drag.
   if (freeDropRank >= 0) return aboveBoard + stride * (stride + 1) + Math.min(freeDropRank, pieceCount);
   const sizeLayer = pieceCount - island.members.length + 1;
   const originalOrder = island.members.reduce(
     (highest, { piece }) => Math.max(highest, piece.currentIndex), 0);
   return aboveBoard + sizeLayer * stride + originalOrder;
+};
+
+/**
+ * Drag hover is a geometric query, not a DOM-wide hit-stack query. A coarse
+ * island envelope rejects most candidates, then the cached canonical outline
+ * decides exact membership (including sockets and irregular silhouettes).
+ * The caller supplies the outline predicate so this stays browser-independent.
+ */
+export const findJigsawDragHoverIslandAtWorldPoint = (
+  islands: readonly JigsawPositionedVisualIsland[],
+  worldPoint: { x: number; y: number },
+  draggedIslandKey: string | null,
+  layout: Pick<JigsawWorldLayout, "pieceWidth" | "pieceHeight">,
+  anchoredPieceIds: ReadonlySet<string>,
+  pieceCount: number,
+  containsPieceOutlinePoint: (pieceId: string, x: number, y: number) => boolean,
+  freeDropRankForIsland: (island: JigsawPositionedVisualIsland) => number = () => -1,
+): string | null => {
+  let topKey: string | null = null;
+  let topLayer = -Infinity;
+  for (const island of islands) {
+    if (island.key === draggedIslandKey) continue;
+    // Connector lobes can extend outside the nominal island cell rectangle.
+    const paddingX = layout.pieceWidth;
+    const paddingY = layout.pieceHeight;
+    if (worldPoint.x < island.worldX - paddingX ||
+        worldPoint.y < island.worldY - paddingY ||
+        worldPoint.x > island.worldX + island.widthCells * layout.pieceWidth + paddingX ||
+        worldPoint.y > island.worldY + island.heightCells * layout.pieceHeight + paddingY) continue;
+
+    const anchored = island.members.some(({ piece }) => anchoredPieceIds.has(piece.id));
+    const layer = getJigsawIslandStackOrder(island, pieceCount, false, anchored, freeDropRankForIsland(island));
+    if (layer <= topLayer) continue;
+    const xInCells = (worldPoint.x - island.worldX) / layout.pieceWidth;
+    const yInCells = (worldPoint.y - island.worldY) / layout.pieceHeight;
+    for (const { piece, span } of island.members) {
+      const x = (xInCells - (piece.column - island.minColumn)) * 100;
+      const y = (yInCells - (piece.row - island.minRow)) * 100;
+      // The exact outline is only queried when the pointer is near this piece.
+      if (x < -100 || y < -100 || x > span.width * 100 + 100 || y > span.height * 100 + 100) continue;
+      if (!containsPieceOutlinePoint(piece.id, x, y)) continue;
+      topKey = island.key;
+      topLayer = layer;
+      break;
+    }
+  }
+  return topKey;
+};
+
+/** Pointer capture keeps events on the dragged piece; hit-test through it for hover feedback. */
+export const findJigsawDragHoverIsland = (
+  hitStack: readonly Element[],
+  draggedIsland: Element | null,
+  stage: Element,
+): HTMLElement | null => {
+  for (const element of hitStack) {
+    if (!element.matches(".tile-puzzle-piece-hit-target")) continue;
+    const island = element.closest<HTMLElement>(".jigsaw-island");
+    if (island && island !== draggedIsland && stage.contains(island)) return island;
+  }
+  return null;
 };

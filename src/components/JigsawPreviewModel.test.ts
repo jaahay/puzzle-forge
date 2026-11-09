@@ -8,7 +8,7 @@ import {
   getJigsawCameraTransform,
   getJigsawOccupiedBounds,
 } from "../games/jigsaw/placement";
-import { getJigsawIslandLayerIdentity, getJigsawIslandStackOrder, initializeOrPreserveJigsawCamera, resolveJigsawCameraForViewportResize } from "./JigsawPreviewModel";
+import { findJigsawDragHoverIsland, findJigsawDragHoverIslandAtWorldPoint, getJigsawIslandLayerIdentity, getJigsawIslandStackOrder, initializeOrPreserveJigsawCamera, resolveJigsawCameraForViewportResize } from "./JigsawPreviewModel";
 
 describe("Jigsaw initial All pieces view", () => {
   it.each([
@@ -46,76 +46,150 @@ describe("Jigsaw initial All pieces view", () => {
   });
 });
 
-describe("Jigsaw settled island layer order", () => {
-  const island = (...indices: number[]) =>
-    ({ members: indices.map((currentIndex) => ({ piece: { currentIndex } })) }) as unknown as
-      Parameters<typeof getJigsawIslandStackOrder>[0];
+describe("Jigsaw selection and settled layer order", () => {
+  const piece = (currentIndex: number) => ({ piece: { currentIndex } });
+  const layer = (indices: number[]) =>
+    ({ members: indices.map(piece) }) as unknown as Parameters<typeof getJigsawIslandStackOrder>[0];
 
-  it("places loose pieces above joined islands, with larger joins behind smaller joins", () => {
-    const pieceCount = 64;
-    const loose = getJigsawIslandStackOrder(island(0), pieceCount, false, false);
-    const laterLoose = getJigsawIslandStackOrder(island(63), pieceCount, false, false);
-    const joined = getJigsawIslandStackOrder(island(61, 62), pieceCount, false, false);
-    const larger = getJigsawIslandStackOrder(island(0, 1, 63), pieceCount, false, false);
-    expect(laterLoose).toBeGreaterThan(loose);
-    expect(loose).toBeGreaterThan(joined);
-    expect(joined).toBeGreaterThan(larger);
+  it("settles joined islands behind loose pieces, larger joins behind smaller joins", () => {
+    const count = 64;
+    const loose = getJigsawIslandStackOrder(layer([0]), count, false, false);
+    const highLoose = getJigsawIslandStackOrder(layer([63]), count, false, false);
+    const pair = getJigsawIslandStackOrder(layer([61, 62]), count, false, false);
+    const triple = getJigsawIslandStackOrder(layer([0, 1, 63]), count, false, false);
+    expect(highLoose).toBeGreaterThan(loose);
+    expect(loose).toBeGreaterThan(pair);
+    expect(pair).toBeGreaterThan(triple);
+    const anchored = getJigsawIslandStackOrder(layer([63]), count, false, true);
+    expect(anchored).toBeGreaterThan(2); // The board occupies z-index 2.
+    expect(anchored).toBeLessThan(triple);
   });
 
-  it("keeps anchored islands above the board but below free pieces", () => {
-    const anchored = getJigsawIslandStackOrder(island(63), 64, false, true);
-    const joined = getJigsawIslandStackOrder(island(1, 2, 3), 64, false, false);
-    expect(anchored).toBeGreaterThan(2); // The assembly board is layer 2.
-    expect(anchored).toBeLessThan(joined);
-  });
-
-  it("lifts only the active drag, settling immediately after release", () => {
-    const loose = getJigsawIslandStackOrder(island(63), 64, false, false);
-    const dragging = getJigsawIslandStackOrder(island(1, 2, 3), 64, true, false);
-    const afterDrop = getJigsawIslandStackOrder(island(1, 2, 3), 64, false, false);
-    expect(dragging).toBeGreaterThan(loose);
-    expect(afterDrop).toBeLessThan(loose);
+  it("lifts only the active island, then restores settled stacking on drop", () => {
+    const count = 64;
+    const loose = getJigsawIslandStackOrder(layer([63]), count, false, false);
+    const active = getJigsawIslandStackOrder(layer([0, 1, 2]), count, true, false);
+    const dropped = getJigsawIslandStackOrder(layer([0, 1, 2]), count, false, false);
+    expect(active).toBeGreaterThan(loose);
+    expect(dropped).toBeLessThan(loose);
   });
 
   const keyed = (key: string, ...indices: number[]) => ({
     key,
-    members: indices.map((currentIndex) => ({
-      piece: { id: `tile-${currentIndex}`, currentIndex },
-    })),
+    members: indices.map((currentIndex) => ({ piece: { id: `tile-${currentIndex}`, currentIndex } })),
   }) as unknown as Parameters<typeof getJigsawIslandLayerIdentity>[0];
 
-  it("preserves free-drop stacking across multiple moves without losing earlier overlaps", () => {
+  it("preserves free-drop stacking across moves without lifting newly joined groups", () => {
     const first = keyed("first", 0, 1, 2);
     const second = keyed("second", 3);
-    const third = keyed("third", 9);
-    const order = [
-      getJigsawIslandLayerIdentity(first),
-      getJigsawIslandLayerIdentity(second),
-      getJigsawIslandLayerIdentity(third),
-    ];
-    const rank = (candidate: typeof first) =>
-      order.indexOf(getJigsawIslandLayerIdentity(candidate));
-    const firstLayer = getJigsawIslandStackOrder(first, 64, false, false, rank(first));
-    const secondLayer = getJigsawIslandStackOrder(second, 64, false, false, rank(second));
-    const thirdLayer = getJigsawIslandStackOrder(third, 64, false, false, rank(third));
-    const untouchedLoose = getJigsawIslandStackOrder(island(63), 64, false, false);
-
-    expect(firstLayer).toBeGreaterThan(untouchedLoose);
+    const order = [getJigsawIslandLayerIdentity(first), getJigsawIslandLayerIdentity(second)];
+    const firstRank = order.indexOf(getJigsawIslandLayerIdentity(first));
+    const secondRank = order.indexOf(getJigsawIslandLayerIdentity(second));
+    const firstLayer = getJigsawIslandStackOrder(first, 64, false, false, firstRank);
+    const secondLayer = getJigsawIslandStackOrder(second, 64, false, false, secondRank);
+    expect(firstLayer).toBeGreaterThan(getJigsawIslandStackOrder(layer([63]), 64, false, false));
     expect(secondLayer).toBeGreaterThan(firstLayer);
-    expect(thirdLayer).toBeGreaterThan(secondLayer);
-    expect(getJigsawIslandStackOrder(first, 64, true, false, rank(first))).toBeGreaterThan(thirdLayer);
+    expect(getJigsawIslandStackOrder(first, 64, true, false, firstRank)).toBeGreaterThan(secondLayer);
+    const movedPose = { ...first, worldX: 20 };
+    expect(getJigsawIslandLayerIdentity(movedPose)).toBe(order[0]);
+    const joined = keyed("first", 0, 1, 2, 4);
+    expect(order.indexOf(getJigsawIslandLayerIdentity(joined))).toBe(-1);
+    expect(getJigsawIslandStackOrder(joined, 64, false, false)).toBeLessThan(secondLayer);
+    expect(getJigsawIslandStackOrder(first, 64, false, true, firstRank)).toBe(10);
   });
 
-  it("invalidates a free-drop lift when membership changes after a join", () => {
-    const moved = keyed("island-a", 2, 3);
-    const order = [getJigsawIslandLayerIdentity(moved)];
-    const joined = keyed("island-a", 2, 3, 4);
-    const unchangedPose = { ...moved, worldX: 1234 };
+  const positioned = (
+    key: string, worldX: number, worldY: number, currentIndex: number,
+    column = 0, row = 0,
+  ) => ({
+    key, worldX, worldY, minColumn: column, minRow: row,
+    widthCells: 1, heightCells: 1,
+    members: [{ piece: { id: key, currentIndex, column, row }, span: { width: 1, height: 1 } }],
+  }) as unknown as Parameters<typeof findJigsawDragHoverIslandAtWorldPoint>[0][number];
 
-    expect(order.indexOf(getJigsawIslandLayerIdentity(unchangedPose))).toBe(0);
-    expect(order.indexOf(getJigsawIslandLayerIdentity(joined))).toBe(-1);
-    expect(getJigsawIslandStackOrder(joined, 64, false, false, -1))
-      .toBeLessThan(getJigsawIslandStackOrder(island(63), 64, false, false));
-    expect(getJigsawIslandStackOrder(moved, 64, false, true, 0)).toBe(10);
+  it("tests cached outlines rather than treating overlapping bounds as solid", () => {
+    const low = positioned("low", 10, 20, 1);
+    const high = positioned("high", 10, 20, 8);
+    const calls: string[] = [];
+    const hit = (id: string, x: number, y: number) => {
+      calls.push(id);
+      return x >= 20 && x <= 80 && y >= 20 && y <= 80 && id !== "high";
+    };
+    expect(findJigsawDragHoverIslandAtWorldPoint(
+      [low, high], { x: 60, y: 60 }, null,
+      { pieceWidth: 100, pieceHeight: 100 }, new Set(), 20, hit,
+    )).toBe("low");
+    expect(calls).toContain("high");
+    expect(findJigsawDragHoverIslandAtWorldPoint(
+      [low, high], { x: 15, y: 25 }, null,
+      { pieceWidth: 100, pieceHeight: 100 }, new Set(), 20, hit,
+    )).toBeNull();
+    expect(findJigsawDragHoverIslandAtWorldPoint(
+      [low, high], { x: 60, y: 60 }, "low",
+      { pieceWidth: 100, pieceHeight: 100 }, new Set(), 20, hit,
+    )).toBeNull();
+  });
+
+  it("projects joined-member outlines into island-local coordinates and honors layer order", () => {
+    const joined = {
+      ...positioned("joined", 40, 80, 2, 3, 2),
+      widthCells: 2,
+      members: [
+        { piece: { id: "left", currentIndex: 2, column: 3, row: 2 }, span: { width: 1, height: 1 } },
+        { piece: { id: "right", currentIndex: 3, column: 4, row: 2 }, span: { width: 1, height: 1 } },
+      ],
+    } as unknown as Parameters<typeof findJigsawDragHoverIslandAtWorldPoint>[0][number];
+    const local: { id: string; x: number; y: number }[] = [];
+    const test = (id: string, x: number, y: number) => {
+      local.push({ id, x, y });
+      return id === "right" && Math.abs(x - 20) < 0.001 && Math.abs(y - 25) < 0.001;
+    };
+    expect(findJigsawDragHoverIslandAtWorldPoint(
+      [joined], { x: 160, y: 105 }, null,
+      { pieceWidth: 100, pieceHeight: 100 }, new Set(), 100, test,
+    )).toBe("joined");
+    expect(local.some(({ id, x, y }) => id === "right" && Math.abs(x - 20) < 0.001 && Math.abs(y - 25) < 0.001)).toBe(true);
+
+    const loose = positioned("loose", 40, 80, 50);
+    const all = [joined, loose];
+    expect(findJigsawDragHoverIslandAtWorldPoint(
+      all, { x: 60, y: 100 }, null,
+      { pieceWidth: 100, pieceHeight: 100 }, new Set(["loose"]), 100,
+      (_id, x, y) => x >= 0 && x <= 100 && y >= 0 && y <= 100,
+    )).toBe("joined"); // An anchored loose island is behind a free joined island.
+    expect(findJigsawDragHoverIslandAtWorldPoint(
+      all, { x: 60, y: 100 }, null,
+      { pieceWidth: 100, pieceHeight: 100 }, new Set(), 100,
+      (_id, x, y) => x >= 0 && x <= 100 && y >= 0 && y <= 100,
+    )).toBe("loose");
+  });
+
+  it("uses the visible free-drop order for geometric hover targeting", () => {
+    const first = positioned("first", 10, 20, 5);
+    const second = positioned("second", 10, 20, 6);
+    const firstIdentity = getJigsawIslandLayerIdentity(first);
+    const order = [getJigsawIslandLayerIdentity(second), firstIdentity];
+    const rank = (candidate: typeof first) => order.indexOf(getJigsawIslandLayerIdentity(candidate));
+    expect(findJigsawDragHoverIslandAtWorldPoint(
+      [first, second], { x: 60, y: 60 }, null,
+      { pieceWidth: 100, pieceHeight: 100 }, new Set(), 20,
+      () => true, rank,
+    )).toBe("first");
+  });
+
+  it("discovers an underlying island through the dragged hit target, not empty bounds", () => {
+    const source = {} as Element;
+    const target = {} as HTMLElement;
+    const outside = {} as HTMLElement;
+    const hit = (island: Element | null, isPiece = true) => ({
+      matches: (selector: string) => isPiece && selector === ".tile-puzzle-piece-hit-target",
+      closest: () => island,
+    }) as unknown as Element;
+    const stage = { contains: (element: Element) => element === source || element === target } as Element;
+    expect(findJigsawDragHoverIsland(
+      [hit(source), hit(outside), hit(target)], source, stage,
+    )).toBe(target);
+    expect(findJigsawDragHoverIsland([hit(source), hit(target, false)], source, stage)).toBeNull();
+    expect(findJigsawDragHoverIsland([hit(outside)], source, stage)).toBeNull();
   });
 });

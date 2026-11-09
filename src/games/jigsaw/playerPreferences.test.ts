@@ -43,7 +43,7 @@ describe("Jigsaw player preferences", () => {
     expect(loadJigsawPlayerPreferences().lockViewDragging).toBe(false);
   });
 
-  it("defaults the panning lock off for missing or invalid saved values", () => {
+  it("keeps the view drag lock off for malformed or legacy stored preferences", () => {
     stubStorage('{"lockViewDragging":"yes","showPreview":true}');
     expect(loadJigsawPlayerPreferences().lockViewDragging).toBe(false);
     stubStorage('{"lockViewDragging":true}');

@@ -5,15 +5,19 @@ import {
   resetJigsawDragOffset,
 } from "./JigsawImperativeRenderer";
 
-const makeCssVariableTarget = () => {
-  const values = new Map<string, string>();
+const makeDragTarget = () => {
+  let translate = "";
+  let writes = 0;
   return {
-    values,
     target: {
       style: {
-        setProperty: (property: string, value: string) => values.set(property, value),
+        transform: "translate(var(--jigsaw-piece-x), var(--jigsaw-piece-y))",
+        get translate() { return translate; },
+        set translate(value: string) { translate = value; writes++; },
       },
     },
+    get translate() { return translate; },
+    get writes() { return writes; },
   };
 };
 
@@ -30,28 +34,31 @@ describe("Jigsaw imperative renderer", () => {
     expect(target.style.transform).toBe("translate3d(0px, -10px, 0) scale(2)");
   });
 
-  it("applies one transient drag offset to every island member", () => {
-    const first = makeCssVariableTarget();
-    const second = makeCssVariableTarget();
+  it("moves the island independently of inherited SVG properties and skips unchanged frames", () => {
+    const first = makeDragTarget();
+    const second = makeDragTarget();
 
     applyJigsawDragOffset([first.target, second.target], 14.5, -8);
-
-    for (const values of [first.values, second.values]) {
-      expect(values.get("--jigsaw-drag-x")).toBe("14.5px");
-      expect(values.get("--jigsaw-drag-y")).toBe("-8px");
-    }
+    expect(first.translate).toBe("14.5px -8px");
+    expect(second.translate).toBe("14.5px -8px");
+    applyJigsawDragOffset([first.target, second.target], 14.5, -8);
+    expect(first.writes).toBe(1);
+    expect(second.writes).toBe(1);
+    applyJigsawDragOffset([first.target], 15, -8);
+    expect(first.translate).toBe("15px -8px");
+    expect(first.writes).toBe(2);
   });
 
-  it("resets transient drag offsets without touching canonical placement", () => {
-    const member = makeCssVariableTarget();
-    member.values.set("--jigsaw-piece-x", "120px");
-    member.values.set("--jigsaw-piece-y", "75px");
-
+  it("resets the temporary translate while retaining the canonical CSS transform", () => {
+    const member = makeDragTarget();
+    // The settled transform is a separate styling channel, so it remains
+    // untouched by active drag movement or by the release reset.
+    applyJigsawDragOffset([member.target], 14, 9);
     resetJigsawDragOffset([member.target]);
-
-    expect(member.values.get("--jigsaw-drag-x")).toBe("0px");
-    expect(member.values.get("--jigsaw-drag-y")).toBe("0px");
-    expect(member.values.get("--jigsaw-piece-x")).toBe("120px");
-    expect(member.values.get("--jigsaw-piece-y")).toBe("75px");
+    expect(member.translate).toBe("");
+    expect(member.target.style.transform).toBe("translate(var(--jigsaw-piece-x), var(--jigsaw-piece-y))");
+    expect(member.writes).toBe(2);
+    resetJigsawDragOffset([member.target]);
+    expect(member.writes).toBe(2); // Already at rest: no DOM mutation.
   });
 });

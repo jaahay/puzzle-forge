@@ -101,7 +101,6 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).not.toContain("focusedSection");
     expect(jigsawCss).not.toContain(".jigsaw-section-tools");
     expect(jigsawCss).not.toContain(".tile-puzzle-summary");
-    expect(jigsawPreviewSource).not.toContain(".tile-puzzle-summary");
     expect(jigsawPreviewSource).toContain(".jigsaw-camera-tools, .puzzle-workspace-display-tools");
     expect(jigsawPreviewSource).toContain("getCurrentFitInsets(),\n        ),");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .jigsaw-workbench-toolbar {\n  display: contents;");

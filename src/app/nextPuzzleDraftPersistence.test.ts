@@ -29,6 +29,7 @@ describe("persisted next-puzzle preferences", () => {
       imageId: "great-wave",
       jigsawSizeSelection: "Custom" as const,
       jigsawCutStyle: "eclectic" as const,
+      jigsawEditionChoice: "heritage" as const,
       jigsawBoundaryMode: "contoured" as const,
       jigsawSpecialPiecesMode: "always" as const,
     };
@@ -38,6 +39,21 @@ describe("persisted next-puzzle preferences", () => {
     });
 
     expect(drafts.jigsaw).toEqual(jigsawDraft);
+  });
+
+  it("rejects invalid edition selections without discarding valid legacy defaults", () => {
+    const draft = {
+      ...zeroKillerDraft, width: 6, height: 5,
+      imageId: "great-wave", jigsawSizeSelection: "Custom",
+      jigsawCutStyle: "classic", jigsawBoundaryMode: "flat",
+      jigsawSpecialPiecesMode: "off",
+    };
+    const legacy = parseNextPuzzleDraftCache({ schemaVersion: 1, drafts: { jigsaw: draft } });
+    expect(legacy.jigsaw?.jigsawEditionChoice).toBeUndefined();
+    const invalid = parseNextPuzzleDraftCache({
+      schemaVersion: 1, drafts: { jigsaw: { ...draft, jigsawEditionChoice: "plastic" } },
+    });
+    expect(invalid).toEqual({});
   });
 
   it("rejects ambiguous stale Jigsaw drafts that do not carry size intent", () => {

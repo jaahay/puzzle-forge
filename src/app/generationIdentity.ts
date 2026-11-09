@@ -2,6 +2,7 @@ import type {
   GeneratedPuzzle,
   JigsawBoundaryMode,
   JigsawCutStyle,
+  JigsawEditionChoice,
   JigsawSpecialPiecesMode,
   PuzzleDifficulty,
   PuzzleId,
@@ -14,6 +15,7 @@ import {
   normalizeJigsawBoundaryMode,
 } from "../games/jigsaw/boundaryContours";
 import { normalizeJigsawCutStyle } from "../games/jigsaw/cutStyle";
+import { normalizeJigsawEditionChoice } from "../games/jigsaw/physicalEdition";
 import { normalizeJigsawSpecialPiecesMode } from "../games/jigsaw/specialPieces";
 import { normalizeSolitaireVariation, solitaireVariationsEqual } from "../games/solitaire/variation";
 import { normalizeSudokuVariation } from "../games/sudoku/variation";
@@ -28,6 +30,7 @@ export type GenerationRuntimeSettings = {
   sudokuVariation: SudokuVariation;
   solitaireVariation: SolitaireVariation;
   jigsawCutStyle?: JigsawCutStyle;
+  jigsawEditionChoice?: JigsawEditionChoice;
   jigsawBoundaryMode?: JigsawBoundaryMode;
   jigsawSpecialPiecesMode?: JigsawSpecialPiecesMode;
 };
@@ -55,6 +58,10 @@ export const getGeneratedPuzzleRuntimeSettings = (
     puzzle.kind === "cards"
       ? normalizeSolitaireVariation(puzzle.solitaireVariation)
       : fallback.solitaireVariation,
+  jigsawEditionChoice:
+    puzzle.kind === "tiles" && puzzle.puzzleId === "jigsaw"
+      ? normalizeJigsawEditionChoice(puzzle.editionChoice)
+      : fallback.jigsawEditionChoice,
   jigsawCutStyle:
     puzzle.kind === "tiles" && puzzle.puzzleId === "jigsaw"
       ? normalizeJigsawCutStyle(puzzle.edgeModel.cutStyle)
@@ -124,6 +131,8 @@ export const generatedPuzzleMatchesIdentity = (
       puzzle.asset.id === identity.imageId &&
       normalizeJigsawCutStyle(puzzle.edgeModel.cutStyle) ===
         normalizeJigsawCutStyle(identity.jigsawCutStyle) &&
+      normalizeJigsawEditionChoice(puzzle.editionChoice) ===
+        normalizeJigsawEditionChoice(identity.jigsawEditionChoice) &&
       getJigsawBoundaryMode(puzzle.tiles) ===
         normalizeJigsawBoundaryMode(identity.jigsawBoundaryMode) &&
       normalizeJigsawSpecialPiecesMode(puzzle.specialPiecesMode) ===

@@ -751,21 +751,15 @@
 }
 
 .jigsaw-island {
-  --jigsaw-active-drag-x: 0px;
-  --jigsaw-active-drag-y: 0px;
   position: absolute;
   left: 0;
   top: 0;
   pointer-events: none;
-  transform: translate3d(
-    calc(var(--jigsaw-piece-x, 0px) + var(--jigsaw-active-drag-x)),
-    calc(var(--jigsaw-piece-y, 0px) + var(--jigsaw-active-drag-y)),
-    0
+  /* Settled pose belongs to Preact; drag motion uses style.translate. */
+  transform: translate(
+    var(--jigsaw-piece-x, 0px),
+    var(--jigsaw-piece-y, 0px)
   );
-}
-.jigsaw-island.dragging {
-  --jigsaw-active-drag-x: var(--jigsaw-drag-x, 0px);
-  --jigsaw-active-drag-y: var(--jigsaw-drag-y, 0px);
 }
 .jigsaw-island-visual {
   position: absolute;
@@ -775,16 +769,95 @@
   overflow: visible;
   pointer-events: none;
 }
-.jigsaw-island-artwork {
-  filter: drop-shadow(0 8px 10px rgba(2, 6, 23, 0.38));
+/* Construction belongs to the edition: board depth, exposed core and coating.
+   Piece appearance only controls the visibility of the cuts below. */
+.jigsaw-island-sidewall {
+  fill: #9d8b75;
+  opacity: 0.94;
+  pointer-events: none;
+  transform: translate(0.85px, 2.05px);
+  transition: transform 160ms ease;
+  filter: drop-shadow(0 1px 1px rgba(3, 8, 14, 0.48))
+    drop-shadow(0 5px 6px rgba(3, 8, 14, 0.21));
 }
-.jigsaw-island.joined .jigsaw-island-artwork,
-.jigsaw-island.anchored .jigsaw-island-artwork {
-  filter: drop-shadow(0 3px 4px rgba(2, 6, 23, 0.28));
+.jigsaw-material-finish,
+.jigsaw-material-gloss,
+.jigsaw-material-texture,
+.jigsaw-material-fibers {
+  pointer-events: none;
 }
-.jigsaw-island.dragging .jigsaw-island-artwork {
-  filter: drop-shadow(0 14px 16px rgba(2, 6, 23, 0.52));
+.jigsaw-material-finish { opacity: 0.72; }
+.jigsaw-material-gloss {
+  opacity: 0;
+  transition: transform 160ms ease, opacity 160ms ease;
 }
+.jigsaw-material-texture,
+.jigsaw-material-fibers { opacity: 0; }
+
+/* Bevel only the exterior of the physical island. Individual joined pieces
+   must never create overlapping sidewalls or doubled T junctions. */
+.jigsaw-material-edge {
+  fill: none;
+  pointer-events: none;
+  stroke-linecap: butt;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.jigsaw-island[data-physical-edition="heritage"] .jigsaw-island-sidewall {
+  fill: #81664d;
+  transform: translate(1.2px, 3.1px);
+}
+.jigsaw-island[data-physical-edition="heritage"] .jigsaw-material-finish { opacity: 0.45; }
+.jigsaw-island[data-physical-edition="heritage"] .jigsaw-material-fibers { opacity: 0.68; }
+.jigsaw-island[data-physical-edition="heritage"] .jigsaw-material-edge {
+  stroke: rgba(235, 213, 169, 0.5);
+  stroke-width: 1.35;
+}
+.jigsaw-island[data-physical-edition="classic"] .jigsaw-island-sidewall {
+  fill: #9d9384;
+  transform: translate(0.85px, 2.05px);
+}
+.jigsaw-island[data-physical-edition="classic"] .jigsaw-material-finish { opacity: 0.7; }
+.jigsaw-island[data-physical-edition="classic"] .jigsaw-material-texture { opacity: 0.52; }
+.jigsaw-island[data-physical-edition="classic"] .jigsaw-material-gloss { opacity: 0.18; }
+.jigsaw-island[data-physical-edition="classic"] .jigsaw-material-edge {
+  stroke: rgba(226, 218, 204, 0.38);
+  stroke-width: 0.9;
+}
+.jigsaw-island[data-physical-edition="vivid"] .jigsaw-island-sidewall {
+  fill: #596777;
+  transform: translate(0.65px, 1.35px);
+}
+.jigsaw-island[data-physical-edition="vivid"] .jigsaw-material-finish { opacity: 0.38; }
+.jigsaw-island[data-physical-edition="vivid"] .jigsaw-material-gloss { opacity: 1; }
+.jigsaw-island[data-physical-edition="vivid"] .jigsaw-material-edge {
+  stroke: rgba(230, 240, 247, 0.6);
+  stroke-width: 0.7;
+}
+
+/* Lifting reveals thickness and displaces the coating reflection relative
+   to the fixed light. The illustration and its hit targets do not tilt. */
+.jigsaw-island.dragging .jigsaw-island-sidewall {
+  transform: translate(1.75px, 4.6px);
+}
+.jigsaw-island.dragging .jigsaw-material-gloss {
+  transform: translate(12px, -7px);
+}
+.jigsaw-island.dragging[data-physical-edition="vivid"] .jigsaw-material-gloss {
+  opacity: 1;
+}
+
+/* A small contact shadow grounds loose pieces; joined islands have one shared
+   soft outline shadow instead of per-piece elevation. */
+/* The physical silhouette owns the contact shadow, so lifting a piece
+   no longer re-filters its source artwork. */
+.jigsaw-island.joined .jigsaw-island-sidewall,
+.jigsaw-island.anchored .jigsaw-island-sidewall {
+  filter: drop-shadow(0 1px 1px rgba(3, 8, 14, 0.42))
+    drop-shadow(0 2px 3px rgba(3, 8, 14, 0.2));
+}
+/* Contact shadows stay stable across pointer release. The physical lift is
+   conveyed by raised cardboard thickness and a shifted material reflection. */
 .tile-puzzle-piece-hit-visual {
   width: 100%;
   height: 100%;
@@ -792,8 +865,6 @@
   pointer-events: none;
 }
 .tile-puzzle-piece {
-  --jigsaw-active-drag-x: 0px;
-  --jigsaw-active-drag-y: 0px;
   position: absolute;
   left: 0;
   top: 0;
@@ -811,21 +882,11 @@
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
-  transform: translate3d(
+  /* Hit targets need a local translation, not a separate GPU layer per piece. */
+  transform: translate(
     var(--jigsaw-piece-x, 0px),
-    var(--jigsaw-piece-y, 0px),
-    0
+    var(--jigsaw-piece-y, 0px)
   );
-}
-
-.tile-puzzle-piece.dragging {
-  --jigsaw-active-drag-x: var(--jigsaw-drag-x, 0px);
-  --jigsaw-active-drag-y: var(--jigsaw-drag-y, 0px);
-}
-
-.jigsaw-island:has(.tile-puzzle-piece:hover) .jigsaw-island-visual,
-.jigsaw-island:has(.tile-puzzle-piece:focus-visible) .jigsaw-island-visual {
-  filter: brightness(1.05);
 }
 
 .tile-puzzle-piece:focus-visible {
@@ -835,7 +896,6 @@
 
 .tile-puzzle-piece.dragging {
   cursor: grabbing;
-  filter: brightness(1.08);
 }
 
 .tile-puzzle-piece.joined {
@@ -892,85 +952,107 @@
   cursor: grabbing;
 }
 
+/* One screen-space stroke per physical cut; butt caps meet cleanly at T
+   junctions instead of layering complete piece perimeters. */
 .tile-puzzle-piece-outline {
   fill: none;
-  stroke: rgba(248, 250, 252, 0.5);
-  stroke-width: 1.15;
-  stroke-linecap: round;
+  pointer-events: none;
+  stroke-linecap: butt;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
-  transition: stroke 140ms ease, stroke-width 140ms ease;
 }
 
-.jigsaw-island:has(.tile-puzzle-piece:hover) .tile-puzzle-piece-outline:not(.interior),
-.jigsaw-island:has(.tile-puzzle-piece:focus-visible) .tile-puzzle-piece-outline:not(.interior),
-.jigsaw-island.dragging .tile-puzzle-piece-outline:not(.interior) {
-  stroke: rgba(125, 211, 252, 0.96);
-  stroke-width: 1.75;
+/* Outlined: a restrained neutral cut, not a bright contrasting halo. */
+.jigsaw-island[data-piece-appearance="outlined"] .tile-puzzle-piece-outline {
+  stroke: rgba(28, 32, 34, 0.78);
+  stroke-width: 1.35;
 }
 
-.jigsaw-island.joined .tile-puzzle-piece-outline, .jigsaw-island.anchored .tile-puzzle-piece-outline {
-  stroke: rgba(167, 243, 208, 0.72);
-  stroke-width: 1.1;
+.jigsaw-island[data-piece-appearance="outlined"] .tile-puzzle-piece-outline.exterior {
+  stroke: rgba(224, 219, 203, 0.48);
+  stroke-width: 1;
 }
-/* Joined islands use one open path per cut, without doubled round endpoints. */
-.jigsaw-island.joined .tile-puzzle-piece-outline {
-  stroke-linecap: butt;
+.jigsaw-island[data-piece-appearance="outlined"] .jigsaw-island-exterior-cuts {
+  filter: drop-shadow(0 0.5px 0.5px rgba(12, 17, 24, 0.42));
 }
 
-/* Interior seams are presentation only; geometry, image clipping, and hit targets stay shared. */
-.jigsaw-island[data-piece-appearance="inlaid"] .tile-puzzle-piece-outline,
-.jigsaw-island[data-piece-appearance="seamless"] .tile-puzzle-piece-outline {
+/* Inlaid: slightly deeper matte kerf with a soft upper-left light-catching
+   lip. Both derive from one physical cut, never duplicate piece perimeters. */
+.jigsaw-island[data-piece-appearance="inlaid"] .tile-puzzle-piece-outline {
+  stroke: rgba(22, 24, 22, 0.82);
+  stroke-width: 1.22;
+}
+.jigsaw-island[data-piece-appearance="inlaid"] .jigsaw-island-interior-cuts {
+  filter: drop-shadow(-0.65px -0.7px 0 rgba(251, 242, 218, 0.42));
+}
+
+.jigsaw-island[data-piece-appearance="inlaid"] .tile-puzzle-piece-outline.exterior {
+  stroke: rgba(231, 224, 205, 0.36);
+  stroke-width: 0.86;
+}
+
+/* Seamless: exterior contours remain faint; internal joined cuts disappear. */
+.jigsaw-island[data-piece-appearance="seamless"] .tile-puzzle-piece-outline.interior {
   stroke: transparent;
 }
 
-.tile-puzzle-piece-inlaid-recess,
-.tile-puzzle-piece-inlaid-highlight {
-  fill: none;
-  pointer-events: none;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
+.jigsaw-island[data-piece-appearance="seamless"] .tile-puzzle-piece-outline.exterior {
+  stroke: rgba(227, 229, 224, 0.16);
+  stroke-width: 0.65;
 }
 
-.tile-puzzle-piece-inlaid-recess {
-  stroke: rgba(8, 21, 31, 0.5);
-  stroke-width: 0.9;
+.jigsaw-island.loose[data-piece-appearance="seamless"] .tile-puzzle-piece-outline.exterior {
+  stroke: rgba(230, 232, 226, 0.28);
+  stroke-width: 0.8;
 }
 
-.tile-puzzle-piece-inlaid-highlight {
-  stroke: rgba(255, 255, 255, 0.25);
-  stroke-width: 0.6;
+/* Hover reveals the physical boundary, never the printed artwork. Reuse
+   canonical exterior cuts so joined seams remain undisturbed. */
+/* Drag-over Edge Awareness remains immediate; animating both stroke properties
+   on every hover switch creates thousands of SVG animations during dragging. */
+.tile-puzzle-piece-outline.exterior {
+  transition: none;
+}
+
+.jigsaw-island:not(.dragging):has(.tile-puzzle-piece:focus-visible) .tile-puzzle-piece-outline.exterior,
+.jigsaw-island.drag-hover .tile-puzzle-piece-outline.exterior {
+  stroke: rgba(238, 235, 223, 0.60);
+  stroke-width: 1.08;
+}
+
+/* Touch taps must not leave a persistent pseudo-hover on assembled islands.
+   Direct drag-over feedback still works on touch through the drag-hover class. */
+@media (hover: hover) {
+  .jigsaw-island:not(.dragging):has(.tile-puzzle-piece:hover) .tile-puzzle-piece-outline.exterior {
+    stroke: rgba(238, 235, 223, 0.60);
+    stroke-width: 1.08;
+  }
 }
 
 .jigsaw-freeform-stage.completion-celebrating .jigsaw-world-layer {
   animation: jigsaw-solved-world-settle 620ms ease-out both;
 }
 
-.jigsaw-freeform-stage.solved .jigsaw-island-artwork {
-  filter: none;
+.jigsaw-freeform-stage.solved .jigsaw-island-sidewall {
+  filter: drop-shadow(0 1px 1px rgba(15, 17, 19, 0.32));
 }
 
-.jigsaw-freeform-stage.solved .tile-puzzle-piece-outline {
+.jigsaw-freeform-stage.solved .jigsaw-island .tile-puzzle-piece-outline {
   stroke: transparent;
 }
 
 .tile-puzzle-edge-seam {
   fill: none;
   stroke: rgba(248, 250, 252, 0.72);
-  stroke-width: 1.25;
-  stroke-linecap: round;
+  stroke-width: 1.1;
+  stroke-linecap: butt;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 1px 1px rgba(2, 6, 23, 0.9));
+  filter: drop-shadow(0 1px 1px rgba(2, 6, 23, 0.7));
 }
 
-.tile-puzzle-edge-seam.boundary {
-  stroke: rgba(248, 250, 252, 0.36);
-}
-
-.tile-puzzle-piece.joined .tile-puzzle-edge-seam.interior {
-  stroke: rgba(167, 243, 208, 0.82);
+.tile-puzzle-edge-seam.exterior {
+  stroke: rgba(248, 250, 252, 0.44);
 }
 
 @media (max-width: 700px) {
@@ -1066,6 +1148,9 @@
   .tile-puzzle-piece-outline {
     transition: none;
   }
+
+  .jigsaw-island-sidewall,
+  .jigsaw-material-gloss { transition: none; }
 
   .jigsaw-freeform-stage.completion-celebrating .jigsaw-world-layer,
   .jigsaw-solved-card.is-celebrating {
