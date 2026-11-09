@@ -1,15 +1,10 @@
 import { useEffect, useMemo, useState } from "preact/hooks";
 import type { PuzzleCell } from "../catalog/types";
 import type { GridCellSelection } from "../interactions/gridRules";
+import { isPuzzleModalOpen, shouldHandlePuzzleShortcut } from "../interactions/keyboardOwnership";
 
 const gridSelectionScopeSelector = '[data-grid-selection-scope="true"]';
-
-const isTextEditingTarget = (target: EventTarget | null) =>
-  target instanceof HTMLElement &&
-  (target.isContentEditable ||
-    target.tagName === "INPUT" ||
-    target.tagName === "TEXTAREA" ||
-    target.tagName === "SELECT");
+const numericBoardCellShortcutSelector = `${gridSelectionScopeSelector} [data-grid-cell-row][data-grid-cell-column]`;
 
 export const getNumericGridDigits = (digitCount: number) =>
   Array.from({ length: Math.max(0, Math.floor(digitCount)) }, (_, index) => String(index + 1));
@@ -132,9 +127,10 @@ export const useNumericGridInput = ({
     }
 
     const handleNumericKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || isTextEditingTarget(event.target)) {
-        return;
-      }
+      if (!shouldHandlePuzzleShortcut(event, {
+        boardCellSelector: numericBoardCellShortcutSelector,
+        modalOpen: isPuzzleModalOpen(),
+      })) return;
 
       const arrowDelta = getNumericGridArrowDelta(event.key);
 

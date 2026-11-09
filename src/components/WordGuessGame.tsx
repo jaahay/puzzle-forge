@@ -7,6 +7,7 @@ import { scoreWordGuess } from "../games/wordGuess/feedback";
 import { readWordGuessProgress, writeWordGuessProgress, type WordGuessProgressStatus } from "../games/wordGuess/progress";
 import { formatWordGuessShareText } from "../games/wordGuess/share";
 import { normalizeWordGuessNativeInput } from "../games/wordGuess/input";
+import { isPuzzleModalOpen, shouldHandlePuzzleShortcut } from "../interactions/keyboardOwnership";
 import { getWordGuessBank, isValidWordGuess, normalizeWordGuessWord } from "../games/wordGuess/words";
 import { PuzzleTerminalDock } from "./PuzzleTerminalDock";
 
@@ -48,13 +49,6 @@ const getLetterFromKey = (key: string) => {
   const letter = key.toUpperCase();
   return letter.length === 1 && letter >= "A" && letter <= "Z" ? letter : "";
 };
-
-const isTextEditingTarget = (target: EventTarget | null) =>
-  target instanceof HTMLElement &&
-  (target.isContentEditable ||
-    target.tagName === "INPUT" ||
-    target.tagName === "TEXTAREA" ||
-    target.tagName === "SELECT");
 
 const getLetterMarks = (answer: string, submittedGuesses: string[]) => {
   const marks: Partial<Record<string, WordGuessMark>> = {};
@@ -337,9 +331,9 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || isTextEditingTarget(event.target)) {
-        return;
-      }
+      if (disabled || status !== "playing" || !shouldHandlePuzzleShortcut(event, {
+        modalOpen: isPuzzleModalOpen(),
+      })) return;
 
       if (event.key === "Enter") {
         event.preventDefault();
