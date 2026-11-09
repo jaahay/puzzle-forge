@@ -32,6 +32,14 @@ describe("generation transition boundaries", () => {
     expect(app).toContain("routeMatchesSession(route, currentSession)");
   });
 
+  it("announces generation failure without replacing the restored puzzle", () => {
+    expect(app).toContain('class="generation-failure-notice" role="alert"');
+    expect(app).toContain("setGenerationFailureNotice(null)");
+    expect(app).toContain("restoreSession(fallback.session, fallback.route)");
+    expect(app).toContain("setGenerationFailureNotice(`Could not create the requested puzzle.");
+    expect(app).toContain('type="button" onClick={() => setGenerationFailureNotice(null)}>Dismiss</button>');
+  });
+
   it("suspends every mounted puzzle surface while replacement generation runs", () => {
     expect(grid).toContain("inert={isGenerating}");
     expect(sudoku).toContain('class="sudoku-play-composition" inert={isGenerating}');

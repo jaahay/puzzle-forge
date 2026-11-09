@@ -119,6 +119,7 @@ export const App = () => {
   const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
   const [jigsawProgress, setJigsawProgress] = useState<{ puzzleInstanceId: string; assembly: JigsawAssemblyProgress } | null>(null);
   const [puzzleLinkError, setPuzzleLinkError] = useState<string | null>(null);
+  const [generationFailureNotice, setGenerationFailureNotice] = useState<string | null>(null);
   const [pendingAbandonment, setPendingAbandonment] = useState<PendingAbandonmentAction | null>(null);
   const workspaceProgressRef = useRef<IdentifiedWorkspaceProgress | null>(null);
   const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(true);
@@ -167,6 +168,7 @@ export const App = () => {
 
   const cancelPendingGeneration = () => {
     pendingGenerationResourceRef.current = null;
+    setGenerationFailureNotice(null);
     generation.cancelGeneration();
   };
 
@@ -299,6 +301,7 @@ export const App = () => {
   const resetRuntimePuzzleState = () => { setPuzzle(null); setJigsawProgress(null); solitaire.resetSolitaire(); grid.resetGrid(); };
 
   const beginGeneration = (options: BeginGenerationOptions = {}, behavior: GenerationBehavior = {}) => {
+    setGenerationFailureNotice(null);
     // The outgoing session must be stable before worker dispatch pauses autosaving.
     const currentSession = hasSelectedPuzzle && !isHomeSelected ? makeCurrentSession() : null;
     const fallback = pendingGenerationResourceRef.current?.fallback ??
@@ -398,6 +401,7 @@ export const App = () => {
     pendingGenerationResourceRef.current = null;
     if (fallback) {
       restoreSession(fallback.session, fallback.route);
+      setGenerationFailureNotice(`Could not create the requested puzzle. Your previous puzzle has been restored. ${message}`);
       setStatusMessage(`Could not generate the requested puzzle. ${message}`);
       return;
     }
@@ -933,6 +937,12 @@ export const App = () => {
   return (
     <AppShell activeView={activeView} headerControls={puzzleNavigation} onHomeSelect={() => selectHome()} onViewSelect={(view) => selectSiteView(view)}>
       {content}
+      {generationFailureNotice && !puzzleLinkError ? (
+        <div class="generation-failure-notice" role="alert">
+          <span>{generationFailureNotice}</span>
+          <button type="button" onClick={() => setGenerationFailureNotice(null)}>Dismiss</button>
+        </div>
+      ) : null}
       {pendingAbandonment ? (
         <AbandonmentDialog
           action={pendingAbandonment.action}
