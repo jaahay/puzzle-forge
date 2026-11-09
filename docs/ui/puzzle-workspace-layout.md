@@ -153,7 +153,7 @@ Keep choices, values, and modes legible; prioritize the puzzle surface; disclose
 
 See [Control Communication Principles](../principles/control-communication.md) and the companion [research notes](../research/control-communication.md).
 
-# Terminal state and completion
+## Terminal state and completion
 
 Puzzle workspaces use a small semantic vocabulary for terminal meaning: `playing`, `solved`, and, where the mechanic admits an unsuccessful terminal outcome, `failed`. This vocabulary describes durable gameplay meaning, not animation phase or status copy.
 

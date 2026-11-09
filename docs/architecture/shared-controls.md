@@ -87,7 +87,7 @@ Keep the visual vocabulary coherent without forcing every action into an icon. S
 
 See [Control Communication Principles](../principles/control-communication.md) for the governing design direction and [Control Communication Research](../research/control-communication.md) for evidence and examples.
 
-# Action history
+## Action history
 
 Undo/Redo should become a platform capability where the mechanic has meaningful reversible player actions.
 
