@@ -85,7 +85,7 @@ Select icons, words, or both by how clearly the control conveys its meaning in c
 
 Keep the visual vocabulary coherent without forcing every action into an icon. Shared commands must retain consistent meanings across puzzle families; the board and its interaction needs determine the local composition. Accessible names, visible state, and pointer/keyboard/touch affordances should agree with the action's actual behavior.
 
-See [Control Communication Principles](../principles/control-communication.md) for the governing design direction and [Control Communication Research](../research/control-communication.md) for evidence and examples.
+See the [Control Communication Principles](../principles/control-communication.md) for guidance and the [supporting research](../principles/control-communication.md#supporting-research) for evidence and examples.
 
 ## Action history
 
