@@ -61,5 +61,6 @@ describe("generation transition boundaries", () => {
     expect(jigsaw).toContain("inputSuspended={isGenerating}");
     expect(jigsawPreview).toContain("cancelJigsawDragAction(activeDrag)");
     expect(jigsawPreview).toContain("if (inputSuspendedRef.current) return;");
+    expect(jigsawPreview).toContain("if (inputSuspendedRef.current) {\n      cancelDrag(event);");
   });
 });

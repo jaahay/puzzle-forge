@@ -1062,6 +1062,11 @@ export const TilePuzzlePreview = ({
   const finishDrag = (event: PiecePointerEvent, tile: JigsawPiece) => {
     const drag = dragRef.current;
     if (!drag || drag.puzzleId !== puzzle.id || drag.pointerId !== event.pointerId || drag.tileId !== tile.id) return;
+    // An already-captured pointer may release before the suspension effect runs.
+    if (inputSuspendedRef.current) {
+      cancelDrag(event);
+      return;
+    }
     drag.clientX = event.clientX;
     drag.clientY = event.clientY;
     stopDragAnimation();
