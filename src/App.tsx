@@ -279,9 +279,17 @@ export const App = () => {
       })
     : null;
 
+  // While a different resource is loading, its route may not describe the mounted board.
+  // Never persist that outgoing board under the incoming resource's identity.
+  const routeMatchesSession = (currentRoute: AppRoute, session: PuzzleSession) => {
+    if (currentRoute.kind !== "resource") return false;
+    const resolved = resolvePuzzleResourceSegment(currentRoute.puzzleId, currentRoute.generationId);
+    return resolved.ok && generatedPuzzleMatchesIdentity(session.puzzle, resolved.identity);
+  };
+
   const saveCurrentSession = () => {
     const session = makeCurrentSession();
-    if (!session || route.kind !== "resource") return;
+    if (!session || route.kind !== "resource" || !routeMatchesSession(route, session)) return;
     sessions.saveSession({ puzzleId: route.puzzleId, generationId: route.generationId }, session);
   };
   saveCurrentSessionRef.current = () => {
@@ -296,12 +304,12 @@ export const App = () => {
     const fallback = pendingGenerationResourceRef.current?.fallback ??
       (currentSession ? {
         session: currentSession,
-        route: route.kind === "resource" && route.puzzleId === currentSession.puzzle.puzzleId
+        route: routeMatchesSession(route, currentSession)
           ? route
           : { kind: "puzzle" as const, puzzleId: currentSession.puzzle.puzzleId },
       } : null);
     if (!generation.hasActiveRequest() && currentSession &&
-        route.kind === "resource" && route.puzzleId === currentSession.puzzle.puzzleId) {
+        route.kind === "resource" && routeMatchesSession(route, currentSession)) {
       sessions.saveSession({ puzzleId: route.puzzleId, generationId: route.generationId }, currentSession);
     }
     if (behavior.preserveScroll) rememberScrollPosition();

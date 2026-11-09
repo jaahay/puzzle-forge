@@ -81,7 +81,7 @@ describe("Solitaire shared history integration", () => {
       /if \(isSolved\) \{[\s\S]*?solitaireUndoStack: \[\],[\s\S]*?solitaireRedoStack: \[\],[\s\S]*?\}/,
     );
     expect(workspaceSource).toContain("<PuzzleTerminalDock");
-    expect(workspaceSource).toContain("disabled={isSolved}");
+    expect(workspaceSource).toContain("disabled={isSolved || isGenerating}");
   });
 
   it("keeps existing Solitaire session history as the single persisted history model", () => {

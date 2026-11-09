@@ -24,6 +24,14 @@ describe("generation transition boundaries", () => {
     expect(app).toContain("generationErrorHandlerRef.current(error)");
   });
 
+  it("does not save a mounted puzzle under a newly selected resource route", () => {
+    expect(app).toContain("const routeMatchesSession = (currentRoute: AppRoute, session: PuzzleSession) => {");
+    expect(app).toContain("resolvePuzzleResourceSegment(currentRoute.puzzleId, currentRoute.generationId)");
+    expect(app).toContain("generatedPuzzleMatchesIdentity(session.puzzle, resolved.identity)");
+    expect(app).toContain("!routeMatchesSession(route, session)");
+    expect(app).toContain("routeMatchesSession(route, currentSession)");
+  });
+
   it("suspends every mounted puzzle surface while replacement generation runs", () => {
     expect(grid).toContain("inert={isGenerating}");
     expect(sudoku).toContain('class="sudoku-play-composition" inert={isGenerating}');
