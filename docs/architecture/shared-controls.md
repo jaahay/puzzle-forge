@@ -79,27 +79,15 @@ Prefer a live calendar-date button over a generic calendar glyph. The visual dat
 
 The control should remain compatible with a future calendar/archive modal, but Today itself stays a direct action.
 
-## Action icons
+## Control presentation
 
-Prefer icons for conventional actions when the meaning remains clear. Keep configuration choices/data textual.
+Select icons, words, or both by how clearly the control conveys its meaning in context. Conventional repeated actions may be compact; specialized, ambiguous, or consequential actions benefit from visible labels. A tooltip is supporting explanation, not a substitute for an understandable primary action.
 
-Suggested shared vocabulary:
+Keep the visual vocabulary coherent without forcing every action into an icon. Shared commands must retain consistent meanings across puzzle families; the board and its interaction needs determine the local composition. Accessible names, visible state, and pointer/keyboard/touch affordances should agree with the action's actual behavior.
 
-- die: new random puzzle
-- chevron: options disclosure
-- date tile: Today
-- play/forward: load seed
-- overlapping rectangles: copy
-- curved left/right arrows: Undo / Redo
-- verification mark: Check
-- restart/circular arrow: Reset
-- circled `i`: contextual explanation
-- corners: fullscreen
-- `x`: close/exit
+See [Control Communication Principles](../principles/control-communication.md) for the governing design direction and [Control Communication Research](../research/control-communication.md) for evidence and examples.
 
-Use consistent SVG artwork rather than emoji. Every icon-only action requires an accessible name; titles/tooltips are useful secondary disclosure, not a substitute for accessibility.
-
-## Action history
+# Action history
 
 Undo/Redo should become a platform capability where the mechanic has meaningful reversible player actions.
 

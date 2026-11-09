@@ -147,29 +147,13 @@ If the app remains open across local midnight, the displayed date and the daily 
 
 ## Visual language
 
-Prefer graphical controls for conventional actions while keeping choices and data textual.
+The presentation of a control should fit its meaning and context. Use explicit labels where an icon could be confused with another action, especially for important or progress-affecting commands. Familiar, frequent actions can be icon-only when that makes the playing surface quieter without adding interpretation cost.
 
-**Actions are graphical. Choices and data remain legible.**
+Keep choices, values, and modes legible; prioritize the puzzle surface; disclose secondary actions where useful. Icons should form a coherent visual family, but identical-looking toolbars are not required across different puzzle mechanics. Accessible names, visible labels, control states, and behavior must tell the same story.
 
-Good icon candidates include:
+See [Control Communication Principles](../principles/control-communication.md) and the companion [research notes](../research/control-communication.md).
 
-- die: new random puzzle;
-- chevron: New-puzzle options;
-- live calendar-date tile: Today;
-- play/forward: load entered seed;
-- overlapping rectangles: copy;
-- curved arrows: Undo / Redo;
-- verification mark: Check;
-- restart/circular arrow: Reset;
-- circled `i`: contextual explanation;
-- corners: fullscreen;
-- `x`: close/exit.
-
-Do not replace meaningful values such as Easy/Medium/Hard, Standard/Diagonal/Zero Killer, dimensions, seed values, or puzzle variants with obscure pictograms.
-
-Icon controls require accessible names and, where useful, titles/tooltips. Use a consistent SVG language rather than emoji as production controls.
-
-## Terminal state and completion
+# Terminal state and completion
 
 Puzzle workspaces use a small semantic vocabulary for terminal meaning: `playing`, `solved`, and, where the mechanic admits an unsuccessful terminal outcome, `failed`. This vocabulary describes durable gameplay meaning, not animation phase or status copy.
 
