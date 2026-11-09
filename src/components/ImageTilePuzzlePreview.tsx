@@ -35,6 +35,7 @@ export type ImageTileHistoryAvailability = {
 };
 
 type ImageTilePuzzlePreviewProps = {
+  interactionSuspended?: boolean;
   puzzle: ImageTileGeneratedPuzzle;
   resetVersion?: number;
   completionPhase?: CompletionPresentationPhase;
@@ -232,6 +233,7 @@ const saveImageTileProgress = (puzzle: ImageTileGeneratedPuzzle, progress: Image
 
 export const ImageTilePuzzlePreview = ({
   puzzle,
+  interactionSuspended = false,
   resetVersion = 0,
   completionPhase,
   onCausativeInput,
@@ -288,9 +290,10 @@ export const ImageTilePuzzlePreview = ({
   }, [publishHistoryAvailability]);
 
   const canHistoryAction = useCallback((action: ImageTileHistoryAction) => {
+    if (interactionSuspended) return false;
     const history = runtimeRef.current.history;
     return action === "undo" ? history.undoStack.length > 0 : history.redoStack.length > 0;
-  }, []);
+  }, [interactionSuspended]);
 
   useEffect(() => {
     if (lastResetVersion.current === resetVersion) return;
@@ -351,7 +354,7 @@ export const ImageTilePuzzlePreview = ({
   }, [isSolved, onSolvedChange, onProgressChange, hasUnfinishedArrangement]);
 
   const moveTile = (tile: TilePuzzlePiece) => {
-    if (isSolved) return;
+    if (interactionSuspended || isSolved) return;
 
     if (isSliding) {
       if (progress.emptyIndex === undefined || !canSlideTileTowardGap(tile, progress.emptyIndex, puzzle.width, puzzle.height)) return;

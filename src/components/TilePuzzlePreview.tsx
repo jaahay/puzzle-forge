@@ -97,6 +97,7 @@ export type JigsawHistoryController = {
 
 type TilePuzzlePreviewProps = {
   puzzle: JigsawGeneratedPuzzle;
+  inputSuspended?: boolean;
   resetVersion?: number;
   initialAssembly?: JigsawAssemblyProgress | null;
   onAssemblyChange?: (assembly: JigsawAssemblyProgress) => void;
@@ -324,6 +325,7 @@ const JigsawFullscreenIcon = ({ active }: { active: boolean }) => (
 
 export const TilePuzzlePreview = ({
   puzzle,
+  inputSuspended = false,
   resetVersion = 0,
   initialAssembly = null,
   onAssemblyChange,
@@ -336,6 +338,8 @@ export const TilePuzzlePreview = ({
   onCompletionAnimationEnd,
 }: TilePuzzlePreviewProps) => {
   const stageRef = useRef<HTMLDivElement>(null);
+  const inputSuspendedRef = useRef(inputSuspended);
+  inputSuspendedRef.current = inputSuspended;
   const toolsToggleRef = useRef<HTMLButtonElement>(null);
   const toolsPanelRef = useRef<HTMLDivElement>(null);
   const worldLayerRef = useRef<HTMLDivElement>(null);
@@ -856,7 +860,7 @@ export const TilePuzzlePreview = ({
   };
 
   const beginTouchPinch = (event: StagePointerEvent) => {
-    if (event.pointerType !== "touch") return;
+    if (inputSuspended || event.pointerType !== "touch") return;
     const target = event.target as Element | null;
     const point = getStagePoint(event.clientX, event.clientY);
     if (!point) return;
@@ -997,7 +1001,7 @@ export const TilePuzzlePreview = ({
   };
 
   const beginDrag = (event: PiecePointerEvent, tile: JigsawPiece, placement: JigsawPlacement) => {
-    if (isSolved || pinchRef.current) return;
+    if (inputSuspended || isSolved || pinchRef.current) return;
     const stagePoint = getStagePoint(event.clientX, event.clientY);
     if (!stagePoint) return;
     const current = wheelStateRef.current;
@@ -1147,8 +1151,28 @@ export const TilePuzzlePreview = ({
     event.stopPropagation();
   };
 
+  useEffect(() => {
+    if (!inputSuspended) return;
+    const activeDrag = dragRef.current;
+    if (activeDrag?.puzzleId === puzzle.id) {
+      stopDragAnimation();
+      clearIslandDragOffset(activeDrag);
+      updatePlacementState((current) => current?.puzzleId === puzzle.id
+        ? { ...current, ...cancelJigsawDragAction(activeDrag) }
+        : current);
+      dragRef.current = null;
+      setActiveTileId(null);
+    }
+    panRef.current = null;
+    touchPointsRef.current.clear();
+    pinchRef.current = null;
+    setIsPanning(false);
+    publishHistoryAvailability(historyRef.current);
+  }, [inputSuspended, puzzle.id]);
+
   islandPointerActionsRef.current = {
     beginDrag: (event, tile) => {
+      if (inputSuspended) return;
       const current = placementStateRef.current;
       const placement = current?.puzzleId === puzzle.id
         ? current.placements.find((candidate) => candidate.id === tile.id) : null;
@@ -1160,7 +1184,7 @@ export const TilePuzzlePreview = ({
   };
 
   const beginPan = (event: StagePointerEvent) => {
-    if (lockViewDragging || dragRef.current || pinchRef.current) return;
+    if (inputSuspended || lockViewDragging || dragRef.current || pinchRef.current) return;
     const target = event.target as Element | null;
     // A locked piece acts as a stable grip for panning; only loose pieces drag.
     const piece = target?.closest(".tile-puzzle-piece");
@@ -1201,6 +1225,7 @@ export const TilePuzzlePreview = ({
   };
 
   const handleWheel = (event: WheelEvent) => {
+    if (inputSuspendedRef.current) return;
     const stagePoint = getStagePoint(event.clientX, event.clientY);
     if (!stagePoint) return;
     const current = wheelStateRef.current;
@@ -1255,6 +1280,7 @@ export const TilePuzzlePreview = ({
   };
 
   const handleStageKeyDown = (event: StageKeyboardEvent) => {
+    if (inputSuspended) return;
     if (event.key === "Escape" && event.target === event.currentTarget) {
       event.currentTarget.blur();
       event.preventDefault();

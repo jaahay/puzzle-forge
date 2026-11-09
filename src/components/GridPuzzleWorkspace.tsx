@@ -77,12 +77,12 @@ export const GridPuzzleWorkspace = ({
   const isPuzzleArriving = usePuzzleArrival(puzzleArrivalIdentity);
 
   const handleCellClick = (cell: PuzzleCell) => {
-    if (isSolved) return;
+    if (isGenerating || isSolved) return;
     onCellClick(cell);
   };
 
   const handleCellInput = (cell: PuzzleCell, value: string) => {
-    if (isSolved) return;
+    if (isGenerating || isSolved) return;
     onCellInput(cell, value);
   };
 
@@ -188,6 +188,7 @@ export const GridPuzzleWorkspace = ({
       key={puzzleArrivalIdentity ?? undefined}
       class={`puzzle-panel${hasCrown && isPuzzleArriving ? " puzzle-arrival" : ""}`}
       aria-label="Generated puzzle preview"
+      inert={isGenerating}
     >
       {puzzle.puzzleId === "word-guess" && gridCells ? (
         <WordGuessGame
@@ -207,7 +208,7 @@ export const GridPuzzleWorkspace = ({
           puzzle={puzzle}
           cells={gridCells}
           selectedGridCell={isSolved ? null : selectedGridCell}
-          disabled={isSolved}
+          disabled={isSolved || isGenerating}
           onCellClick={handleCellClick}
           onCellInput={handleCellInput}
         />
@@ -216,7 +217,7 @@ export const GridPuzzleWorkspace = ({
           puzzle={puzzle}
           cells={gridCells}
           selectedGridCell={isSolved ? null : selectedGridCell}
-          disabled={isSolved}
+          disabled={isSolved || isGenerating}
           onCellClick={handleCellClick}
           onCellInput={handleCellInput}
         />
@@ -237,7 +238,7 @@ export const GridPuzzleWorkspace = ({
         />
       ) : (
         <div class={`puzzle-actions ${isNonogram ? "nonogram-current-actions" : ""}`.trim()}>
-          <button type="button" onClick={onCheck}>Check</button>
+          <button type="button" onClick={onCheck} disabled={isGenerating}>Check</button>
           {isNonogram || isFutoshiki ? <button type="button" onClick={() => onReset()} disabled={isGenerating}>Reset</button> : null}
         </div>
       )}

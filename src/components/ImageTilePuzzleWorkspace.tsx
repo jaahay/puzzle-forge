@@ -169,10 +169,12 @@ export const ImageTilePuzzleWorkspace = ({
       key={puzzleArrivalIdentity ?? undefined}
       class={`puzzle-panel image-tile-puzzle-panel${isPuzzleArriving ? " puzzle-arrival" : ""}`}
       aria-label={`Generated ${selectedDefinition.title} puzzle`}
+      inert={isGenerating}
     >
       <ImageTilePuzzlePreview
         key={imagePuzzle.id}
         puzzle={imagePuzzle}
+        interactionSuspended={isGenerating}
         resetVersion={resetVersion}
         completionPhase={completionPresentation.phase}
         onCausativeInput={completionPresentation.recordCausativeInput}
