@@ -1,32 +1,34 @@
-# Control Communication Principles
+# Control Communication
 
 Puzzle Forge controls should support effortless play through clarity, familiarity, appropriate emphasis, and minimal interference with the puzzle surface.
 
-## Purpose
+## Principles
+
+### Purpose
 
 The puzzle is the primary experience. A control succeeds when players can recognize its purpose, understand its consequences, and operate it without unnecessary interpretation.
 
-## Presentation
+### Presentation
 
 Choose text, icons, or both according to the meaning of an action, its familiarity, frequency, consequences, and surrounding context. Favor explicit labels when interpretation is uncertain. Use icon-only controls when their meaning is established and the compact presentation improves the experience.
 
-## Composition
+### Composition
 
 Keep the active puzzle central. Give frequently needed actions convenient access and disclose secondary configuration when requested. Do not substitute cryptic controls for thoughtful prioritization.
 
-## Consistency
+### Consistency
 
 Shared actions should retain recognizable meaning, terminology, behavior, and visual identity across puzzle families. Puzzle-specific layouts may differ to support their mechanics and interaction requirements.
 
-## Interaction
+### Interaction
 
 Controls must communicate their availability, current state, and consequences. Provide meaningful accessible names, keyboard and touch operation, visible feedback, and appropriate safeguards for progress-affecting actions.
 
-## Judgment
+### Judgment
 
 Optimize for the whole experience rather than the consistency of isolated elements. Evaluate proposed designs at realistic screen sizes and with actual player tasks. Prefer the simplest implementation that produces an understandable, cohesive result.
 
-## Application
+### Application
 
 Use these principles to make contextual design decisions, not to impose a universal ratio of icons to labels:
 
@@ -38,13 +40,9 @@ Use these principles to make contextual design decisions, not to impose a univer
 
 ---
 
-## Supporting research
+## Research and rationale
 
-**Source:** ChatGPT research synthesis (2026-11-09). The following records external design and accessibility guidance, its limitations, Puzzle Forge source observations, and questions for future usability evaluation. The principles above guide design decisions; this material is supporting context, not a user study or a prescribed interface specification.
-
-**Recorded:** 2026-11-09  
-**Scope:** Puzzle Forge's cross-puzzle buttons, toolbars, navigation, configuration, and completion controls  
-**Status:** Research synthesis and source-level design assessment, not a user study or implementation approval
+**Research snapshot — November 9, 2026.** This ChatGPT synthesis draws on public design and accessibility guidance and source-level observations of Puzzle Forge's buttons, navigation, toolbars, configuration, and completion controls. It records evidence, limitations, and questions for future evaluation. It is not a user study or a binding interface specification; reassess application-specific observations as the product evolves.
 
 ### Central finding
 
