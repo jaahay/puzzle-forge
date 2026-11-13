@@ -25,14 +25,16 @@ describe("abandonment dialog backdrop cancellation", () => {
     expect(app).toContain('onCancel={() => setPendingAbandonment(null)}');
   });
 
-  it("places the shared confirmation inside the fullscreen subtree and follows fullscreen changes", () => {
+  it("hosts confirmation inside the mobile sheet or fullscreen surface, retaining focus and Escape ownership", () => {
     expect(source).toContain('import { createPortal } from "preact/compat"');
+    expect(source).toContain('document.querySelector("dialog.new-puzzle-mobile-sheet[open]")');
     expect(source).toContain("document.fullscreenElement");
-    expect(source).toContain('document.addEventListener("fullscreenchange", syncFullscreenHost)');
-    expect(source).toContain('document.removeEventListener("fullscreenchange", syncFullscreenHost)');
-    expect(source).toContain("return fullscreenHost ? createPortal(dialog, fullscreenHost) : dialog;");
+    expect(source).toContain('document.addEventListener("fullscreenchange", syncOverlayHost)');
+    expect(source).toContain('document.removeEventListener("fullscreenchange", syncOverlayHost)');
+    expect(source).toContain("return overlayHost ? createPortal(dialog, overlayHost) : dialog;");
     expect(source).toContain("safe.current?.focus();");
     expect(newPuzzleCommand).toContain('event.target.closest(\'[role="alertdialog"][aria-modal="true"]\')');
+    expect(newPuzzleCommand).toContain('if (document.querySelector(\'[role="alertdialog"][aria-modal="true"]\'))');
   });
 
   it("keeps New and Reset confirmation behind explicit destructive buttons", () => {
