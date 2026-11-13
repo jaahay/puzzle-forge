@@ -292,11 +292,25 @@
 .jigsaw-camera-tools .jigsaw-expand-workspace,
 .jigsaw-camera-tools .jigsaw-fullscreen-action {
   display: grid;
+  position: relative;
   width: 2.6rem;
+  margin-left: 0.35rem;
   place-items: center;
   padding: 0;
-  border-left: 1px solid rgba(148, 163, 184, 0.24);
-  border-radius: 0.3rem 0.65rem 0.65rem 0.3rem;
+}
+
+/* Separate workspace-mode actions from camera adjustments without restyling the buttons. */
+.jigsaw-camera-tools .jigsaw-expand-workspace::before,
+.jigsaw-camera-tools .jigsaw-fullscreen-action::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -0.25rem;
+  width: 1px;
+  height: 1.45rem;
+  transform: translateY(-50%);
+  background: rgba(148, 163, 184, 0.3);
+  pointer-events: none;
 }
 
 .jigsaw-tools-toggle svg,

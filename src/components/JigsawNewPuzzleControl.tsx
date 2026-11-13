@@ -49,6 +49,12 @@ export const makeJigsawImageSelectionSettings = (
   };
 };
 
+export const describeJigsawPieceCount = (width: number, height: number, mode: JigsawSpecialPiecesMode) => {
+  const gridCount = width * height;
+  // A medallion or capsule adds one piece to the solved grid, if placement is possible.
+  return mode === "off" ? `${gridCount} pieces` : `${gridCount}–${gridCount + 1} pieces`;
+};
+
 type JigsawNewPuzzleControlProps = {
   currentSeed: string;
   imageId: string | undefined;
@@ -103,7 +109,7 @@ export const JigsawNewPuzzleControl = ({
   onLoadSeed,
 }: JigsawNewPuzzleControlProps) => {
   const selectedAsset = getPuzzleImageAsset(imageId, "jigsaw");
-  const pieceCount = width * height;
+  const pieceCountLabel = describeJigsawPieceCount(width, height, specialPiecesMode);
   const gridAdaptation = sizeSelection === jigsawCustomSizeSelection
     ? getJigsawGridAdaptation(selectedAsset, width, height)
     : null;
@@ -112,9 +118,9 @@ export const JigsawNewPuzzleControl = ({
     : null;
   const boundaryLabel = jigsawBoundaryModeLabels[boundaryMode];
   const specialPiecesLabel = jigsawSpecialPiecesModeLabels[specialPiecesMode];
-  const configurationSummary = `${selectedAsset.title} · ${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${specialPiecesLabel} special pieces · ${sizeSelection} · ~${pieceCount} pieces · ${width}×${height}`;
+  const configurationSummary = `${selectedAsset.title} · ${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${specialPiecesLabel} special pieces · ${sizeSelection} · ${pieceCountLabel} · ${width}×${height}`;
   const randomConfigurationSummary = sizeSelection === jigsawCustomSizeSelection
-    ? `${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${specialPiecesLabel} special pieces · Custom · ~${pieceCount} pieces · ${width}×${height}`
+    ? `${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${specialPiecesLabel} special pieces · Custom · ${pieceCountLabel} · ${width}×${height}`
     : `${jigsawCutStyleLabels[cutStyle]} · ${boundaryLabel} boundary · ${specialPiecesLabel} special pieces · ${sizeSelection}`;
 
   return (
@@ -137,7 +143,7 @@ export const JigsawNewPuzzleControl = ({
           <p><strong>Cut style.</strong> {jigsawCutStyleDescriptions[cutStyle]}</p>
           <p><strong>Outer boundary.</strong> {jigsawBoundaryModeDescriptions[boundaryMode]}</p>
           <p><strong>Special pieces.</strong> {jigsawSpecialPiecesModeDescriptions[specialPiecesMode]}</p>
-          <p><strong>Size.</strong> Named presets target an approximate piece count and adapt to the selected artwork. Custom dimensions stay explicit when artwork changes.</p>
+          <p><strong>Size.</strong> Presets target an approximate grid count and adapt to the artwork. A special shape can add one more piece. Custom dimensions stay explicit when artwork changes.</p>
           <p>New and Surprise Me choose a different eligible artwork; Today and seed loads use the selected artwork.</p>
         </>
       )}
@@ -206,7 +212,7 @@ export const JigsawNewPuzzleControl = ({
           <div class="jigsaw-size-settings" role="group" aria-label="Jigsaw size">
             <div class="jigsaw-size-heading">
               <strong>Size</strong>
-              <span>~{pieceCount} pieces</span>
+              <span>{pieceCountLabel}</span>
             </div>
             <div class="jigsaw-size-options">
               {jigsawSizePresets.map((preset) => {
