@@ -68,6 +68,13 @@ describe("image tile history integration", () => {
     expect(previewSource).toContain("publishHistoryAvailability(restored);");
   });
 
+  it("persists progress and history in the same storage write", () => {
+    expect(previewSource).toContain("saveImageTileProgress(puzzle, runtime)");
+    expect(previewSource).toContain("[runtime, puzzle]");
+    expect(previewSource).toContain("restoreImageTileRuntime(puzzle, JSON.parse(raw))");
+    expect(previewSource).toContain("history: isRecord(value) ? restorePersistedHistory(puzzle, value.history)");
+  });
+
   it("registers the shared history controller and rendered availability for both puzzle types", () => {
     expect(workspaceSource).toContain("onHistoryAvailabilityChange={handleHistoryAvailabilityChange}");
     expect(workspaceSource).toContain("onHistoryControllerChange={handleHistoryControllerChange}");
