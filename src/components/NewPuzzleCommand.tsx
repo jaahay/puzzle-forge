@@ -111,9 +111,6 @@ export const NewPuzzleCommand = ({
   const [isSheetViewport, setIsSheetViewport] = useState(
     () => typeof window !== "undefined" && window.matchMedia(newPuzzleSheetMediaQuery).matches,
   );
-  const [fullscreenHost, setFullscreenHost] = useState<Element | null>(
-    () => typeof document === "undefined" ? null : document.fullscreenElement,
-  );
 
   const closeInfo = (restoreFocus = false) => {
     if (!infoOpen) return false;
@@ -154,12 +151,6 @@ export const NewPuzzleCommand = ({
   }, []);
 
   useEffect(() => {
-    const sync = () => setFullscreenHost(document.fullscreenElement);
-    document.addEventListener("fullscreenchange", sync);
-    return () => document.removeEventListener("fullscreenchange", sync);
-  }, []);
-
-  useEffect(() => {
     if (!isSheetViewport || !optionsOpen) return;
     const dialog = sheetRef.current;
     if (!dialog) return;
@@ -185,7 +176,7 @@ export const NewPuzzleCommand = ({
       document.body.style.overflow = previousOverflow;
       if (dialog.open) dialog.close();
     };
-  }, [isSheetViewport, optionsOpen, fullscreenHost]);
+  }, [isSheetViewport, optionsOpen]);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -309,7 +300,7 @@ export const NewPuzzleCommand = ({
           </div>
   );
   const sheetHost = typeof document === "undefined" ? null :
-    fullscreenHost ?? commandRef.current?.closest(".puzzle-workspace-layout") ?? document.body;
+    commandRef.current?.closest(".puzzle-workspace-layout") ?? document.fullscreenElement ?? document.body;
 
   return (
     <div class={`new-puzzle-command${compactActions ? " is-icon-only" : ""}`} aria-label={`New ${puzzleTitle}: ${configurationSummary}`} ref={commandRef}>

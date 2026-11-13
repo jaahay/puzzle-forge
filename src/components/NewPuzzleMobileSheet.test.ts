@@ -12,6 +12,8 @@ describe("responsive New puzzle sheet", () => {
     expect(command).toContain("dialog.showModal()");
     expect(command).toContain("createPortal(");
     expect(command).toContain("const panel = (");
+    expect(command).toContain('commandRef.current?.closest(".puzzle-workspace-layout") ?? document.fullscreenElement');
+    expect(command).not.toContain("setFullscreenHost");
     expect(command).toContain("isSheetViewport ? (optionsOpen && sheetHost");
     expect(command).toContain(") : panel}");
   });
