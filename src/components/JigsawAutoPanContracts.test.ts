@@ -58,7 +58,7 @@ describe("Jigsaw auto-pan controller boundary", () => {
   });
 
   it("isolates the persistent panning lock to pointer dragging, retaining other camera controls", () => {
-    expect(previewSource).toContain("if (lockViewDragging || dragRef.current || pinchRef.current) return;");
+    expect(previewSource).toContain("if (inputSuspended || lockViewDragging || dragRef.current || pinchRef.current) return;");
     expect(previewSource).toContain("aria-pressed={lockViewDragging}");
     expect(previewSource).toContain('lockViewDragging ? "Unlock panning" : "Lock panning"');
     expect(previewSource).toContain("getJigsawWheelGesture(event, current.viewport.height)");

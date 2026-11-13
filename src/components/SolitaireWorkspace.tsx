@@ -83,7 +83,7 @@ export const SolitaireWorkspace = ({
     />
   ) : (
     <div class="solitaire-action-row" aria-label="Solitaire controls">
-      <button type="button" onClick={onAutoMoveToFoundations} aria-label="Move all currently legal cards to foundations" title="Auto foundation">♣→</button>
+      <button type="button" onClick={onAutoMoveToFoundations} aria-label="Move all currently legal cards to foundations" title="Auto foundation" disabled={isGenerating}>♣→</button>
       <button type="button" onClick={() => onReset()} disabled={isGenerating}>Reset</button>
     </div>
   );
@@ -100,6 +100,7 @@ export const SolitaireWorkspace = ({
       key={puzzleArrivalIdentity ?? undefined}
       class={`puzzle-panel${isPuzzleArriving ? " puzzle-arrival" : ""}`}
       aria-label="Generated puzzle preview"
+      inert={isGenerating}
     >
       <CardPuzzlePreview
         stacks={cardStacks}
@@ -107,7 +108,7 @@ export const SolitaireWorkspace = ({
         stats={solitaireStats}
         toolbar={actionControls}
         variation={solitairePuzzle.solitaireVariation}
-        disabled={isSolved}
+        disabled={isSolved || isGenerating}
         onCardClick={onCardClick}
         onCardDoubleClick={onCardDoubleClick}
         onStackClick={onStackClick}

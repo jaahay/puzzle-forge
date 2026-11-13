@@ -167,9 +167,11 @@ export const JigsawWorkspace = ({
       key={puzzleArrivalIdentity ?? undefined}
       class={`puzzle-panel jigsaw-puzzle-panel${isPuzzleArriving ? " puzzle-arrival" : ""}`}
       aria-label="Generated Jigsaw puzzle"
+      inert={isGenerating}
     >
       <TilePuzzlePreview
         puzzle={jigsawPuzzle}
+        inputSuspended={isGenerating}
         resetVersion={resetVersion}
         initialAssembly={jigsawAssembly}
         onAssemblyChange={onJigsawAssemblyChange}

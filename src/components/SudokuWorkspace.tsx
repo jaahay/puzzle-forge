@@ -65,12 +65,14 @@ export const SudokuWorkspace = ({
   };
 
   const handleCellInput = (cell: PuzzleCell, value: string) => {
+    if (isGenerating) return;
     clearValidationRenewal();
     completion.recordCausativeInput();
     onCellInput(cell, value);
   };
 
   const handleCheck = () => {
+    if (isGenerating) return;
     if (validationRenewalTimerRef.current !== null) {
       clearTimeout(validationRenewalTimerRef.current);
       validationRenewalTimerRef.current = null;
@@ -95,7 +97,7 @@ export const SudokuWorkspace = ({
   };
 
   const numericInput = useNumericGridInput({
-    enabled: Boolean(sudokuPuzzle && !isSolved),
+    enabled: Boolean(sudokuPuzzle && !isSolved && !isGenerating),
     puzzleIdentity: sudokuPuzzle
       ? `${sudokuPuzzle.puzzleId}:${sudokuPuzzle.seed}:${sudokuPuzzle.sudokuVariation ?? ""}:${sudokuPuzzle.width}:${sudokuPuzzle.height}`
       : "sudoku:pending",
@@ -179,7 +181,7 @@ export const SudokuWorkspace = ({
       digits={numericInput.digits}
       activeValue={numericInput.activeValue}
       canClearSelectedCell={numericInput.canClearSelectedCell}
-      disabled={isSolved}
+      disabled={isSolved || isGenerating}
       onDigit={numericInput.setSelectedValue}
       onClear={numericInput.clearSelectedValue}
     />
@@ -229,7 +231,7 @@ export const SudokuWorkspace = ({
         >
           {digitPad}
           <div class="sudoku-current-actions" aria-label="Current Sudoku actions">
-            <button class="sudoku-check-action" type="button" onClick={handleCheck} disabled={isSolved}>Check</button>
+            <button class="sudoku-check-action" type="button" onClick={handleCheck} disabled={isSolved || isGenerating}>Check</button>
             <button class="sudoku-reset-action" type="button" onClick={() => onReset()} disabled={isGenerating}>Reset</button>
           </div>
           {validation}
@@ -259,6 +261,7 @@ export const SudokuWorkspace = ({
         numericSelectedCell={numericInput.selectedCell}
         numericActiveValue={numericInput.activeValue}
         completionPhase={completion.phase}
+        disabled={isGenerating}
         onCompletionAnimationEnd={completion.completePresentation}
         onCellClick={onCellClick}
         onCellInput={handleCellInput}
@@ -267,7 +270,7 @@ export const SudokuWorkspace = ({
   ) : isGenerating ? loadingBoard : null;
 
   const playComposition = sudokuPuzzle && gridCells ? (
-    <div class="sudoku-play-composition">
+    <div class="sudoku-play-composition" inert={isGenerating}>
       <section class="sudoku-play-board" aria-label="Puzzle board">{board}</section>
       <section class="sudoku-play-controls" aria-label="Gameplay controls">{gameplay}</section>
     </div>

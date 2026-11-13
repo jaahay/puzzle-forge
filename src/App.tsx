@@ -36,7 +36,7 @@ import { getInitialSelectedPuzzleId, markPuzzleNavigation } from "./app/homeNavi
 import { encodeGenerationId, resolvePuzzleResourceSegment } from "./app/puzzleResourceIdentity";
 import { defaultPuzzleDifficulty, makeRandomSeed } from "./app/runtime";
 import { getCurrentAppRoute, parseAppRoute, pushAppRoute, replaceAppRoute, type AppRoute } from "./app/routes";
-import { initialSolitaireStats, loadPersistedPuzzleSessions } from "./app/session";
+import { initialSolitaireStats, loadPersistedPuzzleSessions, type PuzzleSession } from "./app/session";
 import { isInstalledAppContext, resolveStartupRoute } from "./app/startupNavigation";
 import { useGridController } from "./app/useGridController";
 import { randomizeNextPuzzleArtwork, useNextPuzzleDrafts } from "./app/useNextPuzzleDrafts";
@@ -56,6 +56,7 @@ type PendingGenerationResource = {
   identity: GenerationIdentity;
   route: Extract<AppRoute, { kind: "resource" }>;
   history: ResourceHistoryBehavior;
+  fallback: { route: AppRoute; session: PuzzleSession } | null;
 };
 
 const makeInitialGenerationDefaults = (): GenerationRuntimeSettings => ({
@@ -118,6 +119,7 @@ export const App = () => {
   const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
   const [jigsawProgress, setJigsawProgress] = useState<{ puzzleInstanceId: string; assembly: JigsawAssemblyProgress } | null>(null);
   const [puzzleLinkError, setPuzzleLinkError] = useState<string | null>(null);
+  const [generationFailureNotice, setGenerationFailureNotice] = useState<string | null>(null);
   const [pendingAbandonment, setPendingAbandonment] = useState<PendingAbandonmentAction | null>(null);
   const workspaceProgressRef = useRef<IdentifiedWorkspaceProgress | null>(null);
   const [isCatalogCollapsed, setIsCatalogCollapsed] = useState(true);
@@ -126,6 +128,7 @@ export const App = () => {
   const pendingScrollRestore = useRef<{ x: number; y: number } | null>(null);
   const pendingGenerationResourceRef = useRef<PendingGenerationResource | null>(null);
   const generatedPuzzleHandlerRef = useRef<(generatedPuzzle: GeneratedPuzzle) => void>(() => undefined);
+  const generationErrorHandlerRef = useRef<(message: string) => void>(() => undefined);
   const routeNavigationHandlerRef = useRef<(route: AppRoute) => void>(() => undefined);
   const saveCurrentSessionRef = useRef<() => void>(() => undefined);
   const {
@@ -165,6 +168,7 @@ export const App = () => {
 
   const cancelPendingGeneration = () => {
     pendingGenerationResourceRef.current = null;
+    setGenerationFailureNotice(null);
     generation.cancelGeneration();
   };
 
@@ -277,9 +281,17 @@ export const App = () => {
       })
     : null;
 
+  // While a different resource is loading, its route may not describe the mounted board.
+  // Never persist that outgoing board under the incoming resource's identity.
+  const routeMatchesSession = (currentRoute: AppRoute, session: PuzzleSession) => {
+    if (currentRoute.kind !== "resource") return false;
+    const resolved = resolvePuzzleResourceSegment(currentRoute.puzzleId, currentRoute.generationId);
+    return resolved.ok && generatedPuzzleMatchesIdentity(session.puzzle, resolved.identity);
+  };
+
   const saveCurrentSession = () => {
     const session = makeCurrentSession();
-    if (!session || route.kind !== "resource") return;
+    if (!session || route.kind !== "resource" || !routeMatchesSession(route, session)) return;
     sessions.saveSession({ puzzleId: route.puzzleId, generationId: route.generationId }, session);
   };
   saveCurrentSessionRef.current = () => {
@@ -289,6 +301,20 @@ export const App = () => {
   const resetRuntimePuzzleState = () => { setPuzzle(null); setJigsawProgress(null); solitaire.resetSolitaire(); grid.resetGrid(); };
 
   const beginGeneration = (options: BeginGenerationOptions = {}, behavior: GenerationBehavior = {}) => {
+    setGenerationFailureNotice(null);
+    // The outgoing session must be stable before worker dispatch pauses autosaving.
+    const currentSession = hasSelectedPuzzle && !isHomeSelected ? makeCurrentSession() : null;
+    const fallback = pendingGenerationResourceRef.current?.fallback ??
+      (currentSession ? {
+        session: currentSession,
+        route: routeMatchesSession(route, currentSession)
+          ? route
+          : { kind: "puzzle" as const, puzzleId: currentSession.puzzle.puzzleId },
+      } : null);
+    if (!generation.hasActiveRequest() && currentSession &&
+        route.kind === "resource" && routeMatchesSession(route, currentSession)) {
+      sessions.saveSession({ puzzleId: route.puzzleId, generationId: route.generationId }, currentSession);
+    }
     if (behavior.preserveScroll) rememberScrollPosition();
     setPuzzleLinkError(null);
     const requestedPuzzleId = options.puzzleId ?? selectedPuzzleId;
@@ -351,6 +377,7 @@ export const App = () => {
         generationId: encodeGenerationId(identity),
       },
       history: behavior.resourceHistory ?? "replace",
+      fallback,
     };
     setSelectedPuzzleId(request.puzzleId);
     setGenerationDefaults({
@@ -369,9 +396,24 @@ export const App = () => {
     setStatusMessage(`Generating ${title}...`);
   };
 
+  const recoverGenerationFailure = (message: string) => {
+    const fallback = pendingGenerationResourceRef.current?.fallback;
+    pendingGenerationResourceRef.current = null;
+    if (fallback) {
+      restoreSession(fallback.session, fallback.route);
+      setGenerationFailureNotice(`Could not create the requested puzzle. Your previous puzzle has been restored. ${message}`);
+      setStatusMessage(`Could not generate the requested puzzle. ${message}`);
+      return;
+    }
+    resetRuntimePuzzleState();
+    setPuzzleLinkError(`Could not generate puzzle. ${message}`);
+    setStatusMessage(message);
+    restoreScrollPosition();
+  };
+  generationErrorHandlerRef.current = recoverGenerationFailure;
+
   const handleGeneratedPuzzle = (generatedPuzzle: GeneratedPuzzle) => {
     const pendingResource = pendingGenerationResourceRef.current;
-    pendingGenerationResourceRef.current = null;
     setPuzzleLinkError(null);
 
     if (
@@ -380,12 +422,11 @@ export const App = () => {
       !generatedPuzzleMatchesIdentity(generatedPuzzle, pendingResource.identity)
     ) {
       const message = "Generated puzzle did not match its requested resource identity.";
-      resetRuntimePuzzleState();
-      setPuzzleLinkError(message);
-      setStatusMessage(message);
+      recoverGenerationFailure(message);
       return;
     }
 
+    pendingGenerationResourceRef.current = null;
     const resource = {
       puzzleId: pendingResource.route.puzzleId,
       generationId: pendingResource.route.generationId,
@@ -596,11 +637,7 @@ export const App = () => {
     const handleMessage = (event: MessageEvent) => generation.handleGenerationMessage(
       event,
       (generatedPuzzle) => generatedPuzzleHandlerRef.current(generatedPuzzle),
-      (error) => {
-        pendingGenerationResourceRef.current = null;
-        setStatusMessage(error);
-        restoreScrollPosition();
-      },
+      (error) => generationErrorHandlerRef.current(error),
     );
     generation.worker.addEventListener("message", handleMessage);
 
@@ -649,7 +686,7 @@ export const App = () => {
   }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, selectedPuzzleId, puzzle, solitaire.cardStacks, solitaire.selectedCard, solitaire.solitaireStats, solitaire.solitaireUndoStack, solitaire.solitaireRedoStack, grid.gridCells, grid.selectedGridCell, grid.gridHistory, jigsawProgress, statusMessage]);
 
   const resetCurrentPuzzle = () => {
-    if (!puzzle) return;
+    if (!puzzle || generation.hasActiveRequest()) return;
     rememberScrollPosition();
     if (puzzle.kind === "cards") {
       solitaire.restoreSolitaireSnapshot({ cardStacks: puzzle.stacks, selectedCard: null, solitaireStats: initialSolitaireStats, solitaireUndoStack: [], solitaireRedoStack: [] });
@@ -665,10 +702,12 @@ export const App = () => {
   };
 
   const reportWorkspaceProgress = (puzzleInstanceId: string, report: WorkspaceProgressReport) => {
+    if (generation.hasActiveRequest()) return;
     workspaceProgressRef.current = { puzzleInstanceId, ...report };
   };
 
   const requestDestructiveAction = (action: "new" | "reset", proceed: () => void, targetIdentity?: GenerationIdentity) => {
+    if (generation.hasActiveRequest()) return;
     const assembly = puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw" &&
       jigsawProgress?.puzzleInstanceId === puzzle.id ? jigsawProgress.assembly : null;
     const pending = planAbandonmentAction(puzzle, {
@@ -774,7 +813,7 @@ export const App = () => {
     provenance: { source: "daily", dateStamp: getLocalDateStamp() },
   }, afterStart);
 
-  const handleCheck = () => { if (!puzzle) return; puzzle.kind === "cards" ? solitaire.checkSolitaire() : grid.checkGrid(puzzle, setStatusMessage); };
+  const handleCheck = () => { if (!puzzle || generation.hasActiveRequest()) return; puzzle.kind === "cards" ? solitaire.checkSolitaire() : grid.checkGrid(puzzle, setStatusMessage); };
   const workspaceIsGenerating = generation.isGenerating || (!puzzle && selectedPuzzleIsGeneratable && !isHomeSelected && !puzzleLinkError);
   const workspaceCore = {
     selectedDefinition,
@@ -804,12 +843,16 @@ export const App = () => {
     canRedoGrid: grid.canRedoGrid,
     canUndoGridNow: grid.canUndoGridNow,
     canRedoGridNow: grid.canRedoGridNow,
-    onUndoGrid: () => grid.undoGridAction(puzzle, setStatusMessage),
-    onRedoGrid: () => grid.redoGridAction(puzzle, setStatusMessage),
-    onCommitGridHistory: grid.commitGridHistory,
+    onUndoGrid: () => { if (!generation.hasActiveRequest()) grid.undoGridAction(puzzle, setStatusMessage); },
+    onRedoGrid: () => { if (!generation.hasActiveRequest()) grid.redoGridAction(puzzle, setStatusMessage); },
+    onCommitGridHistory: () => { if (!generation.hasActiveRequest()) grid.commitGridHistory(); },
     onCheck: handleCheck,
-    onCellClick: (cell: Parameters<typeof grid.handleGridCellClick>[1]) => grid.handleGridCellClick(puzzle, cell, setStatusMessage),
-    onCellInput: (cell: Parameters<typeof grid.handleGridCellInput>[1], value: string) => grid.handleGridCellInput(puzzle, cell, value, setStatusMessage),
+    onCellClick: (cell: Parameters<typeof grid.handleGridCellClick>[1]) => {
+      if (!generation.hasActiveRequest()) grid.handleGridCellClick(puzzle, cell, setStatusMessage);
+    },
+    onCellInput: (cell: Parameters<typeof grid.handleGridCellInput>[1], value: string) => {
+      if (!generation.hasActiveRequest()) grid.handleGridCellInput(puzzle, cell, value, setStatusMessage);
+    },
   };
   const workspaceJigsaw = {
     jigsawAssembly:
@@ -819,7 +862,7 @@ export const App = () => {
         ? jigsawProgress.assembly
         : null,
     onJigsawAssemblyChange: (assembly: JigsawAssemblyProgress) => {
-      if (puzzle?.kind !== "tiles" || puzzle.puzzleId !== "jigsaw") return;
+      if (generation.hasActiveRequest() || puzzle?.kind !== "tiles" || puzzle.puzzleId !== "jigsaw") return;
       setJigsawProgress((current) => {
         if (
           current?.puzzleInstanceId === puzzle.id &&
@@ -836,16 +879,22 @@ export const App = () => {
     cardStacks: solitaire.cardStacks,
     selectedCard: solitaire.selectedCard,
     solitaireStats: solitaire.solitaireStats,
-    onAutoMoveToFoundations: solitaire.autoMoveToFoundations,
-    onUndoSolitaire: solitaire.undoSolitaireMove,
-    onRedoSolitaire: solitaire.redoSolitaireMove,
+    onAutoMoveToFoundations: () => { if (!generation.hasActiveRequest()) solitaire.autoMoveToFoundations(); },
+    onUndoSolitaire: () => { if (!generation.hasActiveRequest()) solitaire.undoSolitaireMove(); },
+    onRedoSolitaire: () => { if (!generation.hasActiveRequest()) solitaire.redoSolitaireMove(); },
     canUndoSolitaire: solitaire.solitaireUndoStack.length > 0,
     canRedoSolitaire: solitaire.solitaireRedoStack.length > 0,
     canUndoSolitaireNow: solitaire.canUndoSolitaireNow,
     canRedoSolitaireNow: solitaire.canRedoSolitaireNow,
-    onCardClick: solitaire.handleCardClick,
-    onCardDoubleClick: solitaire.moveSingleCardToFoundation,
-    onStackClick: solitaire.handleStackClick,
+    onCardClick: (...args: Parameters<typeof solitaire.handleCardClick>) => {
+      if (!generation.hasActiveRequest()) solitaire.handleCardClick(...args);
+    },
+    onCardDoubleClick: (...args: Parameters<typeof solitaire.moveSingleCardToFoundation>) => {
+      if (!generation.hasActiveRequest()) solitaire.moveSingleCardToFoundation(...args);
+    },
+    onStackClick: (...args: Parameters<typeof solitaire.handleStackClick>) => {
+      if (!generation.hasActiveRequest()) solitaire.handleStackClick(...args);
+    },
   };
 
   const puzzleNavigation = activeView === "catalog" ? <PuzzleCatalog isCollapsed={isCatalogCollapsed} isHomeSelected={isHomeSelected || !hasSelectedPuzzle} selectedPuzzleId={selectedPuzzleId} onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)} onHomeSelect={() => selectHome()} onSelectPuzzle={(puzzleId) => selectPuzzle(puzzleId)} /> : null;
@@ -888,6 +937,12 @@ export const App = () => {
   return (
     <AppShell activeView={activeView} headerControls={puzzleNavigation} onHomeSelect={() => selectHome()} onViewSelect={(view) => selectSiteView(view)}>
       {content}
+      {generationFailureNotice && !puzzleLinkError ? (
+        <div class="generation-failure-notice" role="alert">
+          <span>{generationFailureNotice}</span>
+          <button type="button" onClick={() => setGenerationFailureNotice(null)}>Dismiss</button>
+        </div>
+      ) : null}
       {pendingAbandonment ? (
         <AbandonmentDialog
           action={pendingAbandonment.action}
