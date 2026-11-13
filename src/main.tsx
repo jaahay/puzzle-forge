@@ -22,6 +22,7 @@ import "./site/image-tiles.css";
 import "./site/artwork-album.css";
 import "./site/solitaire.css";
 import "./site/abandonment-dialog.css";
+import "./site/new-puzzle-sheet.css";
 
 const root = document.getElementById("app");
 

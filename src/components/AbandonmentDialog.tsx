@@ -12,15 +12,15 @@ export const isAbandonmentBackdropClick = (target: EventTarget | null, backdrop:
 export const AbandonmentDialog = ({ action, onCancel, onConfirm }: Props) => {
   const safe = useRef<HTMLButtonElement>(null);
   const destructive = useRef<HTMLButtonElement>(null);
-  const [fullscreenHost, setFullscreenHost] = useState<Element | null>(
-    () => typeof document === "undefined" ? null : document.fullscreenElement,
+  const [overlayHost, setOverlayHost] = useState<Element | null>(
+    () => typeof document === "undefined" ? null : document.querySelector("dialog.new-puzzle-mobile-sheet[open]") ?? document.fullscreenElement,
   );
 
   useEffect(() => {
-    const syncFullscreenHost = () => setFullscreenHost(document.fullscreenElement);
-    document.addEventListener("fullscreenchange", syncFullscreenHost);
-    syncFullscreenHost();
-    return () => document.removeEventListener("fullscreenchange", syncFullscreenHost);
+    const syncOverlayHost = () => setOverlayHost(document.querySelector("dialog.new-puzzle-mobile-sheet[open]") ?? document.fullscreenElement);
+    document.addEventListener("fullscreenchange", syncOverlayHost);
+    syncOverlayHost();
+    return () => document.removeEventListener("fullscreenchange", syncOverlayHost);
   }, []);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export const AbandonmentDialog = ({ action, onCancel, onConfirm }: Props) => {
   }, []);
 
   // Focus may need to be restored when the portal moves on entering or exiting fullscreen.
-  useEffect(() => { safe.current?.focus(); }, [fullscreenHost]);
+  useEffect(() => { safe.current?.focus(); }, [overlayHost]);
   const isNew = action === "new";
   const dialog = (
     <div
@@ -75,5 +75,5 @@ export const AbandonmentDialog = ({ action, onCancel, onConfirm }: Props) => {
   );
 
   // Only descendants of the fullscreen element are visible above its top-layer surface.
-  return fullscreenHost ? createPortal(dialog, fullscreenHost) : dialog;
+  return overlayHost ? createPortal(dialog, overlayHost) : dialog;
 };

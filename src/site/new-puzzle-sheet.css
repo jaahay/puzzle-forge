@@ -1,0 +1,76 @@
+/* One responsive modal surface for existing New-puzzle configuration. */
+.new-puzzle-mobile-sheet:not([open]) { display: none; }
+.new-puzzle-mobile-sheet {
+  box-sizing: border-box;
+  position: fixed;
+  inset: auto 0 var(--new-puzzle-viewport-bottom, 0px);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: 100%;
+  max-width: none;
+  max-height: min(44rem, calc(var(--new-puzzle-visible-height, 100dvh) - 0.5rem - env(safe-area-inset-top, 0px)));
+  margin: 0;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-bottom: 0;
+  border-radius: 1.15rem 1.15rem 0 0;
+  padding: 0;
+  color: #e5e7eb;
+  background: #111827;
+  box-shadow: 0 -18px 60px rgba(2, 6, 23, 0.56);
+  overflow: hidden;
+}
+.new-puzzle-mobile-sheet::backdrop { background: rgba(2, 6, 23, 0.7); }
+.new-puzzle-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  min-height: 3.5rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+  padding: 0.55rem max(0.85rem, env(safe-area-inset-right, 0px));
+  background: #111827;
+}
+.new-puzzle-sheet-header h2 { min-width: 0; margin: 0; color: #f8fafc; font-size: 1rem; font-weight: 800; }
+.new-puzzle-sheet-close {
+  flex: 0 0 auto;
+  min-height: 2.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 0.7rem;
+  padding: 0.4rem 0.75rem;
+  color: #e2e8f0;
+  background: #26364a;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+.new-puzzle-sheet-close:focus-visible { outline: 2px solid #a7f3d0; outline-offset: 2px; }
+.new-puzzle-sheet-scroll {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.8rem max(0.8rem, env(safe-area-inset-right, 0px))
+    max(1rem, env(safe-area-inset-bottom, 0px))
+    max(0.8rem, env(safe-area-inset-left, 0px));
+  scrollbar-gutter: stable;
+}
+.new-puzzle-mobile-sheet .new-puzzle-options-panel,
+.jigsaw-workspace .new-puzzle-mobile-sheet .new-puzzle-options-panel,
+.jigsaw-workspace:not(.is-immersive) .new-puzzle-mobile-sheet .new-puzzle-options-panel {
+  box-sizing: border-box;
+  position: static;
+  inset: auto;
+  display: grid;
+  width: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+.new-puzzle-mobile-sheet .new-puzzle-info-panel { max-height: none; overflow: visible; }
+.new-puzzle-mobile-sheet .new-puzzle-quick-actions { border-top: 0; padding-top: 0; }
