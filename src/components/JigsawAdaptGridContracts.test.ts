@@ -1,10 +1,21 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { describeJigsawPieceCount } from "./JigsawNewPuzzleControl";
 
 const source = readFileSync(new URL("./JigsawNewPuzzleControl.tsx", import.meta.url), "utf8");
 const boundedNumberInputSource = readFileSync(new URL("./BoundedNumberInput.tsx", import.meta.url), "utf8");
 
 describe("Jigsaw Adapt grid contracts", () => {
+  it("distinguishes the grid count from a possible extra special piece", () => {
+    expect(describeJigsawPieceCount(7, 5, "off")).toBe("35 pieces");
+    expect(describeJigsawPieceCount(7, 5, "rare")).toBe("35–36 pieces");
+    expect(describeJigsawPieceCount(7, 5, "always")).toBe("35–36 pieces");
+    expect(source).toContain("<span>{pieceCountLabel}</span>");
+    expect(source).toContain("A special shape can add one more piece.");
+    // Preset targets are approximate; they are not the realized topology count.
+    expect(source).toContain("~{jigsawSizeTargetPieces[preset]} pieces");
+  });
+
   it("keeps adaptation advisory and Custom-only without re-deriving intent from dimensions", () => {
     expect(source).toContain("sizeSelection === jigsawCustomSizeSelection");
     expect(source).not.toContain("getJigsawSizePresetForDimensions");
