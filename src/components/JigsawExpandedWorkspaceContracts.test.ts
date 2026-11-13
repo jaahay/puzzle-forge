@@ -202,7 +202,7 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(compactFitRule).toContain("width: 2.6rem;");
     expect(compactFitRule).toContain("padding: 0;");
     const expansionControl = cssRule(jigsawCss, ".jigsaw-camera-tools .jigsaw-expand-workspace,");
-    const sharedCameraButton = cssRule(jigsawCss, ".jigsaw-camera-tools button {");
+    const sharedCameraButton = cssRule(jigsawCss, "\n.jigsaw-camera-tools button {\n  border: 0;");
     expect(expansionControl).toContain("width: 2.6rem;");
     expect(expansionControl).not.toMatch(/border-left:|border-radius:|background:|box-shadow:/);
     expect(sharedCameraButton).toContain("background: transparent;");
