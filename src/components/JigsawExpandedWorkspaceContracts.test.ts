@@ -202,9 +202,16 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(compactFitRule).toContain("width: 2.6rem;");
     expect(compactFitRule).toContain("padding: 0;");
     const expansionControl = cssRule(jigsawCss, ".jigsaw-camera-tools .jigsaw-expand-workspace,");
+    const workspaceSeparator = cssRule(jigsawCss, ".jigsaw-camera-tools .jigsaw-expand-workspace::before,");
     const sharedCameraButton = cssRule(jigsawCss, "\n.jigsaw-camera-tools button {\n  border: 0;");
     expect(expansionControl).toContain("width: 2.6rem;");
+    expect(expansionControl).toContain("margin-left: 0.35rem;");
+    expect(expansionControl).toContain("position: relative;");
     expect(expansionControl).not.toMatch(/border-left:|border-radius:|background:|box-shadow:/);
+    expect(workspaceSeparator).toContain('content: "";');
+    expect(workspaceSeparator).toContain("width: 1px;");
+    expect(workspaceSeparator).toContain("pointer-events: none;");
+    expect(workspaceSeparator).toContain(".jigsaw-camera-tools .jigsaw-fullscreen-action::before");
     expect(sharedCameraButton).toContain("background: transparent;");
     expect(sharedCameraButton).toContain("border: 0;");
     expect(jigsawPreviewSource).toContain("createJigsawOccupiedFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles)");
