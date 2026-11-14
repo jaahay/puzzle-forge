@@ -34,6 +34,14 @@ export const makeEmptyImageTileHistoryState = (): ImageTileHistoryState => ({
   redoStack: [],
 });
 
+export const cloneImageTileActionRuntime = (runtime: ImageTileActionRuntime): ImageTileActionRuntime => ({
+  state: cloneImageTileActionState(runtime.state),
+  history: {
+    undoStack: runtime.history.undoStack.map(cloneImageTileActionState).slice(-imageTileHistoryLimit),
+    redoStack: runtime.history.redoStack.map(cloneImageTileActionState).slice(-imageTileHistoryLimit),
+  },
+});
+
 export const sameImageTileActionState = (
   left: ImageTileActionState,
   right: ImageTileActionState,

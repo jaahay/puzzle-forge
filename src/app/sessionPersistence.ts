@@ -1,4 +1,12 @@
-import type { GeneratedPuzzle, GridGeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
+import type { GeneratedPuzzle, GridGeneratedPuzzle, ImageTileGeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
+import {
+  cloneImageTileActionRuntime,
+  imageTileHistoryLimit,
+  makeEmptyImageTileHistoryState,
+  type ImageTileActionRuntime,
+  type ImageTileActionState,
+} from "../games/imageTiles/history";
+import { hasUniqueTilePositions } from "../games/imageTiles/state";
 import type { CardSelection } from "../interactions/cardRules";
 import { prepareGridCells, type GridCellSelection } from "../interactions/gridRules";
 import {
@@ -40,11 +48,24 @@ export type PersistedCardProgress = {
   redoStack: PersistedSolitaireHistoryEntry[];
 };
 
+export type PersistedCompactImageTileEntry = {
+  positions: number[];
+  emptyIndex?: number;
+  moveCount: number;
+};
+
+export type PersistedCompactImageTileHistory = {
+  undo: PersistedCompactImageTileEntry[];
+  redo: PersistedCompactImageTileEntry[];
+};
+
 export type PersistedTileProgress = {
   kind: "tiles";
   tileOrder: Array<{ id: string; currentIndex: number }>;
   selectedTileId: string | null;
   jigsawAssembly?: JigsawAssemblyProgress;
+  imageTileMoveCount?: number;
+  imageTileHistory?: PersistedCompactImageTileHistory;
 };
 
 export type PersistedCompactGridHistoryEntry = {
@@ -119,6 +140,59 @@ const isPuzzleCell = (value: unknown): value is PuzzleCell =>
   (value.ariaLabel === undefined || typeof value.ariaLabel === "string");
 const isPersistedTileOrderEntry = (value: unknown): value is PersistedTileProgress["tileOrder"][number] =>
   isRecord(value) && typeof value.id === "string" && isNonNegativeInteger(value.currentIndex);
+
+const isCompactImageTileEntry = (value: unknown): value is PersistedCompactImageTileEntry =>
+  isRecord(value) &&
+  Array.isArray(value.positions) && value.positions.every(isNonNegativeInteger) &&
+  isNonNegativeInteger(value.moveCount) &&
+  (value.emptyIndex === undefined || isNonNegativeInteger(value.emptyIndex));
+
+const isCompactImageTileHistory = (value: unknown): value is PersistedCompactImageTileHistory =>
+  isRecord(value) &&
+  Array.isArray(value.undo) && value.undo.length <= imageTileHistoryLimit && value.undo.every(isCompactImageTileEntry) &&
+  Array.isArray(value.redo) && value.redo.length <= imageTileHistoryLimit && value.redo.every(isCompactImageTileEntry);
+
+const buildCompactImageTileHistoryEntry = (state: ImageTileActionState): PersistedCompactImageTileEntry => ({
+  positions: state.tiles.map((tile) => tile.currentIndex),
+  ...(state.emptyIndex === undefined ? {} : { emptyIndex: state.emptyIndex }),
+  moveCount: state.moveCount,
+});
+
+const cloneCompactImageTileHistory = (history: PersistedCompactImageTileHistory): PersistedCompactImageTileHistory => ({
+  undo: history.undo.map((entry) => ({ ...entry, positions: [...entry.positions] })),
+  redo: history.redo.map((entry) => ({ ...entry, positions: [...entry.positions] })),
+});
+
+const restoreCompactImageTileEntry = (
+  puzzle: ImageTileGeneratedPuzzle,
+  entry: PersistedCompactImageTileEntry,
+): ImageTileActionState | null => {
+  if (entry.positions.length !== puzzle.tiles.length) return null;
+  const tiles = puzzle.tiles.map((tile, index) => ({ ...tile, currentIndex: entry.positions[index] }));
+  const boardCellCount = puzzle.width * puzzle.height;
+  if (!hasUniqueTilePositions(tiles, boardCellCount)) return null;
+
+  if (puzzle.puzzleId === "sliding-puzzle") {
+    const gap = entry.emptyIndex;
+    if (gap === undefined || gap >= boardCellCount || tiles.some((tile) => tile.currentIndex === gap)) return null;
+    return { tiles, emptyIndex: gap, moveCount: entry.moveCount };
+  }
+  return entry.emptyIndex === undefined && tiles.length === boardCellCount
+    ? { tiles, moveCount: entry.moveCount }
+    : null;
+};
+
+const restoreCompactImageTileHistory = (
+  puzzle: ImageTileGeneratedPuzzle,
+  value: unknown,
+) => {
+  const empty = makeEmptyImageTileHistoryState();
+  if (!isCompactImageTileHistory(value)) return empty;
+  const undo = value.undo.map((entry) => restoreCompactImageTileEntry(puzzle, entry));
+  const redo = value.redo.map((entry) => restoreCompactImageTileEntry(puzzle, entry));
+  if (undo.some((entry) => entry === null) || redo.some((entry) => entry === null)) return empty;
+  return { undoStack: undo as ImageTileActionState[], redoStack: redo as ImageTileActionState[] };
+};
 const isPersistedSolitaireHistoryEntry = (value: unknown): value is PersistedSolitaireHistoryEntry =>
   isRecord(value) &&
   Array.isArray(value.cardStacks) &&
@@ -195,10 +269,22 @@ const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzlePr
   if (session.kind === "tiles") {
     return {
       kind: "tiles",
-      tileOrder: session.puzzle.tiles.map(({ id, currentIndex }) => ({ id, currentIndex })),
+      tileOrder: (session.progress.imageTileRuntime?.state.tiles ?? session.puzzle.tiles)
+        .map(({ id, currentIndex }) => ({ id, currentIndex })),
       selectedTileId: null,
       ...(session.puzzle.puzzleId === "jigsaw" && session.progress.jigsawAssembly
         ? { jigsawAssembly: normalizeJigsawAssemblyProgress(session.progress.jigsawAssembly) }
+        : {}),
+      ...(session.puzzle.puzzleId !== "jigsaw" && session.progress.imageTileRuntime
+        ? {
+            imageTileMoveCount: session.progress.imageTileRuntime.state.moveCount,
+            imageTileHistory: {
+              undo: session.progress.imageTileRuntime.history.undoStack
+                .slice(-imageTileHistoryLimit).map(buildCompactImageTileHistoryEntry),
+              redo: session.progress.imageTileRuntime.history.redoStack
+                .slice(-imageTileHistoryLimit).map(buildCompactImageTileHistoryEntry),
+            },
+          }
         : {}),
     };
   }
@@ -338,6 +424,12 @@ const clonePersistedPuzzleProgress = (progress: PersistedPuzzleProgress): Persis
       selectedTileId: progress.selectedTileId ?? null,
       ...(progress.jigsawAssembly
         ? { jigsawAssembly: cloneJigsawAssemblyProgress(progress.jigsawAssembly) }
+        : {}),
+      ...(isNonNegativeInteger(progress.imageTileMoveCount)
+        ? { imageTileMoveCount: progress.imageTileMoveCount }
+        : {}),
+      ...(isCompactImageTileHistory(progress.imageTileHistory)
+        ? { imageTileHistory: cloneCompactImageTileHistory(progress.imageTileHistory) }
         : {}),
     };
   }
@@ -546,12 +638,29 @@ export const restorePuzzleSessionFromPersisted = (
     const restoredPuzzle = restorePersistedTilePuzzle(persisted.progress, generatedPuzzle);
     const jigsawAssembly = restorePersistedJigsawAssembly(persisted.progress, generatedPuzzle);
     if (!restoredPuzzle || jigsawAssembly === null) return null;
+    const isImageTile = restoredPuzzle.puzzleId !== "jigsaw";
+    const imageTileRuntime: ImageTileActionRuntime | null = isImageTile &&
+      isNonNegativeInteger(persisted.progress.imageTileMoveCount)
+      ? cloneImageTileActionRuntime({
+          state: {
+            tiles: restoredPuzzle.tiles.map((tile) => ({ ...tile })),
+            ...(restoredPuzzle.puzzleId === "sliding-puzzle" ? { emptyIndex: restoredPuzzle.emptyIndex } : {}),
+            moveCount: persisted.progress.imageTileMoveCount,
+          },
+          history: restoreCompactImageTileHistory(
+            generatedPuzzle as ImageTileGeneratedPuzzle,
+            persisted.progress.imageTileHistory,
+          ),
+        })
+      : null;
     return {
       kind: "tiles",
-      puzzle: restoredPuzzle,
+      // Image-tile progress lives in the session, not in the regenerated baseline.
+      puzzle: imageTileRuntime ? generatedPuzzle : restoredPuzzle,
       progress: {
         kind: "tiles",
         ...(jigsawAssembly ? { jigsawAssembly } : {}),
+        ...(imageTileRuntime ? { imageTileRuntime } : {}),
       },
     };
   }
