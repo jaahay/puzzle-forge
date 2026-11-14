@@ -111,7 +111,7 @@ describe("image tile session identity", () => {
   });
 });
 
-const makeProgressedSession = (puzzle: ImageTileGeneratedPuzzle): PuzzleSession => {
+const makeProgressedSession = (puzzle: ImageTileGeneratedPuzzle, undoLastMove = true): PuzzleSession => {
   const initial: ImageTileActionRuntime = {
     state: {
       tiles: puzzle.tiles.map((tile) => ({ ...tile })),
@@ -128,12 +128,12 @@ const makeProgressedSession = (puzzle: ImageTileGeneratedPuzzle): PuzzleSession 
       )
     : swapImageTileAction(initial, puzzle.tiles[0].id, puzzle.tiles[1].id);
   if (!next) throw new Error("Expected a legal image-tile move");
-  const undone = applyImageTileHistoryAction(next, "undo");
-  if (!undone) throw new Error("Expected an undoable move");
+  const runtime = undoLastMove ? applyImageTileHistoryAction(next, "undo") : next;
+  if (!runtime) throw new Error("Expected an undoable move");
   return {
     kind: "tiles",
     puzzle,
-    progress: { kind: "tiles", imageTileRuntime: undone },
+    progress: { kind: "tiles", imageTileRuntime: runtime },
   };
 };
 
@@ -186,21 +186,31 @@ describe("canonical resource-owned image-tile history", () => {
       const second = generateTileSwap({ puzzleId: "tile-swap", seed: "retained-second", width: 4, height: 4, imageId: "great-wave" });
       const keyA = makePuzzleResourceKey("tile-swap", makeResource(first).generationId);
       const keyB = makePuzzleResourceKey("tile-swap", makeResource(second).generationId);
-      const sessionA = makeProgressedSession(first);
-      const sessionB = makeProgressedSession(second);
+      const sessionA = makeProgressedSession(first, false);
+      const sessionB = makeProgressedSession(second, false);
       savePersistedPuzzleSessions({ activeResourceKey: keyA, sessions: { [keyA]: sessionA } });
       savePersistedPuzzleSessions({ activeResourceKey: keyB, sessions: { [keyA]: sessionA, [keyB]: sessionB } });
 
       const saved = loadPersistedPuzzleSessions();
       expect(Object.keys(saved?.sessions ?? {})).toEqual(expect.arrayContaining([keyA, keyB]));
-      for (const [key, puzzle] of [[keyA, first], [keyB, second]] as const) {
+      for (const [key, puzzle, original] of [
+        [keyA, first, sessionA],
+        [keyB, second, sessionB],
+      ] as const) {
         const session = saved?.sessions[key];
         expect(session).toBeDefined();
-        if (!session) continue;
+        if (!session || original.progress.kind !== "tiles") continue;
         const restored = restorePuzzleSessionFromPersisted(session, puzzle);
         expect(restored?.kind).toBe("tiles");
         if (restored?.kind !== "tiles") continue;
-        expect(restored.progress.imageTileRuntime?.history.redoStack).toHaveLength(1);
+        const runtime = restored.progress.imageTileRuntime;
+        expect(runtime?.state.moveCount).toBe(1);
+        expect(runtime?.history.undoStack).toHaveLength(1);
+        expect(runtime?.state.tiles.map((tile) => tile.currentIndex)).toEqual(
+          original.progress.imageTileRuntime?.state.tiles.map((tile) => tile.currentIndex),
+        );
+        expect(runtime?.state.tiles.map((tile) => tile.currentIndex))
+          .not.toEqual(puzzle.tiles.map((tile) => tile.currentIndex));
       }
       expect([...values.keys()].filter((key) => key.startsWith("puzzle-forge.image-tile-progress"))).toHaveLength(0);
       expect([...values.keys()].filter((key) => key.startsWith("puzzle-forge.session."))).toHaveLength(2);
