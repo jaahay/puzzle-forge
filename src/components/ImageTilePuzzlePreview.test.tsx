@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import type { ImageTileGeneratedPuzzle, TilePuzzlePiece } from "../catalog/types";
 import { canSlideTile, slideTileIntoGap } from "../games/imageTiles/state";
 import {
   applyImageTileHistoryAction,
@@ -7,11 +8,11 @@ import {
   slideImageTileAction,
   swapImageTileAction,
   type ImageTileActionRuntime,
+  type ImageTileHistoryState,
 } from "../games/imageTiles/history";
 import { generateSlidingPuzzle } from "../games/slidingPuzzle/generate";
 import { generateTileSwap } from "../games/tileSwap/generate";
 import {
-  buildPersistedImageTileProgress,
   getImageTileBoardStyle,
   getImageTileHelpCopy,
   restoreImageTileProgress,
@@ -21,6 +22,39 @@ import {
 
 const imageTilePreviewSource = readFileSync(new URL("./ImageTilePuzzlePreview.tsx", import.meta.url), "utf8");
 const imageTileCss = readFileSync(new URL("../site/image-tiles.css", import.meta.url), "utf8");
+
+// The old per-type record is read only for a one-time import; new gameplay
+// stores progress and history in the canonical resource session.
+const makeLegacyImageTileRecord = (
+  puzzle: ImageTileGeneratedPuzzle,
+  runtime: {
+    progress: { puzzleInstanceId: string; tiles: TilePuzzlePiece[]; emptyIndex?: number; moveCount: number };
+    history: ImageTileHistoryState;
+  },
+) => {
+  const serializeHistory = (stack: ImageTileActionRuntime["history"]["undoStack"]) =>
+    stack.map((state) => ({
+      positions: state.tiles.map((tile) => tile.currentIndex),
+      ...(state.emptyIndex === undefined ? {} : { emptyIndex: state.emptyIndex }),
+      moveCount: state.moveCount,
+    }));
+  return {
+    schemaVersion: 1,
+    puzzleId: puzzle.puzzleId,
+    puzzleInstanceId: puzzle.id,
+    assetId: puzzle.asset.id,
+    width: puzzle.width,
+    height: puzzle.height,
+    tileOrder: runtime.progress.tiles.map(({ id, currentIndex }) => ({ id, currentIndex })),
+    ...(puzzle.puzzleId === "sliding-puzzle" ? { emptyIndex: runtime.progress.emptyIndex } : {}),
+    moveCount: runtime.progress.moveCount,
+    history: {
+      undo: serializeHistory(runtime.history.undoStack),
+      redo: serializeHistory(runtime.history.redoStack),
+    },
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  };
+};
 
 describe("ImageTilePuzzlePreview layout", () => {
   it("defines both grid axes and uses measured play height for tall boards", () => {
@@ -170,7 +204,7 @@ describe("ImageTilePuzzlePreview history persistence", () => {
     expect(undone).not.toBeNull();
     if (!undone) return;
 
-    const persisted = buildPersistedImageTileProgress(puzzle, {
+    const persisted = makeLegacyImageTileRecord(puzzle, {
       progress: { puzzleInstanceId: puzzle.id, ...undone.state },
       history: undone.history,
     });
@@ -196,7 +230,7 @@ describe("ImageTilePuzzlePreview history persistence", () => {
     const moved = slideImageTileAction(initial, movable.id, puzzle.width, puzzle.height);
     expect(moved).not.toBeNull();
     if (!moved) return;
-    const persisted = buildPersistedImageTileProgress(puzzle, {
+    const persisted = makeLegacyImageTileRecord(puzzle, {
       progress: { puzzleInstanceId: puzzle.id, ...moved.state },
       history: moved.history,
     });
@@ -215,7 +249,7 @@ describe("ImageTilePuzzlePreview history persistence", () => {
     }, puzzle.tiles[0].id, puzzle.tiles[1].id);
     expect(first).not.toBeNull();
     if (!first) return;
-    const envelope = buildPersistedImageTileProgress(puzzle, {
+    const envelope = makeLegacyImageTileRecord(puzzle, {
       progress: { puzzleInstanceId: puzzle.id, ...first.state },
       history: first.history,
     });
@@ -232,7 +266,7 @@ describe("ImageTilePuzzlePreview history persistence", () => {
 
   it("restores old position-only records with empty history", () => {
     const puzzle = generateTileSwap({ puzzleId: "tile-swap", seed: "history-empty", width: 3, height: 3 });
-    const envelope = buildPersistedImageTileProgress(puzzle, {
+    const envelope = makeLegacyImageTileRecord(puzzle, {
       progress: { puzzleInstanceId: puzzle.id, tiles: puzzle.tiles, moveCount: 0 },
       history: makeEmptyImageTileHistoryState(),
     });

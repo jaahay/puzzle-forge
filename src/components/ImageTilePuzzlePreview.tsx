@@ -214,12 +214,6 @@ export const restoreImageTileProgress = (
   return { puzzleInstanceId: puzzle.id, tiles, moveCount: Number(candidate.moveCount) };
 };
 
-const toPersistedHistoryEntry = (state: ImageTileActionState): PersistedImageTileHistoryEntry => ({
-  positions: state.tiles.map(({ currentIndex }) => currentIndex),
-  ...(state.emptyIndex === undefined ? {} : { emptyIndex: state.emptyIndex }),
-  moveCount: state.moveCount,
-});
-
 const restorePersistedHistoryEntry = (
   puzzle: ImageTileGeneratedPuzzle,
   value: unknown,
@@ -273,26 +267,6 @@ export const restoreImageTileRuntime = (
     history: isRecord(value) ? restorePersistedHistory(puzzle, value.history) : makeEmptyImageTileHistoryState(),
   };
 };
-
-export const buildPersistedImageTileProgress = (
-  puzzle: ImageTileGeneratedPuzzle,
-  runtime: ImageTileRuntimeState,
-): PersistedImageTileProgress => ({
-  schemaVersion: progressSchemaVersion,
-  puzzleId: puzzle.puzzleId,
-  puzzleInstanceId: puzzle.id,
-  assetId: puzzle.asset.id,
-  width: puzzle.width,
-  height: puzzle.height,
-  tileOrder: runtime.progress.tiles.map(({ id, currentIndex }) => ({ id, currentIndex })),
-  ...(puzzle.puzzleId === "sliding-puzzle" ? { emptyIndex: runtime.progress.emptyIndex } : {}),
-  moveCount: runtime.progress.moveCount,
-  history: {
-    undo: runtime.history.undoStack.slice(-imageTileHistoryLimit).map(toPersistedHistoryEntry),
-    redo: runtime.history.redoStack.slice(-imageTileHistoryLimit).map(toPersistedHistoryEntry),
-  },
-  updatedAt: new Date().toISOString(),
-});
 
 // Read-only import of the prior per-type record. New moves never write to this key.
 const loadImageTileRuntime = (puzzle: ImageTileGeneratedPuzzle) => {

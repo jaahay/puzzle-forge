@@ -234,3 +234,49 @@ describe("canonical resource-owned image-tile history", () => {
     expect(restored.progress.imageTileRuntime?.history.undoStack).toHaveLength(0);
   });
 });
+
+describe("one-time image tile legacy slot retirement", () => {
+  it("removes only the matching old slot after canonical progress is durably saved", () => {
+    withMockStorage((values) => {
+      const puzzle = generateTileSwap({ puzzleId: "tile-swap", seed: "import-old-swap", width: 4, height: 4 });
+      const session = makeProgressedSession(puzzle);
+      const key = makePuzzleResourceKey(puzzle.puzzleId, makeResource(puzzle).generationId);
+      const legacyKey = "puzzle-forge.image-tile-progress.v1.tile-swap";
+      values.set(legacyKey, JSON.stringify({ puzzleInstanceId: puzzle.id }));
+      savePersistedPuzzleSessions({ activeResourceKey: key, sessions: { [key]: session } });
+      expect(values.has(legacyKey)).toBe(false);
+      expect(loadPersistedPuzzleSessions()?.sessions[key]?.progress).toMatchObject({
+        kind: "tiles",
+        imageTileMoveCount: 0,
+      });
+    });
+  });
+
+  it("does not remove an old record for another puzzle instance", () => {
+    withMockStorage((values) => {
+      const puzzle = generateTileSwap({ puzzleId: "tile-swap", seed: "leave-other-swap", width: 4, height: 4 });
+      const session = makeProgressedSession(puzzle);
+      const key = makePuzzleResourceKey(puzzle.puzzleId, makeResource(puzzle).generationId);
+      const legacyKey = "puzzle-forge.image-tile-progress.v1.tile-swap";
+      values.set(legacyKey, JSON.stringify({ puzzleInstanceId: "other-instance" }));
+      savePersistedPuzzleSessions({ activeResourceKey: key, sessions: { [key]: session } });
+      expect(values.has(legacyKey)).toBe(true);
+    });
+  });
+
+  it("retains the import if browser storage rejects the canonical write", () => {
+    withMockStorage((values) => {
+      const puzzle = generateTileSwap({ puzzleId: "tile-swap", seed: "failed-import", width: 4, height: 4 });
+      const session = makeProgressedSession(puzzle);
+      const key = makePuzzleResourceKey(puzzle.puzzleId, makeResource(puzzle).generationId);
+      const legacyKey = "puzzle-forge.image-tile-progress.v1.tile-swap";
+      values.set(legacyKey, JSON.stringify({ puzzleInstanceId: puzzle.id }));
+      Object.defineProperty(window.localStorage, "setItem", {
+        configurable: true,
+        value: () => { throw new Error("QuotaExceededError"); },
+      });
+      expect(() => savePersistedPuzzleSessions({ activeResourceKey: key, sessions: { [key]: session } })).not.toThrow();
+      expect(values.has(legacyKey)).toBe(true);
+    });
+  });
+});
