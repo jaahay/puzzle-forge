@@ -765,21 +765,16 @@
 }
 
 .jigsaw-island {
-  --jigsaw-active-drag-x: 0px;
-  --jigsaw-active-drag-y: 0px;
   position: absolute;
   left: 0;
   top: 0;
   pointer-events: none;
+  /* Canonical pose stays here; temporary drag displacement uses style.translate. */
   transform: translate3d(
-    calc(var(--jigsaw-piece-x, 0px) + var(--jigsaw-active-drag-x)),
-    calc(var(--jigsaw-piece-y, 0px) + var(--jigsaw-active-drag-y)),
+    var(--jigsaw-piece-x, 0px),
+    var(--jigsaw-piece-y, 0px),
     0
   );
-}
-.jigsaw-island.dragging {
-  --jigsaw-active-drag-x: var(--jigsaw-drag-x, 0px);
-  --jigsaw-active-drag-y: var(--jigsaw-drag-y, 0px);
 }
 .jigsaw-island-visual {
   position: absolute;
@@ -806,8 +801,6 @@
   pointer-events: none;
 }
 .tile-puzzle-piece {
-  --jigsaw-active-drag-x: 0px;
-  --jigsaw-active-drag-y: 0px;
   position: absolute;
   left: 0;
   top: 0;
@@ -830,11 +823,6 @@
     var(--jigsaw-piece-y, 0px),
     0
   );
-}
-
-.tile-puzzle-piece.dragging {
-  --jigsaw-active-drag-x: var(--jigsaw-drag-x, 0px);
-  --jigsaw-active-drag-y: var(--jigsaw-drag-y, 0px);
 }
 
 .jigsaw-island:has(.tile-puzzle-piece:hover) .jigsaw-island-visual,
