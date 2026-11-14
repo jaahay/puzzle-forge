@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 
 const workspaceSource = readFileSync(new URL("./ImageTilePuzzleWorkspace.tsx", import.meta.url), "utf8");
 const previewSource = readFileSync(new URL("./ImageTilePuzzlePreview.tsx", import.meta.url), "utf8");
+const appSource = readFileSync(new URL("../App.tsx", import.meta.url), "utf8");
+const sessionSource = readFileSync(new URL("../app/sessionPersistence.ts", import.meta.url), "utf8");
 
 describe("image tile history integration", () => {
   it("owns Undo/Redo in the current-puzzle crown for both image-tile puzzle types", () => {
@@ -68,11 +70,16 @@ describe("image tile history integration", () => {
     expect(previewSource).toContain("publishHistoryAvailability(restored);");
   });
 
-  it("persists progress and history in the same storage write", () => {
-    expect(previewSource).toContain("saveImageTileProgress(puzzle, runtime)");
-    expect(previewSource).toContain("[runtime, puzzle]");
+  it("routes moves through the canonical resource-keyed session instead of writing a second localStorage record", () => {
+    expect(previewSource).toContain("runtimeChangeRef.current?.(puzzle.id, toImageTileActionRuntime(next))");
+    expect(previewSource).toContain("runtimeChangeRef.current?.(puzzle.id, toImageTileActionRuntime(runtimeRef.current))");
+    expect(previewSource).not.toContain("localStorage.setItem(");
+    expect(workspaceSource).toContain("onRuntimeChange={onImageTileRuntimeChange}");
+    expect(appSource).toContain("imageTileRuntimeRef.current = {");
+    expect(appSource).toContain("saveCurrentSessionRef.current();");
+    expect(sessionSource).toContain("imageTileMoveCount: session.progress.imageTileRuntime.state.moveCount");
+    expect(sessionSource).toContain("imageTileHistory:");
     expect(previewSource).toContain("restoreImageTileRuntime(puzzle, JSON.parse(raw))");
-    expect(previewSource).toContain("history: isRecord(value) ? restorePersistedHistory(puzzle, value.history)");
   });
 
   it("registers the shared history controller and rendered availability for both puzzle types", () => {

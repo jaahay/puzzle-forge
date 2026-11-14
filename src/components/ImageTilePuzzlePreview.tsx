@@ -38,6 +38,8 @@ export type ImageTileHistoryAvailability = {
 type ImageTilePuzzlePreviewProps = {
   interactionSuspended?: boolean;
   puzzle: ImageTileGeneratedPuzzle;
+  initialRuntime?: ImageTileActionRuntime | null;
+  onRuntimeChange?: (puzzleInstanceId: string, runtime: ImageTileActionRuntime) => void;
   resetVersion?: number;
   completionPhase?: CompletionPresentationPhase;
   onCausativeInput?: () => void;
@@ -292,6 +294,7 @@ export const buildPersistedImageTileProgress = (
   updatedAt: new Date().toISOString(),
 });
 
+// Read-only import of the prior per-type record. New moves never write to this key.
 const loadImageTileRuntime = (puzzle: ImageTileGeneratedPuzzle) => {
   if (typeof window === "undefined") return null;
   try {
@@ -302,17 +305,10 @@ const loadImageTileRuntime = (puzzle: ImageTileGeneratedPuzzle) => {
   }
 };
 
-const saveImageTileProgress = (puzzle: ImageTileGeneratedPuzzle, runtime: ImageTileRuntimeState) => {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(progressStorageKey(puzzle), JSON.stringify(buildPersistedImageTileProgress(puzzle, runtime)));
-  } catch {
-    // Progress persistence is best-effort; gameplay remains available without browser storage.
-  }
-};
-
 export const ImageTilePuzzlePreview = ({
   puzzle,
+  initialRuntime,
+  onRuntimeChange,
   interactionSuspended = false,
   resetVersion = 0,
   completionPhase,
@@ -323,11 +319,23 @@ export const ImageTilePuzzlePreview = ({
   onHistoryAvailabilityChange,
   onHistoryControllerChange,
 }: ImageTilePuzzlePreviewProps) => {
-  const [runtime, setRuntime] = useState<ImageTileRuntimeState>(() => loadImageTileRuntime(puzzle) ?? ({
-    progress: makeInitialProgress(puzzle),
-    history: makeEmptyImageTileHistoryState(),
-  }));
+  const [runtime, setRuntime] = useState<ImageTileRuntimeState>(() => initialRuntime
+    ? {
+        progress: {
+          puzzleInstanceId: puzzle.id,
+          tiles: initialRuntime.state.tiles.map((tile) => ({ ...tile })),
+          ...(initialRuntime.state.emptyIndex === undefined ? {} : { emptyIndex: initialRuntime.state.emptyIndex }),
+          moveCount: initialRuntime.state.moveCount,
+        },
+        history: initialRuntime.history,
+      }
+    : loadImageTileRuntime(puzzle) ?? ({
+        progress: makeInitialProgress(puzzle),
+        history: makeEmptyImageTileHistoryState(),
+      }));
   const runtimeRef = useRef(runtime);
+  const runtimeChangeRef = useRef(onRuntimeChange);
+  runtimeChangeRef.current = onRuntimeChange;
   const progress = runtime.progress;
   const [selectedTileId, setSelectedTileId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -366,8 +374,9 @@ export const ImageTilePuzzlePreview = ({
     setRuntime(next);
     publishHistoryAvailability(next);
     publishProgress(next);
+    runtimeChangeRef.current?.(puzzle.id, toImageTileActionRuntime(next));
     return next;
-  }, [publishHistoryAvailability]);
+  }, [publishHistoryAvailability, puzzle.id]);
 
   const canHistoryAction = useCallback((action: ImageTileHistoryAction) => {
     if (interactionSuspended) return false;
@@ -401,6 +410,7 @@ export const ImageTilePuzzlePreview = ({
     setRuntime(restored);
     publishHistoryAvailability(restored);
     publishProgress(restored);
+    runtimeChangeRef.current?.(puzzle.id, toImageTileActionRuntime(restored));
     setSelectedTileId(null);
     return true;
   }, [canHistoryAction, publishHistoryAvailability]);
@@ -421,8 +431,9 @@ export const ImageTilePuzzlePreview = ({
   }, [publishHistoryAvailability, puzzle.id]);
 
   useEffect(() => {
-    saveImageTileProgress(puzzle, runtime);
-  }, [runtime, puzzle]);
+    // Register the restored (or migrated) board with the canonical resource session.
+    runtimeChangeRef.current?.(puzzle.id, toImageTileActionRuntime(runtimeRef.current));
+  }, [puzzle.id]);
 
   const hasUnfinishedArrangement = progress.tiles.some((tile) =>
     puzzle.tiles.find((original) => original.id === tile.id)?.currentIndex !== tile.currentIndex) ||

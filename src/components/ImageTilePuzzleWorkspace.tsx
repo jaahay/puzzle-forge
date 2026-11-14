@@ -37,6 +37,8 @@ export const ImageTilePuzzleWorkspace = ({
   isGenerating,
   onReset,
   onRuntimeProgressChange,
+  imageTileRuntime,
+  onImageTileRuntimeChange,
   onNextPuzzleDraftChange,
   onSeedLoadInputChange,
   onNewPuzzle,
@@ -174,6 +176,8 @@ export const ImageTilePuzzleWorkspace = ({
       <ImageTilePuzzlePreview
         key={imagePuzzle.id}
         puzzle={imagePuzzle}
+        initialRuntime={imageTileRuntime}
+        onRuntimeChange={onImageTileRuntimeChange}
         interactionSuspended={isGenerating}
         resetVersion={resetVersion}
         completionPhase={completionPresentation.phase}
