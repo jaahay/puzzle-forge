@@ -101,7 +101,7 @@ export const ImageTilePuzzleWorkspace = ({
     const controller = historyControllerRef.current;
     if (!imagePuzzle || controller?.puzzleInstanceId !== imagePuzzle.id || !controller.dispatch(action)) return;
 
-    onStatusMessageChange(action === "undo" ? "Undid last puzzle action." : "Redid last puzzle action.");
+    onStatusMessageChange("");
   };
 
   const resetPuzzle = () => onReset(() => {

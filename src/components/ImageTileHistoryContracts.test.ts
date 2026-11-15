@@ -25,10 +25,16 @@ describe("image tile history integration", () => {
     );
   });
 
-  it("announces accepted Undo/Redo actions through the workspace status line", () => {
-    expect(workspaceSource).toContain(
-      'onStatusMessageChange(action === "undo" ? "Undid last puzzle action." : "Redid last puzzle action.");',
-    );
+  it("clears stale status after accepted Undo/Redo without narrating the change", () => {
+    const start = workspaceSource.indexOf("const requestHistoryAction =");
+    const end = workspaceSource.indexOf("const resetPuzzle =", start);
+    const action = workspaceSource.slice(start, end);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    expect(action).toContain("!controller.dispatch(action)) return;");
+    expect(action).toContain('onStatusMessageChange("");');
+    expect(action).not.toContain("Undid last puzzle action.");
+    expect(action).not.toContain("Redid last puzzle action.");
   });
 
   it("keeps history controls available after solve while generation is idle", () => {

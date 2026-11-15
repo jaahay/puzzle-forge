@@ -202,7 +202,7 @@ export const useGridController = () => {
 
     setGridHistory(transition.history);
     restoreGridHistoryEntry(transition.entry);
-    onStatusMessage("Undid last puzzle action.");
+    onStatusMessage("");
   };
 
   const redoGridAction = (puzzle: GeneratedPuzzle | null, onStatusMessage: (message: string) => void) => {
@@ -222,7 +222,7 @@ export const useGridController = () => {
 
     setGridHistory(transition.history);
     restoreGridHistoryEntry(transition.entry);
-    onStatusMessage("Redid last puzzle action.");
+    onStatusMessage("");
   };
 
   const updateGridCells = (
