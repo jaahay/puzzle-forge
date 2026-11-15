@@ -3,8 +3,9 @@ import { generateJigsaw } from "./generate";
 import { defaultJigsawImageAsset } from "./imageAssets";
 import { createJigsawWorldLayout, getJigsawSolvedPosition } from "./placement";
 import {
-  composeJigsawIslandCuts, getJigsawVisualMembershipKey, positionJigsawVisualIslands,
-  prepareJigsawVisualGeometry, reconcileJigsawVisualScene,
+  composeJigsawIslandArtworkClipPath, composeJigsawIslandCuts,
+  getJigsawVisualMembershipKey, positionJigsawVisualIslands,
+  prepareJigsawVisualGeometry, reconcileJigsawVisualScene, translateJigsawOutlinePath,
 } from "./visualIslands";
 
 const puzzle = generateJigsaw({
@@ -25,6 +26,66 @@ const second = puzzle.tiles.find((piece) => piece.row === 0 && piece.column === 
 const third = puzzle.tiles.find((piece) => piece.row === 0 && piece.column === 2)!;
 
 describe("island-aware Jigsaw visual composition", () => {
+
+  it("translates line, curve, and arc endpoints without altering arc geometry", () => {
+    const source = "M 50 50 L 100 100 C 1 2 3 4 5 6 A 20 10 0 1 0 70 80 Z";
+    expect(translateJigsawOutlinePath(source, 100, 200)).toBe(
+      "M 150 250 L 200 300 C 101 202 103 204 105 206 A 20 10 0 1 0 170 280 Z",
+    );
+    expect(translateJigsawOutlinePath(source, 0, 0)).toBe(source);
+    expect(() => translateJigsawOutlinePath("M 0 0 Q 1 2 3 4 Z", 1, 1)).toThrow();
+  });
+
+  it("constructs one compound path with one closed contour per island member", () => {
+    const square = puzzle.tiles.filter((piece) => piece.row < 2 && piece.column < 2);
+    const scene = reconcileJigsawVisualScene(puzzle.tiles,
+      { joinedComponents: [square.map((piece) => piece.id)] }, geometry);
+    const island = scene.byPieceId.get(first.id)!;
+    expect((island.artworkClipPath.match(/\bM\b/g) ?? [])).toHaveLength(square.length);
+    expect((island.artworkClipPath.match(/\bZ\b/g) ?? [])).toHaveLength(square.length);
+    expect(island.artworkClipPath).toBe(
+      composeJigsawIslandArtworkClipPath(island.members, island.minColumn, island.minRow),
+    );
+    const moved = positionJigsawVisualIslands(scene, layout, placements);
+    expect(moved.find((entry) => entry.key === island.key)!.artworkClipPath)
+      .toBe(island.artworkClipPath);
+  });
+
+  it("supports large groups without introducing extra SVG clipping children", () => {
+    const large = generateJigsaw({
+      puzzleId: "jigsaw", seed: "compound-clip-large", width: 9, height: 7,
+      imageId: defaultJigsawImageAsset.id, jigsawSpecialPiecesMode: "off",
+    });
+    const largeGeometry = prepareJigsawVisualGeometry(large.tiles, large.edgeModel);
+    for (const count of [34, 39]) {
+      const members = large.tiles.slice(0, count);
+      const prepared = members.map((piece) => largeGeometry.get(piece.id)!);
+      const path = composeJigsawIslandArtworkClipPath(prepared, 0, 0);
+      expect(prepared).toHaveLength(count);
+      expect((path.match(/\bM\b/g) ?? [])).toHaveLength(count);
+      expect((path.match(/\bZ\b/g) ?? [])).toHaveLength(count);
+    }
+  });
+
+  it("keeps special-piece arcs in the compound clip", () => {
+    const candidate = Array.from({ length: 128 }, (_, index) => generateJigsaw({
+      puzzleId: "jigsaw", seed: `compound-capsule-${index}`, width: 6, height: 6,
+      imageId: defaultJigsawImageAsset.id, jigsawSpecialPiecesMode: "always",
+    })).find((sample) => sample.tiles.some((piece) => piece.specialShape?.kind === "capsule"));
+    expect(candidate).toBeDefined();
+    const pieces = candidate!.tiles;
+    const special = pieces.find((piece) => piece.specialShape?.kind === "capsule")!;
+    const socket = pieces.find((piece) => piece.specialShape?.kind === "capsule-socket")!;
+    const prepared = prepareJigsawVisualGeometry(pieces, candidate!.edgeModel);
+    const memberGeometry = [prepared.get(special.id)!, prepared.get(socket.id)!];
+    const minColumn = Math.min(special.column, socket.column);
+    const minRow = Math.min(special.row, socket.row);
+    const path = composeJigsawIslandArtworkClipPath(memberGeometry, minColumn, minRow);
+    expect(path).toContain("A ");
+    expect((path.match(/\bM\b/g) ?? [])).toHaveLength(2);
+    expect((path.match(/\bZ\b/g) ?? [])).toHaveLength(2);
+  });
+
   it("prepares all outlines and seams just once, preserving their references on joins", () => {
     expect(geometry.size).toBe(puzzle.tiles.length);
     const prepared = geometry.get(first.id)!;
