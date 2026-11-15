@@ -176,9 +176,7 @@ const JigsawIslandVisual = memo(({
       <svg class="jigsaw-island-visual" viewBox={`0 0 ${island.widthCells * 100} ${island.heightCells * 100}`} preserveAspectRatio="none" aria-hidden="true">
         <defs>
           <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
-            {island.members.map(({ piece, outline }) => (
-              <path key={piece.id} d={outline} transform={`translate(${(piece.column - island.minColumn) * 100} ${(piece.row - island.minRow) * 100})`} />
-            ))}
+            <path d={island.artworkClipPath} clip-rule="nonzero" />
           </clipPath>
         </defs>
         <g class="jigsaw-island-artwork">
