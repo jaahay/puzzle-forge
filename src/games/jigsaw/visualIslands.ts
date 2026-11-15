@@ -21,6 +21,50 @@ export const prepareJigsawVisualGeometry = (
   span: getJigsawPieceCellSpan(piece),
 }]));
 
+
+/**
+ * Translate canonical absolute SVG path commands into island-local coordinates.
+ * Each piece outline is already closed; keeping all contours in one path avoids
+ * requiring the browser to Boolean-union many sibling clipPath elements.
+ * The generated outline vocabulary is M/L/C/A/Z; fail on unexpected commands.
+ */
+export const translateJigsawOutlinePath = (path: string, x: number, y: number): string => {
+  if (x === 0 && y === 0) return path;
+  const tokens = path.match(/[A-Za-z]|[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?/g) ?? [];
+  const arities: Record<string, number> = { M: 2, L: 2, C: 6, A: 7, Z: 0 };
+  const translated: string[] = [];
+  for (let i = 0; i < tokens.length;) {
+    const command = tokens[i++]!;
+    const arity = arities[command];
+    if (arity === undefined) throw new Error(`Unsupported Jigsaw outline command: ${command}`);
+    if (command === "Z") { translated.push("Z"); continue; }
+    const values = tokens.slice(i, i + arity).map(Number);
+    if (values.length !== arity || values.some((value) => !Number.isFinite(value))) {
+      throw new Error(`Invalid Jigsaw outline command: ${command}`);
+    }
+    const xIndices = command === "C" ? [0, 2, 4] : command === "A" ? [5] : [0];
+    for (const index of xIndices) {
+      values[index] = values[index]! + x;
+      values[index + 1] = values[index + 1]! + y;
+    }
+    translated.push(`${command} ${values.join(" ")}`);
+    i += arity;
+  }
+  return translated.join(" ");
+};
+
+/** A compound nonzero-filled path: exactly one clipping child per visual island. */
+export const composeJigsawIslandArtworkClipPath = (
+  members: readonly PreparedJigsawPiece[],
+  minColumn: number,
+  minRow: number,
+): string => members.map(({ piece, outline }) =>
+  translateJigsawOutlinePath(
+    outline,
+    (piece.column - minColumn) * 100,
+    (piece.row - minRow) * 100,
+  )).join(" ");
+
 export type JigsawIslandCut = {
   /** A physical cut is stroked only once even if two joined pieces share it. */
   key: string;
@@ -34,6 +78,7 @@ export type JigsawVisualIslandGeometry = {
   /** Stable across absorption; a retired island is eligible for DOM/GC cleanup. */
   key: string;
   members: readonly PreparedJigsawPiece[];
+  artworkClipPath: string;
   cuts: readonly JigsawIslandCut[];
   minColumn: number;
   minRow: number;
@@ -161,7 +206,9 @@ export const reconcileJigsawVisualScene = (
     const maxColumn = Math.max(...members.map(({ piece, span }) => piece.column + span.width));
     const maxRow = Math.max(...members.map(({ piece, span }) => piece.row + span.height));
     return [{
-      key, members, cuts: composeJigsawIslandCuts(members, minColumn, minRow), minColumn, minRow,
+      key, members,
+      artworkClipPath: composeJigsawIslandArtworkClipPath(members, minColumn, minRow),
+      cuts: composeJigsawIslandCuts(members, minColumn, minRow), minColumn, minRow,
       widthCells: maxColumn - minColumn,
       heightCells: maxRow - minRow,
     }];
