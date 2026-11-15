@@ -52,10 +52,16 @@ describe("island-aware Jigsaw visual composition", () => {
   });
 
   it("supports large groups without introducing extra SVG clipping children", () => {
+    const large = generateJigsaw({
+      puzzleId: "jigsaw", seed: "compound-clip-large", width: 9, height: 7,
+      imageId: defaultJigsawImageAsset.id, jigsawSpecialPiecesMode: "off",
+    });
+    const largeGeometry = prepareJigsawVisualGeometry(large.tiles, large.edgeModel);
     for (const count of [34, 39]) {
-      const members = puzzle.tiles.slice(0, count);
-      const prepared = members.map((piece) => geometry.get(piece.id)!);
+      const members = large.tiles.slice(0, count);
+      const prepared = members.map((piece) => largeGeometry.get(piece.id)!);
       const path = composeJigsawIslandArtworkClipPath(prepared, 0, 0);
+      expect(prepared).toHaveLength(count);
       expect((path.match(/\bM\b/g) ?? [])).toHaveLength(count);
       expect((path.match(/\bZ\b/g) ?? [])).toHaveLength(count);
     }
