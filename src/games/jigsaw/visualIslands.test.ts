@@ -41,8 +41,8 @@ describe("island-aware Jigsaw visual composition", () => {
     const scene = reconcileJigsawVisualScene(puzzle.tiles,
       { joinedComponents: [square.map((piece) => piece.id)] }, geometry);
     const island = scene.byPieceId.get(first.id)!;
-    expect((island.artworkClipPath.match(/\\bM\\b/g) ?? [])).toHaveLength(square.length);
-    expect((island.artworkClipPath.match(/\\bZ\\b/g) ?? [])).toHaveLength(square.length);
+    expect((island.artworkClipPath.match(/\bM\b/g) ?? [])).toHaveLength(square.length);
+    expect((island.artworkClipPath.match(/\bZ\b/g) ?? [])).toHaveLength(square.length);
     expect(island.artworkClipPath).toBe(
       composeJigsawIslandArtworkClipPath(island.members, island.minColumn, island.minRow),
     );
@@ -56,8 +56,8 @@ describe("island-aware Jigsaw visual composition", () => {
       const members = puzzle.tiles.slice(0, count);
       const prepared = members.map((piece) => geometry.get(piece.id)!);
       const path = composeJigsawIslandArtworkClipPath(prepared, 0, 0);
-      expect((path.match(/\\bM\\b/g) ?? [])).toHaveLength(count);
-      expect((path.match(/\\bZ\\b/g) ?? [])).toHaveLength(count);
+      expect((path.match(/\bM\b/g) ?? [])).toHaveLength(count);
+      expect((path.match(/\bZ\b/g) ?? [])).toHaveLength(count);
     }
   });
 
@@ -76,8 +76,8 @@ describe("island-aware Jigsaw visual composition", () => {
     const minRow = Math.min(special.row, socket.row);
     const path = composeJigsawIslandArtworkClipPath(memberGeometry, minColumn, minRow);
     expect(path).toContain("A ");
-    expect((path.match(/\\bM\\b/g) ?? [])).toHaveLength(2);
-    expect((path.match(/\\bZ\\b/g) ?? [])).toHaveLength(2);
+    expect((path.match(/\bM\b/g) ?? [])).toHaveLength(2);
+    expect((path.match(/\bZ\b/g) ?? [])).toHaveLength(2);
   });
 
   it("prepares all outlines and seams just once, preserving their references on joins", () => {
