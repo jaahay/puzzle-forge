@@ -32,8 +32,12 @@ import {
   applyJigsawHistoryAction,
   commitJigsawPlacementAction,
   getJigsawHistoryAvailability,
+  cloneJigsawActionRuntime,
+  cloneJigsawHistoryState,
+  cloneJigsawSnapshot,
   makeEmptyJigsawHistoryState,
   resolveJigsawActionBaseline,
+  type JigsawActionRuntime,
   type JigsawHistoryAction,
   type JigsawHistoryState,
   type JigsawWorkspaceSnapshot,
@@ -100,7 +104,9 @@ type TilePuzzlePreviewProps = {
   inputSuspended?: boolean;
   resetVersion?: number;
   initialAssembly?: JigsawAssemblyProgress | null;
+  initialRuntime?: JigsawActionRuntime | null;
   onAssemblyChange?: (assembly: JigsawAssemblyProgress) => void;
+  onRuntimeChange?: (runtime: JigsawActionRuntime) => void;
   onSolvedChange?: (solved: boolean) => void;
   onHistoryAvailabilityChange?: (availability: JigsawHistoryAvailability) => void;
   onProgressChange?: (report: { hasProgress: boolean; terminal: boolean }) => void;
@@ -326,7 +332,9 @@ export const TilePuzzlePreview = ({
   inputSuspended = false,
   resetVersion = 0,
   initialAssembly = null,
+  initialRuntime = null,
   onAssemblyChange,
+  onRuntimeChange,
   onSolvedChange,
   onHistoryAvailabilityChange,
   onProgressChange,
@@ -367,6 +375,8 @@ export const TilePuzzlePreview = ({
   const baselinePlacementsRef = useRef<{ puzzleId: string; placements: JigsawPlacement[] } | null>(null);
   const progressChangeRef = useRef(onProgressChange);
   progressChangeRef.current = onProgressChange;
+  const runtimeChangeRef = useRef(onRuntimeChange);
+  runtimeChangeRef.current = onRuntimeChange;
   const [cameraState, setCameraState] = useState<CameraState | null>(null);
   const [activeTileId, setActiveTileId] = useState<string | null>(null);
   // Presentation-only order: free drops stay above earlier pieces; joins settle.
@@ -466,7 +476,14 @@ export const TilePuzzlePreview = ({
   const replaceHistory = useCallback((history: JigsawHistoryState) => {
     historyRef.current = history;
     publishHistoryAvailability(history);
-  }, [publishHistoryAvailability]);
+    const current = placementStateRef.current;
+    if (current?.puzzleId === puzzle.id) {
+      runtimeChangeRef.current?.(cloneJigsawActionRuntime({
+        snapshot: current,
+        history,
+      }));
+    }
+  }, [publishHistoryAvailability, puzzle.id]);
 
   const publishAssemblyProgress = useCallback((assembly: JigsawAssemblyProgress) => {
     onAssemblyChange?.(cloneJigsawAssemblyProgress(assembly));
@@ -554,11 +571,15 @@ export const TilePuzzlePreview = ({
   }, [puzzle.id, replaceHistory]);
 
   useEffect(() => {
-    if (initialAssembly === null) return;
+    if (initialAssembly === null && !initialRuntime) return;
+    const wasInitialized = placementStateRef.current?.puzzleId === puzzle.id;
     const initialized = updatePlacementState((current) => {
       if (current?.puzzleId === puzzle.id) return current;
       const stagingViewport = getMeasuredJigsawViewport(stageRef.current);
-      const initial = resolveInitialJigsawWorkspaceState(initialAssembly, layout, puzzle.tiles, stagingViewport);
+      if (!stagingViewport) return current;
+      const initial = initialRuntime
+        ? cloneJigsawSnapshot(initialRuntime.snapshot)
+        : resolveInitialJigsawWorkspaceState(initialAssembly!, layout, puzzle.tiles, stagingViewport);
       if (!initial) return current;
       const baseline = resetJigsawWorkspaceState(layout, puzzle.tiles, stagingViewport);
       if (baseline) baselinePlacementsRef.current = {
@@ -567,8 +588,13 @@ export const TilePuzzlePreview = ({
       };
       return { puzzleId: puzzle.id, ...initial };
     });
-    if (initialized?.puzzleId === puzzle.id) publishCurrentProgress();
-  }, [initialAssembly, layout, publishCurrentProgress, puzzle.id, puzzle.tiles, updatePlacementState, viewport.height, viewport.width]);
+    if (!wasInitialized && initialized?.puzzleId === puzzle.id) {
+      replaceHistory(initialRuntime
+        ? cloneJigsawHistoryState(initialRuntime.history)
+        : makeEmptyJigsawHistoryState());
+      publishCurrentProgress();
+    }
+  }, [initialAssembly, initialRuntime, layout, publishCurrentProgress, puzzle.id, puzzle.tiles, replaceHistory, updatePlacementState, viewport.height, viewport.width]);
 
   useEffect(() => {
     if (!isUsableJigsawViewport(viewport) || !activePlacements) return;

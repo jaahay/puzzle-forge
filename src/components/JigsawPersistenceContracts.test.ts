@@ -13,6 +13,10 @@ describe("Jigsaw resource-session persistence integration", () => {
     expect(appSource).toContain("jigsaw={workspaceJigsaw}");
     expect(workspaceSource).toContain("initialAssembly={jigsawAssembly}");
     expect(workspaceSource).toContain("onAssemblyChange={onJigsawAssemblyChange}");
+    expect(workspaceSource).toContain("initialRuntime={jigsawRuntime}");
+    expect(workspaceSource).toContain("onRuntimeChange=");
+    expect(appSource).toContain("onJigsawRuntimeChange:");
+    expect(appSource).toContain("jigsawRuntimeRef.current =");
     expect(previewSource).toContain("if (initialAssembly === null) return;");
   });
 

@@ -14,6 +14,21 @@ export type JigsawHistoryState = {
   redoStack: JigsawWorkspaceSnapshot[];
 };
 
+export type JigsawActionRuntime = {
+  snapshot: JigsawWorkspaceSnapshot;
+  history: JigsawHistoryState;
+};
+
+export const cloneJigsawHistoryState = (history: JigsawHistoryState): JigsawHistoryState => ({
+  undoStack: history.undoStack.slice(-jigsawHistoryLimit).map(cloneJigsawSnapshot),
+  redoStack: history.redoStack.slice(-jigsawHistoryLimit).map(cloneJigsawSnapshot),
+});
+
+export const cloneJigsawActionRuntime = (runtime: JigsawActionRuntime): JigsawActionRuntime => ({
+  snapshot: cloneJigsawSnapshot(runtime.snapshot),
+  history: cloneJigsawHistoryState(runtime.history),
+});
+
 export type JigsawHistoryTransition = {
   snapshot: JigsawWorkspaceSnapshot;
   history: JigsawHistoryState;

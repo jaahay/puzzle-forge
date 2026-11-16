@@ -3,6 +3,7 @@ import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
 import type { GridHistoryEntry } from "./gridHistory";
 import type { JigsawAssemblyProgress } from "../games/jigsaw/assembly";
+import type { JigsawActionRuntime } from "../games/jigsaw/history";
 import type { ImageTileActionRuntime } from "../games/imageTiles/history";
 import {
   loadPersistedPuzzleSessions as loadPersistedPuzzleSessionsUnsafe,
@@ -59,6 +60,7 @@ export type GridSessionProgress = {
 export type TileSessionProgress = {
   kind: "tiles";
   jigsawAssembly?: JigsawAssemblyProgress;
+  jigsawRuntime?: JigsawActionRuntime;
   imageTileRuntime?: ImageTileActionRuntime;
 };
 

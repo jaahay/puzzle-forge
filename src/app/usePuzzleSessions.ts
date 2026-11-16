@@ -19,6 +19,7 @@ import { cloneGridHistoryState, makeEmptyGridHistoryState, type GridHistoryState
 import { makePuzzleResourceKey, type PuzzleResourceIdentity } from "./puzzleResourceIdentity";
 import { cloneSolitaireHistoryEntry } from "./solitaireHistory";
 import { cloneImageTileActionRuntime, type ImageTileActionRuntime } from "../games/imageTiles/history";
+import { cloneJigsawActionRuntime, type JigsawActionRuntime } from "../games/jigsaw/history";
 import {
   cloneJigsawAssemblyProgress,
   makeEmptyJigsawAssemblyProgress,
@@ -36,6 +37,7 @@ export type RuntimeSessionDraft = {
   selectedGridCell: GridCellSelection | null;
   gridHistory?: GridHistoryState;
   jigsawAssembly?: JigsawAssemblyProgress | null;
+  jigsawRuntime?: JigsawActionRuntime | null;
   imageTileRuntime?: ImageTileActionRuntime | null;
 };
 
@@ -140,6 +142,9 @@ export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => {
       ...(session.progress.jigsawAssembly
         ? { jigsawAssembly: cloneJigsawAssemblyProgress(session.progress.jigsawAssembly) }
         : {}),
+      ...(session.progress.jigsawRuntime
+        ? { jigsawRuntime: cloneJigsawActionRuntime(session.progress.jigsawRuntime) }
+        : {}),
       ...(session.progress.imageTileRuntime
         ? { imageTileRuntime: cloneImageTileActionRuntime(session.progress.imageTileRuntime) }
         : {}),
@@ -158,6 +163,7 @@ export const buildRuntimeSession = ({
   selectedGridCell,
   gridHistory,
   jigsawAssembly,
+  jigsawRuntime,
   imageTileRuntime,
 }: RuntimeSessionDraft): PuzzleSession => {
   if (puzzle.kind === "cards") {
@@ -195,8 +201,11 @@ export const buildRuntimeSession = ({
     puzzle,
     progress: {
       kind: "tiles",
-      ...(puzzle.puzzleId === "jigsaw" && jigsawAssembly
-        ? { jigsawAssembly: cloneJigsawAssemblyProgress(jigsawAssembly) }
+      ...(puzzle.puzzleId === "jigsaw" && (jigsawRuntime || jigsawAssembly)
+        ? { jigsawAssembly: cloneJigsawAssemblyProgress(jigsawRuntime?.snapshot.assembly ?? jigsawAssembly!) }
+        : {}),
+      ...(puzzle.puzzleId === "jigsaw" && jigsawRuntime
+        ? { jigsawRuntime: cloneJigsawActionRuntime(jigsawRuntime) }
         : {}),
       ...(puzzle.puzzleId !== "jigsaw" && imageTileRuntime
         ? { imageTileRuntime: cloneImageTileActionRuntime(imageTileRuntime) }

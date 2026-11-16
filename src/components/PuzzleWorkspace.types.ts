@@ -6,6 +6,7 @@ import type { CardSelection } from "../interactions/cardRules";
 import type { GridCheckFeedbackTone } from "../interactions/gridChecking";
 import type { GridCellSelection } from "../interactions/gridRules";
 import type { JigsawAssemblyProgress } from "../games/jigsaw/assembly";
+import type { JigsawActionRuntime } from "../games/jigsaw/history";
 import type { ImageTileActionRuntime } from "../games/imageTiles/history";
 
 export type { GenerationSettings, NextPuzzleDraft } from "../app/generationSettings";
@@ -52,7 +53,9 @@ export type GridInteractionProps = {
 
 export type JigsawInteractionProps = {
   jigsawAssembly: JigsawAssemblyProgress | null;
+  jigsawRuntime: JigsawActionRuntime | null;
   onJigsawAssemblyChange: (assembly: JigsawAssemblyProgress) => void;
+  onJigsawRuntimeChange: (puzzleInstanceId: string, runtime: JigsawActionRuntime) => void;
 };
 
 export type SolitaireInteractionProps = {
