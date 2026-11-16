@@ -139,7 +139,8 @@ describe("Jigsaw current-format resource sessions", () => {
     }
     if (!puzzle) throw new Error("Expected a medallion");
     const medallion = puzzle.tiles.find((piece) => piece.specialShape?.kind === "medallion")!;
-    const neighbor = medallion.specialShape?.socketPieceIds[0];
+    if (medallion.specialShape?.kind !== "medallion") throw new Error("Expected medallion shape");
+    const neighbor = medallion.specialShape.socketPieceIds[0];
     if (!neighbor) throw new Error("Missing socket");
     const joined = [medallion.id, neighbor];
     const assembly = { joinedComponents: [joined], anchoredPieceIds: joined };

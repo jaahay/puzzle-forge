@@ -17,7 +17,7 @@ describe("Jigsaw resource-session persistence integration", () => {
     expect(workspaceSource).toContain("onRuntimeChange=");
     expect(appSource).toContain("onJigsawRuntimeChange:");
     expect(appSource).toContain("jigsawRuntimeRef.current =");
-    expect(previewSource).toContain("if (initialAssembly === null) return;");
+    expect(previewSource).toContain("if (initialAssembly === null && !initialRuntime) return;");
   });
 
   it("publishes semantic assembly only through the four committed-state boundaries", () => {

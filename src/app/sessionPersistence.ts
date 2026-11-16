@@ -632,8 +632,7 @@ export const restorePuzzleSessionFromPersisted = (
         },
       };
     }
-    const isImageTile = true;
-    const imageTileRuntime: ImageTileActionRuntime | null = isImageTile &&
+    const imageTileRuntime: ImageTileActionRuntime | null =
       isNonNegativeInteger(persisted.progress.imageTileMoveCount)
       ? cloneImageTileActionRuntime({
           state: {
