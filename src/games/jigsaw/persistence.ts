@@ -49,7 +49,9 @@ const isPatch = (value: unknown): value is PersistedJigsawPatch =>
   (value.assembly === undefined || isIndexedAssembly(value.assembly));
 
 /** A valid current board is enough to preserve progress when history alone is damaged. */
-export const hasPersistedJigsawCurrent = (value: unknown): value is { current: PersistedJigsawFrame } =>
+export const hasPersistedJigsawCurrent = (
+  value: unknown,
+): value is Record<string, unknown> & { current: PersistedJigsawFrame } =>
   isRecord(value) && isFrame(value.current);
 
 export const isPersistedJigsawRuntime = (value: unknown): value is PersistedJigsawRuntime =>
