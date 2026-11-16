@@ -32,6 +32,7 @@ import {
   type GenerationRuntimeSettings,
 } from "./app/generationIdentity";
 import { resolveGenerationIdentity, type GenerationSettings } from "./app/generationSettings";
+import { cloneImageTileActionRuntime, type ImageTileActionRuntime } from "./games/imageTiles/history";
 import { getInitialSelectedPuzzleId, markPuzzleNavigation } from "./app/homeNavigation";
 import { encodeGenerationId, resolvePuzzleResourceSegment } from "./app/puzzleResourceIdentity";
 import { defaultPuzzleDifficulty, makeRandomSeed } from "./app/runtime";
@@ -118,6 +119,7 @@ export const App = () => {
   const [puzzle, setPuzzle] = useState<GeneratedPuzzle | null>(null);
   const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
   const [jigsawProgress, setJigsawProgress] = useState<{ puzzleInstanceId: string; assembly: JigsawAssemblyProgress } | null>(null);
+  const imageTileRuntimeRef = useRef<{ puzzleInstanceId: string; runtime: ImageTileActionRuntime } | null>(null);
   const [puzzleLinkError, setPuzzleLinkError] = useState<string | null>(null);
   const [generationFailureNotice, setGenerationFailureNotice] = useState<string | null>(null);
   const [pendingAbandonment, setPendingAbandonment] = useState<PendingAbandonmentAction | null>(null);
@@ -221,6 +223,12 @@ export const App = () => {
     setSelectedPuzzleId(puzzleId);
     setGenerationDefaults((current) => getGeneratedPuzzleRuntimeSettings(restoredPuzzle, current));
     setPuzzle(restoredPuzzle);
+    imageTileRuntimeRef.current = session.progress.kind === "tiles" && session.progress.imageTileRuntime
+      ? {
+          puzzleInstanceId: restoredPuzzle.id,
+          runtime: cloneImageTileActionRuntime(session.progress.imageTileRuntime),
+        }
+      : null;
     if (nextRoute.kind === "resource") commitResourceRoute(nextRoute, routeHistory);
     else replaceCurrentRoute(nextRoute);
 
@@ -274,6 +282,11 @@ export const App = () => {
         gridCells: grid.gridCells,
         selectedGridCell: grid.selectedGridCell,
         gridHistory: grid.gridHistory,
+        imageTileRuntime:
+          puzzle.kind === "tiles" && puzzle.puzzleId !== "jigsaw" &&
+          imageTileRuntimeRef.current?.puzzleInstanceId === puzzle.id
+            ? imageTileRuntimeRef.current.runtime
+            : null,
         jigsawAssembly:
           puzzle.puzzleId === "jigsaw" && jigsawProgress?.puzzleInstanceId === puzzle.id
             ? jigsawProgress.assembly
@@ -298,7 +311,13 @@ export const App = () => {
     if (hasSelectedPuzzle && !isHomeSelected) saveCurrentSession();
   };
 
-  const resetRuntimePuzzleState = () => { setPuzzle(null); setJigsawProgress(null); solitaire.resetSolitaire(); grid.resetGrid(); };
+  const resetRuntimePuzzleState = () => {
+    setPuzzle(null);
+    setJigsawProgress(null);
+    imageTileRuntimeRef.current = null;
+    solitaire.resetSolitaire();
+    grid.resetGrid();
+  };
 
   const beginGeneration = (options: BeginGenerationOptions = {}, behavior: GenerationBehavior = {}) => {
     setGenerationFailureNotice(null);
@@ -816,6 +835,21 @@ export const App = () => {
   const handleCheck = () => { if (!puzzle || generation.hasActiveRequest()) return; puzzle.kind === "cards" ? solitaire.checkSolitaire() : grid.checkGrid(puzzle, setStatusMessage); };
   const workspaceIsGenerating = generation.isGenerating || (!puzzle && selectedPuzzleIsGeneratable && !isHomeSelected && !puzzleLinkError);
   const workspaceCore = {
+    imageTileRuntime: puzzle?.kind === "tiles" && puzzle.puzzleId !== "jigsaw" &&
+      imageTileRuntimeRef.current?.puzzleInstanceId === puzzle.id
+        ? imageTileRuntimeRef.current.runtime
+        : null,
+    onImageTileRuntimeChange: (puzzleInstanceId: string, runtime: ImageTileActionRuntime) => {
+      if (generation.hasActiveRequest() || puzzle?.id !== puzzleInstanceId ||
+          puzzle.kind !== "tiles" || puzzle.puzzleId === "jigsaw") return;
+      imageTileRuntimeRef.current = {
+        puzzleInstanceId,
+        runtime: cloneImageTileActionRuntime(runtime),
+      };
+      // Commit the latest completed intention immediately; navigation/pagehide need
+      // the same synchronous snapshot, not a stale render of the child workspace.
+      saveCurrentSessionRef.current();
+    },
     selectedDefinition,
     selectedPuzzleIsGeneratable,
     seed,

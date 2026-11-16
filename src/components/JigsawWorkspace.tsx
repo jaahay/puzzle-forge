@@ -92,9 +92,7 @@ export const JigsawWorkspace = ({
       !controller.dispatch(action)
     ) return;
 
-    onStatusMessageChange(
-      action === "undo" ? "Undid last puzzle action." : "Redid last puzzle action.",
-    );
+    onStatusMessageChange("");
   };
 
   const resetJigsaw = (afterReset?: () => void) => onReset(() => {

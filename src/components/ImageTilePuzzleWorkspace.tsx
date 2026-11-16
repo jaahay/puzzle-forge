@@ -37,6 +37,8 @@ export const ImageTilePuzzleWorkspace = ({
   isGenerating,
   onReset,
   onRuntimeProgressChange,
+  imageTileRuntime,
+  onImageTileRuntimeChange,
   onNextPuzzleDraftChange,
   onSeedLoadInputChange,
   onNewPuzzle,
@@ -99,7 +101,7 @@ export const ImageTilePuzzleWorkspace = ({
     const controller = historyControllerRef.current;
     if (!imagePuzzle || controller?.puzzleInstanceId !== imagePuzzle.id || !controller.dispatch(action)) return;
 
-    onStatusMessageChange(action === "undo" ? "Undid last puzzle action." : "Redid last puzzle action.");
+    onStatusMessageChange("");
   };
 
   const resetPuzzle = () => onReset(() => {
@@ -174,6 +176,8 @@ export const ImageTilePuzzleWorkspace = ({
       <ImageTilePuzzlePreview
         key={imagePuzzle.id}
         puzzle={imagePuzzle}
+        initialRuntime={imageTileRuntime}
+        onRuntimeChange={onImageTileRuntimeChange}
         interactionSuspended={isGenerating}
         resetVersion={resetVersion}
         completionPhase={completionPresentation.phase}

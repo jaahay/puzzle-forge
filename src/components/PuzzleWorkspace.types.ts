@@ -6,10 +6,13 @@ import type { CardSelection } from "../interactions/cardRules";
 import type { GridCheckFeedbackTone } from "../interactions/gridChecking";
 import type { GridCellSelection } from "../interactions/gridRules";
 import type { JigsawAssemblyProgress } from "../games/jigsaw/assembly";
+import type { ImageTileActionRuntime } from "../games/imageTiles/history";
 
 export type { GenerationSettings, NextPuzzleDraft } from "../app/generationSettings";
 
 export type CoreWorkspaceProps = {
+  imageTileRuntime?: ImageTileActionRuntime | null;
+  onImageTileRuntimeChange?: (puzzleInstanceId: string, runtime: ImageTileActionRuntime) => void;
   selectedDefinition: PuzzleDefinition;
   selectedPuzzleIsGeneratable: boolean;
   seed: string;

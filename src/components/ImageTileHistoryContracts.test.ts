@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 
 const workspaceSource = readFileSync(new URL("./ImageTilePuzzleWorkspace.tsx", import.meta.url), "utf8");
 const previewSource = readFileSync(new URL("./ImageTilePuzzlePreview.tsx", import.meta.url), "utf8");
+const appSource = readFileSync(new URL("../App.tsx", import.meta.url), "utf8");
+const sessionSource = readFileSync(new URL("../app/sessionPersistence.ts", import.meta.url), "utf8");
 
 describe("image tile history integration", () => {
   it("owns Undo/Redo in the current-puzzle crown for both image-tile puzzle types", () => {
@@ -23,10 +25,16 @@ describe("image tile history integration", () => {
     );
   });
 
-  it("announces accepted Undo/Redo actions through the workspace status line", () => {
-    expect(workspaceSource).toContain(
-      'onStatusMessageChange(action === "undo" ? "Undid last puzzle action." : "Redid last puzzle action.");',
-    );
+  it("clears stale status after accepted Undo/Redo without narrating the change", () => {
+    const start = workspaceSource.indexOf("const requestHistoryAction =");
+    const end = workspaceSource.indexOf("const resetPuzzle =", start);
+    const action = workspaceSource.slice(start, end);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    expect(action).toContain("!controller.dispatch(action)) return;");
+    expect(action).toContain('onStatusMessageChange("");');
+    expect(action).not.toContain("Undid last puzzle action.");
+    expect(action).not.toContain("Redid last puzzle action.");
   });
 
   it("keeps history controls available after solve while generation is idle", () => {
@@ -66,6 +74,18 @@ describe("image tile history integration", () => {
     expect(previewSource).toContain("const runtimeRef = useRef(runtime);");
     expect(previewSource).toContain("publishHistoryAvailability(next);");
     expect(previewSource).toContain("publishHistoryAvailability(restored);");
+  });
+
+  it("routes moves through the canonical resource-keyed session instead of writing a second localStorage record", () => {
+    expect(previewSource).toContain("runtimeChangeRef.current?.(puzzle.id, toImageTileActionRuntime(next))");
+    expect(previewSource).toContain("runtimeChangeRef.current?.(puzzle.id, toImageTileActionRuntime(runtimeRef.current))");
+    expect(previewSource).not.toContain("localStorage.setItem(");
+    expect(workspaceSource).toContain("onRuntimeChange={onImageTileRuntimeChange}");
+    expect(appSource).toContain("imageTileRuntimeRef.current = {");
+    expect(appSource).toContain("saveCurrentSessionRef.current();");
+    expect(sessionSource).toContain("imageTileMoveCount: session.progress.imageTileRuntime.state.moveCount");
+    expect(sessionSource).toContain("imageTileHistory:");
+    expect(previewSource).toContain("restoreImageTileRuntime(puzzle, JSON.parse(raw))");
   });
 
   it("registers the shared history controller and rendered availability for both puzzle types", () => {

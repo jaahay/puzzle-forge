@@ -1,17 +1,60 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import type { ImageTileGeneratedPuzzle, TilePuzzlePiece } from "../catalog/types";
 import { canSlideTile, slideTileIntoGap } from "../games/imageTiles/state";
+import {
+  applyImageTileHistoryAction,
+  makeEmptyImageTileHistoryState,
+  slideImageTileAction,
+  swapImageTileAction,
+  type ImageTileActionRuntime,
+  type ImageTileHistoryState,
+} from "../games/imageTiles/history";
 import { generateSlidingPuzzle } from "../games/slidingPuzzle/generate";
 import { generateTileSwap } from "../games/tileSwap/generate";
 import {
   getImageTileBoardStyle,
   getImageTileHelpCopy,
   restoreImageTileProgress,
+  restoreImageTileRuntime,
   shouldRevealSlidingCompletionGap,
 } from "./ImageTilePuzzlePreview";
 
 const imageTilePreviewSource = readFileSync(new URL("./ImageTilePuzzlePreview.tsx", import.meta.url), "utf8");
 const imageTileCss = readFileSync(new URL("../site/image-tiles.css", import.meta.url), "utf8");
+
+// The old per-type record is read only for a one-time import; new gameplay
+// stores progress and history in the canonical resource session.
+const makeLegacyImageTileRecord = (
+  puzzle: ImageTileGeneratedPuzzle,
+  runtime: {
+    progress: { puzzleInstanceId: string; tiles: TilePuzzlePiece[]; emptyIndex?: number; moveCount: number };
+    history: ImageTileHistoryState;
+  },
+) => {
+  const serializeHistory = (stack: ImageTileActionRuntime["history"]["undoStack"]) =>
+    stack.map((state) => ({
+      positions: state.tiles.map((tile) => tile.currentIndex),
+      ...(state.emptyIndex === undefined ? {} : { emptyIndex: state.emptyIndex }),
+      moveCount: state.moveCount,
+    }));
+  return {
+    schemaVersion: 1,
+    puzzleId: puzzle.puzzleId,
+    puzzleInstanceId: puzzle.id,
+    assetId: puzzle.asset.id,
+    width: puzzle.width,
+    height: puzzle.height,
+    tileOrder: runtime.progress.tiles.map(({ id, currentIndex }) => ({ id, currentIndex })),
+    ...(puzzle.puzzleId === "sliding-puzzle" ? { emptyIndex: runtime.progress.emptyIndex } : {}),
+    moveCount: runtime.progress.moveCount,
+    history: {
+      undo: serializeHistory(runtime.history.undoStack),
+      redo: serializeHistory(runtime.history.redoStack),
+    },
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  };
+};
 
 describe("ImageTilePuzzlePreview layout", () => {
   it("defines both grid axes and uses measured play height for tall boards", () => {
@@ -141,5 +184,95 @@ describe("ImageTilePuzzlePreview progress restoration", () => {
 
     expect(restoreImageTileProgress(puzzle, { ...base, emptyIndex: puzzle.emptyIndex })).not.toBeNull();
     expect(restoreImageTileProgress(puzzle, { ...base, emptyIndex: puzzle.tiles[0].currentIndex })).toBeNull();
+  });
+});
+
+describe("ImageTilePuzzlePreview history persistence", () => {
+  it("round-trips Tile Swap undo and redo in the existing progress record", () => {
+    const puzzle = generateTileSwap({ puzzleId: "tile-swap", seed: "history-swap", width: 3, height: 3 });
+    const initial: ImageTileActionRuntime = {
+      state: { tiles: puzzle.tiles.map((tile) => ({ ...tile })), moveCount: 0 },
+      history: makeEmptyImageTileHistoryState(),
+    };
+    const first = swapImageTileAction(initial, puzzle.tiles[0].id, puzzle.tiles[1].id);
+    expect(first).not.toBeNull();
+    if (!first) return;
+    const second = swapImageTileAction(first, puzzle.tiles[1].id, puzzle.tiles[2].id);
+    expect(second).not.toBeNull();
+    if (!second) return;
+    const undone = applyImageTileHistoryAction(second, "undo");
+    expect(undone).not.toBeNull();
+    if (!undone) return;
+
+    const persisted = makeLegacyImageTileRecord(puzzle, {
+      progress: { puzzleInstanceId: puzzle.id, ...undone.state },
+      history: undone.history,
+    });
+    const restored = restoreImageTileRuntime(puzzle, JSON.parse(JSON.stringify(persisted)));
+    expect(restored?.history.undoStack).toHaveLength(1);
+    expect(restored?.history.redoStack).toHaveLength(1);
+    expect(restored?.progress.moveCount).toBe(1);
+    expect(restored?.history.undoStack[0]?.tiles.map((tile) => tile.currentIndex)).toEqual(initial.state.tiles.map((tile) => tile.currentIndex));
+    const restarted = restored && applyImageTileHistoryAction({ state: restored.progress, history: restored.history }, "redo");
+    expect(restarted?.state.tiles.map((tile) => tile.currentIndex)).toEqual(second.state.tiles.map((tile) => tile.currentIndex));
+    expect(restarted?.state.moveCount).toBe(2);
+  });
+
+  it("round-trips Sliding Puzzle history with each unoccupied gap", () => {
+    const puzzle = generateSlidingPuzzle({ puzzleId: "sliding-puzzle", seed: "history-slide", width: 4, height: 4 });
+    const movable = puzzle.tiles.find((tile) => canSlideTile(tile, puzzle.emptyIndex, puzzle.width, puzzle.height));
+    expect(movable).toBeDefined();
+    if (!movable) return;
+    const initial: ImageTileActionRuntime = {
+      state: { tiles: puzzle.tiles.map((tile) => ({ ...tile })), emptyIndex: puzzle.emptyIndex, moveCount: 0 },
+      history: makeEmptyImageTileHistoryState(),
+    };
+    const moved = slideImageTileAction(initial, movable.id, puzzle.width, puzzle.height);
+    expect(moved).not.toBeNull();
+    if (!moved) return;
+    const persisted = makeLegacyImageTileRecord(puzzle, {
+      progress: { puzzleInstanceId: puzzle.id, ...moved.state },
+      history: moved.history,
+    });
+    const restored = restoreImageTileRuntime(puzzle, JSON.parse(JSON.stringify(persisted)));
+    const undo = restored && applyImageTileHistoryAction({ state: restored.progress, history: restored.history }, "undo");
+    expect(undo?.state.emptyIndex).toBe(initial.state.emptyIndex);
+    expect(undo?.state.tiles.map((tile) => tile.currentIndex)).toEqual(initial.state.tiles.map((tile) => tile.currentIndex));
+    expect(undo?.state.moveCount).toBe(0);
+  });
+
+  it("retains valid progress but drops tampered or oversized history", () => {
+    const puzzle = generateTileSwap({ puzzleId: "tile-swap", seed: "history-invalid", width: 3, height: 3 });
+    const first = swapImageTileAction({
+      state: { tiles: puzzle.tiles.map((tile) => ({ ...tile })), moveCount: 0 },
+      history: makeEmptyImageTileHistoryState(),
+    }, puzzle.tiles[0].id, puzzle.tiles[1].id);
+    expect(first).not.toBeNull();
+    if (!first) return;
+    const envelope = makeLegacyImageTileRecord(puzzle, {
+      progress: { puzzleInstanceId: puzzle.id, ...first.state },
+      history: first.history,
+    });
+    const invalid = { ...envelope, history: {
+      undo: [{ positions: Array(puzzle.tiles.length).fill(0), moveCount: 0 }],
+      redo: [],
+    } };
+    const recovered = restoreImageTileRuntime(puzzle, invalid);
+    expect(recovered?.progress.moveCount).toBe(1);
+    expect(recovered?.history.undoStack).toHaveLength(0);
+    expect(restoreImageTileRuntime(puzzle, { ...envelope, history: { undo: Array(101).fill(envelope.history?.undo[0]), redo: [] } })?.history.undoStack).toHaveLength(0);
+    expect(restoreImageTileRuntime(puzzle, { ...envelope, puzzleInstanceId: "another-puzzle" })).toBeNull();
+  });
+
+  it("restores old position-only records with empty history", () => {
+    const puzzle = generateTileSwap({ puzzleId: "tile-swap", seed: "history-empty", width: 3, height: 3 });
+    const envelope = makeLegacyImageTileRecord(puzzle, {
+      progress: { puzzleInstanceId: puzzle.id, tiles: puzzle.tiles, moveCount: 0 },
+      history: makeEmptyImageTileHistoryState(),
+    });
+    const { history: _history, ...positionOnly } = envelope;
+    const restored = restoreImageTileRuntime(puzzle, positionOnly);
+    expect(restored?.progress.tiles).toEqual(puzzle.tiles);
+    expect(restored?.history).toEqual({ undoStack: [], redoStack: [] });
   });
 });

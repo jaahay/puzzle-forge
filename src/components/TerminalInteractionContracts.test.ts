@@ -48,6 +48,18 @@ describe("terminal interaction contracts", () => {
     expect(gridControllerSource.match(/supportsAutomaticGridCompletion\(puzzle\.puzzleId\) && isGridPuzzleSolved\(puzzle, currentCells\)/g)?.length).toBeGreaterThanOrEqual(2);
   });
 
+  it("clears stale grid status on successful Undo and Redo while keeping solved feedback", () => {
+    const start = gridControllerSource.indexOf("const undoGridAction =");
+    const end = gridControllerSource.indexOf("const updateGridCells =", start);
+    const actions = gridControllerSource.slice(start, end);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    expect(actions.match(/restoreGridHistoryEntry\(transition\.entry\);\s*onStatusMessage\(""\);/g)).toHaveLength(2);
+    expect(actions).toContain('onStatusMessage("Solved.");');
+    expect(actions).not.toContain("Undid last puzzle action.");
+    expect(actions).not.toContain("Redid last puzzle action.");
+  });
+
   it("disables Word Guess terminal continuation while replacement generation is active", () => {
     expect(gridWorkspaceSource).toMatch(/<WordGuessGame[\s\S]*?disabled=\{isGenerating\}[\s\S]*?\/>/);
     expect(wordGuessSource).toContain("disabled={disabled}");

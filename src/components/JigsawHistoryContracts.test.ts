@@ -54,4 +54,16 @@ describe("Jigsaw history integration", () => {
     expect(workspaceSource).toContain("controller?.puzzleInstanceId === puzzleInstanceId");
     expect(workspaceSource).toContain("!controller.dispatch(action)");
   });
+
+  it("clears stale status after successful history actions without an extra announcement", () => {
+    const start = workspaceSource.indexOf("const requestHistoryAction =");
+    const end = workspaceSource.indexOf("const resetJigsaw =", start);
+    const action = workspaceSource.slice(start, end);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    expect(action).toContain("!controller.dispatch(action)");
+    expect(action).toContain('onStatusMessageChange("");');
+    expect(action).not.toContain("Undid last puzzle action.");
+    expect(action).not.toContain("Redid last puzzle action.");
+  });
 });

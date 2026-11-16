@@ -5,6 +5,7 @@ import type { WorkspaceProgressReport } from "../app/abandonmentPolicy";
 import { getImageTileCrop } from "../games/imageTiles/geometry";
 import {
   applyImageTileHistoryAction,
+  imageTileHistoryLimit,
   makeEmptyImageTileHistoryState,
   resetImageTileAction,
   slideImageTileAction,
@@ -37,6 +38,8 @@ export type ImageTileHistoryAvailability = {
 type ImageTilePuzzlePreviewProps = {
   interactionSuspended?: boolean;
   puzzle: ImageTileGeneratedPuzzle;
+  initialRuntime?: ImageTileActionRuntime | null;
+  onRuntimeChange?: (puzzleInstanceId: string, runtime: ImageTileActionRuntime) => void;
   resetVersion?: number;
   completionPhase?: CompletionPresentationPhase;
   onCausativeInput?: () => void;
@@ -59,6 +62,17 @@ type ImageTileRuntimeState = {
   history: ImageTileHistoryState;
 };
 
+type PersistedImageTileHistoryEntry = {
+  positions: number[];
+  emptyIndex?: number;
+  moveCount: number;
+};
+
+type PersistedImageTileHistory = {
+  undo: PersistedImageTileHistoryEntry[];
+  redo: PersistedImageTileHistoryEntry[];
+};
+
 type PersistedImageTileProgress = {
   schemaVersion: 1;
   puzzleId: ImageTileGeneratedPuzzle["puzzleId"];
@@ -69,6 +83,7 @@ type PersistedImageTileProgress = {
   tileOrder: Array<{ id: string; currentIndex: number }>;
   emptyIndex?: number;
   moveCount: number;
+  history?: PersistedImageTileHistory;
   updatedAt: string;
 };
 
@@ -199,40 +214,75 @@ export const restoreImageTileProgress = (
   return { puzzleInstanceId: puzzle.id, tiles, moveCount: Number(candidate.moveCount) };
 };
 
-const loadImageTileProgress = (puzzle: ImageTileGeneratedPuzzle) => {
+const restorePersistedHistoryEntry = (
+  puzzle: ImageTileGeneratedPuzzle,
+  value: unknown,
+): ImageTileActionState | null => {
+  if (!isRecord(value) || !Array.isArray(value.positions) ||
+      value.positions.length !== puzzle.tiles.length ||
+      !Number.isInteger(value.moveCount) || Number(value.moveCount) < 0) return null;
+
+  const positions: unknown[] = value.positions;
+  if (!positions.every((position) => typeof position === "number" && Number.isInteger(position))) return null;
+  const tiles = puzzle.tiles.map((tile, index) => ({ ...tile, currentIndex: positions[index] as number }));
+  const boardCellCount = puzzle.width * puzzle.height;
+  if (!hasUniqueTilePositions(tiles, boardCellCount)) return null;
+
+  if (puzzle.puzzleId === "sliding-puzzle") {
+    const gap = value.emptyIndex;
+    if (typeof gap !== "number" || !Number.isInteger(gap) ||
+        gap < 0 || gap >= boardCellCount || tiles.some((tile) => tile.currentIndex === gap)) return null;
+    return { tiles, emptyIndex: gap, moveCount: value.moveCount as number };
+  }
+  if (value.emptyIndex !== undefined || tiles.length !== boardCellCount) return null;
+  return { tiles, moveCount: value.moveCount as number };
+};
+
+const restorePersistedHistory = (
+  puzzle: ImageTileGeneratedPuzzle,
+  value: unknown,
+): ImageTileHistoryState => {
+  // Invalid history must never invalidate an otherwise recoverable puzzle board.
+  const empty = makeEmptyImageTileHistoryState();
+  if (!isRecord(value) || !Array.isArray(value.undo) || !Array.isArray(value.redo) ||
+      value.undo.length > imageTileHistoryLimit || value.redo.length > imageTileHistoryLimit) return empty;
+
+  const undo = value.undo.map((entry) => restorePersistedHistoryEntry(puzzle, entry));
+  const redo = value.redo.map((entry) => restorePersistedHistoryEntry(puzzle, entry));
+  if (undo.some((entry) => entry === null) || redo.some((entry) => entry === null)) return empty;
+  return {
+    undoStack: undo as ImageTileActionState[],
+    redoStack: redo as ImageTileActionState[],
+  };
+};
+
+export const restoreImageTileRuntime = (
+  puzzle: ImageTileGeneratedPuzzle,
+  value: unknown,
+): ImageTileRuntimeState | null => {
+  const progress = restoreImageTileProgress(puzzle, value);
+  if (!progress) return null;
+  return {
+    progress,
+    history: isRecord(value) ? restorePersistedHistory(puzzle, value.history) : makeEmptyImageTileHistoryState(),
+  };
+};
+
+// Read-only import of the prior per-type record. New moves never write to this key.
+const loadImageTileRuntime = (puzzle: ImageTileGeneratedPuzzle) => {
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(progressStorageKey(puzzle));
-    return raw ? restoreImageTileProgress(puzzle, JSON.parse(raw)) : null;
+    return raw ? restoreImageTileRuntime(puzzle, JSON.parse(raw)) : null;
   } catch {
     return null;
   }
 };
 
-const saveImageTileProgress = (puzzle: ImageTileGeneratedPuzzle, progress: ImageTileProgress) => {
-  if (typeof window === "undefined") return;
-  const envelope: PersistedImageTileProgress = {
-    schemaVersion: progressSchemaVersion,
-    puzzleId: puzzle.puzzleId,
-    puzzleInstanceId: puzzle.id,
-    assetId: puzzle.asset.id,
-    width: puzzle.width,
-    height: puzzle.height,
-    tileOrder: progress.tiles.map(({ id, currentIndex }) => ({ id, currentIndex })),
-    ...(puzzle.puzzleId === "sliding-puzzle" ? { emptyIndex: progress.emptyIndex } : {}),
-    moveCount: progress.moveCount,
-    updatedAt: new Date().toISOString(),
-  };
-
-  try {
-    window.localStorage.setItem(progressStorageKey(puzzle), JSON.stringify(envelope));
-  } catch {
-    // Progress persistence is best-effort; gameplay remains available without browser storage.
-  }
-};
-
 export const ImageTilePuzzlePreview = ({
   puzzle,
+  initialRuntime,
+  onRuntimeChange,
   interactionSuspended = false,
   resetVersion = 0,
   completionPhase,
@@ -243,11 +293,23 @@ export const ImageTilePuzzlePreview = ({
   onHistoryAvailabilityChange,
   onHistoryControllerChange,
 }: ImageTilePuzzlePreviewProps) => {
-  const [runtime, setRuntime] = useState<ImageTileRuntimeState>(() => ({
-    progress: loadImageTileProgress(puzzle) ?? makeInitialProgress(puzzle),
-    history: makeEmptyImageTileHistoryState(),
-  }));
+  const [runtime, setRuntime] = useState<ImageTileRuntimeState>(() => initialRuntime
+    ? {
+        progress: {
+          puzzleInstanceId: puzzle.id,
+          tiles: initialRuntime.state.tiles.map((tile) => ({ ...tile })),
+          ...(initialRuntime.state.emptyIndex === undefined ? {} : { emptyIndex: initialRuntime.state.emptyIndex }),
+          moveCount: initialRuntime.state.moveCount,
+        },
+        history: initialRuntime.history,
+      }
+    : loadImageTileRuntime(puzzle) ?? ({
+        progress: makeInitialProgress(puzzle),
+        history: makeEmptyImageTileHistoryState(),
+      }));
   const runtimeRef = useRef(runtime);
+  const runtimeChangeRef = useRef(onRuntimeChange);
+  runtimeChangeRef.current = onRuntimeChange;
   const progress = runtime.progress;
   const [selectedTileId, setSelectedTileId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -286,8 +348,9 @@ export const ImageTilePuzzlePreview = ({
     setRuntime(next);
     publishHistoryAvailability(next);
     publishProgress(next);
+    runtimeChangeRef.current?.(puzzle.id, toImageTileActionRuntime(next));
     return next;
-  }, [publishHistoryAvailability]);
+  }, [publishHistoryAvailability, puzzle.id]);
 
   const canHistoryAction = useCallback((action: ImageTileHistoryAction) => {
     if (interactionSuspended) return false;
@@ -321,6 +384,7 @@ export const ImageTilePuzzlePreview = ({
     setRuntime(restored);
     publishHistoryAvailability(restored);
     publishProgress(restored);
+    runtimeChangeRef.current?.(puzzle.id, toImageTileActionRuntime(restored));
     setSelectedTileId(null);
     return true;
   }, [canHistoryAction, publishHistoryAvailability]);
@@ -341,8 +405,9 @@ export const ImageTilePuzzlePreview = ({
   }, [publishHistoryAvailability, puzzle.id]);
 
   useEffect(() => {
-    saveImageTileProgress(puzzle, progress);
-  }, [progress, puzzle]);
+    // Register the restored (or migrated) board with the canonical resource session.
+    runtimeChangeRef.current?.(puzzle.id, toImageTileActionRuntime(runtimeRef.current));
+  }, [puzzle.id]);
 
   const hasUnfinishedArrangement = progress.tiles.some((tile) =>
     puzzle.tiles.find((original) => original.id === tile.id)?.currentIndex !== tile.currentIndex) ||
