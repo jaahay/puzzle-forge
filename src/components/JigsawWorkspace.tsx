@@ -3,7 +3,7 @@ import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from 
 import { defaultJigsawBoundaryMode } from "../games/jigsaw/boundaryContours";
 import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
 import { defaultJigsawSpecialPiecesMode } from "../games/jigsaw/specialPieces";
-import type { JigsawHistoryAction } from "../games/jigsaw/history";
+import type { JigsawActionRuntime, JigsawHistoryAction } from "../games/jigsaw/history";
 import { jigsawCustomSizeSelection } from "../games/jigsaw/size";
 import { JigsawNewPuzzleControl } from "./JigsawNewPuzzleControl";
 import { PuzzleHistoryActions } from "./PuzzleHistoryActions";
@@ -28,8 +28,8 @@ export const JigsawWorkspace = ({
   onNewPuzzle,
   onToday,
   onLoadSeed,
-  jigsawAssembly,
-  onJigsawAssemblyChange,
+  jigsawRuntime,
+  onJigsawRuntimeChange,
 }: JigsawWorkspaceProps) => {
   const [resetVersion, setResetVersion] = useState(0);
   const [completionState, setCompletionState] = useState<{ puzzleInstanceId: string; solved: boolean } | null>(null);
@@ -171,8 +171,10 @@ export const JigsawWorkspace = ({
         puzzle={jigsawPuzzle}
         inputSuspended={isGenerating}
         resetVersion={resetVersion}
-        initialAssembly={jigsawAssembly}
-        onAssemblyChange={onJigsawAssemblyChange}
+        initialRuntime={jigsawRuntime}
+        onRuntimeChange={(runtime: JigsawActionRuntime) => {
+          if (puzzleInstanceId) onJigsawRuntimeChange(puzzleInstanceId, runtime);
+        }}
         onSolvedChange={handleSolvedChange}
         onHistoryAvailabilityChange={handleHistoryAvailabilityChange}
         onProgressChange={(report) => {

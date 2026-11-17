@@ -14,6 +14,21 @@ export type JigsawHistoryState = {
   redoStack: JigsawWorkspaceSnapshot[];
 };
 
+export type JigsawActionRuntime = {
+  snapshot: JigsawWorkspaceSnapshot;
+  history: JigsawHistoryState;
+};
+
+export const cloneJigsawHistoryState = (history: JigsawHistoryState): JigsawHistoryState => ({
+  undoStack: history.undoStack.slice(-jigsawHistoryLimit).map(cloneJigsawSnapshot),
+  redoStack: history.redoStack.slice(-jigsawHistoryLimit).map(cloneJigsawSnapshot),
+});
+
+export const cloneJigsawActionRuntime = (runtime: JigsawActionRuntime): JigsawActionRuntime => ({
+  snapshot: cloneJigsawSnapshot(runtime.snapshot),
+  history: cloneJigsawHistoryState(runtime.history),
+});
+
 export type JigsawHistoryTransition = {
   snapshot: JigsawWorkspaceSnapshot;
   history: JigsawHistoryState;
@@ -104,7 +119,7 @@ export const applyJigsawHistoryAction = (
     return {
       snapshot: cloneJigsawSnapshot(entry),
       history: {
-        undoStack: history.undoStack.slice(0, -1).map(cloneJigsawSnapshot),
+        undoStack: history.undoStack.slice(0, -1),
         redoStack: [...history.redoStack, cloneJigsawSnapshot(current)].slice(-jigsawHistoryLimit),
       },
     };
@@ -114,7 +129,7 @@ export const applyJigsawHistoryAction = (
     snapshot: cloneJigsawSnapshot(entry),
     history: {
       undoStack: [...history.undoStack, cloneJigsawSnapshot(current)].slice(-jigsawHistoryLimit),
-      redoStack: history.redoStack.slice(0, -1).map(cloneJigsawSnapshot),
+      redoStack: history.redoStack.slice(0, -1),
     },
   };
 };

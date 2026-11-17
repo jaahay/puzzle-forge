@@ -19,11 +19,7 @@ import { cloneGridHistoryState, makeEmptyGridHistoryState, type GridHistoryState
 import { makePuzzleResourceKey, type PuzzleResourceIdentity } from "./puzzleResourceIdentity";
 import { cloneSolitaireHistoryEntry } from "./solitaireHistory";
 import { cloneImageTileActionRuntime, type ImageTileActionRuntime } from "../games/imageTiles/history";
-import {
-  cloneJigsawAssemblyProgress,
-  makeEmptyJigsawAssemblyProgress,
-  type JigsawAssemblyProgress,
-} from "../games/jigsaw/assembly";
+import { cloneJigsawActionRuntime, type JigsawActionRuntime } from "../games/jigsaw/history";
 
 export type RuntimeSessionDraft = {
   puzzle: GeneratedPuzzle;
@@ -35,7 +31,7 @@ export type RuntimeSessionDraft = {
   gridCells: PuzzleCell[] | null;
   selectedGridCell: GridCellSelection | null;
   gridHistory?: GridHistoryState;
-  jigsawAssembly?: JigsawAssemblyProgress | null;
+  jigsawRuntime?: JigsawActionRuntime | null;
   imageTileRuntime?: ImageTileActionRuntime | null;
 };
 
@@ -137,8 +133,8 @@ export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => {
     puzzle: cloneTilePuzzle(session.puzzle),
     progress: {
       kind: "tiles",
-      ...(session.progress.jigsawAssembly
-        ? { jigsawAssembly: cloneJigsawAssemblyProgress(session.progress.jigsawAssembly) }
+      ...(session.progress.jigsawRuntime
+        ? { jigsawRuntime: cloneJigsawActionRuntime(session.progress.jigsawRuntime) }
         : {}),
       ...(session.progress.imageTileRuntime
         ? { imageTileRuntime: cloneImageTileActionRuntime(session.progress.imageTileRuntime) }
@@ -157,7 +153,7 @@ export const buildRuntimeSession = ({
   gridCells,
   selectedGridCell,
   gridHistory,
-  jigsawAssembly,
+  jigsawRuntime,
   imageTileRuntime,
 }: RuntimeSessionDraft): PuzzleSession => {
   if (puzzle.kind === "cards") {
@@ -195,8 +191,8 @@ export const buildRuntimeSession = ({
     puzzle,
     progress: {
       kind: "tiles",
-      ...(puzzle.puzzleId === "jigsaw" && jigsawAssembly
-        ? { jigsawAssembly: cloneJigsawAssemblyProgress(jigsawAssembly) }
+      ...(puzzle.puzzleId === "jigsaw" && jigsawRuntime
+        ? { jigsawRuntime }
         : {}),
       ...(puzzle.puzzleId !== "jigsaw" && imageTileRuntime
         ? { imageTileRuntime: cloneImageTileActionRuntime(imageTileRuntime) }
@@ -240,9 +236,6 @@ export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPu
     puzzle: generatedPuzzle,
     progress: {
       kind: "tiles",
-      ...(generatedPuzzle.puzzleId === "jigsaw"
-        ? { jigsawAssembly: makeEmptyJigsawAssemblyProgress() }
-        : {}),
     },
   };
 };

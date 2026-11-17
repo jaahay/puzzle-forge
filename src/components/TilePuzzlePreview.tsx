@@ -32,8 +32,11 @@ import {
   applyJigsawHistoryAction,
   commitJigsawPlacementAction,
   getJigsawHistoryAvailability,
+  cloneJigsawHistoryState,
+  cloneJigsawSnapshot,
   makeEmptyJigsawHistoryState,
   resolveJigsawActionBaseline,
+  type JigsawActionRuntime,
   type JigsawHistoryAction,
   type JigsawHistoryState,
   type JigsawWorkspaceSnapshot,
@@ -99,8 +102,8 @@ type TilePuzzlePreviewProps = {
   puzzle: JigsawGeneratedPuzzle;
   inputSuspended?: boolean;
   resetVersion?: number;
-  initialAssembly?: JigsawAssemblyProgress | null;
-  onAssemblyChange?: (assembly: JigsawAssemblyProgress) => void;
+  initialRuntime?: JigsawActionRuntime | null;
+  onRuntimeChange?: (runtime: JigsawActionRuntime) => void;
   onSolvedChange?: (solved: boolean) => void;
   onHistoryAvailabilityChange?: (availability: JigsawHistoryAvailability) => void;
   onProgressChange?: (report: { hasProgress: boolean; terminal: boolean }) => void;
@@ -325,8 +328,8 @@ export const TilePuzzlePreview = ({
   puzzle,
   inputSuspended = false,
   resetVersion = 0,
-  initialAssembly = null,
-  onAssemblyChange,
+  initialRuntime = null,
+  onRuntimeChange,
   onSolvedChange,
   onHistoryAvailabilityChange,
   onProgressChange,
@@ -367,6 +370,8 @@ export const TilePuzzlePreview = ({
   const baselinePlacementsRef = useRef<{ puzzleId: string; placements: JigsawPlacement[] } | null>(null);
   const progressChangeRef = useRef(onProgressChange);
   progressChangeRef.current = onProgressChange;
+  const runtimeChangeRef = useRef(onRuntimeChange);
+  runtimeChangeRef.current = onRuntimeChange;
   const [cameraState, setCameraState] = useState<CameraState | null>(null);
   const [activeTileId, setActiveTileId] = useState<string | null>(null);
   // Presentation-only order: free drops stay above earlier pieces; joins settle.
@@ -466,12 +471,11 @@ export const TilePuzzlePreview = ({
   const replaceHistory = useCallback((history: JigsawHistoryState) => {
     historyRef.current = history;
     publishHistoryAvailability(history);
-  }, [publishHistoryAvailability]);
-
-  const publishAssemblyProgress = useCallback((assembly: JigsawAssemblyProgress) => {
-    onAssemblyChange?.(cloneJigsawAssemblyProgress(assembly));
-    publishCurrentProgress();
-  }, [onAssemblyChange, publishCurrentProgress]);
+    const current = placementStateRef.current;
+    if (current?.puzzleId === puzzle.id) {
+      runtimeChangeRef.current?.({ snapshot: current, history });
+    }
+  }, [publishHistoryAvailability, puzzle.id]);
 
   const updatePlacementState = useCallback((
     updater: (current: PlacementState | null) => PlacementState | null,
@@ -554,11 +558,14 @@ export const TilePuzzlePreview = ({
   }, [puzzle.id, replaceHistory]);
 
   useEffect(() => {
-    if (initialAssembly === null) return;
+    const wasInitialized = placementStateRef.current?.puzzleId === puzzle.id;
     const initialized = updatePlacementState((current) => {
       if (current?.puzzleId === puzzle.id) return current;
       const stagingViewport = getMeasuredJigsawViewport(stageRef.current);
-      const initial = resolveInitialJigsawWorkspaceState(initialAssembly, layout, puzzle.tiles, stagingViewport);
+      if (!stagingViewport) return current;
+      const initial = initialRuntime
+        ? cloneJigsawSnapshot(initialRuntime.snapshot)
+        : resolveInitialJigsawWorkspaceState(makeEmptyJigsawAssemblyProgress(), layout, puzzle.tiles, stagingViewport);
       if (!initial) return current;
       const baseline = resetJigsawWorkspaceState(layout, puzzle.tiles, stagingViewport);
       if (baseline) baselinePlacementsRef.current = {
@@ -567,8 +574,13 @@ export const TilePuzzlePreview = ({
       };
       return { puzzleId: puzzle.id, ...initial };
     });
-    if (initialized?.puzzleId === puzzle.id) publishCurrentProgress();
-  }, [initialAssembly, layout, publishCurrentProgress, puzzle.id, puzzle.tiles, updatePlacementState, viewport.height, viewport.width]);
+    if (!wasInitialized && initialized?.puzzleId === puzzle.id) {
+      replaceHistory(initialRuntime
+        ? cloneJigsawHistoryState(initialRuntime.history)
+        : makeEmptyJigsawHistoryState());
+      publishCurrentProgress();
+    }
+  }, [initialRuntime, layout, publishCurrentProgress, puzzle.id, puzzle.tiles, replaceHistory, updatePlacementState, viewport.height, viewport.width]);
 
   useEffect(() => {
     if (!isUsableJigsawViewport(viewport) || !activePlacements) return;
@@ -708,7 +720,6 @@ export const TilePuzzlePreview = ({
     setActiveTileId(null);
     setFreeDropStack({ puzzleId: puzzle.id, order: [] });
     setIsPanning(false);
-    publishAssemblyProgress(nextAssembly);
     if (baseline) {
       replaceHistory(commitJigsawPlacementAction(
         historyRef.current,
@@ -817,12 +828,11 @@ export const TilePuzzlePreview = ({
       placements: transition.snapshot.placements,
       assembly: transition.snapshot.assembly,
     }));
-    publishAssemblyProgress(transition.snapshot.assembly);
     replaceHistory(transition.history);
     setActiveTileId(null);
     setFreeDropStack({ puzzleId: puzzle.id, order: [] });
     return true;
-  }, [canHistoryAction, publishAssemblyProgress, puzzle.id, replaceHistory, updatePlacementState]);
+  }, [canHistoryAction, puzzle.id, replaceHistory, updatePlacementState]);
 
   useEffect(() => {
     if (!onHistoryControllerChange) return;
@@ -1129,7 +1139,6 @@ export const TilePuzzlePreview = ({
         });
       }
       if (completed.solved) onCausativeInput();
-      publishAssemblyProgress(nextState.assembly);
       replaceHistory(completed.history);
     } else {
       publishHistoryAvailability(historyRef.current);
@@ -1447,7 +1456,6 @@ export const TilePuzzlePreview = ({
                 const updatedHistory = commitJigsawPlacementAction(historyRef.current, before, after);
                 if (updatedHistory !== historyRef.current) {
                   updatePlacementState(() => ({ puzzleId: puzzle.id, ...after }));
-                  publishAssemblyProgress(after.assembly);
                   replaceHistory(updatedHistory);
                   if (isJigsawAssemblySolved(after.assembly, puzzle.tiles.length)) onCausativeInput();
                 }
