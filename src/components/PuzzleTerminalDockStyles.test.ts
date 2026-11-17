@@ -33,6 +33,16 @@ describe("PuzzleTerminalDock responsive actions", () => {
   });
 });
 
+describe("PuzzleTerminalDock command hierarchy", () => {
+  it("keeps solved Reset and Share secondary while making failed Retry the primary action", () => {
+    const actions = getRuleBody(".completion-dock .puzzle-actions button");
+    const failedRetry = getRuleBody(".completion-dock.terminal-failed .puzzle-actions button:first-child");
+
+    expect(actions).toContain("background: linear-gradient(180deg, #365f8c, #254569);");
+    expect(failedRetry).toContain("background: linear-gradient(180deg, #bae6fd, #7dd3fc);");
+  });
+});
+
 describe("PuzzleTerminalDock terminal tones", () => {
   it("keeps failed outcomes visually neutral instead of inheriting solved green", () => {
     const failedDock = getRuleBody(".terminal-failed");
