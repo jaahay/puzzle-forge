@@ -119,7 +119,7 @@ export const applyJigsawHistoryAction = (
     return {
       snapshot: cloneJigsawSnapshot(entry),
       history: {
-        undoStack: history.undoStack.slice(0, -1).map(cloneJigsawSnapshot),
+        undoStack: history.undoStack.slice(0, -1),
         redoStack: [...history.redoStack, cloneJigsawSnapshot(current)].slice(-jigsawHistoryLimit),
       },
     };
@@ -129,7 +129,7 @@ export const applyJigsawHistoryAction = (
     snapshot: cloneJigsawSnapshot(entry),
     history: {
       undoStack: [...history.undoStack, cloneJigsawSnapshot(current)].slice(-jigsawHistoryLimit),
-      redoStack: history.redoStack.slice(0, -1).map(cloneJigsawSnapshot),
+      redoStack: history.redoStack.slice(0, -1),
     },
   };
 };

@@ -5,7 +5,6 @@ import type { CardStack, GeneratedPuzzle, PuzzleCell, PuzzleDefinition } from ".
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCheckFeedbackTone } from "../interactions/gridChecking";
 import type { GridCellSelection } from "../interactions/gridRules";
-import type { JigsawAssemblyProgress } from "../games/jigsaw/assembly";
 import type { JigsawActionRuntime } from "../games/jigsaw/history";
 import type { ImageTileActionRuntime } from "../games/imageTiles/history";
 
@@ -52,9 +51,7 @@ export type GridInteractionProps = {
 };
 
 export type JigsawInteractionProps = {
-  jigsawAssembly: JigsawAssemblyProgress | null;
   jigsawRuntime: JigsawActionRuntime | null;
-  onJigsawAssemblyChange: (assembly: JigsawAssemblyProgress) => void;
   onJigsawRuntimeChange: (puzzleInstanceId: string, runtime: JigsawActionRuntime) => void;
 };
 

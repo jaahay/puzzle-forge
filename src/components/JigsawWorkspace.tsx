@@ -28,9 +28,7 @@ export const JigsawWorkspace = ({
   onNewPuzzle,
   onToday,
   onLoadSeed,
-  jigsawAssembly,
   jigsawRuntime,
-  onJigsawAssemblyChange,
   onJigsawRuntimeChange,
 }: JigsawWorkspaceProps) => {
   const [resetVersion, setResetVersion] = useState(0);
@@ -173,9 +171,7 @@ export const JigsawWorkspace = ({
         puzzle={jigsawPuzzle}
         inputSuspended={isGenerating}
         resetVersion={resetVersion}
-        initialAssembly={jigsawAssembly}
         initialRuntime={jigsawRuntime}
-        onAssemblyChange={onJigsawAssemblyChange}
         onRuntimeChange={(runtime: JigsawActionRuntime) => {
           if (puzzleInstanceId) onJigsawRuntimeChange(puzzleInstanceId, runtime);
         }}

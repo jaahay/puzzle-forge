@@ -38,8 +38,6 @@ const persistenceMetadataStorageKey = "puzzle-forge.sessions";
 const persistenceSessionStorageKeyPrefix = "puzzle-forge.session.";
 const puzzleCellTones = ["given", "empty", "accent", "answer", "hint", "disabled"] as const satisfies readonly PuzzleCell["tone"][];
 
-type TileGeneratedPuzzle = Extract<GeneratedPuzzle, { kind: "tiles" }>;
-
 export type PersistedCardProgress = {
   kind: "cards";
   stacks: PersistedCardStack[];
@@ -64,9 +62,13 @@ export type PersistedTileProgress = {
   kind: "tiles";
   tileOrder: Array<{ id: string; currentIndex: number }>;
   selectedTileId: string | null;
-  jigsawRuntime?: PersistedJigsawRuntime;
   imageTileMoveCount?: number;
   imageTileHistory?: PersistedCompactImageTileHistory;
+};
+
+export type PersistedJigsawProgress = {
+  kind: "jigsaw";
+  runtime: PersistedJigsawRuntime;
 };
 
 export type PersistedCompactGridHistoryEntry = {
@@ -86,7 +88,8 @@ export type PersistedGridProgress = {
   history?: PersistedCompactGridHistory;
 };
 
-export type PersistedPuzzleProgress = PersistedCardProgress | PersistedTileProgress | PersistedGridProgress;
+export type PersistedPuzzleProgress =
+  PersistedCardProgress | PersistedTileProgress | PersistedJigsawProgress | PersistedGridProgress;
 
 export type PersistedPuzzleSession = {
   puzzleId: PuzzleId;
@@ -255,7 +258,7 @@ const clonePersistedCompactGridHistory = (history: PersistedCompactGridHistory):
   redo: history.redo.map((entry) => ({ values: [...entry.values], selectedCellIndex: entry.selectedCellIndex })),
 });
 
-const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzleProgress => {
+const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzleProgress | null => {
   if (session.kind === "cards") {
     return {
       kind: "cards",
@@ -268,17 +271,22 @@ const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzlePr
   }
 
   if (session.kind === "tiles") {
+    if (session.puzzle.puzzleId === "jigsaw") {
+      if (!session.progress.jigsawRuntime) return null;
+      const stored = buildPersistedJigsawRuntime(session.progress.jigsawRuntime, session.puzzle.tiles);
+      if (stored) return { kind: "jigsaw", runtime: stored };
+      // A damaged history must not prevent a valid current workspace from being saved.
+      const current = buildPersistedJigsawRuntime({
+        snapshot: session.progress.jigsawRuntime.snapshot,
+        history: { undoStack: [], redoStack: [] },
+      }, session.puzzle.tiles);
+      return current ? { kind: "jigsaw", runtime: current } : null;
+    }
     return {
       kind: "tiles",
       tileOrder: (session.progress.imageTileRuntime?.state.tiles ?? session.puzzle.tiles)
         .map(({ id, currentIndex }) => ({ id, currentIndex })),
       selectedTileId: null,
-      ...(session.puzzle.puzzleId === "jigsaw" && session.progress.jigsawRuntime
-        ? (() => {
-            const runtime = buildPersistedJigsawRuntime(session.progress.jigsawRuntime, session.puzzle.tiles);
-            return runtime ? { jigsawRuntime: runtime } : {};
-          })()
-        : {}),
       ...(session.puzzle.puzzleId !== "jigsaw" && session.progress.imageTileRuntime
         ? {
             imageTileMoveCount: session.progress.imageTileRuntime.state.moveCount,
@@ -312,8 +320,7 @@ export const buildPersistedPuzzleSession = (
 ): PersistedPuzzleSession | null => {
   if (session.puzzle.puzzleId !== resource.puzzleId || !resource.generationId) return null;
   const progress = buildPersistedPuzzleProgress(session);
-  if (session.puzzle.puzzleId === "jigsaw" &&
-      (progress.kind !== "tiles" || !progress.jigsawRuntime)) return null;
+  if (!progress) return null;
 
   return {
     puzzleId: resource.puzzleId,
@@ -347,8 +354,7 @@ const isPersistedCardProgress = (value: Record<string, unknown>): value is Persi
 const isPersistedTileProgress = (value: Record<string, unknown>): value is PersistedTileProgress =>
   Array.isArray(value.tileOrder) &&
   value.tileOrder.every(isPersistedTileOrderEntry) &&
-  (value.selectedTileId === null || typeof value.selectedTileId === "string") &&
-  (value.jigsawRuntime === undefined || hasPersistedJigsawCurrent(value.jigsawRuntime));
+  (value.selectedTileId === null || typeof value.selectedTileId === "string");
 
 const isPersistedGridProgress = (value: Record<string, unknown>): value is PersistedGridProgress =>
   Array.isArray(value.cells) &&
@@ -360,6 +366,7 @@ const isPersistedPuzzleProgress = (value: unknown): value is PersistedPuzzleProg
   if (!isRecord(value)) return false;
   if (value.kind === "cards") return isPersistedCardProgress(value);
   if (value.kind === "tiles") return isPersistedTileProgress(value);
+  if (value.kind === "jigsaw") return hasPersistedJigsawCurrent(value.runtime);
   return value.kind === "grid" && isPersistedGridProgress(value);
 };
 
@@ -378,10 +385,8 @@ const isPersistedPuzzleSession = (value: unknown): value is PersistedPuzzleSessi
 
   const progress = value.progress as PersistedPuzzleProgress;
   if (value.puzzleId === "jigsaw") {
-    if (progress.kind !== "tiles" || progress.jigsawRuntime === undefined) return false;
-  } else if (progress.kind === "tiles" && progress.jigsawRuntime !== undefined) {
-    return false;
-  }
+    if (progress.kind !== "jigsaw") return false;
+  } else if (progress.kind === "jigsaw") return false;
 
   return decodeGenerationId(value.puzzleId, value.generationId).ok;
 };
@@ -408,14 +413,15 @@ const clonePersistedPuzzleProgress = (progress: PersistedPuzzleProgress): Persis
     };
   }
 
+  if (progress.kind === "jigsaw") {
+    return { kind: "jigsaw", runtime: normalizePersistedJigsawRuntime(progress.runtime)! };
+  }
+
   if (progress.kind === "tiles") {
     return {
       kind: "tiles",
       tileOrder: progress.tileOrder.map(({ id, currentIndex }) => ({ id, currentIndex })),
       selectedTileId: progress.selectedTileId ?? null,
-      ...(progress.jigsawRuntime
-        ? { jigsawRuntime: normalizePersistedJigsawRuntime(progress.jigsawRuntime)! }
-        : {}),
       ...(isNonNegativeInteger(progress.imageTileMoveCount)
         ? { imageTileMoveCount: progress.imageTileMoveCount }
         : {}),
@@ -541,19 +547,12 @@ const restorePersistedGridProgress = (progress: PersistedGridProgress, puzzle: G
   };
 };
 
-const restorePersistedTilePuzzle = (progress: PersistedTileProgress, puzzle: TileGeneratedPuzzle): TileGeneratedPuzzle | null => {
+const restorePersistedTilePuzzle = (progress: PersistedTileProgress, puzzle: ImageTileGeneratedPuzzle): ImageTileGeneratedPuzzle | null => {
   const boardCellCount = puzzle.width * puzzle.height;
-  const expectedTileCount = puzzle.puzzleId === "jigsaw"
-    ? puzzle.tiles.length
-    : puzzle.puzzleId === "sliding-puzzle"
-      ? boardCellCount - 1
-      : boardCellCount;
-  if (progress.tileOrder.length !== expectedTileCount) return null;
-  if (puzzle.puzzleId !== "jigsaw" && puzzle.tiles.length !== expectedTileCount) return null;
+  const expectedTileCount = puzzle.puzzleId === "sliding-puzzle" ? boardCellCount - 1 : boardCellCount;
+  if (progress.tileOrder.length !== expectedTileCount || puzzle.tiles.length !== expectedTileCount) return null;
 
-  const currentIndexCount = puzzle.puzzleId === "jigsaw"
-    ? expectedTileCount
-    : boardCellCount;
+  const currentIndexCount = boardCellCount;
   const tileIndexes = new Map<string, number>();
   const usedIndexes = new Set<number>();
   for (const { id, currentIndex } of progress.tileOrder) {
@@ -563,16 +562,6 @@ const restorePersistedTilePuzzle = (progress: PersistedTileProgress, puzzle: Til
   }
 
   if (puzzle.tiles.some((tile) => !tileIndexes.has(tile.id))) return null;
-
-  if (puzzle.puzzleId === "jigsaw") {
-    return {
-      ...puzzle,
-      tiles: puzzle.tiles.map((tile) => ({
-        ...tile,
-        currentIndex: tileIndexes.get(tile.id) ?? tile.currentIndex,
-      })),
-    };
-  }
 
   const tiles = puzzle.tiles.map((tile) => ({ ...tile, currentIndex: tileIndexes.get(tile.id) ?? tile.currentIndex }));
   if (puzzle.puzzleId === "sliding-puzzle") {
@@ -613,25 +602,20 @@ export const restorePuzzleSessionFromPersisted = (
     };
   }
 
-  if (persisted.progress.kind === "tiles" && generatedPuzzle.kind === "tiles") {
+  if (persisted.progress.kind === "jigsaw" && generatedPuzzle.kind === "tiles" &&
+      generatedPuzzle.puzzleId === "jigsaw") {
+    const runtime = restorePersistedJigsawRuntime(persisted.progress.runtime, generatedPuzzle.tiles);
+    return runtime ? {
+      kind: "tiles",
+      puzzle: generatedPuzzle,
+      progress: { kind: "tiles", jigsawRuntime: runtime },
+    } : null;
+  }
+
+  if (persisted.progress.kind === "tiles" && generatedPuzzle.kind === "tiles" &&
+      generatedPuzzle.puzzleId !== "jigsaw") {
     const restoredPuzzle = restorePersistedTilePuzzle(persisted.progress, generatedPuzzle);
     if (!restoredPuzzle) return null;
-    if (restoredPuzzle.puzzleId === "jigsaw") {
-      const jigsawRuntime = restorePersistedJigsawRuntime(
-        persisted.progress.jigsawRuntime,
-        restoredPuzzle.tiles,
-      );
-      if (!jigsawRuntime) return null;
-      return {
-        kind: "tiles",
-        puzzle: restoredPuzzle,
-        progress: {
-          kind: "tiles",
-          jigsawAssembly: jigsawRuntime.snapshot.assembly,
-          jigsawRuntime,
-        },
-      };
-    }
     const imageTileRuntime: ImageTileActionRuntime | null =
       isNonNegativeInteger(persisted.progress.imageTileMoveCount)
       ? cloneImageTileActionRuntime({
@@ -765,6 +749,39 @@ export const loadPersistedPuzzleSessions = (): PersistedPuzzleSessions | null =>
   return activeResourceKey ? { activeResourceKey, sessions } : null;
 };
 
+
+const isStorageQuotaError = (error: unknown) =>
+  isRecord(error) && (error.name === "QuotaExceededError" || error.name === "NS_ERROR_DOM_QUOTA_REACHED");
+
+/** Keep the current board even when all of its history will not fit in browser storage. */
+const writePersistedActiveSession = (resourceKey: PuzzleResourceKey, session: PersistedPuzzleSession) => {
+  const key = sessionStorageKey(resourceKey);
+  if (session.progress.kind !== "jigsaw") {
+    window.localStorage.setItem(key, JSON.stringify(session));
+    return;
+  }
+
+  let runtime = session.progress.runtime;
+  for (;;) {
+    try {
+      window.localStorage.setItem(key, JSON.stringify({
+        ...session,
+        progress: { kind: "jigsaw", runtime },
+      }));
+      return;
+    } catch (error) {
+      if (!isStorageQuotaError(error) || (!runtime.undo.length && !runtime.redo.length)) throw error;
+      // Oldest patches can be dropped without affecting newer reverse-patch dependencies.
+      const trimUndo = runtime.undo.length >= runtime.redo.length && runtime.undo.length > 0;
+      runtime = {
+        ...runtime,
+        undo: trimUndo ? runtime.undo.slice(Math.max(1, Math.ceil(runtime.undo.length / 2))) : runtime.undo,
+        redo: !trimUndo ? runtime.redo.slice(Math.max(1, Math.ceil(runtime.redo.length / 2))) : runtime.redo,
+      };
+    }
+  }
+};
+
 export const savePersistedPuzzleSessions = ({ activeResourceKey, sessions }: RuntimePuzzleSessions) => {
   if (typeof window === "undefined") return;
 
@@ -781,7 +798,7 @@ export const savePersistedPuzzleSessions = ({ activeResourceKey, sessions }: Run
 
   if (persistedActiveSession) {
     savedResourceKeys.add(activeResourceKey);
-    window.localStorage.setItem(sessionStorageKey(activeResourceKey), JSON.stringify(persistedActiveSession));
+    writePersistedActiveSession(activeResourceKey, persistedActiveSession);
   } else {
     savedResourceKeys.delete(activeResourceKey);
     window.localStorage.removeItem(sessionStorageKey(activeResourceKey));

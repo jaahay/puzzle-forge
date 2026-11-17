@@ -6,25 +6,22 @@ const previewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", import.met
 const workspaceSource = readFileSync(new URL("./JigsawWorkspace.tsx", import.meta.url), "utf8");
 
 describe("Jigsaw resource-session persistence integration", () => {
-  it("binds canonical assembly progress through the app-owned Jigsaw workspace", () => {
-    expect(appSource).toContain("const [jigsawProgress, setJigsawProgress]");
-    expect(appSource).toContain("session.progress.jigsawAssembly");
-    expect(appSource).toContain("jigsawAssembly:");
-    expect(appSource).toContain("jigsaw={workspaceJigsaw}");
-    expect(workspaceSource).toContain("initialAssembly={jigsawAssembly}");
-    expect(workspaceSource).toContain("onAssemblyChange={onJigsawAssemblyChange}");
+  it("has one app-owned Jigsaw runtime rather than separately-owned assembly state", () => {
+    expect(appSource).not.toContain("setJigsawProgress");
+    expect(workspaceSource).not.toContain("onAssemblyChange=");
     expect(workspaceSource).toContain("initialRuntime={jigsawRuntime}");
     expect(workspaceSource).toContain("onRuntimeChange=");
     expect(appSource).toContain("onJigsawRuntimeChange:");
     expect(appSource).toContain("jigsawRuntimeRef.current =");
-    expect(previewSource).toContain("if (initialAssembly === null && !initialRuntime) return;");
+    expect(appSource).toContain("jigsaw={workspaceJigsaw}");
+    expect(previewSource).not.toContain("publishAssemblyProgress(");
   });
 
-  it("publishes semantic assembly only through the four committed-state boundaries", () => {
-    expect((previewSource.match(/publishAssemblyProgress\(/g) ?? []).length).toBe(4);
-    expect(previewSource).toContain("publishAssemblyProgress(nextAssembly);");
-    expect(previewSource).toContain("publishAssemblyProgress(transition.snapshot.assembly);");
-    expect(previewSource).toContain("publishAssemblyProgress(nextState.assembly);");
-    expect(previewSource).toContain("publishAssemblyProgress(after.assembly);");
+  it("publishes completed actions, not pointer-movement snapshots", () => {
+    expect(previewSource).toContain("replaceHistory(completed.history)");
+    expect(previewSource).toContain("replaceHistory(transition.history)");
+    expect(previewSource).toContain("replaceHistory(updatedHistory)");
+    expect(previewSource).toContain("replaceHistory(makeEmptyJigsawHistoryState())");
+    expect(previewSource).toContain("runtimeChangeRef.current?.({ snapshot: current, history })");
   });
 });

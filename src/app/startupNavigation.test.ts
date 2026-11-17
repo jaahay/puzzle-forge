@@ -32,7 +32,7 @@ const makeSession = (
   completedAt?: string,
 ): PersistedPuzzleSession => {
   const progress: PersistedPuzzleProgress = puzzleId === "jigsaw"
-    ? { kind: "tiles", tileOrder: [], selectedTileId: null, jigsawRuntime: {
+    ? { kind: "jigsaw", runtime: {
         current: { positions: [], assembly: { joinedComponents: [] } },
         undo: [], redo: [],
       } }

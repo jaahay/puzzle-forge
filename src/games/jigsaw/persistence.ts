@@ -126,18 +126,28 @@ const encodeFrame = (
   };
 };
 
-const makePatch = (target: PersistedJigsawFrame, successor: PersistedJigsawFrame): PersistedJigsawPatch => {
+/** Encode only the changed coordinates; preserve the immutable per-piece ordering. */
+const makePatch = (
+  target: JigsawWorkspaceSnapshot,
+  successor: JigsawWorkspaceSnapshot,
+  pieces: readonly JigsawPiece[],
+  indexes: ReadonlyMap<string, number>,
+): PersistedJigsawPatch | null => {
+  if (target.placements.length !== pieces.length || successor.placements.length !== pieces.length) return null;
   const positions: Array<[number, number, number]> = [];
-  for (let index = 0; index < target.positions.length; index += 1) {
-    const [x, y] = target.positions[index]!;
-    const [nextX, nextY] = successor.positions[index]!;
-    if (x !== nextX || y !== nextY) positions.push([index, x, y]);
+  for (let index = 0; index < pieces.length; index += 1) {
+    const before = target.placements[index]!;
+    const after = successor.placements[index]!;
+    if (before.id !== pieces[index]!.id || after.id !== before.id ||
+        !isCoordinate(before.worldX) || !isCoordinate(before.worldY) ||
+        !isCoordinate(after.worldX) || !isCoordinate(after.worldY)) return null;
+    if (before.worldX !== after.worldX || before.worldY !== after.worldY) {
+      positions.push([index, before.worldX, before.worldY]);
+    }
   }
-  return {
-    positions,
-    ...(JSON.stringify(target.assembly) !== JSON.stringify(successor.assembly)
-      ? { assembly: cloneAssembly(target.assembly) } : {}),
-  };
+  if (JSON.stringify(target.assembly) === JSON.stringify(successor.assembly)) return { positions };
+  const encoded = encodeFrame(target, pieces, indexes);
+  return encoded ? { positions, assembly: encoded.assembly } : null;
 };
 
 export const buildPersistedJigsawRuntime = (
@@ -149,11 +159,12 @@ export const buildPersistedJigsawRuntime = (
   if (!current || runtime.history.undoStack.length + runtime.history.redoStack.length > jigsawHistoryLimit) return null;
   const encodeStack = (snapshots: JigsawWorkspaceSnapshot[]) => {
     const patches: PersistedJigsawPatch[] = [];
-    let successor = current;
+    let successor = runtime.snapshot;
     for (let index = snapshots.length - 1; index >= 0; index -= 1) {
-      const target = encodeFrame(snapshots[index]!, pieces, indexes);
-      if (!target) return null;
-      patches[index] = makePatch(target, successor);
+      const target = snapshots[index]!;
+      const patch = makePatch(target, successor, pieces, indexes);
+      if (!patch) return null;
+      patches[index] = patch;
       successor = target;
     }
     return patches;

@@ -17,12 +17,6 @@ import { isImageBackedPuzzleId } from "./games/imageAssets";
 import { defaultJigsawBoundaryMode } from "./games/jigsaw/boundaryContours";
 import { defaultJigsawCutStyle } from "./games/jigsaw/cutStyle";
 import { defaultJigsawSpecialPiecesMode } from "./games/jigsaw/specialPieces";
-import {
-  cloneJigsawAssemblyProgress,
-  makeEmptyJigsawAssemblyProgress,
-  sameJigsawAssemblyProgress,
-  type JigsawAssemblyProgress,
-} from "./games/jigsaw/assembly";
 import { defaultSolitaireVariation, normalizeSolitaireVariation } from "./games/solitaire/variation";
 import { defaultSudokuVariation } from "./games/sudoku/variation";
 import {
@@ -119,7 +113,6 @@ export const App = () => {
   const [generationDefaults, setGenerationDefaults] = useState<GenerationRuntimeSettings>(makeInitialGenerationDefaults);
   const [puzzle, setPuzzle] = useState<GeneratedPuzzle | null>(null);
   const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
-  const [jigsawProgress, setJigsawProgress] = useState<{ puzzleInstanceId: string; assembly: JigsawAssemblyProgress } | null>(null);
   const imageTileRuntimeRef = useRef<{ puzzleInstanceId: string; runtime: ImageTileActionRuntime } | null>(null);
   const jigsawRuntimeRef = useRef<{ puzzleInstanceId: string; runtime: JigsawActionRuntime } | null>(null);
   const [puzzleLinkError, setPuzzleLinkError] = useState<string | null>(null);
@@ -240,17 +233,6 @@ export const App = () => {
     if (nextRoute.kind === "resource") commitResourceRoute(nextRoute, routeHistory);
     else replaceCurrentRoute(nextRoute);
 
-    if (session.progress.kind === "tiles" && restoredPuzzle.puzzleId === "jigsaw") {
-      setJigsawProgress({
-        puzzleInstanceId: restoredPuzzle.id,
-        assembly: cloneJigsawAssemblyProgress(
-          session.progress.jigsawAssembly ?? makeEmptyJigsawAssemblyProgress(),
-        ),
-      });
-    } else {
-      setJigsawProgress(null);
-    }
-
     if (session.progress.kind === "cards") {
       solitaire.restoreSolitaireSnapshot({
         cardStacks: session.progress.cardStacks,
@@ -295,12 +277,6 @@ export const App = () => {
           imageTileRuntimeRef.current?.puzzleInstanceId === puzzle.id
             ? imageTileRuntimeRef.current.runtime
             : null,
-        jigsawAssembly:
-          puzzle.puzzleId === "jigsaw" && jigsawRuntimeRef.current?.puzzleInstanceId === puzzle.id
-            ? jigsawRuntimeRef.current.runtime.snapshot.assembly
-            : puzzle.puzzleId === "jigsaw" && jigsawProgress?.puzzleInstanceId === puzzle.id
-              ? jigsawProgress.assembly
-              : null,
         jigsawRuntime:
           puzzle.puzzleId === "jigsaw" && jigsawRuntimeRef.current?.puzzleInstanceId === puzzle.id
             ? jigsawRuntimeRef.current.runtime
@@ -327,7 +303,6 @@ export const App = () => {
 
   const resetRuntimePuzzleState = () => {
     setPuzzle(null);
-    setJigsawProgress(null);
     imageTileRuntimeRef.current = null;
     jigsawRuntimeRef.current = null;
     solitaire.resetSolitaire();
@@ -717,7 +692,7 @@ export const App = () => {
   useEffect(() => {
     if (!hasSelectedPuzzle || generation.isGenerating || isHomeSelected || !puzzle) return;
     saveCurrentSession();
-  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, selectedPuzzleId, puzzle, solitaire.cardStacks, solitaire.selectedCard, solitaire.solitaireStats, solitaire.solitaireUndoStack, solitaire.solitaireRedoStack, grid.gridCells, grid.selectedGridCell, grid.gridHistory, jigsawProgress, statusMessage]);
+  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, selectedPuzzleId, puzzle, solitaire.cardStacks, solitaire.selectedCard, solitaire.solitaireStats, solitaire.solitaireUndoStack, solitaire.solitaireRedoStack, grid.gridCells, grid.selectedGridCell, grid.gridHistory, statusMessage]);
 
   const resetCurrentPuzzle = () => {
     if (!puzzle || generation.hasActiveRequest()) return;
@@ -728,7 +703,6 @@ export const App = () => {
       grid.resetCurrentGrid(puzzle, "", setStatusMessage);
     } else if (puzzle.puzzleId === "jigsaw") {
       jigsawRuntimeRef.current = null;
-      setJigsawProgress({ puzzleInstanceId: puzzle.id, assembly: makeEmptyJigsawAssemblyProgress() });
     } else {
       grid.prepareGeneratedGrid(puzzle);
     }
@@ -743,10 +717,9 @@ export const App = () => {
 
   const requestDestructiveAction = (action: "new" | "reset", proceed: () => void, targetIdentity?: GenerationIdentity) => {
     if (generation.hasActiveRequest()) return;
-    const assembly = puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw"
-      ? jigsawRuntimeRef.current?.puzzleInstanceId === puzzle.id
-        ? jigsawRuntimeRef.current.runtime.snapshot.assembly
-        : jigsawProgress?.puzzleInstanceId === puzzle.id ? jigsawProgress.assembly : null
+    const assembly = puzzle?.kind === "tiles" && puzzle.puzzleId === "jigsaw" &&
+      jigsawRuntimeRef.current?.puzzleInstanceId === puzzle.id
+      ? jigsawRuntimeRef.current.runtime.snapshot.assembly
       : null;
     const pending = planAbandonmentAction(puzzle, {
       gridCells: grid.gridCells,
@@ -913,30 +886,11 @@ export const App = () => {
       jigsawRuntimeRef.current?.puzzleInstanceId === puzzle.id
         ? jigsawRuntimeRef.current.runtime
         : null,
-    jigsawAssembly:
-      puzzle?.kind === "tiles" &&
-      puzzle.puzzleId === "jigsaw" &&
-      jigsawProgress?.puzzleInstanceId === puzzle.id
-        ? jigsawProgress.assembly
-        : null,
     onJigsawRuntimeChange: (puzzleInstanceId: string, runtime: JigsawActionRuntime) => {
       if (generation.hasActiveRequest() || puzzle?.kind !== "tiles" ||
           puzzle.puzzleId !== "jigsaw" || puzzle.id !== puzzleInstanceId) return;
-      jigsawRuntimeRef.current = { puzzleInstanceId, runtime: cloneJigsawActionRuntime(runtime) };
+      jigsawRuntimeRef.current = { puzzleInstanceId, runtime };
       saveCurrentSessionRef.current();
-    },
-    onJigsawAssemblyChange: (assembly: JigsawAssemblyProgress) => {
-      if (generation.hasActiveRequest() || puzzle?.kind !== "tiles" || puzzle.puzzleId !== "jigsaw") return;
-      setJigsawProgress((current) => {
-        if (
-          current?.puzzleInstanceId === puzzle.id &&
-          sameJigsawAssemblyProgress(current.assembly, assembly)
-        ) return current;
-        return {
-          puzzleInstanceId: puzzle.id,
-          assembly: cloneJigsawAssemblyProgress(assembly),
-        };
-      });
     },
   };
   const workspaceSolitaire = {

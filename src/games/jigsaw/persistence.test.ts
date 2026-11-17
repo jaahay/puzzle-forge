@@ -1,3 +1,5 @@
+import { generateJigsaw } from "./generate";
+import { defaultJigsawImageAsset } from "./imageAssets";
 import { describe, expect, it } from "vitest";
 import type { JigsawPiece } from "../../catalog/types";
 import {
@@ -63,6 +65,39 @@ describe("compact Jigsaw session history", () => {
     expect(compact!.undo).toHaveLength(100);
     expect(compact!.undo.every((entry) => entry.positions.length === 1)).toBe(true);
     expect(JSON.stringify(compact).length).toBeLessThan(40000);
+  });
+
+  it("preserves an entire joined-island move as one reversible action", () => {
+    const puzzle = generateJigsaw({
+      puzzleId: "jigsaw",
+      seed: "joined-island-history",
+      width: 5, height: 4,
+      imageId: defaultJigsawImageAsset.id,
+    });
+    const group = puzzle.tiles.filter((piece) => piece.row === 0)
+      .sort((left, right) => left.column - right.column)
+      .slice(0, 3)
+      .map((piece) => piece.id);
+    const before: JigsawWorkspaceSnapshot = {
+      placements: puzzle.tiles.map((piece, index) => ({
+        id: piece.id, worldX: index * 20, worldY: index * 10,
+      })),
+      assembly: { joinedComponents: [group] },
+    };
+    const after: JigsawWorkspaceSnapshot = {
+      placements: before.placements.map((piece) => group.includes(piece.id)
+        ? { ...piece, worldX: piece.worldX + 47 } : { ...piece }),
+      assembly: before.assembly,
+    };
+    const stored = buildPersistedJigsawRuntime({
+      snapshot: after,
+      history: commitJigsawPlacementAction(makeEmptyJigsawHistoryState(), before, after),
+    }, puzzle.tiles);
+    expect(stored).not.toBeNull();
+    expect(stored?.undo[0]?.positions).toHaveLength(3);
+    const restored = restorePersistedJigsawRuntime(stored, puzzle.tiles)!;
+    const undone = applyJigsawHistoryAction(restored.history, restored.snapshot, "undo")!;
+    expect(sameJigsawSnapshot(undone.snapshot, before)).toBe(true);
   });
 
   it("preserves the current board but drops corrupt history", () => {

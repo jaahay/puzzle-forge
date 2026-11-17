@@ -27,7 +27,6 @@ const makeSnapshot = (puzzle: JigsawGeneratedPuzzle, assembly: JigsawAssemblyPro
 const makeSession = (puzzle: JigsawGeneratedPuzzle, snapshot = makeSnapshot(puzzle)): Extract<PuzzleSession, { kind: "tiles" }> => ({
   kind: "tiles", puzzle, progress: {
     kind: "tiles",
-    jigsawAssembly: snapshot.assembly,
     jigsawRuntime: { snapshot, history: makeEmptyJigsawHistoryState() },
   },
 });
@@ -42,13 +41,21 @@ const resourceFor = (puzzle: JigsawGeneratedPuzzle) => {
   return { puzzleId: "jigsaw" as const, generationId, resourceKey: makePuzzleResourceKey("jigsaw", generationId) };
 };
 
-const withMemoryStorage = (run: (storage: Map<string, string>) => void) => {
+const withMemoryStorage = (
+  run: (storage: Map<string, string>) => void,
+  maxSessionValueLength = Infinity,
+) => {
   const storage = new Map<string, string>();
   const originalWindow = globalThis.window;
   Object.defineProperty(globalThis, "window", {
     configurable: true, value: { localStorage: {
       getItem: (key: string) => storage.get(key) ?? null,
-      setItem: (key: string, value: string) => storage.set(key, value),
+      setItem: (key: string, value: string) => {
+        if (key.startsWith("puzzle-forge.session.") && value.length > maxSessionValueLength) {
+          throw Object.assign(new Error("Test quota reached"), { name: "QuotaExceededError" });
+        }
+        storage.set(key, value);
+      },
       removeItem: (key: string) => storage.delete(key),
     } },
   });
@@ -61,7 +68,7 @@ const persistedFor = (session: Extract<PuzzleSession, { kind: "tiles" }>) => {
   if (session.puzzle.puzzleId !== "jigsaw") throw new Error("Expected Jigsaw");
   const resource = resourceFor(session.puzzle);
   const persisted = buildPersistedPuzzleSession(resource, session);
-  if (!persisted || persisted.progress.kind !== "tiles") throw new Error("Missing valid session");
+  if (!persisted || persisted.progress.kind !== "jigsaw") throw new Error("Missing valid session");
   return { resource, persisted };
 };
 
@@ -85,10 +92,10 @@ describe("Jigsaw current-format resource sessions", () => {
         sessions: { [resource.resourceKey]: session },
       });
       const stored = loadPersistedPuzzleSessions()?.sessions[resource.resourceKey];
-      expect(stored?.progress.kind).toBe("tiles");
-      if (!stored || stored.progress.kind !== "tiles") return;
-      expect(stored.progress).not.toHaveProperty("jigsawAssembly");
-      expect(stored.progress.jigsawRuntime?.redo).toHaveLength(1);
+      expect(stored?.progress.kind).toBe("jigsaw");
+      if (!stored || stored.progress.kind !== "jigsaw") return;
+      expect(stored.progress).not.toHaveProperty("tileOrder");
+      expect(stored.progress.runtime.redo).toHaveLength(1);
       const restored = restorePuzzleSessionFromPersisted(stored, puzzle);
       expect(restored?.progress.kind).toBe("tiles");
       if (!restored || restored.progress.kind !== "tiles") return;
@@ -149,7 +156,7 @@ describe("Jigsaw current-format resource sessions", () => {
     const restored = restorePuzzleSessionFromPersisted(persisted, puzzle);
     expect(restored?.progress.kind).toBe("tiles");
     if (!restored || restored.progress.kind !== "tiles") return;
-    expect(restored.progress.jigsawAssembly?.anchoredPieceIds).toEqual([...joined].sort());
+    expect(restored.progress.jigsawRuntime?.snapshot.assembly.anchoredPieceIds).toEqual([...joined].sort());
   });
 
   it("restores solved assemblies and rejects topology/baseline mismatches", () => {
@@ -160,12 +167,12 @@ describe("Jigsaw current-format resource sessions", () => {
     const restored = restorePuzzleSessionFromPersisted(persisted, puzzle);
     expect(restored?.progress.kind).toBe("tiles");
     if (!restored || restored.progress.kind !== "tiles") return;
-    expect(isJigsawAssemblySolved(restored.progress.jigsawAssembly!, puzzle.tiles.length)).toBe(true);
+    expect(isJigsawAssemblySolved(restored.progress.jigsawRuntime!.snapshot.assembly, puzzle.tiles.length)).toBe(true);
     expect(restorePuzzleSessionFromPersisted(persisted, { ...puzzle, checksum: "different" })).toBeNull();
-    if (persisted.progress.kind !== "tiles" || !persisted.progress.jigsawRuntime) return;
+    if (persisted.progress.kind !== "jigsaw" || !persisted.progress.runtime) return;
     const tampered: PersistedPuzzleSession = JSON.parse(JSON.stringify(persisted));
-    if (tampered.progress.kind !== "tiles" || !tampered.progress.jigsawRuntime) return;
-    tampered.progress.jigsawRuntime.current.assembly.joinedComponents = [[9999, 0]];
+    if (tampered.progress.kind !== "jigsaw" || !tampered.progress.runtime) return;
+    tampered.progress.runtime.current.assembly.joinedComponents = [[9999, 0]];
     expect(restorePuzzleSessionFromPersisted(tampered, puzzle)).toBeNull();
   });
 
@@ -178,8 +185,8 @@ describe("Jigsaw current-format resource sessions", () => {
     session.progress.jigsawRuntime!.history =
       commitJigsawPlacementAction(makeEmptyJigsawHistoryState(), before, after);
     const { persisted } = persistedFor(session);
-    if (persisted.progress.kind !== "tiles" || !persisted.progress.jigsawRuntime) return;
-    persisted.progress.jigsawRuntime.undo[0]!.positions = [[9999, 2, 3]];
+    if (persisted.progress.kind !== "jigsaw" || !persisted.progress.runtime) return;
+    persisted.progress.runtime.undo[0]!.positions = [[9999, 2, 3]];
     const restored = restorePuzzleSessionFromPersisted(persisted, puzzle);
     expect(restored?.progress.kind).toBe("tiles");
     if (!restored || restored.progress.kind !== "tiles") return;
@@ -187,14 +194,51 @@ describe("Jigsaw current-format resource sessions", () => {
     expect(restored.progress.jigsawRuntime?.snapshot.placements[0]?.worldX).toBe(after.placements[0]?.worldX);
   });
 
+  it("keeps current positions when history exceeds the browser's storage quota", () => {
+    const puzzle = generate("quota-history");
+    const baseline = makeSnapshot(puzzle);
+    const shifted = (amount: number): JigsawWorkspaceSnapshot => ({
+      placements: baseline.placements.map((piece) => ({
+        ...piece, worldX: piece.worldX + amount, worldY: piece.worldY + amount,
+      })),
+      assembly: { joinedComponents: [] },
+    });
+    const session = makeSession(puzzle, shifted(100));
+    const runtime = session.progress.jigsawRuntime!;
+    runtime.history.undoStack = Array.from({ length: 100 }, (_, i) => shifted(i));
+    const full = persistedFor(session).persisted;
+    runtime.history.undoStack = [];
+    const currentOnly = persistedFor(session).persisted;
+    runtime.history.undoStack = Array.from({ length: 100 }, (_, i) => shifted(i));
+    const limit = Math.floor(
+      (JSON.stringify(full).length + JSON.stringify(currentOnly).length) / 2,
+    );
+    withMemoryStorage(() => {
+      const { resource } = persistedFor(session);
+      savePersistedPuzzleSessions({
+        activeResourceKey: resource.resourceKey,
+        sessions: { [resource.resourceKey]: session },
+      });
+      const stored = loadPersistedPuzzleSessions()?.sessions[resource.resourceKey];
+      expect(stored?.progress.kind).toBe("jigsaw");
+      if (!stored || stored.progress.kind !== "jigsaw") return;
+      expect(stored.progress.runtime.undo.length).toBeLessThan(100);
+      const restored = restorePuzzleSessionFromPersisted(stored, puzzle);
+      expect(restored?.progress.kind).toBe("tiles");
+      if (!restored || restored.progress.kind !== "tiles") return;
+      expect(restored.progress.jigsawRuntime?.snapshot.placements[0]?.worldX)
+        .toBe(shifted(100).placements[0]?.worldX);
+    }, limit);
+  });
+
   it("does not accept old assembly-only Jigsaw sessions", () => {
     withMemoryStorage((storage) => {
       const puzzle = generate("no-legacy");
       const session = makeSession(puzzle);
       const { resource, persisted } = persistedFor(session);
-      if (persisted.progress.kind !== "tiles") return;
+      if (persisted.progress.kind !== "jigsaw") return;
       const legacy = { ...persisted, progress: {
-        kind: "tiles", tileOrder: persisted.progress.tileOrder, selectedTileId: null,
+        kind: "tiles", tileOrder: puzzle.tiles.map((tile) => ({ id: tile.id, currentIndex: tile.currentIndex })), selectedTileId: null,
         jigsawAssembly: { joinedComponents: [] },
       } };
       storage.set("puzzle-forge.session." + resource.resourceKey, JSON.stringify(legacy));
