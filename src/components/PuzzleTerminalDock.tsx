@@ -9,7 +9,6 @@ type PuzzleTerminalDockProps = {
   ariaLabel?: string;
   announce?: boolean;
   disabled?: boolean;
-  onNewPuzzle: () => void;
   onReset?: () => void;
   resetLabel?: string;
   children?: ComponentChildren;
@@ -26,7 +25,6 @@ export const PuzzleTerminalDock = ({
   ariaLabel,
   announce = true,
   disabled = false,
-  onNewPuzzle,
   onReset,
   resetLabel = "Reset",
   children,
@@ -43,13 +41,12 @@ export const PuzzleTerminalDock = ({
         <span class="completion-dock-mark" aria-hidden="true">{presentation.mark}</span>
         <strong>{label}</strong>
       </div>
-      <div class="puzzle-actions">
-        {onReset ? <button type="button" onClick={onReset} disabled={disabled}>{resetLabel}</button> : null}
-        {children}
-        <button class="new-puzzle-primary" type="button" onClick={onNewPuzzle} disabled={disabled}>
-          New puzzle
-        </button>
-      </div>
+      {onReset || children ? (
+        <div class="puzzle-actions">
+          {onReset ? <button type="button" onClick={onReset} disabled={disabled}>{resetLabel}</button> : null}
+          {children}
+        </div>
+      ) : null}
     </section>
   );
 };

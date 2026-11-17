@@ -200,14 +200,14 @@ export const SudokuWorkspace = ({
       </div>
       <div class="puzzle-actions">
         <button
-          class="new-puzzle-primary"
+          class="sudoku-reset-action"
           type="button"
-          onClick={() => onNewPuzzle()}
+          onClick={() => onReset()}
           disabled={isGenerating}
           tabIndex={isPresentationCompleted ? 0 : -1}
-          aria-label="Start a new Sudoku with the remembered settings"
+          aria-label="Reset current Sudoku"
         >
-          New puzzle
+          Reset
         </button>
       </div>
     </section>

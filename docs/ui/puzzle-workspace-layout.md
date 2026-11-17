@@ -31,17 +31,11 @@ Examples:
 
 Empty reserved space is acceptable. Do not fill it merely because it exists; breathing room is preferable to decorative or textual noise.
 
-## Header
+## Header and current-puzzle crown
 
-The header answers: "What am I playing?"
+The app header orients the player within Puzzle Forge. The current-puzzle crown identifies the active puzzle and provides the stable, shared Undo/Redo and New-puzzle entry points.
 
-Use it for:
-
-- puzzle title;
-- a short description when useful;
-- optional tags or category language.
-
-Avoid putting primary controls here. The header should orient the player, not become a settings panel.
+Identity and actions should stay visually subordinate to the board. Prospective settings belong behind the New-puzzle disclosure, not inline with the puzzle identity. The crown should retain the same actions before and after completion; solved-state presentation must not introduce a competing New-puzzle button.
 
 ## Status semantics
 
@@ -87,7 +81,7 @@ The board is the primary visual object on the screen.
 
 Every puzzle should be laid out around the game surface first. Controls should not crowd the board, push it into an awkward shape, or cause avoidable layout shifts while work happens.
 
-Completion should normally read as a state transformation of the existing workspace, not navigation to a miniature results screen.
+Completion should normally read as a state transformation of the existing workspace, not navigation to a miniature results screen. A completed puzzle may show a compact outcome and meaningful **current-puzzle** actions (Reset, Retry, Share), while the crown remains the sole New-puzzle entry. Different mechanics may require different terminal behavior without duplicating navigation.
 
 ## Gameplay controls: current puzzle
 

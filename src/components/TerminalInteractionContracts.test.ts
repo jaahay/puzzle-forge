@@ -12,9 +12,24 @@ const jigsawPreviewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", impo
 const jigsawCss = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
 const immersiveCss = readFileSync(new URL("../site/immersive.css", import.meta.url), "utf8");
 const newCommandSource = readFileSync(new URL("./NewPuzzleCommand.tsx", import.meta.url), "utf8");
+const terminalDockSource = readFileSync(new URL("./PuzzleTerminalDock.tsx", import.meta.url), "utf8");
+const imageTileWorkspaceSource = readFileSync(new URL("./ImageTilePuzzleWorkspace.tsx", import.meta.url), "utf8");
+const solitaireWorkspaceSource = readFileSync(new URL("./SolitaireWorkspace.tsx", import.meta.url), "utf8");
 const layoutSource = readFileSync(new URL("./PuzzleWorkspaceLayout.tsx", import.meta.url), "utf8");
 
 describe("terminal interaction contracts", () => {
+  it("keeps New in the shared puzzle header instead of duplicating it in solved docks", () => {
+    expect(terminalDockSource).not.toContain("onNewPuzzle");
+    expect(terminalDockSource).not.toContain("New puzzle");
+    expect(sudokuWorkspaceSource).toContain('aria-label="Reset current Sudoku"');
+    expect(sudokuWorkspaceSource).not.toContain("Start a new Sudoku with the remembered settings");
+    for (const workspace of [gridWorkspaceSource, imageTileWorkspaceSource, solitaireWorkspaceSource]) {
+      expect(workspace).toContain("newPuzzleControl={newPuzzleControl}");
+      const terminal = workspace.slice(workspace.indexOf("<PuzzleTerminalDock"));
+      expect(terminal.slice(0, terminal.indexOf("/>"))).not.toContain("onNewPuzzle=");
+    }
+  });
+
   it("keeps the reserved grid validation lane mounted after completion", () => {
     expect(gridWorkspaceSource).toContain("      )}\n      {validation}\n    </div>");
   });

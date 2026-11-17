@@ -43,7 +43,8 @@ describe("Solitaire shared history integration", () => {
     expect(workspaceSource).not.toContain("Redo Solitaire move");
     expect(actionControls).toContain('class="solitaire-action-row"');
     expect(actionControls).toContain("onAutoMoveToFoundations");
-    expect(actionControls).toContain('title="Auto foundation"');
+    expect(actionControls).toContain('title="Automatically move all currently legal cards to foundations"');
+    expect(actionControls).toContain(">Move to foundations</button>");
     expect(actionControls).toContain("onClick={() => onReset()}");
     expect(actionControls).not.toContain("onClick={onReset}");
     expect(actionControls).toContain(">Reset</button>");
