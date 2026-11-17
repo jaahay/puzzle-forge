@@ -31,17 +31,11 @@ Examples:
 
 Empty reserved space is acceptable. Do not fill it merely because it exists; breathing room is preferable to decorative or textual noise.
 
-## Header
+## Header and current-puzzle crown
 
-The header answers: "What am I playing?"
+The app header orients the player within Puzzle Forge. The current-puzzle crown identifies the active puzzle and provides the stable, shared Undo/Redo and New-puzzle entry points.
 
-Use it for:
-
-- puzzle title;
-- a short description when useful;
-- optional tags or category language.
-
-Avoid putting primary controls here. The header should orient the player, not become a settings panel.
+Identity and actions should stay visually subordinate to the board. Prospective settings belong behind the New-puzzle disclosure, not inline with the puzzle identity. The crown should retain the same actions before and after completion. A contextual Next-puzzle shortcut may appear near the result when the crown is outside the visible viewport; it invokes the same generation behavior rather than creating another configuration owner.
 
 ## Status semantics
 
@@ -87,7 +81,7 @@ The board is the primary visual object on the screen.
 
 Every puzzle should be laid out around the game surface first. Controls should not crowd the board, push it into an awkward shape, or cause avoidable layout shifts while work happens.
 
-Completion should normally read as a state transformation of the existing workspace, not navigation to a miniature results screen.
+Completion should normally read as a state transformation of the existing workspace, not navigation to a miniature results screen. A completed puzzle may show a compact outcome, meaningful **current-puzzle** actions (Reset, Retry, Share), and a contextual **Next puzzle** continuation to the same New-puzzle behavior offered by the crown. Different mechanics may require different terminal behavior without duplicating configuration or state ownership.
 
 ## Gameplay controls: current puzzle
 
@@ -161,7 +155,7 @@ When correctness is unambiguous, recognize completion automatically rather than 
 
 A solved transition may use a brief puzzle-wide acknowledgment because the whole puzzle is relevant to the event. Afterward, settle into a calm solved state in the same workspace geometry. A failed outcome must remain semantically and visually distinct from success and should not borrow affirmative completion treatment.
 
-Terminal state should preserve the completed or failed result and suppress interactions that would silently return it to active play. The gameplay region becomes the terminal continuation surface: **New puzzle** is the primary next action, while Reset / Retry and puzzle-specific actions such as Share remain secondary where meaningful.
+Terminal state should preserve the completed or failed result and suppress interactions that would silently return it to active play. The gameplay region may provide a contextual **Next puzzle** command wired to the crown's existing New action. After success, Next is the primary continuation; after a failed attempt, Retry may take precedence. Reset, Retry and puzzle-specific actions such as Share remain distinct from creating another puzzle.
 
 Do not persist a second solved/failed flag when the terminal result can be recomputed from authoritative puzzle state. Presentation copy is never the source of truth.
 

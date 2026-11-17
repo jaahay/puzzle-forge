@@ -189,7 +189,7 @@ export const SudokuWorkspace = ({
 
   const completionDock = isSolved ? (
     <section
-      class="completion-dock"
+      class="completion-dock terminal-solved"
       aria-hidden={completion.phase !== "completed" || undefined}
       aria-live={isPresentationCompleted ? "polite" : "off"}
       aria-label="Sudoku solved"
@@ -200,14 +200,23 @@ export const SudokuWorkspace = ({
       </div>
       <div class="puzzle-actions">
         <button
-          class="new-puzzle-primary"
+          class="sudoku-reset-action"
+          type="button"
+          onClick={() => onReset()}
+          disabled={isGenerating}
+          tabIndex={isPresentationCompleted ? 0 : -1}
+          aria-label="Reset current Sudoku"
+        >
+          Reset
+        </button>
+        <button
+          class="terminal-next-action"
           type="button"
           onClick={() => onNewPuzzle()}
           disabled={isGenerating}
           tabIndex={isPresentationCompleted ? 0 : -1}
-          aria-label="Start a new Sudoku with the remembered settings"
         >
-          New puzzle
+          Next puzzle
         </button>
       </div>
     </section>
@@ -218,7 +227,8 @@ export const SudokuWorkspace = ({
       <div class="completion-control-stage" data-phase={completion.phase} ref={completionStageRef} tabIndex={-1}>
         <div
           class="completion-control-layer completion-control-playing gameplay-active-controls"
-          aria-hidden={isPresentationCompleted || undefined}
+          aria-hidden={isSolved || undefined}
+          inert={isSolved}
           ref={activeGameplayRef}
           onFocusCapture={() => {
             activeGameplayHadFocusRef.current = true;

@@ -12,9 +12,33 @@ const jigsawPreviewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", impo
 const jigsawCss = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
 const immersiveCss = readFileSync(new URL("../site/immersive.css", import.meta.url), "utf8");
 const newCommandSource = readFileSync(new URL("./NewPuzzleCommand.tsx", import.meta.url), "utf8");
+const terminalDockSource = readFileSync(new URL("./PuzzleTerminalDock.tsx", import.meta.url), "utf8");
+const imageTileWorkspaceSource = readFileSync(new URL("./ImageTilePuzzleWorkspace.tsx", import.meta.url), "utf8");
+const solitaireWorkspaceSource = readFileSync(new URL("./SolitaireWorkspace.tsx", import.meta.url), "utf8");
 const layoutSource = readFileSync(new URL("./PuzzleWorkspaceLayout.tsx", import.meta.url), "utf8");
 
 describe("terminal interaction contracts", () => {
+  it("keeps New in the crown and adds a contextual Next shortcut at completion", () => {
+    expect(terminalDockSource).toContain("onNextPuzzle: () => void");
+    expect(terminalDockSource).toContain('class="terminal-next-action"');
+    expect(terminalDockSource).toContain("Next puzzle");
+    expect(sudokuWorkspaceSource).toContain('aria-label="Reset current Sudoku"');
+    expect(sudokuWorkspaceSource).toContain('class="terminal-next-action"');
+    expect(sudokuWorkspaceSource).toContain("onClick={() => onNewPuzzle()}");
+    for (const workspace of [gridWorkspaceSource, imageTileWorkspaceSource, solitaireWorkspaceSource]) {
+      expect(workspace).toContain("newPuzzleControl={newPuzzleControl}");
+      const terminal = workspace.slice(workspace.indexOf("<PuzzleTerminalDock"));
+      expect(terminal.slice(0, terminal.indexOf("/>"))).toContain("onNextPuzzle=");
+    }
+    expect(wordGuessSource).toContain("onNextPuzzle={onNewPuzzle}");
+  });
+
+  it("removes hidden completed Sudoku controls from keyboard navigation", () => {
+    expect(sudokuWorkspaceSource).toContain("inert={isSolved}");
+    expect(sudokuWorkspaceSource).toContain("aria-hidden={isSolved || undefined}");
+    expect(sudokuWorkspaceSource).toContain("tabIndex={isPresentationCompleted ? 0 : -1}");
+  });
+
   it("keeps the reserved grid validation lane mounted after completion", () => {
     expect(gridWorkspaceSource).toContain("      )}\n      {validation}\n    </div>");
   });

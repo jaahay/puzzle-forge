@@ -9,8 +9,8 @@ type PuzzleTerminalDockProps = {
   ariaLabel?: string;
   announce?: boolean;
   disabled?: boolean;
-  onNewPuzzle: () => void;
   onReset?: () => void;
+  onNextPuzzle: () => void;
   resetLabel?: string;
   children?: ComponentChildren;
 };
@@ -26,8 +26,8 @@ export const PuzzleTerminalDock = ({
   ariaLabel,
   announce = true,
   disabled = false,
-  onNewPuzzle,
   onReset,
+  onNextPuzzle,
   resetLabel = "Reset",
   children,
 }: PuzzleTerminalDockProps) => {
@@ -46,8 +46,8 @@ export const PuzzleTerminalDock = ({
       <div class="puzzle-actions">
         {onReset ? <button type="button" onClick={onReset} disabled={disabled}>{resetLabel}</button> : null}
         {children}
-        <button class="new-puzzle-primary" type="button" onClick={onNewPuzzle} disabled={disabled}>
-          New puzzle
+        <button class="terminal-next-action" type="button" onClick={onNextPuzzle} disabled={disabled}>
+          Next puzzle
         </button>
       </div>
     </section>

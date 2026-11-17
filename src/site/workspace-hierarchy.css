@@ -96,9 +96,9 @@
   margin-left: auto;
 }
 
-/* In the crown, New is a quiet split workspace utility: the primary hit area
-   starts a random puzzle immediately, while the caret discloses options. The
-   completion dock remains the stronger one-click continuation after a solve. */
+/* The crown retains one stable New utility before and after completion.
+   A contextual Next shortcut may appear near the terminal result without
+   introducing another configuration or session owner. */
 .current-puzzle-new-action .new-puzzle-split-control {
   box-shadow: none;
 }

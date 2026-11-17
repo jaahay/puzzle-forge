@@ -234,7 +234,7 @@ export const GridPuzzleWorkspace = ({
           ariaLabel={`${selectedDefinition.title} solved`}
           disabled={isGenerating}
           onReset={() => onReset()}
-          onNewPuzzle={() => onNewPuzzle()}
+          onNextPuzzle={() => onNewPuzzle()}
         />
       ) : (
         <div class={`puzzle-actions ${isNonogram ? "nonogram-current-actions" : ""}`.trim()}>

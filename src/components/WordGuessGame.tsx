@@ -35,8 +35,8 @@ type WordGuessGameProps = {
   onSubmitGuess: () => void;
   onCommitCurrentGuess: () => void;
   onReset: (afterReset?: () => void) => void;
-  onProgressChange?: (report: WorkspaceProgressReport) => void;
   onNewPuzzle: () => void;
+  onProgressChange?: (report: WorkspaceProgressReport) => void;
   disabled?: boolean;
 };
 
@@ -472,7 +472,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
           disabled={disabled}
           onReset={resetGame}
           resetLabel={actionPresentation.resetLabel}
-          onNewPuzzle={onNewPuzzle}
+          onNextPuzzle={onNewPuzzle}
         >
           {actionPresentation.canShare ? (
             <button type="button" onClick={copyShareText}>
