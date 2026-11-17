@@ -11,7 +11,7 @@ describe("Word Guess terminal mapping", () => {
     });
   });
 
-  it("switches terminal outcomes from Submit to Retry and New puzzle while retaining Share", () => {
+  it("switches terminal outcomes from Submit to Retry while retaining Share", () => {
     expect(getWordGuessActionPresentation("playing", 0)).toEqual({
       terminal: false,
       terminalLabel: null,

@@ -17,13 +17,13 @@ describe("PuzzleTerminalDock presentation", () => {
     const defaultDock = PuzzleTerminalDock({
       state: { kind: "solved" },
       label: "Puzzle solved",
-      onNewPuzzle: () => {},
+      onReset: () => {},
     });
     const quietDock = PuzzleTerminalDock({
       state: { kind: "solved" },
       label: "Puzzle solved",
       announce: false,
-      onNewPuzzle: () => {},
+      onReset: () => {},
     });
 
     expect(defaultDock.props["aria-live"]).toBe("polite");
