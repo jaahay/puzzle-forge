@@ -198,6 +198,7 @@ export const ImageTilePuzzleWorkspace = ({
       ariaLabel={`${selectedDefinition.title} solved`}
       disabled={isGenerating}
       onReset={resetPuzzle}
+      onNextPuzzle={() => onNewPuzzle()}
     />
   ) : imagePuzzle ? (
     <div class="puzzle-actions">

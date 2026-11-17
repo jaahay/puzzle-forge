@@ -79,6 +79,7 @@ export const SolitaireWorkspace = ({
       ariaLabel="Klondike Solitaire solved"
       disabled={isGenerating}
       onReset={() => onReset()}
+      onNextPuzzle={() => onNewPuzzle()}
     />
   ) : (
     <div class="solitaire-action-row" aria-label="Solitaire controls">

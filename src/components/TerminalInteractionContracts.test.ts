@@ -18,16 +18,25 @@ const solitaireWorkspaceSource = readFileSync(new URL("./SolitaireWorkspace.tsx"
 const layoutSource = readFileSync(new URL("./PuzzleWorkspaceLayout.tsx", import.meta.url), "utf8");
 
 describe("terminal interaction contracts", () => {
-  it("keeps New in the shared puzzle header instead of duplicating it in solved docks", () => {
-    expect(terminalDockSource).not.toContain("onNewPuzzle");
-    expect(terminalDockSource).not.toContain("New puzzle");
+  it("keeps New in the crown and adds a contextual Next shortcut at completion", () => {
+    expect(terminalDockSource).toContain("onNextPuzzle: () => void");
+    expect(terminalDockSource).toContain('class="terminal-next-action"');
+    expect(terminalDockSource).toContain("Next puzzle");
     expect(sudokuWorkspaceSource).toContain('aria-label="Reset current Sudoku"');
-    expect(sudokuWorkspaceSource).not.toContain("Start a new Sudoku with the remembered settings");
+    expect(sudokuWorkspaceSource).toContain('class="terminal-next-action"');
+    expect(sudokuWorkspaceSource).toContain("onClick={() => onNewPuzzle()}");
     for (const workspace of [gridWorkspaceSource, imageTileWorkspaceSource, solitaireWorkspaceSource]) {
       expect(workspace).toContain("newPuzzleControl={newPuzzleControl}");
       const terminal = workspace.slice(workspace.indexOf("<PuzzleTerminalDock"));
-      expect(terminal.slice(0, terminal.indexOf("/>"))).not.toContain("onNewPuzzle=");
+      expect(terminal.slice(0, terminal.indexOf("/>"))).toContain("onNextPuzzle=");
     }
+    expect(wordGuessSource).toContain("onNextPuzzle={onNewPuzzle}");
+  });
+
+  it("removes hidden completed Sudoku controls from keyboard navigation", () => {
+    expect(sudokuWorkspaceSource).toContain("inert={isSolved}");
+    expect(sudokuWorkspaceSource).toContain("aria-hidden={isSolved || undefined}");
+    expect(sudokuWorkspaceSource).toContain("tabIndex={isPresentationCompleted ? 0 : -1}");
   });
 
   it("keeps the reserved grid validation lane mounted after completion", () => {

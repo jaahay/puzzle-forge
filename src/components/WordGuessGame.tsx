@@ -35,6 +35,7 @@ type WordGuessGameProps = {
   onSubmitGuess: () => void;
   onCommitCurrentGuess: () => void;
   onReset: (afterReset?: () => void) => void;
+  onNewPuzzle: () => void;
   onProgressChange?: (report: WorkspaceProgressReport) => void;
   disabled?: boolean;
 };
@@ -98,7 +99,7 @@ export const getWordGuessActionPresentation = (status: WordGuessProgressStatus, 
 const formatRemainingAttempts = (count: number) =>
   `${count} ${count === 1 ? "attempt" : "attempts"} remain.`;
 
-export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSubmitGuess, onCommitCurrentGuess, onReset, onProgressChange, disabled = false }: WordGuessGameProps) => {
+export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSubmitGuess, onCommitCurrentGuess, onReset, onNewPuzzle, onProgressChange, disabled = false }: WordGuessGameProps) => {
   const answer = puzzle.answerKey?.join("").toUpperCase() ?? "";
   const wordBank = useMemo(() => getWordGuessBank(puzzle.width), [puzzle.width]);
   const rows = useMemo(() => getRows(cells, puzzle.height), [cells, puzzle.height]);
@@ -471,6 +472,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
           disabled={disabled}
           onReset={resetGame}
           resetLabel={actionPresentation.resetLabel}
+          onNextPuzzle={onNewPuzzle}
         >
           {actionPresentation.canShare ? (
             <button type="button" onClick={copyShareText}>
