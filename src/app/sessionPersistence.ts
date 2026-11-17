@@ -287,7 +287,7 @@ const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzlePr
       tileOrder: (session.progress.imageTileRuntime?.state.tiles ?? session.puzzle.tiles)
         .map(({ id, currentIndex }) => ({ id, currentIndex })),
       selectedTileId: null,
-      ...(session.puzzle.puzzleId !== "jigsaw" && session.progress.imageTileRuntime
+      ...(session.progress.imageTileRuntime
         ? {
             imageTileMoveCount: session.progress.imageTileRuntime.state.moveCount,
             imageTileHistory: {
