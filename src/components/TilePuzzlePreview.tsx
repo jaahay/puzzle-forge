@@ -1345,7 +1345,6 @@ export const TilePuzzlePreview = ({
             type="button"
             aria-label={fitIsOverview ? "Return to working view" : "Show all pieces"}
             title={fitIsOverview ? "Return to working view" : "Show all pieces"}
-            aria-pressed={fitIsOverview}
             onClick={toggleFitView}
           >
             <JigsawFitIcon />
@@ -1397,7 +1396,6 @@ export const TilePuzzlePreview = ({
       >
         <button
           type="button"
-          aria-pressed={showPreview}
           onClick={() => setPlayerPreferences((current) => ({ ...current, showPreview: !current.showPreview }))}
         >
           {showPreview ? "Hide preview" : "Preview image"}
@@ -1427,7 +1425,6 @@ export const TilePuzzlePreview = ({
         </label>
         <button
           type="button"
-          aria-pressed={showEdgeSeams}
           onClick={() => {
             setPlayerPreferences((current) => ({ ...current, showEdgeSeams: !current.showEdgeSeams }));
           }}
@@ -1436,7 +1433,6 @@ export const TilePuzzlePreview = ({
         </button>
         <button
           type="button"
-          aria-pressed={lockViewDragging}
           title="Prevent accidental background and anchored-piece drag panning; wheel zoom, pinch, and view controls still work"
           onClick={() => setPlayerPreferences((current) => ({ ...current, lockViewDragging: !current.lockViewDragging }))}
         >

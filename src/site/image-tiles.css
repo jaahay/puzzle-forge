@@ -168,13 +168,13 @@
 }
 
 .image-tile-board-viewport {
+  position: relative;
   display: grid;
   width: 100%;
   min-width: 0;
   justify-items: center;
 }
 
-.image-tile-reference,
 .image-tile-board {
   width: min(100%, 42rem);
   overflow: hidden;
@@ -182,9 +182,17 @@
 }
 
 .image-tile-reference {
-  position: relative;
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  position: absolute;
+  z-index: 5;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: min(34%, 11rem);
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.68);
+  border-radius: 0.55rem;
   background: #020617;
+  box-shadow: 0 8px 28px rgba(2, 6, 23, 0.55);
+  pointer-events: none;
 }
 
 .image-tile-reference img {

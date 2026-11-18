@@ -34,13 +34,34 @@
   max-width: 100%;
 }
 
+.grid-rule-help {
+  width: var(--board-width);
+  max-width: 100%;
+  margin-top: 0.5rem;
+  font-size: 0.84rem;
+}
+
+.grid-rule-help > summary {
+  width: fit-content;
+  border-radius: 0.65rem;
+  padding: 0.4rem 0.55rem;
+  color: #bfdbfe;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.grid-rule-help > summary:focus-visible {
+  outline: 2px solid #a7f3d0;
+  outline-offset: 2px;
+}
+
 .grid-rule-note {
   box-sizing: border-box;
   width: var(--board-width);
   max-width: 100%;
   border: 1px solid rgba(148, 163, 184, 0.28);
   border-radius: 0.85rem;
-  margin: 0.65rem 0 0;
+  margin: 0.3rem 0 0;
   padding: 0.68rem 0.78rem;
   color: #cbd5e1;
   background: rgba(15, 23, 42, 0.78);
