@@ -777,6 +777,27 @@
     0
   );
 }
+.jigsaw-island.keyboard-selected {
+  outline: 3px solid #facc15;
+  outline-offset: 4px;
+  border-radius: 0.4rem;
+}
+
+.jigsaw-keyboard-help {
+  width: 100%;
+  color: #dbeafe;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.jigsaw-keyboard-help > summary {
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.jigsaw-keyboard-help > summary:focus-visible { outline: 2px solid #7dd3fc; }
+.jigsaw-keyboard-help p { margin: 0.4rem 0 0; }
+
 .jigsaw-island.dragging {
   --jigsaw-active-drag-x: var(--jigsaw-drag-x, 0px);
   --jigsaw-active-drag-y: var(--jigsaw-drag-y, 0px);
