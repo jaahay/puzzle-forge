@@ -15,7 +15,8 @@ describe("Jigsaw keyboard workspace parity", () => {
   it("shares snap, action history and free-drop layering with pointer movement", () => {
     expect(source).toContain("advanceJigsawKeyboardPiece(");
     expect(source).toContain("commitJigsawPlacementAction(historyRef.current, before, after)");
-    expect((source.match(/settleJigsawDropStack\(/g) ?? []).length).toBe(3);
+    expect((source.match(/settleJigsawDropStack\(/g) ?? []).length).toBe(2);
+    expect(source).toContain("const settleJigsawDropStack = (");
     expect(source).toContain("getJigsawComponentPieceIds(before.assembly, keyboardPieceId)");
   });
 });
