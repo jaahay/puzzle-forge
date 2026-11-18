@@ -1015,6 +1015,29 @@ export const TilePuzzlePreview = ({
     dragAnimationFrameRef.current = window.requestAnimationFrame(runDragAnimationFrame);
   };
 
+  const settleJigsawDropStack = (
+    pieceId: string, draggedMemberIds: readonly string[], snapshot: JigsawWorkspaceSnapshot,
+  ) => {
+    const finalMembers = getJigsawComponentPieceIds(snapshot.assembly, pieceId);
+    const joined = finalMembers.some((id) => !draggedMemberIds.includes(id));
+    const anchored = finalMembers.some((id) => snapshot.assembly.anchoredPieceIds?.includes(id));
+    // A new snap consumes the old layers; an ordinary free drop goes above earlier pieces.
+    const affectedIdentities = new Set(finalMembers.flatMap((id) => {
+      const island = visualScene.byPieceId.get(id);
+      return island ? [getJigsawIslandLayerIdentity(island)] : [];
+    }));
+    const availableIdentities = new Set(visualScene.islands.map(getJigsawIslandLayerIdentity));
+    const oldIsland = visualScene.byPieceId.get(pieceId);
+    const freeIdentity = oldIsland ? getJigsawIslandLayerIdentity(oldIsland) : null;
+    setFreeDropStack((current) => {
+      const prior = current.puzzleId === puzzle.id ? current.order : [];
+      const order = prior.filter((id) =>
+        availableIdentities.has(id) && !affectedIdentities.has(id));
+      if (!joined && !anchored && freeIdentity) order.push(freeIdentity);
+      return { puzzleId: puzzle.id, order };
+    });
+  };
+
   const beginDrag = (event: PiecePointerEvent, tile: JigsawPiece, placement: JigsawPlacement) => {
     if (inputSuspended || isSolved || pinchRef.current) return;
     const stagePoint = getStagePoint(event.clientX, event.clientY);
@@ -1127,24 +1150,7 @@ export const TilePuzzlePreview = ({
     setActiveTileId(null);
     if (nextState?.puzzleId === puzzle.id) {
       if (changed) {
-        const finalMembers = getJigsawComponentPieceIds(nextSnapshot.assembly, drag.tileId);
-        const joined = finalMembers.some((id) => !drag.pieceIds.includes(id));
-        const anchored = finalMembers.some((id) => nextSnapshot.assembly.anchoredPieceIds?.includes(id));
-        // Remove old layers of every island consumed by a snap, not just the dragged one.
-        const affectedIdentities = new Set(finalMembers.flatMap((id) => {
-          const island = visualScene.byPieceId.get(id);
-          return island ? [getJigsawIslandLayerIdentity(island)] : [];
-        }));
-        const availableIdentities = new Set(visualScene.islands.map(getJigsawIslandLayerIdentity));
-        const draggedIsland = visualScene.byPieceId.get(drag.tileId);
-        const freeIdentity = draggedIsland ? getJigsawIslandLayerIdentity(draggedIsland) : null;
-        setFreeDropStack((current) => {
-          const prior = current.puzzleId === puzzle.id ? current.order : [];
-          const order = prior.filter((id) =>
-            availableIdentities.has(id) && !affectedIdentities.has(id));
-          if (!joined && !anchored && freeIdentity) order.push(freeIdentity);
-          return { puzzleId: puzzle.id, order };
-        });
+        settleJigsawDropStack(drag.tileId, drag.pieceIds, nextSnapshot);
       }
       if (completed.solved) onCausativeInput();
       replaceHistory(completed.history);
@@ -1370,7 +1376,9 @@ export const TilePuzzlePreview = ({
         if (history !== historyRef.current) {
           updatePlacementState(() => ({ puzzleId: puzzle.id, ...after }));
           replaceHistory(history);
-          setFreeDropStack({ puzzleId: puzzle.id, order: [] });
+          settleJigsawDropStack(
+            keyboardPieceId, getJigsawComponentPieceIds(before.assembly, keyboardPieceId), after,
+          );
           const anchored = Boolean(after.assembly.anchoredPieceIds?.includes(keyboardPieceId));
           const solved = isJigsawAssemblySolved(after.assembly, puzzle.tiles.length);
           if (anchored || solved) setKeyboardPieceId(null);
