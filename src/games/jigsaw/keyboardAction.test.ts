@@ -6,7 +6,7 @@ import { advanceJigsawKeyboardPiece } from "./keyboardAction";
 import { makeEmptyJigsawAssemblyProgress } from "./assembly";
 import { commitJigsawPlacementAction, makeEmptyJigsawHistoryState } from "./history";
 
-const puzzle = generateJigsaw({ seed: "keyboard-ux", width: 2, height: 2, imageId: defaultJigsawImageAsset.id });
+const puzzle = generateJigsaw({ puzzleId: "jigsaw", seed: "keyboard-ux", width: 2, height: 2, imageId: defaultJigsawImageAsset.id });
 const layout = createJigsawWorldLayout({
   imageWidth: puzzle.asset.intrinsicWidth, imageHeight: puzzle.asset.intrinsicHeight,
   puzzleWidth: puzzle.width, puzzleHeight: puzzle.height,
