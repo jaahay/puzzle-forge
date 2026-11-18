@@ -1,3 +1,7 @@
+import { getPuzzleAvailability } from "../catalog/puzzleAvailability";
+
+const { readyPuzzles, previewPuzzles } = getPuzzleAvailability();
+
 export const AboutView = () => (
   <section class="site-changelog about-view" id="about" aria-labelledby="about-title">
     <p class="site-kicker">about</p>
@@ -9,7 +13,10 @@ export const AboutView = () => (
 
     <article>
       <h3>What it does</h3>
-      <p>Generate and play Sudoku, Nonogram, Word Guess, and preview puzzle experiments from one interface.</p>
+      <p>
+        Play {readyPuzzles.map((puzzle) => puzzle.title).join(", ")}.
+        {previewPuzzles.length > 0 ? ` Explore ${previewPuzzles.map((puzzle) => puzzle.title).join(", ")} in Preview.` : null}
+      </p>
     </article>
     <article>
       <h3>Why seeds matter</h3>
