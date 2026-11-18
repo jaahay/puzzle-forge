@@ -50,6 +50,7 @@ describe("grid entry status", () => {
   it("retains meaningful entry feedback for other grid surfaces", () => {
     expect(getGridEntryStatusMessage("sudoku", "3")).toBe("Sudoku entry updated.");
     expect(getGridEntryStatusMessage("futoshiki", "2")).toBe("Futoshiki entry updated.");
-    expect(getGridEntryStatusMessage("nonogram", "■")).toBe("Set cell to ■.");
+    expect(getGridEntryStatusMessage("nonogram", "■")).toBe("Marked filled square.");
+    expect(getGridEntryStatusMessage("nonogram", "×")).toBe("Marked empty square.");
   });
 });

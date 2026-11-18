@@ -157,6 +157,7 @@ export const GridPuzzlePreview = ({
         const cellClass = [
           "cell",
           visualTone,
+          isNonogram && cell.value === "×" ? "marked-empty" : "",
           isSelectable ? "interactive-cell" : "",
           isSelected ? "selected-grid-cell" : "",
           isPeer ? "peer-cell" : "",

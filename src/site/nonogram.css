@@ -132,6 +132,11 @@
   box-shadow: inset 0 0 0 1px rgba(248, 250, 252, 0.12);
 }
 
+.nonogram-board .grid.nonogram .cell.marked-empty {
+  color: #64748b;
+  background: #e2e8f0;
+}
+
 .nonogram-board .grid.nonogram .cell.hint {
   color: #450a0a;
   background: #fecaca;
@@ -139,6 +144,42 @@
 
 .nonogram-workspace .puzzle-panel {
   align-items: center;
+}
+
+.nonogram-mark-mode {
+  display: flex;
+  gap: 0.2rem;
+  align-self: center;
+  margin-bottom: 0.4rem;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 0.7rem;
+  padding: 0.2rem;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.nonogram-mark-mode button {
+  min-height: 2.5rem;
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  color: #cbd5e1;
+  background: transparent;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.nonogram-mark-mode button[aria-pressed="true"] {
+  color: #082f49;
+  background: #bae6fd;
+}
+
+.nonogram-mark-mode button:focus-visible {
+  outline: 2px solid #a7f3d0;
+  outline-offset: 2px;
+}
+
+.nonogram-mark-mode button:disabled {
+  cursor: default;
+  opacity: 0.6;
 }
 
 .nonogram-settings-panel {

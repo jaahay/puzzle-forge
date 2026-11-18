@@ -61,10 +61,15 @@ export const clearGridValidationTone = (puzzleId: PuzzleId, cell: PuzzleCell): P
 };
 
 export const getGridEntryTone = (puzzleId: PuzzleId, value: string): PuzzleCell["tone"] =>
-  usesNeutralNumericEntryTone(puzzleId) ? "empty" : value ? "answer" : "empty";
+  usesNeutralNumericEntryTone(puzzleId) ? "empty"
+    : puzzleId === "nonogram" ? (value === "■" ? "accent" : "empty")
+    : value ? "answer" : "empty";
 
 export const getGridEntryStatusMessage = (puzzleId: PuzzleId, value: string) => {
   if (puzzleId === "word-guess") return "";
+  if (puzzleId === "nonogram") return value === "■"
+    ? "Marked filled square."
+    : value === "×" ? "Marked empty square." : "Cleared square.";
   const puzzleName = puzzleId === "sudoku" ? "Sudoku" : puzzleId === "futoshiki" ? "Futoshiki" : null;
   return puzzleName ? `${puzzleName} entry updated.` : value ? `Set cell to ${value}.` : "Cleared cell.";
 };
@@ -271,7 +276,9 @@ export const useGridController = () => {
         ...current,
         value: nextValue,
         tone: getGridEntryTone(puzzle.puzzleId, nextValue),
-        ariaLabel: `${nextValue || "Empty"} cell at row ${current.row + 1}, column ${current.column + 1}`,
+        ariaLabel: puzzle.puzzleId === "nonogram"
+          ? `${nextValue === "■" ? "Filled" : nextValue === "×" ? "Marked empty" : "Unmarked"} nonogram cell at row ${current.row + 1}, column ${current.column + 1}`
+          : `${nextValue || "Empty"} cell at row ${current.row + 1}, column ${current.column + 1}`,
       };
 
       if (supportsAutomaticGridCompletion(puzzle.puzzleId) && isGridPuzzleSolved(puzzle, editableCells)) {
@@ -287,48 +294,6 @@ export const useGridController = () => {
         cells: editableCells,
         message: getGridEntryStatusMessage(puzzle.puzzleId, nextValue),
       };
-    }, onStatusMessage);
-
-    if (result) recordGridHistoryEntry(historyEntry);
-  };
-
-  const toggleNonogramCell = (puzzle: GeneratedPuzzle, cell: PuzzleCell, onStatusMessage: (message: string) => void) => {
-    const currentCells = gridCellsRef.current;
-    if (puzzle.kind !== "grid" || puzzle.puzzleId !== "nonogram" || !currentCells || !getGridCell(currentCells, cell)) return;
-    if (isGridPuzzleSolved(puzzle, currentCells)) {
-      clearGridInteraction();
-      onStatusMessage("Solved.");
-      return;
-    }
-
-    clearGridTransientFeedbackTimer();
-    const historyEntry = captureGridHistoryEntry("nonogram");
-
-    clearGridInteraction();
-    const result = updateGridCells((cells) => {
-      const editableCells = cells.map((candidate) => clearGridValidationTone("nonogram", candidate));
-      const index = getCellIndex(editableCells, cell);
-      const current = editableCells[index];
-      if (!current) return { cells: editableCells, message: "Cell no longer exists." };
-
-      const nextValue = current.value === "■" ? "" : "■";
-      editableCells[index] = {
-        ...current,
-        value: nextValue,
-        tone: nextValue ? "accent" : "empty",
-        ariaLabel: `${nextValue ? "Filled" : "Empty"} nonogram cell at row ${current.row + 1}, column ${current.column + 1}`,
-      };
-
-      if (isGridPuzzleSolved(puzzle, editableCells)) {
-        return {
-          cells: editableCells,
-          message: "Solved. All clues match.",
-          feedbackTone: "success",
-          clearSelection: true,
-        };
-      }
-
-      return { cells: editableCells, message: nextValue ? "Marked filled square." : "Cleared square." };
     }, onStatusMessage);
 
     if (result) recordGridHistoryEntry(historyEntry);
@@ -416,10 +381,6 @@ export const useGridController = () => {
 
     if (getGridInputMode(puzzle.puzzleId) === "numeric") {
       selectNumericGridCell(cell);
-      return;
-    }
-    if (puzzle.puzzleId === "nonogram") {
-      toggleNonogramCell(puzzle, cell, onStatusMessage);
       return;
     }
     if (puzzle.puzzleId === "peg-solitaire") handlePegSolitaireCellClick(cell, onStatusMessage);
