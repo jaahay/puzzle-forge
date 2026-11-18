@@ -206,7 +206,7 @@ export const GridPuzzlePreview = ({
             onClick={() => onCellClick(cell)}
             type="button"
           >
-            {isNonogram ? "" : isSudoku ? (
+            {isNonogram ? (cell.value === "×" ? <span aria-hidden="true">×</span> : "") : isSudoku ? (
               <>
                 {killerCage?.isClueCell ? <span aria-hidden="true" class="killer-cage-sum">{killerCage.sum}</span> : null}
                 <span
