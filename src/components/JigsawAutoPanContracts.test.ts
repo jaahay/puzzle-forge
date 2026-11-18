@@ -20,16 +20,16 @@ describe("Jigsaw auto-pan controller boundary", () => {
     expect(previewSource).toContain('"--jigsaw-piece-y":');
 
     expect(jigsawCss).toContain(".jigsaw-island {");
-    expect(jigsawCss).toContain("calc(var(--jigsaw-piece-x, 0px) + var(--jigsaw-active-drag-x))");
-    expect(jigsawCss).toContain(".jigsaw-island.dragging {");
-    expect(jigsawCss).toContain("calc(var(--jigsaw-piece-y, 0px) + var(--jigsaw-active-drag-y))");
-    expect(jigsawCss).toContain("--jigsaw-active-drag-x: var(--jigsaw-drag-x, 0px)");
+    expect(jigsawCss).toContain("Canonical pose stays here; temporary drag displacement uses style.translate.");
+    expect(jigsawCss).toContain("transform: translate3d(");
+    expect(jigsawCss).not.toContain("--jigsaw-active-drag-x");
+    expect(jigsawCss).not.toContain("--jigsaw-drag-x");
     expect(jigsawCss).toContain(".tile-puzzle-piece {");
     expect(jigsawCss).toContain("var(--jigsaw-piece-x, 0px)");
     expect(jigsawCss).toContain("var(--jigsaw-piece-y, 0px)");
     expect(previewSource).toContain("projectJigsawDragOffset(");
     expect(previewSource).toContain("islandElement");
-    expect(previewSource).toContain("clearIslandDragOffset(drag)");
+    expect(previewSource).toContain("endDragPresentation(drag, true)");
     expect(previewSource).toContain("positionJigsawVisualIslands(");
     expect(previewSource).toContain("reconcileJigsawVisualScene(");
     expect(previewSource).toContain("const JigsawIslandVisual = memo(");
@@ -44,8 +44,17 @@ describe("Jigsaw auto-pan controller boundary", () => {
     expect(previewSource).toContain('class="tile-puzzle-piece-outline"');
   });
 
+  it("keeps the transient drag offset until the next committed layout", () => {
+    expect(previewSource).toContain("useLayoutEffect(() => {");
+    expect(previewSource).toContain("pendingDragResetRef.current = drag.islandElement");
+    expect(previewSource).toContain("resetJigsawDragOffset([pending])");
+    expect(previewSource).toContain("endDragPresentation(interruptedDrag, true)");
+    expect(previewSource).toContain("endDragPresentation(drag, true)");
+    expect(previewSource).not.toContain("clearIslandDragOffset");
+  });
+
   it("clears transient interaction presentation when gestures terminate", () => {
-    expect((previewSource.match(/setActiveTileId\(null\)/g) ?? []).length).toBeGreaterThanOrEqual(4);
+    expect((previewSource.match(/setActiveTileId\(null\)/g) ?? []).length).toBeGreaterThanOrEqual(1);
     expect(previewSource).toContain("dragRef.current = null");
     expect(previewSource).toContain("pinchRef.current = null");
     expect(previewSource).toContain("panRef.current = null");
