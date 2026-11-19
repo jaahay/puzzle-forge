@@ -499,7 +499,8 @@ export const ImageTilePuzzlePreview = ({
       </div>
 
       <div class="image-tile-board-viewport" ref={boardViewportRef}>
-        <div class="image-tile-reference" id={`image-tile-reference-${puzzle.id}`} style={frameStyle} hidden={!showPreview}>
+        <div class="image-tile-board-frame" style={{ width: boardStyle.width }}>
+          <div class="image-tile-reference" id={`image-tile-reference-${puzzle.id}`} style={frameStyle} hidden={!showPreview}>
           <img src={puzzle.asset.files.puzzle} alt={puzzle.asset.alt} />
         </div>
         <div
@@ -575,6 +576,7 @@ export const ImageTilePuzzlePreview = ({
             </button>
           );
           })}
+        </div>
         </div>
       </div>
     </section>

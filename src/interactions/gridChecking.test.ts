@@ -192,7 +192,26 @@ describe("Nonogram grid checking feedback", () => {
     expect(result.message).toBe("Looks good so far.");
   });
 
-  it("marks only filled cells that participate in impossible clue lines", () => {
+  it("honors known-empty marks and highlights impossible clue lines", () => {
+    const impossible = checkGridAnswer(makeNonogramPuzzle(), [
+      makeCell(0, 0, "×"),
+      makeCell(0, 1, "×"),
+      makeCell(0, 2, "×"),
+    ]);
+    expect(impossible.feedbackTone).toBe("error");
+    expect(impossible.message).toContain("row clue");
+    expect(impossible.cells.map((cell) => cell.tone)).toEqual(["hint", "hint", "hint"]);
+
+    const possible = checkGridAnswer(makeNonogramPuzzle(), [
+      makeCell(0, 0, "■"),
+      makeCell(0, 1, ""),
+      makeCell(0, 2, "×"),
+    ]);
+    expect(possible.feedbackTone).toBe("progress");
+    expect(possible.cells.map((cell) => cell.tone)).toEqual(["accent", "empty", "empty"]);
+  });
+
+  it("marks filled cells that participate in impossible clue lines", () => {
     const puzzle = makeNonogramPuzzle([1]);
     const result = checkGridAnswer(puzzle, [
       makeCell(0, 0, "■"),

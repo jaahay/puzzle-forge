@@ -17,6 +17,9 @@ describe("contextual assistance controls", () => {
     expect(component).toContain("hidden={!showPreview}");
     expect(component).toContain("aria-expanded={showPreview}");
     expect(css).toContain(".image-tile-reference {\n  position: absolute;");
+    expect(css).toContain("pointer-events: auto;");
+    expect(css).toContain(".image-tile-board-frame {\n  position: relative;");
+    expect(component).toContain('class="image-tile-board-frame" style={{ width: boardStyle.width }}');
   });
 
   it("does not mix changing action labels with aria-pressed for Jigsaw view commands", () => {

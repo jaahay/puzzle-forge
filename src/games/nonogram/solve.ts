@@ -85,13 +85,15 @@ export const isNonogramLineFeasible = (
   length: number,
   clues: number[],
   filledIndices: readonly number[],
+  emptyIndices: readonly number[] = [],
 ) => {
-  if (filledIndices.some((index) => index < 0 || index >= length)) {
+  if ([...filledIndices, ...emptyIndices].some((index) => index < 0 || index >= length)) {
     return false;
   }
 
   return enumerateLinePatterns(length, clues).some((pattern) =>
-    filledIndices.every((index) => pattern[index]),
+    filledIndices.every((index) => pattern[index]) &&
+    emptyIndices.every((index) => !pattern[index]),
   );
 };
 

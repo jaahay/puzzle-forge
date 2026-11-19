@@ -18,5 +18,9 @@ describe("Jigsaw keyboard workspace parity", () => {
     expect((source.match(/settleJigsawDropStack\(/g) ?? []).length).toBe(2);
     expect(source).toContain("const settleJigsawDropStack = (");
     expect(source).toContain("getJigsawComponentPieceIds(before.assembly, keyboardPieceId)");
+    expect(source).toContain("event.ctrlKey || event.metaKey || event.altKey");
+    expect(source).toContain("dragRef.current || panRef.current || pinchRef.current || touchPointsRef.current.size > 0");
+    expect(source).toContain("setKeyboardPieceId(null);\n    setKeyboardFeedback(\"\");\n    setFreeDropStack");
+
   });
 });

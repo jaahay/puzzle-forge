@@ -175,6 +175,11 @@
   justify-items: center;
 }
 
+.image-tile-board-frame {
+  position: relative;
+  max-width: 100%;
+}
+
 .image-tile-board {
   width: min(100%, 42rem);
   overflow: hidden;
@@ -192,7 +197,8 @@
   border-radius: 0.55rem;
   background: #020617;
   box-shadow: 0 8px 28px rgba(2, 6, 23, 0.55);
-  pointer-events: none;
+  /* A visible reference must never allow accidental tile interaction beneath it. */
+  pointer-events: auto;
 }
 
 .image-tile-reference img {

@@ -724,6 +724,8 @@ export const TilePuzzlePreview = ({
     touchPointsRef.current.clear();
     pinchRef.current = null;
     setActiveTileId(null);
+    setKeyboardPieceId(null);
+    setKeyboardFeedback("");
     setFreeDropStack({ puzzleId: puzzle.id, order: [] });
     setIsPanning(false);
     if (baseline) {
@@ -1324,7 +1326,11 @@ export const TilePuzzlePreview = ({
   };
 
   const handleStageKeyDown = (event: StageKeyboardEvent) => {
-    if (inputSuspended || event.target !== event.currentTarget) return;
+    if (
+      inputSuspended || event.target !== event.currentTarget ||
+      event.ctrlKey || event.metaKey || event.altKey ||
+      dragRef.current || panRef.current || pinchRef.current || touchPointsRef.current.size > 0
+    ) return;
     if (event.key === "Escape") {
       if (keyboardPieceId) {
         setKeyboardPieceId(null);
