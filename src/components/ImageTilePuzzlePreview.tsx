@@ -471,7 +471,6 @@ export const ImageTilePuzzlePreview = ({
   );
   const frameStyle = {
     aspectRatio: boardStyle.aspectRatio,
-    width: boardStyle.width,
   } as JSX.CSSProperties;
 
   return (
@@ -489,18 +488,21 @@ export const ImageTilePuzzlePreview = ({
           </summary>
           <p>{getImageTileHelpCopy(isSliding)}</p>
         </details>
-        <button type="button" aria-pressed={showPreview} onClick={() => setShowPreview((current) => !current)}>
+        <button
+          type="button"
+          aria-expanded={showPreview}
+          aria-controls={`image-tile-reference-${puzzle.id}`}
+          onClick={() => setShowPreview((current) => !current)}
+        >
           {showPreview ? "Hide reference" : "Show reference"}
         </button>
       </div>
 
-      {showPreview ? (
-        <div class="image-tile-reference" style={frameStyle}>
+      <div class="image-tile-board-viewport" ref={boardViewportRef}>
+        <div class="image-tile-board-frame" style={{ width: boardStyle.width }}>
+          <div class="image-tile-reference" id={`image-tile-reference-${puzzle.id}`} style={frameStyle} hidden={!showPreview}>
           <img src={puzzle.asset.files.puzzle} alt={puzzle.asset.alt} />
         </div>
-      ) : null}
-
-      <div class="image-tile-board-viewport" ref={boardViewportRef}>
         <div
           class={`image-tile-board ${showSolvedPresentation ? "solved" : ""} ${showCompletionEffect ? "just-solved" : ""}`}
           style={boardStyle}
@@ -574,6 +576,7 @@ export const ImageTilePuzzlePreview = ({
             </button>
           );
           })}
+        </div>
         </div>
       </div>
     </section>

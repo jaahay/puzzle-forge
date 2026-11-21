@@ -97,6 +97,10 @@ Examples:
 - Auto foundation;
 - Hint, once supported.
 
+### Assistance and workspace controls
+
+Keep rules, reference imagery, solving aids, and display preferences distinct in meaning, even when puzzle-specific Tools disclosures group infrequent operations. Reference imagery should not insert a second board-sized block that pushes the active puzzle down. A button whose label changes to describe the next action does not also advertise a persistent `aria-pressed` state; stable labeled mode controls may.
+
 ### Action history
 
 Where the mechanic admits a meaningful reversible action, prefer both Undo and Redo.
@@ -106,7 +110,7 @@ Where the mechanic admits a meaningful reversible action, prefer both Undo and R
 Examples:
 
 - one Sudoku/Futoshiki cell edit = one action;
-- one Nonogram mark change = one action;
+- one Nonogram filled/known-empty/clear mark change = one action;
 - one Tile Swap exchange = one action;
 - one Sliding Puzzle slide = one action;
 - one Jigsaw drag-and-release = one action, regardless of pointer-motion events.

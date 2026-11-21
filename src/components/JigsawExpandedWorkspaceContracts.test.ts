@@ -175,7 +175,7 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).toContain('doc.addEventListener("pointerdown", onOutsidePointer, true)');
     expect(jigsawPreviewSource).toContain('doc.addEventListener("focusin", onOutsideFocus, true)');
     expect(jigsawPreviewSource).toContain('doc.addEventListener("keydown", onEscape)');
-    expect(jigsawPreviewSource).toContain("aria-pressed={showPreview}");
+    expect(jigsawPreviewSource).not.toContain("aria-pressed={showPreview}");
     expect(jigsawPreviewSource).toContain('onClick={() => setPlayerPreferences((current) => ({ ...current, showPreview: !current.showPreview }))}');
     expect(jigsawPreviewSource).toContain('saveJigsawPlayerPreferences(playerPreferences)');
     expect(jigsawPreviewSource).toContain('if (restagePieces()) setShowCompactTools(false)');
@@ -190,13 +190,13 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).toContain('fitIsOverview ? "Return to working view" : "Show all pieces"');
     expect(jigsawPreviewSource).toContain("<JigsawFitIcon />");
     expect(jigsawPreviewSource).toContain("onClick={toggleFitView}");
-    expect(jigsawPreviewSource).toContain('aria-pressed={fitIsOverview}');
+    expect(jigsawPreviewSource).not.toContain('aria-pressed={fitIsOverview}');
     expect(jigsawPreviewSource).not.toContain("jigsaw-view-action-label");
     expect(jigsawPreviewSource).toContain('title={fitIsOverview ? "Return to working view" : "Show all pieces"}');
     expect(jigsawPreviewSource).toContain('title="Expand workspace"');
     expect(jigsawPreviewSource).toContain('<rect x="2.5" y="3.5" width="19" height="17" rx="2.5" />');
     expect(jigsawPreviewSource).not.toContain('<circle cx="12" cy="12" r="2.5" />');
-    expect(jigsawCss).toContain('.jigsaw-camera-tools .jigsaw-fit-action[aria-pressed="true"]');
+    expect(jigsawCss).not.toContain('.jigsaw-camera-tools .jigsaw-fit-action[aria-pressed="true"]');
     expect(jigsawCss).not.toContain(".jigsaw-view-action-label");
     const compactFitRule = cssRule(jigsawCss, ".jigsaw-camera-tools .jigsaw-fit-action {");
     expect(compactFitRule).toContain("width: 2.6rem;");

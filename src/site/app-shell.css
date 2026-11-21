@@ -247,6 +247,29 @@
   transform: translateY(-1px);
 }
 
+.recent-puzzle-more {
+  margin-top: 0.6rem;
+}
+
+.recent-puzzle-more > summary {
+  width: fit-content;
+  border-radius: 0.65rem;
+  padding: 0.42rem 0.65rem;
+  color: #bfdbfe;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.recent-puzzle-more > summary:focus-visible {
+  outline: 2px solid #a7f3d0;
+  outline-offset: 2px;
+}
+
+.recent-puzzle-more .recent-puzzle-list {
+  margin-top: 0.55rem;
+}
+
 .recent-puzzle-list {
   display: grid;
   gap: 0.42rem;

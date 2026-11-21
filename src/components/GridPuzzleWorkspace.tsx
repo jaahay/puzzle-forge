@@ -1,4 +1,5 @@
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
+import { useState } from "preact/hooks";
 import { playingTerminalState, solvedTerminalState, type PuzzleTerminalState } from "../app/puzzleTerminalState";
 import { isGridPuzzleSolved } from "../interactions/gridChecking";
 import { getBoardViewportNaturalWidth } from "./BoardViewport";
@@ -23,6 +24,13 @@ export const getGridWorkspaceTerminalState = (
   }
 
   return isGridPuzzleSolved(puzzle, cells) ? solvedTerminalState : playingTerminalState;
+};
+
+export type NonogramMarkMode = "fill" | "cross";
+
+export const getNextNonogramMark = (current: string, mode: NonogramMarkMode) => {
+  const mark = mode === "fill" ? "■" : "×";
+  return current === mark ? "" : mark;
 };
 
 export const GridPuzzleWorkspace = ({
@@ -54,6 +62,7 @@ export const GridPuzzleWorkspace = ({
   onCellClick,
   onCellInput,
 }: GridPuzzleWorkspaceProps) => {
+  const [nonogramMarkMode, setNonogramMarkMode] = useState<NonogramMarkMode>("fill");
   const isNonogram = selectedDefinition.id === "nonogram";
   const isWordGuess = selectedDefinition.id === "word-guess";
   const isFutoshiki = selectedDefinition.id === "futoshiki";
@@ -78,6 +87,11 @@ export const GridPuzzleWorkspace = ({
 
   const handleCellClick = (cell: PuzzleCell) => {
     if (isGenerating || isSolved) return;
+    if (isNonogram) {
+      // Both marking modes share the existing grid edit/history/persistence path.
+      onCellInput(cell, getNextNonogramMark(cell.value, nonogramMarkMode));
+      return;
+    }
     onCellClick(cell);
   };
 
@@ -190,6 +204,12 @@ export const GridPuzzleWorkspace = ({
       aria-label="Generated puzzle preview"
       inert={isGenerating}
     >
+      {isNonogram && gridCells ? (
+        <div class="nonogram-mark-mode" role="group" aria-label="Nonogram cell marking">
+          <button type="button" aria-pressed={nonogramMarkMode === "fill"} onClick={() => setNonogramMarkMode("fill")} disabled={isGenerating || isSolved}>Fill</button>
+          <button type="button" aria-pressed={nonogramMarkMode === "cross"} onClick={() => setNonogramMarkMode("cross")} disabled={isGenerating || isSolved}>Mark empty ×</button>
+        </div>
+      ) : null}
       {puzzle.puzzleId === "word-guess" && gridCells ? (
         <WordGuessGame
           puzzle={puzzle}

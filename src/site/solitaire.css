@@ -358,16 +358,104 @@
     min-width: 0;
   }
 
+  /* Six top slots and seven tableau columns fit the phone width;
+     card overlap remains vertical rather than introducing horizontal scrolling. */
+  .cards-layout {
+    min-width: 0;
+    width: 100%;
+    overflow-x: visible;
+  }
+
   .card-board-top-row {
-    min-width: 29rem;
-    gap: 0.65rem;
+    min-width: 0;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 4fr);
+    gap: 0.28rem;
+  }
+
+  .stock-row,
+  .foundation-row {
+    min-width: 0;
+    gap: 0.18rem;
+  }
+
+  .stock-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .foundation-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .tableau-row {
-    min-width: 37rem;
+    min-width: 0;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.2rem;
+    overflow-x: visible;
+    padding: 0.15rem 0.05rem 3.8rem;
+  }
+
+  .tableau-row .card-stack {
+    min-width: 0;
   }
 
   .playing-card {
-    min-height: 4.65rem;
+    width: 100%;
+    min-height: 0;
+    aspect-ratio: 0.72;
+    border-radius: 0.38rem;
+    font-size: clamp(0.68rem, 2.4vw, 0.92rem);
+  }
+
+  .stock .playing-card-list,
+  .waste .playing-card-list,
+  .foundation .playing-card-list {
+    min-height: 0;
+  }
+
+  .waste .playing-card-list {
+    min-width: 0;
+    padding-right: 0;
+  }
+
+  .waste .playing-card {
+    flex: 0 0 72%;
+  }
+
+  .waste .playing-card + .playing-card {
+    margin-left: -59%;
+  }
+
+  .tableau .playing-card-list {
+    grid-auto-rows: clamp(0.75rem, 2vw, 1rem);
+    padding-bottom: clamp(3.5rem, 12vw, 5rem);
+  }
+
+  .card-corner {
+    font-size: clamp(0.58rem, 2vw, 0.72rem);
+  }
+
+  .card-corner-top {
+    top: 0.14rem;
+    left: 0.12rem;
+  }
+
+  .card-corner-bottom {
+    right: 0.12rem;
+    bottom: 0.14rem;
+  }
+
+  .card-center-suit {
+    font-size: clamp(0.85rem, 3vw, 1.35rem);
+  }
+
+  .card-back-mark {
+    width: min(1.5rem, 70%);
+    height: auto;
+    aspect-ratio: 1;
+    font-size: 0.54rem;
+  }
+
+  .solitaire-action-row button {
+    min-height: 2.75rem;
   }
 }

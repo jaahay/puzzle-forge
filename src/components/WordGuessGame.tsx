@@ -1,3 +1,4 @@
+import type { JSX } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { failedTerminalState, playingTerminalState, solvedTerminalState, type PuzzleTerminalState } from "../app/puzzleTerminalState";
 import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
@@ -386,7 +387,14 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
         <strong>{message}</strong>
       </div>
 
-      <div class="word-guess-board-shell" onClick={focusNativeInput}>
+      <div
+        class="word-guess-board-shell"
+        style={{
+          "--word-guess-columns": puzzle.width,
+          "--word-guess-ideal-width": `${puzzle.width * 3.85}rem`,
+        } as JSX.CSSProperties}
+        onClick={focusNativeInput}
+      >
         <input
           ref={nativeInputRef}
           class="word-guess-native-input"
@@ -494,6 +502,13 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
         </div>
       )}
 
+      <div class="word-guess-play-options">
+        <label class="word-guess-hard-mode">
+          <input type="checkbox" checked={hardMode} onChange={(event) => setHardMode(event.currentTarget.checked)} disabled={status !== "playing" && submittedRows > 0} />
+          <span>Hard mode</span>
+        </label>
+      </div>
+
       <details class="word-guess-solver-details">
         <summary>Solver</summary>
         <div class="word-guess-analysis-header">
@@ -510,11 +525,6 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
             <span>starter</span>
           </div>
         </div>
-
-        <label class="word-guess-hard-mode">
-          <input type="checkbox" checked={hardMode} onChange={(event) => setHardMode(event.currentTarget.checked)} disabled={status !== "playing" && submittedRows > 0} />
-          <span>Hard mode</span>
-        </label>
 
         {analysis.steps.length > 0 ? (
           <ol class="word-guess-candidate-steps">

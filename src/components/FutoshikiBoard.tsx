@@ -166,9 +166,12 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, disabled = fal
         onDigit={input.setSelectedValue}
         onClear={input.clearSelectedValue}
       />
-      <p class="grid-rule-note" id="futoshiki-rule">
-        Use each digit once per row and column. The narrow side of each inequality points to the smaller number.
-      </p>
+      <details class="grid-rule-help">
+        <summary>How to play Futoshiki</summary>
+        <p class="grid-rule-note" id="futoshiki-rule">
+          Use each digit once per row and column. The narrow side of each inequality points to the smaller number.
+        </p>
+      </details>
     </BoardViewport>
   );
 };

@@ -451,7 +451,7 @@ const restoreGridCell = (puzzle: GridGeneratedPuzzle, baseline: PuzzleCell, pers
       ...baseline,
       value: persistedValue,
       tone: persistedValue === "■" ? "accent" : "empty",
-      ariaLabel: `${persistedValue === "■" ? "Filled" : "Empty"} nonogram cell at row ${baseline.row + 1}, column ${baseline.column + 1}`,
+      ariaLabel: `${persistedValue === "■" ? "Filled" : persistedValue === "×" ? "Marked empty" : "Unmarked"} nonogram cell at row ${baseline.row + 1}, column ${baseline.column + 1}`,
     };
   }
   return {

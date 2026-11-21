@@ -19,6 +19,7 @@ import {
   type JigsawDragAction,
 } from "../games/jigsaw/dragAction";
 import { resolveJigsawAssistanceActivation } from "../games/jigsaw/interaction";
+import { advanceJigsawKeyboardPiece } from "../games/jigsaw/keyboardAction";
 import { getJigsawWheelGesture } from "../games/jigsaw/wheelInput";
 import {
   getJigsawVisualMembershipKey,
@@ -48,6 +49,7 @@ import {
   createJigsawOccupiedFitCamera,
   createJigsawWorkingFitCamera,
   createJigsawWorldLayout,
+  clampJigsawCamera,
   getJigsawCameraTransform,
   getJigsawPlacementPosition,
   isUsableJigsawViewport,
@@ -144,6 +146,7 @@ type IslandVisualProps = {
   puzzle: JigsawGeneratedPuzzle;
   layout: JigsawWorldLayout;
   active: boolean;
+  keyboardSelected: boolean;
   anchored: boolean;
   freeDropRank: number;
   showEdgeSeams: boolean;
@@ -155,7 +158,7 @@ type IslandVisualProps = {
 
 /** Memoized by immutable membership and individual pose; camera changes do not re-render artwork. */
 const JigsawIslandVisual = memo(({
-  island, puzzle, layout, active, anchored, freeDropRank, showEdgeSeams, appearance, isSolved,
+  island, puzzle, layout, active, keyboardSelected, anchored, freeDropRank, showEdgeSeams, appearance, isSolved,
   islandElements, pointerActions,
 }: IslandVisualProps) => {
   const clipId = `island-${puzzle.id}-${island.key}`.replace(/[^a-zA-Z0-9_-]/g, "-");
@@ -168,7 +171,7 @@ const JigsawIslandVisual = memo(({
   } as JSX.CSSProperties;
   return (
     <div
-      class={`jigsaw-island ${anchored ? "anchored" : island.members.length > 1 ? "joined" : "loose"} ${active ? "dragging" : ""}`}
+      class={`jigsaw-island ${anchored ? "anchored" : island.members.length > 1 ? "joined" : "loose"} ${active ? "dragging" : ""} ${keyboardSelected ? "keyboard-selected" : ""}`}
       data-piece-appearance={appearance}
       ref={(element) => {
         if (element) islandElements.current.set(island.key, element);
@@ -374,6 +377,8 @@ export const TilePuzzlePreview = ({
   runtimeChangeRef.current = onRuntimeChange;
   const [cameraState, setCameraState] = useState<CameraState | null>(null);
   const [activeTileId, setActiveTileId] = useState<string | null>(null);
+  const [keyboardPieceId, setKeyboardPieceId] = useState<string | null>(null);
+  const [keyboardFeedback, setKeyboardFeedback] = useState("");
   // Presentation-only order: free drops stay above earlier pieces; joins settle.
   const [freeDropStack, setFreeDropStack] = useState<{ puzzleId: string; order: string[] }>({
     puzzleId: puzzle.id,
@@ -394,6 +399,7 @@ export const TilePuzzlePreview = ({
   useEffect(() => {
     saveJigsawPlayerPreferences(playerPreferences);
   }, [playerPreferences]);
+  useEffect(() => { setKeyboardPieceId(null); setKeyboardFeedback(""); }, [puzzle.id]);
   const markManualCameraAdjustment = () => {
     cameraWasUserAdjustedRef.current = true;
     setFitIsOverview(false);
@@ -718,6 +724,8 @@ export const TilePuzzlePreview = ({
     touchPointsRef.current.clear();
     pinchRef.current = null;
     setActiveTileId(null);
+    setKeyboardPieceId(null);
+    setKeyboardFeedback("");
     setFreeDropStack({ puzzleId: puzzle.id, order: [] });
     setIsPanning(false);
     if (baseline) {
@@ -830,6 +838,7 @@ export const TilePuzzlePreview = ({
     }));
     replaceHistory(transition.history);
     setActiveTileId(null);
+    setKeyboardPieceId(null);
     setFreeDropStack({ puzzleId: puzzle.id, order: [] });
     return true;
   }, [canHistoryAction, puzzle.id, replaceHistory, updatePlacementState]);
@@ -1008,6 +1017,29 @@ export const TilePuzzlePreview = ({
     dragAnimationFrameRef.current = window.requestAnimationFrame(runDragAnimationFrame);
   };
 
+  const settleJigsawDropStack = (
+    pieceId: string, draggedMemberIds: readonly string[], snapshot: JigsawWorkspaceSnapshot,
+  ) => {
+    const finalMembers = getJigsawComponentPieceIds(snapshot.assembly, pieceId);
+    const joined = finalMembers.some((id) => !draggedMemberIds.includes(id));
+    const anchored = finalMembers.some((id) => snapshot.assembly.anchoredPieceIds?.includes(id));
+    // A new snap consumes the old layers; an ordinary free drop goes above earlier pieces.
+    const affectedIdentities = new Set(finalMembers.flatMap((id) => {
+      const island = visualScene.byPieceId.get(id);
+      return island ? [getJigsawIslandLayerIdentity(island)] : [];
+    }));
+    const availableIdentities = new Set(visualScene.islands.map(getJigsawIslandLayerIdentity));
+    const oldIsland = visualScene.byPieceId.get(pieceId);
+    const freeIdentity = oldIsland ? getJigsawIslandLayerIdentity(oldIsland) : null;
+    setFreeDropStack((current) => {
+      const prior = current.puzzleId === puzzle.id ? current.order : [];
+      const order = prior.filter((id) =>
+        availableIdentities.has(id) && !affectedIdentities.has(id));
+      if (!joined && !anchored && freeIdentity) order.push(freeIdentity);
+      return { puzzleId: puzzle.id, order };
+    });
+  };
+
   const beginDrag = (event: PiecePointerEvent, tile: JigsawPiece, placement: JigsawPlacement) => {
     if (inputSuspended || isSolved || pinchRef.current) return;
     const stagePoint = getStagePoint(event.clientX, event.clientY);
@@ -1051,6 +1083,7 @@ export const TilePuzzlePreview = ({
     stageRef.current?.focus({ preventScroll: true });
     target.setPointerCapture(event.pointerId);
     setActiveTileId(tile.id);
+    setKeyboardPieceId(null);
     startDragAnimation();
     event.stopPropagation();
     event.preventDefault();
@@ -1119,24 +1152,7 @@ export const TilePuzzlePreview = ({
     setActiveTileId(null);
     if (nextState?.puzzleId === puzzle.id) {
       if (changed) {
-        const finalMembers = getJigsawComponentPieceIds(nextSnapshot.assembly, drag.tileId);
-        const joined = finalMembers.some((id) => !drag.pieceIds.includes(id));
-        const anchored = finalMembers.some((id) => nextSnapshot.assembly.anchoredPieceIds?.includes(id));
-        // Remove old layers of every island consumed by a snap, not just the dragged one.
-        const affectedIdentities = new Set(finalMembers.flatMap((id) => {
-          const island = visualScene.byPieceId.get(id);
-          return island ? [getJigsawIslandLayerIdentity(island)] : [];
-        }));
-        const availableIdentities = new Set(visualScene.islands.map(getJigsawIslandLayerIdentity));
-        const draggedIsland = visualScene.byPieceId.get(drag.tileId);
-        const freeIdentity = draggedIsland ? getJigsawIslandLayerIdentity(draggedIsland) : null;
-        setFreeDropStack((current) => {
-          const prior = current.puzzleId === puzzle.id ? current.order : [];
-          const order = prior.filter((id) =>
-            availableIdentities.has(id) && !affectedIdentities.has(id));
-          if (!joined && !anchored && freeIdentity) order.push(freeIdentity);
-          return { puzzleId: puzzle.id, order };
-        });
+        settleJigsawDropStack(drag.tileId, drag.pieceIds, nextSnapshot);
       }
       if (completed.solved) onCausativeInput();
       replaceHistory(completed.history);
@@ -1291,17 +1307,96 @@ export const TilePuzzlePreview = ({
     setZoomAtCenter(getJigsawZoomStep(wheelStateRef.current.camera.zoom, direction));
   };
 
+  const keyboardIslands = visualIslands.filter((island) =>
+    !island.members.some(({ piece }) => anchoredIslandIds.has(piece.id)));
+
+  const selectKeyboardIsland = (id: string) => {
+    const island = keyboardIslands.find((candidate) => candidate.members.some(({ piece }) => piece.id === id));
+    const piece = island?.members[0]?.piece;
+    if (!island || !piece) return;
+    setKeyboardPieceId(piece.id);
+    setKeyboardFeedback(`Piece ${piece.solvedIndex + 1} selected. Arrow keys move it, Shift moves further, Escape releases.`);
+    markManualCameraAdjustment();
+    const { camera, viewport } = wheelStateRef.current;
+    setCamera(clampJigsawCamera(layout, viewport, {
+      ...camera,
+      centerX: island.worldX + island.widthCells * layout.pieceWidth / 2,
+      centerY: island.worldY + island.heightCells * layout.pieceHeight / 2,
+    }));
+  };
+
   const handleStageKeyDown = (event: StageKeyboardEvent) => {
-    if (inputSuspended) return;
-    if (event.key === "Escape" && event.target === event.currentTarget) {
-      event.currentTarget.blur();
+    if (
+      inputSuspended || event.target !== event.currentTarget ||
+      event.ctrlKey || event.metaKey || event.altKey ||
+      dragRef.current || panRef.current || pinchRef.current || touchPointsRef.current.size > 0
+    ) return;
+    if (event.key === "Escape") {
+      if (keyboardPieceId) {
+        setKeyboardPieceId(null);
+        setKeyboardFeedback("Piece released; arrow keys now pan.");
+      } else event.currentTarget.blur();
       event.preventDefault();
       return;
     }
-    if (event.target !== event.currentTarget) return;
+
+    if (!isSolved && (event.key.toLowerCase() === "p" || event.key === "[" || event.key === "]")) {
+      if (!keyboardIslands.length) return;
+      if (keyboardPieceId && event.key.toLowerCase() === "p") {
+        setKeyboardPieceId(null);
+        setKeyboardFeedback("Piece released; arrow keys now pan.");
+      } else if (event.key.toLowerCase() === "p" || !keyboardPieceId) {
+        const { camera } = wheelStateRef.current;
+        const distance = (island: JigsawPositionedVisualIsland) => Math.hypot(
+          island.worldX + island.widthCells * layout.pieceWidth / 2 - camera.centerX,
+          island.worldY + island.heightCells * layout.pieceHeight / 2 - camera.centerY,
+        );
+        const nearest = keyboardIslands.reduce((best, island) => distance(island) < distance(best) ? island : best);
+        const id = nearest.members[0]?.piece.id;
+        if (id) selectKeyboardIsland(id);
+      } else {
+        const current = keyboardIslands.findIndex((island) => island.members.some(({ piece }) => piece.id === keyboardPieceId));
+        const index = (current + (event.key === "]" ? 1 : -1) + keyboardIslands.length) % keyboardIslands.length;
+        const id = keyboardIslands[index]?.members[0]?.piece.id;
+        if (id) selectKeyboardIsland(id);
+      }
+      event.preventDefault();
+      return;
+    }
 
     const direction = event.key;
     if (!["ArrowUp", "ArrowRight", "ArrowDown", "ArrowLeft"].includes(direction)) return;
+    if (keyboardPieceId && !isSolved) {
+      const before = getCurrentSnapshot();
+      if (!before) return;
+      const after = advanceJigsawKeyboardPiece(
+        layout, puzzle.tiles, before, keyboardPieceId,
+        direction as "ArrowUp" | "ArrowRight" | "ArrowDown" | "ArrowLeft",
+        event.shiftKey, snapToFrame,
+      );
+      if (!after) {
+        setKeyboardPieceId(null);
+        setKeyboardFeedback("Piece is anchored and cannot move.");
+      } else {
+        const history = commitJigsawPlacementAction(historyRef.current, before, after);
+        if (history !== historyRef.current) {
+          updatePlacementState(() => ({ puzzleId: puzzle.id, ...after }));
+          replaceHistory(history);
+          settleJigsawDropStack(
+            keyboardPieceId, getJigsawComponentPieceIds(before.assembly, keyboardPieceId), after,
+          );
+          const anchored = Boolean(after.assembly.anchoredPieceIds?.includes(keyboardPieceId));
+          const solved = isJigsawAssemblySolved(after.assembly, puzzle.tiles.length);
+          if (anchored || solved) setKeyboardPieceId(null);
+          if (solved) onCausativeInput();
+          const piece = puzzle.tiles.find((tile) => tile.id === keyboardPieceId);
+          setKeyboardFeedback(`Piece ${(piece?.solvedIndex ?? 0) + 1} moved ${direction.slice(5).toLowerCase()}${anchored ? " and anchored" : ""}.`);
+        }
+      }
+      event.preventDefault();
+      return;
+    }
+
     const step = event.shiftKey ? keyboardPanStep * 2 : keyboardPanStep;
     const deltaX = direction === "ArrowRight" ? step : direction === "ArrowLeft" ? -step : 0;
     const deltaY = direction === "ArrowDown" ? step : direction === "ArrowUp" ? -step : 0;
@@ -1345,7 +1440,6 @@ export const TilePuzzlePreview = ({
             type="button"
             aria-label={fitIsOverview ? "Return to working view" : "Show all pieces"}
             title={fitIsOverview ? "Return to working view" : "Show all pieces"}
-            aria-pressed={fitIsOverview}
             onClick={toggleFitView}
           >
             <JigsawFitIcon />
@@ -1397,7 +1491,6 @@ export const TilePuzzlePreview = ({
       >
         <button
           type="button"
-          aria-pressed={showPreview}
           onClick={() => setPlayerPreferences((current) => ({ ...current, showPreview: !current.showPreview }))}
         >
           {showPreview ? "Hide preview" : "Preview image"}
@@ -1427,7 +1520,6 @@ export const TilePuzzlePreview = ({
         </label>
         <button
           type="button"
-          aria-pressed={showEdgeSeams}
           onClick={() => {
             setPlayerPreferences((current) => ({ ...current, showEdgeSeams: !current.showEdgeSeams }));
           }}
@@ -1436,7 +1528,6 @@ export const TilePuzzlePreview = ({
         </button>
         <button
           type="button"
-          aria-pressed={lockViewDragging}
           title="Prevent accidental background and anchored-piece drag panning; wheel zoom, pinch, and view controls still work"
           onClick={() => setPlayerPreferences((current) => ({ ...current, lockViewDragging: !current.lockViewDragging }))}
         >
@@ -1467,6 +1558,10 @@ export const TilePuzzlePreview = ({
         >
           Snap and lock to frame
         </button>
+        <details class="jigsaw-keyboard-help">
+          <summary>Keyboard controls</summary>
+          <p>Focus the workspace, P selects the nearest piece, [ and ] cycle islands, arrows move, Shift + arrows move farther, and Escape releases selection. Arrows pan when nothing is selected.</p>
+        </details>
       </div>
 
       {shouldRenderJigsawReferencePreview(showPreview, isSolved) ? (
@@ -1486,8 +1581,9 @@ export const TilePuzzlePreview = ({
         onPointerCancel={finishPan}
         onKeyDown={handleStageKeyDown}
         tabIndex={0}
-        aria-label={`Jigsaw workspace. Scroll the mouse wheel to zoom toward the pointer. ${lockViewDragging ? "Background dragging is locked." : "Drag the background to pan."} Arrow keys, Shift plus wheel, or horizontal trackpad gestures pan. Pinch to zoom.`}
+        aria-label="Jigsaw workspace. Press P for the nearest loose piece; brackets cycle pieces; arrow keys move selected pieces, Shift moves farther, Escape releases. Without a selected piece arrows pan. Wheel or pinch zooms."
       >
+        <span class="sr-only" role="status" aria-live="polite">{keyboardFeedback}</span>
         <div class="jigsaw-world-layer" ref={worldLayerRef} style={worldStyle}>
           <div class="jigsaw-assembly-board" style={boardStyle} aria-hidden="true" />
 
@@ -1498,6 +1594,7 @@ export const TilePuzzlePreview = ({
               puzzle={puzzle}
               layout={layout}
               active={activeIslandKey === island.key}
+              keyboardSelected={Boolean(keyboardPieceId && island.members.some(({ piece }) => piece.id === keyboardPieceId))}
               anchored={anchoredIslandIds.has(island.members[0]!.piece.id)}
               freeDropRank={freeDropOrder.indexOf(getJigsawIslandLayerIdentity(island))}
               showEdgeSeams={showEdgeSeams}

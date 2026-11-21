@@ -78,7 +78,7 @@ const RecentPuzzleButton = ({ entry }: { entry: RecentPuzzleEntry }) => {
 };
 
 export const StartView = ({ readyPuzzles, previewPuzzles, onSelectPuzzle }: StartViewProps) => {
-  const recentPuzzles = getRecentPuzzleEntries(loadPersistedPuzzleSessions()).slice(0, homeRecentPuzzleLimit);
+  const recentPuzzles = getRecentPuzzleEntries(loadPersistedPuzzleSessions());
 
   return (
     <section class="start-layout" aria-labelledby="puzzle-start-title">
@@ -99,8 +99,16 @@ export const StartView = ({ readyPuzzles, previewPuzzles, onSelectPuzzle }: Star
           <section class="start-section" aria-label="Recent puzzles">
             <p class="start-section-label">Recent</p>
             <div class="recent-puzzle-list">
-              {recentPuzzles.map((entry) => <RecentPuzzleButton entry={entry} key={entry.resourceKey} />)}
+              {recentPuzzles.slice(0, homeRecentPuzzleLimit).map((entry) => <RecentPuzzleButton entry={entry} key={entry.resourceKey} />)}
             </div>
+            {recentPuzzles.length > homeRecentPuzzleLimit ? (
+              <details class="recent-puzzle-more">
+                <summary>More saved puzzles ({recentPuzzles.length - homeRecentPuzzleLimit})</summary>
+                <div class="recent-puzzle-list">
+                  {recentPuzzles.slice(homeRecentPuzzleLimit).map((entry) => <RecentPuzzleButton entry={entry} key={entry.resourceKey} />)}
+                </div>
+              </details>
+            ) : null}
           </section>
         ) : null}
 

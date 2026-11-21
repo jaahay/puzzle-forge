@@ -89,6 +89,9 @@ const checkNonogram = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]):
       cells
         .filter((cell) => cell.row === row && cell.value === FILLED_NONOGRAM_CELL)
         .map((cell) => cell.column),
+      cells
+        .filter((cell) => cell.row === row && cell.value === "×")
+        .map((cell) => cell.column),
     ),
   );
   const columnFeasible = Array.from({ length: currentPuzzle.width }, (_, column) =>
@@ -97,6 +100,9 @@ const checkNonogram = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]):
       targetColumns[column] ?? [],
       cells
         .filter((cell) => cell.column === column && cell.value === FILLED_NONOGRAM_CELL)
+        .map((cell) => cell.row),
+      cells
+        .filter((cell) => cell.column === column && cell.value === "×")
         .map((cell) => cell.row),
     ),
   );
@@ -108,11 +114,14 @@ const checkNonogram = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[]):
     }
 
     const isFilled = cell.value === FILLED_NONOGRAM_CELL;
+    const isMarkedEmpty = cell.value === "×";
     const crossesImpossibleLine = rowFeasible[cell.row] === false || columnFeasible[cell.column] === false;
 
     return {
       ...cell,
-      tone: isFilled ? (crossesImpossibleLine ? "hint" : "accent") : "empty",
+      tone: crossesImpossibleLine && (isFilled || isMarkedEmpty)
+        ? "hint"
+        : isFilled ? "accent" : "empty",
     };
   });
 

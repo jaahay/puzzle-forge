@@ -23,7 +23,7 @@
 
 .word-guess-board-shell {
   position: relative;
-  width: fit-content;
+  width: min(100%, var(--word-guess-ideal-width));
   max-width: 100%;
   margin: 0 auto;
   cursor: text;
@@ -42,14 +42,16 @@
 
 .word-guess-board {
   display: grid;
+  width: 100%;
   gap: 0.45rem;
-  justify-items: center;
+  justify-items: stretch;
 }
 
 .word-guess-row {
   display: grid;
-  grid-auto-flow: column;
-  gap: 0.35rem;
+  width: 100%;
+  grid-template-columns: repeat(var(--word-guess-columns), minmax(0, 1fr));
+  gap: clamp(0.14rem, 0.85vw, 0.35rem);
 }
 
 .word-guess-row.active .word-guess-tile.pending {
@@ -58,8 +60,10 @@
 
 .word-guess-tile {
   display: grid;
-  width: clamp(2rem, 7vw, 3.5rem);
-  min-height: clamp(2.25rem, 8vw, 3.75rem);
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: 1;
   place-items: center;
   border: 1px solid #334155;
   border-radius: 0.7rem;
@@ -241,11 +245,21 @@
   font-size: 0.85rem;
 }
 
+.word-guess-play-options {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
 .word-guess-hard-mode {
   display: flex;
   gap: 0.55rem;
   align-items: center;
-  margin-top: 0.75rem;
+  margin: 0;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  background: rgba(15, 23, 42, 0.42);
 }
 
 .word-guess-hard-mode input {
