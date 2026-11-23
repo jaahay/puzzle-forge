@@ -243,7 +243,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
       return;
     }
 
-    if (hardMode && submittedGuesses.some((previous) => {
+    if (hardMode && submittedGuesses.length > 0 && submittedGuesses.some((previous) => {
       const required = scoreWordGuess(answer, previous);
       const hypothetical = scoreWordGuess(guess, previous);
       return required.some((mark, index) => mark !== hypothetical[index]);

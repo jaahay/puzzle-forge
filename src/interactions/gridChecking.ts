@@ -2,7 +2,6 @@ import type { GridGeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import { pluralize } from "../app/runtime";
 import { scoreWordGuess, wordGuessMarkToTone } from "../games/wordGuess/feedback";
 import { buildNonogramCluesFromCells, isNonogramLineFeasible, sameNonogramClue, FILLED_NONOGRAM_CELL } from "../games/nonogram/solve";
-import { getWordGuessBank, isValidWordGuess } from "../games/wordGuess/words";
 import { cloneGridCell } from "./gridRules";
 
 export type GridCheckFeedbackTone = "progress" | "success" | "error";
@@ -25,7 +24,6 @@ const checkWordGuess = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[])
     return makeGridCheckResult(cells, "No checker is available for this word puzzle.", "error");
   }
 
-  const wordBank = getWordGuessBank(currentPuzzle.width);
   let completeGuessCount = 0;
   let solved = false;
   const nextCells = cells.map(cloneGridCell);
@@ -44,9 +42,7 @@ const checkWordGuess = (currentPuzzle: GridGeneratedPuzzle, cells: PuzzleCell[])
       return makeGridCheckResult(nextCells, `Row ${row + 1} is incomplete.`, "progress");
     }
 
-    if (!isValidWordGuess(guess, wordBank)) {
-      return makeGridCheckResult(nextCells, `${guess} is not in the ${wordBank.length}-letter guess list.`, "error");
-    }
+    // Word Guess owns dictionary validation before invoking the shared scorer.
 
     const marks = scoreWordGuess(solutionWord, guess);
     completeGuessCount += 1;

@@ -54,6 +54,28 @@ const solvedCells = () => [
   makeCell(1, 1, "4", true),
 ];
 
+
+describe("Word Guess scoring after dictionary validation", () => {
+  it("scores an accepted non-answer word without consulting the curated answer list", () => {
+    const puzzle: GridGeneratedPuzzle = {
+      ...makeSudokuPuzzle(),
+      id: "test-word-guess",
+      puzzleId: "word-guess",
+      title: "Word Guess",
+      width: 5,
+      height: 6,
+      answerKey: [..."CRANE"],
+    };
+    const cells = [..."ABBOT"].map((value, column) => makeCell(0, column, value));
+    const result = checkGridAnswer(puzzle, cells);
+
+    expect(result.feedbackTone).toBe("progress");
+    expect(result.message).toBe("Not solved yet. 5 attempts remain.");
+    expect(result.cells).toHaveLength(5);
+    expect(result.cells.every((cell) => cell.ariaLabel?.includes("Word Guess cell"))).toBe(true);
+  });
+});
+
 describe("shared answer-grid assessment", () => {
   it("distinguishes a solved board from incomplete and full-but-wrong boards", () => {
     const puzzle = makeSudokuPuzzle();
