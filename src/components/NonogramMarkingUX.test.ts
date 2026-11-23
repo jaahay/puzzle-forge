@@ -23,6 +23,7 @@ describe("Nonogram cell marking", () => {
     expect(source).toContain("onCellInput(cell, getNextNonogramMark(cell.value, nonogramMarkMode))");
     expect(readFileSync(new URL("./GridPuzzlePreview.tsx", import.meta.url), "utf8")).toContain('cell.value === "×" ? <span aria-hidden="true">×</span>');
     expect(source).toContain('aria-pressed={nonogramMarkMode === "cross"}');
+    expect(source).toContain('aria-label="Mark empty">Empty ×</button>');
     expect(controller).not.toContain("toggleNonogramCell");
     expect(persistence).toContain('persistedValue === "×" ? "Marked empty"');
   });

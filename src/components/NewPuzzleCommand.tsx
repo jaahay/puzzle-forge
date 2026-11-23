@@ -3,7 +3,7 @@ import { createPortal } from "preact/compat";
 import { useEffect, useId, useRef, useState } from "preact/hooks";
 import { makeRandomSeed, maxPuzzleSeedLength } from "../app/runtime";
 import { InfoIcon } from "./InfoIcon";
-import { PlayIcon, PuzzlePickerIcon, RandomIcon, RestartPuzzleIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
+import { PlayIcon, RestartPuzzleIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
 import { CurrentSeedDisplay } from "./SeedControl";
 
 export const newPuzzleSheetMediaQuery = "(max-width: 700px), (max-height: 520px)";
@@ -75,7 +75,6 @@ type NewPuzzleCommandProps = {
   settings?: ComponentChildren;
   info?: ComponentChildren;
   panelClassName?: string;
-  compactActions?: boolean;
   onSeedLoadInputChange: (seed: string) => void;
   onNewPuzzle: (afterStart?: () => void) => void;
   onToday: (afterStart?: () => void) => void;
@@ -94,7 +93,6 @@ export const NewPuzzleCommand = ({
   settings,
   info,
   panelClassName,
-  compactActions = false,
   onSeedLoadInputChange,
   onNewPuzzle,
   onToday,
@@ -303,7 +301,7 @@ export const NewPuzzleCommand = ({
     commandRef.current?.closest(".puzzle-workspace-layout") ?? document.fullscreenElement ?? document.body;
 
   return (
-    <div class={`new-puzzle-command${compactActions ? " is-icon-only" : ""}`} aria-label={`New ${puzzleTitle}: ${configurationSummary}`} ref={commandRef}>
+    <div class="new-puzzle-command" aria-label={`New ${puzzleTitle}: ${configurationSummary}`} ref={commandRef}>
       <div class="new-puzzle-split-control">
         <button
           class="new-puzzle-command-primary"
@@ -313,7 +311,7 @@ export const NewPuzzleCommand = ({
           aria-label={`New random ${puzzleTitle}, ${randomConfigurationSummary}`}
           title={`New random puzzle — ${randomConfigurationSummary}`}
         >
-          {compactActions ? <RandomIcon /> : "New"}
+          New
         </button>
         <details
           class="new-puzzle-options"
@@ -336,12 +334,12 @@ export const NewPuzzleCommand = ({
             aria-label={`Change new puzzle options. Current selection: ${configurationSummary}`}
             aria-disabled={disabled || undefined}
             tabIndex={disabled ? -1 : 0}
-            title={compactActions ? "Choose puzzle and settings" : "New puzzle options"}
+            title="New puzzle options"
             onClick={(event) => {
               if (disabled) event.preventDefault();
             }}
           >
-            {compactActions ? <PuzzlePickerIcon /> : <span class="new-puzzle-command-caret" aria-hidden="true">▾</span>}
+            <span class="new-puzzle-command-caret" aria-hidden="true">▾</span>
           </summary>
           {isSheetViewport ? (optionsOpen && sheetHost ? createPortal(
             <dialog class="new-puzzle-mobile-sheet" ref={sheetRef} aria-labelledby={sheetTitleId}

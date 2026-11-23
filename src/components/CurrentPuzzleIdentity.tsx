@@ -176,6 +176,7 @@ export const CurrentPuzzleHeader = ({
         <div
           class={`current-puzzle-identity${isArriving ? " is-arriving" : ""}`}
           aria-label={`Current puzzle: ${fullIdentity.join(", ")}`}
+          title={fullIdentity.join(" · ")}
         >
           <strong class="current-puzzle-type">{identity.puzzleLabel}</strong>
           {identity.sourceLabel ? <span class="current-puzzle-source">{identity.sourceLabel}</span> : null}

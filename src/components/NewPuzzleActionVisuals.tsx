@@ -3,27 +3,6 @@ import { getLocalDateStamp } from "../games/shared/daily";
 
 const monthLabels = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"] as const;
 
-export const RandomIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <rect x="4" y="4" width="16" height="16" rx="3" />
-    <circle cx="9" cy="9" r="1" />
-    <circle cx="15" cy="15" r="1" />
-    <circle cx="15" cy="9" r="1" />
-    <circle cx="9" cy="15" r="1" />
-    <circle cx="12" cy="12" r="1" />
-  </svg>
-);
-
-/* Shared visual vocabulary for Jigsaw navigation and completion actions. */
-export const PuzzlePickerIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M8 4h11a2 2 0 0 1 2 2v10" />
-    <rect x="3" y="7" width="15" height="13" rx="2" />
-    <circle cx="8.5" cy="11" r="1.2" />
-    <path d="m5 18 3.4-3.5 2.8 2.7 2.2-2.2 2.6 2.6" />
-  </svg>
-);
-
 export const RestartPuzzleIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true">
     <path d="M20 7v5h-5" />

@@ -12,6 +12,7 @@ const jigsawPreviewSource = readFileSync(new URL("./TilePuzzlePreview.tsx", impo
 const jigsawCss = readFileSync(new URL("../site/jigsaw.css", import.meta.url), "utf8");
 const immersiveCss = readFileSync(new URL("../site/immersive.css", import.meta.url), "utf8");
 const newCommandSource = readFileSync(new URL("./NewPuzzleCommand.tsx", import.meta.url), "utf8");
+const jigsawNewCommandSource = readFileSync(new URL("./JigsawNewPuzzleControl.tsx", import.meta.url), "utf8");
 const terminalDockSource = readFileSync(new URL("./PuzzleTerminalDock.tsx", import.meta.url), "utf8");
 const imageTileWorkspaceSource = readFileSync(new URL("./ImageTilePuzzleWorkspace.tsx", import.meta.url), "utf8");
 const solitaireWorkspaceSource = readFileSync(new URL("./SolitaireWorkspace.tsx", import.meta.url), "utf8");
@@ -111,8 +112,10 @@ describe("terminal interaction contracts", () => {
     expect(jigsawPreviewSource).not.toContain('class="jigsaw-solved-card is-completed"');
     expect(jigsawCss).not.toContain(".jigsaw-solved-actions {");
     expect(jigsawCss).not.toContain(".jigsaw-solved-card.is-completed");
-    expect(newCommandSource).toContain("compactActions ? <RandomIcon />");
-    expect(newCommandSource).toContain("compactActions ? <PuzzlePickerIcon />");
+    expect(newCommandSource).toMatch(/>\s*New\s*<\/button>/);
+    expect(newCommandSource).toContain('class="new-puzzle-command-caret"');
+    expect(newCommandSource).not.toContain("compactActions");
+    expect(jigsawNewCommandSource).not.toContain("compactActions");
     expect(newCommandSource).toContain('class="new-puzzle-restart-current"');
     expect(newCommandSource).not.toContain("openOptionsRequest");
     expect(newCommandSource).toContain('document.addEventListener("keydown", handleKeyDown, true)');
@@ -120,7 +123,7 @@ describe("terminal interaction contracts", () => {
     expect(layoutSource).not.toContain("[data-workspace-escape-layer]");
     expect(immersiveCss).toContain(".workspace-layout-header.workspace-layout-crown");
     expect(jigsawCss).toContain("background: #111827");
-    expect(jigsawCss).toContain(".jigsaw-workspace .current-puzzle-new-action .new-puzzle-split-control");
+    expect(jigsawCss).not.toContain(".jigsaw-workspace .current-puzzle-new-action .new-puzzle-split-control");
     expect(jigsawCss).toContain(".jigsaw-workspace.is-immersive .new-puzzle-options-panel");
   });
 

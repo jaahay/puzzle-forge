@@ -41,19 +41,9 @@
   }
 }
 
-/* Independent square actions, not a text-bearing joined pill. */
-.jigsaw-workspace .current-puzzle-new-action .new-puzzle-split-control {
-  gap: 0.3rem;
-}
-.jigsaw-workspace .current-puzzle-new-action .new-puzzle-command-primary,
-.jigsaw-workspace .current-puzzle-new-action .new-puzzle-options > summary {
-  box-sizing: border-box;
-  width: 2.75rem;
-  min-width: 2.75rem;
-  min-height: 2.75rem;
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  border-radius: 0.72rem;
-  padding: 0;
+/* Let the Jigsaw crown align with its full-width workbench. */
+.jigsaw-workspace:not(.is-immersive) .current-puzzle-header {
+  width: 100%;
 }
 .jigsaw-workspace .new-puzzle-restart-current {
   display: flex;
@@ -90,16 +80,6 @@
 .jigsaw-workspace .new-puzzle-restart-current:disabled {
   cursor: not-allowed;
   opacity: 0.55;
-}
-.jigsaw-workspace .new-puzzle-command.is-icon-only .new-puzzle-command-primary svg,
-.jigsaw-workspace .new-puzzle-command.is-icon-only .new-puzzle-options > summary svg {
-  width: 1.3rem;
-  height: 1.3rem;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
 }
 .jigsaw-workspace:not(.is-immersive) .workspace-layout-crown:has(.new-puzzle-options[open]) {
   z-index: 50;
