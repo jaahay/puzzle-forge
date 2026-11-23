@@ -207,7 +207,7 @@ export const GridPuzzleWorkspace = ({
       {isNonogram && gridCells ? (
         <div class="nonogram-mark-mode" role="group" aria-label="Nonogram cell marking">
           <button type="button" aria-pressed={nonogramMarkMode === "fill"} onClick={() => setNonogramMarkMode("fill")} disabled={isGenerating || isSolved}>Fill</button>
-          <button type="button" aria-pressed={nonogramMarkMode === "cross"} onClick={() => setNonogramMarkMode("cross")} disabled={isGenerating || isSolved} aria-label="Mark empty">Empty ×</button>
+          <button type="button" aria-pressed={nonogramMarkMode === "cross"} onClick={() => setNonogramMarkMode("cross")} disabled={isGenerating || isSolved} aria-label="Empty × (mark cells empty)">Empty ×</button>
         </div>
       ) : null}
       {puzzle.puzzleId === "word-guess" && gridCells ? (
