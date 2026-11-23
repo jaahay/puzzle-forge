@@ -46,21 +46,22 @@ That means it is not primarily a solver workbench. Analysis should support playe
 ### Requirements
 
 - Make the answer bank feel curated enough for daily use.
-- Keep valid guesses broader than answers if practical.
+- Accept a broad set of ordinary, valid English guesses; keep the answer list selectively familiar and substantially smaller.
 - Preserve deterministic answer selection by seed and word length.
 - Show or record a clear difficulty label based on the generated answer or analysis metrics.
 - Avoid surprising obscure answers in the default daily path.
 
 ### Implementation notes
 
-- Treat `words.ts` as the first word-bank source unless a larger data file is introduced intentionally.
-- If importing a larger word list, document source/license and keep answer-list curation separate from valid-guess breadth.
+- The hard-coded lists in `words.ts` are transitional; derive accepted guesses and answer candidates from the shared, licensed [Language Assets](./language-assets.md) pipeline instead of manually maintaining a larger list.
+- Keep runtime word assets separate from the initial application bundle and preserve a clear distinction between broadly accepted guesses and fair answers.
+- Existing canonical resource URLs already carry the seed. Do not introduce runtime dictionary/generator version control; ensure Word Guess baseline checksums include the solution so incompatible saved progress cannot silently attach to a changed answer.
 - If difficulty is analysis-derived, keep the function deterministic and tested.
 
 ### Acceptance criteria
 
 - Same seed and dimensions produce the same answer.
-- Default 5-letter play uses curated answers.
+- Default 5-letter play uses curated answers while ordinary correct guesses are not rejected due to a tiny hard-coded bank.
 - Difficulty label is stable for a given generated puzzle.
 - Tests cover deterministic generation and difficulty classification.
 

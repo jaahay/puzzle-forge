@@ -47,6 +47,8 @@ Implementation-ready planning docs:
 - [Jigsaw Roadmap](./jigsaw-roadmap.md) tracks image sourcing, image slicing, edge-profile, and custom-edge rendering work.
 - [Solitaire Mobile Roadmap](./solitaire-mobile-roadmap.md) tracks phone-sized Klondike layout and touch ergonomics.
 - [Word Guess Roadmap](./word-guess-roadmap.md) tracks Word Guess product polish, difficulty, completion feedback, and share/history integration.
+- [Language Assets and Word-Puzzle Content](./language-assets.md) owns lexical source ingestion, selection quality, licensing, and Word Guess / Word Search / Crossword content boundaries.
+- [App Runtime Boundaries](../app-decomposition-plan.md) records deliberately deferred code splitting and graphical-engine decisions.
 - [Daily, History, and Share Roadmap](./daily-history-share-roadmap.md) tracks the cross-puzzle daily puzzle loop, completion history, and spoiler-safe sharing.
 - [Puzzle Capability Model](./puzzle-capabilities.md) tracks shared capability declarations and the meaning of `playable`, `prototype`, and `planned`.
 

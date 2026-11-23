@@ -88,3 +88,12 @@ This avoids a universal workspace prop bag becoming an implicit dependency surfa
 ## Generation boundary
 
 All generated puzzle workspaces, including image-backed puzzles, use prospective generation capabilities. Identity-changing settings are edited as next-puzzle drafts and take effect only when a creation action is invoked. The current puzzle remains authoritative until its replacement is explicitly created.
+
+
+## Deferred loading and rendering decisions
+
+Prefer a fast, quiet application shell whose initial transfer does not grow in proportion to every optional puzzle engine or content library. Keep substantial puzzle-specific datasets as independently fetchable same-origin assets and load them on demand; see [Language assets and word-puzzle content](architecture/language-assets.md).
+
+The current workspace dispatcher statically imports the concrete workspaces; the generation worker is constructed on app mount and imports the full generator registry. This is a candidate for dynamic imports or on-demand worker creation, **not an immediate refactor mandate**. Reassess when new word assets or graphics dependencies are integrated, or when real network/bundle/interaction measurements indicate unnecessary startup cost. Preserve direct-route loading, progress restoration, and prompt transitions between puzzles.
+
+A first-class client graphics/animation engine is likewise a **deferred architecture choice**, not a preselected dependency. Revisit only if existing Jigsaw/image-tile rendering constraints, gesture/animation complexity, or measured mobile frame-time problems make the current approach materially less effective. Evaluate full-app implications and conditional puzzle-specific loading, not just Jigsaw aesthetics. Avoid imposing rendering/physics dependencies on unrelated games such as Sudoku. Do not maintain parallel rendering frameworks merely to claim one has been adopted.
