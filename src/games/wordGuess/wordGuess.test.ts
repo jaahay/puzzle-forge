@@ -1,11 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
 import { getWordGuessAnalysis, getWordGuessCandidateSteps, getWordGuessCandidates, getWordGuessDifficultyBand, rankWordGuessStarter } from "./analysis";
 import { getWordGuessDailyLabel, getWordGuessDailySeed } from "./daily";
 import { scoreWordGuess, wordGuessMarkToEmoji } from "./feedback";
 import { readWordGuessProgress, writeWordGuessProgress } from "./progress";
 import { formatWordGuessShareText } from "./share";
 import { createWordGuessState, reduceWordGuess } from "./state";
-import { getWordGuessBank, isValidWordGuess, type WordGuessWordBank } from "./words";
+import { getWordGuessBank, isValidWordGuess, loadWordGuessBank, type WordGuessWordBank } from "./words";
 
 const makeTinyBank = (): WordGuessWordBank => ({
   dictionaryId: "test-5",
@@ -37,6 +38,26 @@ describe("Word Guess word banks", () => {
     expect(isValidWordGuess(" forge ", bank)).toBe(true);
     expect(isValidWordGuess("toolong", bank)).toBe(false);
     expect(isValidWordGuess("zzzzz", bank)).toBe(false);
+  });
+});
+
+describe("Word Guess compiled dictionary", () => {
+  it("loads ordinary guesses on demand, with caching", async () => {
+    const text = readFileSync(new URL("../../../public/lexicon/word-guess/5.txt", import.meta.url), "utf8");
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, text: async () => text });
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      const bank = await loadWordGuessBank(5);
+      expect(bank.validGuesses.length).toBeGreaterThan(5000);
+      expect(isValidWordGuess("ABBOT", bank)).toBe(true);
+      expect(isValidWordGuess("FORGE", bank)).toBe(true);
+      expect(isValidWordGuess("ZZZZZ", bank)).toBe(false);
+      expect(bank.answers.length).toBeLessThan(bank.validGuesses.length / 10);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(await loadWordGuessBank(5)).toBe(bank);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
 
@@ -102,20 +123,23 @@ describe("Word Guess progress", () => {
     try {
       writeWordGuessProgress({
         puzzleId: "word-guess-5x6-test",
+        baselineChecksum: "expected-5",
         wordLength: 5,
         maxGuesses: 6,
         guesses: ["SLATE"],
         status: "playing",
       });
 
-      expect(readWordGuessProgress("word-guess-5x6-test")).toEqual({
+      expect(readWordGuessProgress("word-guess-5x6-test", "expected-5")).toEqual({
         puzzleId: "word-guess-5x6-test",
+        baselineChecksum: "expected-5",
         wordLength: 5,
         maxGuesses: 6,
         guesses: ["SLATE"],
         status: "playing",
       });
 
+      expect(readWordGuessProgress("word-guess-5x6-test", "another-answer")).toBeNull();
       storage.set("puzzle-forge:word-guess:bad", JSON.stringify({ puzzleId: 3 }));
       expect(readWordGuessProgress("bad")).toBeNull();
     } finally {

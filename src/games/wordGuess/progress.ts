@@ -2,6 +2,7 @@ export type WordGuessProgressStatus = "playing" | "won" | "lost";
 
 export type SavedWordGuessProgress = {
   puzzleId: string;
+  baselineChecksum: string;
   wordLength: number;
   maxGuesses: number;
   guesses: string[];
@@ -19,6 +20,7 @@ const isSavedWordGuessProgress = (value: unknown): value is SavedWordGuessProgre
   const candidate = value as Partial<SavedWordGuessProgress>;
   return (
     typeof candidate.puzzleId === "string" &&
+    typeof candidate.baselineChecksum === "string" && candidate.baselineChecksum.length > 0 &&
     typeof candidate.wordLength === "number" &&
     typeof candidate.maxGuesses === "number" &&
     Array.isArray(candidate.guesses) &&
@@ -30,7 +32,7 @@ const isSavedWordGuessProgress = (value: unknown): value is SavedWordGuessProgre
 
 export const getWordGuessProgressKey = (puzzleId: string) => `${storagePrefix}${puzzleId}`;
 
-export const readWordGuessProgress = (puzzleId: string) => {
+export const readWordGuessProgress = (puzzleId: string, expectedChecksum?: string) => {
   if (typeof window === "undefined") {
     return null;
   }
@@ -38,7 +40,8 @@ export const readWordGuessProgress = (puzzleId: string) => {
   try {
     const saved = window.localStorage.getItem(getWordGuessProgressKey(puzzleId));
     const parsed = saved ? JSON.parse(saved) : null;
-    return isSavedWordGuessProgress(parsed) ? parsed : null;
+    return isSavedWordGuessProgress(parsed) &&
+      (expectedChecksum === undefined || parsed.baselineChecksum === expectedChecksum) ? parsed : null;
   } catch {
     return null;
   }

@@ -1,3 +1,5 @@
+import answerLists from "../../../assets/lexicon/word-guess-answers.json";
+
 export type WordGuessLength = 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
 export type WordGuessWordBank = {
@@ -13,380 +15,70 @@ export const WORD_GUESS_MIN_GUESSES = 4;
 export const WORD_GUESS_MAX_GUESSES = 10;
 export const DEFAULT_WORD_GUESS_LENGTH: WordGuessLength = 5;
 export const DEFAULT_WORD_GUESS_GUESSES = 6;
+export const wordGuessLengths: WordGuessLength[] = [4, 5, 6, 7, 8, 9, 10, 11, 12];
 
-const answerLists = {
-  4: [
-    "ABLE",
-    "ACID",
-    "AGED",
-    "ALLY",
-    "AREA",
-    "ARMY",
-    "AUNT",
-    "BAKE",
-    "BALD",
-    "BARN",
-    "BEAM",
-    "BIRD",
-    "BOLD",
-    "BOND",
-    "BOOK",
-    "BOWL",
-    "CALM",
-    "CARD",
-    "CAVE",
-    "CLAY",
-    "COAL",
-    "COIN",
-    "COLD",
-    "CORD",
-    "CURE",
-    "DARK",
-    "DAWN",
-    "DEAL",
-    "DICE",
-    "DUST",
-    "EARN",
-    "ECHO",
-    "EDGE",
-    "FARM",
-    "FINE",
-    "FIRE",
-    "FISH",
-    "FOLD",
-    "GAME",
-    "GATE",
-    "GIFT",
-    "GLOW",
-    "HARD",
-    "HILL",
-    "HOPE",
-    "IRON",
-    "JUMP",
-    "KIND",
-    "LAKE",
-    "LAMP",
-    "LEAF",
-    "LINE",
-    "MIND",
-    "MOON",
-    "NODE",
-    "PATH",
-    "PLAY",
-    "RING",
-    "ROAD",
-    "WORD",
-  ],
-  5: [
-    "ABBEY",
-    "ACORN",
-    "ADAPT",
-    "AGILE",
-    "ALERT",
-    "ALLEY",
-    "AMBER",
-    "ANGLE",
-    "APPLE",
-    "ARDOR",
-    "BASIC",
-    "BASIL",
-    "BEACH",
-    "BEARD",
-    "BERRY",
-    "BIRTH",
-    "BLEND",
-    "BRAIN",
-    "BRAVE",
-    "BREAD",
-    "BRICK",
-    "BRING",
-    "BROAD",
-    "BROWN",
-    "CABIN",
-    "CABLE",
-    "CAMEL",
-    "CANDY",
-    "CARRY",
-    "CHAIN",
-    "CHAIR",
-    "CHARM",
-    "CHART",
-    "CHESS",
-    "CIVIC",
-    "CLEAN",
-    "CLEAR",
-    "CLIMB",
-    "CLOUD",
-    "COAST",
-    "CRANE",
-    "CRISP",
-    "CROWN",
-    "DELTA",
-    "DREAM",
-    "DRIFT",
-    "EAGER",
-    "EARTH",
-    "ELBOW",
-    "FAITH",
-    "FIELD",
-    "FLAME",
-    "FLOOD",
-    "FOCUS",
-    "FORGE",
-    "FRAME",
-    "FRESH",
-    "GIANT",
-    "GRACE",
-    "GRAIN",
-    "GRAPE",
-    "GREEN",
-    "HONEY",
-    "HORSE",
-    "HOUSE",
-    "INDEX",
-    "JELLY",
-    "KNIFE",
-    "LASER",
-    "LEMON",
-    "LEVEL",
-    "LIGHT",
-    "LOGIC",
-    "MAGIC",
-    "MANGO",
-    "MARCH",
-    "MATCH",
-    "METAL",
-    "MODEL",
-    "MONEY",
-    "NOBLE",
-    "OCEAN",
-    "ORBIT",
-    "PAINT",
-    "PANEL",
-    "PEARL",
-    "PIANO",
-    "PLANT",
-    "POINT",
-    "PRIDE",
-    "QUILT",
-    "RIVER",
-    "ROBIN",
-    "ROUTE",
-    "ROYAL",
-    "SCALE",
-    "SHARE",
-    "SHEEP",
-    "SHELF",
-    "SLATE",
-    "SMILE",
-    "SOLVE",
-    "SOUND",
-    "SPARE",
-    "SPICE",
-    "STACK",
-    "STONE",
-    "TRACE",
-    "TRAIN",
-    "TRAIL",
-    "UNITY",
-    "VALUE",
-    "WATER",
-    "WHEEL",
-    "WORLD",
-    "YEAST",
-  ],
-  6: [
-    "ANSWER",
-    "BOTTLE",
-    "BRIDGE",
-    "BRIGHT",
-    "BUTTON",
-    "CAMERA",
-    "CASTLE",
-    "CIRCLE",
-    "COLUMN",
-    "DANGER",
-    "DESIGN",
-    "DOMAIN",
-    "ENERGY",
-    "FAMILY",
-    "FILTER",
-    "FOREST",
-    "GARDEN",
-    "GOLDEN",
-    "HAMMER",
-    "ISLAND",
-    "JUNGLE",
-    "LETTER",
-    "MATRIX",
-    "MEMORY",
-    "ORANGE",
-    "PLANET",
-    "POCKET",
-    "PUZZLE",
-    "REASON",
-    "ROCKET",
-    "SCRIPT",
-    "SEARCH",
-    "SIGNAL",
-    "STREAM",
-    "TARGET",
-    "VECTOR",
-    "WINDOW",
-    "WINTER",
-  ],
-  7: [
-    "ANALYZE",
-    "BALANCE",
-    "CAPTURE",
-    "CHAPTER",
-    "CHECKER",
-    "CIRCUIT",
-    "COUNTRY",
-    "DYNAMIC",
-    "EXAMPLE",
-    "FARMING",
-    "FOUNDRY",
-    "HARMONY",
-    "JOURNEY",
-    "JUSTIFY",
-    "KITCHEN",
-    "LIBRARY",
-    "MEASURE",
-    "NETWORK",
-    "NOTHING",
-    "PATTERN",
-    "PROCESS",
-    "SEEDING",
-    "SOLVERS",
-    "STATION",
-    "VICTORY",
-    "VILLAGE",
-    "WORDING",
-  ],
-  8: [
-    "ANALYSIS",
-    "BASELINE",
-    "DATABASE",
-    "FEEDBACK",
-    "FUNCTION",
-    "KEYBOARD",
-    "LANGUAGE",
-    "MOUNTAIN",
-    "NOTEBOOK",
-    "PLAYTEST",
-    "QUESTION",
-    "SOLUTION",
-    "STRATEGY",
-    "TEACHING",
-    "TREASURE",
-    "UMBRELLA",
-    "VALIDATE",
-    "WORKSHOP",
-  ],
-  9: [
-    "ALGORITHM",
-    "CROSSWORD",
-    "DEDUCTION",
-    "FRAMEWORK",
-    "GENERATOR",
-    "GUESSWORK",
-    "IMPORTANT",
-    "PLAYFIELD",
-    "REFERENCE",
-    "VALIDATOR",
-    "WORKSPACE",
-  ],
-  10: [
-    "CALCULATOR",
-    "CANDIDATES",
-    "COMPLETION",
-    "CONSTRAINT",
-    "DICTIONARY",
-    "GENERATION",
-    "INTERLOCKS",
-    "PARAMETRIC",
-    "STRUCTURED",
-    "VALIDATION",
-  ],
-  11: [
-    "CONFIGURING",
-    "CONSTRAINTS",
-    "DESCRIPTION",
-    "ENGINEERING",
-    "EXPLORATION",
-    "INTERACTIVE",
-    "PERFORMANCE",
-    "RESPONSIBLE",
-  ],
-  12: [
-    "ARCHITECTURE",
-    "CALIBRATIONS",
-    "CONFIGURABLE",
-    "DETERMINABLE",
-    "EXPERIMENTAL",
-    "INTERACTIONS",
-    "OPTIMIZATIONS",
-    "PRESENTATION",
-  ],
-} as const satisfies Record<WordGuessLength, readonly string[]>;
+const curated = answerLists as Record<WordGuessLength, readonly string[]>;
 
-const validGuessExtras = {
-  4: ["BEND", "BITE", "BOAT", "BURN", "CART", "DECK", "DOME", "FACT", "FANG", "FORK", "HARP", "HINT", "JOLT", "KITE", "LACE", "MELT", "MOVE", "POND", "RAIL", "RANK", "RISK", "SAND", "TASK", "TURN", "VASE"],
-  5: ["ABOUT", "ABOVE", "ACUTE", "ADMIT", "ADORE", "ADULT", "AFTER", "AGAIN", "AGENT", "AISLE", "ALIEN", "ALLOW", "ALONE", "ALTER", "AMONG", "ANGRY", "APPLY", "ARISE", "ASIDE", "AUDIO", "AWARE", "BADGE", "BAKER", "BATCH", "BEGAN", "BEING", "BENCH", "BLADE", "BLANK", "BLAST", "BLOOM", "BLUSH", "BOOST", "BOUND", "BUNCH", "CATCH", "CAUSE", "CHALK", "CHANT", "CHILD", "CHOIR", "CLAIM", "CLASS", "CLERK", "CLOCK", "COACH", "CORAL", "COUNT", "COURT", "CRAFT", "CREAM", "DAILY", "DANCE", "DEPTH", "DOUBT", "DRAFT", "EIGHT", "ENJOY", "EQUAL", "EVENT", "FANCY", "FAULT", "FERRY", "FIBER", "FINAL", "FLOUR", "FORCE", "FRUIT", "GHOST", "GIVEN", "GLASS", "GLOBE", "GRANT", "GREAT", "GUARD", "GUEST", "GUIDE", "HABIT", "HAPPY", "HEART", "HUMAN", "IDEAL", "IMAGE", "JOINT", "JUDGE", "KNACK", "KNOWN", "LAYER", "LEARN", "LOCAL", "LODGE", "LUCKY", "MAJOR", "MAPLE", "MERCY", "MINOR", "MIXED", "MOTOR", "MUSIC", "NURSE", "OPERA", "OTHER", "PAUSE", "PEACE", "PHASE", "PHONE", "PHOTO", "PLAIN", "PLANE", "PLATE", "POWER", "PRESS", "PRINT", "QUIET", "RADIO", "RAISE", "RANGE", "REACH", "REACT", "READY", "RHYME", "ROUND", "SCENE", "SCORE", "SERVE", "SHADE", "SHIFT", "SHINE", "SHORE", "SKILL", "SMART", "SOLID", "SOUTH", "SPACE", "SPARK", "SPEED", "SPEND", "SPORT", "STAGE", "STAND", "STEAM", "STORY", "STYLE", "SUGAR", "TABLE", "THEME", "THING", "THINK", "TIGER", "TOUCH", "TRUST", "TRUTH", "UNDER", "VOICE", "WATCH", "WOMAN", "YOUNG"],
-  6: ["ABSENT", "ACROSS", "ACTION", "ACTIVE", "ADVICE", "ANIMAL", "BANNER", "BASKET", "BORDER", "BROKEN", "BUFFER", "CARBON", "CENTER", "CHANCE", "CHANGE", "CLIENT", "COMMON", "COPPER", "CREATE", "DOUBLE", "EDITOR", "EFFECT", "EFFORT", "ENGINE", "FATHER", "FUTURE", "GATHER", "HIDDEN", "IGNORE", "INSIDE", "MARKET", "METHOD", "MIDDLE", "NATURE", "NUMBER", "OBJECT", "OUTPUT", "PEOPLE", "PLAYER", "PUBLIC", "RANDOM", "RECORD", "RESULT", "SAMPLE", "SECOND", "SILVER", "SIMPLE", "SINGLE", "SMOOTH", "SQUARE", "SYSTEM", "THREAD", "TURTLE", "WEIGHT", "YELLOW"],
-  7: ["ACCOUNT", "ANCIENT", "ANOTHER", "ARCHIVE", "ARTICLE", "BATTERY", "BETWEEN", "CAPTAIN", "CENTRAL", "CONTROL", "DEFAULT", "DISPLAY", "ELEMENT", "EXPLAIN", "FEATURE", "FORWARD", "GENERAL", "GRAPHIC", "IMPROVE", "INITIAL", "JOURNAL", "KINDRED", "LEATHER", "MESSAGE", "MISSING", "NATURAL", "OBSERVE", "PACKAGE", "QUALITY", "REALITY", "REQUEST", "SESSION", "SURFACE", "TEXTURE", "UNKNOWN", "VERSION"],
-  8: ["ABSOLUTE", "ANYTHING", "APPROACH", "BIRTHDAY", "COMPLETE", "COMPUTER", "CREATURE", "DOCUMENT", "ELEPHANT", "EVERYONE", "FAMILIAR", "HOSPITAL", "INTERVAL", "KEYSTONE", "LOCATION", "MATERIAL", "NEGATIVE", "OPTIONAL", "PARALLEL", "PLEASURE", "POSITIVE", "RESPONSE", "SANDWICH", "STANDARD", "TOGETHER", "TRANSFER", "VARIABLE"],
-  9: ["ATTRIBUTE", "BEHAVIOR", "CHALLENGE", "DEVELOPER", "EDUCATION", "EVERYBODY", "FREQUENCY", "HESITATE", "INTERFACE", "KNOWLEDGE", "LIBRARIES", "MOTIVATOR", "OBJECTIVE", "PRECISION", "QUESTIONS", "RESOURCES", "SELECTION", "TECHNIQUE", "UNIVERSE"],
-  10: ["BACKGROUND", "COLLECTION", "CONNECTION", "DEFINITION", "DEVELOPER", "EVERYTHING", "FOUNDATION", "IMPORTANCE", "JAVASCRIPT", "MANAGEMENT", "NAVIGATION", "OPERATIONS", "PROCEDURAL", "REASONABLE", "TECHNICAL"],
-  11: ["APPLICATION", "COMPARISON", "DEVELOPMENT", "EXPERIENCE", "INFORMATION", "INTERACTION", "MEASUREMENT", "OBSERVATION", "PROGRESSION", "REQUIREMENT", "TEMPERATURE"],
-  12: ["COMBINATION", "CONSTRUCTION", "CONVERSATION", "DISTRIBUTION", "DOCUMENTATION", "FOUNDATIONAL", "IMPLEMENTATION", "POSSIBILITY", "RELATIONSHIP", "TRANSMISSION", "UNDERSTANDING"],
-} as const satisfies Record<WordGuessLength, readonly string[]>;
-
-const uniqueWords = (words: readonly string[]) => [...new Set(words.map(normalizeWordGuessWord))].sort();
-
-const createWordGuessBank = (length: WordGuessLength): WordGuessWordBank => {
-  const answers = uniqueWords(answerLists[length]).filter((word) => word.length === length);
-  const validGuesses = uniqueWords([...answers, ...validGuessExtras[length]]).filter((word) => word.length === length);
-
-  return {
-    dictionaryId: `english-${length}-v2`,
-    length,
-    answers,
-    validGuesses,
-  };
-};
-
-const wordBanks = {
-  4: createWordGuessBank(4),
-  5: createWordGuessBank(5),
-  6: createWordGuessBank(6),
-  7: createWordGuessBank(7),
-  8: createWordGuessBank(8),
-  9: createWordGuessBank(9),
-  10: createWordGuessBank(10),
-  11: createWordGuessBank(11),
-  12: createWordGuessBank(12),
-} as const satisfies Record<WordGuessLength, WordGuessWordBank>;
-
-export const wordGuessLengths = Object.keys(wordBanks).map(Number) as WordGuessLength[];
+const baseBanks = Object.fromEntries(wordGuessLengths.map((length) => [length, {
+  dictionaryId: `esdb-en-US-2026.02.25-${length}`,
+  length,
+  answers: curated[length],
+  validGuesses: curated[length],
+}])) as Record<WordGuessLength, WordGuessWordBank>;
 
 export const isSupportedWordGuessLength = (length: number): length is WordGuessLength =>
-  Number.isInteger(length) && length >= WORD_GUESS_MIN_LENGTH && length <= WORD_GUESS_MAX_LENGTH && length in wordBanks;
+  Number.isInteger(length) && wordGuessLengths.includes(length as WordGuessLength);
 
-export const getWordGuessBank = (length: number): WordGuessWordBank => {
-  if (isSupportedWordGuessLength(length)) {
-    return wordBanks[length];
+export const getWordGuessBank = (length: number): WordGuessWordBank =>
+  baseBanks[isSupportedWordGuessLength(length) ? length : DEFAULT_WORD_GUESS_LENGTH];
+
+const loadedBanks = new Map<WordGuessLength, Promise<WordGuessWordBank>>();
+const lookups = new WeakMap<WordGuessWordBank, ReadonlySet<string>>();
+
+export const parseWordGuessGuesses = (text: string, length: WordGuessLength): WordGuessWordBank => {
+  const base = getWordGuessBank(length);
+  const words = text.trimEnd().split("\n");
+  if (words.length < 1000) throw new Error("Word Guess dictionary is incomplete.");
+  let previous = "";
+  for (const word of words) {
+    if (!/^[A-Z]+$/.test(word) || word.length !== length || word <= previous) {
+      throw new Error("Word Guess dictionary is malformed or unsorted.");
+    }
+    previous = word;
   }
-
-  return wordBanks[DEFAULT_WORD_GUESS_LENGTH];
+  const lookup = new Set(words);
+  if (base.answers.some((answer) => !lookup.has(answer))) {
+    throw new Error("Word Guess dictionary is missing eligible answers.");
+  }
+  return { ...base, validGuesses: words };
 };
 
-export function normalizeWordGuessWord(word: string) {
-  return word.trim().toUpperCase();
-}
+export const loadWordGuessBank = (length: number): Promise<WordGuessWordBank> => {
+  const selected = isSupportedWordGuessLength(length) ? length : DEFAULT_WORD_GUESS_LENGTH;
+  const cached = loadedBanks.get(selected);
+  if (cached) return cached;
+
+  const url = `${import.meta.env.BASE_URL}lexicon/word-guess/${selected}.txt`;
+  const pending = fetch(url).then(async (response) => {
+    if (!response.ok) throw new Error("Word Guess dictionary could not be loaded.");
+    return parseWordGuessGuesses(await response.text(), selected);
+  }).catch((error: unknown) => {
+    loadedBanks.delete(selected);
+    throw error;
+  });
+  loadedBanks.set(selected, pending);
+  return pending;
+};
+
+export const normalizeWordGuessWord = (word: string) => word.trim().toUpperCase();
 
 export const isValidWordGuess = (word: string, bank: WordGuessWordBank) => {
-  const normalizedWord = normalizeWordGuessWord(word);
-  return normalizedWord.length === bank.length && bank.validGuesses.includes(normalizedWord);
+  const normalized = normalizeWordGuessWord(word);
+  if (normalized.length !== bank.length) return false;
+  let lookup = lookups.get(bank);
+  if (!lookup) {
+    lookup = new Set(bank.validGuesses);
+    lookups.set(bank, lookup);
+  }
+  return lookup.has(normalized);
 };

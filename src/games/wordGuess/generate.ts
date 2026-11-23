@@ -32,7 +32,7 @@ export const generateWordGuess: GridPuzzleGenerator = ({ seed, width, height }) 
     } as const;
   });
 
-  return createGeneratedPuzzle({
+  const generated = createGeneratedPuzzle({
     id: `word-guess-${wordLength}x${maxGuesses}-${normalizedSeed}`,
     puzzleId: "word-guess",
     title: "Word Guess",
@@ -42,4 +42,7 @@ export const generateWordGuess: GridPuzzleGenerator = ({ seed, width, height }) 
     cells,
     answerKey: Array.from(answerWord),
   });
+
+  // A changed lexicon must not restore guesses against a different answer.
+  return { ...generated, checksum: `${generated.checksum}:${answerWord}` };
 };

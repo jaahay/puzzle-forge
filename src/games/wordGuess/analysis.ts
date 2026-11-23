@@ -72,7 +72,7 @@ export const rankWordGuessStarter = (guess: string, bank: WordGuessWordBank): Wo
 };
 
 export const getBestWordGuessStarter = (bank: WordGuessWordBank) =>
-  bank.validGuesses.map((guess) => rankWordGuessStarter(guess, bank)).sort((left, right) => {
+  bank.answers.map((guess) => rankWordGuessStarter(guess, bank)).sort((left, right) => {
     if (left.averageRemaining !== right.averageRemaining) {
       return left.averageRemaining - right.averageRemaining;
     }

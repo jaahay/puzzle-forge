@@ -46,6 +46,7 @@ describe("Word Guess hardening", () => {
 
     expect(first.id).toBe(second.id);
     expect(first.answerKey).toEqual(second.answerKey);
+    expect(first.checksum).toContain(first.answerKey!.join(""));
     expect(first.width).toBe(5);
     expect(first.height).toBe(6);
     expect(first.cells).toHaveLength(30);
@@ -55,6 +56,7 @@ describe("Word Guess hardening", () => {
     withMockStorage(() => {
       writeWordGuessProgress({
         puzzleId: "word-guess-5x6-progress",
+        baselineChecksum: "word-guess-test",
         wordLength: 5,
         maxGuesses: 6,
         guesses: ["SLATE"],
@@ -62,8 +64,9 @@ describe("Word Guess hardening", () => {
         status: "playing",
       });
 
-      expect(readWordGuessProgress("word-guess-5x6-progress")).toEqual({
+      expect(readWordGuessProgress("word-guess-5x6-progress", "word-guess-test")).toEqual({
         puzzleId: "word-guess-5x6-progress",
+        baselineChecksum: "word-guess-test",
         wordLength: 5,
         maxGuesses: 6,
         guesses: ["SLATE"],
