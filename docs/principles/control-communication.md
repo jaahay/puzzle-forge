@@ -38,11 +38,13 @@ Use these principles to make contextual design decisions, not to impose a univer
 - A tooltip can clarify an icon but cannot provide the only discoverable explanation of an essential action on touch devices.
 - Match visible wording, accessible naming, interaction state, and actual behavior. Preserve useful differences between puzzle families while making shared actions familiar.
 
+For implementation-level responsibilities, cross-reference [Shared Puzzle Controls](../architecture/shared-controls.md) and [Puzzle Workspace Layout](../ui/puzzle-workspace-layout.md). These records describe design intent, not an alternative authority to current code and observed behavior.
+
 ---
 
 ## Research and rationale
 
-**Research snapshot — November 9, 2026.** This ChatGPT synthesis draws on public design and accessibility guidance and source-level observations of Puzzle Forge's buttons, navigation, toolbars, configuration, and completion controls. It records evidence, limitations, and questions for future evaluation. It is not a user study or a binding interface specification; reassess application-specific observations as the product evolves.
+**Research snapshot — November 9, 2026.** This ChatGPT synthesis draws on public design and accessibility guidance and source-level observations of Puzzle Forge's buttons, navigation, toolbars, configuration, and completion controls. It records evidence, limitations, and questions for future evaluation. It is not a user study or a binding interface specification; reassess application-specific observations as the product evolves. Later implementation cross-checks are distinguished from the original snapshot below.
 
 ### Central finding
 
@@ -64,18 +66,18 @@ The design problem includes **which controls remain visible**, their grouping, s
 
 These references provide practical direction, not an experimental ranking among three button styles. Context, prior familiarity, device, visual density, and the action's consequences all matter.
 
-### Puzzle Forge source-level observations
+### Puzzle Forge source-level observations, revisited
 
-The following observations come from reading the implementation on 2026-11-09, not from directly observing players or measuring interaction outcomes.
+The observations originated in a source review on November 9, 2026, not in player testing. The follow-ups below cross-check the implementation on the [PR #358 branch](https://github.com/jaahay/puzzle-forge/pull/358) in November 2026; an open PR is not yet production behavior. Neither historical findings nor current source inspection establish usability without actual interaction testing.
 
-1. **New-puzzle entry points differ.** [NewPuzzleCommand](../../src/components/NewPuzzleCommand.tsx) has a compact presentation used by Jigsaw: a die means generate a random puzzle and a picture-stack symbol opens options. Its less compact presentation says “New.” The menu itself uses explicit labels such as Random, Today, and Restart this puzzle. The symbols may be visually consistent without communicating these exact meanings on first encounter.
+1. **New-puzzle entry points (historical inconsistency addressed).** The November 9 implementation used a die for Jigsaw's random New action and a picture-stack icon for options, unlike other puzzles' labeled New control. On [PR #358](https://github.com/jaahay/puzzle-forge/pull/358), [NewPuzzleCommand](../../src/components/NewPuzzleCommand.tsx) uses **New** plus a disclosure chevron for every puzzle family, including Jigsaw. The options still have labeled Random, Today, and seed actions; the Random icon remains useful *inside* that labeled panel. Consistent controls resolve the ambiguity of the old icon pair, but their spacing and recognition still merit viewport QA.
 2. **Undo/Redo are defensible icon-only controls.** [PuzzleHistoryActions](../../src/components/PuzzleHistoryActions.tsx) uses conventional curved arrows, accessible names, shortcut hints, and stable positions. The semantics transfer naturally across puzzle families where history is supported.
-3. **Jigsaw's camera and tools deserve different treatments.** [TilePuzzlePreview](../../src/components/TilePuzzlePreview.tsx) uses compact zoom/fit/expand controls around the board, while less frequent options such as edge guides, restaging, and appearance already have text inside Tools. It also includes state-changing labels alongside aria-pressed for some toggles; those deserve a semantic review against the WAI-ARIA button pattern.
-4. **Solitaire exposes a specialized pictogram.** [SolitaireWorkspace](../../src/components/SolitaireWorkspace.tsx) uses “♣→” for its auto-foundation command, with a fuller accessible label. The symbol's exact consequence is difficult to infer without a visible label.
+3. **Jigsaw's camera and tools remain specialized.** [TilePuzzlePreview](../../src/components/TilePuzzlePreview.tsx) uses compact zoom, fit, and expand controls around the board, while less frequent options such as edge guides, restaging, and appearance use text in Tools. On the cross-checked branch, changing-label actions such as **Show/Hide edge guides** and **Lock/Unlock panning** do not carry `aria-pressed`; **Snap and lock to frame** retains a stable label with `aria-pressed`. This addresses the snapshot's semantic concern at source level, not an exhaustive assistive-technology test.
+4. **Solitaire auto-foundation (historical ambiguity addressed).** The original implementation used “♣→” without a visible action label. [SolitaireWorkspace](../../src/components/SolitaireWorkspace.tsx) now says **Move to foundations** and supplies a title explaining that it moves currently legal cards. Clarity is improved, but the real mobile layout and whether players can predict the action remain subjects for QA.
 5. **Text still carries core gameplay meaning.** [SudokuWorkspace](../../src/components/SudokuWorkspace.tsx) uses explicit Check and Reset actions; [WordGuessGame](../../src/components/WordGuessGame.tsx) uses Submit, Reset, and Share. There is no reason to turn every puzzle-specific verb into a new pictogram for visual uniformity.
 6. **The workspace already has shared semantic components.** [CurrentPuzzleIdentity](../../src/components/CurrentPuzzleIdentity.tsx), [PuzzleTerminalDock](../../src/components/PuzzleTerminalDock.tsx), and [PuzzleWorkspaceLayout](../../src/components/PuzzleWorkspaceLayout.tsx) provide reusable presentation concepts. The opportunity is to refine these decisions, not create a universal control framework before observing actual needs.
 
-These are candidates for review, **not** a conclusion that the controls are unusable or that any specific redesign is already validated.
+These observations distinguish historical issues from their later implementation changes. They are **not** proof that the old controls were unusable, or that subsequent designs have been validated for all users and devices.
 
 ### Interpretation by control role
 
@@ -103,6 +105,6 @@ A sensible small study would compare a restrained icon-first presentation agains
 
 ### Implementation implications, not commitments
 
-Use the smallest coherent change that improves understanding. Likely early candidates are the shared New-puzzle entry point and completion actions, followed by specialized puzzle commands. Preserve the board's prominence; keep action semantics distinct; resolve contradictory accessible state or wording; and avoid a sweeping component or icon-library rewrite solely to comply with a document.
+Use the smallest coherent change that improves understanding. The early candidates identified in this snapshot—the shared New-puzzle entry point and completion actions—were subsequently addressed through [PR #356](https://github.com/jaahay/puzzle-forge/pull/356), [PR #357](https://github.com/jaahay/puzzle-forge/pull/357), and the proposed follow-up [PR #358](https://github.com/jaahay/puzzle-forge/pull/358). This is an implementation history, **not** a requirement to follow every recommendation in the snapshot.
 
-The research supports the design principles but does **not** certify a final icon set, a specific Jigsaw toolbar composition, or a particular mobile layout. Those require evaluation in the application.
+Preserve the board's prominence, distinguish current-puzzle actions from creating another puzzle, and resolve actual accessibility or comprehension issues without a sweeping icon-library rewrite. The research does **not** certify a final icon set, a particular Jigsaw toolbar composition, or a mobile layout. Current code, real-device QA, and reasoned product judgment can legitimately supersede its initial hypotheses.

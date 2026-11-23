@@ -132,7 +132,6 @@ export const JigsawNewPuzzleControl = ({
       seedLoadInput={seedLoadInput}
       disabled={disabled}
       panelClassName="image-new-puzzle-options-panel jigsaw-new-puzzle-options-panel"
-      compactActions
       onRestartPuzzle={onRestartPuzzle}
       onSeedLoadInputChange={onSeedLoadInputChange}
       onNewPuzzle={onNewPuzzle}
