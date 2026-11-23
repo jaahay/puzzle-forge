@@ -3,7 +3,7 @@ import { createPortal } from "preact/compat";
 import { useEffect, useId, useRef, useState } from "preact/hooks";
 import { makeRandomSeed, maxPuzzleSeedLength } from "../app/runtime";
 import { InfoIcon } from "./InfoIcon";
-import { PlayIcon, RestartPuzzleIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
+import { PlayIcon, RandomIcon, RestartPuzzleIcon, TodayDateTile } from "./NewPuzzleActionVisuals";
 import { CurrentSeedDisplay } from "./SeedControl";
 
 export const newPuzzleSheetMediaQuery = "(max-width: 700px), (max-height: 520px)";

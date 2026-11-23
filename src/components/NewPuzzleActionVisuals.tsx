@@ -3,6 +3,17 @@ import { getLocalDateStamp } from "../games/shared/daily";
 
 const monthLabels = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"] as const;
 
+export const RandomIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="4" y="4" width="16" height="16" rx="3" />
+    <circle cx="9" cy="9" r="1" />
+    <circle cx="15" cy="15" r="1" />
+    <circle cx="15" cy="9" r="1" />
+    <circle cx="9" cy="15" r="1" />
+    <circle cx="12" cy="12" r="1" />
+  </svg>
+);
+
 export const RestartPuzzleIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true">
     <path d="M20 7v5h-5" />
