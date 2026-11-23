@@ -1,0 +1,64 @@
+{
+  "source": {
+    "id": "esdb-en-US-2026.02.25",
+    "release": "rel-2026.02.25",
+    "sha256": "4ff7e0b6d86763e1e042ffd746e94cdf4432618702deac303a1669e2a838db04"
+  },
+  "curatedAnswersSha256": "58036958f2c6b4a1e7ffe4114e7eb204673d0d6f60028fc39f0f04e1bd42f0ad",
+  "files": {
+    "4": {
+      "path": "public/lexicon/word-guess/4.txt",
+      "words": 2741,
+      "bytes": 13705,
+      "sha256": "427b83c2b6d6c9068f4095d80928be97d305e41de298a23a09c6daaaf12376ac"
+    },
+    "5": {
+      "path": "public/lexicon/word-guess/5.txt",
+      "words": 5189,
+      "bytes": 31134,
+      "sha256": "cf90337568ace25caf5c81a9fde004910da757fe79067d1890b4d3c8048eac97"
+    },
+    "6": {
+      "path": "public/lexicon/word-guess/6.txt",
+      "words": 8388,
+      "bytes": 58716,
+      "sha256": "5feda65653382f3642fc5955f25cbfd39810f26c206cac3a66c07df468afaafd"
+    },
+    "7": {
+      "path": "public/lexicon/word-guess/7.txt",
+      "words": 11667,
+      "bytes": 93336,
+      "sha256": "7927fb2ffe89e8dd10dbaaaa847f3595412b3843c0f1d5977b008087f70ef7d4"
+    },
+    "8": {
+      "path": "public/lexicon/word-guess/8.txt",
+      "words": 12741,
+      "bytes": 114669,
+      "sha256": "a91404a27b23f9b1e3e22c099446c72717397a2f0fc19ef62e100b663ad5a0a3"
+    },
+    "9": {
+      "path": "public/lexicon/word-guess/9.txt",
+      "words": 11635,
+      "bytes": 116350,
+      "sha256": "8ec2f60ea16ceaab555e4aaf0e6e580f96eb2fcc61b358a231d5b7948ab5ad3c"
+    },
+    "10": {
+      "path": "public/lexicon/word-guess/10.txt",
+      "words": 9522,
+      "bytes": 104742,
+      "sha256": "90cc53feb7307f67cb4be1132f5437623a3009b611997d1a4193991bac7dfed6"
+    },
+    "11": {
+      "path": "public/lexicon/word-guess/11.txt",
+      "words": 6847,
+      "bytes": 82164,
+      "sha256": "19e5ff1315d4974058e8627262da0650179665aef1e7288f705e6c55f92cb030"
+    },
+    "12": {
+      "path": "public/lexicon/word-guess/12.txt",
+      "words": 4496,
+      "bytes": 58448,
+      "sha256": "a0a65b96172b20ace03e29ccc0ab53ba368671084aa55c293e4a96f85e64a5e3"
+    }
+  }
+}

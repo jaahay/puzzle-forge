@@ -1,0 +1,18 @@
+{
+  "source": {
+    "id": "esdb-en-US-2026.02.25",
+    "name": "English Speller Database / SCOWL US English speller (size 60)",
+    "release": "rel-2026.02.25",
+    "url": "https://raw.githubusercontent.com/en-wl/wordlist-diff/71d7dd07676edb60ade43552e10b41314b7e9287/en_US.txt",
+    "upstreamRepository": "https://github.com/en-wl/wordlist",
+    "generatedRepository": "https://github.com/en-wl/wordlist-diff",
+    "blobSha1": "b4222bda8be5826fce1635230f9503234ec31e5a",
+    "sha256": "4ff7e0b6d86763e1e042ffd746e94cdf4432618702deac303a1669e2a838db04",
+    "licenseNotice": "public/lexicon/NOTICE.txt"
+  },
+  "editorialSpellings": [
+    "PLAYTEST",
+    "PLAYFIELD",
+    "VALIDATOR"
+  ]
+}
