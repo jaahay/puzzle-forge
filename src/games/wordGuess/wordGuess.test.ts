@@ -94,7 +94,8 @@ describe("Word Guess loading recovery", () => {
       const bank = await loadWordGuessBank(10);
       expect(isValidWordGuess("JAVASCRIPT", bank)).toBe(true);
       expect(bank.answers.length).toBeGreaterThan(900);
-      expect(fetchMock).toHaveBeenCalledTimes(3);
+      // Both assets are requested in parallel on each attempt.
+      expect(fetchMock).toHaveBeenCalledTimes(4);
     } finally {
       vi.unstubAllGlobals();
     }
