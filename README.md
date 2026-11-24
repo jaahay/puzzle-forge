@@ -147,12 +147,14 @@ The branch now targets a catalog destination rather than a single puzzle workben
 ## Word Guess lexical assets
 
 The accepted-guess vocabulary comes from the pinned ESDB/SCOWL US English
-size-60 speller list, not a runtime dictionary API. Nine same-origin text
-files under `public/lexicon/word-guess/` are fetched on demand for the
-selected word length, alongside its corresponding file under `answers/`.
-The much smaller possible-answer pool is derived from
-pinned MIT-licensed familiarity bands plus a small editorial seed list and is
-published in `assets/lexicon/word-guess-answers.json`.
+size-60 speller list, not a runtime dictionary API. Each of the nine
+same-origin JSON banks under `public/lexicon/word-guess/banks/` is loaded on
+demand for its word length and contains accepted guesses, eligible answers,
+and offline-computed starter statistics. Generation receives the answer
+pool explicitly from the same loaded bank used for validation and assistance.
+The smaller eligible-answer pool is derived from pinned MIT-licensed
+familiarity bands plus editorial seeds; the readable build-time answer
+inventory is `assets/lexicon/word-guess-answers.json`.
 
 `assets/lexicon/sources.json` records both pinned source inputs, including
 vendored familiarity bands under `assets/lexicon/familiarity/`. The original

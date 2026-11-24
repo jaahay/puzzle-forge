@@ -127,27 +127,20 @@ def encode_bank(bank):
     return (json.dumps(bank, separators=(",", ":")) + "\n").encode("utf8")
 
 
-def manifest_for(manifest, answers, dictionary_data):
+def manifest_for(manifest, answers, banks):
     src = manifest["source"]
     return {
         "source": {"id": src["id"], "release": src["release"], "sha256": src["sha256"]},
         "answerPoolSha256": digest(encode(answers)),
         "editorialAnswersSha256": digest(EDITORIAL_FILE.read_bytes()),
         "familiaritySources": [{"tier": b["tier"], "sha256": b["sha256"]} for b in manifest["familiarity"]["bands"]],
-        "answerFiles": {
-            str(n): {
-                "path": f"public/lexicon/word-guess/answers/{n}.txt",
-                "words": len(answers[str(n)]),
-                "bytes": len(("\n".join(answers[str(n)]) + "\n").encode("utf8")),
-                "sha256": digest(("\n".join(answers[str(n)]) + "\n").encode("utf8")),
-            } for n in LENGTHS
-        },
         "files": {
             str(n): {
-                "path": f"public/lexicon/word-guess/{n}.txt",
-                "words": len(dictionary_data[n].decode("utf8").splitlines()),
-                "bytes": len(dictionary_data[n]),
-                "sha256": digest(dictionary_data[n]),
+                "path": f"public/lexicon/word-guess/banks/{n}.json",
+                "guesses": len(banks[n]["validGuesses"]),
+                "answers": len(banks[n]["answers"]),
+                "bytes": len(encode_bank(banks[n])),
+                "sha256": digest(encode_bank(banks[n])),
             } for n in LENGTHS
         },
     }
@@ -155,14 +148,18 @@ def manifest_for(manifest, answers, dictionary_data):
 
 def verify():
     manifest, editorial, tiers = sources()
-    dictionary_data = {}
+    banks = {}
     dictionaries = {}
     for n in LENGTHS:
-        raw = (ROOT / f"public/lexicon/word-guess/{n}.txt").read_bytes()
-        words = raw.decode("utf8").splitlines()
+        path = ROOT / f"public/lexicon/word-guess/banks/{n}.json"
+        raw = path.read_bytes()
+        bank = json.loads(raw)
+        words = bank["validGuesses"]
         if not words or words != sorted(set(words)) or any(not re.fullmatch(r"[A-Z]+", w) or len(w) != n for w in words):
             raise ValueError(f"Malformed compiled words at length {n}.")
-        dictionary_data[n] = raw
+        if raw != encode_bank(bank):
+            raise ValueError(f"Noncanonical bank encoding at length {n}.")
+        banks[n] = bank
         dictionaries[n] = set(words)
     if not set(manifest["editorialSpellings"]).issubset(set().union(*dictionaries.values())):
         raise ValueError("An editorial spelling exception is missing.")
@@ -170,16 +167,12 @@ def verify():
     if ANSWERS_FILE.read_bytes() != encode(answers):
         raise ValueError("Answer pool does not match pinned familiarity sources.")
     for n in LENGTHS:
-        compiled = ("\n".join(answers[str(n)]) + "\n").encode("utf8")
-        if (ROOT / f"public/lexicon/word-guess/answers/{n}.txt").read_bytes() != compiled:
-            raise ValueError(f"Compiled answer list mismatch at length {n}.")
-    for n in LENGTHS:
         expected = bank_data(answers[str(n)], sorted(dictionaries[n]))
-        if (ROOT / f"public/lexicon/word-guess/banks/{n}.json").read_bytes() != encode_bank(expected):
+        if banks[n] != expected:
             raise ValueError(f"Compiled lexical bank or starter mismatch at length {n}.")
-    if read_json(PROVENANCE_FILE) != manifest_for(manifest, answers, dictionary_data):
+    if read_json(PROVENANCE_FILE) != manifest_for(manifest, answers, banks):
         raise ValueError("Derived asset provenance or hashes do not match.")
-    print("Verified nine Word Guess dictionaries and the derived familiar answer pool.")
+    print("Verified nine Word Guess lexical banks, familiar answers, and starter statistics.")
 
 
 def regenerate():
@@ -200,15 +193,13 @@ def regenerate():
     for word in manifest["editorialSpellings"]:
         dictionaries[len(word)].add(word)
     answers = eligible_answers(editorial, tiers, dictionaries)
-    compiled = {n: ("\n".join(sorted(dictionaries[n])) + "\n").encode("utf8") for n in LENGTHS}
-    outputs = {ROOT / f"public/lexicon/word-guess/{n}.txt": compiled[n] for n in LENGTHS}
-    outputs.update({ROOT / f"public/lexicon/word-guess/answers/{n}.txt": ("\n".join(answers[str(n)]) + "\n").encode("utf8") for n in LENGTHS})
-    outputs.update({
-        ROOT / f"public/lexicon/word-guess/banks/{n}.json": encode_bank(bank_data(answers[str(n)], sorted(dictionaries[n])))
+    banks = {n: bank_data(answers[str(n)], sorted(dictionaries[n])) for n in LENGTHS}
+    outputs = {
+        ROOT / f"public/lexicon/word-guess/banks/{n}.json": encode_bank(banks[n])
         for n in LENGTHS
-    })
+    }
     outputs[ANSWERS_FILE] = encode(answers)
-    outputs[PROVENANCE_FILE] = encode(manifest_for(manifest, answers, compiled))
+    outputs[PROVENANCE_FILE] = encode(manifest_for(manifest, answers, banks))
     for path, content in outputs.items():
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content)

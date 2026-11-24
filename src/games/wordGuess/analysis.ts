@@ -26,34 +26,23 @@ export type WordGuessAnalysis = {
 
 const getPatternKey = (answer: string, guess: string) => scoreWordGuess(answer, guess).join("");
 
-const getObservedPatterns = (answer: string, guesses: readonly string[]) =>
-  guesses.map((guess) => ({ guess, pattern: getPatternKey(answer, guess) }));
-
-export const getWordGuessCandidates = (answer: string, guesses: readonly string[], bank: WordGuessWordBank) => {
-  const observedPatterns = getObservedPatterns(answer, guesses);
-
-  return bank.answers.filter((candidate) =>
-    observedPatterns.every(({ guess, pattern }) => getPatternKey(candidate, guess) === pattern),
-  );
-};
-
-export const getWordGuessCandidateSteps = (answer: string, guesses: readonly string[], bank: WordGuessWordBank) => {
+const analyzeCandidates = (answer: string, guesses: readonly string[], bank: WordGuessWordBank) => {
   let candidates = [...bank.answers];
-
-  return guesses.map((guess) => {
+  const steps = guesses.map((guess) => {
     const before = candidates.length;
     const pattern = getPatternKey(answer, guess);
-    candidates = candidates.filter((candidate) => getPatternKey(candidate, guess) === pattern);
+    candidates = candidates.filter(candidate => getPatternKey(candidate, guess) === pattern);
     const after = candidates.length;
-
-    return {
-      guess,
-      before,
-      after,
-      eliminated: before - after,
-    };
+    return { guess, before, after, eliminated: before - after };
   });
+  return { candidates, steps };
 };
+
+export const getWordGuessCandidates = (answer: string, guesses: readonly string[], bank: WordGuessWordBank) =>
+  analyzeCandidates(answer, guesses, bank).candidates;
+
+export const getWordGuessCandidateSteps = (answer: string, guesses: readonly string[], bank: WordGuessWordBank) =>
+  analyzeCandidates(answer, guesses, bank).steps;
 
 export const rankWordGuessStarter = (guess: string, bank: WordGuessWordBank): WordGuessStarterRank => {
   const buckets = new Map<string, number>();
@@ -99,13 +88,13 @@ export const getWordGuessDifficultyBand = (bestStarter: WordGuessStarterRank, ba
 };
 
 export const getWordGuessAnalysis = (answer: string, guesses: readonly string[], bank: WordGuessWordBank): WordGuessAnalysis => {
-  const currentCandidates = getWordGuessCandidates(answer, guesses, bank);
+  const { candidates: currentCandidates, steps } = analyzeCandidates(answer, guesses, bank);
   const bestStarter = getBestWordGuessStarter(bank);
 
   return {
     candidateCount: currentCandidates.length,
     currentCandidates,
-    steps: getWordGuessCandidateSteps(answer, guesses, bank),
+    steps,
     bestStarter,
     difficultyBand: getWordGuessDifficultyBand(bestStarter, bank),
   };
