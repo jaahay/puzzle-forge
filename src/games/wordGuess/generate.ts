@@ -1,22 +1,23 @@
-import type { GridPuzzleGenerator } from "../../catalog/types";
+import type { GridGeneratedPuzzle, PuzzleGenerationParams } from "../../catalog/types";
 import { createGeneratedPuzzle, createRandom, normalizeDimension, normalizeSeed } from "../shared";
 import {
   DEFAULT_WORD_GUESS_GUESSES,
   DEFAULT_WORD_GUESS_LENGTH,
-  getWordGuessAnswerBank,
   WORD_GUESS_MAX_GUESSES,
   WORD_GUESS_MAX_LENGTH,
   WORD_GUESS_MIN_GUESSES,
   WORD_GUESS_MIN_LENGTH,
 } from "./words";
 
-export const generateWordGuess: GridPuzzleGenerator = ({ seed, width, height }) => {
+export const generateWordGuess = ({ seed, width, height }: PuzzleGenerationParams, answers: readonly string[]): GridGeneratedPuzzle => {
   const normalizedSeed = normalizeSeed(seed);
   const wordLength = normalizeDimension(width, DEFAULT_WORD_GUESS_LENGTH, WORD_GUESS_MIN_LENGTH, WORD_GUESS_MAX_LENGTH);
   const maxGuesses = normalizeDimension(height, DEFAULT_WORD_GUESS_GUESSES, WORD_GUESS_MIN_GUESSES, WORD_GUESS_MAX_GUESSES);
-  const wordBank = getWordGuessAnswerBank(wordLength);
-  const random = createRandom(`word-guess:${wordBank.answerPoolId}:${wordLength}:${maxGuesses}:${normalizedSeed}`);
-  const answerWord = wordBank.answers[Math.floor(random() * wordBank.answers.length)] ?? wordBank.answers[0] ?? "FORGE";
+  if (!answers.length || answers.some(word => word.length !== wordLength || !/^[A-Z]+$/.test(word))) {
+    throw new Error("Word Guess requires a matching answer pool.");
+  }
+  const random = createRandom(`word-guess:english-${wordLength}-v2:${wordLength}:${maxGuesses}:${normalizedSeed}`);
+  const answerWord = answers[Math.floor(random() * answers.length)]!;
 
   const cells = Array.from({ length: maxGuesses * wordLength }, (_, index) => {
     const row = Math.floor(index / wordLength);

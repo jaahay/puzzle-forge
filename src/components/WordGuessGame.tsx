@@ -9,7 +9,7 @@ import { readWordGuessProgress, writeWordGuessProgress, type WordGuessProgressSt
 import { formatWordGuessShareText } from "../games/wordGuess/share";
 import { normalizeWordGuessNativeInput } from "../games/wordGuess/input";
 import { isPuzzleModalOpen, shouldHandlePuzzleShortcut } from "../interactions/keyboardOwnership";
-import { isValidWordGuess, loadWordGuessBank, normalizeWordGuessWord, type WordGuessWordBank } from "../games/wordGuess/words";
+import { isValidWordGuess, isWordGuessAnswer, loadWordGuessBank, normalizeWordGuessWord, type WordGuessWordBank } from "../games/wordGuess/words";
 import { PuzzleTerminalDock } from "./PuzzleTerminalDock";
 
 const difficultyLabels = {
@@ -108,9 +108,12 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     error: boolean;
   }>({ length: puzzle.width, bank: null, error: false });
   const [lexiconRetry, setLexiconRetry] = useState(0);
-  const dictionaryReady = lexicon.length === puzzle.width && lexicon.bank !== null;
+  const loadedBank = lexicon.length === puzzle.width ? lexicon.bank : null;
+  const incompatibleAnswer = loadedBank !== null && !isWordGuessAnswer(answer, loadedBank);
+  const wordBank = incompatibleAnswer ? null : loadedBank;
+  const dictionaryReady = wordBank !== null;
   const dictionaryError = lexicon.length === puzzle.width && lexicon.error;
-  const wordBank = dictionaryReady ? lexicon.bank : null;
+  const [solverOpen, setSolverOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -137,7 +140,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
       : "";
   const submittedGuesses = rowGuesses.slice(0, submittedRows).filter((guess) => guess.length === puzzle.width);
   const submittedGuessKey = submittedGuesses.join("|");
-  const analysis = useMemo(() => wordBank ? getWordGuessAnalysis(answer, submittedGuesses, wordBank) : null, [answer, submittedGuessKey, wordBank]);
+  const analysis = useMemo(() => solverOpen && wordBank ? getWordGuessAnalysis(answer, submittedGuesses, wordBank) : null, [answer, submittedGuessKey, wordBank, solverOpen]);
   const letterMarks = useMemo(() => getLetterMarks(answer, submittedGuesses), [answer, submittedGuessKey]);
   const terminalState = getWordGuessTerminalState(
     status,
@@ -407,7 +410,8 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
   return (
     <section class="word-guess-game" aria-label={`${puzzle.width}-letter Word Guess game`}>
       <div class="word-guess-status" aria-live="polite">
-        <strong>{dictionaryError ? "Word list unavailable." : dictionaryReady ? message : "Loading word list…"}</strong>
+        <strong>{incompatibleAnswer ? "This puzzle no longer matches the available word list." : dictionaryError ? "Word list unavailable." : dictionaryReady ? message : "Loading word list…"}</strong>
+        {incompatibleAnswer ? <button type="button" disabled={disabled} onClick={onNewPuzzle}>New puzzle</button> : null}
         {dictionaryError ? (
           <button type="button" onClick={() => {
             setLexicon({ length: puzzle.width, bank: null, error: false });
@@ -538,8 +542,9 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
         </label>
       </div>
 
-      {wordBank && analysis ? <details class="word-guess-solver-details">
+      {wordBank ? <details class="word-guess-solver-details" open={solverOpen} onToggle={event => setSolverOpen(event.currentTarget.open)}>
         <summary>Solver</summary>
+        {analysis ? <>
         <div class="word-guess-analysis-header">
           <div>
             <strong>{analysis.candidateCount}</strong>
@@ -571,6 +576,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
             <a href={`${import.meta.env.BASE_URL}lexicon/NOTICE.txt`}>Word list credits</a>.
           </p>
         )}
+        </> : null}
       </details> : null}
 
       {statusMessage ? <span class="sr-only">{statusMessage}</span> : null}

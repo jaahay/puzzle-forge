@@ -1,13 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { PuzzleCell } from "../catalog/types";
-import { isValidWordGuess, parseWordGuessAnswers, parseWordGuessGuesses } from "../games/wordGuess/words";
+import { isValidWordGuess, parseWordGuessBank } from "../games/wordGuess/words";
 import { readFileSync } from "node:fs";
 
-const answerText = readFileSync(new URL("../../public/lexicon/word-guess/answers/4.txt", import.meta.url), "utf8");
-const loadedBank = parseWordGuessGuesses(
-  readFileSync(new URL("../../public/lexicon/word-guess/4.txt", import.meta.url), "utf8"),
-  4,
-  parseWordGuessAnswers(answerText, 4),
+const loadedBank = parseWordGuessBank(
+  readFileSync(new URL("../../public/lexicon/word-guess/banks/4.json", import.meta.url), "utf8"), 4,
 );
 import {
   commitGridHistoryState,

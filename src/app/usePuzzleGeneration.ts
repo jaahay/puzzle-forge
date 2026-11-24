@@ -19,6 +19,7 @@ import { defaultJigsawCutStyle } from "../games/jigsaw/cutStyle";
 import { defaultJigsawSpecialPiecesMode } from "../games/jigsaw/specialPieces";
 import { defaultSolitaireVariation } from "../games/solitaire/variation";
 import { defaultSudokuVariation, normalizeSudokuVariation } from "../games/sudoku/variation";
+import { loadWordGuessBank } from "../games/wordGuess/words";
 import type { NextPuzzleDraft } from "./generationSettings";
 import { withPuzzleProvenance, type PuzzleProvenance } from "./puzzleProvenance";
 import { defaultPuzzleDifficulty, makeRequestId } from "./runtime";
@@ -165,7 +166,7 @@ export const makeMissingPuzzleGenerationOptions = ({
     selectedPuzzleId === "jigsaw" ? jigsawSpecialPiecesMode : undefined,
 });
 
-export const usePuzzleGeneration = () => {
+export const usePuzzleGeneration = (onPreparationError: (message: string) => void) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const activeRequestId = useRef<string | null>(null);
   const activeProvenance = useRef<PuzzleProvenance | undefined>(undefined);
@@ -174,7 +175,10 @@ export const usePuzzleGeneration = () => {
     [],
   );
 
-  useEffect(() => () => worker.terminate(), [worker]);
+  useEffect(() => () => {
+    activeRequestId.current = null;
+    worker.terminate();
+  }, [worker]);
 
   const hasActiveRequest = () => activeRequestId.current !== null;
 
@@ -227,7 +231,18 @@ export const usePuzzleGeneration = () => {
     activeRequestId.current = request.requestId;
     activeProvenance.current = options.provenance ? { ...options.provenance } : undefined;
     setIsGenerating(true);
-    worker.postMessage(request);
+    if (puzzleId === "word-guess") {
+      loadWordGuessBank(width).then(bank => {
+        if (!shouldAcceptGenerationResponse(activeRequestId.current, request.requestId)) return;
+        worker.postMessage({ ...request, wordGuessAnswers: bank.answers });
+      }).catch((reason: unknown) => {
+        if (!shouldAcceptGenerationResponse(activeRequestId.current, request.requestId)) return;
+        cancelGeneration();
+        onPreparationError(reason instanceof Error ? reason.message : "Could not load Word Guess word list.");
+      });
+    } else {
+      worker.postMessage(request);
+    }
 
     return { kind: "started", request, title: definition.title };
   };

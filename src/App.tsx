@@ -146,7 +146,7 @@ export const App = () => {
     setGenerationDefaults((current) => ({ ...current, ...settings }));
   };
 
-  const generation = usePuzzleGeneration();
+  const generation = usePuzzleGeneration(message => generationErrorHandlerRef.current(message));
   const sessions = usePuzzleSessions(initialPersistedSessions);
   const grid = useGridController();
   const solitaire = useSolitaireController({ onStatusMessage: setStatusMessage, solitaireVariation: activeSolitaireVariation });

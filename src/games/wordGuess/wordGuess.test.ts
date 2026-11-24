@@ -6,7 +6,7 @@ import { scoreWordGuess, wordGuessMarkToEmoji } from "./feedback";
 import { readWordGuessProgress, writeWordGuessProgress } from "./progress";
 import { formatWordGuessShareText } from "./share";
 import { createWordGuessState, reduceWordGuess } from "./state";
-import { isValidWordGuess, loadWordGuessAnswerBank, loadWordGuessBank, parseWordGuessAnswers, parseWordGuessGuesses, type WordGuessWordBank } from "./words";
+import { isValidWordGuess, isWordGuessAnswer, loadWordGuessBank, parseWordGuessBank, type WordGuessWordBank } from "./words";
 
 const makeTinyBank = (): WordGuessWordBank => ({
   dictionaryId: "test-5",
@@ -14,6 +14,7 @@ const makeTinyBank = (): WordGuessWordBank => ({
   length: 5,
   answers: ["CRANE", "SLATE", "TRACE", "ABBEY"],
   validGuesses: ["CRANE", "SLATE", "TRACE", "ABBEY"],
+  starter: { guess: "SLATE", weightedTotal: 4, worstBucket: 1 },
 });
 
 describe("Word Guess feedback", () => {
@@ -32,81 +33,59 @@ describe("Word Guess feedback", () => {
   });
 });
 
-describe("Word Guess word banks", () => {
-  it("keeps answer-only generation data distinct from the loaded validator", () => {
-    const text = readFileSync(new URL("../../../public/lexicon/word-guess/answers/5.txt", import.meta.url), "utf8");
-    const bank = parseWordGuessAnswers(text, 5);
-    expect(bank.answers.length).toBeGreaterThan(1300);
-    expect("validGuesses" in bank).toBe(false);
-    expect(bank.answerPoolId).not.toBe(bank.dictionaryId);
-  });
-
-  it("validates words against the loaded accepted-guess list", () => {
-    const text = readFileSync(new URL("../../../public/lexicon/word-guess/5.txt", import.meta.url), "utf8");
-    const answerText = readFileSync(new URL("../../../public/lexicon/word-guess/answers/5.txt", import.meta.url), "utf8");
-    const bank = parseWordGuessGuesses(text, 5, parseWordGuessAnswers(answerText, 5));
-    expect(isValidWordGuess(" forge ", bank)).toBe(true);
-    expect(isValidWordGuess("ABBOT", bank)).toBe(true);
-    expect(isValidWordGuess("toolong", bank)).toBe(false);
-    expect(isValidWordGuess("zzzzz", bank)).toBe(false);
-  });
-});
+const bankText = (n: number) => readFileSync(new URL(`../../../public/lexicon/word-guess/banks/${n}.json`, import.meta.url), "utf8");
 
 describe("Word Guess compiled dictionary", () => {
-  it("loads ordinary guesses on demand, with caching", async () => {
-    const guesses = readFileSync(new URL("../../../public/lexicon/word-guess/5.txt", import.meta.url), "utf8");
-    const answers = readFileSync(new URL("../../../public/lexicon/word-guess/answers/5.txt", import.meta.url), "utf8");
-    const fetchMock = vi.fn(async (url: string) => ({
-      ok: true,
-      text: async () => url.includes("/answers/") ? answers : guesses,
-    }));
+  it("uses one coherent length-specific bank for answers, guesses and offline starter statistics", () => {
+    const bank = parseWordGuessBank(bankText(5), 5);
+    expect(bank.answers.length).toBeGreaterThan(1300);
+    expect(bank.validGuesses.length).toBeGreaterThan(5000);
+    expect(isValidWordGuess(" forge ", bank)).toBe(true);
+    expect(isValidWordGuess("ABBOT", bank)).toBe(true);
+    expect(isValidWordGuess("zzzzz", bank)).toBe(false);
+    expect(isWordGuessAnswer("ZZZZZ", bank)).toBe(false);
+    expect(isWordGuessAnswer(bank.answers[0]!, bank)).toBe(true);
+    expect(rankWordGuessStarter(bank.starter.guess, bank)).toEqual({
+      guess: bank.starter.guess,
+      averageRemaining: bank.starter.weightedTotal / bank.answers.length,
+      worstBucket: bank.starter.worstBucket,
+    });
+  });
+
+  it("shares a single fetch across concurrent and subsequent consumers", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, text: async () => bankText(5) });
     vi.stubGlobal("fetch", fetchMock);
     try {
-      const bank = await loadWordGuessBank(5);
-      expect(bank.validGuesses.length).toBeGreaterThan(5000);
-      expect(isValidWordGuess("ABBOT", bank)).toBe(true);
-      expect(isValidWordGuess("FORGE", bank)).toBe(true);
-      expect(isValidWordGuess("ZZZZZ", bank)).toBe(false);
-      expect(bank.answers.length).toBeLessThan(bank.validGuesses.length);
-      expect(fetchMock).toHaveBeenCalledTimes(2);
-      expect(await loadWordGuessBank(5)).toBe(bank);
+      const [one, two] = await Promise.all([loadWordGuessBank(5), loadWordGuessBank(5)]);
+      expect(one).toBe(two);
+      expect(await loadWordGuessBank(5)).toBe(one);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
     } finally {
       vi.unstubAllGlobals();
     }
   });
-});
 
-describe("Word Guess loading recovery", () => {
-  it("does not cache a failed request, then accepts a previously omitted word", async () => {
-    const guesses = readFileSync(new URL("../../../public/lexicon/word-guess/10.txt", import.meta.url), "utf8");
-    const answers = readFileSync(new URL("../../../public/lexicon/word-guess/answers/10.txt", import.meta.url), "utf8");
-    let firstAnswerRequest = true;
-    const fetchMock = vi.fn(async (url: string) => {
-      if (url.includes("/answers/") && firstAnswerRequest) {
-        firstAnswerRequest = false;
-        throw new Error("offline");
-      }
-      return { ok: true, text: async () => url.includes("/answers/") ? answers : guesses };
-    });
+  it("does not cache a failed request and preserves spelling exceptions", async () => {
+    const fetchMock = vi.fn().mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValue({ ok: true, text: async () => bankText(10) });
     vi.stubGlobal("fetch", fetchMock);
     try {
       await expect(loadWordGuessBank(10)).rejects.toThrow("offline");
       const bank = await loadWordGuessBank(10);
       expect(isValidWordGuess("JAVASCRIPT", bank)).toBe(true);
       expect(bank.answers.length).toBeGreaterThan(900);
-      // Both assets are requested in parallel on each attempt.
-      expect(fetchMock).toHaveBeenCalledTimes(4);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
     } finally {
       vi.unstubAllGlobals();
     }
   });
 
-  it("rejects malformed and incomplete derived assets", () => {
-    const answerText = readFileSync(new URL("../../../public/lexicon/word-guess/answers/4.txt", import.meta.url), "utf8");
-    const bank = parseWordGuessAnswers(answerText, 4);
-    expect(() => parseWordGuessGuesses("CRANE\\n", 4, bank)).toThrow("incomplete");
-    const text = readFileSync(new URL("../../../public/lexicon/word-guess/4.txt", import.meta.url), "utf8");
-    expect(() => parseWordGuessGuesses(text.replace("ABLE", "AB-L"), 4, bank)).toThrow("malformed");
+  it("rejects malformed, incomplete, or inconsistent assets", () => {
+    expect(() => parseWordGuessBank("{}", 4)).toThrow("incomplete");
+    const bank = JSON.parse(bankText(4));
+    expect(() => parseWordGuessBank(JSON.stringify({ ...bank, validGuesses: ["AB-L", ...bank.validGuesses.slice(1)] }), 4)).toThrow("malformed");
+    expect(() => parseWordGuessBank(JSON.stringify({ ...bank, validGuesses: bank.validGuesses.filter((word: string) => word !== bank.answers[0]) }), 4)).toThrow("missing eligible answers");
+    expect(() => parseWordGuessBank(JSON.stringify({ ...bank, starter: { ...bank.starter, weightedTotal: -1 } }), 4)).toThrow("starter statistics");
   });
 });
 
@@ -134,7 +113,7 @@ describe("Word Guess analysis", () => {
     expect(rank.guess).toBe("SLATE");
     expect(rank.averageRemaining).toBeGreaterThan(0);
     expect(["gentle", "steady", "sharp", "severe"]).toContain(getWordGuessDifficultyBand(rank, bank));
-    expect(analysis.bestStarter.guess.length).toBe(5);
+    expect(analysis.bestStarter.guess).toBe(bank.starter.guess);
     expect(bank.validGuesses).toContain(analysis.bestStarter.guess);
     expect(analysis.currentCandidates).toEqual(bank.answers);
   });

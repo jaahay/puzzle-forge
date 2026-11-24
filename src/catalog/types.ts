@@ -403,6 +403,10 @@ export type PuzzleGenerationRequest = {
   requestId: string;
 } & PuzzleGenerationParams;
 
+export type PuzzleGenerationWorkerRequest = PuzzleGenerationRequest & {
+  wordGuessAnswers?: readonly string[];
+};
+
 export type PuzzleGenerationResponse =
   | {
       requestId: string;

@@ -71,38 +71,12 @@ export const rankWordGuessStarter = (guess: string, bank: WordGuessWordBank): Wo
   return { guess, averageRemaining, worstBucket };
 };
 
-// Consider all accepted guesses, but score exact feedback partitions for only a
-// letter-diverse shortlist. Cached by immutable loaded bank, not by puzzle render.
-const starterCache = new WeakMap<WordGuessWordBank, WordGuessStarterRank>();
-
-export const getBestWordGuessStarter = (bank: WordGuessWordBank): WordGuessStarterRank => {
-  const cached = starterCache.get(bank);
-  if (cached) return cached;
-
-  const frequency = new Map<string, number>();
-  for (const answer of bank.answers) {
-    for (const letter of new Set(answer)) {
-      frequency.set(letter, (frequency.get(letter) ?? 0) + 1);
-    }
-  }
-
-  const shortlist = bank.validGuesses
-    .map((guess) => ({
-      guess,
-      coverage: [...new Set(guess)].reduce((sum, letter) => sum + (frequency.get(letter) ?? 0), 0),
-    }))
-    .sort((a, b) => b.coverage - a.coverage || a.guess.localeCompare(b.guess))
-    .slice(0, 96);
-
-  const ranked = shortlist.map(({ guess }) => rankWordGuessStarter(guess, bank)).sort((a, b) =>
-    a.averageRemaining - b.averageRemaining ||
-    a.worstBucket - b.worstBucket ||
-    a.guess.localeCompare(b.guess),
-  );
-  const best = ranked[0] ?? { guess: "", averageRemaining: 0, worstBucket: 0 };
-  starterCache.set(bank, best);
-  return best;
-};
+// Starter rankings are generated offline from the same lexical bank.
+export const getBestWordGuessStarter = (bank: WordGuessWordBank): WordGuessStarterRank => ({
+  guess: bank.starter.guess,
+  averageRemaining: bank.starter.weightedTotal / bank.answers.length,
+  worstBucket: bank.starter.worstBucket,
+});
 
 export const getWordGuessDifficultyBand = (bestStarter: WordGuessStarterRank, bank: WordGuessWordBank): WordGuessDifficultyBand => {
   const answerCount = Math.max(1, bank.answers.length);
