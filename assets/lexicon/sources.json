@@ -1,0 +1,39 @@
+{
+  "source": {
+    "id": "esdb-en-US-2026.02.25",
+    "name": "English Speller Database / SCOWL US English speller (size 60)",
+    "release": "rel-2026.02.25",
+    "url": "https://raw.githubusercontent.com/en-wl/wordlist-diff/71d7dd07676edb60ade43552e10b41314b7e9287/en_US.txt",
+    "upstreamRepository": "https://github.com/en-wl/wordlist",
+    "generatedRepository": "https://github.com/en-wl/wordlist-diff",
+    "blobSha1": "b4222bda8be5826fce1635230f9503234ec31e5a",
+    "sha256": "4ff7e0b6d86763e1e042ffd746e94cdf4432618702deac303a1669e2a838db04",
+    "licenseNotice": "public/lexicon/NOTICE.txt"
+  },
+  "editorialSpellings": [
+    "PLAYTEST",
+    "PLAYFIELD",
+    "VALIDATOR",
+    "JAVASCRIPT"
+  ],
+  "familiarity": {
+    "repository": "https://github.com/rptetzloff/anagrimoire",
+    "commit": "5715edf9d8b865de51e122703ca6cf0c1f6f8609",
+    "release": "words-v6",
+    "license": "MIT",
+    "bands": [
+      {
+        "tier": "everyday",
+        "path": "assets/lexicon/familiarity/band-10.json",
+        "gitBlobSha1": "2c5bc63e3024af97757f76b1be8b8a51353b3cf5",
+        "sha256": "43bb1573f7e628f799161732f16a11208f948457f3153d5b236674bef25a9fd1"
+      },
+      {
+        "tier": "common",
+        "path": "assets/lexicon/familiarity/band-20.json",
+        "gitBlobSha1": "88ddbb40817edf139377359d04b6308272406fd2",
+        "sha256": "932ef25fd64abee8918698ff92ec954e4a50947638da9262ac2e69f168198878"
+      }
+    ]
+  }
+}

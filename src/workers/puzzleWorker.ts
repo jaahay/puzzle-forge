@@ -1,17 +1,17 @@
 /// <reference lib="webworker" />
 
-import type { PuzzleGenerationRequest, PuzzleGenerationResponse } from "../catalog/types";
+import type { PuzzleGenerationWorkerRequest, PuzzleGenerationResponse } from "../catalog/types";
 import { generatePuzzle } from "../games/registry";
 
 const workerScope = self as DedicatedWorkerGlobalScope;
 
-workerScope.addEventListener("message", (event: MessageEvent<PuzzleGenerationRequest>) => {
-  const { requestId, ...generationRequest } = event.data;
+workerScope.addEventListener("message", (event: MessageEvent<PuzzleGenerationWorkerRequest>) => {
+  const { requestId, wordGuessAnswers, ...generationRequest } = event.data;
 
   try {
     const response: PuzzleGenerationResponse = {
       requestId,
-      puzzle: generatePuzzle(generationRequest),
+      puzzle: generatePuzzle(generationRequest, wordGuessAnswers),
     };
 
     workerScope.postMessage(response);

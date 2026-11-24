@@ -1,17 +1,20 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
 import { getWordGuessAnalysis, getWordGuessCandidateSteps, getWordGuessCandidates, getWordGuessDifficultyBand, rankWordGuessStarter } from "./analysis";
 import { getWordGuessDailyLabel, getWordGuessDailySeed } from "./daily";
 import { scoreWordGuess, wordGuessMarkToEmoji } from "./feedback";
 import { readWordGuessProgress, writeWordGuessProgress } from "./progress";
 import { formatWordGuessShareText } from "./share";
 import { createWordGuessState, reduceWordGuess } from "./state";
-import { getWordGuessBank, isValidWordGuess, type WordGuessWordBank } from "./words";
+import { isValidWordGuess, isWordGuessAnswer, loadWordGuessBank, parseWordGuessBank, type WordGuessWordBank } from "./words";
 
 const makeTinyBank = (): WordGuessWordBank => ({
   dictionaryId: "test-5",
+  answerPoolId: "test-answers",
   length: 5,
   answers: ["CRANE", "SLATE", "TRACE", "ABBEY"],
   validGuesses: ["CRANE", "SLATE", "TRACE", "ABBEY"],
+  starter: { guess: "SLATE", weightedTotal: 4, worstBucket: 1 },
 });
 
 describe("Word Guess feedback", () => {
@@ -30,13 +33,59 @@ describe("Word Guess feedback", () => {
   });
 });
 
-describe("Word Guess word banks", () => {
-  it("normalizes validity checks against the selected bank", () => {
-    const bank = getWordGuessBank(5);
+const bankText = (n: number) => readFileSync(new URL(`../../../public/lexicon/word-guess/banks/${n}.json`, import.meta.url), "utf8");
 
+describe("Word Guess compiled dictionary", () => {
+  it("uses one coherent length-specific bank for answers, guesses and offline starter statistics", () => {
+    const bank = parseWordGuessBank(bankText(5), 5);
+    expect(bank.answers.length).toBeGreaterThan(1300);
+    expect(bank.validGuesses.length).toBeGreaterThan(5000);
     expect(isValidWordGuess(" forge ", bank)).toBe(true);
-    expect(isValidWordGuess("toolong", bank)).toBe(false);
+    expect(isValidWordGuess("ABBOT", bank)).toBe(true);
     expect(isValidWordGuess("zzzzz", bank)).toBe(false);
+    expect(isWordGuessAnswer("ZZZZZ", bank)).toBe(false);
+    expect(isWordGuessAnswer(bank.answers[0]!, bank)).toBe(true);
+    expect(rankWordGuessStarter(bank.starter.guess, bank)).toEqual({
+      guess: bank.starter.guess,
+      averageRemaining: bank.starter.weightedTotal / bank.answers.length,
+      worstBucket: bank.starter.worstBucket,
+    });
+  });
+
+  it("shares a single fetch across concurrent and subsequent consumers", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, text: async () => bankText(5) });
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      const [one, two] = await Promise.all([loadWordGuessBank(5), loadWordGuessBank(5)]);
+      expect(one).toBe(two);
+      expect(await loadWordGuessBank(5)).toBe(one);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("does not cache a failed request and preserves spelling exceptions", async () => {
+    const fetchMock = vi.fn().mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValue({ ok: true, text: async () => bankText(10) });
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      await expect(loadWordGuessBank(10)).rejects.toThrow("offline");
+      const bank = await loadWordGuessBank(10);
+      expect(isValidWordGuess("JAVASCRIPT", bank)).toBe(true);
+      expect(bank.answers.length).toBeGreaterThan(900);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("rejects malformed, incomplete, or inconsistent assets", () => {
+    expect(() => parseWordGuessBank("{}", 4)).toThrow("incomplete");
+    const bank = JSON.parse(bankText(4));
+    expect(() => parseWordGuessBank(JSON.stringify({ ...bank, validGuesses: ["AB-L", ...bank.validGuesses.slice(1)] }), 4)).toThrow("malformed");
+    expect(() => parseWordGuessBank(JSON.stringify({ ...bank, validGuesses: bank.validGuesses.filter((word: string) => word !== bank.answers[0]) }), 4)).toThrow("missing eligible answers");
+    expect(() => parseWordGuessBank(JSON.stringify({ ...bank, starter: { ...bank.starter, weightedTotal: -1 } }), 4)).toThrow("starter statistics");
   });
 });
 
@@ -64,7 +113,8 @@ describe("Word Guess analysis", () => {
     expect(rank.guess).toBe("SLATE");
     expect(rank.averageRemaining).toBeGreaterThan(0);
     expect(["gentle", "steady", "sharp", "severe"]).toContain(getWordGuessDifficultyBand(rank, bank));
-    expect(analysis.bestStarter.guess.length).toBe(5);
+    expect(analysis.bestStarter.guess).toBe(bank.starter.guess);
+    expect(bank.validGuesses).toContain(analysis.bestStarter.guess);
     expect(analysis.currentCandidates).toEqual(bank.answers);
   });
 });
@@ -102,20 +152,23 @@ describe("Word Guess progress", () => {
     try {
       writeWordGuessProgress({
         puzzleId: "word-guess-5x6-test",
+        baselineChecksum: "expected-5",
         wordLength: 5,
         maxGuesses: 6,
         guesses: ["SLATE"],
         status: "playing",
       });
 
-      expect(readWordGuessProgress("word-guess-5x6-test")).toEqual({
+      expect(readWordGuessProgress("word-guess-5x6-test", "expected-5")).toEqual({
         puzzleId: "word-guess-5x6-test",
+        baselineChecksum: "expected-5",
         wordLength: 5,
         maxGuesses: 6,
         guesses: ["SLATE"],
         status: "playing",
       });
 
+      expect(readWordGuessProgress("word-guess-5x6-test", "another-answer")).toBeNull();
       storage.set("puzzle-forge:word-guess:bad", JSON.stringify({ puzzleId: 3 }));
       expect(readWordGuessProgress("bad")).toBeNull();
     } finally {
@@ -144,7 +197,7 @@ describe("Word Guess share text", () => {
 
 describe("Word Guess reducer", () => {
   it("accepts typed letters, validates dictionary membership, and detects wins", () => {
-    const bank = getWordGuessBank(5);
+    const bank = makeTinyBank();
     const rules = { answer: "CRANE", maxGuesses: 6, wordBank: bank };
     let state = createWordGuessState("CRANE");
 

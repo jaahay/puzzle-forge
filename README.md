@@ -143,3 +143,30 @@ Local ingestion remains supported and should invoke the same Python scripts rath
 ## Product direction
 
 The branch now targets a catalog destination rather than a single puzzle workbench. Future work should add richer per-puzzle renderers, puzzle-specific settings, curated word dictionaries, Nonogram clue derivation, Sudoku uniqueness checks, Solitaire move validation, Peg Solitaire solver hints, and eventually deployment configuration for the chosen `puzzles.*` host.
+
+## Word Guess lexical assets
+
+The accepted-guess vocabulary comes from the pinned ESDB/SCOWL US English
+size-60 speller list, not a runtime dictionary API. Each of the nine
+same-origin JSON banks under `public/lexicon/word-guess/banks/` is loaded on
+demand for its word length and contains accepted guesses, eligible answers,
+and offline-computed starter statistics. Generation receives the answer
+pool explicitly from the same loaded bank used for validation and assistance.
+The smaller eligible-answer pool is derived from pinned MIT-licensed
+familiarity bands plus editorial seeds; the readable build-time answer
+inventory is `assets/lexicon/word-guess-answers.json`.
+
+`assets/lexicon/sources.json` records both pinned source inputs, including
+vendored familiarity bands under `assets/lexicon/familiarity/`. The original
+curated answers live in `word-guess-curated.json` as editorial seeds;
+`assets/lexicon/provenance.json` records derived file hashes.
+Verify shipped assets without network access:
+
+```sh
+python3 scripts/build_word_guess_lexicon.py --verify
+```
+
+Rebuild only deliberately, using
+`python3 scripts/build_word_guess_lexicon.py --regenerate`; review the
+asset/provenance diff before committing. The source copyright and permissions
+appear in `public/lexicon/NOTICE.txt` and are linked from Word Guess.

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import { scoreWordGuess } from "./feedback";
 import { generateWordGuess } from "./generate";
+import { parseWordGuessBank } from "./words";
 import { readWordGuessProgress, writeWordGuessProgress } from "./progress";
 
 const withMockStorage = (testBody: (storage: Map<string, string>) => void) => {
@@ -34,27 +36,32 @@ describe("Word Guess hardening", () => {
     expect(scoreWordGuess("SHEEP", "PEELS")).toEqual(["present", "present", "correct", "absent", "present"]);
   });
 
-  it("generates the same answer and layout for the same seed and dimensions", () => {
+  it("generates the same answer and layout for the same seed and explicit answer pool", () => {
+    const bank = parseWordGuessBank(readFileSync(new URL("../../../public/lexicon/word-guess/banks/5.json", import.meta.url), "utf8"), 5);
     const request = {
       puzzleId: "word-guess" as const,
       seed: "repeatable-word-seed",
       width: 5,
       height: 6,
     };
-    const first = generateWordGuess(request);
-    const second = generateWordGuess(request);
+    const first = generateWordGuess(request, bank.answers);
+    const second = generateWordGuess(request, bank.answers);
 
     expect(first.id).toBe(second.id);
     expect(first.answerKey).toEqual(second.answerKey);
+    expect(first.checksum).toContain(first.answerKey!.join(""));
     expect(first.width).toBe(5);
     expect(first.height).toBe(6);
     expect(first.cells).toHaveLength(30);
+    expect(bank.answers).toContain(first.answerKey!.join(""));
+    expect(() => generateWordGuess(request, ["NO"])).toThrow("matching answer pool");
   });
 
   it("persists submitted guesses separately from active row input", () => {
     withMockStorage(() => {
       writeWordGuessProgress({
         puzzleId: "word-guess-5x6-progress",
+        baselineChecksum: "word-guess-test",
         wordLength: 5,
         maxGuesses: 6,
         guesses: ["SLATE"],
@@ -62,8 +69,9 @@ describe("Word Guess hardening", () => {
         status: "playing",
       });
 
-      expect(readWordGuessProgress("word-guess-5x6-progress")).toEqual({
+      expect(readWordGuessProgress("word-guess-5x6-progress", "word-guess-test")).toEqual({
         puzzleId: "word-guess-5x6-progress",
+        baselineChecksum: "word-guess-test",
         wordLength: 5,
         maxGuesses: 6,
         guesses: ["SLATE"],
@@ -79,6 +87,7 @@ describe("Word Guess hardening", () => {
         "puzzle-forge:word-guess:bad-current-input",
         JSON.stringify({
           puzzleId: "bad-current-input",
+          baselineChecksum: "valid-checksum",
           wordLength: 5,
           maxGuesses: 6,
           guesses: ["SLATE"],

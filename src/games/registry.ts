@@ -13,7 +13,6 @@ import { generateWordGuess } from "./wordGuess/generate";
 const generators: Partial<Record<PuzzleId, PuzzleGenerator>> = {
   sudoku: generateSudoku,
   nonogram: generateNonogram,
-  "word-guess": generateWordGuess,
   "logic-grid": generateLogicGrid,
   jigsaw: generateJigsaw,
   "tile-swap": generateTileSwap,
@@ -23,9 +22,13 @@ const generators: Partial<Record<PuzzleId, PuzzleGenerator>> = {
   futoshiki: generateFutoshiki,
 };
 
-export const hasPuzzleGenerator = (puzzleId: PuzzleId) => Boolean(generators[puzzleId]);
+export const hasPuzzleGenerator = (puzzleId: PuzzleId) => puzzleId === "word-guess" || Boolean(generators[puzzleId]);
 
-export const generatePuzzle = (request: Parameters<PuzzleGenerator>[0]) => {
+export const generatePuzzle = (request: Parameters<PuzzleGenerator>[0], wordGuessAnswers?: readonly string[]) => {
+  if (request.puzzleId === "word-guess") {
+    if (!wordGuessAnswers) throw new Error("Word Guess generation requires an explicit answer pool.");
+    return generateWordGuess(request, wordGuessAnswers);
+  }
   const generator = generators[request.puzzleId];
 
   if (!generator) {

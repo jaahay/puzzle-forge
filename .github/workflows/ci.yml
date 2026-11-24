@@ -38,5 +38,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Verify compiled Word Guess assets
+        run: python3 scripts/build_word_guess_lexicon.py --verify
+
       - name: Build
         run: pnpm build

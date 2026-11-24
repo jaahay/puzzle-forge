@@ -53,8 +53,8 @@ That means it is not primarily a solver workbench. Analysis should support playe
 
 ### Implementation notes
 
-- The hard-coded lists in `words.ts` are transitional; derive accepted guesses and answer candidates from the shared, licensed [Language Assets](./language-assets.md) pipeline instead of manually maintaining a larger list.
-- Keep runtime word assets separate from the initial application bundle and preserve a clear distinction between broadly accepted guesses and fair answers.
+- Eligible answers are compiled into `assets/lexicon/word-guess-answers.json` from pinned everyday/common familiarity bands plus the original reviewed editorial seeds. Accepted guesses come from pinned ESDB data via `scripts/build_word_guess_lexicon.py`; no broad dictionary entry becomes a possible answer merely because it is spelled correctly.
+- Keep runtime word assets separate from the initial application bundle. Load one coherent bank per word length, with distinct accepted guesses and eligible answers, and supply that bank's answer pool explicitly to generation. Precompute starter statistics offline and perform candidate analysis only when requested. If a restored answer is incompatible with the loaded bank, offer a fresh puzzle without silently reusing its progress.
 - Existing canonical resource URLs already carry the seed. Do not introduce runtime dictionary/generator version control; ensure Word Guess baseline checksums include the solution so incompatible saved progress cannot silently attach to a changed answer.
 - If difficulty is analysis-derived, keep the function deterministic and tested.
 
