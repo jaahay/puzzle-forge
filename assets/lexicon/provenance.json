@@ -71,5 +71,61 @@
       "tier": "common",
       "sha256": "932ef25fd64abee8918698ff92ec954e4a50947638da9262ac2e69f168198878"
     }
-  ]
+  ],
+  "answerFiles": {
+    "4": {
+      "path": "public/lexicon/word-guess/answers/4.txt",
+      "words": 929,
+      "bytes": 4645,
+      "sha256": "bf904454b426275acf771bcc39374da74dac4f6f19e23f132caf085f19570068"
+    },
+    "5": {
+      "path": "public/lexicon/word-guess/answers/5.txt",
+      "words": 1386,
+      "bytes": 8316,
+      "sha256": "a0fe0ff23875e7217dae9835645ed18f7a93528a2a37a05a3879c4ab60d03296"
+    },
+    "6": {
+      "path": "public/lexicon/word-guess/answers/6.txt",
+      "words": 1648,
+      "bytes": 11536,
+      "sha256": "762592ba52574977dfa86c193b9327d9efbe94ed3f7691bd858d5c9ad734aca4"
+    },
+    "7": {
+      "path": "public/lexicon/word-guess/answers/7.txt",
+      "words": 1761,
+      "bytes": 14088,
+      "sha256": "91df52069c188a67a3e75242f50b62f01035533c81c9ab2c3e17358af4e896a2"
+    },
+    "8": {
+      "path": "public/lexicon/word-guess/answers/8.txt",
+      "words": 1575,
+      "bytes": 14175,
+      "sha256": "79739ba1419f73d4ec1d33abd99c99a5b4796d7e3f6071d66725fa741f99dc01"
+    },
+    "9": {
+      "path": "public/lexicon/word-guess/answers/9.txt",
+      "words": 1287,
+      "bytes": 12870,
+      "sha256": "f506d288f34607919bbc9627c0f0ce2cb16d1741fd2ef4f941ef80ea9ef04a72"
+    },
+    "10": {
+      "path": "public/lexicon/word-guess/answers/10.txt",
+      "words": 948,
+      "bytes": 10428,
+      "sha256": "efbf303a66fd9d7d5e1c5f3f63d35ae95fa7bfb9b87ec9251a5ef651b7181434"
+    },
+    "11": {
+      "path": "public/lexicon/word-guess/answers/11.txt",
+      "words": 554,
+      "bytes": 6648,
+      "sha256": "359bb7920018edf33f4bdb5ae0609c659e47c1316d581e5b518237ef5db2f8d6"
+    },
+    "12": {
+      "path": "public/lexicon/word-guess/answers/12.txt",
+      "words": 303,
+      "bytes": 3939,
+      "sha256": "2a6ae96c210b99dec27976279039d883570237eff5b018655304ef30c783814f"
+    }
+  }
 }

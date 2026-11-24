@@ -93,6 +93,14 @@ def manifest_for(manifest, answers, dictionary_data):
         "answerPoolSha256": digest(encode(answers)),
         "editorialAnswersSha256": digest(EDITORIAL_FILE.read_bytes()),
         "familiaritySources": [{"tier": b["tier"], "sha256": b["sha256"]} for b in manifest["familiarity"]["bands"]],
+        "answerFiles": {
+            str(n): {
+                "path": f"public/lexicon/word-guess/answers/{n}.txt",
+                "words": len(answers[str(n)]),
+                "bytes": len(("\n".join(answers[str(n)]) + "\n").encode("utf8")),
+                "sha256": digest(("\n".join(answers[str(n)]) + "\n").encode("utf8")),
+            } for n in LENGTHS
+        },
         "files": {
             str(n): {
                 "path": f"public/lexicon/word-guess/{n}.txt",
@@ -120,6 +128,10 @@ def verify():
     answers = eligible_answers(editorial, tiers, dictionaries)
     if ANSWERS_FILE.read_bytes() != encode(answers):
         raise ValueError("Answer pool does not match pinned familiarity sources.")
+    for n in LENGTHS:
+        compiled = ("\n".join(answers[str(n)]) + "\n").encode("utf8")
+        if (ROOT / f"public/lexicon/word-guess/answers/{n}.txt").read_bytes() != compiled:
+            raise ValueError(f"Compiled answer list mismatch at length {n}.")
     if read_json(PROVENANCE_FILE) != manifest_for(manifest, answers, dictionary_data):
         raise ValueError("Derived asset provenance or hashes do not match.")
     print("Verified nine Word Guess dictionaries and the derived familiar answer pool.")
@@ -145,6 +157,7 @@ def regenerate():
     answers = eligible_answers(editorial, tiers, dictionaries)
     compiled = {n: ("\n".join(sorted(dictionaries[n])) + "\n").encode("utf8") for n in LENGTHS}
     outputs = {ROOT / f"public/lexicon/word-guess/{n}.txt": compiled[n] for n in LENGTHS}
+    outputs.update({ROOT / f"public/lexicon/word-guess/answers/{n}.txt": ("\n".join(answers[str(n)]) + "\n").encode("utf8") for n in LENGTHS})
     outputs[ANSWERS_FILE] = encode(answers)
     outputs[PROVENANCE_FILE] = encode(manifest_for(manifest, answers, compiled))
     for path, content in outputs.items():
