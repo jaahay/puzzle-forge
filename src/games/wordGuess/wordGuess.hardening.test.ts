@@ -1,6 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
 import { scoreWordGuess } from "./feedback";
 import { generateWordGuess } from "./generate";
+import { loadWordGuessAnswerBank } from "./words";
 import { readWordGuessProgress, writeWordGuessProgress } from "./progress";
 
 const withMockStorage = (testBody: (storage: Map<string, string>) => void) => {
@@ -34,7 +36,12 @@ describe("Word Guess hardening", () => {
     expect(scoreWordGuess("SHEEP", "PEELS")).toEqual(["present", "present", "correct", "absent", "present"]);
   });
 
-  it("generates the same answer and layout for the same seed and dimensions", () => {
+  it("generates the same answer and layout for the same seed and dimensions", async () => {
+    const answers = readFileSync(new URL("../../../public/lexicon/word-guess/answers/5.txt", import.meta.url), "utf8");
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, text: async () => answers });
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      await loadWordGuessAnswerBank(5);
     const request = {
       puzzleId: "word-guess" as const,
       seed: "repeatable-word-seed",
@@ -50,6 +57,9 @@ describe("Word Guess hardening", () => {
     expect(first.width).toBe(5);
     expect(first.height).toBe(6);
     expect(first.cells).toHaveLength(30);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it("persists submitted guesses separately from active row input", () => {
