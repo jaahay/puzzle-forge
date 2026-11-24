@@ -86,6 +86,47 @@ def eligible_answers(editorial, tiers, dictionaries):
     return answers
 
 
+def starter_for(answers, guesses):
+    # Rank the same full-vocabulary shortlist previously evaluated in the browser.
+    # The result is a suggestion, not an exhaustive global optimum.
+    frequency = {}
+    for answer in answers:
+        for letter in set(answer):
+            frequency[letter] = frequency.get(letter, 0) + 1
+    shortlist = sorted(guesses, key=lambda word: (
+        -sum(frequency.get(letter, 0) for letter in set(word)), word
+    ))[:96]
+    best = None
+    for guess in shortlist:
+        buckets = {}
+        for answer in answers:
+            marks = [0] * len(guess)
+            remaining = {}
+            for i, (actual, letter) in enumerate(zip(answer, guess)):
+                if actual == letter:
+                    marks[i] = 2
+                else:
+                    remaining[actual] = remaining.get(actual, 0) + 1
+            for i, letter in enumerate(guess):
+                if marks[i] == 0 and remaining.get(letter, 0) > 0:
+                    marks[i] = 1
+                    remaining[letter] -= 1
+            key = tuple(marks)
+            buckets[key] = buckets.get(key, 0) + 1
+        score = (sum(size * size for size in buckets.values()), max(buckets.values()), guess)
+        if best is None or score < best:
+            best = score
+    return {"guess": best[2], "weightedTotal": best[0], "worstBucket": best[1]}
+
+
+def bank_data(answers, guesses):
+    return {"answers": answers, "validGuesses": guesses, "starter": starter_for(answers, guesses)}
+
+
+def encode_bank(bank):
+    return (json.dumps(bank, separators=(",", ":")) + "\n").encode("utf8")
+
+
 def manifest_for(manifest, answers, dictionary_data):
     src = manifest["source"]
     return {
@@ -132,6 +173,10 @@ def verify():
         compiled = ("\n".join(answers[str(n)]) + "\n").encode("utf8")
         if (ROOT / f"public/lexicon/word-guess/answers/{n}.txt").read_bytes() != compiled:
             raise ValueError(f"Compiled answer list mismatch at length {n}.")
+    for n in LENGTHS:
+        expected = bank_data(answers[str(n)], sorted(dictionaries[n]))
+        if (ROOT / f"public/lexicon/word-guess/banks/{n}.json").read_bytes() != encode_bank(expected):
+            raise ValueError(f"Compiled lexical bank or starter mismatch at length {n}.")
     if read_json(PROVENANCE_FILE) != manifest_for(manifest, answers, dictionary_data):
         raise ValueError("Derived asset provenance or hashes do not match.")
     print("Verified nine Word Guess dictionaries and the derived familiar answer pool.")
@@ -158,6 +203,10 @@ def regenerate():
     compiled = {n: ("\n".join(sorted(dictionaries[n])) + "\n").encode("utf8") for n in LENGTHS}
     outputs = {ROOT / f"public/lexicon/word-guess/{n}.txt": compiled[n] for n in LENGTHS}
     outputs.update({ROOT / f"public/lexicon/word-guess/answers/{n}.txt": ("\n".join(answers[str(n)]) + "\n").encode("utf8") for n in LENGTHS})
+    outputs.update({
+        ROOT / f"public/lexicon/word-guess/banks/{n}.json": encode_bank(bank_data(answers[str(n)], sorted(dictionaries[n])))
+        for n in LENGTHS
+    })
     outputs[ANSWERS_FILE] = encode(answers)
     outputs[PROVENANCE_FILE] = encode(manifest_for(manifest, answers, compiled))
     for path, content in outputs.items():
