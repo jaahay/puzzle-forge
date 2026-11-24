@@ -97,3 +97,27 @@ Prefer a fast, quiet application shell whose initial transfer does not grow in p
 The current workspace dispatcher statically imports the concrete workspaces; the generation worker is constructed on app mount and imports the full generator registry. This is a candidate for dynamic imports or on-demand worker creation, **not an immediate refactor mandate**. Reassess when new word assets or graphics dependencies are integrated, or when real network/bundle/interaction measurements indicate unnecessary startup cost. Preserve direct-route loading, progress restoration, and prompt transitions between puzzles.
 
 A first-class client graphics/animation engine is likewise a **deferred architecture choice**, not a preselected dependency. Revisit only if existing Jigsaw/image-tile rendering constraints, gesture/animation complexity, or measured mobile frame-time problems make the current approach materially less effective. Evaluate full-app implications and conditional puzzle-specific loading, not just Jigsaw aesthetics. Avoid imposing rendering/physics dependencies on unrelated games such as Sudoku. Do not maintain parallel rendering frameworks merely to claim one has been adopted.
+
+## Client performance budgets
+
+Optimize time to a playable puzzle and responsiveness on ordinary mobile devices, not bundle size in isolation. Treat the following numbers as initial engineering targets and investigation thresholds, not platform limits, release blockers, or automatic CI gates. Revisit them when measured user experience or the supported device range warrants it.
+
+| Metric | Preferred | Investigate above |
+| --- | ---: | ---: |
+| Initial client JavaScript, compressed | 100 KB | 150 KB |
+| Initial client JavaScript, uncompressed | 350 KB | 500 KB |
+| Initial critical-path transfer, compressed | 170 KB | 300 KB |
+| Additional text-puzzle assets needed for play, compressed | 100 KB | 250 KB |
+| Additional text-puzzle assets needed for play, uncompressed | 500 KB | 1 MB |
+| Retained JavaScript heap for an ordinary text-puzzle session | 30 MB | 50 MB |
+| Total tab memory for an ordinary text-puzzle session, where measurable | 100 MB | 200 MB |
+
+Use decimal KB and MB for these indicative budgets. Count the resources actually loaded for the initial route, including eagerly started worker code and its dependencies, when assessing total critical-path transfer. Report client JavaScript and worker JavaScript separately as useful diagnostics; measure their combined cost rather than hiding work in another execution context. Record the compression encoding when comparing sizes. Build output gzip size is a useful proxy, not proof of network transfer size; inspect cold-cache and repeat-navigation waterfalls in a production-like build.
+
+Uncompressed resource bytes are not a heap measurement. Parsed strings, objects, lookup indexes, worker heaps, decoded images, rendering surfaces and GPU allocations can have very different memory costs. Measure retained memory after representative play, navigation, and return to a puzzle, distinguish transient allocation peaks from sustained growth, and document the measurement method. Treat image-intensive puzzles such as Jigsaw separately according to artwork dimensions, rendering strategy, and representative device measurements; do not impose text-puzzle memory targets on them without evidence.
+
+Use [Core Web Vitals](https://web.dev/articles/vitals) as external experience benchmarks: LCP at most 2.5 seconds, INP at most 200 milliseconds, and CLS at most 0.1 at the 75th percentile of page visits, considering mobile and desktop separately. These describe page experience, not the complete puzzle interaction contract. Aim for smooth continuous pointer and touch interactions at the display refresh rate (60 FPS as an ordinary baseline), and avoid main-thread tasks exceeding 50 milliseconds, especially during input, generation transitions, and initial readiness.
+
+Do expensive work outside the critical path when the result is not required for play. Precompute deterministic content-derived results offline when practical; defer optional assistance until requested; choose a worker or incremental computation only when actual runtime work needs it. Cache bounded reusable data when useful, and introduce eviction or more complex storage only in response to measured retention or growth.
+
+The 170 KB starting point is informed by [web.dev's performance-budget guidance](https://web.dev/articles/codelab-setting-performance-budgets-with-webpack). The other byte and memory budgets above are Puzzle Forge's own provisional targets, not universal web standards. Prefer measured improvements in player experience to optimizing a number for its own sake.
