@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild or verify pinned ESDB/SCOWL Word Guess assets with no dependencies."""
+"""Regenerate or verify reproducible Word Guess vocabularies and answer pools."""
 import argparse
 import hashlib
 import json
@@ -9,121 +9,154 @@ from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_FILE = ROOT / "assets/lexicon/sources.json"
+EDITORIAL_FILE = ROOT / "assets/lexicon/word-guess-curated.json"
 ANSWERS_FILE = ROOT / "assets/lexicon/word-guess-answers.json"
 PROVENANCE_FILE = ROOT / "assets/lexicon/provenance.json"
 LENGTHS = range(4, 13)
 
 
-def sha256(data: bytes) -> str:
+def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
 def read_json(path: Path):
-    return json.loads(path.read_text(encoding="utf-8"))
+    return json.loads(path.read_text(encoding="utf8"))
 
 
-def validated_inputs():
+def encode(value) -> bytes:
+    return (json.dumps(value, indent=2) + "\n").encode("utf8")
+
+
+def sources():
     manifest = read_json(SOURCE_FILE)
     source = manifest["source"]
     if not re.fullmatch(r"https://raw\.githubusercontent\.com/en-wl/wordlist-diff/[0-9a-f]{40}/en_US\.txt", source["url"]):
-        raise ValueError("The upstream source must be an immutable official GitHub commit.")
+        raise ValueError("Spelling source must be pinned to an immutable commit.")
     if not re.fullmatch(r"[0-9a-f]{40}", source["blobSha1"]) or not re.fullmatch(r"[0-9a-f]{64}", source["sha256"]):
-        raise ValueError("Pinned source hashes are missing.")
-    answers = read_json(ANSWERS_FILE)
-    if set(answers) != {str(n) for n in LENGTHS}:
-        raise ValueError("Curated answer lengths are incomplete.")
-    extensions = manifest["editorialSpellings"]
-    if not isinstance(extensions, list) or len(extensions) != len(set(extensions)):
-        raise ValueError("Invalid editorial spelling exceptions.")
-    all_answers = []
-    for length in LENGTHS:
-        words = answers[str(length)]
-        if not isinstance(words, list) or len(words) != len(set(words)):
-            raise ValueError(f"Duplicate curated answers for {length}.")
-        if not words or any(not isinstance(w, str) or re.fullmatch(r"[A-Z]+", w) is None or len(w) != length for w in words):
-            raise ValueError(f"Malformed curated answers for {length}.")
-        all_answers.extend(words)
-    if any(word not in all_answers for word in extensions):
-        raise ValueError("Editorial spelling exception is not an answer.")
-    return manifest, answers
+        raise ValueError("Source digests missing.")
+    editorial = read_json(EDITORIAL_FILE)
+    if set(editorial) != {str(n) for n in LENGTHS}:
+        raise ValueError("Incomplete editorial answer inventory.")
+    for n in LENGTHS:
+        words = editorial[str(n)]
+        if not words or len(words) != len(set(words)) or any(not isinstance(w, str) or not re.fullmatch(r"[A-Z]+", w) or len(w) != n for w in words):
+            raise ValueError(f"Invalid curated answers at length {n}.")
+    exceptions = manifest["editorialSpellings"]
+    if not isinstance(exceptions, list) or len(exceptions) != len(set(exceptions)):
+        raise ValueError("Invalid spelling exceptions.")
+    if any(not isinstance(w, str) or not re.fullmatch(r"[A-Z]{4,12}", w) for w in exceptions):
+        raise ValueError("Malformed spelling exception.")
+    fam = manifest["familiarity"]
+    if fam["release"] != "words-v6" or not re.fullmatch(r"[0-9a-f]{40}", fam["commit"]):
+        raise ValueError("Unpinned familiarity version.")
+    if [b["tier"] for b in fam["bands"]] != ["everyday", "common"]:
+        raise ValueError("Unexpected familiarity tiers.")
+    tiers = []
+    for band in fam["bands"]:
+        path = ROOT / band["path"]
+        if path.resolve().parent != (ROOT / "assets/lexicon/familiarity").resolve():
+            raise ValueError("Familiarity source outside allowed directory.")
+        data = path.read_bytes()
+        if digest(data) != band["sha256"]:
+            raise ValueError("Familiarity source digest mismatch.")
+        blob = b"blob " + str(len(data)).encode("ascii") + b"\0" + data
+        if hashlib.sha1(blob).hexdigest() != band["gitBlobSha1"]:
+            raise ValueError("Familiarity Git blob digest mismatch.")
+        parsed = json.loads(data)
+        if parsed.get("version") != fam["release"] or not isinstance(parsed.get("words"), list) or not isinstance(parsed.get("flags"), dict):
+            raise ValueError("Malformed familiarity data.")
+        tiers.append(parsed)
+    return manifest, editorial, tiers
 
 
-def build():
-    manifest, answers = validated_inputs()
-    source = manifest["source"]
-    request = Request(source["url"], headers={"User-Agent": "puzzle-forge-lexicon-builder/1"})
-    with urlopen(request, timeout=45) as response:
-        raw = response.read()
-    if sha256(raw) != source["sha256"]:
-        raise ValueError("Upstream SHA-256 mismatch.")
-    git_blob = b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw
-    if hashlib.sha1(git_blob).hexdigest() != source["blobSha1"]:
-        raise ValueError("Upstream Git blob SHA-1 mismatch.")
-    words = [set() for _ in LENGTHS]
-    for original in raw.decode("utf-8").splitlines():
-        if re.fullmatch(r"[a-z]+", original) and 4 <= len(original) <= 12:
-            words[len(original) - 4].add(original.upper())
-    extensions = set(manifest["editorialSpellings"])
-    for length in LENGTHS:
-        for word in answers[str(length)]:
-            if word not in words[length - 4] and word not in extensions:
-                raise ValueError(f"Unapproved spelling exception: {word}")
-            words[length - 4].add(word)
-    provenance = {
-        "source": {"id": source["id"], "release": source["release"], "sha256": source["sha256"]},
-        "curatedAnswersSha256": sha256(ANSWERS_FILE.read_bytes()),
-        "files": {},
+def eligible_answers(editorial, tiers, dictionaries):
+    flagged = {w.upper() for tier in tiers for w in tier["flags"]}
+    answers = {}
+    for n in LENGTHS:
+        accepted = dictionaries[n]
+        selected = set(editorial[str(n)])
+        for tier in tiers:
+            for word in tier["words"]:
+                if (isinstance(word, str) and len(word) == n and re.fullmatch(r"[a-z]+", word)
+                        and word.upper() not in flagged and word.upper() in accepted):
+                    selected.add(word.upper())
+        if not selected.issubset(accepted):
+            raise ValueError(f"Answer absent from accepted words at length {n}.")
+        answers[str(n)] = sorted(selected)
+    return answers
+
+
+def manifest_for(manifest, answers, dictionary_data):
+    src = manifest["source"]
+    return {
+        "source": {"id": src["id"], "release": src["release"], "sha256": src["sha256"]},
+        "answerPoolSha256": digest(encode(answers)),
+        "editorialAnswersSha256": digest(EDITORIAL_FILE.read_bytes()),
+        "familiaritySources": [{"tier": b["tier"], "sha256": b["sha256"]} for b in manifest["familiarity"]["bands"]],
+        "files": {
+            str(n): {
+                "path": f"public/lexicon/word-guess/{n}.txt",
+                "words": len(dictionary_data[n].decode("utf8").splitlines()),
+                "bytes": len(dictionary_data[n]),
+                "sha256": digest(dictionary_data[n]),
+            } for n in LENGTHS
+        },
     }
-    for length in LENGTHS:
-        path = f"public/lexicon/word-guess/{length}.txt"
-        data = ("\n".join(sorted(words[length - 4])) + "\n").encode("utf-8")
-        target = ROOT / path
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes(data)
-        provenance["files"][str(length)] = {
-            "path": path, "words": len(words[length - 4]),
-            "bytes": len(data), "sha256": sha256(data),
-        }
-    PROVENANCE_FILE.write_text(json.dumps(provenance, indent=2) + "\n", encoding="utf-8")
-    print("Generated nine Word Guess lexicon assets from pinned ESDB source.")
-    verify()
 
 
 def verify():
-    manifest, answers = validated_inputs()
-    provenance = read_json(PROVENANCE_FILE)
-    expected = manifest["source"]
-    if provenance["source"] != {"id": expected["id"], "release": expected["release"], "sha256": expected["sha256"]}:
-        raise ValueError("Provenance source does not match the manifest.")
-    if provenance["curatedAnswersSha256"] != sha256(ANSWERS_FILE.read_bytes()):
-        raise ValueError("Curated answer list changed without regeneration.")
-    if set(provenance["files"]) != {str(n) for n in LENGTHS}:
-        raise ValueError("Derived asset inventory is incomplete.")
-    for length in LENGTHS:
-        item = provenance["files"][str(length)]
-        path = f"public/lexicon/word-guess/{length}.txt"
-        if item["path"] != path:
-            raise ValueError(f"Unexpected asset path: {path}")
-        data = (ROOT / path).read_bytes()
-        if item["bytes"] != len(data) or item["sha256"] != sha256(data):
-            raise ValueError(f"Derived asset digest mismatch: {path}")
-        decoded = data.decode("utf-8").splitlines()
-        if not decoded or len(decoded) != item["words"] or decoded != sorted(set(decoded)):
-            raise ValueError(f"Derived asset ordering or size invalid: {path}")
-        if any(re.fullmatch(r"[A-Z]+", w) is None or len(w) != length for w in decoded):
-            raise ValueError(f"Malformed words in {path}")
-        if not set(answers[str(length)]).issubset(decoded):
-            raise ValueError(f"Missing eligible answers in {path}")
-    print("Verified nine Word Guess assets offline.")
+    manifest, editorial, tiers = sources()
+    dictionary_data = {}
+    dictionaries = {}
+    for n in LENGTHS:
+        raw = (ROOT / f"public/lexicon/word-guess/{n}.txt").read_bytes()
+        words = raw.decode("utf8").splitlines()
+        if not words or words != sorted(set(words)) or any(not re.fullmatch(r"[A-Z]+", w) or len(w) != n for w in words):
+            raise ValueError(f"Malformed compiled words at length {n}.")
+        dictionary_data[n] = raw
+        dictionaries[n] = set(words)
+    if not set(manifest["editorialSpellings"]).issubset(set().union(*dictionaries.values())):
+        raise ValueError("An editorial spelling exception is missing.")
+    answers = eligible_answers(editorial, tiers, dictionaries)
+    if ANSWERS_FILE.read_bytes() != encode(answers):
+        raise ValueError("Answer pool does not match pinned familiarity sources.")
+    if read_json(PROVENANCE_FILE) != manifest_for(manifest, answers, dictionary_data):
+        raise ValueError("Derived asset provenance or hashes do not match.")
+    print("Verified nine Word Guess dictionaries and the derived familiar answer pool.")
+
+
+def regenerate():
+    manifest, editorial, tiers = sources()
+    request = Request(manifest["source"]["url"], headers={"User-Agent": "puzzle-forge-lexicon-builder/1"})
+    with urlopen(request, timeout=45) as response:
+        raw = response.read()
+    source = manifest["source"]
+    if digest(raw) != source["sha256"]:
+        raise ValueError("Spelling source SHA-256 mismatch.")
+    blob = b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw
+    if hashlib.sha1(blob).hexdigest() != source["blobSha1"]:
+        raise ValueError("Spelling source Git blob mismatch.")
+    dictionaries = {n: set() for n in LENGTHS}
+    for word in raw.decode("utf8").splitlines():
+        if re.fullmatch(r"[a-z]+", word) and 4 <= len(word) <= 12:
+            dictionaries[len(word)].add(word.upper())
+    for word in manifest["editorialSpellings"]:
+        dictionaries[len(word)].add(word)
+    answers = eligible_answers(editorial, tiers, dictionaries)
+    compiled = {n: ("\n".join(sorted(dictionaries[n])) + "\n").encode("utf8") for n in LENGTHS}
+    outputs = {ROOT / f"public/lexicon/word-guess/{n}.txt": compiled[n] for n in LENGTHS}
+    outputs[ANSWERS_FILE] = encode(answers)
+    outputs[PROVENANCE_FILE] = encode(manifest_for(manifest, answers, compiled))
+    for path, content in outputs.items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+    verify()
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--regenerate", action="store_true", help="Fetch pinned source and replace generated assets.")
-    group.add_argument("--verify", action="store_true", help="Verify committed assets without network access.")
-    args = parser.parse_args()
-    if args.regenerate:
-        build()
-    else:
-        verify()
+    choices = parser.add_mutually_exclusive_group(required=True)
+    choices.add_argument("--regenerate", action="store_true")
+    choices.add_argument("--verify", action="store_true")
+    arguments = parser.parse_args()
+    regenerate() if arguments.regenerate else verify()

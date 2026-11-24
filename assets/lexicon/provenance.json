@@ -4,7 +4,6 @@
     "release": "rel-2026.02.25",
     "sha256": "4ff7e0b6d86763e1e042ffd746e94cdf4432618702deac303a1669e2a838db04"
   },
-  "curatedAnswersSha256": "58036958f2c6b4a1e7ffe4114e7eb204673d0d6f60028fc39f0f04e1bd42f0ad",
   "files": {
     "4": {
       "path": "public/lexicon/word-guess/4.txt",
@@ -44,9 +43,9 @@
     },
     "10": {
       "path": "public/lexicon/word-guess/10.txt",
-      "words": 9522,
-      "bytes": 104742,
-      "sha256": "90cc53feb7307f67cb4be1132f5437623a3009b611997d1a4193991bac7dfed6"
+      "words": 9523,
+      "bytes": 104753,
+      "sha256": "dee2d49b9b3d9b03f219a68fc1525a46bbfdeb1e6cdb6fd627d0bcb9a58835db"
     },
     "11": {
       "path": "public/lexicon/word-guess/11.txt",
@@ -60,5 +59,17 @@
       "bytes": 58448,
       "sha256": "a0a65b96172b20ace03e29ccc0ab53ba368671084aa55c293e4a96f85e64a5e3"
     }
-  }
+  },
+  "answerPoolSha256": "9096c007868e88affb87d89a1fe45847491654c1562fa0a18f5753b9230a5b4d",
+  "editorialAnswersSha256": "58036958f2c6b4a1e7ffe4114e7eb204673d0d6f60028fc39f0f04e1bd42f0ad",
+  "familiaritySources": [
+    {
+      "tier": "everyday",
+      "sha256": "43bb1573f7e628f799161732f16a11208f948457f3153d5b236674bef25a9fd1"
+    },
+    {
+      "tier": "common",
+      "sha256": "932ef25fd64abee8918698ff92ec954e4a50947638da9262ac2e69f168198878"
+    }
+  ]
 }

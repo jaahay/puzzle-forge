@@ -13,7 +13,8 @@
   "editorialSpellings": [
     "PLAYTEST",
     "PLAYFIELD",
-    "VALIDATOR"
+    "VALIDATOR",
+    "JAVASCRIPT"
   ],
   "familiarity": {
     "repository": "https://github.com/rptetzloff/anagrimoire",
