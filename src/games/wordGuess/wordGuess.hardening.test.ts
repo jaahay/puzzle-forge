@@ -82,6 +82,7 @@ describe("Word Guess hardening", () => {
         "puzzle-forge:word-guess:bad-current-input",
         JSON.stringify({
           puzzleId: "bad-current-input",
+          baselineChecksum: "valid-checksum",
           wordLength: 5,
           maxGuesses: 6,
           guesses: ["SLATE"],

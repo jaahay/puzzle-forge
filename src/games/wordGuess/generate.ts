@@ -3,7 +3,7 @@ import { createGeneratedPuzzle, createRandom, normalizeDimension, normalizeSeed 
 import {
   DEFAULT_WORD_GUESS_GUESSES,
   DEFAULT_WORD_GUESS_LENGTH,
-  getWordGuessBank,
+  getWordGuessAnswerBank,
   WORD_GUESS_MAX_GUESSES,
   WORD_GUESS_MAX_LENGTH,
   WORD_GUESS_MIN_GUESSES,
@@ -14,8 +14,8 @@ export const generateWordGuess: GridPuzzleGenerator = ({ seed, width, height }) 
   const normalizedSeed = normalizeSeed(seed);
   const wordLength = normalizeDimension(width, DEFAULT_WORD_GUESS_LENGTH, WORD_GUESS_MIN_LENGTH, WORD_GUESS_MAX_LENGTH);
   const maxGuesses = normalizeDimension(height, DEFAULT_WORD_GUESS_GUESSES, WORD_GUESS_MIN_GUESSES, WORD_GUESS_MAX_GUESSES);
-  const wordBank = getWordGuessBank(wordLength);
-  const random = createRandom(`word-guess:${wordBank.dictionaryId}:${wordLength}:${maxGuesses}:${normalizedSeed}`);
+  const wordBank = getWordGuessAnswerBank(wordLength);
+  const random = createRandom(`word-guess:${wordBank.answerPoolId}:${wordLength}:${maxGuesses}:${normalizedSeed}`);
   const answerWord = wordBank.answers[Math.floor(random() * wordBank.answers.length)] ?? wordBank.answers[0] ?? "FORGE";
 
   const cells = Array.from({ length: maxGuesses * wordLength }, (_, index) => {

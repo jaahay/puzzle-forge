@@ -53,7 +53,7 @@ That means it is not primarily a solver workbench. Analysis should support playe
 
 ### Implementation notes
 
-- Curated answer candidates now live in `assets/lexicon/word-guess-answers.json`; accepted guesses are derived from pinned ESDB data by `scripts/build_word_guess_lexicon.py`. Future answer expansion should be based on reviewed familiarity and quality, not automatic promotion of every spelling.
+- Eligible answers are compiled into `assets/lexicon/word-guess-answers.json` from pinned everyday/common familiarity bands plus the original reviewed editorial seeds. Accepted guesses come from pinned ESDB data via `scripts/build_word_guess_lexicon.py`; no broad dictionary entry becomes a possible answer merely because it is spelled correctly.
 - Keep runtime word assets separate from the initial application bundle and preserve a clear distinction between broadly accepted guesses and fair answers.
 - Existing canonical resource URLs already carry the seed. Do not introduce runtime dictionary/generator version control; ensure Word Guess baseline checksums include the solution so incompatible saved progress cannot silently attach to a changed answer.
 - If difficulty is analysis-derived, keep the function deterministic and tested.

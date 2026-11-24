@@ -149,11 +149,14 @@ The branch now targets a catalog destination rather than a single puzzle workben
 The accepted-guess vocabulary comes from the pinned ESDB/SCOWL US English
 size-60 speller list, not a runtime dictionary API. Nine same-origin text
 files under `public/lexicon/word-guess/` are fetched on demand for the
-selected word length. Curated answer candidates live separately in
-`assets/lexicon/word-guess-answers.json`.
+selected word length. The much smaller possible-answer pool is derived from
+pinned MIT-licensed familiarity bands plus a small editorial seed list and is
+published in `assets/lexicon/word-guess-answers.json`.
 
-`assets/lexicon/sources.json` records immutable provenance and editorial
-exceptions, and `assets/lexicon/provenance.json` records derived file hashes.
+`assets/lexicon/sources.json` records both pinned source inputs, including
+vendored familiarity bands under `assets/lexicon/familiarity/`. The original
+curated answers live in `word-guess-curated.json` as editorial seeds;
+`assets/lexicon/provenance.json` records derived file hashes.
 Verify shipped assets without network access:
 
 ```sh

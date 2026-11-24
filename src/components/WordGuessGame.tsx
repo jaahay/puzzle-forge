@@ -9,7 +9,7 @@ import { readWordGuessProgress, writeWordGuessProgress, type WordGuessProgressSt
 import { formatWordGuessShareText } from "../games/wordGuess/share";
 import { normalizeWordGuessNativeInput } from "../games/wordGuess/input";
 import { isPuzzleModalOpen, shouldHandlePuzzleShortcut } from "../interactions/keyboardOwnership";
-import { getWordGuessBank, isValidWordGuess, loadWordGuessBank, normalizeWordGuessWord, type WordGuessWordBank } from "../games/wordGuess/words";
+import { isValidWordGuess, loadWordGuessBank, normalizeWordGuessWord, type WordGuessWordBank } from "../games/wordGuess/words";
 import { PuzzleTerminalDock } from "./PuzzleTerminalDock";
 
 const difficultyLabels = {
@@ -110,7 +110,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
   const [lexiconRetry, setLexiconRetry] = useState(0);
   const dictionaryReady = lexicon.length === puzzle.width && lexicon.bank !== null;
   const dictionaryError = lexicon.length === puzzle.width && lexicon.error;
-  const wordBank = dictionaryReady ? lexicon.bank! : getWordGuessBank(puzzle.width);
+  const wordBank = dictionaryReady ? lexicon.bank : null;
 
   useEffect(() => {
     let active = true;
@@ -137,7 +137,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
       : "";
   const submittedGuesses = rowGuesses.slice(0, submittedRows).filter((guess) => guess.length === puzzle.width);
   const submittedGuessKey = submittedGuesses.join("|");
-  const analysis = useMemo(() => getWordGuessAnalysis(answer, submittedGuesses, wordBank), [answer, submittedGuessKey, wordBank]);
+  const analysis = useMemo(() => wordBank ? getWordGuessAnalysis(answer, submittedGuesses, wordBank) : null, [answer, submittedGuessKey, wordBank]);
   const letterMarks = useMemo(() => getLetterMarks(answer, submittedGuesses), [answer, submittedGuessKey]);
   const terminalState = getWordGuessTerminalState(
     status,
@@ -226,7 +226,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
   }, [onProgressChange, rowGuesses.join("|"), status, submittedRows]);
 
   const submitGuess = () => {
-    if (status !== "playing" || !dictionaryReady) {
+    if (status !== "playing" || !wordBank) {
       return;
     }
 
@@ -538,7 +538,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
         </label>
       </div>
 
-      <details class="word-guess-solver-details">
+      {wordBank && analysis ? <details class="word-guess-solver-details">
         <summary>Solver</summary>
         <div class="word-guess-analysis-header">
           <div>
@@ -551,7 +551,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
           </div>
           <div>
             <strong>{analysis.bestStarter.guess || "—"}</strong>
-            <span>starter</span>
+            <span>suggested starter</span>
           </div>
         </div>
 
@@ -571,7 +571,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
             <a href={`${import.meta.env.BASE_URL}lexicon/NOTICE.txt`}>Word list credits</a>.
           </p>
         )}
-      </details>
+      </details> : null}
 
       {statusMessage ? <span class="sr-only">{statusMessage}</span> : null}
     </section>

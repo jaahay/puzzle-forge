@@ -2,10 +2,14 @@ import answerLists from "../../../assets/lexicon/word-guess-answers.json";
 
 export type WordGuessLength = 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
-export type WordGuessWordBank = {
+export type WordGuessAnswerBank = {
+  answerPoolId: string;
   dictionaryId: string;
   length: WordGuessLength;
   answers: readonly string[];
+};
+
+export type WordGuessWordBank = WordGuessAnswerBank & {
   validGuesses: readonly string[];
 };
 
@@ -19,24 +23,25 @@ export const wordGuessLengths: WordGuessLength[] = [4, 5, 6, 7, 8, 9, 10, 11, 12
 
 const curated = answerLists as Record<WordGuessLength, readonly string[]>;
 
-const baseBanks = Object.fromEntries(wordGuessLengths.map((length) => [length, {
+const answerBanks = Object.fromEntries(wordGuessLengths.map((length) => [length, {
+  // Generation identity is deliberately independent of the spelling corpus.
+  answerPoolId: `english-${length}-v2`,
   dictionaryId: `esdb-en-US-2026.02.25-${length}`,
   length,
   answers: curated[length],
-  validGuesses: curated[length],
-}])) as Record<WordGuessLength, WordGuessWordBank>;
+}])) as Record<WordGuessLength, WordGuessAnswerBank>;
 
 export const isSupportedWordGuessLength = (length: number): length is WordGuessLength =>
   Number.isInteger(length) && wordGuessLengths.includes(length as WordGuessLength);
 
-export const getWordGuessBank = (length: number): WordGuessWordBank =>
-  baseBanks[isSupportedWordGuessLength(length) ? length : DEFAULT_WORD_GUESS_LENGTH];
+export const getWordGuessAnswerBank = (length: number): WordGuessAnswerBank =>
+  answerBanks[isSupportedWordGuessLength(length) ? length : DEFAULT_WORD_GUESS_LENGTH];
 
 const loadedBanks = new Map<WordGuessLength, Promise<WordGuessWordBank>>();
 const lookups = new WeakMap<WordGuessWordBank, ReadonlySet<string>>();
 
 export const parseWordGuessGuesses = (text: string, length: WordGuessLength): WordGuessWordBank => {
-  const base = getWordGuessBank(length);
+  const base = getWordGuessAnswerBank(length);
   const words = text.trimEnd().split("\n");
   if (words.length < 1000) throw new Error("Word Guess dictionary is incomplete.");
   let previous = "";
@@ -57,7 +62,6 @@ export const loadWordGuessBank = (length: number): Promise<WordGuessWordBank> =>
   const selected = isSupportedWordGuessLength(length) ? length : DEFAULT_WORD_GUESS_LENGTH;
   const cached = loadedBanks.get(selected);
   if (cached) return cached;
-
   const url = `${import.meta.env.BASE_URL}lexicon/word-guess/${selected}.txt`;
   const pending = fetch(url).then(async (response) => {
     if (!response.ok) throw new Error("Word Guess dictionary could not be loaded.");

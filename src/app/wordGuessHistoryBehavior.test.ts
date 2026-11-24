@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { PuzzleCell } from "../catalog/types";
-import { getWordGuessBank, isValidWordGuess } from "../games/wordGuess/words";
+import { isValidWordGuess, parseWordGuessGuesses } from "../games/wordGuess/words";
+import { readFileSync } from "node:fs";
+
+const loadedBank = parseWordGuessGuesses(readFileSync(new URL("../../public/lexicon/word-guess/4.txt", import.meta.url), "utf8"), 4);
 import {
   commitGridHistoryState,
   makeEmptyGridHistoryState,
@@ -94,7 +97,7 @@ describe("Word Guess edit history behavior", () => {
 
     runtime = editCell(redone!, 0, 2, "L");
     runtime = editCell(runtime, 0, 3, "E");
-    expect(isValidWordGuess(rowValue(runtime, 0), getWordGuessBank(4))).toBe(true);
+    expect(isValidWordGuess(rowValue(runtime, 0), loadedBank)).toBe(true);
 
     runtime = { ...runtime, history: commitGridHistoryState() };
     expect(runtime.history.undoStack).toHaveLength(0);
@@ -118,7 +121,7 @@ describe("Word Guess edit history behavior", () => {
       runtime = editCell(runtime, 0, column, letter);
     }
 
-    expect(isValidWordGuess(rowValue(runtime, 0), getWordGuessBank(4))).toBe(false);
+    expect(isValidWordGuess(rowValue(runtime, 0), loadedBank)).toBe(false);
     expect(runtime.history.undoStack.length).toBeGreaterThan(0);
 
     const undone = undo(runtime);
