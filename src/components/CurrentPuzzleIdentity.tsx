@@ -1,4 +1,4 @@
-import { getWordSearchTheme } from "../games/wordSearch/themes";
+import { getWordSearchThemeTitle } from "../games/wordSearch/themes";
 import type { ComponentChildren } from "preact";
 import { useEffect, useRef } from "preact/hooks";
 import { getPuzzleProvenance } from "../app/puzzleProvenance";
@@ -69,7 +69,7 @@ export const getCurrentPuzzleIdentity = (
     };
   }
 
-  if (puzzle.kind === "word-search") return { puzzleLabel: definition.title, sourceLabel, details: [getWordSearchTheme(puzzle.theme).title], difficultyLabel };
+  if (puzzle.kind === "word-search") return { puzzleLabel: definition.title, sourceLabel, details: [getWordSearchThemeTitle(puzzle.theme)], difficultyLabel };
 
   if (puzzle.puzzleId === "word-guess") {
     return {

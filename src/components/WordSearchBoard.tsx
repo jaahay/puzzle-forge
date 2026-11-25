@@ -1,4 +1,4 @@
-import type { JSX } from "preact";
+import type { ComponentChildren, JSX } from "preact";
 import { useEffect, useId, useRef, useState } from "preact/hooks";
 import { chooseWordSearchEndpoint, moveWordSearchFocus, wordSearchCellAt, wordSearchDragEnd, type WordSearchEndpoints } from "../games/wordSearch/interaction";
 import { wordSearchPath, type WordSearchBoard as Board } from "../games/wordSearch/model";
@@ -11,6 +11,7 @@ type Props = {
   onSelectEndpoints: (start: number, end: number) => void;
   disabled?: boolean;
   resetVersion?: number;
+  controls?: ComponentChildren;
 };
 
 type Drag = {
@@ -30,7 +31,7 @@ const PathMark = ({ size, start, end, preview = false }: WordSearchEndpoints & {
 
 // This surface owns only gesture/focus state. Its parent owns the current
 // resource's progress, completion, persistence and reset.
-const WordSearchBoardSurface = ({ board, progress, onSelectEndpoints, disabled = false }: Props) => {
+const WordSearchBoardSurface = ({ board, progress, onSelectEndpoints, disabled = false, controls }: Props) => {
   const { size } = board;
   const instructionsId = useId();
   const gridRef = useRef<HTMLDivElement>(null);
@@ -185,15 +186,12 @@ const WordSearchBoardSurface = ({ board, progress, onSelectEndpoints, disabled =
         <p class="word-search-instructions" id={instructionsId}>Drag across a word or select its two endpoints.
           <span class="sr-only"> Use arrow keys to move between letters, Enter or Space to select endpoints, and Escape to cancel.</span>
         </p>
+        {controls}
       </div>
       <aside class="word-search-word-list" aria-label="Words to find">
-        <div class="word-search-count" aria-live="polite" aria-atomic="true">
-          <strong>{found.size} / {board.targets.length}</strong><span> found</span>
-        </div>
         <ul>
           {board.targets.map(target => (
             <li key={target.word} class={found.has(target.word) ? "found" : undefined}>
-              <span class="word-search-list-mark" aria-hidden="true">{found.has(target.word) ? "✓" : ""}</span>
               <span>{target.word}</span>
               {found.has(target.word) ? <span class="sr-only"> (found)</span> : null}
             </li>
