@@ -1,3 +1,5 @@
+import { defaultWordSearchTheme } from "../games/wordSearch/themes";
+import { wordSearchProfiles } from "../games/wordSearch/model";
 import { useRef, useState } from "preact/hooks";
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { GeneratedPuzzle, PuzzleId } from "../catalog/types";
@@ -53,8 +55,9 @@ export const buildNextPuzzleDraft = ({
   const cards = puzzle?.kind === "cards" ? puzzle : null;
   const imageId = puzzle?.kind === "tiles" && puzzle.asset.kind === "image" ? puzzle.asset.id : undefined;
   const useRuntimeFallback = puzzleId === selectedPuzzleId;
-  const width = puzzle?.width ?? (useRuntimeFallback ? runtimeSettings.width : definition.defaultWidth);
-  const height = puzzle?.height ?? (useRuntimeFallback ? runtimeSettings.height : definition.defaultHeight);
+  const difficulty = puzzle?.difficulty ?? (useRuntimeFallback ? runtimeSettings.difficulty : defaultPuzzleDifficulty);
+  const width = puzzleId === "word-search" ? wordSearchProfiles[difficulty].size : puzzle?.width ?? (useRuntimeFallback ? runtimeSettings.width : definition.defaultWidth);
+  const height = puzzleId === "word-search" ? width : puzzle?.height ?? (useRuntimeFallback ? runtimeSettings.height : definition.defaultHeight);
   const jigsawSizeSelection = puzzleId === "jigsaw"
     ? getJigsawSizePresetForDimensions(getPuzzleImageAsset(imageId, "jigsaw"), width, height) ?? jigsawCustomSizeSelection
     : undefined;
@@ -89,7 +92,8 @@ export const buildNextPuzzleDraft = ({
   return {
     width,
     height,
-    difficulty: puzzle?.difficulty ?? (useRuntimeFallback ? runtimeSettings.difficulty : defaultPuzzleDifficulty),
+    difficulty,
+    ...(puzzleId === "word-search" ? { wordSearchTheme: puzzle?.kind === "word-search" ? puzzle.theme : (useRuntimeFallback ? runtimeSettings.wordSearchTheme : undefined) ?? defaultWordSearchTheme } : {}),
     requireUniqueSolution: puzzle?.uniqueSolution ?? (useRuntimeFallback ? runtimeSettings.requireUniqueSolution : true),
     sudokuVariation:
       puzzle?.puzzleId === "sudoku"
@@ -142,8 +146,9 @@ export const applyNextPuzzleDraftSettings = (
   base: NextPuzzleDraft,
   settings: GenerationSettings,
 ): NextPuzzleDraft => ({
-  width: Number.isFinite(settings.width) ? Number(settings.width) : base.width,
-  height: Number.isFinite(settings.height) ? Number(settings.height) : base.height,
+  width: base.wordSearchTheme !== undefined ? wordSearchProfiles[settings.difficulty ?? base.difficulty].size : Number.isFinite(settings.width) ? Number(settings.width) : base.width,
+  height: base.wordSearchTheme !== undefined ? wordSearchProfiles[settings.difficulty ?? base.difficulty].size : Number.isFinite(settings.height) ? Number(settings.height) : base.height,
+  ...(base.wordSearchTheme !== undefined ? { wordSearchTheme: settings.wordSearchTheme ?? base.wordSearchTheme } : {}),
   difficulty: settings.difficulty ?? base.difficulty,
   requireUniqueSolution:
     typeof settings.requireUniqueSolution === "boolean"

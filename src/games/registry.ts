@@ -9,6 +9,8 @@ import { generateSolitaire } from "./solitaire/generate";
 import { generateSudoku } from "./sudoku/generate";
 import { generateTileSwap } from "./tileSwap/generate";
 import { generateWordGuess } from "./wordGuess/generate";
+import { generateWordSearch } from "./wordSearch/generate";
+import { defaultWordSearchTheme } from "./wordSearch/themes";
 
 const generators: Partial<Record<PuzzleId, PuzzleGenerator>> = {
   sudoku: generateSudoku,
@@ -20,6 +22,12 @@ const generators: Partial<Record<PuzzleId, PuzzleGenerator>> = {
   "klondike-solitaire": generateSolitaire,
   "peg-solitaire": generatePegSolitaire,
   futoshiki: generateFutoshiki,
+  "word-search": ({ seed, difficulty = "Medium", wordSearchTheme = defaultWordSearchTheme }) => {
+    const board = generateWordSearch({ seed, difficulty, theme: wordSearchTheme });
+    return { ...board, kind: "word-search", puzzleId: "word-search", title: "Word Search",
+      id: `word-search:${board.seed}:${board.difficulty}:${board.theme}`,
+      width: board.size, height: board.size, createdAt: new Date().toISOString() };
+  },
 };
 
 export const hasPuzzleGenerator = (puzzleId: PuzzleId) => puzzleId === "word-guess" || Boolean(generators[puzzleId]);

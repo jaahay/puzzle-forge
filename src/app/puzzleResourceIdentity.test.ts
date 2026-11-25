@@ -67,8 +67,8 @@ describe("canonical puzzle generation identity", () => {
     const { generatablePuzzles } = getPuzzleAvailability();
 
     for (const definition of generatablePuzzles) {
-      const width = alternateDimension(definition.defaultWidth, definition.minWidth, definition.maxWidth);
-      const height = alternateDimension(definition.defaultHeight, definition.minHeight, definition.maxHeight);
+      const width = definition.id === "word-search" ? 12 : alternateDimension(definition.defaultWidth, definition.minWidth, definition.maxWidth);
+      const height = definition.id === "word-search" ? 12 : alternateDimension(definition.defaultHeight, definition.minHeight, definition.maxHeight);
       const imageId = isImageBackedPuzzleId(definition.id)
         ? (getPuzzleImageAssetsFor(definition.id)[1] ?? getPuzzleImageAsset(undefined, definition.id)).id
         : undefined;
@@ -81,6 +81,7 @@ describe("canonical puzzle generation identity", () => {
         width,
         height,
         difficulty: "Expert",
+        ...(definition.id === "word-search" ? { wordSearchTheme: "ocean" as const } : {}),
         requireUniqueSolution: false,
         sudokuVariation: definition.id === "sudoku" ? "zero-killer" : defaultSudokuVariation,
         solitaireVariation,
@@ -109,6 +110,9 @@ describe("canonical puzzle generation identity", () => {
           break;
         case "nonogram":
           expect(decoded.identity).toMatchObject({ width, height, difficulty: "Expert", requireUniqueSolution: false });
+          break;
+        case "word-search":
+          expect(decoded.identity).toMatchObject({ width, height, difficulty: "Expert", wordSearchTheme: "ocean" });
           break;
         case "word-guess":
         case "logic-grid":

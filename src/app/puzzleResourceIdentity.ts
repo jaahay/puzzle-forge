@@ -1,3 +1,5 @@
+import { wordSearchProfiles } from "../games/wordSearch/model";
+import { defaultWordSearchTheme, isWordSearchTheme, type WordSearchTheme } from "../games/wordSearch/themes";
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type {
   JigsawBoundaryMode,
@@ -192,6 +194,13 @@ const pushPuzzlePayload = (bytes: number[], identity: GenerationIdentity) => {
       pushDimensions(bytes, identity);
       pushByte(bytes, difficultyIndex(identity.difficulty) | (identity.requireUniqueSolution ? 0x04 : 0));
       return;
+    case "word-search": {
+      const theme = identity.wordSearchTheme ?? defaultWordSearchTheme;
+      if (!isWordSearchTheme(theme) || identity.width !== wordSearchProfiles[identity.difficulty].size || identity.height !== identity.width) throw new Error("Invalid Word Search profile.");
+      pushByte(bytes, difficultyIndex(identity.difficulty));
+      pushText(bytes, theme);
+      return;
+    }
     case "word-guess":
     case "logic-grid":
       pushDimensions(bytes, identity);
@@ -295,6 +304,7 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
     let jigsawBoundaryMode: JigsawBoundaryMode | undefined;
     let jigsawSpecialPiecesMode: JigsawSpecialPiecesMode | undefined;
     let imageId: string | undefined;
+    let wordSearchTheme: WordSearchTheme | undefined;
 
     switch (puzzleId) {
       case "sudoku": {
@@ -316,6 +326,15 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
         if (!decodedDifficulty) return { ok: false, reason: "invalid-identity" };
         difficulty = decodedDifficulty;
         requireUniqueSolution = (flags & 0x04) !== 0;
+        break;
+      }
+      case "word-search": {
+        const decodedDifficulty = difficultyAt(reader.readByte());
+        const theme = reader.readText();
+        if (!decodedDifficulty || !isWordSearchTheme(theme)) return { ok: false, reason: "invalid-identity" };
+        difficulty = decodedDifficulty;
+        wordSearchTheme = theme;
+        width = height = wordSearchProfiles[difficulty].size;
         break;
       }
       case "word-guess":
@@ -405,6 +424,7 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
       ...(jigsawBoundaryMode ? { jigsawBoundaryMode } : {}),
       ...(jigsawSpecialPiecesMode ? { jigsawSpecialPiecesMode } : {}),
       ...(imageId ? { imageId } : {}),
+      ...(wordSearchTheme ? { wordSearchTheme } : {}),
       ...(provenance ? { provenance } : {}),
     };
 

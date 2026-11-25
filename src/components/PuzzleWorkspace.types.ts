@@ -1,3 +1,4 @@
+import type { WordSearchProgress } from "../games/wordSearch/progress";
 import type { GenerationSettings, NextPuzzleDraft } from "../app/generationSettings";
 import type { WorkspaceProgressReport } from "../app/abandonmentPolicy";
 import type { SolitaireStats } from "../app/session";
@@ -11,6 +12,8 @@ import type { ImageTileActionRuntime } from "../games/imageTiles/history";
 export type { GenerationSettings, NextPuzzleDraft } from "../app/generationSettings";
 
 export type CoreWorkspaceProps = {
+  wordSearchProgress?: WordSearchProgress | null;
+  onWordSearchSelection?: (puzzleInstanceId: string, start: number, end: number) => boolean;
   imageTileRuntime?: ImageTileActionRuntime | null;
   onImageTileRuntimeChange?: (puzzleInstanceId: string, runtime: ImageTileActionRuntime) => void;
   selectedDefinition: PuzzleDefinition;

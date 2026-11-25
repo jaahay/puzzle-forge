@@ -4,6 +4,7 @@ export const puzzleIds: readonly PuzzleId[] = [
   "sudoku",
   "nonogram",
   "word-guess",
+  "word-search",
   "logic-grid",
   "klondike-solitaire",
   "peg-solitaire",
