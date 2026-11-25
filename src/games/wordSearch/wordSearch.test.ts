@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { PuzzleDifficulty } from "../../catalog/types";
 import { generateWordSearch, findWordSearchOccurrences } from "./generate";
 import { allWordSearchDirections, snapWordSearchEnd, wordSearchPath, wordSearchProfiles } from "./model";
@@ -7,6 +7,10 @@ import { fillWordSearchBoard, wordSearchFillerWeights } from "./filler";
 import { createRandom } from "../shared";
 import { createWordSearchProgress, isWordSearchComplete, restoreWordSearchProgress, selectWordSearchEndpoints, wordSearchFoundCells } from "./progress";
 import { getWordSearchTheme, wordSearchNamedTerms, wordSearchThemeIds } from "./themes";
+
+import { loadGeneralWordSearchWords, parseGeneralWordSearchWords } from "./generalWords";
+
+const generalWords = parseGeneralWordSearchWords(readFileSync(new URL("../../../public/lexicon/word-search/general.json", import.meta.url), "utf8"));
 
 describe("Word Search editorial themes", () => {
   it("contains unique familiar themed spellings, checked against the shared spelling corpus", () => {
@@ -17,7 +21,7 @@ describe("Word Search editorial themes", () => {
     }
     for (const word of wordSearchNamedTerms) spelling.add(word);
     for (const theme of wordSearchThemeIds) {
-      const words = getWordSearchTheme(theme).words;
+      const words = getWordSearchTheme(theme, generalWords).words;
       expect(new Set(words).size).toBe(words.length);
       expect(words.every(word => /^[A-Z]{4,10}$/.test(word) && spelling.has(word))).toBe(true);
       expect(words.filter(word => word.length <= 6).length).toBeGreaterThan(15);
@@ -25,12 +29,60 @@ describe("Word Search editorial themes", () => {
   });
 });
 
+describe("General Word Search vocabulary loading", () => {
+  it("rejects malformed inventories and retries a failed fetch before caching a successful load", async () => {
+    expect(() => parseGeneralWordSearchWords("[]")).toThrow("incomplete");
+    const malformed = [...generalWords];
+    malformed[1] = malformed[0]!;
+    expect(() => parseGeneralWordSearchWords(JSON.stringify(malformed))).toThrow("malformed");
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ ok: false })
+      .mockResolvedValueOnce({ ok: true, text: async () => JSON.stringify(generalWords) });
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      await expect(loadGeneralWordSearchWords()).rejects.toThrow("could not be loaded");
+      const first = loadGeneralWordSearchWords();
+      expect(loadGeneralWordSearchWords()).toBe(first);
+      await expect(first).resolves.toEqual(generalWords);
+      expect(loadGeneralWordSearchWords()).toBe(first);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(fetchMock.mock.calls[1]?.[0]).toContain("lexicon/word-search/general.json");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
 describe("Word Search generation", () => {
+  it("compiles General from the familiar source inventory without narrowing the themed lists", () => {
+    const answers = JSON.parse(readFileSync(new URL("../../../assets/lexicon/word-guess-answers.json", import.meta.url), "utf8")) as Record<string, string[]>;
+    const expected = [...new Set(Array.from({ length: 7 }, (_, i) => answers[String(i + 4)]!).flat())].sort();
+    expect(generalWords).toEqual(expected);
+    expect(generalWords.length).toBeGreaterThan(9000);
+    expect(() => generateWordSearch({ seed: "missing", theme: "general", difficulty: "Easy" })).toThrow("requires its vocabulary");
+  });
+
+  it("favors natural reading directions more strongly at lower difficulties", () => {
+    const naturalShares = ["Easy", "Medium", "Hard", "Expert"].map(difficulty => {
+      let natural = 0, total = 0;
+      for (let i = 0; i < 16; i++) {
+        const board = generateWordSearch({ seed: `direction-sweep-${i}`, theme: "general", difficulty: difficulty as PuzzleDifficulty, generalWords });
+        for (const { start, end } of board.targets) {
+          if ((Math.floor(start / board.size) === Math.floor(end / board.size) && end > start) || (start % board.size === end % board.size && end > start)) natural++;
+          total++;
+        }
+      }
+      return natural / total;
+    });
+    expect(naturalShares[0]).toBe(1);
+    expect(naturalShares[1]!).toBeGreaterThan(naturalShares[2]!);
+    expect(naturalShares[2]!).toBeGreaterThan(naturalShares[3]!);
+  }, 30000);
   it("generates each theme at each difficulty, with unique physical target paths", () => {
     for (const theme of wordSearchThemeIds) {
       for (const difficulty of Object.keys(wordSearchProfiles) as PuzzleDifficulty[]) {
         const profile = wordSearchProfiles[difficulty];
-        const board = generateWordSearch({ seed: "coverage", theme, difficulty });
+        const board = generateWordSearch({ seed: "coverage", theme, difficulty, generalWords });
         expect(board.size).toBe(profile.size);
         expect(board.letters).toHaveLength(profile.size ** 2);
         expect(board.letters.every(letter => /^[A-Z]$/.test(letter))).toBe(true);
@@ -38,7 +90,7 @@ describe("Word Search generation", () => {
         expect(new Set(board.targets.map(t => t.word)).size).toBe(profile.targetCount);
         const directions = new Set<string>();
         for (const target of board.targets) {
-          expect(getWordSearchTheme(theme).words).toContain(target.word);
+          expect(getWordSearchTheme(theme, generalWords).words).toContain(target.word);
           const path = wordSearchPath(board.size, target.start, target.end);
           expect(path.map(i => board.letters[i]).join("")).toBe(target.word);
           const dr = Math.sign(Math.floor(target.end / board.size) - Math.floor(target.start / board.size));
@@ -118,7 +170,7 @@ describe("Word Search distractor design", () => {
       for (const difficulty of ["Medium", "Hard", "Expert"] as const) {
         const profile = wordSearchProfiles[difficulty];
         for (const seed of ["distractor-1", "distractor-2", "distractor-3"]) {
-          const board = generateWordSearch({ seed, theme, difficulty });
+          const board = generateWordSearch({ seed, theme, difficulty, generalWords });
           const nearMatchWords = new Set<string>();
           for (const target of board.targets) {
             expect(findWordSearchOccurrences(board.letters, board.size, target.word)).toHaveLength(1);

@@ -1,5 +1,5 @@
 import type { PuzzleDifficulty } from "../catalog/types";
-import { getWordSearchTheme, wordSearchThemeIds, type WordSearchTheme } from "../games/wordSearch/themes";
+import { getWordSearchThemeTitle, wordSearchThemeIds, type WordSearchTheme } from "../games/wordSearch/themes";
 import { NewPuzzleCommand } from "./NewPuzzleCommand";
 
 const difficulties: readonly PuzzleDifficulty[] = ["Easy", "Medium", "Hard", "Expert"];
@@ -22,7 +22,7 @@ export const WordSearchNewPuzzleControl = (props: Props) => (
   <NewPuzzleCommand
     puzzleTitle="Word Search"
     currentSeed={props.currentSeed}
-    configurationSummary={`${getWordSearchTheme(props.theme).title} · ${props.difficulty}`}
+    configurationSummary={`${getWordSearchThemeTitle(props.theme)} · ${props.difficulty}`}
     seedLoadInput={props.seedLoadInput}
     disabled={props.disabled}
     onSeedLoadInputChange={props.onSeedLoadInputChange}
@@ -40,7 +40,7 @@ export const WordSearchNewPuzzleControl = (props: Props) => (
           const theme = wordSearchThemeIds.find(id => id === event.currentTarget.value);
           if (theme) props.onThemeChange(theme);
         }}>
-          {wordSearchThemeIds.map(id => <option key={id} value={id}>{getWordSearchTheme(id).title}</option>)}
+          {wordSearchThemeIds.map(id => <option key={id} value={id}>{getWordSearchThemeTitle(id)}</option>)}
         </select>
       </label>
       <div class="new-puzzle-segmented new-puzzle-difficulty-options" role="group" aria-label="Difficulty">

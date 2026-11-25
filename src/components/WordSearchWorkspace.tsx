@@ -42,12 +42,25 @@ export const WordSearchWorkspace = ({
     onToday={onToday}
     onLoadSeed={onLoadSeed}
   />;
+  const controls = board && progress ? (
+    <div class="completion-control-stage word-search-controls" data-phase={completion.phase}>
+      <div class="completion-control-layer completion-control-playing word-search-playing-controls" inert={solved} aria-hidden={solved || undefined}>
+        <div class="word-search-count" aria-live="polite" aria-atomic="true">
+          <strong>{progress.found.length} / {board.targets.length}</strong><span> found</span>
+        </div>
+        <div class="puzzle-actions"><button type="button" disabled={disabled || solved} onClick={reset}>Reset</button></div>
+      </div>
+      <div class="completion-control-layer completion-control-solved" inert={completion.phase !== "completed" || !solved} aria-hidden={completion.phase !== "completed" || !solved}>
+        <PuzzleTerminalDock state={solvedTerminalState} label="All words found" announce={solved && completion.phase === "completed"} disabled={disabled || !solved} onReset={reset} onNextPuzzle={() => onNewPuzzle()} />
+      </div>
+    </div>
+  ) : null;
   return <PuzzleWorkspaceLayout
     className="word-search-workspace"
     crown={board ? <CurrentPuzzleHeader key={arrivalIdentity ?? undefined} puzzle={board} isArriving={isArriving} newPuzzleControl={newControl} /> : null}
     status={statusMessage ? <p class="status-line" aria-live="polite">{statusMessage}</p> : null}
     board={board && progress ? <section class={`puzzle-panel word-search-panel${isArriving ? " puzzle-arrival" : ""}${completion.phase === "celebrating" ? " word-search-celebrating" : ""}`} aria-label="Generated Word Search puzzle" inert={isGenerating}>
-      <WordSearchBoard key={board.id} board={board} progress={progress} disabled={disabled} resetVersion={resetVersion}
+      <WordSearchBoard key={board.id} board={board} progress={progress} disabled={disabled} resetVersion={resetVersion} controls={controls}
         onSelectEndpoints={(start, end) => {
           if (onWordSearchSelection?.(board.id, start, end)) completion.recordCausativeInput();
         }} />
@@ -55,8 +68,6 @@ export const WordSearchWorkspace = ({
       <div class="puzzle-loading-copy"><strong>Generating Word Search</strong></div>
       <div class="puzzle-loading-grid" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <span key={index} />)}</div>
     </section> : null}
-    gameplay={board && progress ? solved ? completion.phase === "completed" ? <PuzzleTerminalDock state={solvedTerminalState} label="All words found" disabled={disabled} onReset={reset} onNextPuzzle={() => onNewPuzzle()} /> : null
-      : <div class="puzzle-actions"><button type="button" disabled={disabled} onClick={reset}>Reset</button></div> : null}
     enableImmersive
     playColumnMax={860}
   />;

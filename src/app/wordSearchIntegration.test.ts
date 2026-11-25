@@ -43,6 +43,12 @@ describe("Word Search platform integration", () => {
     expect(generatedPuzzleMatchesIdentity(puzzle, decoded.identity)).toBe(true);
     expect(generatedPuzzleMatchesIdentity(puzzle, { ...decoded.identity, wordSearchTheme: "garden" })).toBe(false);
     expect(encodeGenerationId({ ...identity, wordSearchTheme: "garden" })).not.toBe(generationId);
+    const generalIdentity = { ...identity, wordSearchTheme: "general" as const };
+    const generalId = encodeGenerationId(generalIdentity);
+    expect(generalId).not.toBe(generationId);
+    const generalDecoded = decodeGenerationId("word-search", generalId);
+    expect(generalDecoded.ok && generalDecoded.identity.wordSearchTheme).toBe("general");
+    expect(resolveDailyResource("word-search", "2026-11-24", "?theme=general").ok).toBe(true);
     expect(() => encodeGenerationId({ ...identity, width: 11 })).toThrow("Invalid Word Search profile");
     expect(parseAppRoute(`/word-search/${generationId}`, "")).toEqual({ kind: "resource", puzzleId: "word-search", generationId });
   });

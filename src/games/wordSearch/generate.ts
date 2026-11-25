@@ -52,11 +52,15 @@ export const findWordSearchOccurrences = (letters: readonly string[], size: numb
 const samePath = (a: WordSearchTarget, b: WordSearchTarget) =>
   (a.start === b.start && a.end === b.end) || (a.start === b.end && a.end === b.start);
 
+const directionGroup = ([dr, dc]: readonly [number, number]): number =>
+  dr !== 0 && dc !== 0 ? 2 : dr + dc > 0 ? 0 : 1;
+
 const placeWords = (words: readonly string[], profile: WordSearchProfile, random: Random) => {
   const { size, directions, overlapWeight } = profile;
   const letters: string[] = Array(size * size).fill("");
   const targets: WordSearchTarget[] = [];
   const directionCounts = Array<number>(directions.length).fill(0);
+  const groupCounts = [0, 0, 0];
   const quadrantCounts = [0, 0, 0, 0];
   let totalOverlap = 0;
   for (const word of words) {
@@ -76,7 +80,9 @@ const placeWords = (words: readonly string[], profile: WordSearchProfile, random
         }
         if (!valid || overlap === word.length) continue;
         const quadrant = ((row + r >= size - 1) ? 2 : 0) + ((column + c >= size - 1) ? 1 : 0);
-        const score = overlapWeight * overlap - 5 * directionCounts[direction]!
+        const group = directionGroup(directions[direction]!);
+        const deficit = profile.directionShares[group]! * (targets.length + 1) - groupCounts[group]!;
+        const score = overlapWeight * overlap + 5 * deficit - 1.5 * directionCounts[direction]!
           - 2 * quadrantCounts[quadrant]! + random() * 5;
         if (!best || score > best.score) best = { start, end: r * size + c, direction, quadrant, overlap, score };
       }
@@ -86,14 +92,17 @@ const placeWords = (words: readonly string[], profile: WordSearchProfile, random
     path.forEach((index, i) => { letters[index] = word[i]!; });
     targets.push({ word, start: best.start, end: best.end });
     directionCounts[best.direction]!++;
+    groupCounts[directionGroup(directions[best.direction]!)]!++;
     quadrantCounts[best.quadrant]!++;
     totalOverlap += best.overlap;
   }
   const usedDirections = directionCounts.filter(Boolean).length;
   if (usedDirections < profile.minDirections) return null;
   const occupied = letters.filter(Boolean).length;
-  const quality = usedDirections * 8 + quadrantCounts.filter(Boolean).length * 5
-    + occupied / size + totalOverlap * overlapWeight / 2;
+  const directionDeviation = groupCounts.reduce((sum, count, group) =>
+    sum + Math.abs(count - words.length * profile.directionShares[group]!), 0);
+  const quality = usedDirections * 2 + quadrantCounts.filter(Boolean).length * 5
+    + occupied / size + totalOverlap * overlapWeight / 2 - 5 * directionDeviation;
 
   // Overlap can itself produce unintended occurrences. Reject those before trying filler.
   if (targets.some(target => {
@@ -111,13 +120,13 @@ const placeWords = (words: readonly string[], profile: WordSearchProfile, random
   return null;
 };
 
-export const generateWordSearch = ({ seed, difficulty, theme }: {
-  seed: string; difficulty: PuzzleDifficulty; theme: WordSearchTheme;
+export const generateWordSearch = ({ seed, difficulty, theme, generalWords }: {
+  seed: string; difficulty: PuzzleDifficulty; theme: WordSearchTheme; generalWords?: readonly string[];
 }): WordSearchBoard => {
   const normalizedSeed = normalizeSeed(seed);
   const profile = wordSearchProfiles[difficulty];
   if (!profile) throw new Error("Unknown Word Search difficulty.");
-  const words = getWordSearchTheme(theme).words;
+  const words = getWordSearchTheme(theme, generalWords).words;
   const random = createRandom(`word-search:${difficulty}:${theme}:${normalizedSeed}`);
   let best: NonNullable<ReturnType<typeof placeWords>> | undefined;
   let accepted = 0;

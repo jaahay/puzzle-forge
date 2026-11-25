@@ -1,4 +1,4 @@
-import type { JSX } from "preact";
+import type { ComponentChildren, JSX } from "preact";
 import { useEffect, useId, useRef, useState } from "preact/hooks";
 import { chooseWordSearchEndpoint, moveWordSearchFocus, wordSearchCellAt, wordSearchDragEnd, type WordSearchEndpoints } from "../games/wordSearch/interaction";
 import { wordSearchPath, type WordSearchBoard as Board } from "../games/wordSearch/model";
@@ -11,6 +11,7 @@ type Props = {
   onSelectEndpoints: (start: number, end: number) => void;
   disabled?: boolean;
   resetVersion?: number;
+  controls?: ComponentChildren;
 };
 
 type Drag = {
@@ -30,7 +31,9 @@ const PathMark = ({ size, start, end, preview = false }: WordSearchEndpoints & {
 
 // This surface owns only gesture/focus state. Its parent owns the current
 // resource's progress, completion, persistence and reset.
-const WordSearchBoardSurface = ({ board, progress, onSelectEndpoints, disabled = false }: Props) => {
+type SurfaceProps = Omit<Props, "controls" | "resetVersion"> & { found: ReadonlySet<string> };
+
+const WordSearchBoardSurface = ({ board, progress, onSelectEndpoints, disabled = false, found }: SurfaceProps) => {
   const { size } = board;
   const instructionsId = useId();
   const gridRef = useRef<HTMLDivElement>(null);
@@ -40,7 +43,6 @@ const WordSearchBoardSurface = ({ board, progress, onSelectEndpoints, disabled =
   const [focusCell, setFocusCell] = useState(0);
   const complete = isWordSearchComplete(board, progress);
   const blocked = disabled || complete;
-  const found = new Set(progress.found);
   const foundCells = wordSearchFoundCells(board, progress);
   const keyboardPreview = anchor !== null && wordSearchPath(size, anchor, focusCell).length > 0
     ? { start: anchor, end: focusCell } : anchor !== null ? { start: anchor, end: anchor } : null;
@@ -146,8 +148,7 @@ const WordSearchBoardSurface = ({ board, progress, onSelectEndpoints, disabled =
   };
 
   return (
-    <section class="word-search-play" aria-label="Word Search">
-      <div class="word-search-board-column">
+    <>
         <div class="word-search-board"
           ref={gridRef}
           style={{ "--word-search-size": size } as JSX.CSSProperties}
@@ -185,15 +186,25 @@ const WordSearchBoardSurface = ({ board, progress, onSelectEndpoints, disabled =
         <p class="word-search-instructions" id={instructionsId}>Drag across a word or select its two endpoints.
           <span class="sr-only"> Use arrow keys to move between letters, Enter or Space to select endpoints, and Escape to cancel.</span>
         </p>
+    </>
+  );
+};
+
+// Only the gesture surface remounts on reset; the surrounding controls and
+// word list keep their DOM identity (including the Reset focus target).
+export const WordSearchBoard = ({ controls, resetVersion, ...props }: Props) => {
+  const { board, progress } = props;
+  const found = new Set(progress.found);
+  return (
+    <section class="word-search-play" aria-label="Word Search">
+      <div class="word-search-board-column">
+        <WordSearchBoardSurface key={`${board.checksum}:${resetVersion ?? 0}`} {...props} found={found} />
+        {controls}
       </div>
       <aside class="word-search-word-list" aria-label="Words to find">
-        <div class="word-search-count" aria-live="polite" aria-atomic="true">
-          <strong>{found.size} / {board.targets.length}</strong><span> found</span>
-        </div>
         <ul>
           {board.targets.map(target => (
             <li key={target.word} class={found.has(target.word) ? "found" : undefined}>
-              <span class="word-search-list-mark" aria-hidden="true">{found.has(target.word) ? "✓" : ""}</span>
               <span>{target.word}</span>
               {found.has(target.word) ? <span class="sr-only"> (found)</span> : null}
             </li>
@@ -203,8 +214,3 @@ const WordSearchBoardSurface = ({ board, progress, onSelectEndpoints, disabled =
     </section>
   );
 };
-
-// A different baseline or an explicit reset must clear transient endpoints
-// and any captured gesture, even when the canonical seed remains the same.
-export const WordSearchBoard = (props: Props) =>
-  <WordSearchBoardSurface key={`${props.board.checksum}:${props.resetVersion ?? 0}`} {...props} />;

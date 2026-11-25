@@ -28,10 +28,10 @@ const themes = {
   },
 } as const;
 
-export type WordSearchTheme = "mixed" | keyof typeof themes;
+export type WordSearchTheme = "mixed" | "general" | keyof typeof themes;
 
 export const wordSearchThemeIds: readonly WordSearchTheme[] = [
-  "mixed", "animals", "garden", "kitchen", "space", "ocean", "music",
+  "mixed", "general", "animals", "garden", "kitchen", "space", "ocean", "music",
 ];
 
 export const defaultWordSearchTheme: WordSearchTheme = "mixed";
@@ -47,7 +47,14 @@ const mixed = {
   words: [...new Set(Object.values(themes).flatMap(theme => theme.words))].sort(),
 };
 
-export const getWordSearchTheme = (id: WordSearchTheme): { title: string; words: readonly string[] } => {
+export const getWordSearchThemeTitle = (id: WordSearchTheme): string =>
+  id === "general" ? "General" : getWordSearchTheme(id).title;
+
+export const getWordSearchTheme = (id: WordSearchTheme, generalWords?: readonly string[]): { title: string; words: readonly string[] } => {
+  if (id === "general") {
+    if (!generalWords?.length) throw new Error("General Word Search requires its vocabulary.");
+    return { title: "General", words: generalWords };
+  }
   if (id === "mixed") return mixed;
   const theme = themes[id];
   if (!theme) throw new Error("Unknown Word Search theme.");
