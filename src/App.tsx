@@ -12,6 +12,7 @@ import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import { ResourceUnavailableView } from "./components/ResourceUnavailableView";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
 import { PuzzleShareProvider } from "./components/PuzzleShare";
+import { getCurrentPuzzleIdentity } from "./components/CurrentPuzzleIdentity";
 import { formatPuzzleShareProgress, getPuzzleShareResource } from "./app/puzzleShare";
 import { StartView } from "./components/StartView";
 import { getLocalDateStamp } from "./games/shared/daily";
@@ -917,9 +918,18 @@ export const App = () => {
     },
   };
 
-  const shareResource = useMemo(() => workspaceIsGenerating || typeof window === "undefined"
-    ? null
-    : getPuzzleShareResource(route, puzzle, window.location.origin), [route, puzzle, workspaceIsGenerating]);
+  const shareResource = useMemo(() => {
+    if (workspaceIsGenerating || !puzzle || typeof window === "undefined") return null;
+    const resource = getPuzzleShareResource(route, puzzle, window.location.origin);
+    if (!resource) return null;
+    const identity = getCurrentPuzzleIdentity(puzzle, getLocalDateStamp());
+    return {
+      ...resource,
+      title: identity.puzzleLabel,
+      description: [identity.sourceLabel, ...identity.details, identity.difficultyLabel]
+        .filter(Boolean).join(" · "),
+    };
+  }, [route, puzzle, workspaceIsGenerating]);
   const getShareProgress = () => puzzle ? formatPuzzleShareProgress(puzzle, {
     gridCells: grid.gridCells,
     cardStacks: solitaire.cardStacks,

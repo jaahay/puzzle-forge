@@ -54,6 +54,7 @@
 }
 .puzzle-share-dialog button:disabled { opacity: 0.6; cursor: default; }
 .puzzle-share-dialog button:focus-visible,
+.puzzle-share-disclosure summary:focus-visible,
 .puzzle-share-preview:focus-visible { outline: 2px solid #a7f3d0; outline-offset: 2px; }
 .puzzle-share-intents {
   display: flex;
@@ -67,6 +68,27 @@
   background: #bae6fd;
 }
 .puzzle-share-explanation { margin: 0 0 0.7rem; color: #cbd5e1; font-size: 0.875rem; }
+.puzzle-share-identity {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.8rem;
+  border: 1px solid #334155;
+  border-radius: 0.65rem;
+  background: #0f172a;
+  overflow-wrap: anywhere;
+}
+.puzzle-share-identity strong { color: #f8fafc; }
+.puzzle-share-identity span { color: #cbd5e1; font-size: 0.875rem; }
+.puzzle-share-identity .puzzle-share-destination { color: #94a3b8; font-size: 0.8rem; }
+.puzzle-share-report { white-space: pre-wrap; line-height: 1.5; font-size: 0.875rem; }
+.puzzle-share-disclosure { margin-top: 0.5rem; }
+.puzzle-share-disclosure summary {
+  min-height: 2.75rem;
+  padding: 0.6rem 0.15rem;
+  color: #cbd5e1;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
 .puzzle-share-preview {
   display: block;
   width: 100%;
@@ -82,7 +104,8 @@
   line-height: 1.45;
   overflow-wrap: anywhere;
 }
-.puzzle-share-feedback { min-height: 1.5rem; margin: 0.35rem 0; color: #bae6fd; font-size: 0.82rem; }
+.puzzle-share-feedback { color: #bae6fd; font-size: 0.82rem; }
+.puzzle-share-feedback:not(:empty) { margin: 0.35rem 0; }
 .puzzle-share-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.5rem; }
 .puzzle-share-actions .puzzle-share-native { color: #052e16; border-color: #86efac; background: #a7f3d0; }
 

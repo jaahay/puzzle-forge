@@ -2,7 +2,7 @@ import { createContext, type ComponentChildren } from "preact";
 import { createPortal } from "preact/compat";
 import { useCallback, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from "preact/hooks";
 import {
-  canUseNativePuzzleShare, copyPuzzleShare, makePuzzleSharePayload, sharePuzzleNatively,
+  canUseNativePuzzleShare, copyPuzzleShare, getPuzzleSharePreview, makePuzzleSharePayload, sharePuzzleNatively,
   type PuzzleShareIntent, type PuzzleShareResource,
 } from "../app/puzzleShare";
 
@@ -89,13 +89,15 @@ export const PuzzleShareProvider = ({
 
 const PuzzleShareDialog = ({ request, onClose }: { request: ShareRequest; onClose: () => void }) => {
   const dialog = useRef<HTMLDialogElement>(null);
-  const preview = useRef<HTMLTextAreaElement>(null);
+  const disclosure = useRef<HTMLDetailsElement>(null);
+  const shareText = useRef<HTMLTextAreaElement>(null);
   const titleId = useId();
   const [intent, setIntent] = useState<PuzzleShareIntent>(request.initialIntent);
   const [feedback, setFeedback] = useState("");
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const payload = makePuzzleSharePayload(request.resource, intent, request.progress);
+  const preview = getPuzzleSharePreview(request.resource, intent, request.progress);
 
   useLayoutEffect(() => {
     const element = dialog.current;
@@ -121,9 +123,10 @@ const PuzzleShareDialog = ({ request, onClose }: { request: ShareRequest; onClos
     setBusy(false);
     if (success) setFeedback(intent === "puzzle" ? "Link copied." : "Progress and link copied.");
     else {
-      setFeedback("Copy the selected text manually.");
-      preview.current?.focus();
-      preview.current?.select();
+      setFeedback("Could not copy automatically. Select and copy the share text.");
+      if (disclosure.current) disclosure.current.open = true;
+      shareText.current?.focus();
+      shareText.current?.select();
     }
   };
 
@@ -160,9 +163,21 @@ const PuzzleShareDialog = ({ request, onClose }: { request: ShareRequest; onClos
           ? "Share a progress report. Others play the same puzzle independently."
           : "Share the same puzzle without your progress."}
       </p>
-      <textarea ref={preview} class="puzzle-share-preview" aria-label="Share text"
-        readOnly rows={intent === "progress" ? 6 : 2} value={payload.copyText} />
-      <div class="puzzle-share-feedback" role="status">{feedback || "\u00a0"}</div>
+      <div class="puzzle-share-identity">
+        {preview.report ? <div class="puzzle-share-report">{preview.report}</div> : (
+          <>
+            <strong>{preview.title}</strong>
+            {preview.description ? <span>{preview.description}</span> : null}
+          </>
+        )}
+        <span class="puzzle-share-destination">{preview.destination}</span>
+      </div>
+      <details ref={disclosure} class="puzzle-share-disclosure">
+        <summary>View share text</summary>
+        <textarea ref={shareText} class="puzzle-share-preview" aria-label="Share text"
+          readOnly rows={intent === "progress" ? 6 : 2} value={payload.copyText} />
+      </details>
+      <div class="puzzle-share-feedback" role="status">{feedback}</div>
       <div class="puzzle-share-actions">
         <button type="button" onClick={() => void copy()} disabled={busy}>
           {intent === "progress" ? "Copy progress + link" : "Copy link"}

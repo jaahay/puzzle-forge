@@ -13,6 +13,7 @@ import { getSolitaireFoundationCardCount, isSolitaireSolved } from "./solitaireT
 export type PuzzleShareResource = {
   puzzleInstanceId: string;
   title: string;
+  description?: string;
   url: string;
 };
 
@@ -95,6 +96,18 @@ export const formatPuzzleShareProgress = (
   if (!solved && state.moveCount === 0) return null;
   return `${puzzle.title} · ${puzzle.asset.title} · ${puzzle.width}×${puzzle.height}\n${solved ? "Solved" : "In progress"} · ${state.moveCount} ${state.moveCount === 1 ? "move" : "moves"}`;
 };
+
+// The primary preview communicates what is being shared, not its serialization.
+export const getPuzzleSharePreview = (
+  resource: PuzzleShareResource,
+  intent: PuzzleShareIntent,
+  progress: string | null,
+) => ({
+  title: resource.title,
+  description: resource.description ?? "",
+  report: intent === "progress" ? progress : null,
+  destination: new URL(resource.url).host,
+});
 
 export type PuzzleSharePayload = { native: ShareData; copyText: string };
 

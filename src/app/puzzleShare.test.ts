@@ -18,7 +18,7 @@ import { parseAppRoute } from "./routes";
 import { initialSolitaireStats } from "./session";
 import {
   canUseNativePuzzleShare, copyPuzzleShare, formatPuzzleShareProgress,
-  getPuzzleShareResource, makePuzzleSharePayload, sharePuzzleNatively, type PuzzleShareProgress,
+  getPuzzleSharePreview, getPuzzleShareResource, makePuzzleSharePayload, sharePuzzleNatively, type PuzzleShareProgress,
 } from "./puzzleShare";
 
 const origin = "https://puzzle-forge.example";
@@ -62,6 +62,27 @@ describe("canonical puzzle sharing", () => {
       expect(url.search).toBe("");
       expect(url.hash).toBe("");
       expect(parseAppRoute(url.pathname, "")).toEqual(route);
+    }
+  });
+
+  it("discovers the destination at runtime and keeps the opaque resource path out of the primary preview", () => {
+    const identity = identityFor("word-guess");
+    const puzzle = generate(identity);
+    const generationId = encodeGenerationId(identity);
+    const route = { kind: "resource" as const, puzzleId: "word-guess" as const, generationId };
+    for (const runtimeOrigin of ["https://preview.example", "https://puzzles.example.org", "http://localhost:5173"]) {
+      const resource = { ...getPuzzleShareResource(route, puzzle, runtimeOrigin)!, description: "5 letters · 6 guesses" };
+      expect(resource.url).toBe(`${runtimeOrigin}/word-guess/${generationId}`);
+      const report = "Word Guess 5×6\nSolved · 3/6";
+      const preview = getPuzzleSharePreview(resource, "puzzle", report);
+      expect(preview).toEqual({
+        title: resource.title, description: resource.description, report: null,
+        destination: new URL(runtimeOrigin).host,
+      });
+      expect(JSON.stringify(preview)).not.toContain(generationId);
+      expect(getPuzzleSharePreview(resource, "progress", report).report).toBe(report);
+      expect(makePuzzleSharePayload(resource, "puzzle", report).copyText).toBe(resource.url);
+      expect(makePuzzleSharePayload(resource, "progress", report).native.url).toBe(resource.url);
     }
   });
 
