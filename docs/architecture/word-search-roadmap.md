@@ -6,7 +6,20 @@ The board is a spatial selection surface, not an editable text grid. Issue #200 
 
 Six small authored thematic collections and their deduplicated mixed collection use the existing spelling corpus as a build-time quality reference. Theme membership is an editorial sense decision, not the Word Guess answer pool; the latter omits many familiar names of animals, plants, and instruments. Named planets are deliberate theme-specific exceptions to Word Guess's lowercase-source restriction. No new external source or runtime dictionary download is needed for these compact lists.
 
-The difficulty profile determines size, count, maximum target length, placement directions and overlap preference. Initial boards range from 8×8 with six targets to 14×14 with fifteen. Prefer familiar words at all difficulties; longer words are possible on larger boards, but vocabulary obscurity is not a difficulty mechanism.
+The difficulty profile independently controls search area, target count, maximum target length, placement directions, overlap preference, filler distribution and false leads. Prefer familiar words at all difficulties. Difficulty should reward scrutiny, not merely scanning a larger board. The initial compact profiles are:
+
+| Profile | Board | Targets | Directions | Uniform filler share | Target-derived share | Planted near-matches |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Easy | 8×8 | 6 | 2 | 45% | 0% | 0 |
+| Medium | 10×10 | 9 | 6 | 25% | 25% | 1 |
+| Hard | 10×10 | 10 | 8 | 15% | 50% | 2 |
+| Expert | 12×12 | 12 | 8 | 10% | 75% | 3 |
+
+The remaining filler weight comes from letter frequencies across the mixed thematic vocabulary, not a purported general-English corpus. All letters retain a nonzero probability. These weights govern stochastic filler, not the final histogram after targets and near-matches are placed. Keeping Hard the same size as Medium lets spatial and linguistic interference carry the difficulty; the 12-cell Expert width is an initial mobile usability choice, subject to actual QA.
+
+A deliberate near-match is a straight ray with the first three letters of a listed target and exactly one subsequent mismatch. Place the requested number against distinct targets without overwriting intended letters or earlier distractors; at least two cells in each ray must be available as filler. Reject layouts that cannot achieve the requested count or that accidentally create another exact occurrence. No distractor identity needs to be stored or exposed. Ordinary unlisted English words, including other themed words, may occur incidentally and are not objectives. Do not attempt to eliminate the entire dictionary. A separately considered, narrow content-safety policy may be useful for egregious incidental language, but is not a claim that this generator prevents every offensive substring.
+
+Bent/wrapping paths, irregular boards, alternate alphabets and clue-driven target discovery change the rules rather than merely difficulty. Retain these as future variations instead of presenting a parameter wall or implementing a universal puzzle engine.
 
 ## Generation and selection
 

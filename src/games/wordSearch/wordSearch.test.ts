@@ -2,7 +2,9 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import type { PuzzleDifficulty } from "../../catalog/types";
 import { generateWordSearch, findWordSearchOccurrences } from "./generate";
-import { snapWordSearchEnd, wordSearchPath, wordSearchProfiles } from "./model";
+import { allWordSearchDirections, snapWordSearchEnd, wordSearchPath, wordSearchProfiles } from "./model";
+import { fillWordSearchBoard, wordSearchFillerWeights } from "./filler";
+import { createRandom } from "../shared";
 import { createWordSearchProgress, isWordSearchComplete, restoreWordSearchProgress, selectWordSearchEndpoints, wordSearchFoundCells } from "./progress";
 import { getWordSearchTheme, wordSearchNamedTerms, wordSearchThemeIds } from "./themes";
 
@@ -74,6 +76,68 @@ describe("Word Search generation", () => {
     expect(findWordSearchOccurrences(letters, 4, "ABBA")).toHaveLength(2);
     expect(findWordSearchOccurrences([... "ABBAZZZZZZZZZZZZ"], 4, "ABBA")).toHaveLength(1);
   });
+});
+
+describe("Word Search distractor design", () => {
+  it("keeps all letters possible while increasing target-specific bias", () => {
+    const words = ["AAAA", "AAAB"];
+    const weights = (difficulty: PuzzleDifficulty) => wordSearchFillerWeights(words, wordSearchProfiles[difficulty]);
+    for (const difficulty of Object.keys(wordSearchProfiles) as PuzzleDifficulty[]) {
+      const w = weights(difficulty);
+      expect(w).toHaveLength(26);
+      expect(w.every(value => value > 0)).toBe(true);
+      expect(w.reduce((sum, value) => sum + value, 0)).toBeCloseTo(1, 10);
+    }
+    expect(weights("Medium")[0]).toBeGreaterThan(weights("Easy")[0]!);
+    expect(weights("Hard")[0]).toBeGreaterThan(weights("Medium")[0]!);
+    expect(weights("Expert")[0]).toBeGreaterThan(weights("Hard")[0]!);
+    expect(wordSearchProfiles.Hard.size).toBe(wordSearchProfiles.Medium.size);
+  });
+
+  it("never overwrites placed letters and builds repeatable filler", () => {
+    const profile = wordSearchProfiles.Hard;
+    const placed = Array<string>(profile.size ** 2).fill("");
+    const targets = [
+      { word: "TIGER", start: 0, end: 4 },
+      { word: "BEAR", start: 10, end: 13 },
+      { word: "WOLF", start: 20, end: 23 },
+    ];
+    for (const target of targets) {
+      wordSearchPath(profile.size, target.start, target.end).forEach((cell, i) => { placed[cell] = target.word[i]!; });
+    }
+    const result = fillWordSearchBoard(placed, targets, profile, createRandom("filler"));
+    expect(result).not.toBeNull();
+    expect(result).toEqual(fillWordSearchBoard(placed, targets, profile, createRandom("filler")));
+    expect(result!.every((letter, i) => !placed[i] || placed[i] === letter)).toBe(true);
+    expect(placed.filter(Boolean)).toHaveLength(13);
+  });
+
+  it("guarantees the requested distinct false leads without making additional targets", () => {
+    // Check independently from the planter, on every theme and several seeds.
+    for (const theme of wordSearchThemeIds) {
+      for (const difficulty of ["Medium", "Hard", "Expert"] as const) {
+        const profile = wordSearchProfiles[difficulty];
+        for (const seed of ["distractor-1", "distractor-2", "distractor-3"]) {
+          const board = generateWordSearch({ seed, theme, difficulty });
+          const nearMatchWords = new Set<string>();
+          for (const target of board.targets) {
+            expect(findWordSearchOccurrences(board.letters, board.size, target.word)).toHaveLength(1);
+            for (let start = 0; start < board.letters.length; start++) {
+              const r = Math.floor(start / board.size), c = start % board.size;
+              for (const [dr, dc] of allWordSearchDirections) {
+                const endR = r + dr * (target.word.length - 1), endC = c + dc * (target.word.length - 1);
+                if (endR < 0 || endC < 0 || endR >= board.size || endC >= board.size) continue;
+                const word = wordSearchPath(board.size, start, endR * board.size + endC).map(i => board.letters[i]).join("");
+                if (word.slice(0, 3) !== target.word.slice(0, 3)) continue;
+                if ([...word].filter((letter, i) => letter !== target.word[i]).length === 1) nearMatchWords.add(target.word);
+              }
+            }
+          }
+          expect(nearMatchWords.size).toBeGreaterThanOrEqual(profile.filler.nearMatches);
+        }
+      }
+    }
+  }, 30000);
 });
 
 describe("Word Search selection and progress", () => {

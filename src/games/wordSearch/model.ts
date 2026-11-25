@@ -13,13 +13,20 @@ export type WordSearchProfile = {
   directions: readonly WordSearchDirection[];
   overlapWeight: number;
   minDirections: number;
+  filler: WordSearchFillerProfile;
+};
+
+export type WordSearchFillerProfile = {
+  uniformShare: number;
+  targetShare: number;
+  nearMatches: number;
 };
 
 export const wordSearchProfiles: Record<PuzzleDifficulty, WordSearchProfile> = {
-  Easy: { size: 8, targetCount: 6, maxWordLength: 6, directions: allWordSearchDirections.slice(0, 2), overlapWeight: 0, minDirections: 2 },
-  Medium: { size: 10, targetCount: 9, maxWordLength: 8, directions: allWordSearchDirections.slice(0, 6), overlapWeight: 1, minDirections: 3 },
-  Hard: { size: 12, targetCount: 12, maxWordLength: 10, directions: allWordSearchDirections, overlapWeight: 3, minDirections: 4 },
-  Expert: { size: 14, targetCount: 15, maxWordLength: 10, directions: allWordSearchDirections, overlapWeight: 5, minDirections: 5 },
+  Easy: { size: 8, targetCount: 6, maxWordLength: 6, directions: allWordSearchDirections.slice(0, 2), overlapWeight: 0, minDirections: 2, filler: { uniformShare: 0.45, targetShare: 0, nearMatches: 0 } },
+  Medium: { size: 10, targetCount: 9, maxWordLength: 8, directions: allWordSearchDirections.slice(0, 6), overlapWeight: 1, minDirections: 3, filler: { uniformShare: 0.25, targetShare: 0.25, nearMatches: 1 } },
+  Hard: { size: 10, targetCount: 10, maxWordLength: 8, directions: allWordSearchDirections, overlapWeight: 3, minDirections: 4, filler: { uniformShare: 0.15, targetShare: 0.5, nearMatches: 2 } },
+  Expert: { size: 12, targetCount: 12, maxWordLength: 10, directions: allWordSearchDirections, overlapWeight: 5, minDirections: 5, filler: { uniformShare: 0.1, targetShare: 0.75, nearMatches: 3 } },
 };
 
 export type WordSearchTarget = {

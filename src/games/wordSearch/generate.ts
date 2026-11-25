@@ -2,9 +2,9 @@ import type { PuzzleDifficulty } from "../../catalog/types";
 import { createRandom, normalizeSeed } from "../shared";
 import { allWordSearchDirections, wordSearchPath, wordSearchProfiles, type WordSearchBoard, type WordSearchProfile, type WordSearchTarget } from "./model";
 import { getWordSearchTheme, type WordSearchTheme } from "./themes";
+import { fillWordSearchBoard } from "./filler";
 
 const reverse = (word: string) => [...word].reverse().join("");
-const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 type Random = () => number;
 
 const shuffle = <T>(input: readonly T[], random: Random): T[] => {
@@ -102,8 +102,8 @@ const placeWords = (words: readonly string[], profile: WordSearchProfile, random
   })) return null;
 
   for (let attempt = 0; attempt < 8; attempt++) {
-    const filled = letters.map(letter => letter || alphabet[Math.floor(random() * alphabet.length)]!);
-    if (targets.every(target => {
+    const filled = fillWordSearchBoard(letters, targets, profile, random);
+    if (filled && targets.every(target => {
       const paths = findWordSearchOccurrences(filled, size, target.word);
       return paths.length === 1 && samePath(paths[0]!, target);
     })) return { letters: filled, targets, quality };
