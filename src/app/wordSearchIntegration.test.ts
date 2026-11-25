@@ -117,7 +117,7 @@ describe("Word Search platform integration", () => {
       const firstKey = makePuzzleResourceKey("word-search", encodeGenerationId(identity));
       const secondKey = makePuzzleResourceKey("word-search", encodeGenerationId(otherIdentity));
       savePersistedPuzzleSessions({ activeResourceKey: firstKey, sessions: {
-        [firstKey]: { ...first, progress: { kind: "word-search", ...found } },
+        [firstKey]: { ...first, progress: { kind: "word-search" as const, ...found } },
       } });
       savePersistedPuzzleSessions({ activeResourceKey: secondKey, sessions: { [secondKey]: second } });
       const loaded = loadPersistedPuzzleSessions();
