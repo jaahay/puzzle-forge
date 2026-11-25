@@ -13,6 +13,7 @@ import {
 import { defaultSudokuVariation, normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
 import { formatDailyDateStamp } from "../games/shared/daily";
 import { useLiveLocalDateStamp } from "./NewPuzzleActionVisuals";
+import { PuzzleShareButton } from "./PuzzleShare";
 
 type CurrentPuzzleIdentityModel = {
   puzzleLabel: string;
@@ -26,6 +27,7 @@ type CurrentPuzzleHeaderProps = {
   historyControl?: ComponentChildren;
   newPuzzleControl?: ComponentChildren;
   isArriving?: boolean;
+  shareResult?: boolean;
 };
 
 export const getCurrentPuzzleIdentity = (
@@ -164,6 +166,7 @@ export const CurrentPuzzleHeader = ({
   historyControl,
   newPuzzleControl,
   isArriving = false,
+  shareResult = false,
 }: CurrentPuzzleHeaderProps) => {
   const currentDateStamp = useLiveLocalDateStamp();
   const identity = getCurrentPuzzleIdentity(puzzle, currentDateStamp);
@@ -191,9 +194,14 @@ export const CurrentPuzzleHeader = ({
             <span class="current-puzzle-difficulty">{identity.difficultyLabel}</span>
           ) : null}
         </div>
-        {historyControl}
       </div>
-      {newPuzzleControl ? <div class="current-puzzle-new-action">{newPuzzleControl}</div> : null}
+      <div class="current-puzzle-crown-actions">
+        {historyControl}
+        <div class="current-puzzle-new-action">
+          <PuzzleShareButton className="puzzle-share-crown-action" intent={shareResult ? "progress" : "puzzle"} />
+          {newPuzzleControl}
+        </div>
+      </div>
     </div>
   );
 };

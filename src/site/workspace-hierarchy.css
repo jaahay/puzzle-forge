@@ -75,6 +75,7 @@
    board comes from shared width and proximity rather than enclosing chrome. */
 .current-puzzle-header {
   display: flex;
+  flex-wrap: wrap;
   box-sizing: border-box;
   min-width: 0;
   min-height: 2.75rem;
@@ -85,15 +86,29 @@
 
 .current-puzzle-context {
   display: flex;
-  flex: 1 1 auto;
+  flex: 1 1 5.5rem;
   min-width: 0;
   align-items: center;
+}
+
+/* Give the identity the remaining space; wrap only when the controls and
+   a readable title cannot coexist in the actual play column. */
+.current-puzzle-crown-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  max-width: 100%;
+  margin-left: auto;
   gap: 0.4rem;
 }
 
 .current-puzzle-new-action {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
   flex: 0 0 auto;
-  margin-left: auto;
 }
 
 /* The crown retains one stable New utility before and after completion.
@@ -494,7 +509,7 @@
     gap: 0.25rem;
   }
 
-  .current-puzzle-context {
+  .current-puzzle-crown-actions {
     gap: 0.3rem;
   }
 

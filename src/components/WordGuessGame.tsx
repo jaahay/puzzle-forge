@@ -11,6 +11,7 @@ import { normalizeWordGuessNativeInput } from "../games/wordGuess/input";
 import { isPuzzleModalOpen, shouldHandlePuzzleShortcut } from "../interactions/keyboardOwnership";
 import { isValidWordGuess, isWordGuessAnswer, loadWordGuessBank, normalizeWordGuessWord, type WordGuessWordBank } from "../games/wordGuess/words";
 import { PuzzleTerminalDock } from "./PuzzleTerminalDock";
+import { usePuzzleShareProgress } from "./PuzzleShare";
 
 const difficultyLabels = {
   gentle: "Gentle",
@@ -94,7 +95,7 @@ export const getWordGuessActionPresentation = (status: WordGuessProgressStatus, 
   terminal: status !== "playing",
   terminalLabel: status === "won" ? "Word solved" : status === "lost" ? "Attempts exhausted" : null,
   resetLabel: status === "playing" ? "Reset" : "Retry",
-  canShare: submittedRows > 0,
+  hasShareableProgress: submittedRows > 0,
 });
 
 const formatRemainingAttempts = (count: number) =>
@@ -127,7 +128,6 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
   const [submittedRows, setSubmittedRows] = useState(0);
   const [status, setStatus] = useState<WordGuessProgressStatus>("playing");
   const [message, setMessage] = useState(`Type a ${puzzle.width}-letter word.`);
-  const [copiedShare, setCopiedShare] = useState(false);
   const [hardMode, setHardMode] = useState(false);
   const restoredPuzzleId = useRef<string | null>(null);
   const skipNextSave = useRef(false);
@@ -158,7 +158,6 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     setSubmittedRows(0);
     setStatus("playing");
     setMessage(`Type a ${puzzle.width}-letter word.`);
-    setCopiedShare(false);
     setHardMode(false);
 
     const saved = readWordGuessProgress(puzzle.id, puzzle.checksum);
@@ -281,7 +280,6 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
 
     onCellInput(nextCell, letter);
     setMessage(`Type a ${puzzle.width}-letter word.`);
-    setCopiedShare(false);
   };
 
   const backspace = () => {
@@ -297,7 +295,6 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
       onCellInput(previousCell, "");
     }
 
-    setCopiedShare(false);
   };
 
   const applyNativeInput = (value: string) => {
@@ -316,7 +313,6 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     });
 
     setMessage(`Type a ${puzzle.width}-letter word.`);
-    setCopiedShare(false);
   };
 
   const focusNativeInput = () => {
@@ -340,7 +336,6 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     setSubmittedRows(0);
     setStatus("playing");
     setMessage(`Type a ${puzzle.width}-letter word.`);
-    setCopiedShare(false);
     setHardMode(false);
     writeWordGuessProgress({
       puzzleId: puzzle.id,
@@ -388,24 +383,15 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
     };
   });
 
-  const shareText = formatWordGuessShareText({
-    title: puzzle.title,
-    seed: puzzle.seed,
-    answer,
-    guesses: submittedGuesses,
-    maxGuesses: puzzle.height,
-    status,
-  });
-
-  const copyShareText = async () => {
-    if (typeof navigator === "undefined" || !navigator.clipboard) {
-      setMessage(shareText);
-      return;
-    }
-
-    await navigator.clipboard.writeText(shareText);
-    setCopiedShare(true);
-  };
+  const shareReport = useMemo(() => actionPresentation.hasShareableProgress && !incompatibleAnswer
+    ? formatWordGuessShareText({
+        answer,
+        guesses: submittedGuesses,
+        maxGuesses: puzzle.height,
+        status,
+      })
+    : null, [actionPresentation.hasShareableProgress, incompatibleAnswer, puzzle.height, answer, submittedGuessKey, status]);
+  usePuzzleShareProgress(puzzle.id, shareReport);
 
   return (
     <section class="word-guess-game" aria-label={`${puzzle.width}-letter Word Guess game`}>
@@ -514,13 +500,8 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
           onReset={resetGame}
           resetLabel={actionPresentation.resetLabel}
           onNextPuzzle={onNewPuzzle}
-        >
-          {actionPresentation.canShare ? (
-            <button type="button" onClick={copyShareText}>
-              {copiedShare ? "Copied" : "Share"}
-            </button>
-          ) : null}
-        </PuzzleTerminalDock>
+          shareResult={Boolean(shareReport)}
+        />
       ) : (
         <div class="word-guess-actions">
           <button type="button" onClick={submitGuess} disabled={disabled || !dictionaryReady}>
@@ -528,9 +509,6 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
           </button>
           <button type="button" onClick={resetGame} disabled={disabled || incompatibleAnswer}>
             {actionPresentation.resetLabel}
-          </button>
-          <button type="button" onClick={copyShareText} disabled={!actionPresentation.canShare}>
-            {copiedShare ? "Copied" : "Share"}
           </button>
         </div>
       )}

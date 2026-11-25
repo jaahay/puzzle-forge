@@ -12,6 +12,9 @@ import { NotFoundView } from "./components/NotFoundView";
 import { PuzzleCatalog } from "./components/PuzzleCatalog";
 import { ResourceUnavailableView } from "./components/ResourceUnavailableView";
 import { PuzzleWorkspace } from "./components/PuzzleWorkspace";
+import { PuzzleShareProvider } from "./components/PuzzleShare";
+import { getCurrentPuzzleIdentity } from "./components/CurrentPuzzleIdentity";
+import { formatPuzzleShareProgress, getPuzzleShareResource } from "./app/puzzleShare";
 import { StartView } from "./components/StartView";
 import { getLocalDateStamp } from "./games/shared/daily";
 import { isImageBackedPuzzleId } from "./games/imageAssets";
@@ -951,6 +954,35 @@ export const App = () => {
     },
   };
 
+  const shareResource = useMemo(() => {
+    if (workspaceIsGenerating || !puzzle || typeof window === "undefined") return null;
+    const resource = getPuzzleShareResource(route, puzzle, window.location.origin);
+    if (!resource) return null;
+    const identity = getCurrentPuzzleIdentity(puzzle, getLocalDateStamp());
+    return {
+      ...resource,
+      title: identity.puzzleLabel,
+      description: [
+        resource.description,
+        ...identity.details,
+        puzzle.kind === "grid" && puzzle.puzzleId !== "word-guess" &&
+          !identity.details.includes(`${puzzle.width}×${puzzle.height}`) ? `${puzzle.width}×${puzzle.height}` : null,
+        puzzle.kind === "word-search" ? `${puzzle.width}×${puzzle.height}` : null,
+        identity.difficultyLabel,
+      ].filter(Boolean).join(" · "),
+    };
+  }, [route, puzzle, workspaceIsGenerating]);
+  const getShareProgress = () => puzzle ? formatPuzzleShareProgress(puzzle, {
+    gridCells: grid.gridCells,
+    cardStacks: solitaire.cardStacks,
+    solitaireStats: solitaire.solitaireStats,
+    wordSearchProgress: wordSearchProgressRef.current,
+    jigsawRuntime: jigsawRuntimeRef.current?.puzzleInstanceId === puzzle.id
+      ? jigsawRuntimeRef.current.runtime : null,
+    imageTileRuntime: imageTileRuntimeRef.current?.puzzleInstanceId === puzzle.id
+      ? imageTileRuntimeRef.current.runtime : null,
+  }) : null;
+
   const puzzleNavigation = activeView === "catalog" ? <PuzzleCatalog isCollapsed={isCatalogCollapsed} isHomeSelected={isHomeSelected || !hasSelectedPuzzle} selectedPuzzleId={selectedPuzzleId} onCollapseToggle={() => setIsCatalogCollapsed((current) => !current)} onHomeSelect={() => selectHome()} onSelectPuzzle={(puzzleId) => selectPuzzle(puzzleId)} /> : null;
 
   let content;
@@ -976,13 +1008,15 @@ export const App = () => {
             }}
           />
         ) : (
-          <PuzzleWorkspace
-            core={workspaceCore}
-            prospective={workspaceProspective}
-            grid={workspaceGrid}
-            solitaire={workspaceSolitaire}
-            jigsaw={workspaceJigsaw}
-          />
+          <PuzzleShareProvider resource={shareResource} getProgress={getShareProgress}>
+            <PuzzleWorkspace
+              core={workspaceCore}
+              prospective={workspaceProspective}
+              grid={workspaceGrid}
+              solitaire={workspaceSolitaire}
+              jigsaw={workspaceJigsaw}
+            />
+          </PuzzleShareProvider>
         )}
       </section>
     );

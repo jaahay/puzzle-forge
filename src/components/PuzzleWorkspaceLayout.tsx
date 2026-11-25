@@ -1,5 +1,7 @@
 import { createContext, type ComponentChildren, type JSX } from "preact";
 import { useContext, useEffect, useRef, useState } from "preact/hooks";
+import { isPuzzleModalOpen } from "../interactions/keyboardOwnership";
+import { PuzzleShareButton } from "./PuzzleShare";
 
 export type PuzzleWorkspaceDisplayMode = {
   isExpanded: boolean;
@@ -112,8 +114,8 @@ export const PuzzleWorkspaceLayout = ({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape" || document.fullscreenElement) return;
-      // An open puzzle menu handles Escape before the workspace exits expanded mode.
-      if (event.defaultPrevented || workspaceRef.current?.querySelector(
+      // Open puzzle dialogs and menus own Escape before the workspace exits expanded mode.
+      if (event.defaultPrevented || isPuzzleModalOpen() || workspaceRef.current?.querySelector(
         ".new-puzzle-options[open]",
       )) return;
       setIsExpanded(false);
@@ -169,6 +171,7 @@ export const PuzzleWorkspaceLayout = ({
         <div class="puzzle-workspace-display-tools" aria-label="Puzzle display controls">
           {isExpanded ? (
             <>
+              {immersiveEntry === "workspace" ? <PuzzleShareButton className="puzzle-share-immersive" /> : null}
               {fullscreenAvailable && immersiveFullscreenControl === "workspace" ? (
                 <button
                   type="button"

@@ -150,6 +150,7 @@ export const JigsawWorkspace = ({
       puzzle={jigsawPuzzle}
       historyControl={historyActions}
       newPuzzleControl={newPuzzleControl}
+      shareResult={isSolved && completion.phase === "completed"}
       isArriving={isPuzzleArriving}
     />
   ) : null;
