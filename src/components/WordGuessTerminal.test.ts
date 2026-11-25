@@ -11,30 +11,30 @@ describe("Word Guess terminal mapping", () => {
     });
   });
 
-  it("switches terminal outcomes from Submit to Retry while retaining Share", () => {
+  it("switches terminal outcomes from Submit to Retry and identifies shareable result progress", () => {
     expect(getWordGuessActionPresentation("playing", 0)).toEqual({
       terminal: false,
       terminalLabel: null,
       resetLabel: "Reset",
-      canShare: false,
+      hasShareableProgress: false,
     });
     expect(getWordGuessActionPresentation("playing", 2)).toEqual({
       terminal: false,
       terminalLabel: null,
       resetLabel: "Reset",
-      canShare: true,
+      hasShareableProgress: true,
     });
     expect(getWordGuessActionPresentation("won", 3)).toEqual({
       terminal: true,
       terminalLabel: "Word solved",
       resetLabel: "Retry",
-      canShare: true,
+      hasShareableProgress: true,
     });
     expect(getWordGuessActionPresentation("lost", 6)).toEqual({
       terminal: true,
       terminalLabel: "Attempts exhausted",
       resetLabel: "Retry",
-      canShare: true,
+      hasShareableProgress: true,
     });
   });
 });

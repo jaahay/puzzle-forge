@@ -185,13 +185,12 @@ describe("Word Guess share text", () => {
     expect(
       formatWordGuessShareText({
         title: "Word Guess",
-        seed: "seed-1",
         answer: "LEVEL",
         guesses: ["LELEE"],
         maxGuesses: 6,
         status: "playing",
       }),
-    ).toBe("Word Guess 5×6 seed-1 1/6\n\n🟩🟩🟨🟩⬛");
+    ).toBe("Word Guess 5×6\nIn progress · 1/6\n\n🟩🟩🟨🟩⬛");
   });
 });
 

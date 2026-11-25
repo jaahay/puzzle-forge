@@ -12,6 +12,7 @@ import {
 import { defaultSudokuVariation, normalizeSudokuVariation, sudokuVariationLabels } from "../games/sudoku/variation";
 import { formatDailyDateStamp } from "../games/shared/daily";
 import { useLiveLocalDateStamp } from "./NewPuzzleActionVisuals";
+import { PuzzleShareButton } from "./PuzzleShare";
 
 type CurrentPuzzleIdentityModel = {
   puzzleLabel: string;
@@ -187,9 +188,14 @@ export const CurrentPuzzleHeader = ({
             <span class="current-puzzle-difficulty">{identity.difficultyLabel}</span>
           ) : null}
         </div>
-        {historyControl}
       </div>
-      {newPuzzleControl ? <div class="current-puzzle-new-action">{newPuzzleControl}</div> : null}
+      <div class="current-puzzle-actions">
+        {historyControl}
+        <div class="current-puzzle-new-action">
+          <PuzzleShareButton className="puzzle-share-crown-action" />
+          {newPuzzleControl}
+        </div>
+      </div>
     </div>
   );
 };
