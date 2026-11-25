@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { PuzzleDifficulty } from "../../catalog/types";
 import { generateWordSearch, findWordSearchOccurrences } from "./generate";
 import { allWordSearchDirections, snapWordSearchEnd, wordSearchPath, wordSearchProfiles } from "./model";
@@ -8,7 +8,7 @@ import { createRandom } from "../shared";
 import { createWordSearchProgress, isWordSearchComplete, restoreWordSearchProgress, selectWordSearchEndpoints, wordSearchFoundCells } from "./progress";
 import { getWordSearchTheme, wordSearchNamedTerms, wordSearchThemeIds } from "./themes";
 
-import { parseGeneralWordSearchWords } from "./generalWords";
+import { loadGeneralWordSearchWords, parseGeneralWordSearchWords } from "./generalWords";
 
 const generalWords = parseGeneralWordSearchWords(readFileSync(new URL("../../../public/lexicon/word-search/general.json", import.meta.url), "utf8"));
 
@@ -25,6 +25,30 @@ describe("Word Search editorial themes", () => {
       expect(new Set(words).size).toBe(words.length);
       expect(words.every(word => /^[A-Z]{4,10}$/.test(word) && spelling.has(word))).toBe(true);
       expect(words.filter(word => word.length <= 6).length).toBeGreaterThan(15);
+    }
+  });
+});
+
+describe("General Word Search vocabulary loading", () => {
+  it("rejects malformed inventories and retries a failed fetch before caching a successful load", async () => {
+    expect(() => parseGeneralWordSearchWords("[]")).toThrow("incomplete");
+    const malformed = [...generalWords];
+    malformed[1] = malformed[0]!;
+    expect(() => parseGeneralWordSearchWords(JSON.stringify(malformed))).toThrow("malformed");
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ ok: false })
+      .mockResolvedValueOnce({ ok: true, text: async () => JSON.stringify(generalWords) });
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      await expect(loadGeneralWordSearchWords()).rejects.toThrow("could not be loaded");
+      const first = loadGeneralWordSearchWords();
+      expect(loadGeneralWordSearchWords()).toBe(first);
+      await expect(first).resolves.toEqual(generalWords);
+      expect(loadGeneralWordSearchWords()).toBe(first);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(fetchMock.mock.calls[1]?.[0]).toContain("lexicon/word-search/general.json");
+    } finally {
+      vi.unstubAllGlobals();
     }
   });
 });
