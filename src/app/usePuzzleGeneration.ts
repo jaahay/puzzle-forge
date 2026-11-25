@@ -1,3 +1,5 @@
+import { defaultWordSearchTheme, type WordSearchTheme } from "../games/wordSearch/themes";
+import { wordSearchProfiles } from "../games/wordSearch/model";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { getPuzzleDefinition, isGeneratable } from "../catalog/puzzleCatalog";
 import type {
@@ -57,6 +59,7 @@ type MissingPuzzleGenerationInput = {
   requireUniqueSolution: boolean;
   sudokuVariation: SudokuVariation;
   solitaireVariation: SolitaireVariation;
+  wordSearchTheme?: WordSearchTheme;
   jigsawCutStyle?: JigsawCutStyle;
   jigsawBoundaryMode?: JigsawBoundaryMode;
   jigsawSpecialPiecesMode?: JigsawSpecialPiecesMode;
@@ -117,6 +120,7 @@ export const makeInitialPuzzleGenerationOptions = ({
     width: normalizeDimension(rememberedDraft?.width, definition.minWidth, definition.maxWidth, definition.defaultWidth),
     height: normalizeDimension(rememberedDraft?.height, definition.minHeight, definition.maxHeight, definition.defaultHeight),
     difficulty: rememberedDraft?.difficulty ?? defaultPuzzleDifficulty,
+    ...(puzzleId === "word-search" ? { wordSearchTheme: rememberedDraft?.wordSearchTheme ?? defaultWordSearchTheme } : {}),
     requireUniqueSolution: rememberedDraft?.requireUniqueSolution ?? true,
     sudokuVariation: puzzleId === "sudoku"
       ? rememberedDraft?.sudokuVariation ?? defaultSudokuVariation
@@ -147,6 +151,7 @@ export const makeMissingPuzzleGenerationOptions = ({
   requireUniqueSolution,
   sudokuVariation,
   solitaireVariation,
+  wordSearchTheme,
   jigsawCutStyle,
   jigsawBoundaryMode,
   jigsawSpecialPiecesMode,
@@ -157,6 +162,7 @@ export const makeMissingPuzzleGenerationOptions = ({
   width: normalizeDimension(width, selectedDefinition.minWidth, selectedDefinition.maxWidth, selectedDefinition.defaultWidth),
   height: normalizeDimension(height, selectedDefinition.minHeight, selectedDefinition.maxHeight, selectedDefinition.defaultHeight),
   difficulty,
+  ...(selectedPuzzleId === "word-search" ? { wordSearchTheme: wordSearchTheme ?? defaultWordSearchTheme } : {}),
   requireUniqueSolution,
   sudokuVariation: selectedPuzzleId === "sudoku" ? sudokuVariation : undefined,
   solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? solitaireVariation : undefined,
@@ -210,9 +216,10 @@ export const usePuzzleGeneration = (onPreparationError: (message: string) => voi
       requestId: makeRequestId(),
       puzzleId,
       seed,
-      width,
-      height,
+      width: puzzleId === "word-search" ? wordSearchProfiles[difficulty].size : width,
+      height: puzzleId === "word-search" ? wordSearchProfiles[difficulty].size : height,
       difficulty,
+      ...(puzzleId === "word-search" ? { wordSearchTheme: options.wordSearchTheme ?? defaultWordSearchTheme } : {}),
       requireUniqueSolution,
       sudokuVariation,
       solitaireVariation: options.solitaireVariation,

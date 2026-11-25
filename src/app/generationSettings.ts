@@ -1,3 +1,5 @@
+import { wordSearchProfiles } from "../games/wordSearch/model";
+import { defaultWordSearchTheme, isWordSearchTheme } from "../games/wordSearch/themes";
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type {
   GeneratedPuzzle,
@@ -28,6 +30,7 @@ export type GenerationSettings = Partial<
     | "width"
     | "height"
     | "difficulty"
+    | "wordSearchTheme"
     | "requireUniqueSolution"
     | "sudokuVariation"
     | "solitaireVariation"
@@ -42,6 +45,7 @@ export type GenerationSettings = Partial<
 };
 
 export type NextPuzzleDraft = {
+  wordSearchTheme?: GenerationIdentity["wordSearchTheme"];
   width: number;
   height: number;
   difficulty: PuzzleDifficulty;
@@ -83,19 +87,26 @@ export const resolveGenerationIdentity = ({
       (currentPuzzle?.puzzleId === "sudoku" ? currentPuzzle.sudokuVariation : undefined) ??
       runtimeSettings.sudokuVariation,
   );
-  const width = normalizeDimension(
+  let width = normalizeDimension(
     settings.width ?? runtimeSettings.width,
     definition.minWidth,
     definition.maxWidth,
     definition.defaultWidth,
   );
-  const height = normalizeDimension(
+  let height = normalizeDimension(
     settings.height ?? runtimeSettings.height,
     definition.minHeight,
     definition.maxHeight,
     definition.defaultHeight,
   );
   const difficulty = settings.difficulty ?? runtimeSettings.difficulty;
+  const wordSearchTheme = puzzleId === "word-search"
+    ? settings.wordSearchTheme ?? (currentPuzzle?.kind === "word-search" ? currentPuzzle.theme : undefined) ?? runtimeSettings.wordSearchTheme ?? defaultWordSearchTheme
+    : undefined;
+  if (puzzleId === "word-search") {
+    if (!isWordSearchTheme(wordSearchTheme)) throw new Error("Unknown Word Search theme.");
+    width = height = wordSearchProfiles[difficulty].size;
+  }
   const requireUniqueSolution = typeof settings.requireUniqueSolution === "boolean"
     ? settings.requireUniqueSolution
     : runtimeSettings.requireUniqueSolution;
@@ -153,12 +164,14 @@ export const resolveGenerationIdentity = ({
         difficulty,
         requireUniqueSolution,
         sudokuVariation,
+        wordSearchTheme,
       })
     : requestedSeed;
 
   return {
     puzzleId,
     seed,
+    wordSearchTheme,
     width,
     height,
     difficulty,

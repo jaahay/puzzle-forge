@@ -1,4 +1,4 @@
-Puzzle Forge Word Guess lexical assets
+Puzzle Forge lexical assets (Word Guess and Word Search General)
 Source: English Speller Database / SCOWL, rel-2026.02.25
 https://github.com/en-wl/wordlist
 

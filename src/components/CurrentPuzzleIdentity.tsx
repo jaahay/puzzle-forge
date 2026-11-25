@@ -1,3 +1,4 @@
+import { getWordSearchThemeTitle } from "../games/wordSearch/themes";
 import type { ComponentChildren } from "preact";
 import { useEffect, useRef } from "preact/hooks";
 import { getPuzzleProvenance } from "../app/puzzleProvenance";
@@ -69,6 +70,8 @@ export const getCurrentPuzzleIdentity = (
     };
   }
 
+  if (puzzle.kind === "word-search") return { puzzleLabel: definition.title, sourceLabel, details: [getWordSearchThemeTitle(puzzle.theme)], difficultyLabel };
+
   if (puzzle.puzzleId === "word-guess") {
     return {
       puzzleLabel: definition.title,
@@ -138,6 +141,7 @@ export const getPuzzleArrivalIdentity = (puzzle: GeneratedPuzzle) => {
     solitaireVariation?.wasteMode ?? "",
     solitaireVariation?.knownSolvable ? "known-solvable" : "",
     puzzle.kind === "tiles" ? puzzle.asset.id : "",
+    ...(puzzle.kind === "word-search" ? [puzzle.theme] : []),
     provenance?.source ?? "",
     provenance?.dateStamp ?? "",
   ].join(":");

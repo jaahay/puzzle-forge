@@ -1,0 +1,195 @@
+.word-search-workspace .workspace-layout-board {
+  width: min(100%, var(--play-column-max));
+}
+
+.word-search-panel {
+  container-type: inline-size;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.word-search-play {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: start;
+  min-width: 0;
+}
+
+.word-search-board-column {
+  min-width: 0;
+}
+
+.word-search-board {
+  isolation: isolate;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--word-search-size), minmax(0, 1fr));
+  width: min(100%, 36rem);
+  aspect-ratio: 1;
+  margin-inline: auto;
+  background: #111827;
+  border-radius: 0.8rem;
+  box-shadow: 0 0 0 1px #334155;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.word-search-paths {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  stroke-linecap: round;
+  stroke-width: 0.78;
+}
+
+.word-search-path-found {
+  stroke: #225849;
+}
+
+.word-search-path-preview {
+  stroke: #a7f3d0;
+  stroke-width: 0.82;
+}
+
+.word-search-letter {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  aspect-ratio: 1;
+  color: #f8fafc;
+  background: transparent;
+  border-radius: 0.35rem;
+  font-size: clamp(0.82rem, 3.8vw, 1.5rem);
+  font-weight: 750;
+  line-height: 1;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.word-search-letter.preview {
+  color: #0f172a;
+}
+
+.word-search-letter:focus-visible {
+  outline: 2px solid #f8fafc;
+  outline-offset: -3px;
+  z-index: 1;
+}
+
+.word-search-letter[aria-disabled="true"] {
+  cursor: default;
+}
+
+.word-search-instructions {
+  width: min(100%, 36rem);
+  margin: 0.65rem auto 0;
+  color: #94a3b8;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.word-search-word-list {
+  min-width: 0;
+  color: #cbd5e1;
+}
+
+.word-search-count {
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.word-search-count strong {
+  color: #f8fafc;
+  font-variant-numeric: tabular-nums;
+}
+
+.word-search-word-list ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(6rem, 100%), 1fr));
+  column-gap: 0.6rem;
+  row-gap: 0.15rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.word-search-word-list li {
+  min-width: 0;
+  font-size: 0.85rem;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.word-search-word-list li.found > span:first-child {
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+
+@container (min-width: 48rem) {
+  .word-search-play {
+    grid-template-columns: minmax(0, 36rem) minmax(9rem, 1fr);
+  }
+
+  .word-search-word-list ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.word-search-controls {
+  width: min(100%, 36rem);
+  margin: 0.25rem auto 0;
+}
+
+.word-search-playing-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.word-search-controls .completion-control-solved {
+  visibility: hidden;
+}
+
+.word-search-controls[data-phase="celebrating"] .completion-control-solved,
+.word-search-controls[data-phase="completed"] .completion-control-solved {
+  visibility: visible;
+}
+
+.word-search-controls[data-phase="completed"] .completion-control-playing {
+  visibility: hidden;
+}
+
+.word-search-controls .completion-dock {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  gap: 0.4rem;
+}
+
+.word-search-controls .completion-dock .puzzle-actions {
+  flex-wrap: nowrap;
+}
+
+.word-search-controls .completion-dock .puzzle-actions button {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .word-search-celebrating .word-search-path-found {
+    animation: word-search-complete 700ms ease-in-out;
+  }
+}
+
+@keyframes word-search-complete {
+  50% { stroke: #4c997e; }
+}

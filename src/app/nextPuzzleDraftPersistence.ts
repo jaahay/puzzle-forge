@@ -1,3 +1,5 @@
+import { isWordSearchTheme } from "../games/wordSearch/themes";
+import { wordSearchProfiles } from "../games/wordSearch/model";
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { PuzzleDifficulty, PuzzleId, SolitaireRedealLimit, SolitaireVariation, SudokuVariation } from "../catalog/types";
 import { getPuzzleImageAssetsFor, isImageBackedPuzzleId } from "../games/imageAssets";
@@ -71,6 +73,7 @@ const parseDraft = (puzzleId: PuzzleId, value: unknown): NextPuzzleDraft | null 
     !isDimensionForPuzzle(puzzleId, "width", value.width) ||
     !isDimensionForPuzzle(puzzleId, "height", value.height) ||
     !isPuzzleDifficulty(value.difficulty) ||
+    (puzzleId === "word-search" ? !isWordSearchTheme(value.wordSearchTheme) || value.width !== wordSearchProfiles[value.difficulty].size || value.height !== value.width : value.wordSearchTheme !== undefined) ||
     typeof value.requireUniqueSolution !== "boolean" ||
     !isSudokuVariation(value.sudokuVariation) ||
     !isSolitaireVariation(value.solitaireVariation) ||
@@ -87,6 +90,7 @@ const parseDraft = (puzzleId: PuzzleId, value: unknown): NextPuzzleDraft | null 
     width: value.width,
     height: value.height,
     difficulty: value.difficulty,
+    ...(isWordSearchTheme(value.wordSearchTheme) ? { wordSearchTheme: value.wordSearchTheme } : {}),
     requireUniqueSolution: value.requireUniqueSolution,
     sudokuVariation: value.sudokuVariation,
     solitaireVariation: { ...value.solitaireVariation },

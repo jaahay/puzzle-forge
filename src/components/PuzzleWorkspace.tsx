@@ -1,3 +1,4 @@
+import { WordSearchWorkspace } from "./WordSearchWorkspace";
 import type { PuzzleId } from "../catalog/types";
 import { GridPuzzleWorkspace } from "./GridPuzzleWorkspace";
 import { ImageTilePuzzleWorkspace } from "./ImageTilePuzzleWorkspace";
@@ -25,6 +26,8 @@ export const PuzzleWorkspace = ({ core, prospective, grid, solitaire, jigsaw }: 
     case "tile-swap":
     case "sliding-puzzle":
       return <ImageTilePuzzleWorkspace {...core} {...prospective} />;
+    case "word-search":
+      return <WordSearchWorkspace {...core} {...prospective} />;
     case "nonogram":
     case "word-guess":
     case "logic-grid":
