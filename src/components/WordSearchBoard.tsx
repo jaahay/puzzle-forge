@@ -134,6 +134,10 @@ const WordSearchBoardSurface = ({ board, progress, onProgressChange, disabled = 
       return;
     }
     if (disabled || dragRef.current) return;
+    if (event.repeat && (event.key === "Enter" || event.key === " ")) {
+      event.preventDefault();
+      return;
+    }
     const next = moveWordSearchFocus(size, cell, event.key);
     if (next !== null) {
       event.preventDefault();

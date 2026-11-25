@@ -1,6 +1,6 @@
 # Word Search
 
-The board is a spatial selection surface, not an editable text grid. Issue #200 describes the full playable feature. This first implementation establishes the domain model before introducing a catalog entry or new runtime state ownership.
+The board is a spatial selection surface, not an editable text grid. Issue #200 describes the playable feature. The catalog exposes Word Search as a preview pending manual interaction and difficulty QA.
 
 ## Content and difficulty
 
@@ -31,10 +31,12 @@ The generated baseline includes the complete letters and word paths. Its compact
 
 The controlled Word Search board renders a continuous, rounded path behind letters for each found word. A brighter path previews the exact candidate during a drag or keyboard endpoint selection. Pointer capture keeps a drag coherent outside the board; release commits the snapped ray, while a tap chooses an exact endpoint. A cancelled pointer does not submit a word. Tap and keyboard share the same endpoint model: an invalid endpoint becomes a new anchor, tapping the anchor again cancels, and Escape clears the selection. Arrow navigation uses one roving tab stop, with native button activation for Enter/Space and assistive technology. Found words are also checked and struck through in a responsive list; count and found state are conveyed without color alone.
 
-The component accepts authoritative progress rather than storing it locally. Reset and baseline changes clear gesture state. A New puzzle control reuses the existing Random/Today/seed command and exposes only Theme and Difficulty. The board and menu are not yet mounted in the catalog; no second persistence path has been introduced.
+The component accepts authoritative progress rather than storing it locally. Reset and baseline changes clear gesture state. A New puzzle control reuses the existing Random/Today/seed command and exposes only Theme and Difficulty.
 
-## Remaining platform integration
+## Platform integration
 
-Add the Word Search-specific generated-puzzle kind and canonical theme/difficulty identity to the existing resource model; feed the worker the relevant profile. Integrate found-word progress with the normal session retention, history, reset, and terminal-state ownership rather than introducing separate localStorage. Use the shared New/Daily controls with only theme and difficulty, and render a responsive board with drag, tap and keyboard endpoint selection. Keep the word list below the board on narrow screens.
+Word Search uses its own generated puzzle and session kind, dispatched by the existing generation worker and catalog. Its resource identity encodes difficulty and a stable theme name; dimensions are derived from the profile rather than encoded independently. Daily generation derives its seed from date, difficulty and theme. The normal daily locator, canonical URL, recent puzzles, and next-puzzle draft persistence carry those settings.
 
-Do not expose this domain-only slice as a playable catalog item until resource, persistence, and accessible workspace behavior are integrated and validated. Do not introduce a universal word-puzzle engine or a new historical content-version scheme.
+The application owns the found-word set, updates its synchronous snapshot before autosave/navigation, validates restored progress against the regenerated baseline, and derives completion and abandonment state from the same progress. The canonical session payload stores only found word names and the existing outer checksum; the immutable board is regenerated. Reset uses shared confirmation, completion uses the shared terminal dock. A wrong selection has no persistent effect, and a correct find is monotonic until reset; individual Undo/Redo actions are intentionally not introduced for this initial ruleset.
+
+Manual QA should cover the pointer/touch/keyboard experience at narrow widths, completion transitions, interrupted drags and restoration, as well as perceived difficulty. Do not introduce a universal word-puzzle engine or a historical content-version scheme.

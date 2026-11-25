@@ -1,3 +1,4 @@
+import { defaultWordSearchTheme, type WordSearchTheme } from "../games/wordSearch/themes";
 import type {
   GeneratedPuzzle,
   JigsawBoundaryMode,
@@ -21,6 +22,7 @@ import { puzzleProvenanceMatches, type PuzzleProvenance } from "./puzzleProvenan
 
 export type GenerationRuntimeSettings = {
   seed: string;
+  wordSearchTheme?: WordSearchTheme;
   width: number;
   height: number;
   difficulty: PuzzleDifficulty;
@@ -43,6 +45,7 @@ export const getGeneratedPuzzleRuntimeSettings = (
   fallback: GenerationRuntimeSettings,
 ): GenerationRuntimeSettings => ({
   seed: puzzle.seed,
+  wordSearchTheme: puzzle.kind === "word-search" ? puzzle.theme : undefined,
   width: puzzle.width,
   height: puzzle.height,
   difficulty: puzzle.difficulty ?? fallback.difficulty,
@@ -81,6 +84,10 @@ export const generatedPuzzleMatchesIdentity = (
   ) {
     return false;
   }
+
+  if (puzzle.kind === "word-search") return puzzle.difficulty === identity.difficulty &&
+    puzzle.theme === (identity.wordSearchTheme ?? defaultWordSearchTheme) &&
+    puzzle.width === identity.width && puzzle.height === identity.height;
 
   if (puzzle.kind === "grid" && (puzzle.width !== identity.width || puzzle.height !== identity.height)) {
     return false;

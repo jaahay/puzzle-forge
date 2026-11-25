@@ -1,3 +1,5 @@
+import type { WordSearchGeneratedPuzzle } from "../catalog/types";
+import type { WordSearchProgress } from "../games/wordSearch/progress";
 import type { CardGeneratedPuzzle, CardStack, GeneratedPuzzle, GridGeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
 import type { CardSelection } from "../interactions/cardRules";
 import type { GridCellSelection } from "../interactions/gridRules";
@@ -62,9 +64,10 @@ export type TileSessionProgress = {
   imageTileRuntime?: ImageTileActionRuntime;
 };
 
-type TileGeneratedPuzzle = Exclude<GeneratedPuzzle, CardGeneratedPuzzle | GridGeneratedPuzzle>;
+type TileGeneratedPuzzle = Extract<GeneratedPuzzle, { kind: "tiles" }>;
 
 export type PuzzleSession =
+  | { kind: "word-search"; puzzle: WordSearchGeneratedPuzzle; progress: WordSearchProgress & { kind: "word-search" } }
   | {
       kind: "cards";
       puzzle: CardGeneratedPuzzle;

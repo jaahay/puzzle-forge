@@ -141,3 +141,13 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  .word-search-celebrating .word-search-path-found {
+    animation: word-search-complete 700ms ease-in-out;
+  }
+}
+
+@keyframes word-search-complete {
+  50% { stroke: #4c997e; }
+}

@@ -1,3 +1,4 @@
+import { defaultWordSearchTheme, getWordSearchTheme } from "../games/wordSearch/themes";
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
 import type { PuzzleId } from "../catalog/types";
 import { getPuzzleImageAsset, isImageBackedPuzzleId } from "../games/imageAssets";
@@ -43,6 +44,9 @@ const formatIdentitySummary = (puzzleId: PuzzleId, generationId: string) => {
     case "nonogram":
       parts.push(`${identity.width}×${identity.height}`, identity.difficulty);
       if (identity.requireUniqueSolution) parts.push("Unique");
+      break;
+    case "word-search":
+      parts.push(getWordSearchTheme(identity.wordSearchTheme ?? defaultWordSearchTheme).title, identity.difficulty);
       break;
     case "word-guess":
     case "logic-grid":

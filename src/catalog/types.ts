@@ -1,7 +1,11 @@
+import type { WordSearchBoard } from "../games/wordSearch/model";
+import type { WordSearchTheme } from "../games/wordSearch/themes";
+
 export type PuzzleId =
   | "sudoku"
   | "nonogram"
   | "word-guess"
+  | "word-search"
   | "logic-grid"
   | "klondike-solitaire"
   | "peg-solitaire"
@@ -116,6 +120,7 @@ export type SolitaireVariation = {
 };
 
 export type PuzzleVariationSettings = {
+  wordSearchTheme?: WordSearchTheme;
   sudokuVariation?: SudokuVariation;
   solitaireVariation?: SolitaireVariation;
   imageId?: string;
@@ -384,7 +389,13 @@ export type SlidingPuzzleGeneratedPuzzle = Omit<TileGeneratedPuzzle, "puzzleId" 
 
 export type ImageTileGeneratedPuzzle = TileSwapGeneratedPuzzle | SlidingPuzzleGeneratedPuzzle;
 
+export type WordSearchGeneratedPuzzle = BaseGeneratedPuzzle & WordSearchBoard & {
+  kind: "word-search";
+  puzzleId: "word-search";
+};
+
 export type GeneratedPuzzle =
+  | WordSearchGeneratedPuzzle
   | GridGeneratedPuzzle
   | CardGeneratedPuzzle
   | JigsawGeneratedPuzzle
@@ -424,4 +435,4 @@ export type TileSwapPuzzleGenerator = (params: PuzzleGenerationParams) => TileSw
 export type SlidingPuzzleGenerator = (params: PuzzleGenerationParams) => SlidingPuzzleGeneratedPuzzle;
 export type TilePuzzleGenerator = (params: PuzzleGenerationParams) => JigsawGeneratedPuzzle | ImageTileGeneratedPuzzle;
 
-export type PuzzleGenerator = GridPuzzleGenerator | CardPuzzleGenerator | TilePuzzleGenerator;
+export type PuzzleGenerator = GridPuzzleGenerator | CardPuzzleGenerator | TilePuzzleGenerator | ((params: PuzzleGenerationParams) => WordSearchGeneratedPuzzle);

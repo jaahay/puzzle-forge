@@ -1,3 +1,4 @@
+import { createWordSearchProgress, isWordSearchComplete, restoreWordSearchProgress, type WordSearchProgress } from "./games/wordSearch/progress";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { getPuzzleAvailability } from "./catalog/puzzleAvailability";
 import { planAbandonmentAction, type IdentifiedWorkspaceProgress, type PendingAbandonmentAction, type WorkspaceProgressReport } from "./app/abandonmentPolicy";
@@ -113,6 +114,12 @@ export const App = () => {
   const [generationDefaults, setGenerationDefaults] = useState<GenerationRuntimeSettings>(makeInitialGenerationDefaults);
   const [puzzle, setPuzzle] = useState<GeneratedPuzzle | null>(null);
   const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
+  const [wordSearchProgress, setWordSearchProgress] = useState<WordSearchProgress | null>(null);
+  const wordSearchProgressRef = useRef<WordSearchProgress | null>(null);
+  const updateWordSearchProgress = (progress: WordSearchProgress | null) => {
+    wordSearchProgressRef.current = progress;
+    setWordSearchProgress(progress);
+  };
   const imageTileRuntimeRef = useRef<{ puzzleInstanceId: string; runtime: ImageTileActionRuntime } | null>(null);
   const jigsawRuntimeRef = useRef<{ puzzleInstanceId: string; runtime: JigsawActionRuntime } | null>(null);
   const [puzzleLinkError, setPuzzleLinkError] = useState<string | null>(null);
@@ -139,6 +146,7 @@ export const App = () => {
     jigsawCutStyle,
     jigsawBoundaryMode,
     jigsawSpecialPiecesMode,
+    wordSearchTheme,
   } = generationDefaults;
   const activeSolitaireVariation = puzzle?.kind === "cards" ? puzzle.solitaireVariation : solitaireVariation;
 
@@ -218,6 +226,8 @@ export const App = () => {
     setSelectedPuzzleId(puzzleId);
     setGenerationDefaults((current) => getGeneratedPuzzleRuntimeSettings(restoredPuzzle, current));
     setPuzzle(restoredPuzzle);
+    updateWordSearchProgress(session.progress.kind === "word-search" ? session.progress : null);
+    workspaceProgressRef.current = null;
     imageTileRuntimeRef.current = session.progress.kind === "tiles" && session.progress.imageTileRuntime
       ? {
           puzzleInstanceId: restoredPuzzle.id,
@@ -272,6 +282,7 @@ export const App = () => {
         gridCells: grid.gridCells,
         selectedGridCell: grid.selectedGridCell,
         gridHistory: grid.gridHistory,
+        wordSearchProgress: wordSearchProgressRef.current,
         imageTileRuntime:
           puzzle.kind === "tiles" && puzzle.puzzleId !== "jigsaw" &&
           imageTileRuntimeRef.current?.puzzleInstanceId === puzzle.id
@@ -303,6 +314,7 @@ export const App = () => {
 
   const resetRuntimePuzzleState = () => {
     setPuzzle(null);
+    updateWordSearchProgress(null);
     imageTileRuntimeRef.current = null;
     jigsawRuntimeRef.current = null;
     solitaire.resetSolitaire();
@@ -351,6 +363,7 @@ export const App = () => {
         width: identity.width,
         height: identity.height,
         difficulty: identity.difficulty,
+        wordSearchTheme: identity.wordSearchTheme,
         requireUniqueSolution: identity.requireUniqueSolution,
         sudokuVariation: identity.puzzleId === "sudoku" ? identity.sudokuVariation : undefined,
         solitaireVariation: identity.puzzleId === "klondike-solitaire" ? identity.solitaireVariation : undefined,
@@ -394,6 +407,7 @@ export const App = () => {
       width: identity.width,
       height: identity.height,
       difficulty: identity.difficulty,
+      wordSearchTheme: identity.wordSearchTheme,
       requireUniqueSolution: identity.requireUniqueSolution,
       sudokuVariation: identity.sudokuVariation,
       solitaireVariation: identity.solitaireVariation,
@@ -553,6 +567,7 @@ export const App = () => {
       width: identity.width,
       height: identity.height,
       difficulty: identity.difficulty,
+      wordSearchTheme: identity.wordSearchTheme,
       requireUniqueSolution: identity.requireUniqueSolution,
       sudokuVariation: identity.sudokuVariation,
       solitaireVariation: identity.solitaireVariation,
@@ -567,6 +582,7 @@ export const App = () => {
         width: identity.width,
         height: identity.height,
         difficulty: identity.difficulty,
+        wordSearchTheme: identity.wordSearchTheme,
         requireUniqueSolution: identity.requireUniqueSolution,
         sudokuVariation: identity.sudokuVariation,
         solitaireVariation: identity.solitaireVariation,
@@ -685,9 +701,10 @@ export const App = () => {
       jigsawCutStyle,
       jigsawBoundaryMode,
       jigsawSpecialPiecesMode,
+      wordSearchTheme,
       makeSeed: makeRandomSeed,
     }), { resourceHistory: "replace" });
-  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, puzzle, puzzleLinkError, selectedPuzzleId, selectedPuzzleIsGeneratable, selectedDefinition, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation, jigsawCutStyle, jigsawBoundaryMode, jigsawSpecialPiecesMode]);
+  }, [hasSelectedPuzzle, isHomeSelected, generation.isGenerating, puzzle, puzzleLinkError, selectedPuzzleId, selectedPuzzleIsGeneratable, selectedDefinition, seed, width, height, difficulty, requireUniqueSolution, sudokuVariation, solitaireVariation, jigsawCutStyle, jigsawBoundaryMode, jigsawSpecialPiecesMode, wordSearchTheme]);
 
   useEffect(() => {
     if (!hasSelectedPuzzle || generation.isGenerating || isHomeSelected || !puzzle) return;
@@ -701,6 +718,9 @@ export const App = () => {
       solitaire.restoreSolitaireSnapshot({ cardStacks: puzzle.stacks, selectedCard: null, solitaireStats: initialSolitaireStats, solitaireUndoStack: [], solitaireRedoStack: [] });
     } else if (puzzle.kind === "grid") {
       grid.resetCurrentGrid(puzzle, "", setStatusMessage);
+    } else if (puzzle.kind === "word-search") {
+      updateWordSearchProgress(createWordSearchProgress(puzzle));
+      saveCurrentSessionRef.current();
     } else if (puzzle.puzzleId === "jigsaw") {
       jigsawRuntimeRef.current = null;
     } else {
@@ -726,7 +746,11 @@ export const App = () => {
       cardStacks: solitaire.cardStacks,
       solitaireStats: solitaire.solitaireStats,
       jigsawAssembly: assembly,
-      workspaceProgress: workspaceProgressRef.current,
+      workspaceProgress: puzzle?.kind === "word-search" ? {
+        puzzleInstanceId: puzzle.id,
+        hasProgress: Boolean(wordSearchProgressRef.current?.found.length),
+        terminal: Boolean(wordSearchProgressRef.current && isWordSearchComplete(puzzle, wordSearchProgressRef.current)),
+      } : workspaceProgressRef.current,
     }, action, proceed, targetIdentity);
     if (pending) setPendingAbandonment(pending);
   };
@@ -756,6 +780,7 @@ export const App = () => {
       width: identity.width,
       height: identity.height,
       difficulty: identity.difficulty,
+      wordSearchTheme: identity.wordSearchTheme,
       requireUniqueSolution: identity.requireUniqueSolution,
       sudokuVariation: identity.sudokuVariation,
       solitaireVariation: identity.solitaireVariation,
@@ -770,6 +795,7 @@ export const App = () => {
       width: identity.width,
       height: identity.height,
       difficulty: identity.difficulty,
+      wordSearchTheme: identity.wordSearchTheme,
       requireUniqueSolution: identity.requireUniqueSolution,
       sudokuVariation: selectedPuzzleId === "sudoku" ? identity.sudokuVariation : undefined,
       solitaireVariation: selectedPuzzleId === "klondike-solitaire" ? identity.solitaireVariation : undefined,
@@ -827,6 +853,18 @@ export const App = () => {
   const handleCheck = () => { if (!puzzle || generation.hasActiveRequest()) return; puzzle.kind === "cards" ? solitaire.checkSolitaire() : grid.checkGrid(puzzle, setStatusMessage); };
   const workspaceIsGenerating = generation.isGenerating || (!puzzle && selectedPuzzleIsGeneratable && !isHomeSelected && !puzzleLinkError);
   const workspaceCore = {
+    wordSearchProgress: puzzle?.kind === "word-search" && wordSearchProgress?.baselineChecksum === puzzle.checksum ? wordSearchProgress : null,
+    onWordSearchProgressChange: (puzzleInstanceId: string, progress: WordSearchProgress) => {
+      if (generation.hasActiveRequest() || puzzle?.kind !== "word-search" || puzzle.id !== puzzleInstanceId) return;
+      const validated = restoreWordSearchProgress(puzzle, progress);
+      if (!validated) return;
+      const current = wordSearchProgressRef.current;
+      if (!current || current.baselineChecksum !== puzzle.checksum || isWordSearchComplete(puzzle, current)) return;
+      const found = new Set([...current.found, ...validated.found]);
+      if (found.size === current.found.length) return;
+      updateWordSearchProgress({ baselineChecksum: puzzle.checksum, found: puzzle.targets.filter(target => found.has(target.word)).map(target => target.word) });
+      saveCurrentSessionRef.current();
+    },
     imageTileRuntime: puzzle?.kind === "tiles" && puzzle.puzzleId !== "jigsaw" &&
       imageTileRuntimeRef.current?.puzzleInstanceId === puzzle.id
         ? imageTileRuntimeRef.current.runtime

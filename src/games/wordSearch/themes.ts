@@ -34,6 +34,10 @@ export const wordSearchThemeIds: readonly WordSearchTheme[] = [
   "mixed", "animals", "garden", "kitchen", "space", "ocean", "music",
 ];
 
+export const defaultWordSearchTheme: WordSearchTheme = "mixed";
+export const isWordSearchTheme = (value: unknown): value is WordSearchTheme =>
+  typeof value === "string" && wordSearchThemeIds.includes(value as WordSearchTheme);
+
 // Named planets are familiar, intentional theme entries even when excluded
 // by the spelling corpus's lower-case-only Word Guess policy.
 export const wordSearchNamedTerms = ["JUPITER", "NEPTUNE", "SATURN", "URANUS", "VENUS"] as const;

@@ -1,3 +1,4 @@
+import { defaultWordSearchTheme, type WordSearchTheme } from "../wordSearch/themes";
 import type { PuzzleDifficulty, PuzzleId, SudokuVariation } from "../../catalog/types";
 
 const dailySeedPrefix = "daily";
@@ -9,6 +10,7 @@ export type DailyPuzzleGenerationProfile = {
   difficulty: PuzzleDifficulty;
   requireUniqueSolution: boolean;
   sudokuVariation?: SudokuVariation;
+  wordSearchTheme?: WordSearchTheme;
 };
 
 const padDatePart = (value: number) => value.toString().padStart(2, "0");
@@ -84,6 +86,8 @@ export const getDailyPuzzleSeedForProfile = (
 
   if (puzzleId === "sudoku") {
     parts.push(profile.sudokuVariation ?? "classic");
+  } else if (puzzleId === "word-search") {
+    parts.push(profile.wordSearchTheme ?? defaultWordSearchTheme);
   } else if (puzzleId === "nonogram") {
     parts.push(`${profile.width}x${profile.height}`);
     parts.push(profile.requireUniqueSolution ? "unique" : "unchecked");

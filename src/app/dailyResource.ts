@@ -1,3 +1,4 @@
+import { defaultWordSearchTheme, isWordSearchTheme } from "../games/wordSearch/themes";
 import { getPuzzleDefinition, isGeneratable } from "../catalog/puzzleCatalog";
 import type {
   PuzzleDifficulty,
@@ -55,6 +56,7 @@ const sizePattern = /^(\d+)x(\d+)$/;
 const queryKeyOrder = [
   "size",
   "difficulty",
+  "theme",
   "variation",
   "unique",
   "image",
@@ -109,6 +111,8 @@ const allowedQueryKeys = (puzzleId: PuzzleId): ReadonlySet<string> => {
       return new Set(["difficulty", "variation"]);
     case "nonogram":
       return new Set(["size", "difficulty", "unique"]);
+    case "word-search":
+      return new Set(["difficulty", "theme"]);
     case "word-guess":
     case "logic-grid":
       return new Set(["size"]);
@@ -145,6 +149,10 @@ const appendCanonicalQuery = (identity: GenerationIdentity) => {
       }
       if (identity.difficulty !== defaultPuzzleDifficulty) values.set("difficulty", identity.difficulty.toLowerCase());
       if (!identity.requireUniqueSolution) values.set("unique", "false");
+      break;
+    case "word-search":
+      if (identity.difficulty !== defaultPuzzleDifficulty) values.set("difficulty", identity.difficulty.toLowerCase());
+      if (identity.wordSearchTheme && identity.wordSearchTheme !== defaultWordSearchTheme) values.set("theme", identity.wordSearchTheme);
       break;
     case "word-guess":
     case "logic-grid":
@@ -255,6 +263,12 @@ export const canonicalizeDailyResourceQuery = (
     const difficulty = difficultyByQueryValue.get(params.get("difficulty") ?? "");
     if (!difficulty) return { ok: false, reason: "invalid-query" };
     settings.difficulty = difficulty;
+  }
+
+  if (params.has("theme")) {
+    const theme = params.get("theme");
+    if (!isWordSearchTheme(theme)) return { ok: false, reason: "invalid-query" };
+    settings.wordSearchTheme = theme;
   }
 
   if (params.has("variation")) {
