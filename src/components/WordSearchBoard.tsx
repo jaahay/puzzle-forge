@@ -2,13 +2,13 @@ import type { JSX } from "preact";
 import { useEffect, useId, useRef, useState } from "preact/hooks";
 import { chooseWordSearchEndpoint, moveWordSearchFocus, wordSearchCellAt, wordSearchDragEnd, type WordSearchEndpoints } from "../games/wordSearch/interaction";
 import { wordSearchPath, type WordSearchBoard as Board } from "../games/wordSearch/model";
-import { isWordSearchComplete, selectWordSearchEndpoints, wordSearchFoundCells, type WordSearchProgress } from "../games/wordSearch/progress";
+import { isWordSearchComplete, wordSearchFoundCells, type WordSearchProgress } from "../games/wordSearch/progress";
 import "../site/word-search.css";
 
 type Props = {
   board: Board;
   progress: WordSearchProgress;
-  onProgressChange: (progress: WordSearchProgress) => void;
+  onSelectEndpoints: (start: number, end: number) => void;
   disabled?: boolean;
   resetVersion?: number;
 };
@@ -30,7 +30,7 @@ const PathMark = ({ size, start, end, preview = false }: WordSearchEndpoints & {
 
 // This surface owns only gesture/focus state. Its parent owns the current
 // resource's progress, completion, persistence and reset.
-const WordSearchBoardSurface = ({ board, progress, onProgressChange, disabled = false }: Props) => {
+const WordSearchBoardSurface = ({ board, progress, onSelectEndpoints, disabled = false }: Props) => {
   const { size } = board;
   const instructionsId = useId();
   const gridRef = useRef<HTMLDivElement>(null);
@@ -65,8 +65,7 @@ const WordSearchBoardSurface = ({ board, progress, onProgressChange, disabled = 
 
   const commit = ({ start, end }: WordSearchEndpoints) => {
     if (blocked) return;
-    const next = selectWordSearchEndpoints(board, progress, start, end);
-    if (next !== progress) onProgressChange(next);
+    onSelectEndpoints(start, end);
   };
 
   const activate = (cell: number) => {

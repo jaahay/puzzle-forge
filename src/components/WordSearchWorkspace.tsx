@@ -11,7 +11,7 @@ import { WordSearchNewPuzzleControl } from "./WordSearchNewPuzzleControl";
 import { usePuzzleCompletionPresentation } from "./usePuzzleCompletionPresentation";
 
 export const WordSearchWorkspace = ({
-  puzzle, wordSearchProgress, onWordSearchProgressChange, nextPuzzleDraft, seedLoadInput,
+  puzzle, wordSearchProgress, onWordSearchSelection, nextPuzzleDraft, seedLoadInput,
   selectedPuzzleIsGeneratable, statusMessage, isGenerating, onReset, onNextPuzzleDraftChange,
   onSeedLoadInputChange, onNewPuzzle, onToday, onLoadSeed,
 }: ImageWorkspaceProps) => {
@@ -48,9 +48,8 @@ export const WordSearchWorkspace = ({
     status={statusMessage ? <p class="status-line" aria-live="polite">{statusMessage}</p> : null}
     board={board && progress ? <section class={`puzzle-panel word-search-panel${isArriving ? " puzzle-arrival" : ""}${completion.phase === "celebrating" ? " word-search-celebrating" : ""}`} aria-label="Generated Word Search puzzle" inert={isGenerating}>
       <WordSearchBoard key={board.id} board={board} progress={progress} disabled={disabled} resetVersion={resetVersion}
-        onProgressChange={next => {
-          completion.recordCausativeInput();
-          onWordSearchProgressChange?.(board.id, next);
+        onSelectEndpoints={(start, end) => {
+          if (onWordSearchSelection?.(board.id, start, end)) completion.recordCausativeInput();
         }} />
     </section> : isGenerating ? <section class="puzzle-panel puzzle-loading-panel" aria-label="Word Search is generating" aria-live="polite">
       <div class="puzzle-loading-copy"><strong>Generating Word Search</strong></div>

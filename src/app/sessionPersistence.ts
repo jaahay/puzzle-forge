@@ -369,8 +369,8 @@ const isPersistedGridProgress = (value: Record<string, unknown>): value is Persi
 
 const isPersistedPuzzleProgress = (value: unknown): value is PersistedPuzzleProgress => {
   if (!isRecord(value)) return false;
-  if (value.kind === "word-search") return Array.isArray(value.found) && value.found.length <= 12 &&
-    value.found.every(word => typeof word === "string" && /^[A-Z]{4,10}$/.test(word)) && new Set(value.found).size === value.found.length;
+  if (value.kind === "word-search") return Array.isArray(value.found) &&
+    value.found.every(word => typeof word === "string") && new Set(value.found).size === value.found.length;
   if (value.kind === "cards") return isPersistedCardProgress(value);
   if (value.kind === "tiles") return isPersistedTileProgress(value);
   if (value.kind === "jigsaw") return hasPersistedJigsawCurrent(value.runtime);

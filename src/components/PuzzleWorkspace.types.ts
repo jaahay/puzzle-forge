@@ -13,7 +13,7 @@ export type { GenerationSettings, NextPuzzleDraft } from "../app/generationSetti
 
 export type CoreWorkspaceProps = {
   wordSearchProgress?: WordSearchProgress | null;
-  onWordSearchProgressChange?: (puzzleInstanceId: string, progress: WordSearchProgress) => void;
+  onWordSearchSelection?: (puzzleInstanceId: string, start: number, end: number) => boolean;
   imageTileRuntime?: ImageTileActionRuntime | null;
   onImageTileRuntimeChange?: (puzzleInstanceId: string, runtime: ImageTileActionRuntime) => void;
   selectedDefinition: PuzzleDefinition;

@@ -1,4 +1,4 @@
-import { createWordSearchProgress, isWordSearchComplete, restoreWordSearchProgress, type WordSearchProgress } from "./games/wordSearch/progress";
+import { createWordSearchProgress, isWordSearchComplete, selectWordSearchEndpoints, type WordSearchProgress } from "./games/wordSearch/progress";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { getPuzzleAvailability } from "./catalog/puzzleAvailability";
 import { planAbandonmentAction, type IdentifiedWorkspaceProgress, type PendingAbandonmentAction, type WorkspaceProgressReport } from "./app/abandonmentPolicy";
@@ -227,7 +227,6 @@ export const App = () => {
     setGenerationDefaults((current) => getGeneratedPuzzleRuntimeSettings(restoredPuzzle, current));
     setPuzzle(restoredPuzzle);
     updateWordSearchProgress(session.progress.kind === "word-search" ? session.progress : null);
-    workspaceProgressRef.current = null;
     imageTileRuntimeRef.current = session.progress.kind === "tiles" && session.progress.imageTileRuntime
       ? {
           puzzleInstanceId: restoredPuzzle.id,
@@ -854,16 +853,15 @@ export const App = () => {
   const workspaceIsGenerating = generation.isGenerating || (!puzzle && selectedPuzzleIsGeneratable && !isHomeSelected && !puzzleLinkError);
   const workspaceCore = {
     wordSearchProgress: puzzle?.kind === "word-search" && wordSearchProgress?.baselineChecksum === puzzle.checksum ? wordSearchProgress : null,
-    onWordSearchProgressChange: (puzzleInstanceId: string, progress: WordSearchProgress) => {
-      if (generation.hasActiveRequest() || puzzle?.kind !== "word-search" || puzzle.id !== puzzleInstanceId) return;
-      const validated = restoreWordSearchProgress(puzzle, progress);
-      if (!validated) return;
+    onWordSearchSelection: (puzzleInstanceId: string, start: number, end: number) => {
+      if (generation.hasActiveRequest() || puzzle?.kind !== "word-search" || puzzle.id !== puzzleInstanceId) return false;
       const current = wordSearchProgressRef.current;
-      if (!current || current.baselineChecksum !== puzzle.checksum || isWordSearchComplete(puzzle, current)) return;
-      const found = new Set([...current.found, ...validated.found]);
-      if (found.size === current.found.length) return;
-      updateWordSearchProgress({ baselineChecksum: puzzle.checksum, found: puzzle.targets.filter(target => found.has(target.word)).map(target => target.word) });
+      if (!current || current.baselineChecksum !== puzzle.checksum || isWordSearchComplete(puzzle, current)) return false;
+      const next = selectWordSearchEndpoints(puzzle, current, start, end);
+      if (next === current) return false;
+      updateWordSearchProgress(next);
       saveCurrentSessionRef.current();
+      return true;
     },
     imageTileRuntime: puzzle?.kind === "tiles" && puzzle.puzzleId !== "jigsaw" &&
       imageTileRuntimeRef.current?.puzzleInstanceId === puzzle.id
