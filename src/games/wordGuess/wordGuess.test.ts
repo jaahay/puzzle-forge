@@ -184,13 +184,12 @@ describe("Word Guess share text", () => {
   it("formats share text without exposing non-summary state", () => {
     expect(
       formatWordGuessShareText({
-        title: "Word Guess",
         answer: "LEVEL",
         guesses: ["LELEE"],
         maxGuesses: 6,
         status: "playing",
       }),
-    ).toBe("Word Guess 5×6\nIn progress · 1/6\n\n🟩🟩🟨🟩⬛");
+    ).toBe("In progress · 1/6\n\n🟩🟩🟨🟩⬛");
   });
 });
 

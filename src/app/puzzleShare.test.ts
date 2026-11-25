@@ -44,7 +44,7 @@ const generate = (identity: GenerationIdentity) =>
   withPuzzleProvenance(generatePuzzle(identity, identity.puzzleId === "word-guess" ? ["CRANE", "LEVEL"] : undefined), identity.provenance);
 const emptyProgress = (): PuzzleShareProgress => ({
   gridCells: null, cardStacks: null, solitaireStats: initialSolitaireStats,
-  imageTileRuntime: null, jigsawRuntime: null,
+  imageTileRuntime: null, jigsawRuntime: null, wordSearchProgress: null,
 });
 
 describe("canonical puzzle sharing", () => {
@@ -73,7 +73,7 @@ describe("canonical puzzle sharing", () => {
     for (const runtimeOrigin of ["https://preview.example", "https://puzzles.example.org", "http://localhost:5173"]) {
       const resource = { ...getPuzzleShareResource(route, puzzle, runtimeOrigin)!, description: "5 letters · 6 guesses" };
       expect(resource.url).toBe(`${runtimeOrigin}/word-guess/${generationId}`);
-      const report = "Word Guess 5×6\nSolved · 3/6";
+      const report = "Solved · 3/6";
       const preview = getPuzzleSharePreview(resource, "puzzle", report);
       expect(preview).toEqual({
         title: resource.title, description: resource.description, report: null,
@@ -95,8 +95,20 @@ describe("canonical puzzle sharing", () => {
     const generationId = encodeGenerationId(identity);
     const resource = getPuzzleShareResource({ kind: "resource", puzzleId: "word-guess", generationId }, puzzle, origin);
     expect(resource?.url).toBe(`${origin}/word-guess/${generationId}`);
+    expect(resource?.description).toBe("Daily 2026-11-23");
     const decoded = decodeGenerationId("word-guess", generationId);
     expect(decoded).toMatchObject({ ok: true, identity: { height: 8, provenance: identity.provenance } });
+  });
+
+  it("uses existing image artwork for the preview without altering the link or share payload", () => {
+    const identity = identityFor("jigsaw");
+    const puzzle = generate(identity);
+    if (puzzle.kind !== "tiles") throw new Error("Expected image puzzle");
+    const resource = getPuzzleShareResource({ kind: "resource", puzzleId: "jigsaw", generationId: encodeGenerationId(identity) }, puzzle, origin)!;
+    expect(getPuzzleSharePreview(resource, "puzzle", null).artwork).toEqual({
+      src: puzzle.asset.files.thumbnail, alt: puzzle.asset.alt,
+    });
+    expect(makePuzzleSharePayload(resource, "puzzle", null).copyText).toBe(resource.url);
   });
 
   it("does not share an uncommitted or mismatched resource", () => {
@@ -111,8 +123,8 @@ describe("canonical puzzle sharing", () => {
   });
 
   it("includes only the URL for a puzzle invitation and the same URL alongside a progress report", () => {
-    const resource = { puzzleInstanceId: "local", title: "Word Guess", url: `${origin}/word-guess/example` };
-    const report = formatWordGuessShareText({ title: "Word Guess", answer: "CRANE",
+    const resource = { puzzleInstanceId: "local", title: "Word Guess", description: "5 letters · 6 guesses · Daily 2026-11-23", url: `${origin}/word-guess/example` };
+    const report = formatWordGuessShareText({ answer: "CRANE",
       guesses: ["SLATE"], maxGuesses: 6, status: "playing" });
     const invitation = makePuzzleSharePayload(resource, "puzzle", report);
     expect(invitation.copyText).toBe(resource.url);
@@ -120,6 +132,8 @@ describe("canonical puzzle sharing", () => {
     const progress = makePuzzleSharePayload(resource, "progress", report);
     expect(progress.native.url).toBe(resource.url);
     expect(progress.copyText).toContain(resource.url);
+    expect(progress.copyText).toContain(resource.description);
+    expect(progress.native.text).toContain(resource.description);
     expect(progress.copyText).toContain("🟩");
     expect(progress.copyText).not.toMatch(/CRANE|SLATE|local/);
     expect(makePuzzleSharePayload(resource, "progress", null)).toEqual(invitation);
@@ -133,10 +147,9 @@ describe("spoiler-safe progress reports", () => {
     const cells = prepareGridCells(puzzle);
     expect(formatPuzzleShareProgress(puzzle, { ...emptyProgress(), gridCells: cells })).toBeNull();
     const index = puzzle.cells.findIndex((cell) => !cell.locked);
-    const editable = puzzle.cells.filter((cell) => !cell.locked).length;
     cells[index] = { ...cells[index]!, value: "PRIVATE" };
     expect(formatPuzzleShareProgress(puzzle, { ...emptyProgress(), gridCells: cells }))
-      .toBe(`${puzzle.title} · 9×9\nIn progress · 1/${editable} editable cells filled`);
+      .toBe("In progress · 1 cell entered");
   });
 
   it("counts Nonogram marks, not purported correct cells", () => {
@@ -145,7 +158,17 @@ describe("spoiler-safe progress reports", () => {
     const cells = prepareGridCells(puzzle);
     cells[0] = { ...cells[0]!, value: "×" };
     expect(formatPuzzleShareProgress(puzzle, { ...emptyProgress(), gridCells: cells }))
-      .toContain("1/64 cells marked");
+      .toContain("1 cell marked");
+  });
+
+  it("reports found-word count without revealing words or accepting stale progress", () => {
+    const puzzle = generate(identityFor("word-search", { wordSearchTheme: "animals" }));
+    if (puzzle.kind !== "word-search") throw new Error("Expected Word Search");
+    const found = [puzzle.targets[0]!.word];
+    const progress = { ...emptyProgress(), wordSearchProgress: { baselineChecksum: puzzle.checksum, found } };
+    expect(formatPuzzleShareProgress(puzzle, progress)).toBe(`In progress · 1/${puzzle.targets.length} words found`);
+    expect(formatPuzzleShareProgress(puzzle, { ...progress, wordSearchProgress: { baselineChecksum: "wrong", found } })).toBeNull();
+    expect(formatPuzzleShareProgress(puzzle, { ...progress, wordSearchProgress: { baselineChecksum: puzzle.checksum, found: puzzle.targets.map(target => target.word) } })).toBe(`Solved · ${puzzle.targets.length}/${puzzle.targets.length} words found`);
   });
 
   it("keeps Word Guess's live report separate from generic grid entries", () => {
@@ -161,7 +184,7 @@ describe("spoiler-safe progress reports", () => {
     expect(formatPuzzleShareProgress(puzzle, progress)).toBeNull();
     expect(formatPuzzleShareProgress(puzzle, { ...progress, solitaireStats: {
       ...initialSolitaireStats, moveCount: 3,
-    } })).toBe(`${puzzle.title}\nIn progress · 0/52 cards in foundations · 3 moves`);
+    } })).toBe("In progress · 0/52 cards in foundations · 3 moves");
   });
 
   it("reports Jigsaw assembly membership without revealing positions", () => {
@@ -176,8 +199,19 @@ describe("spoiler-safe progress reports", () => {
         history: { undoStack: [], redoStack: [] },
       },
     });
-    expect(report).toContain("2/16 pieces joined or anchored");
+    expect(report).toContain("Largest group: 2 pieces");
     expect(report).not.toContain("Solved");
+    const ids = puzzle.tiles.map(tile => tile.id);
+    const groups = [ids.slice(0, 8), ids.slice(8)];
+    const assemblyReport = (joinedComponents: string[][]) => formatPuzzleShareProgress(puzzle, {
+      ...emptyProgress(),
+      jigsawRuntime: {
+        snapshot: { placements: [], assembly: { joinedComponents, anchoredPieceIds: [] } },
+        history: { undoStack: [], redoStack: [] },
+      },
+    });
+    expect(assemblyReport(groups)).toBe("In progress · Largest group: 8 pieces");
+    expect(assemblyReport([ids])).toBe("Solved");
   });
 
   it.each(["tile-swap", "sliding-puzzle"] as const)("reports %s move count without tile order", (puzzleId) => {

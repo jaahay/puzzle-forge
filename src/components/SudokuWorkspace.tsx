@@ -5,6 +5,7 @@ import { CurrentPuzzleHeader, getPuzzleArrivalIdentity, usePuzzleArrival } from 
 import { GridPuzzlePreview } from "./GridPuzzlePreview";
 import { getNumericGridDigits, NumericGridDigitPad, useNumericGridInput } from "./NumericGridInput";
 import { PuzzleHistoryActions } from "./PuzzleHistoryActions";
+import { PuzzleShareButton } from "./PuzzleShare";
 import type { SudokuWorkspaceProps } from "./PuzzleWorkspace.types";
 import { PuzzleWorkspaceLayout } from "./PuzzleWorkspaceLayout";
 import { SudokuNewPuzzleControl } from "./SudokuNewPuzzleControl";
@@ -209,6 +210,7 @@ export const SudokuWorkspace = ({
         >
           Reset
         </button>
+        <PuzzleShareButton intent="progress" disabled={isGenerating || !isPresentationCompleted} tabIndex={isPresentationCompleted ? 0 : -1} />
         <button
           class="terminal-next-action"
           type="button"

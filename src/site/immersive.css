@@ -100,7 +100,7 @@
 }
 
 .jigsaw-workspace.is-immersive .current-puzzle-context,
-.jigsaw-workspace.is-immersive .current-puzzle-actions > .puzzle-history-actions {
+.jigsaw-workspace.is-immersive .current-puzzle-crown-actions > .puzzle-history-actions {
   display: none;
 }
 

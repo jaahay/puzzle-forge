@@ -962,14 +962,21 @@ export const App = () => {
     return {
       ...resource,
       title: identity.puzzleLabel,
-      description: [identity.sourceLabel, ...identity.details, identity.difficultyLabel]
-        .filter(Boolean).join(" · "),
+      description: [
+        resource.description,
+        ...identity.details,
+        puzzle.kind === "grid" && puzzle.puzzleId !== "word-guess" &&
+          !identity.details.includes(`${puzzle.width}×${puzzle.height}`) ? `${puzzle.width}×${puzzle.height}` : null,
+        puzzle.kind === "word-search" ? `${puzzle.width}×${puzzle.height}` : null,
+        identity.difficultyLabel,
+      ].filter(Boolean).join(" · "),
     };
   }, [route, puzzle, workspaceIsGenerating]);
   const getShareProgress = () => puzzle ? formatPuzzleShareProgress(puzzle, {
     gridCells: grid.gridCells,
     cardStacks: solitaire.cardStacks,
     solitaireStats: solitaire.solitaireStats,
+    wordSearchProgress: wordSearchProgressRef.current,
     jigsawRuntime: jigsawRuntimeRef.current?.puzzleInstanceId === puzzle.id
       ? jigsawRuntimeRef.current.runtime : null,
     imageTileRuntime: imageTileRuntimeRef.current?.puzzleInstanceId === puzzle.id

@@ -30,13 +30,13 @@ export const usePuzzleShareProgress = (puzzleInstanceId: string, report: string 
 };
 
 export const PuzzleShareButton = ({
-  intent = "puzzle", className,
-}: { intent?: PuzzleShareIntent; className?: string }) => {
+  intent = "puzzle", className, disabled = false, tabIndex,
+}: { intent?: PuzzleShareIntent; className?: string; disabled?: boolean; tabIndex?: number }) => {
   const share = useContext(PuzzleShareContext);
   if (!share) return null;
   return (
-    <button type="button" class={className} disabled={!share.available}
-      onClick={(event) => share.openShare(event.currentTarget, intent)}>Share</button>
+    <button type="button" class={className} disabled={disabled || !share.available} tabIndex={tabIndex}
+      onClick={(event) => share.openShare(event.currentTarget, intent)}>{intent === "progress" ? "Share result" : "Share"}</button>
   );
 };
 
@@ -92,6 +92,7 @@ const PuzzleShareDialog = ({ request, onClose }: { request: ShareRequest; onClos
   const disclosure = useRef<HTMLDetailsElement>(null);
   const shareText = useRef<HTMLTextAreaElement>(null);
   const titleId = useId();
+  const resultLabel = request.initialIntent === "progress" ? "Include my result" : "Include my progress";
   const [intent, setIntent] = useState<PuzzleShareIntent>(request.initialIntent);
   const [feedback, setFeedback] = useState("");
   const [busy, setBusy] = useState(false);
@@ -150,28 +151,21 @@ const PuzzleShareDialog = ({ request, onClose }: { request: ShareRequest; onClos
         <h2 id={titleId}>Share puzzle</h2>
         <button type="button" onClick={onClose}>Close</button>
       </header>
-      {request.progress ? (
-        <div class="puzzle-share-intents" role="group" aria-label="What to share">
-          <button type="button" aria-pressed={intent === "puzzle"} disabled={busy}
-            onClick={() => changeIntent("puzzle")}>Puzzle link</button>
-          <button type="button" aria-pressed={intent === "progress"} disabled={busy}
-            onClick={() => changeIntent("progress")}>Progress + link</button>
-        </div>
-      ) : null}
-      <p class="puzzle-share-explanation">
-        {intent === "progress"
-          ? "Share a progress report. Others play the same puzzle independently."
-          : "Share the same puzzle without your progress."}
-      </p>
       <div class="puzzle-share-identity">
-        {preview.report ? <div class="puzzle-share-report">{preview.report}</div> : (
-          <>
-            <strong>{preview.title}</strong>
-            {preview.description ? <span>{preview.description}</span> : null}
-          </>
-        )}
+        {preview.artwork ? <img class="puzzle-share-artwork" src={preview.artwork.src} alt={preview.artwork.alt} /> : null}
+        <strong>{preview.title}</strong>
+        {preview.description ? <span>{preview.description}</span> : null}
+        {preview.report ? <div class="puzzle-share-report">{preview.report}</div> : null}
         <span class="puzzle-share-destination">{preview.destination}</span>
       </div>
+      {request.progress ? (
+        <label class="puzzle-share-include">
+          <input type="checkbox" checked={intent === "progress"} disabled={busy}
+            onChange={(event) => changeIntent(event.currentTarget.checked ? "progress" : "puzzle")} />
+          <span>{resultLabel}</span>
+        </label>
+      ) : null}
+      {intent === "progress" ? <p class="puzzle-share-explanation">Recipients play independently.</p> : null}
       <details ref={disclosure} class="puzzle-share-disclosure">
         <summary>View share text</summary>
         <textarea ref={shareText} class="puzzle-share-preview" aria-label="Share text"
@@ -180,7 +174,7 @@ const PuzzleShareDialog = ({ request, onClose }: { request: ShareRequest; onClos
       <div class="puzzle-share-feedback" role="status">{feedback}</div>
       <div class="puzzle-share-actions">
         <button type="button" onClick={() => void copy()} disabled={busy}>
-          {intent === "progress" ? "Copy progress + link" : "Copy link"}
+          {intent === "progress" ? "Copy report + link" : "Copy link"}
         </button>
         {canUseNativePuzzleShare(navigator, payload.native) ? (
           <button type="button" class="puzzle-share-native" onClick={() => void share()} disabled={busy}>Share…</button>

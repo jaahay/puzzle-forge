@@ -175,15 +175,6 @@
   gap: 0.4rem;
 }
 
-.word-search-controls .completion-dock .puzzle-actions {
-  flex-wrap: nowrap;
-}
-
-.word-search-controls .completion-dock .puzzle-actions button {
-  min-width: 0;
-  white-space: nowrap;
-}
-
 @media (prefers-reduced-motion: no-preference) {
   .word-search-celebrating .word-search-path-found {
     animation: word-search-complete 700ms ease-in-out;

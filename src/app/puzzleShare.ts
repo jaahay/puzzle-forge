@@ -4,6 +4,7 @@ import { isImageTileSolved } from "../games/imageTiles/state";
 import { isJigsawAssemblySolved } from "../games/jigsaw/assembly";
 import type { JigsawActionRuntime } from "../games/jigsaw/history";
 import { isGridPuzzleSolved } from "../interactions/gridChecking";
+import { isWordSearchComplete, type WordSearchProgress } from "../games/wordSearch/progress";
 import { generatedPuzzleMatchesIdentity } from "./generationIdentity";
 import { resolvePuzzleResourceSegment } from "./puzzleResourceIdentity";
 import { appRoutePath, type AppRoute } from "./routes";
@@ -14,6 +15,7 @@ export type PuzzleShareResource = {
   puzzleInstanceId: string;
   title: string;
   description?: string;
+  artwork?: { src: string; alt: string };
   url: string;
 };
 
@@ -33,6 +35,9 @@ export const getPuzzleShareResource = (
   return {
     puzzleInstanceId: puzzle.id,
     title: puzzle.title,
+    ...(resolved.identity.provenance?.source === "daily"
+      ? { description: `Daily ${resolved.identity.provenance.dateStamp}` } : {}),
+    ...(puzzle.kind === "tiles" ? { artwork: { src: puzzle.asset.files.thumbnail, alt: puzzle.asset.alt } } : {}),
     url: new URL(appRoutePath({ kind: "resource", ...resolved.canonicalResource }), origin).href,
   };
 };
@@ -43,6 +48,7 @@ export type PuzzleShareProgress = {
   solitaireStats: SolitaireStats;
   imageTileRuntime: ImageTileActionRuntime | null;
   jigsawRuntime: JigsawActionRuntime | null;
+  wordSearchProgress: WordSearchProgress | null;
 };
 
 // Summaries describe completed player intentions, never the values of cells,
@@ -51,17 +57,24 @@ export const formatPuzzleShareProgress = (
   puzzle: GeneratedPuzzle,
   progress: PuzzleShareProgress,
 ): string | null => {
+  if (puzzle.kind === "word-search") {
+    const state = progress.wordSearchProgress;
+    if (!state || state.baselineChecksum !== puzzle.checksum || state.found.length === 0) return null;
+    return `${isWordSearchComplete(puzzle, state) ? "Solved" : "In progress"} · ${state.found.length}/${puzzle.targets.length} words found`;
+  }
+
   if (puzzle.kind === "grid") {
     // Word Guess owns submitted guesses and terminal outcome in its workspace.
     if (puzzle.puzzleId === "word-guess") return null;
     const cells = progress.gridCells;
     if (!cells || cells.length !== puzzle.cells.length) return null;
-    const editable = puzzle.cells.filter((cell) => !cell.locked).length;
     const entered = cells.filter((cell, index) => !puzzle.cells[index]?.locked && cell.value !== "").length;
     const solved = isGridPuzzleSolved(puzzle, cells);
     if (!solved && entered === 0) return null;
-    const label = puzzle.puzzleId === "nonogram" ? "cells marked" : "editable cells filled";
-    return `${puzzle.title} · ${puzzle.width}×${puzzle.height}\n${solved ? "Solved" : `In progress · ${entered}/${editable} ${label}`}`;
+    // Entry counts describe activity, not correctness or distance from completion.
+    if (solved) return "Solved";
+    const label = puzzle.puzzleId === "nonogram" ? "marked" : "entered";
+    return `In progress · ${entered} ${entered === 1 ? "cell" : "cells"} ${label}`;
   }
 
   if (puzzle.kind === "cards") {
@@ -71,7 +84,7 @@ export const formatPuzzleShareProgress = (
     const solved = isSolitaireSolved(progress.cardStacks);
     if (!solved && foundationCount === 0 && moves === 0 && progress.solitaireStats.drawCount === 0 &&
         progress.solitaireStats.recycleCount === 0) return null;
-    return `${puzzle.title}\n${solved ? "Solved" : `In progress · ${foundationCount}/52 cards in foundations`} · ${moves} ${moves === 1 ? "move" : "moves"}`;
+    return `${solved ? "Solved" : "In progress"} · ${foundationCount}/52 cards in foundations · ${moves} ${moves === 1 ? "move" : "moves"}`;
   }
 
   // New puzzle families can publish their own progress via the shared workspace hook.
@@ -81,20 +94,18 @@ export const formatPuzzleShareProgress = (
     const runtime = progress.jigsawRuntime;
     if (!runtime) return null;
     const { assembly } = runtime.snapshot;
-    const joinedOrAnchored = new Set([
-      ...assembly.joinedComponents.flat(),
-      ...(assembly.anchoredPieceIds ?? []),
-    ]).size;
+    const largestGroup = Math.max(0, ...assembly.joinedComponents.map(component => component.length));
     const solved = isJigsawAssemblySolved(assembly, puzzle.tiles.length);
-    if (!solved && joinedOrAnchored === 0 && runtime.history.undoStack.length === 0) return null;
-    return `${puzzle.title} · ${puzzle.asset.title} · ${puzzle.tiles.length} pieces\n${solved ? "Solved" : `In progress · ${joinedOrAnchored}/${puzzle.tiles.length} pieces joined or anchored`}`;
+    if (solved) return "Solved";
+    if (largestGroup === 0 && !assembly.anchoredPieceIds?.length && runtime.history.undoStack.length === 0) return null;
+    return largestGroup > 1 ? `In progress · Largest group: ${largestGroup} pieces` : "In progress";
   }
 
   const state = progress.imageTileRuntime?.state;
   if (!state) return null;
   const solved = isImageTileSolved(state.tiles, state.emptyIndex, puzzle.width * puzzle.height);
   if (!solved && state.moveCount === 0) return null;
-  return `${puzzle.title} · ${puzzle.asset.title} · ${puzzle.width}×${puzzle.height}\n${solved ? "Solved" : "In progress"} · ${state.moveCount} ${state.moveCount === 1 ? "move" : "moves"}`;
+  return `${solved ? "Solved" : "In progress"} · ${state.moveCount} ${state.moveCount === 1 ? "move" : "moves"}`;
 };
 
 // The primary preview communicates what is being shared, not its serialization.
@@ -106,6 +117,7 @@ export const getPuzzleSharePreview = (
   title: resource.title,
   description: resource.description ?? "",
   report: intent === "progress" ? progress : null,
+  ...(resource.artwork ? { artwork: resource.artwork } : {}),
   destination: new URL(resource.url).host,
 });
 
@@ -117,7 +129,8 @@ export const makePuzzleSharePayload = (
   progress: string | null,
 ): PuzzleSharePayload => {
   const title = `Puzzle Forge · ${resource.title}`;
-  const report = intent === "progress" && progress ? `Puzzle Forge · ${progress}` : null;
+  const report = intent === "progress" && progress
+    ? [title, ...(resource.description ? [resource.description] : []), "", progress].join("\n") : null;
   return {
     native: { title, url: resource.url, ...(report ? { text: report } : {}) },
     copyText: report ? `${report}\n\nPlay this puzzle: ${resource.url}` : resource.url,

@@ -27,6 +27,7 @@ type CurrentPuzzleHeaderProps = {
   historyControl?: ComponentChildren;
   newPuzzleControl?: ComponentChildren;
   isArriving?: boolean;
+  shareResult?: boolean;
 };
 
 export const getCurrentPuzzleIdentity = (
@@ -165,6 +166,7 @@ export const CurrentPuzzleHeader = ({
   historyControl,
   newPuzzleControl,
   isArriving = false,
+  shareResult = false,
 }: CurrentPuzzleHeaderProps) => {
   const currentDateStamp = useLiveLocalDateStamp();
   const identity = getCurrentPuzzleIdentity(puzzle, currentDateStamp);
@@ -193,10 +195,10 @@ export const CurrentPuzzleHeader = ({
           ) : null}
         </div>
       </div>
-      <div class="current-puzzle-actions">
+      <div class="current-puzzle-crown-actions">
         {historyControl}
         <div class="current-puzzle-new-action">
-          <PuzzleShareButton className="puzzle-share-crown-action" />
+          <PuzzleShareButton className="puzzle-share-crown-action" intent={shareResult ? "progress" : "puzzle"} />
           {newPuzzleControl}
         </div>
       </div>

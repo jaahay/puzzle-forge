@@ -32,6 +32,8 @@ describe("terminal interaction contracts", () => {
       expect(terminal.slice(0, terminal.indexOf("/>"))).toContain("onNextPuzzle=");
     }
     expect(wordGuessSource).toContain("onNextPuzzle={onNewPuzzle}");
+    expect(terminalDockSource).toContain('<PuzzleShareButton intent="progress" disabled={disabled} />');
+    expect(sudokuWorkspaceSource).toContain('<PuzzleShareButton intent="progress" disabled={isGenerating || !isPresentationCompleted}');
   });
 
   it("removes hidden completed Sudoku controls from keyboard navigation", () => {
@@ -100,6 +102,7 @@ describe("terminal interaction contracts", () => {
     expect(jigsawSource).not.toContain("PuzzleTerminalDock");
     expect(jigsawSource).toContain('const crown = jigsawPuzzle ? (');
     expect(jigsawSource).toContain("newPuzzleControl={newPuzzleControl}");
+    expect(jigsawSource).toContain('shareResult={isSolved && completion.phase === "completed"}');
     expect(jigsawSource).toContain("onRestartPuzzle={isSolved ? resetJigsaw : undefined}");
     expect(jigsawSource).toContain("completionPhase={completion.phase}");
     expect(jigsawSource).toContain("onCausativeInput={completion.recordCausativeInput}");

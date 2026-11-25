@@ -1,4 +1,4 @@
-import type { ComponentChildren } from "preact";
+import { PuzzleShareButton } from "./PuzzleShare";
 import type { PuzzleTerminalState } from "../app/puzzleTerminalState";
 
 type TerminalOutcome = Exclude<PuzzleTerminalState, { kind: "playing" }>;
@@ -12,7 +12,7 @@ type PuzzleTerminalDockProps = {
   onReset?: () => void;
   onNextPuzzle: () => void;
   resetLabel?: string;
-  children?: ComponentChildren;
+  shareResult?: boolean;
 };
 
 export const getPuzzleTerminalDockPresentation = (state: TerminalOutcome) =>
@@ -29,7 +29,7 @@ export const PuzzleTerminalDock = ({
   onReset,
   onNextPuzzle,
   resetLabel = "Reset",
-  children,
+  shareResult = true,
 }: PuzzleTerminalDockProps) => {
   const presentation = getPuzzleTerminalDockPresentation(state);
 
@@ -45,7 +45,7 @@ export const PuzzleTerminalDock = ({
       </div>
       <div class="puzzle-actions">
         {onReset ? <button type="button" onClick={onReset} disabled={disabled}>{resetLabel}</button> : null}
-        {children}
+        {shareResult ? <PuzzleShareButton intent="progress" disabled={disabled} /> : null}
         <button class="terminal-next-action" type="button" onClick={onNextPuzzle} disabled={disabled}>
           Next puzzle
         </button>

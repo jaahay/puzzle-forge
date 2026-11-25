@@ -11,7 +11,7 @@ import { normalizeWordGuessNativeInput } from "../games/wordGuess/input";
 import { isPuzzleModalOpen, shouldHandlePuzzleShortcut } from "../interactions/keyboardOwnership";
 import { isValidWordGuess, isWordGuessAnswer, loadWordGuessBank, normalizeWordGuessWord, type WordGuessWordBank } from "../games/wordGuess/words";
 import { PuzzleTerminalDock } from "./PuzzleTerminalDock";
-import { PuzzleShareButton, usePuzzleShareProgress } from "./PuzzleShare";
+import { usePuzzleShareProgress } from "./PuzzleShare";
 
 const difficultyLabels = {
   gentle: "Gentle",
@@ -385,13 +385,12 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
 
   const shareReport = useMemo(() => actionPresentation.hasShareableProgress && !incompatibleAnswer
     ? formatWordGuessShareText({
-        title: puzzle.title,
         answer,
         guesses: submittedGuesses,
         maxGuesses: puzzle.height,
         status,
       })
-    : null, [actionPresentation.hasShareableProgress, incompatibleAnswer, puzzle.title, puzzle.height, answer, submittedGuessKey, status]);
+    : null, [actionPresentation.hasShareableProgress, incompatibleAnswer, puzzle.height, answer, submittedGuessKey, status]);
   usePuzzleShareProgress(puzzle.id, shareReport);
 
   return (
@@ -501,9 +500,8 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
           onReset={resetGame}
           resetLabel={actionPresentation.resetLabel}
           onNextPuzzle={onNewPuzzle}
-        >
-          {actionPresentation.hasShareableProgress ? <PuzzleShareButton intent="progress" /> : null}
-        </PuzzleTerminalDock>
+          shareResult={Boolean(shareReport)}
+        />
       ) : (
         <div class="word-guess-actions">
           <button type="button" onClick={submitGuess} disabled={disabled || !dictionaryReady}>
