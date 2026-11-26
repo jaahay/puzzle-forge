@@ -1,3 +1,4 @@
+import { isCrosswordComplete, restoreCrosswordProgress, type CrosswordProgress } from "../games/crossword/progress";
 import type { CardStack, GeneratedPuzzle, PuzzleCell } from "../catalog/types";
 import type { ImageTileActionRuntime } from "../games/imageTiles/history";
 import { isImageTileSolved } from "../games/imageTiles/state";
@@ -49,6 +50,7 @@ export type PuzzleShareProgress = {
   imageTileRuntime: ImageTileActionRuntime | null;
   jigsawRuntime: JigsawActionRuntime | null;
   wordSearchProgress: WordSearchProgress | null;
+  crosswordProgress?: CrosswordProgress | null;
 };
 
 // Summaries describe completed player intentions, never the values of cells,
@@ -57,6 +59,13 @@ export const formatPuzzleShareProgress = (
   puzzle: GeneratedPuzzle,
   progress: PuzzleShareProgress,
 ): string | null => {
+  if (puzzle.kind === "crossword") {
+    const state = restoreCrosswordProgress(puzzle, progress.crosswordProgress);
+    if (!state) return null;
+    const entered = [...state.letters].filter(letter => /^[A-Z]$/.test(letter)).length;
+    if (!entered) return null;
+    return isCrosswordComplete(puzzle, state) ? "Solved" : `In progress · ${entered} ${entered === 1 ? "letter" : "letters"} entered`;
+  }
   if (puzzle.kind === "word-search") {
     const state = progress.wordSearchProgress;
     if (!state || state.baselineChecksum !== puzzle.checksum || state.found.length === 0) return null;

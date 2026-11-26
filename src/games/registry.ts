@@ -1,3 +1,4 @@
+import { generateMiniCrossword } from "./crossword/generate";
 import type { PuzzleGenerator, PuzzleId } from "../catalog/types";
 import { generateFutoshiki } from "./futoshiki/generate";
 import { generateJigsaw } from "./jigsaw/generate";
@@ -24,9 +25,9 @@ const generators: Partial<Record<PuzzleId, PuzzleGenerator>> = {
   futoshiki: generateFutoshiki,
 };
 
-export const hasPuzzleGenerator = (puzzleId: PuzzleId) => puzzleId === "word-guess" || puzzleId === "word-search" || Boolean(generators[puzzleId]);
+export const hasPuzzleGenerator = (puzzleId: PuzzleId) => puzzleId === "word-guess" || puzzleId === "word-search" || puzzleId === "crossword" || Boolean(generators[puzzleId]);
 
-export const generatePuzzle = (request: Parameters<PuzzleGenerator>[0], wordGuessAnswers?: readonly string[], wordSearchGeneralWords?: readonly string[]) => {
+export const generatePuzzle = (request: Parameters<PuzzleGenerator>[0], wordGuessAnswers?: readonly string[], wordSearchGeneralWords?: readonly string[], crosswordBank?: unknown) => {
   if (request.puzzleId === "word-guess") {
     if (!wordGuessAnswers) throw new Error("Word Guess generation requires an explicit answer pool.");
     return generateWordGuess(request, wordGuessAnswers);
@@ -37,6 +38,12 @@ export const generatePuzzle = (request: Parameters<PuzzleGenerator>[0], wordGues
     return { ...board, kind: "word-search" as const, puzzleId: "word-search" as const, title: "Word Search",
       id: `word-search:${board.seed}:${board.difficulty}:${board.theme}`,
       width: board.size, height: board.size, createdAt: new Date().toISOString() };
+  }
+  if (request.puzzleId === "crossword") {
+    if (request.width !== 5 || request.height !== 5) throw new Error("Invalid Mini Crossword dimensions.");
+    const board = generateMiniCrossword(request.seed, crosswordBank);
+    return { ...board, kind: "crossword" as const, puzzleId: "crossword" as const, title: "Crossword",
+      id: `crossword:mini:${board.seed}`, createdAt: new Date().toISOString() };
   }
   const generator = generators[request.puzzleId];
 

@@ -185,3 +185,14 @@
     grid-template-columns: minmax(0, 26rem) minmax(0, 1fr);
   }
 }
+
+.crossword-workspace .workspace-layout-board {
+  width: min(100%, var(--play-column-max));
+}
+.crossword-panel { width: 100%; box-sizing: border-box; }
+.crossword-controls { margin-top: 0.4rem; }
+.crossword-controls .completion-control-solved { visibility: hidden; }
+.crossword-controls[data-phase="celebrating"] .completion-control-solved,
+.crossword-controls[data-phase="completed"] .completion-control-solved { visibility: visible; }
+.crossword-controls[data-phase="completed"] .completion-control-playing { visibility: hidden; }
+.crossword-controls .completion-dock { width: 100%; box-sizing: border-box; }

@@ -1,3 +1,5 @@
+import type { CrosswordGeneratedPuzzle } from "../catalog/types";
+import type { CrosswordProgress } from "../games/crossword/progress";
 import type { WordSearchGeneratedPuzzle } from "../catalog/types";
 import type { WordSearchProgress } from "../games/wordSearch/progress";
 import type { CardGeneratedPuzzle, CardStack, GeneratedPuzzle, GridGeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
@@ -67,6 +69,7 @@ export type TileSessionProgress = {
 type TileGeneratedPuzzle = Extract<GeneratedPuzzle, { kind: "tiles" }>;
 
 export type PuzzleSession =
+  | { kind: "crossword"; puzzle: CrosswordGeneratedPuzzle; progress: CrosswordProgress & { kind: "crossword" } }
   | { kind: "word-search"; puzzle: WordSearchGeneratedPuzzle; progress: WordSearchProgress & { kind: "word-search" } }
   | {
       kind: "cards";

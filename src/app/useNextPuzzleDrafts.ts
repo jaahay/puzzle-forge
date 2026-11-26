@@ -56,8 +56,8 @@ export const buildNextPuzzleDraft = ({
   const imageId = puzzle?.kind === "tiles" && puzzle.asset.kind === "image" ? puzzle.asset.id : undefined;
   const useRuntimeFallback = puzzleId === selectedPuzzleId;
   const difficulty = puzzle?.difficulty ?? (useRuntimeFallback ? runtimeSettings.difficulty : defaultPuzzleDifficulty);
-  const width = puzzleId === "word-search" ? wordSearchProfiles[difficulty].size : puzzle?.width ?? (useRuntimeFallback ? runtimeSettings.width : definition.defaultWidth);
-  const height = puzzleId === "word-search" ? width : puzzle?.height ?? (useRuntimeFallback ? runtimeSettings.height : definition.defaultHeight);
+  const width = puzzleId === "crossword" ? definition.defaultWidth : puzzleId === "word-search" ? wordSearchProfiles[difficulty].size : puzzle?.width ?? (useRuntimeFallback ? runtimeSettings.width : definition.defaultWidth);
+  const height = puzzleId === "crossword" ? definition.defaultHeight : puzzleId === "word-search" ? width : puzzle?.height ?? (useRuntimeFallback ? runtimeSettings.height : definition.defaultHeight);
   const jigsawSizeSelection = puzzleId === "jigsaw"
     ? getJigsawSizePresetForDimensions(getPuzzleImageAsset(imageId, "jigsaw"), width, height) ?? jigsawCustomSizeSelection
     : undefined;

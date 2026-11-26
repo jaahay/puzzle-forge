@@ -5,6 +5,7 @@ export const puzzleIcons: Record<PuzzleId, string> = {
   nonogram: "▥",
   "word-guess": "Aa",
   "word-search": "⌕",
+  crossword: "▤",
   "logic-grid": "⌗",
   "klondike-solitaire": "♠",
   "peg-solitaire": "●",

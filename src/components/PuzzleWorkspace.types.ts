@@ -1,3 +1,4 @@
+import type { CrosswordProgress } from "../games/crossword/progress";
 import type { WordSearchProgress } from "../games/wordSearch/progress";
 import type { GenerationSettings, NextPuzzleDraft } from "../app/generationSettings";
 import type { WorkspaceProgressReport } from "../app/abandonmentPolicy";
@@ -12,6 +13,8 @@ import type { ImageTileActionRuntime } from "../games/imageTiles/history";
 export type { GenerationSettings, NextPuzzleDraft } from "../app/generationSettings";
 
 export type CoreWorkspaceProps = {
+  crosswordProgress?: CrosswordProgress | null;
+  onCrosswordProgressChange?: (puzzleInstanceId: string, progress: CrosswordProgress) => boolean;
   wordSearchProgress?: WordSearchProgress | null;
   onWordSearchSelection?: (puzzleInstanceId: string, start: number, end: number) => boolean;
   imageTileRuntime?: ImageTileActionRuntime | null;

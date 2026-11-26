@@ -45,6 +45,9 @@ const formatIdentitySummary = (puzzleId: PuzzleId, generationId: string) => {
       parts.push(`${identity.width}×${identity.height}`, identity.difficulty);
       if (identity.requireUniqueSolution) parts.push("Unique");
       break;
+    case "crossword":
+      parts.push("Mini");
+      break;
     case "word-search":
       parts.push(getWordSearchThemeTitle(identity.wordSearchTheme ?? defaultWordSearchTheme), identity.difficulty);
       break;

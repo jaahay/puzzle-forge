@@ -129,6 +129,7 @@ const allowedQueryKeys = (puzzleId: PuzzleId): ReadonlySet<string> => {
     case "minesweeper":
     case "slitherlink":
       return new Set(["size", "difficulty", "unique"]);
+    case "crossword":
     case "peg-solitaire":
       return new Set();
   }
@@ -149,6 +150,8 @@ const appendCanonicalQuery = (identity: GenerationIdentity) => {
       }
       if (identity.difficulty !== defaultPuzzleDifficulty) values.set("difficulty", identity.difficulty.toLowerCase());
       if (!identity.requireUniqueSolution) values.set("unique", "false");
+      break;
+    case "crossword":
       break;
     case "word-search":
       if (identity.difficulty !== defaultPuzzleDifficulty) values.set("difficulty", identity.difficulty.toLowerCase());
