@@ -8,6 +8,10 @@ const miniTopologies = [
   ["##...", "#....", ".....", "....#", "...##"],
   ["##...", "##...", ".....", "...##", "...##"],
   ["##...", "##...", ".....", "....#", "...##"],
+  ["##...","#....",".....","....#","....#"],
+  ["##...","##...",".....","....#","....#"],
+  ["#...#",".....",".....",".....","#...#"],
+  ["##...",".....",".....",".....","...##"],
 ].map(buildCrosswordTopology);
 const maxSearchNodesPerLayout = 50_000;
 
@@ -18,6 +22,12 @@ const shuffle = <T>(values: readonly T[], random: () => number): T[] => {
     [result[i], result[j]] = [result[j], result[i]];
   }
   return result;
+};
+
+// Avoid obvious repeated spelling variants (e.g. OWE/OWES) in one grid.
+export const areNearDuplicateCrosswordAnswers = (a: string, b: string) => {
+  const [short, long] = a.length < b.length ? [a, b] : [b, a];
+  return ["s", "es", "d", "ed"].some(suffix => long === short + suffix);
 };
 
 const fill = (topology: CrosswordTopology, byLength: ReadonlyMap<number, CrosswordAnswer[]>) => {
@@ -37,7 +47,7 @@ const fill = (topology: CrosswordTopology, byLength: ReadonlyMap<number, Crosswo
       if (assigned[i]) continue;
       const cells = entries[i].cells;
       const candidates = (byLength.get(cells.length) ?? []).filter(record =>
-        !used.has(record.answer) && cells.every((cell, index) => !letters[cell] || letters[cell] === record.answer[index]));
+        !used.has(record.answer) && ![...used].some(answer => areNearDuplicateCrosswordAnswers(answer, record.answer)) && cells.every((cell, index) => !letters[cell] || letters[cell] === record.answer[index]));
       if (!candidates.length) return false;
       if (next < 0 || candidates.length < domain.length) {
         next = i;

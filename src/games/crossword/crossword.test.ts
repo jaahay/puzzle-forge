@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { buildCrosswordTopology } from "./model";
 import { parseMiniClueBank } from "./clues";
-import { generateMiniCrossword } from "./generate";
+import { areNearDuplicateCrosswordAnswers, generateMiniCrossword } from "./generate";
 
 const bank = parseMiniClueBank(JSON.parse(readFileSync(new URL("../../../public/lexicon/crossword/mini-clues.json", import.meta.url), "utf8")));
 
@@ -26,7 +26,7 @@ describe("Crossword topology", () => {
 
 describe("Crossword clue inventory", () => {
   it("contains deliberately selected, distinct clue/answer pairs", () => {
-    expect(bank.length).toBeGreaterThanOrEqual(400);
+    expect(bank.length).toBeGreaterThanOrEqual(500);
     expect(bank.filter(record => record.senses.length > 1).length).toBeGreaterThan(25);
     expect(bank.filter(record => record.senses.some(sense => sense.clues.length > 1)).length).toBeGreaterThan(20);
     for (const n of [3, 4, 5]) expect(bank.filter(record => record.answer.length === n).length).toBeGreaterThan(15);
@@ -78,6 +78,7 @@ describe("Mini Crossword construction", () => {
         selectedClues.set(answer, observed);
       }
       expect(new Set(found).size).toBe(10);
+      expect(found.some((answer, i) => found.slice(i + 1).some(other => areNearDuplicateCrosswordAnswers(answer, other)))).toBe(false);
       for (let cell = 0; cell < board.solution.length; cell++) {
         expect(board.solution[cell] === "#").toBe(board.blocks[cell]);
         const directions = board.entries.filter(entry => entry.cells.includes(cell)).map(entry => entry.direction).sort();
@@ -93,9 +94,9 @@ describe("Mini Crossword construction", () => {
       solutions.add(board.solution);
       answerSets.add(found.sort().join(","));
     }
-    expect(layouts.size).toBe(3);
+    expect(layouts.size).toBe(7);
     expect(solutions.size).toBeGreaterThanOrEqual(16);
-    expect(answerSets.size).toBeGreaterThanOrEqual(20);
+    expect(answerSets.size).toBeGreaterThanOrEqual(40);
     // Alternative clue formulations must be exercised in generated boards,
     // not merely present in the source bank.
     expect([...selectedClues.values()].some(clues => clues.size > 1)).toBe(true);
