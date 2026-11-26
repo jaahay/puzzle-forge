@@ -80,6 +80,9 @@ describe("Crossword selection and input", () => {
 
   it("uses spatial arrows without wrapping or editing, and selects clues by number and direction", () => {
     expect(applyCrosswordKey(board, fresh, first, "ArrowLeft")?.selection).toEqual(first);
+    expect(applyCrosswordKey(board, fresh, first, "ArrowUp")?.selection).toEqual({ cell: 2, direction: "down" });
+    expect(applyCrosswordKey(board, fresh, { cell: 4, direction: "across" }, "ArrowRight")?.selection.cell).toBe(4);
+    expect(applyCrosswordKey(board, fresh, { cell: 22, direction: "down" }, "ArrowDown")?.selection.cell).toBe(22);
     const lower = applyCrosswordKey(board, fresh, first, "ArrowDown")!;
     expect(lower.selection).toEqual({ cell: 7, direction: "down" });
     expect(lower.progress).toBe(fresh);

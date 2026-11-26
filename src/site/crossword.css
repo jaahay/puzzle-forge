@@ -1,3 +1,9 @@
+.crossword-surface {
+  container-type: inline-size;
+  width: 100%;
+  min-width: 0;
+}
+
 .crossword-play {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -112,7 +118,7 @@
 }
 
 .crossword-keyboard-row .crossword-delete {
-  flex-basis: 18%;
+  flex-basis: 24%;
   font-size: 0.72rem;
 }
 
@@ -174,7 +180,7 @@
   outline-offset: 1px;
 }
 
-@media (min-width: 56rem) {
+@container (min-width: 46rem) {
   .crossword-play {
     grid-template-columns: minmax(0, 26rem) minmax(0, 1fr);
   }

@@ -1,5 +1,5 @@
 import type { ComponentChildren, JSX } from "preact";
-import { useId, useRef, useState } from "preact/hooks";
+import { useEffect, useId, useRef, useState } from "preact/hooks";
 import type { CrosswordBoard as Board, CrosswordDirection } from "../games/crossword/model";
 import {
   activeCrosswordEntry, applyCrosswordKey, initialCrosswordSelection, selectCrosswordCell, selectCrosswordEntry,
@@ -24,8 +24,14 @@ const directionLabel = (direction: CrosswordDirection) => direction === "across"
 
 // The parent owns the resource and progress. Only selection and focus live
 // here; no private persistence, generation, or completion state.
-const CrosswordSurface = ({ board, progress, onProgressChange, disabled = false, controls }: Omit<Props, "resetVersion">) => {
-  const [selection, setSelection] = useState(() => initialCrosswordSelection(board));
+export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = false, controls, resetVersion = 0 }: Props) => {
+  // Reset only transient selection, not the surrounding controls or their focus.
+  const identity = JSON.stringify([board.seed, board.checksum, resetVersion]);
+  const [stored, setStored] = useState(() => ({ identity, selection: initialCrosswordSelection(board) }));
+  const selection = stored.identity === identity ? stored.selection : initialCrosswordSelection(board);
+  useEffect(() => {
+    setStored(current => current.identity === identity ? current : { identity, selection: initialCrosswordSelection(board) });
+  }, [identity, board]);
   const grid = useRef<HTMLDivElement>(null);
   const clueId = useId();
   const helpId = useId();
@@ -34,32 +40,33 @@ const CrosswordSurface = ({ board, progress, onProgressChange, disabled = false,
   const solved = isCrosswordComplete(board, progress);
   const filled = !progress.letters.includes(".");
   const select = (next: CrosswordSelection, focus = true) => {
-    setSelection(next);
+    setStored({ identity, selection: next });
     if (focus) grid.current?.querySelector<HTMLButtonElement>(`[data-crossword-cell="${next.cell}"]`)?.focus({ preventScroll: true });
   };
-  const applyKey = (key: string, focus = true) => {
+  const applyKey = (key: string, focus = true, from = selection) => {
     if (disabled || isPuzzleModalOpen()) return false;
-    const action = applyCrosswordKey(board, progress, selection, key);
+    const action = applyCrosswordKey(board, progress, from, key);
     if (!action) return false;
     if (action.progress !== progress) onProgressChange(action.progress);
     select(action.selection, focus);
     return true;
   };
-  const onCellKeyDown = (event: JSX.TargetedKeyboardEvent<HTMLButtonElement>) => {
-    if (event.defaultPrevented || event.isComposing || event.ctrlKey || event.metaKey || event.altKey) return;
+  const onCellKeyDown = (event: JSX.TargetedKeyboardEvent<HTMLButtonElement>, cell: number) => {
+    if (event.defaultPrevented || event.isComposing || event.ctrlKey || event.metaKey || event.altKey || isPuzzleModalOpen()) return;
     if (event.shiftKey && !/^[A-Z]$/.test(event.key)) return;
     if (event.repeat && (event.key === "Enter" || event.key === " ")) {
       event.preventDefault();
       return;
     }
-    if (applyKey(event.key)) {
+    if (applyKey(event.key, true, { ...selection, cell })) {
       event.preventDefault();
       event.stopPropagation();
     }
   };
 
   return (
-    <section class="crossword-play" aria-label="Crossword">
+    <section class="crossword-surface" aria-label="Crossword">
+      <div class="crossword-play">
       <div class="crossword-board-column">
         <div class="crossword-active-clue" id={clueId} aria-live="polite" aria-atomic="true">
           {entry && <><strong>{entry.number} {directionLabel(entry.direction)}</strong><span>{entry.clue}</span></>}
@@ -76,8 +83,8 @@ const CrosswordSurface = ({ board, progress, onProgressChange, disabled = false,
               aria-label={`Row ${Math.floor(cell / board.width) + 1}, column ${cell % board.width + 1}, ${number !== null ? "number " + number + ", " : ""}${letter || "empty"}`}
               aria-current={selected ? "true" : undefined}
               aria-describedby={selected ? clueId : undefined}
-              onClick={() => select(selectCrosswordCell(board, selection, cell))}
-              onKeyDown={onCellKeyDown}>
+              onClick={() => { if (!disabled && !isPuzzleModalOpen()) select(selectCrosswordCell(board, selection, cell)); }}
+              onKeyDown={event => onCellKeyDown(event, cell)}>
               {number !== null && <span class="crossword-cell-number" aria-hidden="true">{number}</span>}
               <span aria-hidden="true">{letter}</span>
             </button>;
@@ -89,7 +96,7 @@ const CrosswordSurface = ({ board, progress, onProgressChange, disabled = false,
             {[...row].map(letter => <button key={letter} type="button" disabled={disabled}
               onClick={event => applyKey(letter, event.detail > 0)}>{letter}</button>)}
             {row === keyboardRows[2] && <button type="button" class="crossword-delete" disabled={disabled}
-              onClick={event => applyKey("Backspace", event.detail > 0)}>Delete</button>}
+              onClick={event => applyKey("Backspace", event.detail > 0)}>Backspace</button>}
           </div>)}
         </div>}
         <div class="crossword-feedback" role="status">{filled && !solved ? "Grid filled — review your answers." : ""}</div>
@@ -104,7 +111,7 @@ const CrosswordSurface = ({ board, progress, onProgressChange, disabled = false,
               return <li key={candidate.number}>
                 <button type="button" disabled={disabled} aria-current={active ? "true" : undefined}
                   class={active ? "active" : undefined}
-                  onClick={() => select(selectCrosswordEntry(board, progress, selection, candidate.number, direction))}>
+                  onClick={() => { if (!disabled && !isPuzzleModalOpen()) select(selectCrosswordEntry(board, progress, selection, candidate.number, direction)); }}>
                   <strong>{candidate.number}</strong><span>{candidate.clue}</span>
                 </button>
               </li>;
@@ -112,10 +119,7 @@ const CrosswordSurface = ({ board, progress, onProgressChange, disabled = false,
           </ul>
         </section>)}
       </aside>
+      </div>
     </section>
   );
 };
-
-export const CrosswordBoard = ({ resetVersion, ...props }: Props) => (
-  <CrosswordSurface key={`${props.board.checksum}:${resetVersion ?? 0}`} {...props} />
-);
