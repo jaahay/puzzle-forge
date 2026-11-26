@@ -1,0 +1,442 @@
+[
+  {
+    "answer": "ACE",
+    "clue": "Playing card that may rank high or low"
+  },
+  {
+    "answer": "ACID",
+    "clue": "Substance with a pH below seven in aqueous solution"
+  },
+  {
+    "answer": "AKIN",
+    "clue": "Similar in nature"
+  },
+  {
+    "answer": "ALLY",
+    "clue": "Supportive partner"
+  },
+  {
+    "answer": "ANGER",
+    "clue": "Feeling of intense displeasure"
+  },
+  {
+    "answer": "ANGLE",
+    "clue": "Space between two intersecting rays"
+  },
+  {
+    "answer": "ANT",
+    "clue": "Insect that lives in colonies"
+  },
+  {
+    "answer": "ANY",
+    "clue": "One or another without restriction"
+  },
+  {
+    "answer": "ARCH",
+    "clue": "Curved structural opening"
+  },
+  {
+    "answer": "AREA",
+    "clue": "Amount of surface covered"
+  },
+  {
+    "answer": "ASH",
+    "clue": "Powder left after a fire"
+  },
+  {
+    "answer": "BASED",
+    "clue": "Founded on, as a theory"
+  },
+  {
+    "answer": "BED",
+    "clue": "Furniture for sleeping"
+  },
+  {
+    "answer": "BEE",
+    "clue": "Insect that makes honey"
+  },
+  {
+    "answer": "BIG",
+    "clue": "Opposite of small"
+  },
+  {
+    "answer": "BUS",
+    "clue": "Large road vehicle for passengers"
+  },
+  {
+    "answer": "CAB",
+    "clue": "Taxi"
+  },
+  {
+    "answer": "CAMEL",
+    "clue": "Desert animal with humps"
+  },
+  {
+    "answer": "CAP",
+    "clue": "Headwear with a visor"
+  },
+  {
+    "answer": "CARRY",
+    "clue": "Transport by holding"
+  },
+  {
+    "answer": "CAW",
+    "clue": "Crow's call"
+  },
+  {
+    "answer": "CIRCA",
+    "clue": "Approximately, before a year"
+  },
+  {
+    "answer": "CLAY",
+    "clue": "Material used to make pottery"
+  },
+  {
+    "answer": "COLD",
+    "clue": "Opposite of hot"
+  },
+  {
+    "answer": "COPY",
+    "clue": "Duplicate of an original"
+  },
+  {
+    "answer": "DIARY",
+    "clue": "Personal record of daily events"
+  },
+  {
+    "answer": "DIE",
+    "clue": "Cube with pips used in board games"
+  },
+  {
+    "answer": "DINED",
+    "clue": "Ate a meal"
+  },
+  {
+    "answer": "DIRE",
+    "clue": "Extremely serious"
+  },
+  {
+    "answer": "DONE",
+    "clue": "Finished"
+  },
+  {
+    "answer": "DUB",
+    "clue": "Give a nickname to"
+  },
+  {
+    "answer": "DYE",
+    "clue": "Substance used to color fabric"
+  },
+  {
+    "answer": "EARN",
+    "clue": "Receive in return for work"
+  },
+  {
+    "answer": "EASE",
+    "clue": "Freedom from difficulty"
+  },
+  {
+    "answer": "EATS",
+    "clue": "Consumes food"
+  },
+  {
+    "answer": "EEL",
+    "clue": "Long, snake-shaped fish"
+  },
+  {
+    "answer": "EGOS",
+    "clue": "Senses of self-importance"
+  },
+  {
+    "answer": "END",
+    "clue": "Final part"
+  },
+  {
+    "answer": "EWE",
+    "clue": "Female sheep"
+  },
+  {
+    "answer": "EYE",
+    "clue": "Organ of sight"
+  },
+  {
+    "answer": "FAVOR",
+    "clue": "Kind act for someone"
+  },
+  {
+    "answer": "FEE",
+    "clue": "Charge for a service"
+  },
+  {
+    "answer": "FINED",
+    "clue": "Charged a monetary penalty"
+  },
+  {
+    "answer": "FIT",
+    "clue": "Be the right size"
+  },
+  {
+    "answer": "FLUTE",
+    "clue": "Woodwind played by blowing across an opening"
+  },
+  {
+    "answer": "FOE",
+    "clue": "Enemy"
+  },
+  {
+    "answer": "FOR",
+    "clue": "In favor of"
+  },
+  {
+    "answer": "FORCE",
+    "clue": "Push or pull in physics"
+  },
+  {
+    "answer": "GEL",
+    "clue": "Thick, jellylike substance"
+  },
+  {
+    "answer": "GET",
+    "clue": "Obtain or receive"
+  },
+  {
+    "answer": "HER",
+    "clue": "Pronoun for a woman as object"
+  },
+  {
+    "answer": "IDEA",
+    "clue": "Thought or suggestion"
+  },
+  {
+    "answer": "IDLE",
+    "clue": "Not working or active"
+  },
+  {
+    "answer": "INCH",
+    "clue": "One-twelfth of a foot"
+  },
+  {
+    "answer": "JELLY",
+    "clue": "Fruit spread made from juice"
+  },
+  {
+    "answer": "JOB",
+    "clue": "Paid position"
+  },
+  {
+    "answer": "KNEE",
+    "clue": "Joint between thigh and lower leg"
+  },
+  {
+    "answer": "KNOW",
+    "clue": "Be aware of"
+  },
+  {
+    "answer": "LAWN",
+    "clue": "Area of closely cut grass"
+  },
+  {
+    "answer": "LIMIT",
+    "clue": "Maximum permitted amount"
+  },
+  {
+    "answer": "LOGO",
+    "clue": "Symbol representing a brand"
+  },
+  {
+    "answer": "LUG",
+    "clue": "Carry with effort"
+  },
+  {
+    "answer": "MADE",
+    "clue": "Manufactured or created"
+  },
+  {
+    "answer": "MEN",
+    "clue": "Adult males"
+  },
+  {
+    "answer": "MENU",
+    "clue": "Restaurant's list of dishes"
+  },
+  {
+    "answer": "MERE",
+    "clue": "Nothing more than"
+  },
+  {
+    "answer": "MILL",
+    "clue": "Building where grain is ground"
+  },
+  {
+    "answer": "MOVED",
+    "clue": "Changed position"
+  },
+  {
+    "answer": "NOR",
+    "clue": "Partner of neither"
+  },
+  {
+    "answer": "ONCE",
+    "clue": "A single time"
+  },
+  {
+    "answer": "ONES",
+    "clue": "Single-dollar bills"
+  },
+  {
+    "answer": "ONLY",
+    "clue": "Exclusively"
+  },
+  {
+    "answer": "OPTS",
+    "clue": "Chooses"
+  },
+  {
+    "answer": "OWES",
+    "clue": "Is in debt to"
+  },
+  {
+    "answer": "PEA",
+    "clue": "Small green seed in a pod"
+  },
+  {
+    "answer": "PENS",
+    "clue": "Writing tools that use ink"
+  },
+  {
+    "answer": "PEP",
+    "clue": "Energy and enthusiasm"
+  },
+  {
+    "answer": "PLACE",
+    "clue": "Particular location"
+  },
+  {
+    "answer": "PLAN",
+    "clue": "Intended course of action"
+  },
+  {
+    "answer": "PURE",
+    "clue": "Free of impurities"
+  },
+  {
+    "answer": "RACE",
+    "clue": "Contest of speed"
+  },
+  {
+    "answer": "RAW",
+    "clue": "Uncooked"
+  },
+  {
+    "answer": "RED",
+    "clue": "Color of a stop sign"
+  },
+  {
+    "answer": "RESET",
+    "clue": "Return a device to its starting state"
+  },
+  {
+    "answer": "RISE",
+    "clue": "Move upward"
+  },
+  {
+    "answer": "ROD",
+    "clue": "Long, thin bar"
+  },
+  {
+    "answer": "ROUTE",
+    "clue": "Course taken on a journey"
+  },
+  {
+    "answer": "SAKE",
+    "clue": "Japanese rice wine"
+  },
+  {
+    "answer": "SEED",
+    "clue": "Plant's reproductive unit"
+  },
+  {
+    "answer": "SET",
+    "clue": "Collection of matching items"
+  },
+  {
+    "answer": "SIDE",
+    "clue": "One of the edges of a polygon"
+  },
+  {
+    "answer": "SLY",
+    "clue": "Clever in a sneaky way"
+  },
+  {
+    "answer": "SPA",
+    "clue": "Place offering massages and treatments"
+  },
+  {
+    "answer": "STALL",
+    "clue": "Compartment for a horse"
+  },
+  {
+    "answer": "STAR",
+    "clue": "Luminous object in the night sky"
+  },
+  {
+    "answer": "STRIP",
+    "clue": "Long, narrow piece of material"
+  },
+  {
+    "answer": "STUN",
+    "clue": "Leave speechless with surprise"
+  },
+  {
+    "answer": "TEA",
+    "clue": "Drink brewed from leaves"
+  },
+  {
+    "answer": "TRY",
+    "clue": "Make an attempt"
+  },
+  {
+    "answer": "USE",
+    "clue": "Put into service"
+  },
+  {
+    "answer": "USED",
+    "clue": "Secondhand"
+  },
+  {
+    "answer": "USES",
+    "clue": "Practical applications"
+  },
+  {
+    "answer": "WAS",
+    "clue": "Past tense of is"
+  },
+  {
+    "answer": "WED",
+    "clue": "Get married"
+  },
+  {
+    "answer": "WET",
+    "clue": "Covered with liquid"
+  },
+  {
+    "answer": "WILLS",
+    "clue": "Legal documents directing inheritance"
+  },
+  {
+    "answer": "WINE",
+    "clue": "Drink made by fermenting grapes"
+  },
+  {
+    "answer": "WISE",
+    "clue": "Showing sound judgment"
+  },
+  {
+    "answer": "YEAST",
+    "clue": "Organism that makes bread dough rise"
+  },
+  {
+    "answer": "YOU",
+    "clue": "Second-person pronoun"
+  }
+]
