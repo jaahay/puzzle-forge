@@ -26,23 +26,34 @@ describe("Crossword topology", () => {
 
 describe("Crossword clue inventory", () => {
   it("contains deliberately selected, distinct clue/answer pairs", () => {
-    expect(bank.length).toBeGreaterThanOrEqual(100);
+    expect(bank.length).toBeGreaterThanOrEqual(150);
+    expect(bank.filter(record => record.senses.length > 1).length).toBeGreaterThan(25);
+    expect(bank.filter(record => record.senses.some(sense => sense.clues.length > 1)).length).toBeGreaterThan(20);
     for (const n of [3, 4, 5]) expect(bank.filter(record => record.answer.length === n).length).toBeGreaterThan(15);
     const spelling = JSON.parse(readFileSync(new URL("../../../assets/lexicon/word-guess-answers.json", import.meta.url), "utf8")) as Record<string, string[]>;
     for (const record of bank.filter(record => record.answer.length >= 4)) {
       expect(spelling[String(record.answer.length)]).toContain(record.answer);
     }
   });
-  it("rejects duplicate answers and invalid records", () => {
-    for (const invalid of [null, [], [{ answer: "CAT", clue: "" }], [{ answer: "cat", clue: "Pet" }], [{ answer: "AB", clue: "Two letters" }], [{ answer: "CAT", clue: "Pet" }, { answer: "CAT", clue: "Feline" }]]) {
-      expect(() => parseMiniClueBank(invalid)).toThrow();
-    }
+  it("rejects malformed records and duplicate answers, senses or clue formulations", () => {
+    const sense = { meaning: "domestic animal", topics: ["animals"], clues: ["Pet that purrs"] };
+    const valid = { answer: "CAT", senses: [sense] };
+    for (const invalid of [
+      null, [], [{ ...valid, answer: "cat" }], [{ ...valid, answer: "AB" }],
+      [{ ...valid, senses: [] }], [valid, valid],
+      [{ ...valid, senses: [sense, sense] }],
+      [{ ...valid, senses: [sense, { ...sense, meaning: "different" }] }],
+      [{ ...valid, senses: [{ ...sense, topics: [] }] }],
+      [{ ...valid, senses: [{ ...sense, clues: [""] }] }],
+      [{ ...valid, senses: [{ ...sense, clues: ["Pet", "Pet"] }] }],
+    ]) expect(() => parseMiniClueBank(invalid)).toThrow();
   });
 });
 
 describe("Mini Crossword construction", () => {
   it("constructs deterministic, fully checked boards with distinct approved answers across seeds", () => {
-    const byAnswer = new Map(bank.map(record => [record.answer, record.clue]));
+    const byAnswer = new Map(bank.map(record => [record.answer, record.senses.flatMap(sense => sense.clues)]));
+    const layouts = new Set<string>();
     const solutions = new Set<string>();
     const answerSets = new Set<string>();
     for (let i = 0; i < 128; i++) {
@@ -54,7 +65,7 @@ describe("Mini Crossword construction", () => {
       const found: string[] = [];
       for (const entry of board.entries) {
         const answer = entry.cells.map(cell => board.solution[cell]).join("");
-        expect(byAnswer.get(answer)).toBe(entry.clue);
+        expect(byAnswer.get(answer)).toContain(entry.clue);
         found.push(answer);
       }
       expect(new Set(found).size).toBe(10);
@@ -63,20 +74,38 @@ describe("Mini Crossword construction", () => {
         const directions = board.entries.filter(entry => entry.cells.includes(cell)).map(entry => entry.direction).sort();
         expect(directions).toEqual(board.blocks[cell] ? [] : ["across", "down"]);
       }
-      expect(generateMiniCrossword(`sweep-${i}`, [...bank].reverse())).toEqual(board);
+      const reordered = [...bank].reverse().map(record => ({
+        ...record, senses: [...record.senses].reverse().map(sense => ({
+          ...sense, topics: [...sense.topics].reverse(), clues: [...sense.clues].reverse(),
+        })),
+      }));
+      expect(generateMiniCrossword(`sweep-${i}`, reordered)).toEqual(board);
+      layouts.add(board.blocks.map(block => block ? "#" : ".").join(""));
       solutions.add(board.solution);
       answerSets.add(found.sort().join(","));
     }
-    expect(solutions.size).toBeGreaterThanOrEqual(10);
-    expect(answerSets.size).toBeGreaterThanOrEqual(6);
+    expect(layouts.size).toBe(2);
+    expect(solutions.size).toBeGreaterThanOrEqual(16);
+    expect(answerSets.size).toBeGreaterThanOrEqual(10);
   }, 30_000);
+
+  it("does not weight fill by the number of clues or senses", () => {
+    const expanded = bank.map(record => ({
+      ...record, senses: record.senses.map(sense => ({ ...sense, clues: [...sense.clues, "Alternate formulation for " + sense.meaning] })),
+    }));
+    for (let i = 0; i < 12; i++) {
+      expect(generateMiniCrossword(`variant-${i}`, expanded).solution).toBe(generateMiniCrossword(`variant-${i}`, bank).solution);
+    }
+  });
 
   it("includes clue text in the exact baseline and fails explicitly with insufficient fill", () => {
     const board = generateMiniCrossword("baseline", bank);
     const answer = board.entries[0].cells.map(cell => board.solution[cell]).join("");
-    const revised = generateMiniCrossword("baseline", bank.map(record => record.answer === answer ? { ...record, clue: record.clue + " (revised)" } : record));
+    const revised = generateMiniCrossword("baseline", bank.map(record => record.answer === answer ? {
+      ...record, senses: record.senses.map(sense => ({ ...sense, clues: sense.clues.map(clue => clue + " (revised)") })),
+    } : record));
     expect(revised.solution).toBe(board.solution);
     expect(revised.checksum).not.toBe(board.checksum);
-    expect(() => generateMiniCrossword("impossible", [{ answer: "CAT", clue: "Pet" }])).toThrow("Could not construct");
+    expect(() => generateMiniCrossword("impossible", [{ answer: "CAT", senses: [{ meaning: "animal", topics: ["animals"], clues: ["Pet"] }] }])).toThrow("Could not construct");
   });
 });

@@ -14,9 +14,17 @@ export type CrosswordTopology = {
   entries: readonly CrosswordEntry[];
 };
 
-export type CrosswordClue = {
+// A spelling participates in fill once, independently of how many senses
+// or alternative formulations it has. Topics describe the intended sense.
+export type CrosswordSense = {
+  meaning: string;
+  topics: readonly string[];
+  clues: readonly string[];
+};
+
+export type CrosswordAnswer = {
   answer: string;
-  clue: string;
+  senses: readonly CrosswordSense[];
 };
 
 export type CrosswordBoard = Omit<CrosswordTopology, "entries"> & {
