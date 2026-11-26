@@ -28,6 +28,13 @@ export const isCrosswordCell = (board: CrosswordBoard, cell: number): boolean =>
 export const isCrosswordComplete = (board: CrosswordBoard, progress: CrosswordProgress): boolean =>
   progress.baselineChecksum === board.checksum && progress.letters === board.solution;
 
+// Explicit checking is a read-only projection of the current snapshot.
+export const getCrosswordIncorrectCells = (board: CrosswordBoard, progress: CrosswordProgress): number[] => {
+  if (!restoreCrosswordProgress(board, progress)) return [];
+  return board.blocks.flatMap((block, cell) =>
+    !block && progress.letters[cell] !== "." && progress.letters[cell] !== board.solution[cell] ? [cell] : []);
+};
+
 export const writeCrosswordLetter = (
   board: CrosswordBoard, progress: CrosswordProgress, cell: number, letter: string,
 ): CrosswordProgress => {

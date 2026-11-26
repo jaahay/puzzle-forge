@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildCrosswordTopology, type CrosswordBoard } from "./model";
-import { createCrosswordProgress, isCrosswordComplete, restoreCrosswordProgress, writeCrosswordLetter } from "./progress";
-import { activeCrosswordEntry, applyCrosswordKey, initialCrosswordSelection, selectCrosswordCell, selectCrosswordEntry } from "./interaction";
+import { createCrosswordProgress, getCrosswordIncorrectCells, isCrosswordComplete, restoreCrosswordProgress, writeCrosswordLetter } from "./progress";
+import { activeCrosswordEntry, applyCrosswordKey, initialCrosswordSelection, moveCrosswordClue, selectCrosswordCell, selectCrosswordEntry } from "./interaction";
 
 const topology = buildCrosswordTopology(["##...", "#....", ".....", "....#", "...##"]);
 const board: CrosswordBoard = {
@@ -25,6 +25,16 @@ describe("Crossword progress", () => {
     }
     for (const cell of [-1, 0, 1.5, 25]) expect(writeCrosswordLetter(board, fresh, cell, "A")).toBe(fresh);
     for (const letter of ["", "AB", "#", "a", "1"]) expect(writeCrosswordLetter(board, fresh, 2, letter)).toBe(fresh);
+  });
+
+  it("checks only entered incorrect letters without changing progress", () => {
+    const fresh = createCrosswordProgress(board);
+    const partial = writeCrosswordLetter(board, writeCrosswordLetter(board, fresh, 2, "A"), 3, "Z");
+    expect(getCrosswordIncorrectCells(board, fresh)).toEqual([]);
+    expect(getCrosswordIncorrectCells(board, partial)).toEqual([3]);
+    expect(partial.letters[3]).toBe("Z");
+    expect(getCrosswordIncorrectCells(board, { ...partial, baselineChecksum: "wrong" })).toEqual([]);
+    expect(getCrosswordIncorrectCells(board, { baselineChecksum: board.checksum, letters: board.solution })).toEqual([]);
   });
 
   it("distinguishes full incorrect grids from completion and locks completed edits", () => {
@@ -91,6 +101,24 @@ describe("Crossword selection and input", () => {
     expect(selectCrosswordEntry(board, fresh, lower.selection, 999, "down")).toBe(lower.selection);
     expect(applyCrosswordKey(board, fresh, first, "Tab")).toBeNull();
     expect(applyCrosswordKey(board, fresh, first, "ß")).toBeNull();
+  });
+
+  it("moves through the displayed clues, wrapping across directions and selecting an unfilled cell", () => {
+    expect(moveCrosswordClue(board, fresh, first, 1)).toEqual({ cell: 6, direction: "across" });
+    const last = moveCrosswordClue(board, fresh, first, -1);
+    expect(activeCrosswordEntry(board, last)?.direction).toBe("down");
+    expect(moveCrosswordClue(board, fresh, last, 1)).toEqual(first);
+    const partial = writeCrosswordLetter(board, fresh, 6, "K");
+    expect(moveCrosswordClue(board, partial, first, 1)).toEqual({ cell: 7, direction: "across" });
+    let current = first;
+    const entries = new Set<string>();
+    for (let i = 0; i < board.entries.length; i++) {
+      const entry = activeCrosswordEntry(board, current)!;
+      entries.add(entry.number + entry.direction);
+      current = moveCrosswordClue(board, fresh, current, 1);
+    }
+    expect(entries.size).toBe(board.entries.length);
+    expect(current).toEqual(first);
   });
 
   it("allows inspection but not edits once solved", () => {

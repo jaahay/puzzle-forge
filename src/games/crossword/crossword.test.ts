@@ -56,6 +56,15 @@ describe("Crossword clue inventory", () => {
 });
 
 describe("Mini Crossword construction", () => {
+  it("rejects simple repeated spelling variants in either order, without banning unrelated shared prefixes", () => {
+    for (const [a, b] of [["OWE", "OWES"], ["AGE", "AGED"], ["PASS", "PASSES"], ["CARE", "CARED"]]) {
+      expect(areNearDuplicateCrosswordAnswers(a, b)).toBe(true);
+      expect(areNearDuplicateCrosswordAnswers(b, a)).toBe(true);
+    }
+    for (const [a, b] of [["EAR", "EARTH"], ["CAT", "CAR"], ["AREA", "ARE"], ["BOW", "BOWL"]]) {
+      expect(areNearDuplicateCrosswordAnswers(a, b)).toBe(false);
+    }
+  });
   it("constructs deterministic, fully checked boards with distinct approved answers across seeds", () => {
     const byAnswer = new Map(bank.map(record => [record.answer, record.senses.flatMap(sense => sense.clues)]));
     const layouts = new Set<string>();

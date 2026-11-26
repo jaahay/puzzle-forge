@@ -196,3 +196,40 @@
 .crossword-controls[data-phase="completed"] .completion-control-solved { visibility: visible; }
 .crossword-controls[data-phase="completed"] .completion-control-playing { visibility: hidden; }
 .crossword-controls .completion-dock { width: 100%; box-sizing: border-box; }
+
+.crossword-clue-navigation {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+.crossword-clue-navigation .crossword-active-clue { margin-bottom: 0; }
+.crossword-clue-step {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+.crossword-clue-step button {
+  min-height: 2.25rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #475569;
+  border-radius: 0.35rem;
+  background: #1e293b;
+  color: #e2e8f0;
+  font-size: 0.8rem;
+}
+.crossword-clue-step button:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 1px;
+}
+.crossword-error-mark {
+  position: absolute;
+  top: 0.15rem;
+  right: 0.25rem;
+  color: #a11e22;
+  font-size: 0.85rem;
+  font-weight: 750;
+  line-height: 1;
+}
+.crossword-cell.incorrect > span:not(.crossword-cell-number):not(.crossword-error-mark) {
+  color: #a11e22;
+}

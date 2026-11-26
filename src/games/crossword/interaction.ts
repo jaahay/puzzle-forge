@@ -31,6 +31,21 @@ export const selectCrosswordEntry = (
   return { cell, direction };
 };
 
+// Clue traversal follows the visible list: Across first, then Down.
+export const moveCrosswordClue = (
+  board: CrosswordBoard, progress: CrosswordProgress, selection: CrosswordSelection, offset: -1 | 1,
+): CrosswordSelection => {
+  const entries = [
+    ...board.entries.filter(entry => entry.direction === "across"),
+    ...board.entries.filter(entry => entry.direction === "down"),
+  ];
+  const current = activeCrosswordEntry(board, selection);
+  const index = current ? entries.indexOf(current) : -1;
+  if (index < 0) return selection;
+  const next = entries[(index + offset + entries.length) % entries.length];
+  return selectCrosswordEntry(board, progress, selection, next.number, next.direction);
+};
+
 const moveSpatially = (board: CrosswordBoard, selection: CrosswordSelection, key: string): CrosswordSelection | null => {
   const { width, height } = board;
   const column = selection.cell % width;

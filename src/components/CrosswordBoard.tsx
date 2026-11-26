@@ -2,10 +2,10 @@ import type { ComponentChildren, JSX } from "preact";
 import { useEffect, useId, useRef, useState } from "preact/hooks";
 import type { CrosswordBoard as Board, CrosswordDirection } from "../games/crossword/model";
 import {
-  activeCrosswordEntry, applyCrosswordKey, initialCrosswordSelection, selectCrosswordCell, selectCrosswordEntry,
+  activeCrosswordEntry, applyCrosswordKey, initialCrosswordSelection, moveCrosswordClue, selectCrosswordCell, selectCrosswordEntry,
   type CrosswordSelection,
 } from "../games/crossword/interaction";
-import { isCrosswordComplete, type CrosswordProgress } from "../games/crossword/progress";
+import { getCrosswordIncorrectCells, isCrosswordComplete, type CrosswordProgress } from "../games/crossword/progress";
 import { isPuzzleModalOpen } from "../interactions/keyboardOwnership";
 import "../site/crossword.css";
 
@@ -15,6 +15,7 @@ type Props = {
   onProgressChange: (progress: CrosswordProgress) => void;
   disabled?: boolean;
   resetVersion?: number;
+  checked?: boolean;
   controls?: ComponentChildren;
 };
 
@@ -24,7 +25,7 @@ const directionLabel = (direction: CrosswordDirection) => direction === "across"
 
 // The parent owns the resource and progress. Only selection and focus live
 // here; no private persistence, generation, or completion state.
-export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = false, controls, resetVersion = 0 }: Props) => {
+export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = false, controls, resetVersion = 0, checked = false }: Props) => {
   // Reset only transient selection, not the surrounding controls or their focus.
   const identity = JSON.stringify([board.seed, board.checksum, resetVersion]);
   const [stored, setStored] = useState(() => ({ identity, selection: initialCrosswordSelection(board) }));
@@ -39,17 +40,23 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
   const activeCells = new Set(entry?.cells ?? []);
   const solved = isCrosswordComplete(board, progress);
   const filled = !progress.letters.includes(".");
-  const select = (next: CrosswordSelection, focus = true) => {
+  const incorrect = new Set(checked ? getCrosswordIncorrectCells(board, progress) : []);
+  const select = (next: CrosswordSelection, focus = true, scroll = false) => {
     setStored({ identity, selection: next });
-    if (focus) grid.current?.querySelector<HTMLButtonElement>(`[data-crossword-cell="${next.cell}"]`)?.focus({ preventScroll: true });
+    const target = grid.current?.querySelector<HTMLButtonElement>(`[data-crossword-cell="${next.cell}"]`);
+    if (focus) target?.focus({ preventScroll: true });
+    if (scroll) target?.scrollIntoView({ block: "nearest", inline: "nearest" });
   };
   const applyKey = (key: string, focus = true, from = selection) => {
     if (disabled || isPuzzleModalOpen()) return false;
     const action = applyCrosswordKey(board, progress, from, key);
     if (!action) return false;
     if (action.progress !== progress) onProgressChange(action.progress);
-    select(action.selection, focus);
+    select(action.selection, focus || isCrosswordComplete(board, action.progress));
     return true;
+  };
+  const moveClue = (offset: -1 | 1) => {
+    if (!disabled && !isPuzzleModalOpen()) select(moveCrosswordClue(board, progress, selection, offset));
   };
   const onCellKeyDown = (event: JSX.TargetedKeyboardEvent<HTMLButtonElement>, cell: number) => {
     if (event.defaultPrevented || event.isComposing || event.ctrlKey || event.metaKey || event.altKey || isPuzzleModalOpen()) return;
@@ -68,8 +75,14 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
     <section class="crossword-surface" aria-label="Crossword">
       <div class="crossword-play">
       <div class="crossword-board-column">
-        <div class="crossword-active-clue" id={clueId} aria-live="polite" aria-atomic="true">
-          {entry && <><strong>{entry.number} {directionLabel(entry.direction)}</strong><span>{entry.clue}</span></>}
+        <div class="crossword-clue-navigation">
+          <div class="crossword-active-clue" id={clueId} aria-live="polite" aria-atomic="true">
+            {entry && <><strong>{entry.number} {directionLabel(entry.direction)}</strong><span>{entry.clue}</span></>}
+          </div>
+          <div class="crossword-clue-step" aria-label="Clue navigation" role="group">
+            <button type="button" disabled={disabled} onClick={() => moveClue(-1)}>Previous clue</button>
+            <button type="button" disabled={disabled} onClick={() => moveClue(1)}>Next clue</button>
+          </div>
         </div>
         <div class="crossword-grid" ref={grid} role="group" aria-label="Crossword letter cells"
           aria-describedby={helpId} style={{ "--crossword-columns": board.width } as JSX.CSSProperties}>
@@ -78,15 +91,16 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
             const letter = progress.letters[cell] === "." ? "" : progress.letters[cell];
             const number = board.numbers[cell];
             const selected = cell === selection.cell;
-            return <button key={cell} type="button" class={`crossword-cell${activeCells.has(cell) ? " in-entry" : ""}${selected ? " selected" : ""}`}
+            return <button key={cell} type="button" class={`crossword-cell${activeCells.has(cell) ? " in-entry" : ""}${selected ? " selected" : ""}${incorrect.has(cell) ? " incorrect" : ""}`}
               data-crossword-cell={cell} disabled={disabled} tabIndex={selected ? 0 : -1}
-              aria-label={`Row ${Math.floor(cell / board.width) + 1}, column ${cell % board.width + 1}, ${number !== null ? "number " + number + ", " : ""}${letter || "empty"}`}
+              aria-label={`Row ${Math.floor(cell / board.width) + 1}, column ${cell % board.width + 1}, ${number !== null ? "number " + number + ", " : ""}${letter || "empty"}${incorrect.has(cell) ? ", incorrect" : ""}`}
               aria-current={selected ? "true" : undefined}
               aria-describedby={selected ? clueId : undefined}
               onClick={() => { if (!disabled && !isPuzzleModalOpen()) select(selectCrosswordCell(board, selection, cell)); }}
               onKeyDown={event => onCellKeyDown(event, cell)}>
               {number !== null && <span class="crossword-cell-number" aria-hidden="true">{number}</span>}
               <span aria-hidden="true">{letter}</span>
+              {incorrect.has(cell) && <span class="crossword-error-mark" aria-hidden="true">×</span>}
             </button>;
           })}
         </div>
@@ -99,7 +113,9 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
               onClick={event => applyKey("Backspace", event.detail > 0)}>Backspace</button>}
           </div>)}
         </div>}
-        <div class="crossword-feedback" role="status">{filled && !solved ? "Grid filled — review your answers." : ""}</div>
+        <div class="crossword-feedback" role="status">{checked && !solved
+          ? incorrect.size ? `${incorrect.size} ${incorrect.size === 1 ? "letter" : "letters"} to review.` : "All entered letters are correct."
+          : filled && !solved ? "Grid filled — review your answers." : ""}</div>
         {controls}
       </div>
       <aside class="crossword-clue-list" aria-label="Clues">
@@ -111,7 +127,7 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
               return <li key={candidate.number}>
                 <button type="button" disabled={disabled} aria-current={active ? "true" : undefined}
                   class={active ? "active" : undefined}
-                  onClick={() => { if (!disabled && !isPuzzleModalOpen()) select(selectCrosswordEntry(board, progress, selection, candidate.number, direction)); }}>
+                  onClick={() => { if (!disabled && !isPuzzleModalOpen()) select(selectCrosswordEntry(board, progress, selection, candidate.number, direction), true, true); }}>
                   <strong>{candidate.number}</strong><span>{candidate.clue}</span>
                 </button>
               </li>;
