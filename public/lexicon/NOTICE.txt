@@ -1,4 +1,4 @@
-Puzzle Forge lexical assets (Word Guess and Word Search General)
+Puzzle Forge lexical assets (Word Guess, Word Search and Crossword)
 Source: English Speller Database / SCOWL, rel-2026.02.25
 https://github.com/en-wl/wordlist
 
@@ -134,3 +134,53 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+Crossword semantic source and editorial clues:
+Open English WordNet 2025 (regular edition), Open English WordNet Team.
+Copyright (c) 2019-present, The Open English WordNet Team.
+https://github.com/globalwordnet/english-wordnet/releases/tag/2025-edition
+https://en-word.net/static/english-wordnet-2025.xml.gz
+Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):
+https://creativecommons.org/licenses/by/4.0/
+Full upstream license and warranty disclaimer:
+https://github.com/globalwordnet/english-wordnet/blob/2025-edition/LICENSE.md
+
+Puzzle Forge selects individual senses and writes/adapts clue formulations;
+playable spellings are normalized and source identifiers are retained in
+repository editorial material. No endorsement is implied.
+The WordNet-derived material incorporates Princeton University WordNet.
+The upstream underlying notice follows (2025 release, WNDB_License.txt):
+https://github.com/globalwordnet/english-wordnet/blob/2025-edition/WNDB_License.txt
+
+This software and database is being provided to you, the LICENSEE, by
+the Open English Wordnet team under the Creative Commons Attribution 4.0
+International License (CC-BY 4.0).
+
+Open English Wordnet 2023 Copyright 2023 by the Open English Wordnet team.
+
+Permission to use, copy, modify and distribute this software and
+database and its documentation for any purpose and without fee or
+royalty is hereby granted, provided that you agree to comply with
+the following copyright notice and statements, including the disclaimer,
+and that the same appear on ALL copies of the software, database and
+documentation, including modifications that you make for internal
+use or for distribution.
+
+WordNet 3.1 Copyright 2011 by Princeton University.  All rights reserved.
+
+THIS SOFTWARE AND DATABASE IS PROVIDED "AS IS" AND PRINCETON
+UNIVERSITY MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR
+IMPLIED.  BY WAY OF EXAMPLE, BUT NOT LIMITATION, PRINCETON
+UNIVERSITY MAKES NO REPRESENTATIONS OR WARRANTIES OF MERCHANT-
+ABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE OR THAT THE USE
+OF THE LICENSED SOFTWARE, DATABASE OR DOCUMENTATION WILL NOT
+INFRINGE ANY THIRD PARTY PATENTS, COPYRIGHTS, TRADEMARKS OR
+OTHER RIGHTS.
+
+The name of Princeton University or Princeton may not be used in
+advertising or publicity pertaining to distribution of the software
+and/or database.  Title to copyright in this software, database and
+any associated documentation shall at all times remain with
+Princeton University and LICENSEE agrees to preserve same.

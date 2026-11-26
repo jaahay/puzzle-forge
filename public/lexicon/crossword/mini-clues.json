@@ -40,6 +40,20 @@
     ]
   },
   {
+    "answer": "ACORN",
+    "senses": [
+      {
+        "meaning": "oak fruit",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "Nut that could become an oak"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "AGE",
     "senses": [
       {
@@ -120,6 +134,43 @@
     ]
   },
   {
+    "answer": "ALARM",
+    "senses": [
+      {
+        "meaning": "wakeup clock",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Device that can wake you in the morning"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ALBUM",
+    "senses": [
+      {
+        "meaning": "recording collection",
+        "topics": [
+          "music"
+        ],
+        "clues": [
+          "Collection of songs issued together"
+        ]
+      },
+      {
+        "meaning": "collection book",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Book for organizing photographs"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ALLY",
     "senses": [
       {
@@ -129,6 +180,20 @@
         ],
         "clues": [
           "Supportive partner"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AMBER",
+    "senses": [
+      {
+        "meaning": "fossil resin",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "Fossil resin often made into jewelry"
         ]
       }
     ]
@@ -204,6 +269,48 @@
     ]
   },
   {
+    "answer": "APE",
+    "senses": [
+      {
+        "meaning": "tail-less primate",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "Chimpanzee or gorilla, for instance"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "APPLE",
+    "senses": [
+      {
+        "meaning": "fruit",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Fruit that might be Granny Smith"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "APRON",
+    "senses": [
+      {
+        "meaning": "protective garment",
+        "topics": [
+          "clothing"
+        ],
+        "clues": [
+          "A cook's clothing protector"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "APT",
     "senses": [
       {
@@ -213,6 +320,20 @@
         ],
         "clues": [
           "Well suited to the occasion"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ARC",
+    "senses": [
+      {
+        "meaning": "part of a circle",
+        "topics": [
+          "mathematics"
+        ],
+        "clues": [
+          "A curved portion of a circle"
         ]
       }
     ]
@@ -261,6 +382,20 @@
     ]
   },
   {
+    "answer": "ARROW",
+    "senses": [
+      {
+        "meaning": "bow projectile",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "What an archer shoots"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ART",
     "senses": [
       {
@@ -301,6 +436,160 @@
     ]
   },
   {
+    "answer": "ATLAS",
+    "senses": [
+      {
+        "meaning": "map collection",
+        "topics": [
+          "geography"
+        ],
+        "clues": [
+          "The world between two covers, perhaps"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ATOM",
+    "senses": [
+      {
+        "meaning": "unit of element",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "The smallest unit retaining an element's chemical identity"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AUDIO",
+    "senses": [
+      {
+        "meaning": "audible signal",
+        "topics": [
+          "technology"
+        ],
+        "clues": [
+          "The sound portion of a video transmission"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AUNT",
+    "senses": [
+      {
+        "meaning": "family relation",
+        "topics": [
+          "family"
+        ],
+        "clues": [
+          "Your mother's sister, for example"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AXE",
+    "senses": [
+      {
+        "meaning": "chopping tool",
+        "topics": [
+          "tools"
+        ],
+        "clues": [
+          "Tool a lumberjack swings"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BADGE",
+    "senses": [
+      {
+        "meaning": "membership emblem",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "Emblem indicating rank or membership"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BAG",
+    "senses": [
+      {
+        "meaning": "flexible container",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Something to carry groceries in"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BAKER",
+    "senses": [
+      {
+        "meaning": "professional bread maker",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Someone who makes bread for a living"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BANK",
+    "senses": [
+      {
+        "meaning": "river slope",
+        "topics": [
+          "geography"
+        ],
+        "clues": [
+          "Land beside a river"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BARK",
+    "senses": [
+      {
+        "meaning": "tree covering",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "A tree's protective outer layer"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BARN",
+    "senses": [
+      {
+        "meaning": "farm building",
+        "topics": [
+          "agriculture"
+        ],
+        "clues": [
+          "Farm building where hay might be stored"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "BASED",
     "senses": [
       {
@@ -310,6 +599,132 @@
         ],
         "clues": [
           "Founded on, as a theory"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BAT",
+    "senses": [
+      {
+        "meaning": "flying mammal",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "A nocturnal mammal with wings"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BATH",
+    "senses": [
+      {
+        "meaning": "washing",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "A soak in a tub"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BAY",
+    "senses": [
+      {
+        "meaning": "coastal inlet",
+        "topics": [
+          "geography"
+        ],
+        "clues": [
+          "Inlet larger than a cove"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BEACH",
+    "senses": [
+      {
+        "meaning": "sandy shore",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "A sandy place to build a castle"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BEAK",
+    "senses": [
+      {
+        "meaning": "bird bill",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "The projecting mouthpart of a bird"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BEAM",
+    "senses": [
+      {
+        "meaning": "structural support",
+        "topics": [
+          "engineering"
+        ],
+        "clues": [
+          "Horizontal timber supporting a ceiling"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BEAN",
+    "senses": [
+      {
+        "meaning": "edible seed",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "One of the seeds in a bowl of chili"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BEAR",
+    "senses": [
+      {
+        "meaning": "large mammal",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "Grizzly or polar, for example"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BEARD",
+    "senses": [
+      {
+        "meaning": "facial hair",
+        "topics": [
+          "anatomy"
+        ],
+        "clues": [
+          "Hair growing on the chin and cheeks"
         ]
       }
     ]
@@ -354,6 +769,48 @@
     ]
   },
   {
+    "answer": "BELL",
+    "senses": [
+      {
+        "meaning": "ringing device",
+        "topics": [
+          "music"
+        ],
+        "clues": [
+          "Something rung to signal the start of class"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BELT",
+    "senses": [
+      {
+        "meaning": "waist strap",
+        "topics": [
+          "clothing"
+        ],
+        "clues": [
+          "A strap threaded through trouser loops"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BERRY",
+    "senses": [
+      {
+        "meaning": "small edible fruit",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Blueberry or raspberry, for example"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "BIG",
     "senses": [
       {
@@ -363,6 +820,318 @@
         ],
         "clues": [
           "Opposite of small"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BIRD",
+    "senses": [
+      {
+        "meaning": "feathered vertebrate",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "A robin or sparrow"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BLOOM",
+    "senses": [
+      {
+        "meaning": "flower",
+        "topics": [
+          "garden"
+        ],
+        "clues": [
+          "A flower in all its glory"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BOARD",
+    "senses": [
+      {
+        "meaning": "sawn timber",
+        "topics": [
+          "tools"
+        ],
+        "clues": [
+          "A length of sawn wood"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BOAT",
+    "senses": [
+      {
+        "meaning": "watercraft",
+        "topics": [
+          "transport"
+        ],
+        "clues": [
+          "Small vessel for a trip on a lake"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BONE",
+    "senses": [
+      {
+        "meaning": "skeletal tissue",
+        "topics": [
+          "anatomy"
+        ],
+        "clues": [
+          "A femur or tibia, for instance"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BOOK",
+    "senses": [
+      {
+        "meaning": "written work",
+        "topics": [
+          "writing"
+        ],
+        "clues": [
+          "A novel you can borrow from a library"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BOOT",
+    "senses": [
+      {
+        "meaning": "footwear",
+        "topics": [
+          "clothing"
+        ],
+        "clues": [
+          "Footwear that extends above the ankle"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BOW",
+    "senses": [
+      {
+        "meaning": "looped knot",
+        "topics": [
+          "crafts"
+        ],
+        "clues": [
+          "A ribbon tied into two loops"
+        ]
+      },
+      {
+        "meaning": "string instrument implement",
+        "topics": [
+          "music"
+        ],
+        "clues": [
+          "What a violinist draws across the strings"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BOWL",
+    "senses": [
+      {
+        "meaning": "dish",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "A dish often used for cereal"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BOX",
+    "senses": [
+      {
+        "meaning": "container",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "A container that might be made of cardboard"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BRAIN",
+    "senses": [
+      {
+        "meaning": "central nervous organ",
+        "topics": [
+          "anatomy"
+        ],
+        "clues": [
+          "The organ inside the skull that processes thoughts"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BRAKE",
+    "senses": [
+      {
+        "meaning": "vehicle stopping device",
+        "topics": [
+          "transport"
+        ],
+        "clues": [
+          "Mechanism used to slow a vehicle"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BRASS",
+    "senses": [
+      {
+        "meaning": "copper zinc alloy",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Metal alloy of copper and zinc"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BREAD",
+    "senses": [
+      {
+        "meaning": "baked dough food",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Food sliced for a sandwich"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BRICK",
+    "senses": [
+      {
+        "meaning": "building block",
+        "topics": [
+          "architecture"
+        ],
+        "clues": [
+          "Rectangular building block made of fired clay"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BRIDE",
+    "senses": [
+      {
+        "meaning": "wedding participant",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "Woman taking part in her own wedding"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BRUSH",
+    "senses": [
+      {
+        "meaning": "bristled implement",
+        "topics": [
+          "arts"
+        ],
+        "clues": [
+          "Tool for applying paint to a canvas"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BUD",
+    "senses": [
+      {
+        "meaning": "partially opened flower",
+        "topics": [
+          "garden"
+        ],
+        "clues": [
+          "A flower not yet in full bloom"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BUG",
+    "senses": [
+      {
+        "meaning": "software defect",
+        "topics": [
+          "technology"
+        ],
+        "clues": [
+          "A programmer's unwelcome discovery"
+        ]
+      },
+      {
+        "meaning": "small crawling creature",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "A little critter crawling under a rock"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BULB",
+    "senses": [
+      {
+        "meaning": "plant organ",
+        "topics": [
+          "garden"
+        ],
+        "clues": [
+          "What you might plant to grow a tulip"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BUN",
+    "senses": [
+      {
+        "meaning": "bread roll",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Bread that might hold a burger"
         ]
       }
     ]
@@ -396,6 +1165,34 @@
     ]
   },
   {
+    "answer": "CAKE",
+    "senses": [
+      {
+        "meaning": "baked dessert",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Birthday treat often topped with candles"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CALF",
+    "senses": [
+      {
+        "meaning": "young bovine",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "A young cow or bull"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "CAMEL",
     "senses": [
       {
@@ -407,6 +1204,62 @@
         "clues": [
           "Desert animal with humps",
           "Desert traveler with built-in humps"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CAN",
+    "senses": [
+      {
+        "meaning": "metal container",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "A soda's container"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CANDY",
+    "senses": [
+      {
+        "meaning": "sweet confection",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Sugary treat in a wrapper"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CANE",
+    "senses": [
+      {
+        "meaning": "walking stick",
+        "topics": [
+          "tools"
+        ],
+        "clues": [
+          "A walking stick for support"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CANOE",
+    "senses": [
+      {
+        "meaning": "paddled boat",
+        "topics": [
+          "transport"
+        ],
+        "clues": [
+          "Light boat with pointed ends"
         ]
       }
     ]
@@ -437,6 +1290,48 @@
     ]
   },
   {
+    "answer": "CAPE",
+    "senses": [
+      {
+        "meaning": "sleeveless garment",
+        "topics": [
+          "clothing"
+        ],
+        "clues": [
+          "A superhero's flowing garment"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CAR",
+    "senses": [
+      {
+        "meaning": "road vehicle",
+        "topics": [
+          "transport"
+        ],
+        "clues": [
+          "A vehicle with a steering wheel and four tires"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CARD",
+    "senses": [
+      {
+        "meaning": "playing card",
+        "topics": [
+          "games"
+        ],
+        "clues": [
+          "One of a deck of fifty-two"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "CARRY",
     "senses": [
       {
@@ -446,6 +1341,48 @@
         ],
         "clues": [
           "Transport by holding"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CART",
+    "senses": [
+      {
+        "meaning": "wheeled vehicle",
+        "topics": [
+          "transport"
+        ],
+        "clues": [
+          "Wheeled carrier pushed around a supermarket"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CAT",
+    "senses": [
+      {
+        "meaning": "feline",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "Pet that might purr in your lap"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CAVE",
+    "senses": [
+      {
+        "meaning": "natural hollow",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "A natural chamber in rock"
         ]
       }
     ]
@@ -466,6 +1403,118 @@
     ]
   },
   {
+    "answer": "CELL",
+    "senses": [
+      {
+        "meaning": "biological unit",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Basic structural unit of living organisms"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CHAIN",
+    "senses": [
+      {
+        "meaning": "linked rings",
+        "topics": [
+          "tools"
+        ],
+        "clues": [
+          "Connected metal rings"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CHEF",
+    "senses": [
+      {
+        "meaning": "professional cook",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Professional cook in a restaurant"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CHESS",
+    "senses": [
+      {
+        "meaning": "board game",
+        "topics": [
+          "games"
+        ],
+        "clues": [
+          "Game with bishops and rooks"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CHIME",
+    "senses": [
+      {
+        "meaning": "tuned bells",
+        "topics": [
+          "music"
+        ],
+        "clues": [
+          "Percussion instrument made of tuned bells"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CHIN",
+    "senses": [
+      {
+        "meaning": "lower face",
+        "topics": [
+          "anatomy"
+        ],
+        "clues": [
+          "Part of the face below the lower lip"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CHORD",
+    "senses": [
+      {
+        "meaning": "musical notes",
+        "topics": [
+          "music"
+        ],
+        "clues": [
+          "Several notes sounded together in harmony"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CIDER",
+    "senses": [
+      {
+        "meaning": "apple drink",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Beverage pressed from apples"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "CIRCA",
     "senses": [
       {
@@ -476,6 +1525,34 @@
         ],
         "clues": [
           "Approximately, before a year"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CITY",
+    "senses": [
+      {
+        "meaning": "urban settlement",
+        "topics": [
+          "geography"
+        ],
+        "clues": [
+          "A large urban community"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CLAW",
+    "senses": [
+      {
+        "meaning": "animal nail",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "A cat's retractable sharp nail"
         ]
       }
     ]
@@ -492,6 +1569,118 @@
         "clues": [
           "Material used to make pottery",
           "What a potter shapes on a wheel"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CLOCK",
+    "senses": [
+      {
+        "meaning": "timepiece",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Something that tells the time"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CLOUD",
+    "senses": [
+      {
+        "meaning": "atmospheric phenomenon",
+        "topics": [
+          "weather"
+        ],
+        "clues": [
+          "Visible mass of droplets or ice crystals in the sky"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "COACH",
+    "senses": [
+      {
+        "meaning": "sports trainer",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "Person who trains a sports team"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "COAL",
+    "senses": [
+      {
+        "meaning": "fossil fuel",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "Black combustible rock"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "COAST",
+    "senses": [
+      {
+        "meaning": "shore",
+        "topics": [
+          "geography"
+        ],
+        "clues": [
+          "Land along an ocean"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "COAT",
+    "senses": [
+      {
+        "meaning": "outer garment",
+        "topics": [
+          "clothing"
+        ],
+        "clues": [
+          "Outer garment worn on a chilly day"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "COIL",
+    "senses": [
+      {
+        "meaning": "wound structure",
+        "topics": [
+          "engineering"
+        ],
+        "clues": [
+          "Wire wound into a series of loops"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "COIN",
+    "senses": [
+      {
+        "meaning": "metal currency",
+        "topics": [
+          "money"
+        ],
+        "clues": [
+          "A dime or nickel"
         ]
       }
     ]
@@ -516,6 +1705,34 @@
         ],
         "clues": [
           "Minor respiratory illness with a runny nose"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CONE",
+    "senses": [
+      {
+        "meaning": "geometrical shape",
+        "topics": [
+          "mathematics"
+        ],
+        "clues": [
+          "Shape with a circular base and a point"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "COOK",
+    "senses": [
+      {
+        "meaning": "food preparer",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Someone preparing a meal"
         ]
       }
     ]
@@ -559,6 +1776,206 @@
     ]
   },
   {
+    "answer": "CORD",
+    "senses": [
+      {
+        "meaning": "twisted fibers",
+        "topics": [
+          "tools"
+        ],
+        "clues": [
+          "A length of strong string"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CORK",
+    "senses": [
+      {
+        "meaning": "tree bark",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "Light bark used to make bottle stoppers"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "COW",
+    "senses": [
+      {
+        "meaning": "female cattle",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "Animal whose milk might fill a dairy pail"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CRAB",
+    "senses": [
+      {
+        "meaning": "crustacean",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "Seaside creature with pincers"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CRANE",
+    "senses": [
+      {
+        "meaning": "lifting machinery",
+        "topics": [
+          "engineering"
+        ],
+        "clues": [
+          "Towering machine at a construction site"
+        ]
+      },
+      {
+        "meaning": "wading bird",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "A long-necked bird of marshes and plains"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CREAM",
+    "senses": [
+      {
+        "meaning": "milk fat",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Rich part of milk that can be whipped"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CUBE",
+    "senses": [
+      {
+        "meaning": "solid shape",
+        "topics": [
+          "mathematics"
+        ],
+        "clues": [
+          "A solid with six square faces"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CUP",
+    "senses": [
+      {
+        "meaning": "drinking vessel",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Tea might be served in one"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CURVE",
+    "senses": [
+      {
+        "meaning": "changing direction path",
+        "topics": [
+          "mathematics"
+        ],
+        "clues": [
+          "A line that isn't straight"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DANCE",
+    "senses": [
+      {
+        "meaning": "rhythmic movement",
+        "topics": [
+          "arts"
+        ],
+        "clues": [
+          "Rhythmic steps performed to music"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DAWN",
+    "senses": [
+      {
+        "meaning": "first daylight",
+        "topics": [
+          "weather"
+        ],
+        "clues": [
+          "First light of the morning"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DEER",
+    "senses": [
+      {
+        "meaning": "antlered animal",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "A woodland animal whose males often have antlers"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DELTA",
+    "senses": [
+      {
+        "meaning": "river mouth landform",
+        "topics": [
+          "geography"
+        ],
+        "clues": [
+          "Land formed by sediment where a river branches near its mouth"
+        ]
+      },
+      {
+        "meaning": "Greek letter",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "The Greek letter after gamma"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "DEN",
     "senses": [
       {
@@ -570,6 +1987,20 @@
         "clues": [
           "Shelter of a fox",
           "Where a fox might raise its young"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DEW",
+    "senses": [
+      {
+        "meaning": "condensed water",
+        "topics": [
+          "weather"
+        ],
+        "clues": [
+          "Morning droplets on the lawn"
         ]
       }
     ]
@@ -614,6 +2045,20 @@
     ]
   },
   {
+    "answer": "DIME",
+    "senses": [
+      {
+        "meaning": "US coin",
+        "topics": [
+          "money"
+        ],
+        "clues": [
+          "Ten-cent coin"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "DINED",
     "senses": [
       {
@@ -623,6 +2068,20 @@
         ],
         "clues": [
           "Ate a meal"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DINER",
+    "senses": [
+      {
+        "meaning": "person eating",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Person having a meal at a restaurant"
         ]
       }
     ]
@@ -642,6 +2101,48 @@
     ]
   },
   {
+    "answer": "DISH",
+    "senses": [
+      {
+        "meaning": "food vessel",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Container for serving a meal"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DIVER",
+    "senses": [
+      {
+        "meaning": "underwater worker",
+        "topics": [
+          "work"
+        ],
+        "clues": [
+          "Someone whose workplace may be below the waves"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DOG",
+    "senses": [
+      {
+        "meaning": "domestic canine",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "A pet often taught to fetch"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "DONE",
     "senses": [
       {
@@ -656,6 +2157,127 @@
     ]
   },
   {
+    "answer": "DOOR",
+    "senses": [
+      {
+        "meaning": "movable barrier",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Something you might knock on before entering"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DOT",
+    "senses": [
+      {
+        "meaning": "small circular mark",
+        "topics": [
+          "writing"
+        ],
+        "clues": [
+          "The mark above a lowercase i"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DOUGH",
+    "senses": [
+      {
+        "meaning": "flour mixture",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Mixture kneaded before baking bread"
+        ]
+      },
+      {
+        "meaning": "money slang",
+        "topics": [
+          "money"
+        ],
+        "clues": [
+          "Money, informally"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DOVE",
+    "senses": [
+      {
+        "meaning": "pigeon",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "Bird often used as a symbol of peace"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DRAMA",
+    "senses": [
+      {
+        "meaning": "stage work",
+        "topics": [
+          "arts"
+        ],
+        "clues": [
+          "A play intended for stage performance"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DREAM",
+    "senses": [
+      {
+        "meaning": "sleep experience",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "A story your mind tells while asleep"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DRILL",
+    "senses": [
+      {
+        "meaning": "hole making tool",
+        "topics": [
+          "tools"
+        ],
+        "clues": [
+          "Tool used to bore a hole"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DRUM",
+    "senses": [
+      {
+        "meaning": "percussion instrument",
+        "topics": [
+          "music"
+        ],
+        "clues": [
+          "Instrument struck with sticks or hands"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "DUB",
     "senses": [
       {
@@ -665,6 +2287,48 @@
         ],
         "clues": [
           "Give a nickname to"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DUCK",
+    "senses": [
+      {
+        "meaning": "water bird",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "Web-footed bird that quacks"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DUNE",
+    "senses": [
+      {
+        "meaning": "sand ridge",
+        "topics": [
+          "geography"
+        ],
+        "clues": [
+          "Wind-shaped hill of sand"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DUSK",
+    "senses": [
+      {
+        "meaning": "evening twilight",
+        "topics": [
+          "weather"
+        ],
+        "clues": [
+          "The fading light after sunset"
         ]
       }
     ]
@@ -685,6 +2349,43 @@
     ]
   },
   {
+    "answer": "EAGLE",
+    "senses": [
+      {
+        "meaning": "bird of prey",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "A broad-winged bird of prey"
+        ]
+      },
+      {
+        "meaning": "golf score",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "Two strokes under par on a golf hole"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EAR",
+    "senses": [
+      {
+        "meaning": "hearing organ",
+        "topics": [
+          "anatomy"
+        ],
+        "clues": [
+          "Where an earring may hang"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "EARN",
     "senses": [
       {
@@ -695,6 +2396,20 @@
         ],
         "clues": [
           "Receive in return for work"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EARTH",
+    "senses": [
+      {
+        "meaning": "soil",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "Loose soil in a garden"
         ]
       }
     ]
@@ -742,6 +2457,34 @@
     ]
   },
   {
+    "answer": "ECHO",
+    "senses": [
+      {
+        "meaning": "reflected sound",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "A shout returning from a canyon"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EDGE",
+    "senses": [
+      {
+        "meaning": "boundary",
+        "topics": [
+          "mathematics"
+        ],
+        "clues": [
+          "The boundary of a flat surface"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "EEL",
     "senses": [
       {
@@ -753,6 +2496,20 @@
         "clues": [
           "Long, snake-shaped fish",
           "A fish with a serpentine silhouette"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EGG",
+    "senses": [
+      {
+        "meaning": "food",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Breakfast item that can be poached"
         ]
       }
     ]
@@ -772,6 +2529,20 @@
     ]
   },
   {
+    "answer": "ELBOW",
+    "senses": [
+      {
+        "meaning": "arm joint",
+        "topics": [
+          "anatomy"
+        ],
+        "clues": [
+          "Joint between the upper and lower arm"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ELF",
     "senses": [
       {
@@ -781,6 +2552,20 @@
         ],
         "clues": [
           "Small magical being of folklore"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ELM",
+    "senses": [
+      {
+        "meaning": "tree",
+        "topics": [
+          "garden"
+        ],
+        "clues": [
+          "A shade tree of the genus Ulmus"
         ]
       }
     ]
@@ -867,6 +2652,57 @@
     ]
   },
   {
+    "answer": "FABLE",
+    "senses": [
+      {
+        "meaning": "moral story",
+        "topics": [
+          "writing"
+        ],
+        "clues": [
+          "A short story with a moral, often featuring animals"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FAIRY",
+    "senses": [
+      {
+        "meaning": "magical being",
+        "topics": [
+          "mythology"
+        ],
+        "clues": [
+          "A small magical being in folklore"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FAN",
+    "senses": [
+      {
+        "meaning": "air moving device",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "A device with spinning blades that cools a room"
+        ]
+      },
+      {
+        "meaning": "sports devotee",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "Someone cheering from the stands"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "FAVOR",
     "senses": [
       {
@@ -881,6 +2717,20 @@
     ]
   },
   {
+    "answer": "FEAST",
+    "senses": [
+      {
+        "meaning": "lavish meal",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "A particularly generous meal"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "FEE",
     "senses": [
       {
@@ -890,6 +2740,90 @@
         ],
         "clues": [
           "Charge for a service"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FENCE",
+    "senses": [
+      {
+        "meaning": "enclosing barrier",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Barrier marking a garden boundary"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FERN",
+    "senses": [
+      {
+        "meaning": "spore bearing plant",
+        "topics": [
+          "garden"
+        ],
+        "clues": [
+          "Plant with fronds rather than flowers"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FERRY",
+    "senses": [
+      {
+        "meaning": "crossing boat",
+        "topics": [
+          "transport"
+        ],
+        "clues": [
+          "Boat that regularly carries passengers across water"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FIELD",
+    "senses": [
+      {
+        "meaning": "open land",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "An open piece of land that may be enclosed"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FILE",
+    "senses": [
+      {
+        "meaning": "records",
+        "topics": [
+          "technology"
+        ],
+        "clues": [
+          "A collection of related records"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FILM",
+    "senses": [
+      {
+        "meaning": "movie",
+        "topics": [
+          "arts"
+        ],
+        "clues": [
+          "A story shown on a cinema screen"
         ]
       }
     ]
@@ -910,6 +2844,20 @@
     ]
   },
   {
+    "answer": "FISH",
+    "senses": [
+      {
+        "meaning": "aquatic vertebrate",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "Creature that typically breathes through gills"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "FIT",
     "senses": [
       {
@@ -919,6 +2867,90 @@
         ],
         "clues": [
           "Be the right size"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FLAG",
+    "senses": [
+      {
+        "meaning": "cloth emblem",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "A banner representing a country"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FLAME",
+    "senses": [
+      {
+        "meaning": "combustion",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Visible fire above a candle's wick"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FLASK",
+    "senses": [
+      {
+        "meaning": "narrow necked bottle",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Bottle with a narrow neck"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FLEA",
+    "senses": [
+      {
+        "meaning": "jumping insect",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "Tiny jumping parasite of pets"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FLOOD",
+    "senses": [
+      {
+        "meaning": "overflow of water",
+        "topics": [
+          "weather"
+        ],
+        "clues": [
+          "Water covering normally dry land"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FLOUR",
+    "senses": [
+      {
+        "meaning": "ground grain",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Powder from grain used in baking"
         ]
       }
     ]
@@ -949,6 +2981,48 @@
     ]
   },
   {
+    "answer": "FLY",
+    "senses": [
+      {
+        "meaning": "winged insect",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "A common insect with two wings"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FOAM",
+    "senses": [
+      {
+        "meaning": "mass of bubbles",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Bubbles atop a cappuccino"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FOCUS",
+    "senses": [
+      {
+        "meaning": "concentration",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Concentration of attention"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "FOE",
     "senses": [
       {
@@ -958,6 +3032,48 @@
         ],
         "clues": [
           "Enemy"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FOG",
+    "senses": [
+      {
+        "meaning": "low suspended droplets",
+        "topics": [
+          "weather"
+        ],
+        "clues": [
+          "Weather that obscures a road near ground level"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FONT",
+    "senses": [
+      {
+        "meaning": "type style",
+        "topics": [
+          "design"
+        ],
+        "clues": [
+          "A particular style and size of type"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FOOT",
+    "senses": [
+      {
+        "meaning": "length unit",
+        "topics": [
+          "measurement"
+        ],
+        "clues": [
+          "Twelve inches"
         ]
       }
     ]
@@ -1000,6 +3116,90 @@
     ]
   },
   {
+    "answer": "FORGE",
+    "senses": [
+      {
+        "meaning": "metalworking place",
+        "topics": [
+          "engineering"
+        ],
+        "clues": [
+          "A blacksmith's workplace"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FORK",
+    "senses": [
+      {
+        "meaning": "pronged utensil",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Utensil often used with a knife"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FRAME",
+    "senses": [
+      {
+        "meaning": "film image",
+        "topics": [
+          "arts"
+        ],
+        "clues": [
+          "One still image in a movie"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FROG",
+    "senses": [
+      {
+        "meaning": "amphibian",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "Pond dweller that leaps and croaks"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FROST",
+    "senses": [
+      {
+        "meaning": "ice deposit",
+        "topics": [
+          "weather"
+        ],
+        "clues": [
+          "White ice crystals on a cold window"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FRUIT",
+    "senses": [
+      {
+        "meaning": "seed plant product",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "Ripened seed-bearing part of a flowering plant"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "FRY",
     "senses": [
       {
@@ -1009,6 +3209,62 @@
         ],
         "clues": [
           "Cook in hot oil"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FUEL",
+    "senses": [
+      {
+        "meaning": "energy source",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Material consumed to release energy"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FUR",
+    "senses": [
+      {
+        "meaning": "animal coat",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "A cat's soft coat"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GALE",
+    "senses": [
+      {
+        "meaning": "strong wind",
+        "topics": [
+          "weather"
+        ],
+        "clues": [
+          "A very strong wind at sea"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GAP",
+    "senses": [
+      {
+        "meaning": "empty space",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Space between two objects"
         ]
       }
     ]
@@ -1032,6 +3288,34 @@
         ],
         "clues": [
           "Fuel sold by the gallon in the US"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GATE",
+    "senses": [
+      {
+        "meaning": "movable barrier",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Movable barrier in a fence"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GEAR",
+    "senses": [
+      {
+        "meaning": "toothed wheel",
+        "topics": [
+          "engineering"
+        ],
+        "clues": [
+          "A toothed wheel in a mechanism"
         ]
       }
     ]
@@ -1099,6 +3383,62 @@
     ]
   },
   {
+    "answer": "GIFT",
+    "senses": [
+      {
+        "meaning": "present",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Something given without payment"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GLUE",
+    "senses": [
+      {
+        "meaning": "adhesive",
+        "topics": [
+          "crafts"
+        ],
+        "clues": [
+          "Sticky stuff used to join paper"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GOAT",
+    "senses": [
+      {
+        "meaning": "ruminant",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "A bearded animal related to sheep"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GOLF",
+    "senses": [
+      {
+        "meaning": "sport",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "Sport commonly played over eighteen holes"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "GOO",
     "senses": [
       {
@@ -1127,6 +3467,90 @@
     ]
   },
   {
+    "answer": "GRID",
+    "senses": [
+      {
+        "meaning": "intersecting lines",
+        "topics": [
+          "mathematics"
+        ],
+        "clues": [
+          "Pattern of evenly spaced horizontal and vertical lines"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GRIN",
+    "senses": [
+      {
+        "meaning": "smile",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "A broad smile"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GULL",
+    "senses": [
+      {
+        "meaning": "seabird",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "A common white seabird"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GUM",
+    "senses": [
+      {
+        "meaning": "chewing confection",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Candy you chew rather than swallow"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GUST",
+    "senses": [
+      {
+        "meaning": "burst of wind",
+        "topics": [
+          "weather"
+        ],
+        "clues": [
+          "Sudden strong rush of air"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GYM",
+    "senses": [
+      {
+        "meaning": "exercise facility",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "Where you might lift weights"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "HAS",
     "senses": [
       {
@@ -1136,6 +3560,34 @@
         ],
         "clues": [
           "Possesses"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HAT",
+    "senses": [
+      {
+        "meaning": "headwear",
+        "topics": [
+          "clothing"
+        ],
+        "clues": [
+          "Something you might take off indoors"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HEN",
+    "senses": [
+      {
+        "meaning": "female chicken",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "A chicken that lays eggs"
         ]
       }
     ]
@@ -1178,6 +3630,34 @@
         ],
         "clues": [
           "Took on as an employee"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HUE",
+    "senses": [
+      {
+        "meaning": "color quality",
+        "topics": [
+          "arts"
+        ],
+        "clues": [
+          "A shade of color"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ICE",
+    "senses": [
+      {
+        "meaning": "frozen water",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "What melts in a cold drink"
         ]
       }
     ]
@@ -1226,6 +3706,20 @@
     ]
   },
   {
+    "answer": "INK",
+    "senses": [
+      {
+        "meaning": "writing fluid",
+        "topics": [
+          "writing"
+        ],
+        "clues": [
+          "What a fountain pen holds"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ION",
     "senses": [
       {
@@ -1269,6 +3763,71 @@
     ]
   },
   {
+    "answer": "IVY",
+    "senses": [
+      {
+        "meaning": "climbing plant",
+        "topics": [
+          "garden"
+        ],
+        "clues": [
+          "Climbing greenery on an old brick wall"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "JAM",
+    "senses": [
+      {
+        "meaning": "fruit preserve",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "A sweet spread for toast"
+        ]
+      },
+      {
+        "meaning": "difficult situation",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "A predicament, informally"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "JAR",
+    "senses": [
+      {
+        "meaning": "storage vessel",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Container for a batch of preserves"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "JAW",
+    "senses": [
+      {
+        "meaning": "part of skull",
+        "topics": [
+          "anatomy"
+        ],
+        "clues": [
+          "Part of the face that holds the teeth"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "JELLY",
     "senses": [
       {
@@ -1292,6 +3851,20 @@
     ]
   },
   {
+    "answer": "JET",
+    "senses": [
+      {
+        "meaning": "aircraft",
+        "topics": [
+          "transport"
+        ],
+        "clues": [
+          "Plane powered by jet engines"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "JOB",
     "senses": [
       {
@@ -1301,6 +3874,34 @@
         ],
         "clues": [
           "Paid position"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "JOY",
+    "senses": [
+      {
+        "meaning": "happiness",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "A feeling of great delight"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "KEY",
+    "senses": [
+      {
+        "meaning": "lock opener",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Something that opens a lock"
         ]
       }
     ]
@@ -1334,6 +3935,20 @@
     ]
   },
   {
+    "answer": "LAB",
+    "senses": [
+      {
+        "meaning": "research workplace",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Where a scientist may conduct experiments"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "LAWN",
     "senses": [
       {
@@ -1350,6 +3965,20 @@
     ]
   },
   {
+    "answer": "LID",
+    "senses": [
+      {
+        "meaning": "container cover",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Top of a jar or pot"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "LIMIT",
     "senses": [
       {
@@ -1360,6 +3989,20 @@
         ],
         "clues": [
           "Maximum permitted amount"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LIP",
+    "senses": [
+      {
+        "meaning": "mouth tissue",
+        "topics": [
+          "anatomy"
+        ],
+        "clues": [
+          "One of the two fleshy borders of the mouth"
         ]
       }
     ]
@@ -1383,6 +4026,20 @@
         ],
         "clues": [
           "Literature, informally, in a course title"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LOG",
+    "senses": [
+      {
+        "meaning": "tree trunk segment",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "A piece of wood for the fireplace"
         ]
       }
     ]
@@ -1426,6 +4083,34 @@
         ],
         "clues": [
           "Manufactured or created"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MAP",
+    "senses": [
+      {
+        "meaning": "geographical diagram",
+        "topics": [
+          "geography"
+        ],
+        "clues": [
+          "A guide to finding your way"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MAT",
+    "senses": [
+      {
+        "meaning": "floor pad",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "A place to wipe your feet"
         ]
       }
     ]
@@ -1580,6 +4265,20 @@
     ]
   },
   {
+    "answer": "MUD",
+    "senses": [
+      {
+        "meaning": "wet earth",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "What rain turns dirt into"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "MUG",
     "senses": [
       {
@@ -1600,6 +4299,20 @@
         ],
         "clues": [
           "Face, in informal speech"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "NAP",
+    "senses": [
+      {
+        "meaning": "short sleep",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "A midday snooze"
         ]
       }
     ]
@@ -1628,6 +4341,48 @@
         ],
         "clues": [
           "Partner of neither"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "NUT",
+    "senses": [
+      {
+        "meaning": "threaded fastener",
+        "topics": [
+          "tools"
+        ],
+        "clues": [
+          "A bolt's threaded partner"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "OAK",
+    "senses": [
+      {
+        "meaning": "tree",
+        "topics": [
+          "garden"
+        ],
+        "clues": [
+          "Tree that bears acorns"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "OAR",
+    "senses": [
+      {
+        "meaning": "boat propulsion implement",
+        "topics": [
+          "transport"
+        ],
+        "clues": [
+          "A rower's implement"
         ]
       }
     ]
@@ -1689,6 +4444,20 @@
     ]
   },
   {
+    "answer": "ORB",
+    "senses": [
+      {
+        "meaning": "sphere",
+        "topics": [
+          "mathematics"
+        ],
+        "clues": [
+          "A round ball-shaped object"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ORE",
     "senses": [
       {
@@ -1727,6 +4496,20 @@
         ],
         "clues": [
           "Is in debt to"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "OWL",
+    "senses": [
+      {
+        "meaning": "nocturnal bird",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "Bird associated with hooting at night"
         ]
       }
     ]

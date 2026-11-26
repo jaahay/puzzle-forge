@@ -35,5 +35,16 @@
         "sha256": "932ef25fd64abee8918698ff92ec954e4a50947638da9262ac2e69f168198878"
       }
     ]
+  },
+  "wordnet": {
+    "id": "oewn-2025",
+    "name": "Open English WordNet (regular edition)",
+    "release": "2025-edition",
+    "url": "https://en-word.net/static/english-wordnet-2025.xml.gz",
+    "repository": "https://github.com/globalwordnet/english-wordnet",
+    "sha256": "9ca6d1dcb75f822fdd66617f7d9da48142ace38dd544d6ad5e2feca1674ad3fe",
+    "bytes": 11363503,
+    "license": "CC BY 4.0",
+    "licenseNotice": "public/lexicon/NOTICE.txt"
   }
 }
