@@ -54,6 +54,20 @@
     ]
   },
   {
+    "answer": "ACT",
+    "senses": [
+      {
+        "meaning": "section of performance",
+        "topics": [
+          "arts"
+        ],
+        "clues": [
+          "Part of a play before or after an intermission"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "AGE",
     "senses": [
       {
@@ -166,6 +180,20 @@
         ],
         "clues": [
           "Book for organizing photographs"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ALE",
+    "senses": [
+      {
+        "meaning": "beer",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Brew served at a pub"
         ]
       }
     ]
@@ -382,6 +410,20 @@
     ]
   },
   {
+    "answer": "ARM",
+    "senses": [
+      {
+        "meaning": "limb",
+        "topics": [
+          "anatomy"
+        ],
+        "clues": [
+          "Limb that connects shoulder and hand"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ARROW",
     "senses": [
       {
@@ -492,6 +534,20 @@
     ]
   },
   {
+    "answer": "AWE",
+    "senses": [
+      {
+        "meaning": "wonder",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Feeling inspired by a spectacular sight"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "AXE",
     "senses": [
       {
@@ -543,6 +599,20 @@
         ],
         "clues": [
           "Someone who makes bread for a living"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BAND",
+    "senses": [
+      {
+        "meaning": "musical group",
+        "topics": [
+          "music"
+        ],
+        "clues": [
+          "Group of musicians playing together"
         ]
       }
     ]
@@ -3425,6 +3495,20 @@
     ]
   },
   {
+    "answer": "GOLD",
+    "senses": [
+      {
+        "meaning": "metal",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Metal whose chemical symbol is Au"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "GOLF",
     "senses": [
       {
@@ -3467,6 +3551,20 @@
     ]
   },
   {
+    "answer": "GRASS",
+    "senses": [
+      {
+        "meaning": "narrow-leaved plant",
+        "topics": [
+          "garden"
+        ],
+        "clues": [
+          "Green growth that a lawn mower trims"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "GRID",
     "senses": [
       {
@@ -3476,6 +3574,20 @@
         ],
         "clues": [
           "Pattern of evenly spaced horizontal and vertical lines"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GRILL",
+    "senses": [
+      {
+        "meaning": "restaurant",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Restaurant specializing in food cooked over heat"
         ]
       }
     ]
@@ -3551,6 +3663,20 @@
     ]
   },
   {
+    "answer": "HARP",
+    "senses": [
+      {
+        "meaning": "stringed instrument",
+        "topics": [
+          "music"
+        ],
+        "clues": [
+          "Instrument with a large triangular frame and plucked strings"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "HAS",
     "senses": [
       {
@@ -3602,6 +3728,20 @@
         ],
         "clues": [
           "Object pronoun corresponding to she"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HERO",
+    "senses": [
+      {
+        "meaning": "central character",
+        "topics": [
+          "writing"
+        ],
+        "clues": [
+          "Central character of an adventure story"
         ]
       }
     ]
@@ -3758,6 +3898,20 @@
         ],
         "clues": [
           "Annoy or irritate"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "IRON",
+    "senses": [
+      {
+        "meaning": "clothes smoothing appliance",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Appliance used to press wrinkles out of shirts"
         ]
       }
     ]
@@ -3949,6 +4103,48 @@
     ]
   },
   {
+    "answer": "LAKE",
+    "senses": [
+      {
+        "meaning": "inland water body",
+        "topics": [
+          "geography"
+        ],
+        "clues": [
+          "Body of water surrounded by land"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LAVA",
+    "senses": [
+      {
+        "meaning": "molten rock",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Molten rock flowing from a volcano"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LAW",
+    "senses": [
+      {
+        "meaning": "authoritative rules",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "Rules imposed by a governing authority"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "LAWN",
     "senses": [
       {
@@ -3974,6 +4170,20 @@
         ],
         "clues": [
           "Top of a jar or pot"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LIME",
+    "senses": [
+      {
+        "meaning": "citrus fruit",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Green citrus fruit squeezed into a drink"
         ]
       }
     ]
@@ -4031,6 +4241,20 @@
     ]
   },
   {
+    "answer": "LODGE",
+    "senses": [
+      {
+        "meaning": "temporary shelter",
+        "topics": [
+          "architecture"
+        ],
+        "clues": [
+          "Rustic house used as a temporary shelter"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "LOG",
     "senses": [
       {
@@ -4083,6 +4307,20 @@
         ],
         "clues": [
           "Manufactured or created"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MANGO",
+    "senses": [
+      {
+        "meaning": "tropical fruit",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Juicy tropical fruit with a large flat seed"
         ]
       }
     ]
@@ -4196,6 +4434,20 @@
     ]
   },
   {
+    "answer": "METAL",
+    "senses": [
+      {
+        "meaning": "conducting element",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Material such as copper or aluminum"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "MILL",
     "senses": [
       {
@@ -4231,6 +4483,20 @@
         ],
         "clues": [
           "Low sounds of pain"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MOO",
+    "senses": [
+      {
+        "meaning": "cattle sound",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "Sound heard in a dairy barn"
         ]
       }
     ]
@@ -4318,6 +4584,20 @@
     ]
   },
   {
+    "answer": "NEAT",
+    "senses": [
+      {
+        "meaning": "organized",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Not messy"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "NOD",
     "senses": [
       {
@@ -4388,6 +4668,20 @@
     ]
   },
   {
+    "answer": "OMEN",
+    "senses": [
+      {
+        "meaning": "sign of future event",
+        "topics": [
+          "mythology"
+        ],
+        "clues": [
+          "Sign of something yet to come"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ONCE",
     "senses": [
       {
@@ -4430,6 +4724,20 @@
     ]
   },
   {
+    "answer": "OPEN",
+    "senses": [
+      {
+        "meaning": "not shut",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Like an unclosed door"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "OPTS",
     "senses": [
       {
@@ -4458,6 +4766,20 @@
     ]
   },
   {
+    "answer": "ORCA",
+    "senses": [
+      {
+        "meaning": "toothed whale",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "Black-and-white toothed whale"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ORE",
     "senses": [
       {
@@ -4468,6 +4790,48 @@
         ],
         "clues": [
           "Rock from which metal can be extracted"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ORGAN",
+    "senses": [
+      {
+        "meaning": "pipe instrument",
+        "topics": [
+          "music"
+        ],
+        "clues": [
+          "Keyboard instrument with rows of sounding pipes"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "OTTER",
+    "senses": [
+      {
+        "meaning": "aquatic mammal",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "Web-footed mammal that swims in rivers"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "OVEN",
+    "senses": [
+      {
+        "meaning": "baking appliance",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Where bread dough turns into a loaf"
         ]
       }
     ]
@@ -4554,6 +4918,20 @@
     ]
   },
   {
+    "answer": "PANE",
+    "senses": [
+      {
+        "meaning": "sheet of glass",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "One sheet of glass in a window"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "PARTY",
     "senses": [
       {
@@ -4577,6 +4955,20 @@
     ]
   },
   {
+    "answer": "PAW",
+    "senses": [
+      {
+        "meaning": "animal foot",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "A cat's foot"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "PEA",
     "senses": [
       {
@@ -4588,6 +4980,20 @@
         "clues": [
           "Small green seed in a pod",
           "One of a pod's little green residents"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PEER",
+    "senses": [
+      {
+        "meaning": "equal in standing",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "Someone of equal standing"
         ]
       }
     ]
@@ -4611,6 +5017,20 @@
         ],
         "clues": [
           "Small enclosures for livestock"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PENT",
+    "senses": [
+      {
+        "meaning": "confined",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "___-up frustration"
         ]
       }
     ]
@@ -4655,6 +5075,20 @@
     ]
   },
   {
+    "answer": "PIANO",
+    "senses": [
+      {
+        "meaning": "keyboard instrument",
+        "topics": [
+          "music"
+        ],
+        "clues": [
+          "Instrument with keys that cause hammers to strike strings"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "PIE",
     "senses": [
       {
@@ -4665,6 +5099,48 @@
         "clues": [
           "Dessert with a crust and filling",
           "Dessert that might be sliced into wedges"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PIKE",
+    "senses": [
+      {
+        "meaning": "freshwater fish",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "Long-snouted freshwater fish"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PILOT",
+    "senses": [
+      {
+        "meaning": "aircraft operator",
+        "topics": [
+          "transport"
+        ],
+        "clues": [
+          "Person at the controls of an airplane"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PINE",
+    "senses": [
+      {
+        "meaning": "conifer",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "Tree with needles and woody cones"
         ]
       }
     ]
@@ -4731,6 +5207,62 @@
     ]
   },
   {
+    "answer": "POPE",
+    "senses": [
+      {
+        "meaning": "church head",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "Head of the Roman Catholic Church"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PORE",
+    "senses": [
+      {
+        "meaning": "skin opening",
+        "topics": [
+          "anatomy"
+        ],
+        "clues": [
+          "Tiny opening in the skin"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PORT",
+    "senses": [
+      {
+        "meaning": "place of entry",
+        "topics": [
+          "transport"
+        ],
+        "clues": [
+          "Place where ships can enter a country"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PUN",
+    "senses": [
+      {
+        "meaning": "wordplay",
+        "topics": [
+          "writing"
+        ],
+        "clues": [
+          "A joke that plays on the meanings of words"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "PURE",
     "senses": [
       {
@@ -4741,6 +5273,20 @@
         ],
         "clues": [
           "Free of impurities"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PUSH",
+    "senses": [
+      {
+        "meaning": "application of force",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Opposite of a pull"
         ]
       }
     ]
@@ -4769,6 +5315,20 @@
     ]
   },
   {
+    "answer": "RAVEN",
+    "senses": [
+      {
+        "meaning": "black bird",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "Large black bird with a wedge-shaped tail"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "RAW",
     "senses": [
       {
@@ -4792,6 +5352,20 @@
     ]
   },
   {
+    "answer": "REACT",
+    "senses": [
+      {
+        "meaning": "respond",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Respond to something that happens"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "RED",
     "senses": [
       {
@@ -4802,6 +5376,20 @@
         "clues": [
           "Color of a stop sign",
           "The color that says stop"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "REEL",
+    "senses": [
+      {
+        "meaning": "fishing spool",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "Spool attached to a fishing rod"
         ]
       }
     ]
@@ -4822,6 +5410,34 @@
     ]
   },
   {
+    "answer": "RIDGE",
+    "senses": [
+      {
+        "meaning": "raised landform",
+        "topics": [
+          "geography"
+        ],
+        "clues": [
+          "A long narrow rise in the land"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RIP",
+    "senses": [
+      {
+        "meaning": "tear opening",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "A tear in a piece of cloth"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "RISE",
     "senses": [
       {
@@ -4831,6 +5447,20 @@
         ],
         "clues": [
           "Move upward"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RIVER",
+    "senses": [
+      {
+        "meaning": "natural stream",
+        "topics": [
+          "geography"
+        ],
+        "clues": [
+          "A large natural stream of water"
         ]
       }
     ]
@@ -4861,6 +5491,20 @@
     ]
   },
   {
+    "answer": "ROE",
+    "senses": [
+      {
+        "meaning": "fish eggs",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Fish eggs used as food"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ROUTE",
     "senses": [
       {
@@ -4871,6 +5515,34 @@
         ],
         "clues": [
           "Course taken on a journey"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ROW",
+    "senses": [
+      {
+        "meaning": "line of things",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "A line of theater seats"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RUG",
+    "senses": [
+      {
+        "meaning": "floor covering",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "A small carpet"
         ]
       }
     ]
@@ -4908,6 +5580,20 @@
         ],
         "clues": [
           "Extent or range of an activity"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SEA",
+    "senses": [
+      {
+        "meaning": "saltwater body",
+        "topics": [
+          "geography"
+        ],
+        "clues": [
+          "Large body of salt water"
         ]
       }
     ]
@@ -4975,6 +5661,20 @@
         ],
         "clues": [
           "Scenery on a stage"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SHORE",
+    "senses": [
+      {
+        "meaning": "waterside land",
+        "topics": [
+          "geography"
+        ],
+        "clues": [
+          "Land along the edge of water"
         ]
       }
     ]
@@ -5061,6 +5761,62 @@
     ]
   },
   {
+    "answer": "SNAKE",
+    "senses": [
+      {
+        "meaning": "limbless reptile",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "A reptile without legs"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SOLAR",
+    "senses": [
+      {
+        "meaning": "related to the sun",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Like energy harnessed by rooftop panels"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SOLID",
+    "senses": [
+      {
+        "meaning": "state of matter",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "State of matter that retains its shape"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SON",
+    "senses": [
+      {
+        "meaning": "male child",
+        "topics": [
+          "family"
+        ],
+        "clues": [
+          "Male offspring"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SPA",
     "senses": [
       {
@@ -5070,6 +5826,20 @@
         ],
         "clues": [
           "Place offering wellness treatments"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SPACE",
+    "senses": [
+      {
+        "meaning": "empty area",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Room between things"
         ]
       }
     ]
@@ -5098,6 +5868,20 @@
         ],
         "clues": [
           "Person who secretly gathers information"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "STAG",
+    "senses": [
+      {
+        "meaning": "male deer",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "An adult male deer"
         ]
       }
     ]
@@ -5137,6 +5921,20 @@
         ],
         "clues": [
           "Lead performer in a movie"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "STONE",
+    "senses": [
+      {
+        "meaning": "piece of rock",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "A piece of hard rock"
         ]
       }
     ]
@@ -5194,6 +5992,34 @@
     ]
   },
   {
+    "answer": "TIDE",
+    "senses": [
+      {
+        "meaning": "periodic sea level change",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "Periodic rise and fall of sea level"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TIN",
+    "senses": [
+      {
+        "meaning": "metal",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Metal whose chemical symbol is Sn"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "TOE",
     "senses": [
       {
@@ -5203,6 +6029,20 @@
         ],
         "clues": [
           "One of five digits on a foot"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TONE",
+    "senses": [
+      {
+        "meaning": "quality of voice",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Quality of someone's speaking voice"
         ]
       }
     ]
@@ -5416,6 +6256,20 @@
         ],
         "clues": [
           "Answer of agreement"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "YIELD",
+    "senses": [
+      {
+        "meaning": "quantity produced",
+        "topics": [
+          "agriculture"
+        ],
+        "clues": [
+          "Amount produced by a harvest"
         ]
       }
     ]

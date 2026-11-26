@@ -7,6 +7,7 @@ import { buildCrosswordTopology, type CrosswordBoard, type CrosswordAnswer, type
 const miniTopologies = [
   ["##...", "#....", ".....", "....#", "...##"],
   ["##...", "##...", ".....", "...##", "...##"],
+  ["##...", "##...", ".....", "....#", "...##"],
 ].map(buildCrosswordTopology);
 const maxSearchNodesPerLayout = 50_000;
 

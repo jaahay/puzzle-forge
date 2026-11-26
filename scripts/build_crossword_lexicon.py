@@ -19,14 +19,13 @@ def read_json(path):
 
 
 def wordnet_rows():
-    """The suffix is the exact source sense-key suffix, not an ordinal."""
+    """Read exact source sense IDs without reconstructing them from spellings."""
     rows = []
     seen = set()
     for line in (EDITORIAL / "wordnet-clues.tsv").read_text(encoding="utf8").splitlines():
-        answer, suffix, meaning, topic, clue = line.split("|")
-        if not re.fullmatch(r"[A-Z]{3,5}", answer) or not suffix or not all((meaning, topic, clue)):
+        answer, sense_id, meaning, topic, clue = line.split("|")
+        if not re.fullmatch(r"[A-Z]{3,5}", answer) or not sense_id.startswith("oewn-") or not all((meaning, topic, clue)):
             raise ValueError(f"Invalid WordNet editorial record: {answer}")
-        sense_id = f"oewn-{answer.lower()}__{suffix}"
         if sense_id in seen:
             raise ValueError(f"Duplicate source sense: {sense_id}")
         seen.add(sense_id)

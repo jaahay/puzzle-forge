@@ -26,7 +26,7 @@ describe("Crossword topology", () => {
 
 describe("Crossword clue inventory", () => {
   it("contains deliberately selected, distinct clue/answer pairs", () => {
-    expect(bank.length).toBeGreaterThanOrEqual(150);
+    expect(bank.length).toBeGreaterThanOrEqual(400);
     expect(bank.filter(record => record.senses.length > 1).length).toBeGreaterThan(25);
     expect(bank.filter(record => record.senses.some(sense => sense.clues.length > 1)).length).toBeGreaterThan(20);
     for (const n of [3, 4, 5]) expect(bank.filter(record => record.answer.length === n).length).toBeGreaterThan(15);
@@ -93,9 +93,9 @@ describe("Mini Crossword construction", () => {
       solutions.add(board.solution);
       answerSets.add(found.sort().join(","));
     }
-    expect(layouts.size).toBe(2);
+    expect(layouts.size).toBe(3);
     expect(solutions.size).toBeGreaterThanOrEqual(16);
-    expect(answerSets.size).toBeGreaterThanOrEqual(10);
+    expect(answerSets.size).toBeGreaterThanOrEqual(20);
     // Alternative clue formulations must be exercised in generated boards,
     // not merely present in the source bank.
     expect([...selectedClues.values()].some(clues => clues.size > 1)).toBe(true);
