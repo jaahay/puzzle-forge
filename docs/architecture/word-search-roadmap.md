@@ -40,3 +40,72 @@ Word Search uses its own generated puzzle and session kind, dispatched by the ex
 The application owns the found-word set, updates its synchronous snapshot before autosave/navigation, validates restored progress against the regenerated baseline, and derives completion and abandonment state from the same progress. The canonical session payload stores only found word names and the existing outer checksum; the immutable board is regenerated. Reset uses shared confirmation, completion uses the shared terminal dock. A wrong selection has no persistent effect, and a correct find is monotonic until reset; individual Undo/Redo actions are intentionally not introduced for this initial ruleset.
 
 Manual QA should cover the pointer/touch/keyboard experience at narrow widths, completion transitions, interrupted drags and restoration, as well as perceived difficulty. Do not introduce a universal word-puzzle engine or a historical content-version scheme.
+
+## Future design directions
+
+The implemented profiles are a starting point, not a ceiling on the design space. The goal is an enjoyable spatial search with familiar, recognizable targets and meaningful variation between boards. The following are exploratory directions, not committed requirements or a backlog of features to implement together.
+
+### Vocabulary and thematic experience
+
+General is the broad, unthemed experience; Mixed draws from the authored thematic collections. General may ultimately be the more attractive default because it maximizes variety, but that is a product hypothesis, not an observed preference across players. Keep the curated themes available as intentional, coherent alternatives. Reconsider the default after playtesting rather than silently changing the meaning of Mixed.
+
+Theme membership should be many-to-many and sense-aware. A word's spelling alone does not determine all its associations: SALMON can belong to Animals, Ocean and Food; PIANO to Music, Instruments and Arts; MERCURY to Space, Chemistry or Mythology, depending on the intended sense. A familiar spelling may be suitable in one theme even when a different sense would be obscure. Not all thematic words need to be eligible Word Guess answers.
+
+Themes need not be restricted to taxonomic categories:
+
+| Kind | Example theme | Illustrative words |
+| --- | --- | --- |
+| Conventional | Space | PLANET, ORBIT, GALAXY, COMET |
+| Situational | A rainy afternoon | WINDOW, BLANKET, COCOA, THUNDER |
+| Conceptual | Things that move | RIVER, PENDULUM, CLOUD, TRAIN |
+| Historical or cultural | The Renaissance | FRESCO, PATRON, MARBLE, SONNET |
+| Linguistic | Silent letters | KNIGHT, GNOME, PSALM, DOUBT |
+
+These examples illustrate selection intent, not approved inventories. Situational and conceptual collections can be particularly evocative. A future Surprise theme could choose a coherent concrete collection for each puzzle, rather than mix arbitrary categories on one board. Resolve that choice deterministically and retain the concrete theme in resource identity so a shared or resumed puzzle is unambiguous.
+
+### Semantic enrichment and shared lexical knowledge
+
+A hybrid approach is worth investigating: derive candidate memberships automatically from broad lexical resources, then refine the collections editorially. Different methods offer complementary evidence:
+
+| Method | Useful contribution | Caveat |
+| --- | --- | --- |
+| Editorial curation | Deliberate theme coherence and familiar vocabulary | Effort grows with collection size |
+| [Open English WordNet](https://en-word.net/) | Sense definitions, synonyms and lexical relationships | Taxonomy is not the same as everyday thematic association |
+| [Wikidata](https://www.wikidata.org/) | Named entities and conceptual relationships | Uneven coverage of ordinary vocabulary |
+| Semantic embeddings | Candidate associations and related-word discovery | Similarity does not establish theme suitability |
+| LLM-assisted classification | Contextual associations and proposed themes | Outputs require evidence and editorial review |
+
+These are candidate sources or techniques, not selected dependencies. Evaluate coverage, sense quality, licensing, attribution and reproducibility before ingestion. Avoid treating all automatically inferred associations as equally relevant. A theme should have enough familiar and length-appropriate targets for varied boards; a technically valid but weak association can still make a theme feel incoherent.
+
+The natural opportunity across Word Guess, Word Search and Mini Crossword is shared **build-time lexical knowledge**, rather than a shared runtime dictionary or universal word-puzzle engine. Spellings, familiarity, senses, definitions, relationships, candidate theme memberships and provenance may be useful common inputs. Each game has its own selection contract:
+
+- Word Guess distinguishes valid guesses from eligible answers and may compile starter statistics.
+- Word Search selects spatially compatible, familiar targets from broad or themed collections; sense information informs editorial membership, not the mechanics of finding a word.
+- Crossword needs defensible clue-answer pairs, including sense-specific clues, suitable answer lengths and grid compatibility. A word list by itself is insufficient.
+
+Compile small, puzzle-specific runtime assets from pinned inputs and deliberate editorial decisions; load assets on demand using the existing static hosting and worker model. Reuse genuinely common content and provenance without forcing games to share runtime types, eligibility rules or release schedules. Explore Crossword's lexical needs before investing in a general semantic enrichment pipeline, so any common machinery is justified by actual use.
+
+### Spatial and linguistic difficulty
+
+Treat difficulty as a composition of independent dimensions. The current profiles combine them into a small set of coherent experiences; individual controls are not required for every tunable quantity.
+
+| Dimension | Directions to explore |
+| --- | --- |
+| Geometry | Board size and aspect ratio, target count and length, spatial distribution, overlap and density |
+| Orientation | Natural reading bias, reversed words, diagonals, and balance among allowed directions |
+| Letter distribution | Uniform noise versus broad-language, theme-specific or target-conditioned frequencies |
+| False leads | Shared prefixes, single-letter substitutions, near-anagrams and deliberately similar letter sequences |
+| Semantic interference | Related or competing words, provided the player's objective stays clear |
+| Ruleset variation | Bent or wrapping paths, irregular geometry, alternate alphabets, wildcard cells and clue-driven discovery |
+
+Keep natural rightward and downward reading strongly represented at easier difficulties. Increase interference, overlap and direction diversity progressively; calibrate actual distributions and solve experience rather than requiring every board to hit exact ratios. More difficult need not mean more obscure vocabulary or a larger board. Consider exposing configuration only when a dimension supports a recognizable and desirable experience; avoid a parameter wall.
+
+Distinguish nonword filler from deliberately placed decoys and incidental real words. A prefix-preserving near-match can reward careful observation, whereas an unintended second exact occurrence of a listed target violates the current uniqueness guarantee. Unlisted real words are normally harmless discoveries rather than selectable objectives. More aggressive lexical or semantic interference should preserve the fairness of the listed objectives. Content screening, if introduced, should distinguish authored targets from incidental strings, and should not promise to eliminate all possible offensive substrings.
+
+### Presentation and evaluation
+
+The workspace should remain board-first. Keep the word list compact, stable, readable and adjacent to the puzzle; prefer available-width adaptation over a viewport-only breakpoint. Keep completion and Next puzzle close to the board, including on mobile and in the expanded workspace. Found-state marks must remain understandable without color alone, and touch, pointer and keyboard interaction should remain equivalent. Additional explanations and advanced configuration should not displace the puzzle surface.
+
+Judge improvements by actual play: perceived difficulty, naturalness of the word directions, theme coherence, vocabulary variety, mobile readability, and ease of continuing after completion. Broader deterministic seed sweeps can measure direction mix, generation failures and latency, and verify that every listed target remains uniquely discoverable; they supplement rather than replace manual QA.
+
+General and the current compact profiles provide a substantial playable foundation. Retain these directions as design context, and prioritize individual refinements only when their expected value warrants the change.
