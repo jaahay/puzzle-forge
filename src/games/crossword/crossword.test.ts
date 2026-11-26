@@ -30,9 +30,14 @@ describe("Crossword clue inventory", () => {
     expect(bank.filter(record => record.senses.length > 1).length).toBeGreaterThan(25);
     expect(bank.filter(record => record.senses.some(sense => sense.clues.length > 1)).length).toBeGreaterThan(20);
     for (const n of [3, 4, 5]) expect(bank.filter(record => record.answer.length === n).length).toBeGreaterThan(15);
-    const spelling = JSON.parse(readFileSync(new URL("../../../assets/lexicon/word-guess-answers.json", import.meta.url), "utf8")) as Record<string, string[]>;
-    for (const record of bank.filter(record => record.answer.length >= 4)) {
-      expect(spelling[String(record.answer.length)]).toContain(record.answer);
+    // Verify spelling against the broad spelling reference, not another
+    // game's more restrictive answer eligibility.
+    for (const n of [4, 5]) {
+      const spelling = JSON.parse(readFileSync(new URL(`../../../public/lexicon/word-guess/banks/${n}.json`, import.meta.url), "utf8")) as { validGuesses: string[] };
+      const accepted = new Set(spelling.validGuesses);
+      for (const record of bank.filter(record => record.answer.length === n)) {
+        expect(accepted.has(record.answer)).toBe(true);
+      }
     }
   });
   it("rejects malformed records and duplicate answers, senses or clue formulations", () => {
@@ -54,6 +59,7 @@ describe("Mini Crossword construction", () => {
   it("constructs deterministic, fully checked boards with distinct approved answers across seeds", () => {
     const byAnswer = new Map(bank.map(record => [record.answer, record.senses.flatMap(sense => sense.clues)]));
     const layouts = new Set<string>();
+    const selectedClues = new Map<string, Set<string>>();
     const solutions = new Set<string>();
     const answerSets = new Set<string>();
     for (let i = 0; i < 128; i++) {
@@ -67,6 +73,9 @@ describe("Mini Crossword construction", () => {
         const answer = entry.cells.map(cell => board.solution[cell]).join("");
         expect(byAnswer.get(answer)).toContain(entry.clue);
         found.push(answer);
+        const observed = selectedClues.get(answer) ?? new Set<string>();
+        observed.add(entry.clue);
+        selectedClues.set(answer, observed);
       }
       expect(new Set(found).size).toBe(10);
       for (let cell = 0; cell < board.solution.length; cell++) {
@@ -87,11 +96,19 @@ describe("Mini Crossword construction", () => {
     expect(layouts.size).toBe(2);
     expect(solutions.size).toBeGreaterThanOrEqual(16);
     expect(answerSets.size).toBeGreaterThanOrEqual(10);
+    // Alternative clue formulations must be exercised in generated boards,
+    // not merely present in the source bank.
+    expect([...selectedClues.values()].some(clues => clues.size > 1)).toBe(true);
+    expect(bank.some(record => record.senses.filter(sense =>
+      sense.clues.some(clue => selectedClues.get(record.answer)?.has(clue))).length > 1)).toBe(true);
   }, 30_000);
 
   it("does not weight fill by the number of clues or senses", () => {
     const expanded = bank.map(record => ({
-      ...record, senses: record.senses.map(sense => ({ ...sense, clues: [...sense.clues, "Alternate formulation for " + sense.meaning] })),
+      ...record, senses: [
+        ...record.senses.map(sense => ({ ...sense, clues: [...sense.clues, "Alternate formulation for " + sense.meaning] })),
+        { meaning: "synthetic test sense", topics: ["test"], clues: ["Synthetic test clue"] },
+      ],
     }));
     for (let i = 0; i < 12; i++) {
       expect(generateMiniCrossword(`variant-${i}`, expanded).solution).toBe(generateMiniCrossword(`variant-${i}`, bank).solution);
