@@ -202,9 +202,6 @@ export const JigsawWorkspace = ({
       status={showStatus ? <p class="status-line" aria-live="polite">{statusMessage}</p> : null}
       board={board}
       gameplay={gameplay}
-      enableImmersive
-      immersiveEntry="descendant"
-      immersiveFullscreenControl="descendant"
     />
   );
 };

@@ -298,35 +298,6 @@ const JigsawFitIcon = () => (
   </svg>
 );
 
-const JigsawExpandIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M9 4H4v5" />
-    <path d="m4 4 6 6" />
-    <path d="M15 20h5v-5" />
-    <path d="m20 20-6-6" />
-  </svg>
-);
-
-const JigsawFullscreenIcon = ({ active }: { active: boolean }) => (
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    {active ? (
-      <>
-        <path d="M8 3v5H3" />
-        <path d="M16 3v5h5" />
-        <path d="M21 16h-5v5" />
-        <path d="M3 16v5h5" />
-      </>
-    ) : (
-      <>
-        <path d="M8 3H3v5" />
-        <path d="M16 3h5v5" />
-        <path d="M21 16v5h-5" />
-        <path d="M3 16v5h5" />
-      </>
-    )}
-  </svg>
-);
-
 export const TilePuzzlePreview = ({
   puzzle,
   inputSuspended = false,
@@ -617,7 +588,7 @@ export const TilePuzzlePreview = ({
     if (!stage || !workspace) return { top: 0, right: 0, bottom: 0, left: 0 };
 
     const overlayElements = Array.from(workspace.querySelectorAll<HTMLElement>(
-      ".jigsaw-tools-toggle, .tile-puzzle-tools, .jigsaw-camera-tools, .puzzle-workspace-display-tools",
+      ".jigsaw-tools-toggle, .tile-puzzle-tools, .jigsaw-camera-tools",
     ));
     const view = stage.ownerDocument.defaultView;
     const isVisible = (element: HTMLElement) => {
@@ -1445,27 +1416,6 @@ export const TilePuzzlePreview = ({
             <JigsawFitIcon />
           </button>
           <button type="button" onClick={() => zoomView("in")} aria-label="Zoom in" title="Zoom in">+</button>
-          {!displayMode.isExpanded ? (
-            <button
-              class="jigsaw-expand-workspace"
-              type="button"
-              onClick={displayMode.enterExpanded}
-              aria-label="Expand workspace"
-              title="Expand workspace"
-            >
-              <JigsawExpandIcon />
-            </button>
-          ) : displayMode.fullscreenAvailable ? (
-            <button
-              class="jigsaw-fullscreen-action"
-              type="button"
-              onClick={() => void displayMode.toggleBrowserFullscreen()}
-              aria-label={displayMode.isBrowserFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-              title={displayMode.isBrowserFullscreen ? "Exit fullscreen" : "Fullscreen"}
-            >
-              <JigsawFullscreenIcon active={displayMode.isBrowserFullscreen} />
-            </button>
-          ) : null}
         </div>
 
         {!isSolved ? (

@@ -213,7 +213,6 @@ export const ImageTilePuzzleWorkspace = ({
       status={statusMessage ? <p class="status-line" aria-live="polite">{statusMessage}</p> : null}
       board={board}
       gameplay={gameplay}
-      enableImmersive
     />
   );
 };

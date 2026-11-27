@@ -14,6 +14,7 @@ import { defaultSudokuVariation, normalizeSudokuVariation, sudokuVariationLabels
 import { formatDailyDateStamp } from "../games/shared/daily";
 import { useLiveLocalDateStamp } from "./NewPuzzleActionVisuals";
 import { PuzzleShareButton } from "./PuzzleShare";
+import { PuzzleWorkspaceDisplayControls } from "./PuzzleWorkspaceLayout";
 
 type CurrentPuzzleIdentityModel = {
   puzzleLabel: string;
@@ -203,6 +204,7 @@ export const CurrentPuzzleHeader = ({
           <PuzzleShareButton className="puzzle-share-crown-action" intent={shareResult ? "progress" : "puzzle"} />
           {newPuzzleControl}
         </div>
+        <PuzzleWorkspaceDisplayControls />
       </div>
     </div>
   );

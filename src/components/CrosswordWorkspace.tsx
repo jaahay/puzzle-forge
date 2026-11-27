@@ -68,5 +68,5 @@ export const CrosswordWorkspace = ({
       <div class="puzzle-loading-copy"><strong>Generating Crossword</strong></div>
       <div class="puzzle-loading-grid" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <span key={index} />)}</div>
     </section> : null}
-    enableImmersive playColumnMax={860} />;
+    playColumnMax={860} />;
 };

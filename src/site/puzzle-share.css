@@ -123,7 +123,3 @@
 .puzzle-share-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.5rem; }
 .puzzle-share-actions .puzzle-share-native { color: #082f49; border-color: #7dd3fc; background: #bae6fd; }
 
-.puzzle-workspace-display-tools button.puzzle-share-immersive {
-  width: auto;
-  padding-inline: 0.8rem;
-}
