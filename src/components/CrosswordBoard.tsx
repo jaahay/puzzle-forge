@@ -20,7 +20,6 @@ type Props = {
 };
 
 const directions: readonly CrosswordDirection[] = ["across", "down"];
-const keyboardRows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
 const directionLabel = (direction: CrosswordDirection) => direction === "across" ? "Across" : "Down";
 
 // The parent owns the resource and progress. Only selection and focus live
@@ -35,31 +34,18 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
   }, [identity, board]);
   const grid = useRef<HTMLDivElement>(null);
   const clueId = useId();
-  const clueLists = useRef<HTMLElement>(null);
   const helpId = useId();
   const entry = activeCrosswordEntry(board, selection);
   const crossing = crossingCrosswordEntry(board, selection);
   const entryId = (clue: NonNullable<typeof entry>) => `${clueId}-${clue.direction}-${clue.number}`;
   const describedBy = [entry, crossing].flatMap(clue => clue ? [entryId(clue)] : []).join(" ");
-  useEffect(() => {
-    // Keep each applicable clue visible inside its own list without scrolling the page.
-    for (const list of clueLists.current?.querySelectorAll<HTMLUListElement>("ul") ?? []) {
-      const item = list.querySelector<HTMLElement>("button.active, button.crossing");
-      if (!item) continue;
-      const bounds = list.getBoundingClientRect();
-      const target = item.getBoundingClientRect();
-      if (target.top < bounds.top) list.scrollTop += target.top - bounds.top;
-      else if (target.bottom > bounds.bottom) list.scrollTop += target.bottom - bounds.bottom;
-    }
-  }, [entry, crossing, identity]);
-  const activeCells = new Set(entry?.cells ?? []);
   const solved = isCrosswordComplete(board, progress);
   const filled = !progress.letters.includes(".");
   const incorrect = new Set(checked ? getCrosswordIncorrectCells(board, progress) : []);
   const select = (next: CrosswordSelection, focus = true, scroll = false) => {
     setStored({ identity, selection: next });
-    const target = grid.current?.querySelector<HTMLButtonElement>(`[data-crossword-cell="${next.cell}"]`);
-    if (focus) target?.focus({ preventScroll: true });
+    const target = grid.current?.querySelector<HTMLInputElement>(`[data-crossword-cell="${next.cell}"]`);
+    if (focus && target) { target.focus({ preventScroll: true }); target.select(); }
     if (scroll) target?.scrollIntoView({ block: "nearest", inline: "nearest" });
   };
   const applyKey = (key: string, focus = true, from = selection) => {
@@ -70,7 +56,7 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
     select(action.selection, focus || isCrosswordComplete(board, action.progress));
     return true;
   };
-  const onCellKeyDown = (event: JSX.TargetedKeyboardEvent<HTMLButtonElement>, cell: number) => {
+  const onCellKeyDown = (event: JSX.TargetedKeyboardEvent<HTMLInputElement>, cell: number) => {
     if (event.defaultPrevented || event.isComposing || event.ctrlKey || event.metaKey || event.altKey || isPuzzleModalOpen()) return;
     if (event.shiftKey && !/^[A-Z]$/.test(event.key)) return;
     if (event.repeat && (event.key === "Enter" || event.key === " ")) {
@@ -81,6 +67,18 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
       event.preventDefault();
       event.stopPropagation();
     }
+  };
+
+  const onCellInput = (event: JSX.TargetedEvent<HTMLInputElement, Event>, cell: number) => {
+    const input = event.currentTarget;
+    if ((event as InputEvent).isComposing) return;
+    const value = input.value;
+    const letter = value.match(/[A-Za-z]/g)?.at(-1);
+    // Native keyboards may emit input rather than keydown. Restore the
+    // controlled value until the parent accepts the common transition.
+    input.value = progress.letters[cell] === "." ? "" : progress.letters[cell];
+    if (value === "") applyKey("Backspace", true, { ...selection, cell });
+    else if (letter) applyKey(letter, true, { ...selection, cell });
   };
 
   return (
@@ -94,21 +92,29 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
             const letter = progress.letters[cell] === "." ? "" : progress.letters[cell];
             const number = board.numbers[cell];
             const selected = cell === selection.cell;
-            return <button key={cell} type="button" class={`crossword-cell${activeCells.has(cell) ? " in-entry" : ""}${selected ? ` selected direction-${selection.direction}` : ""}${incorrect.has(cell) ? " incorrect" : ""}`}
-              data-crossword-cell={cell} disabled={disabled} tabIndex={selected ? 0 : -1}
-              aria-label={`Row ${Math.floor(cell / board.width) + 1}, column ${cell % board.width + 1}, ${number !== null ? "number " + number + ", " : ""}${letter || "empty"}${incorrect.has(cell) ? ", incorrect" : ""}`}
-              aria-current={selected ? "true" : undefined}
-              aria-describedby={selected ? describedBy : undefined}
-              onClick={() => { if (!disabled && !isPuzzleModalOpen()) select(selectCrosswordCell(board, selection, cell)); }}
-              onKeyDown={event => onCellKeyDown(event, cell)}>
+            return <div key={cell} class={`crossword-cell${selected ? ` selected direction-${selection.direction}` : ""}${incorrect.has(cell) ? " incorrect" : ""}`}>
               {number !== null && <span class="crossword-cell-number" aria-hidden="true">{number}</span>}
-              <span aria-hidden="true">{letter}</span>
+              <input type="text" inputMode="text" autoComplete="off" autoCapitalize="characters" autoCorrect="off" spellcheck={false}
+                value={letter} readOnly={solved} data-crossword-cell={cell} disabled={disabled} tabIndex={selected ? 0 : -1}
+                aria-label={`Row ${Math.floor(cell / board.width) + 1}, column ${cell % board.width + 1}${number !== null ? ", number " + number : ""}${incorrect.has(cell) ? ", incorrect" : ""}`}
+                aria-current={selected ? "true" : undefined} aria-describedby={selected ? describedBy : undefined}
+                onFocus={event => {
+                  const target = event.currentTarget;
+                  setStored(current => {
+                    const previous = current.identity === identity ? current.selection : initialCrosswordSelection(board);
+                    return { identity, selection: selectCrosswordCell(board, previous, cell) };
+                  });
+                  target.select();
+                }}
+                onClick={event => event.currentTarget.select()}
+                onKeyDown={event => onCellKeyDown(event, cell)}
+                onInput={event => onCellInput(event, cell)} />
               {incorrect.has(cell) && <span class="crossword-error-mark" aria-hidden="true">×</span>}
-            </button>;
+            </div>;
           })}
         </div>
-        <p id={helpId} class="sr-only">Type letters to fill the active entry. Arrow keys move between cells. Enter or Space changes direction. Backspace clears a letter. The two highlighted clues intersect at the selected cell. Choose a clue to change the active entry.</p>
-      <aside class="crossword-clue-list" ref={clueLists} aria-label="Clues">
+        <p id={helpId} class="sr-only">Type letters to fill the active entry. Arrow keys move between cells. Enter or Space changes direction. Backspace clears a letter. The emphasized clue is active. Choose a clue to change the active entry.</p>
+      <aside class="crossword-clue-list" aria-label="Clues">
         {directions.map(direction => <section key={direction} aria-label={directionLabel(direction)}>
           <h3>{directionLabel(direction)}</h3>
           <ul>
@@ -127,14 +133,6 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
           </ul>
         </section>)}
       </aside>
-        {!solved && <div class="crossword-keyboard" role="group" aria-label="Letter keyboard">
-          {keyboardRows.map(row => <div class="crossword-keyboard-row" key={row}>
-            {[...row].map(letter => <button key={letter} type="button" disabled={disabled}
-              onClick={event => applyKey(letter, event.detail > 0)}>{letter}</button>)}
-            {row === keyboardRows[2] && <button type="button" class="crossword-delete" disabled={disabled}
-              onClick={event => applyKey("Backspace", event.detail > 0)}>Backspace</button>}
-          </div>)}
-        </div>}
         <div class="crossword-feedback" role="status">{checked && !solved
           ? incorrect.size ? `${incorrect.size} ${incorrect.size === 1 ? "letter" : "letters"} to review.` : "All entered letters are correct."
           : filled && !solved ? "Grid filled — review your answers." : ""}</div>
