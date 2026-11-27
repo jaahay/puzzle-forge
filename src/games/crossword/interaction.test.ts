@@ -69,8 +69,8 @@ describe("Crossword selection and input", () => {
     expect(typed.progress.letters[2]).toBe("A");
     expect(typed.selection).toEqual({ cell: 3, direction: "across" });
     const down = selectCrosswordEntry(board, typed.progress, typed.selection, 1, "down");
-    expect(down).toEqual({ cell: 2, direction: "down" });
-    const next = applyCrosswordKey(board, typed.progress, { ...down, cell: 7 }, "n")!;
+    expect(down).toEqual({ cell: 7, direction: "down" });
+    const next = applyCrosswordKey(board, typed.progress, down, "n")!;
     expect(next.selection.cell).toBe(12);
     expect(next.progress.letters[2]).toBe("A");
     expect(next.progress.letters[7]).toBe("N");
