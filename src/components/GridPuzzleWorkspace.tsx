@@ -190,7 +190,7 @@ export const GridPuzzleWorkspace = ({
 
   const loadingBoard = (
     <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label={`${selectedDefinition.title} is generating`}>
-      <div class="puzzle-loading-copy"><strong>Generating {selectedDefinition.title}</strong><span>{statusMessage}</span></div>
+      <div class="puzzle-loading-copy"><strong>Generating {selectedDefinition.title}</strong></div>
       <div class="puzzle-loading-grid" aria-hidden="true">
         {Array.from({ length: 9 }, (_, index) => <span key={index} />)}
       </div>
@@ -270,7 +270,8 @@ export const GridPuzzleWorkspace = ({
     <PuzzleWorkspaceLayout
       className={workspaceClass}
       crown={currentPuzzleCrown}
-      status={status}
+      status={isGenerating ? null : status}
+      pendingReplacement={isGenerating && puzzle?.kind === "grid"}
       board={board}
       gameplay={gameplay}
       playColumnMax={playColumnMax}

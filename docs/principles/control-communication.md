@@ -16,6 +16,10 @@ Choose text, icons, or both according to the meaning of an action, its familiari
 
 Keep the active puzzle central. Give frequently needed actions convenient access and disclose secondary configuration when requested. Do not substitute cryptic controls for thoughtful prioritization.
 
+### Workspace information
+
+Keep the puzzle surface operational. Show clues, meaningful state, action labels, validation and recovery information when they inform play. Put rules, strategies and optional explanations behind discoverable, accessible disclosure. Remove narration that merely repeats an obvious state or another presentation of the same event. Transient feedback should not displace the surface being manipulated. As puzzles mature, familiar play should require less reading, not less clarity.
+
 ### Consistency
 
 Shared actions should retain recognizable meaning, terminology, behavior, and visual identity across puzzle families. Puzzle-specific layouts may differ to support their mechanics and interaction requirements.

@@ -185,9 +185,7 @@ const WordSearchBoardSurface = ({ board, progress, onSelectEndpoints, disabled =
             >{letter}</button>
           ))}
         </div>
-        <p class="word-search-instructions" id={instructionsId}>Drag across a word or select its two endpoints.
-          <span class="sr-only"> Use arrow keys to move between letters, Enter or Space to select endpoints, and Escape to cancel.</span>
-        </p>
+        <p class="sr-only" id={instructionsId}>Drag across a word or select its two endpoints. Use arrow keys to move between letters, Enter or Space to select endpoints, and Escape to cancel.</p>
     </>
   );
 };

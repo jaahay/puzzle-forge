@@ -60,7 +60,8 @@ export const CrosswordWorkspace = ({
   ) : null;
   return <PuzzleWorkspaceLayout className="crossword-workspace"
     crown={board ? <CurrentPuzzleHeader key={arrivalIdentity ?? undefined} puzzle={board} isArriving={isArriving} historyControl={historyControl} newPuzzleControl={newControl} /> : null}
-    status={statusMessage ? <p class="status-line" aria-live="polite">{statusMessage}</p> : null}
+    status={!isGenerating && statusMessage ? <p class="status-line" aria-live="polite">{statusMessage}</p> : null}
+    pendingReplacement={isGenerating && Boolean(board && progress)}
     board={board && progress ? <section class={`puzzle-panel crossword-panel${isArriving ? " puzzle-arrival" : ""}`} aria-label="Generated Crossword puzzle" inert={isGenerating}>
       <CrosswordBoard board={board} progress={progress} disabled={disabled} resetVersion={resetVersion} checked={checked} controls={controls} onHistory={moveHistory}
         onProgressChange={next => { if (onCrosswordProgressChange?.(board.id, next)) { setCheckedProgress(null); completion.recordCausativeInput(); } }} />

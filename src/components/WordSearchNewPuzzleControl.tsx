@@ -30,7 +30,7 @@ export const WordSearchNewPuzzleControl = (props: Props) => (
     onToday={props.onToday}
     onLoadSeed={props.onLoadSeed}
     info={<>
-      <p>Find the supplied words in straight lines. Words may appear diagonally or backwards on higher difficulties. Harder boards also contain more similar letter sequences.</p>
+      <p>Drag across a word or select its two endpoints. Use the arrow keys to move, Enter or Space to select, and Escape to cancel. Words run in straight lines; higher difficulties may include diagonals and backwards words.</p>
       <p>Theme and difficulty configure the next puzzle only. Today uses the selected profile and local date.</p>
     </>}
     settings={<>

@@ -19,11 +19,29 @@
 }
 
 .workspace-layout-play-surface {
+  position: relative;
   display: grid;
   width: 100%;
   min-width: 0;
   gap: 0.5rem;
   justify-items: center;
+}
+
+.workspace-generation-progress {
+  position: absolute;
+  inset-block-start: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  max-width: calc(100% - 1.5rem);
+  box-sizing: border-box;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 0.65rem;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  pointer-events: none;
 }
 
 .sudoku-workspace .workspace-layout-play-surface {

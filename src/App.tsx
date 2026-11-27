@@ -422,7 +422,7 @@ export const App = () => {
       return;
     }
 
-    const { request, title } = result;
+    const { request } = result;
     pendingGenerationResourceRef.current = {
       identity,
       route: {
@@ -448,7 +448,7 @@ export const App = () => {
       jigsawSpecialPiecesMode: identity.jigsawSpecialPiecesMode,
     });
     if (puzzle?.puzzleId !== request.puzzleId) resetRuntimePuzzleState();
-    setStatusMessage(`Generating ${title}...`);
+    setStatusMessage("");
   };
 
   const recoverGenerationFailure = (message: string) => {
@@ -457,12 +457,11 @@ export const App = () => {
     if (fallback) {
       restoreSession(fallback.session, fallback.route);
       setGenerationFailureNotice(`Could not create the requested puzzle. Your previous puzzle has been restored. ${message}`);
-      setStatusMessage(`Could not generate the requested puzzle. ${message}`);
       return;
     }
     resetRuntimePuzzleState();
     setPuzzleLinkError(`Could not generate puzzle. ${message}`);
-    setStatusMessage(message);
+    setStatusMessage("");
     restoreScrollPosition();
   };
   generationErrorHandlerRef.current = recoverGenerationFailure;

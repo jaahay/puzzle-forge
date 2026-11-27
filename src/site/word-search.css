@@ -91,14 +91,6 @@
   cursor: default;
 }
 
-.word-search-instructions {
-  width: min(100%, 36rem);
-  margin: 0.65rem auto 0;
-  color: #94a3b8;
-  text-align: center;
-  font-size: 0.8rem;
-}
-
 .word-search-word-list {
   min-width: 0;
   color: #cbd5e1;

@@ -143,6 +143,7 @@ type PuzzleWorkspaceLayoutProps = {
   gameplay?: ComponentChildren;
   help?: ComponentChildren;
   generation?: ComponentChildren;
+  pendingReplacement?: boolean;
   playColumnMax?: number;
 };
 
@@ -156,6 +157,7 @@ export const PuzzleWorkspaceLayout = ({
   gameplay,
   help,
   generation,
+  pendingReplacement = false,
   playColumnMax,
 }: PuzzleWorkspaceLayoutProps) => {
   const workspaceRef = useRef<HTMLElement>(null);
@@ -234,7 +236,7 @@ export const PuzzleWorkspaceLayout = ({
       if (await attemptWorkspaceFullscreen(workspace, document)) onSuccess?.();
       else {
         // A rejected native transition must not close or reset expanded play.
-        setDisplayError("Fullscreen could not be changed. You can keep playing or try again.");
+        setDisplayError("Fullscreen unavailable. Try again.");
       }
     } finally {
       transitionRef.current = false;
@@ -295,6 +297,7 @@ export const PuzzleWorkspaceLayout = ({
       {play || board ? (
         <div class="workspace-layout-play-surface">
           {play ?? (board ? <section class="workspace-layout-board" aria-label="Puzzle board">{board}</section> : null)}
+          {pendingReplacement ? <div class="workspace-generation-progress" role="status">Generating puzzle…</div> : null}
         </div>
       ) : null}
 

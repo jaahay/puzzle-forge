@@ -58,7 +58,8 @@ export const WordSearchWorkspace = ({
   return <PuzzleWorkspaceLayout
     className="word-search-workspace"
     crown={board ? <CurrentPuzzleHeader key={arrivalIdentity ?? undefined} puzzle={board} isArriving={isArriving} newPuzzleControl={newControl} /> : null}
-    status={statusMessage ? <p class="status-line" aria-live="polite">{statusMessage}</p> : null}
+    status={!isGenerating && statusMessage ? <p class="status-line" aria-live="polite">{statusMessage}</p> : null}
+    pendingReplacement={isGenerating && Boolean(board && progress)}
     board={board && progress ? <section class={`puzzle-panel word-search-panel${isArriving ? " puzzle-arrival" : ""}${completion.phase === "celebrating" ? " word-search-celebrating" : ""}`} aria-label="Generated Word Search puzzle" inert={isGenerating}>
       <WordSearchBoard key={board.id} board={board} progress={progress} disabled={disabled} resetVersion={resetVersion} controls={controls}
         onSelectEndpoints={(start, end) => {

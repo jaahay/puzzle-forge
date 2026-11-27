@@ -39,6 +39,18 @@ describe("generation transition boundaries", () => {
     expect(app).toContain("setGenerationFailureNotice(`Could not create the requested puzzle.");
     expect(app).toContain('type="button" onClick={onDismiss}>Dismiss</button>');
     expect(app).toContain('<GenerationFailureNotice message={generationFailureNotice} onDismiss={() => setGenerationFailureNotice(null)} />');
+    const recovery = app.slice(app.indexOf("const recoverGenerationFailure ="), app.indexOf("generationErrorHandlerRef.current = recoverGenerationFailure"));
+    expect(recovery).not.toContain("setStatusMessage(`Could not generate");
+  });
+
+  it("keeps replacement progress separate from gameplay feedback and initial loading", () => {
+    const layout = readFileSync(new URL("../components/PuzzleWorkspaceLayout.tsx", import.meta.url), "utf8");
+    expect(layout).toContain('pendingReplacement ? <div class="workspace-generation-progress" role="status">');
+    expect(app).not.toContain('setStatusMessage(`Generating');
+    for (const workspace of [grid, sudoku, solitaire, jigsaw, imageTiles]) {
+      expect(workspace).toContain("pendingReplacement={isGenerating &&");
+      expect(workspace).not.toContain("<span>{statusMessage}</span>");
+    }
   });
 
   it("suspends every mounted puzzle surface while replacement generation runs", () => {
