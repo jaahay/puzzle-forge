@@ -312,29 +312,6 @@
 }
 
 @media (max-width: 940px) {
-  .cards-layout {
-    overflow-x: auto;
-    padding-bottom: 0.3rem;
-    scrollbar-color: #475569 transparent;
-  }
-
-  .card-board-top-row {
-    min-width: 31rem;
-    grid-template-columns: minmax(10rem, 0.55fr) minmax(20rem, 1fr);
-  }
-
-  .foundation-row {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(4.6rem, 1fr));
-  }
-
-  .tableau-row {
-    min-width: 39rem;
-    grid-template-columns: repeat(7, minmax(4.5rem, 1fr));
-  }
-}
-
-@media (max-width: 700px) {
   .solitaire-summary {
     align-items: stretch;
   }
@@ -457,5 +434,19 @@
 
   .solitaire-action-row button {
     min-height: 2.75rem;
+  }
+}
+
+/* Extra width should not make every card taller than the play viewport. */
+.solitaire-workspace .cards-layout {
+  width: min(100%, 64rem);
+  margin-inline: auto;
+}
+@media (min-width: 701px) and (max-height: 48rem) {
+  .solitaire-workspace .cards-layout {
+    width: min(100%, max(39rem, calc(100dvh * 1.5)));
+  }
+  .tableau .playing-card-list {
+    grid-auto-rows: clamp(0.85rem, 2.7dvh, 1.25rem);
   }
 }

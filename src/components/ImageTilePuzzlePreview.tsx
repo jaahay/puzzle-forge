@@ -142,7 +142,7 @@ export const getImageTileBoardStyle = (
   const measuredInlineSize = Math.max(0, availableInlineSize);
   const measuredBlockSize = Math.max(0, availableBlockSize);
   const widthFromHeight = measuredBlockSize > 0
-    ? measuredBlockSize * safeWidth / safeHeight
+    ? Math.max(180, measuredBlockSize) * safeWidth / safeHeight
     : maximumBoardWidth;
   const measuredBoardWidth = Math.min(
     maximumBoardWidth,

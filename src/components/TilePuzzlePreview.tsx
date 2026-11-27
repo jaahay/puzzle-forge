@@ -104,6 +104,7 @@ type TilePuzzlePreviewProps = {
   puzzle: JigsawGeneratedPuzzle;
   inputSuspended?: boolean;
   resetVersion?: number;
+  onReset?: () => void;
   initialRuntime?: JigsawActionRuntime | null;
   onRuntimeChange?: (runtime: JigsawActionRuntime) => void;
   onSolvedChange?: (solved: boolean) => void;
@@ -302,6 +303,7 @@ export const TilePuzzlePreview = ({
   puzzle,
   inputSuspended = false,
   resetVersion = 0,
+  onReset,
   initialRuntime = null,
   onRuntimeChange,
   onSolvedChange,
@@ -1454,6 +1456,7 @@ export const TilePuzzlePreview = ({
         >
           Restage pieces
         </button>
+        {onReset ? <button type="button" onClick={onReset} disabled={inputSuspended}>Reset puzzle</button> : null}
         <label class="jigsaw-appearance-setting">
           Piece appearance
           <select

@@ -68,6 +68,7 @@
     max(0.6rem, env(safe-area-inset-bottom)) max(0.6rem, env(safe-area-inset-left));
   overflow: auto;
   overscroll-behavior: contain;
+  scroll-padding-block-start: calc(var(--workspace-crown-height, 3rem) + 0.6rem);
   background: #0f172a;
 }
 
@@ -95,8 +96,8 @@
   background: #0f172a;
 }
 
-/* Jigsaw is a canvas, not a long document. Its real crown and Reset/status
-   stay in flow; the canvas consumes the remaining height. Camera Tools remain
+/* Jigsaw is a canvas, not a long document. Its real crown and status
+   stay in flow; Reset belongs to Tools and the canvas consumes the remaining height. Camera Tools remain
    over the canvas and are still included in its fit-safe-area calculation. */
 .jigsaw-workspace.is-immersive {
   display: flex;
@@ -155,7 +156,7 @@
 
 .jigsaw-workspace.is-immersive .tile-puzzle-art-preview {
   position: absolute;
-  top: 4rem;
+  top: 0.75rem;
   right: 0.75rem;
   z-index: 25;
   width: min(30vw, 15rem);
@@ -231,7 +232,7 @@
   }
 
   .jigsaw-workspace.is-immersive .tile-puzzle-art-preview {
-    top: 3.65rem;
+    top: 0.45rem;
     right: 0.45rem;
     width: min(42vw, 10rem);
     max-width: calc(100% - 0.9rem);

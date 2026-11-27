@@ -220,3 +220,56 @@
 .crossword-cell.incorrect input {
   color: #a11e22;
 }
+
+.crossword-active-clue {
+  display: block;
+  width: min(100%, 26rem);
+  margin: 0 auto 0.45rem;
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.crossword-action-column {
+  min-width: 0;
+}
+
+/* Keep the current entry and its clues visible together on wide surfaces. */
+@container (min-width: 40rem) {
+  .crossword-play {
+    grid-template-columns: minmax(0, 26rem) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    align-items: start;
+  }
+  .crossword-board-column {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .crossword-clue-list {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    margin-block: 0;
+    align-self: start;
+  }
+  .crossword-action-column {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .crossword-active-clue {
+    display: none;
+  }
+}
+@media (max-height: 48rem) {
+  @container (min-width: 40rem) {
+    .crossword-play {
+      grid-template-columns: minmax(0, min(26rem, max(14rem, calc(100dvh - 9rem)))) minmax(0, 1fr);
+    }
+    .crossword-clue-list {
+      grid-template-columns: minmax(0, 1fr);
+      max-height: max(10rem, calc(100dvh - 7rem));
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-color: #475569 transparent;
+    }
+  }
+}

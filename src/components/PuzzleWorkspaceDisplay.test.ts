@@ -76,6 +76,38 @@ describe("universal workspace display composition", () => {
     expect(layout).toContain('querySelector<HTMLElement>(".workspace-expand-action")?.focus()');
   });
 
+  it("preserves the numeric selection and restores play focus only for mouse activation", () => {
+    const numeric = read("./NumericGridInput.tsx");
+    expect(numeric).toContain('target.closest(`${gridSelectionScopeSelector}, .puzzle-workspace-display-tools`)');
+    expect(layout).toContain('event.detail > 0 && mouseActivation.current');
+    expect(layout).toContain('event.pointerType === "mouse"');
+    expect(layout).toContain('origin.closest(".workspace-layout-play-surface")');
+    expect(layout).toContain('!origin.closest("[inert]")');
+    expect(layout).toContain('document.activeElement !== trigger');
+    expect(layout).toContain('focus({ preventScroll: true })');
+    expect(css).toContain('scroll-padding-block-start: calc(var(--workspace-crown-height');
+  });
+
+  it("provides wide reference-list layouts and touch input without a fullscreen-only composition", () => {
+    const wordSearch = read("../site/word-search.css");
+    const crossword = read("../site/crossword.css");
+    const wordGuess = read("../site/word-guess.css");
+    expect(wordSearch).toContain("@container (min-width: 40rem)");
+    expect(wordSearch).toContain("grid-template-columns: minmax(0, var(--word-search-board-limit)) minmax(9rem, 1fr)");
+    expect(crossword).toContain("@container (min-width: 40rem)");
+    expect(read("./CrosswordBoard.tsx")).toContain('class="crossword-active-clue"');
+    expect(wordGuess).toContain("@media (any-pointer: coarse)");
+    expect(wordGuess).toContain(".word-guess-keyboard { display: grid; }");
+    expect(read("./WordGuessGame.tsx")).toContain('"--word-guess-rows": puzzle.height');
+    expect(read("../site/numeric-grid.css")).toContain(".futoshiki-workspace .numeric-grid-digit-pad");
+  });
+
+  it("keeps Jigsaw reset in its existing tools instead of a separate canvas row", () => {
+    expect(read("./TilePuzzlePreview.tsx")).toContain('onClick={onReset} disabled={inputSuspended}>Reset puzzle</button>');
+    expect(read("./JigsawWorkspace.tsx")).toContain("onReset={() => resetJigsaw()}");
+    expect(read("./JigsawWorkspace.tsx")).not.toContain("gameplay={gameplay}");
+  });
+
   it("keeps generation failures visible in the native fullscreen layer", () => {
     const app = read("../App.tsx");
     expect(app).toContain('class="generation-failure-notice" role="alert"');

@@ -12,6 +12,7 @@
 }
 
 .workspace-layout-crown {
+  container-type: inline-size;
   position: relative;
   z-index: 20;
   overflow: visible;
@@ -541,5 +542,39 @@
   .nonogram-current-actions button {
     flex: 1 1 0;
     min-width: 0;
+  }
+}
+
+/* A short crown can retain identity and full-size actions in two intentional
+   rows instead of wrapping the display controls onto a third. */
+@container (max-width: 24rem) {
+  .current-puzzle-header:has(.workspace-fullscreen-action) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .current-puzzle-header:has(.workspace-fullscreen-action) .current-puzzle-context {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .current-puzzle-header:has(.workspace-fullscreen-action) .current-puzzle-crown-actions {
+    display: contents;
+  }
+  .current-puzzle-header:has(.workspace-fullscreen-action) .puzzle-history-actions {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+  .current-puzzle-header:has(.workspace-fullscreen-action):not(:has(.puzzle-history-actions)) .current-puzzle-context {
+    grid-column: 1 / -1;
+  }
+  .current-puzzle-header:has(.workspace-fullscreen-action) .current-puzzle-new-action {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
+  }
+  .current-puzzle-header:has(.workspace-fullscreen-action) .puzzle-workspace-display-tools {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
   }
 }

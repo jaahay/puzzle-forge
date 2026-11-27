@@ -81,23 +81,48 @@ const ExitExpandedIcon = () => (
 export const usePuzzleWorkspaceDisplayMode = () => useContext(PuzzleWorkspaceDisplayModeContext) ?? defaultDisplayMode;
 
 // The crown owns these controls in every puzzle, including Jigsaw. Keep the
-// expand/restore button mounted across mode changes so focus stays on it.
+// expand/restore button mounted across mode changes for keyboard activation.
 export const PuzzleWorkspaceDisplayControls = () => {
   const mode = useContext(PuzzleWorkspaceDisplayModeContext);
+  const mouseOrigin = useRef<HTMLElement | null>(null);
+  const mouseActivation = useRef(false);
   if (!mode) return null;
+  const changeMode = async (event: JSX.TargetedMouseEvent<HTMLButtonElement>, action: () => Promise<void>) => {
+    const trigger = event.currentTarget;
+    const workspace = trigger.closest<HTMLElement>(".puzzle-workspace-layout");
+    const restore = event.detail > 0 && mouseActivation.current;
+    const origin = mouseOrigin.current;
+    mouseActivation.current = false;
+    mouseOrigin.current = null;
+    await action();
+    if (!restore || !workspace) return;
+    requestAnimationFrame(() => {
+      // Don't steal focus from a dialog or a control selected during the native transition.
+      if (!workspace.isConnected || isPuzzleModalOpen() ||
+          (document.activeElement !== trigger && document.activeElement !== document.body)) return;
+      const previousPlayControl = origin?.isConnected && workspace.contains(origin) &&
+        origin.closest(".workspace-layout-play-surface") &&
+        !origin.closest("[inert]") && !origin.matches(":disabled");
+      (previousPlayControl ? origin : workspace)?.focus({ preventScroll: true });
+    });
+  };
   const label = mode.isExpanded ? "Exit expanded workspace" : "Expand workspace";
   const fullscreenLabel = mode.isBrowserFullscreen ? "Exit fullscreen" : "Enter fullscreen";
   return (
-    <div class="puzzle-workspace-display-tools" role="group" aria-label="Workspace display">
+    <div class="puzzle-workspace-display-tools" role="group" aria-label="Workspace display"
+      onPointerDown={event => {
+        mouseActivation.current = event.pointerType === "mouse";
+        mouseOrigin.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      }}>
       <button type="button" class="workspace-expand-action" aria-label={label} title={label}
         aria-disabled={mode.transitionPending || undefined}
-        onClick={() => void mode.toggleExpanded()}>
+        onClick={event => void changeMode(event, mode.toggleExpanded)}>
         {mode.isExpanded ? <ExitExpandedIcon /> : <ExpandWorkspaceIcon />}
       </button>
       {mode.isExpanded && mode.fullscreenAvailable ? (
         <button type="button" class="workspace-fullscreen-action" aria-label={fullscreenLabel} title={fullscreenLabel}
           aria-disabled={mode.transitionPending || undefined}
-          onClick={() => void mode.toggleBrowserFullscreen()}>
+          onClick={event => void changeMode(event, mode.toggleBrowserFullscreen)}>
           {mode.isBrowserFullscreen ? <ExitFullscreenIcon /> : <FullscreenIcon />}
         </button>
       ) : null}
@@ -181,6 +206,21 @@ export const PuzzleWorkspaceLayout = ({
     };
   }, [isExpanded]);
 
+  // Keep scroll-to-focus clear of the actual sticky crown, including wrapped controls.
+  useEffect(() => {
+    const workspace = workspaceRef.current;
+    const crownElement = workspace?.querySelector<HTMLElement>(".workspace-layout-crown");
+    if (!isExpanded || !workspace || !crownElement) return;
+    const measure = () => workspace.style.setProperty("--workspace-crown-height", `${crownElement.offsetHeight}px`);
+    measure();
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measure);
+    observer?.observe(crownElement);
+    return () => {
+      observer?.disconnect();
+      workspace.style.removeProperty("--workspace-crown-height");
+    };
+  }, [isExpanded, Boolean(crown)]);
+
   const runFullscreenTransition = async (onSuccess?: () => void) => {
     const workspace = workspaceRef.current;
     if (!workspace || transitionRef.current) return;
@@ -234,6 +274,7 @@ export const PuzzleWorkspaceLayout = ({
       <section
       class={`workspace-panel puzzle-workspace-layout ${className} ${modeClass}`.trim()}
       aria-label="Selected puzzle workspace"
+      tabIndex={-1}
       ref={workspaceRef}
       style={workspaceStyle}
     >

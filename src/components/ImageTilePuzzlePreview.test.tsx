@@ -66,6 +66,11 @@ describe("ImageTilePuzzlePreview layout", () => {
     });
   });
 
+  it("keeps a usable board when the available height is exhausted, allowing scrolling", () => {
+    expect(getImageTileBoardStyle(4, 4, 320, 1).width).toBe("180px");
+    expect(getImageTileBoardStyle(4, 4, 140, 1).width).toBe("140px");
+  });
+
   it("uses measured width for wide boards without exceeding the desktop cap", () => {
     expect(getImageTileBoardStyle(8, 2, 500, 600).width).toBe("500px");
     expect(getImageTileBoardStyle(8, 2, 900, 600).width).toBe("672px");

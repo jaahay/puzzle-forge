@@ -129,6 +129,9 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, onHistory, d
     <section class="crossword-surface" aria-label="Crossword">
       <div class="crossword-play">
       <div class="crossword-board-column">
+        {entry ? <p class="crossword-active-clue" aria-hidden="true">
+          <strong>{entry.number} {directionLabel(entry.direction)}</strong> · {entry.clue}
+        </p> : null}
         <div class="crossword-grid" ref={grid} tabIndex={-1} role="group" aria-label="Crossword letter cells"
           aria-describedby={helpId} style={{ "--crossword-columns": board.width } as JSX.CSSProperties}>
           {board.blocks.map((block, cell) => {
@@ -158,6 +161,7 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, onHistory, d
           })}
         </div>
         <p id={helpId} class="sr-only">Type letters to fill the active clue, even before selecting a cell. Filling an empty cell skips existing letters; replacing a letter moves one cell forward. Arrow keys move between cells and set direction. Enter or Space changes direction without moving. Backspace clears a letter. Choose a clue to change the active entry. Tab moves to the next control.</p>
+      </div>
       <aside class="crossword-clue-list" aria-label="Clues">
         {directions.map(direction => <section key={direction} aria-label={directionLabel(direction)}>
           <h3>{directionLabel(direction)}</h3>
@@ -177,6 +181,7 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, onHistory, d
           </ul>
         </section>)}
       </aside>
+      <div class="crossword-action-column">
         <div class="crossword-feedback" role="status">{checked && !solved
           ? incorrect.size ? `${incorrect.size} ${incorrect.size === 1 ? "letter" : "letters"} to review.` : "All entered letters are correct."
           : filled && !solved ? "Grid filled — review your answers." : ""}</div>
