@@ -89,12 +89,19 @@ describe("universal workspace display composition", () => {
     expect(css).toContain('scroll-padding-block-start: calc(var(--workspace-crown-height');
   });
 
-  it("provides wide reference-list layouts and touch input without a fullscreen-only composition", () => {
+  it("keeps Word Search centered in one play column across display modes", () => {
     const wordSearch = read("../site/word-search.css");
+    const playRules = [...wordSearch.matchAll(/\.word-search-play\s*\{([^}]+)\}/g)];
+    expect(playRules).toHaveLength(1);
+    expect(playRules[0][1]).toContain("width: min(100%, 36rem);");
+    expect(playRules[0][1]).toContain("margin-inline: auto;");
+    expect(playRules[0][1]).toContain("grid-template-columns: minmax(0, 1fr);");
+    expect(wordSearch).toContain("calc(70cqw / var(--word-search-size))");
+  });
+
+  it("provides a wide Crossword clue layout and touch input without a fullscreen-only composition", () => {
     const crossword = read("../site/crossword.css");
     const wordGuess = read("../site/word-guess.css");
-    expect(wordSearch).toContain("@container (min-width: 36rem)");
-    expect(wordSearch).toContain("grid-template-columns: minmax(0, var(--word-search-board-limit)) minmax(9rem, 1fr)");
     expect(crossword).toContain("@container (min-width: 36rem)");
     const crosswordBoard = read("./CrosswordBoard.tsx");
     expect(crosswordBoard.indexOf('class="crossword-grid"')).toBeLessThan(crosswordBoard.indexOf('class="crossword-active-clue"'));
