@@ -1,5 +1,5 @@
 import type { ComponentChildren, JSX } from "preact";
-import { useEffect, useId, useRef, useState } from "preact/hooks";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "preact/hooks";
 import type { CrosswordBoard as Board, CrosswordDirection } from "../games/crossword/model";
 import {
   activeCrosswordEntry, applyCrosswordKey, initialCrosswordSelection, crossingCrosswordEntry, selectCrosswordCell, selectCrosswordEntry,
@@ -35,6 +35,19 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, onHistory, d
     setStored(current => current.identity === identity ? current : { identity, selection: initialCrosswordSelection(board) });
   }, [identity, board]);
   const grid = useRef<HTMLDivElement>(null);
+
+  // A committed catalog choice can leave its select focused while generation
+  // finishes. Hand off only that focus, never a later focused control or input.
+  // Focus the non-editable group so arriving on mobile does not open a keyboard.
+  useLayoutEffect(() => {
+    if (disabled || isPuzzleModalOpen()) return;
+    const focused = document.activeElement;
+    if (focused instanceof HTMLSelectElement
+        && focused.value === "crossword"
+        && focused.closest("#puzzle-catalog")) {
+      grid.current?.focus({ preventScroll: true });
+    }
+  }, [disabled, identity]);
   const clueId = useId();
   const helpId = useId();
   const entry = activeCrosswordEntry(board, selection);
@@ -61,7 +74,7 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, onHistory, d
   // Like Word Guess, the selected cell is ready even before DOM focus enters
   // the board. Claim only ordinary letters from an otherwise unowned page;
   // the existing cell handler owns focused editing and navigation.
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (disabled || solved) return;
     const onPageKeyDown = (event: KeyboardEvent) => {
       if (!/^[a-zA-Z]$/.test(event.key) || !shouldHandlePuzzleShortcut(event, {
@@ -116,7 +129,7 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, onHistory, d
     <section class="crossword-surface" aria-label="Crossword">
       <div class="crossword-play">
       <div class="crossword-board-column">
-        <div class="crossword-grid" ref={grid} role="group" aria-label="Crossword letter cells"
+        <div class="crossword-grid" ref={grid} tabIndex={-1} role="group" aria-label="Crossword letter cells"
           aria-describedby={helpId} style={{ "--crossword-columns": board.width } as JSX.CSSProperties}>
           {board.blocks.map((block, cell) => {
             if (block) return <div key={cell} class="crossword-block" aria-hidden="true" />;
