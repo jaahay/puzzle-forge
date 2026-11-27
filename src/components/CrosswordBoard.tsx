@@ -5,14 +5,16 @@ import {
   activeCrosswordEntry, applyCrosswordKey, initialCrosswordSelection, crossingCrosswordEntry, selectCrosswordCell, selectCrosswordEntry,
   type CrosswordSelection,
 } from "../games/crossword/interaction";
-import { getCrosswordIncorrectCells, isCrosswordComplete, type CrosswordProgress } from "../games/crossword/progress";
+import { getCrosswordIncorrectCells, isCrosswordComplete, type CrosswordHistoryAction, type CrosswordProgress } from "../games/crossword/progress";
 import { isPuzzleModalOpen } from "../interactions/keyboardOwnership";
+import { getPuzzleHistoryShortcutAction } from "./PuzzleHistoryActions";
 import "../site/crossword.css";
 
 type Props = {
   board: Board;
   progress: CrosswordProgress;
   onProgressChange: (progress: CrosswordProgress) => void;
+  onHistory: (action: CrosswordHistoryAction) => void;
   disabled?: boolean;
   resetVersion?: number;
   checked?: boolean;
@@ -24,7 +26,7 @@ const directionLabel = (direction: CrosswordDirection) => direction === "across"
 
 // The parent owns the resource and progress. Only selection and focus live
 // here; no private persistence, generation, or completion state.
-export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = false, controls, resetVersion = 0, checked = false }: Props) => {
+export const CrosswordBoard = ({ board, progress, onProgressChange, onHistory, disabled = false, controls, resetVersion = 0, checked = false }: Props) => {
   // Reset only transient selection, not the surrounding controls or their focus.
   const identity = JSON.stringify([board.seed, board.checksum, resetVersion]);
   const [stored, setStored] = useState(() => ({ identity, selection: initialCrosswordSelection(board) }));
@@ -57,7 +59,16 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
     return true;
   };
   const onCellKeyDown = (event: JSX.TargetedKeyboardEvent<HTMLInputElement>, cell: number) => {
-    if (event.defaultPrevented || event.isComposing || event.ctrlKey || event.metaKey || event.altKey || isPuzzleModalOpen()) return;
+    if (event.defaultPrevented || event.isComposing || isPuzzleModalOpen()) return;
+    const history = getPuzzleHistoryShortcutAction(event);
+    if (history) {
+      // The cell is a puzzle input, not an independent native text history.
+      event.preventDefault();
+      event.stopPropagation();
+      if (!disabled && !solved) onHistory(history);
+      return;
+    }
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.shiftKey && !/^[A-Z]$/.test(event.key)) return;
     if (event.repeat && (event.key === "Enter" || event.key === " ")) {
       event.preventDefault();
@@ -77,6 +88,11 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
     // Native keyboards may emit input rather than keydown. Restore the
     // controlled value until the parent accepts the common transition.
     input.value = progress.letters[cell] === "." ? "" : progress.letters[cell];
+    // Native editing menus may send history input events without a keydown.
+    if ("inputType" in event && (event.inputType === "historyUndo" || event.inputType === "historyRedo")) {
+      if (!disabled && !solved && !isPuzzleModalOpen()) onHistory(event.inputType === "historyUndo" ? "undo" : "redo");
+      return;
+    }
     if (value === "") applyKey("Backspace", true, { ...selection, cell });
     else if (letter) applyKey(letter, true, { ...selection, cell });
   };

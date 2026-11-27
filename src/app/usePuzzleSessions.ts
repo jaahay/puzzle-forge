@@ -1,4 +1,4 @@
-import { createCrosswordProgress, restoreCrosswordProgress, type CrosswordProgress } from "../games/crossword/progress";
+import { cloneCrosswordProgress, createCrosswordProgress, restoreCrosswordProgress, type CrosswordProgress } from "../games/crossword/progress";
 import { createWordSearchProgress, restoreWordSearchProgress, type WordSearchProgress } from "../games/wordSearch/progress";
 import { useRef } from "preact/hooks";
 import type { CardGeneratedPuzzle, CardStack, GeneratedPuzzle, GridGeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
@@ -103,7 +103,7 @@ export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => {
     kind: "crossword",
     puzzle: { ...session.puzzle, blocks: [...session.puzzle.blocks], numbers: [...session.puzzle.numbers],
       entries: session.puzzle.entries.map(entry => ({ ...entry, cells: [...entry.cells] })) },
-    progress: { ...session.progress },
+    progress: { kind: "crossword", ...cloneCrosswordProgress(session.progress) },
   };
   if (session.kind === "word-search") return {
     kind: "word-search",

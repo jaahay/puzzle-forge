@@ -1,4 +1,4 @@
-import { createCrosswordProgress, isCrosswordComplete, restoreCrosswordProgress, type CrosswordProgress } from "./games/crossword/progress";
+import { createCrosswordProgress, isCrosswordComplete, recordCrosswordEdit, moveCrosswordHistory, canMoveCrosswordHistory, type CrosswordHistoryAction, type CrosswordProgress } from "./games/crossword/progress";
 import { createWordSearchProgress, isWordSearchComplete, selectWordSearchEndpoints, type WordSearchProgress } from "./games/wordSearch/progress";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { getPuzzleAvailability } from "./catalog/puzzleAvailability";
@@ -877,8 +877,22 @@ export const App = () => {
       if (generation.hasActiveRequest() || puzzle?.kind !== "crossword" || puzzle.id !== puzzleInstanceId) return false;
       const current = crosswordProgressRef.current;
       if (!current || isCrosswordComplete(puzzle, current)) return false;
-      const next = restoreCrosswordProgress(puzzle, proposed);
-      if (!next || next.letters === current.letters) return false;
+      const next = recordCrosswordEdit(puzzle, current, proposed);
+      if (!next) return false;
+      updateCrosswordProgress(next);
+      saveCurrentSessionRef.current();
+      return true;
+    },
+    canMoveCrosswordHistoryNow: (puzzleInstanceId: string, action: CrosswordHistoryAction) => {
+      const current = crosswordProgressRef.current;
+      return !generation.hasActiveRequest() && puzzle?.kind === "crossword" && puzzle.id === puzzleInstanceId
+        && Boolean(current && canMoveCrosswordHistory(puzzle, current, action));
+    },
+    onCrosswordHistory: (puzzleInstanceId: string, action: CrosswordHistoryAction) => {
+      if (generation.hasActiveRequest() || puzzle?.kind !== "crossword" || puzzle.id !== puzzleInstanceId) return false;
+      const current = crosswordProgressRef.current;
+      const next = current && moveCrosswordHistory(puzzle, current, action);
+      if (!next) return false;
       updateCrosswordProgress(next);
       saveCurrentSessionRef.current();
       return true;
