@@ -3,12 +3,13 @@
 }
 
 .word-search-panel {
-  container-type: inline-size;
   width: 100%;
   box-sizing: border-box;
 }
 
 .word-search-play {
+  width: min(100%, 36rem);
+  margin-inline: auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 0.65rem;
@@ -131,16 +132,6 @@
 .word-search-word-list li.found > span:first-child {
   color: #94a3b8;
   text-decoration: line-through;
-}
-
-@container (min-width: 48rem) {
-  .word-search-play {
-    grid-template-columns: minmax(0, 36rem) minmax(9rem, 1fr);
-  }
-
-  .word-search-word-list ul {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
 .word-search-controls {
