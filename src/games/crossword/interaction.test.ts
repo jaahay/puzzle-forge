@@ -78,6 +78,35 @@ describe("Crossword selection and input", () => {
     expect(applyCrosswordKey(board, fresh, end, "e")?.selection.cell).toBe(4);
   });
 
+  it("skips filled crossings when filling a blank, without inspecting correctness", () => {
+    const partial = writeCrosswordLetter(board, fresh, 3, "Z");
+    const typed = applyCrosswordKey(board, partial, first, "a")!;
+    expect(typed.selection).toEqual({ cell: 4, direction: "across" });
+    expect(typed.progress.letters[3]).toBe("Z");
+    const tail = writeCrosswordLetter(board, partial, 4, "E");
+    const lastBlank = applyCrosswordKey(board, tail, first, "A")!;
+    expect(lastBlank.selection).toEqual(first);
+    expect(lastBlank.progress.letters.slice(2, 5)).toBe("AZE");
+    const down = { cell: 2, direction: "down" as const };
+    const partialDown = writeCrosswordLetter(board, fresh, 7, "N");
+    expect(applyCrosswordKey(board, partialDown, down, "A")?.selection).toEqual({ cell: 12, direction: "down" });
+    // No implicit wrap to an earlier blank or jump to a different clue.
+    expect(applyCrosswordKey(board, fresh, { cell: 4, direction: "across" }, "E")?.selection.cell).toBe(4);
+  });
+
+  it("overwrites an existing answer sequentially, including when re-entering the same letter", () => {
+    const partial = writeCrosswordLetter(board, writeCrosswordLetter(board, fresh, 2, "A"), 3, "Z");
+    const same = applyCrosswordKey(board, partial, first, "A")!;
+    expect(same.progress).toBe(partial);
+    expect(same.selection.cell).toBe(3);
+    const corrected = applyCrosswordKey(board, same.progress, same.selection, "C")!;
+    expect(corrected.selection.cell).toBe(4);
+    expect(corrected.progress.letters.slice(2, 5)).toBe("AC.");
+    const replacement = applyCrosswordKey(board, partial, first, "B")!;
+    expect(replacement.progress.letters.slice(2, 5)).toBe("BZ.");
+    expect(replacement.selection.cell).toBe(3);
+  });
+
   it("clears current or previous cells predictably without crossing entry boundaries", () => {
     const typed = applyCrosswordKey(board, fresh, first, "a")!;
     const deleted = applyCrosswordKey(board, typed.progress, typed.selection, "Backspace")!;

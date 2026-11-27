@@ -113,7 +113,7 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
             </div>;
           })}
         </div>
-        <p id={helpId} class="sr-only">Type letters to fill the active entry. Arrow keys move between cells. Enter or Space changes direction. Backspace clears a letter. The emphasized clue is active. Choose a clue to change the active entry.</p>
+        <p id={helpId} class="sr-only">Type letters to fill the active clue. Filling an empty cell skips existing letters; replacing a letter moves one cell forward. Arrow keys move between cells and set direction. Enter or Space changes direction without moving. Backspace clears a letter. Choose a clue to change the active entry. Tab moves to the next control.</p>
       <aside class="crossword-clue-list" aria-label="Clues">
         {directions.map(direction => <section key={direction} aria-label={directionLabel(direction)}>
           <h3>{directionLabel(direction)}</h3>
@@ -123,7 +123,7 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
               const intersects = candidate === crossing;
               return <li key={candidate.number}>
                 <button id={entryId(candidate)} type="button" disabled={disabled} aria-current={active ? "true" : undefined}
-                  class={active ? "active" : intersects ? "crossing" : undefined}
+                  class={active ? "active" : undefined}
                   aria-label={`${candidate.number} ${directionLabel(direction)}: ${candidate.clue}${active ? ", active clue" : intersects ? ", intersecting clue" : ""}`}
                   onClick={() => { if (!disabled && !isPuzzleModalOpen()) select(selectCrosswordEntry(board, progress, selection, candidate.number, direction), true, true); }}>
                   <strong>{candidate.number}</strong><span>{candidate.clue}</span>

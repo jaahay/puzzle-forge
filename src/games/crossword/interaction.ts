@@ -56,7 +56,7 @@ const moveSpatially = (board: CrosswordBoard, selection: CrosswordSelection, key
   return selection;
 };
 
-// Both hardware and on-screen keys use the same transition. Navigation is
+// Hardware and native text input share the same transition. Navigation is
 // transient; only a changed progress value becomes a session action.
 export const applyCrosswordKey = (
   board: CrosswordBoard, progress: CrosswordProgress, selection: CrosswordSelection, key: string,
@@ -81,8 +81,11 @@ export const applyCrosswordKey = (
   }
   if (!/^[a-zA-Z]$/.test(key)) return null;
   const next = writeCrosswordLetter(board, progress, selection.cell, key.toUpperCase());
-  return {
-    selection: { ...selection, cell: entry.cells[Math.min(index + 1, entry.cells.length - 1)] },
-    progress: next,
-  };
+  // Filling a blank respects letters already supplied by crossings. Overwriting
+  // a filled cell instead advances sequentially, allowing a full answer rewrite.
+  const following = entry.cells.slice(index + 1);
+  const cell = progress.letters[selection.cell] === "."
+    ? following.find(candidate => next.letters[candidate] === ".") ?? selection.cell
+    : following[0] ?? selection.cell;
+  return { selection: { ...selection, cell }, progress: next };
 };

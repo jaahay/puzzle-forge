@@ -152,11 +152,6 @@
   font-weight: 700;
 }
 
-.crossword-clue-list button.crossing strong {
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-
 .crossword-cell.selected::after {
   content: "";
   position: absolute;
