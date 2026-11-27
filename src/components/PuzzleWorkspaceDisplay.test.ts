@@ -92,9 +92,9 @@ describe("universal workspace display composition", () => {
     const wordSearch = read("../site/word-search.css");
     const crossword = read("../site/crossword.css");
     const wordGuess = read("../site/word-guess.css");
-    expect(wordSearch).toContain("@container (min-width: 40rem)");
+    expect(wordSearch).toContain("@container (min-width: 36rem)");
     expect(wordSearch).toContain("grid-template-columns: minmax(0, var(--word-search-board-limit)) minmax(9rem, 1fr)");
-    expect(crossword).toContain("@container (min-width: 40rem)");
+    expect(crossword).toContain("@container (min-width: 36rem)");
     expect(read("./CrosswordBoard.tsx")).toContain('class="crossword-active-clue"');
     expect(wordGuess).toContain("@media (any-pointer: coarse)");
     expect(wordGuess).toContain(".word-guess-keyboard { display: grid; }");

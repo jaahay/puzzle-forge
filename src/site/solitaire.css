@@ -335,7 +335,7 @@
     min-width: 0;
   }
 
-  /* Six top slots and seven tableau columns fit the phone width;
+  /* Six top slots and seven tableau columns fit compact play widths;
      card overlap remains vertical rather than introducing horizontal scrolling. */
   .cards-layout {
     min-width: 0;
@@ -379,8 +379,6 @@
     width: 100%;
     min-height: 0;
     aspect-ratio: 0.72;
-    border-radius: 0.38rem;
-    font-size: clamp(0.68rem, 2.4vw, 0.92rem);
   }
 
   .stock .playing-card-list,
@@ -405,6 +403,17 @@
   .tableau .playing-card-list {
     grid-auto-rows: clamp(0.75rem, 2vw, 1rem);
     padding-bottom: clamp(3.5rem, 12vw, 5rem);
+  }
+
+  .solitaire-action-row button {
+    min-height: 2.75rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .playing-card {
+    border-radius: 0.38rem;
+    font-size: clamp(0.68rem, 2.4vw, 0.92rem);
   }
 
   .card-corner {
@@ -432,9 +441,6 @@
     font-size: 0.54rem;
   }
 
-  .solitaire-action-row button {
-    min-height: 2.75rem;
-  }
 }
 
 /* Extra width should not make every card taller than the play viewport. */

@@ -571,6 +571,8 @@
     grid-column: 1;
     grid-row: 2;
     justify-self: start;
+    min-width: 0;
+    flex-wrap: wrap;
   }
   .current-puzzle-header:has(.workspace-fullscreen-action) .puzzle-workspace-display-tools {
     grid-column: 2;

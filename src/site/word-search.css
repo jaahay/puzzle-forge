@@ -178,7 +178,7 @@
 }
 
 /* Words to find are a second working surface, not a footer. */
-@container (min-width: 40rem) {
+@container (min-width: 36rem) {
   .word-search-play {
     --word-search-board-limit: 36rem;
     width: 100%;
@@ -190,7 +190,7 @@
   }
 }
 @media (max-height: 48rem) {
-  @container (min-width: 40rem) {
+  @container (min-width: 36rem) {
     .word-search-play {
       --word-search-board-limit: min(36rem, max(14rem, calc(100dvh - 9rem)));
     }
