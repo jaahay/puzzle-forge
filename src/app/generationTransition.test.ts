@@ -37,7 +37,8 @@ describe("generation transition boundaries", () => {
     expect(app).toContain("setGenerationFailureNotice(null)");
     expect(app).toContain("restoreSession(fallback.session, fallback.route)");
     expect(app).toContain("setGenerationFailureNotice(`Could not create the requested puzzle.");
-    expect(app).toContain('type="button" onClick={() => setGenerationFailureNotice(null)}>Dismiss</button>');
+    expect(app).toContain('type="button" onClick={onDismiss}>Dismiss</button>');
+    expect(app).toContain('<GenerationFailureNotice message={generationFailureNotice} onDismiss={() => setGenerationFailureNotice(null)} />');
   });
 
   it("suspends every mounted puzzle surface while replacement generation runs", () => {
