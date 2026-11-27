@@ -194,6 +194,9 @@ const pushPuzzlePayload = (bytes: number[], identity: GenerationIdentity) => {
       pushDimensions(bytes, identity);
       pushByte(bytes, difficultyIndex(identity.difficulty) | (identity.requireUniqueSolution ? 0x04 : 0));
       return;
+    case "crossword":
+      if (identity.width !== 5 || identity.height !== 5) throw new Error("Invalid Mini Crossword dimensions.");
+      return;
     case "word-search": {
       const theme = identity.wordSearchTheme ?? defaultWordSearchTheme;
       if (!isWordSearchTheme(theme) || identity.width !== wordSearchProfiles[identity.difficulty].size || identity.height !== identity.width) throw new Error("Invalid Word Search profile.");
@@ -328,6 +331,8 @@ export const decodeCanonicalGenerationId = (puzzleId: PuzzleId, generationId: st
         requireUniqueSolution = (flags & 0x04) !== 0;
         break;
       }
+      case "crossword":
+        break;
       case "word-search": {
         const decodedDifficulty = difficultyAt(reader.readByte());
         const theme = reader.readText();

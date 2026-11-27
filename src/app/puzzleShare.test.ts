@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 import { getPuzzleAvailability } from "../catalog/puzzleAvailability";
 import { getPuzzleDefinition } from "../catalog/puzzleCatalog";
@@ -41,7 +42,8 @@ const identityFor = (puzzleId: PuzzleId, overrides: Partial<GenerationIdentity> 
   };
 };
 const generate = (identity: GenerationIdentity) =>
-  withPuzzleProvenance(generatePuzzle(identity, identity.puzzleId === "word-guess" ? ["CRANE", "LEVEL"] : undefined), identity.provenance);
+  withPuzzleProvenance(generatePuzzle(identity, identity.puzzleId === "word-guess" ? ["CRANE", "LEVEL"] : undefined, undefined,
+    identity.puzzleId === "crossword" ? JSON.parse(readFileSync(new URL("../../public/lexicon/crossword/mini-clues.json", import.meta.url), "utf8")) : undefined), identity.provenance);
 const emptyProgress = (): PuzzleShareProgress => ({
   gridCells: null, cardStacks: null, solitaireStats: initialSolitaireStats,
   imageTileRuntime: null, jigsawRuntime: null, wordSearchProgress: null,

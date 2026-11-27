@@ -71,6 +71,8 @@ export const getCurrentPuzzleIdentity = (
     };
   }
 
+  if (puzzle.kind === "crossword") return { puzzleLabel: definition.title, sourceLabel, details: ["Mini"], difficultyLabel: null };
+
   if (puzzle.kind === "word-search") return { puzzleLabel: definition.title, sourceLabel, details: [getWordSearchThemeTitle(puzzle.theme)], difficultyLabel };
 
   if (puzzle.puzzleId === "word-guess") {

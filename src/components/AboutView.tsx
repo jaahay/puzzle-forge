@@ -26,5 +26,13 @@ export const AboutView = () => (
       <h3>How it stays responsive</h3>
       <p>Puzzle generation runs in a Web Worker so larger boards and fresh deals do not block the game surface.</p>
     </article>
+    <article>
+      <h3>Language sources</h3>
+      <p>
+        Word puzzles use English Speller Database (SCOWL), Anagrimoire familiarity data, and Open English WordNet
+        (including Princeton WordNet). See the <a href={`${import.meta.env.BASE_URL}lexicon/NOTICE.txt`}>lexical asset notices</a>
+        {" "}for attribution, licenses, and source information.
+      </p>
+    </article>
   </section>
 );

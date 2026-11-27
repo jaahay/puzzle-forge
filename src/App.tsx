@@ -1,3 +1,4 @@
+import { createCrosswordProgress, isCrosswordComplete, recordCrosswordEdit, moveCrosswordHistory, canMoveCrosswordHistory, type CrosswordHistoryAction, type CrosswordProgress } from "./games/crossword/progress";
 import { createWordSearchProgress, isWordSearchComplete, selectWordSearchEndpoints, type WordSearchProgress } from "./games/wordSearch/progress";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { getPuzzleAvailability } from "./catalog/puzzleAvailability";
@@ -117,6 +118,12 @@ export const App = () => {
   const [generationDefaults, setGenerationDefaults] = useState<GenerationRuntimeSettings>(makeInitialGenerationDefaults);
   const [puzzle, setPuzzle] = useState<GeneratedPuzzle | null>(null);
   const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
+  const [crosswordProgress, setCrosswordProgress] = useState<CrosswordProgress | null>(null);
+  const crosswordProgressRef = useRef<CrosswordProgress | null>(null);
+  const updateCrosswordProgress = (progress: CrosswordProgress | null) => {
+    crosswordProgressRef.current = progress;
+    setCrosswordProgress(progress);
+  };
   const [wordSearchProgress, setWordSearchProgress] = useState<WordSearchProgress | null>(null);
   const wordSearchProgressRef = useRef<WordSearchProgress | null>(null);
   const updateWordSearchProgress = (progress: WordSearchProgress | null) => {
@@ -229,6 +236,7 @@ export const App = () => {
     setSelectedPuzzleId(puzzleId);
     setGenerationDefaults((current) => getGeneratedPuzzleRuntimeSettings(restoredPuzzle, current));
     setPuzzle(restoredPuzzle);
+    updateCrosswordProgress(session.progress.kind === "crossword" ? session.progress : null);
     updateWordSearchProgress(session.progress.kind === "word-search" ? session.progress : null);
     imageTileRuntimeRef.current = session.progress.kind === "tiles" && session.progress.imageTileRuntime
       ? {
@@ -284,6 +292,7 @@ export const App = () => {
         gridCells: grid.gridCells,
         selectedGridCell: grid.selectedGridCell,
         gridHistory: grid.gridHistory,
+        crosswordProgress: crosswordProgressRef.current,
         wordSearchProgress: wordSearchProgressRef.current,
         imageTileRuntime:
           puzzle.kind === "tiles" && puzzle.puzzleId !== "jigsaw" &&
@@ -316,6 +325,7 @@ export const App = () => {
 
   const resetRuntimePuzzleState = () => {
     setPuzzle(null);
+    updateCrosswordProgress(null);
     updateWordSearchProgress(null);
     imageTileRuntimeRef.current = null;
     jigsawRuntimeRef.current = null;
@@ -720,6 +730,9 @@ export const App = () => {
       solitaire.restoreSolitaireSnapshot({ cardStacks: puzzle.stacks, selectedCard: null, solitaireStats: initialSolitaireStats, solitaireUndoStack: [], solitaireRedoStack: [] });
     } else if (puzzle.kind === "grid") {
       grid.resetCurrentGrid(puzzle, "", setStatusMessage);
+    } else if (puzzle.kind === "crossword") {
+      updateCrosswordProgress(createCrosswordProgress(puzzle));
+      saveCurrentSessionRef.current();
     } else if (puzzle.kind === "word-search") {
       updateWordSearchProgress(createWordSearchProgress(puzzle));
       saveCurrentSessionRef.current();
@@ -748,7 +761,11 @@ export const App = () => {
       cardStacks: solitaire.cardStacks,
       solitaireStats: solitaire.solitaireStats,
       jigsawAssembly: assembly,
-      workspaceProgress: puzzle?.kind === "word-search" ? {
+      workspaceProgress: puzzle?.kind === "crossword" ? {
+        puzzleInstanceId: puzzle.id,
+        hasProgress: Boolean(crosswordProgressRef.current && /[A-Z]/.test(crosswordProgressRef.current.letters)),
+        terminal: Boolean(crosswordProgressRef.current && isCrosswordComplete(puzzle, crosswordProgressRef.current)),
+      } : puzzle?.kind === "word-search" ? {
         puzzleInstanceId: puzzle.id,
         hasProgress: Boolean(wordSearchProgressRef.current?.found.length),
         terminal: Boolean(wordSearchProgressRef.current && isWordSearchComplete(puzzle, wordSearchProgressRef.current)),
@@ -855,6 +872,31 @@ export const App = () => {
   const handleCheck = () => { if (!puzzle || generation.hasActiveRequest()) return; puzzle.kind === "cards" ? solitaire.checkSolitaire() : grid.checkGrid(puzzle, setStatusMessage); };
   const workspaceIsGenerating = generation.isGenerating || (!puzzle && selectedPuzzleIsGeneratable && !isHomeSelected && !puzzleLinkError);
   const workspaceCore = {
+    crosswordProgress: puzzle?.kind === "crossword" && crosswordProgress?.baselineChecksum === puzzle.checksum ? crosswordProgress : null,
+    onCrosswordProgressChange: (puzzleInstanceId: string, proposed: CrosswordProgress) => {
+      if (generation.hasActiveRequest() || puzzle?.kind !== "crossword" || puzzle.id !== puzzleInstanceId) return false;
+      const current = crosswordProgressRef.current;
+      if (!current || isCrosswordComplete(puzzle, current)) return false;
+      const next = recordCrosswordEdit(puzzle, current, proposed);
+      if (!next) return false;
+      updateCrosswordProgress(next);
+      saveCurrentSessionRef.current();
+      return true;
+    },
+    canMoveCrosswordHistoryNow: (puzzleInstanceId: string, action: CrosswordHistoryAction) => {
+      const current = crosswordProgressRef.current;
+      return !generation.hasActiveRequest() && puzzle?.kind === "crossword" && puzzle.id === puzzleInstanceId
+        && Boolean(current && canMoveCrosswordHistory(puzzle, current, action));
+    },
+    onCrosswordHistory: (puzzleInstanceId: string, action: CrosswordHistoryAction) => {
+      if (generation.hasActiveRequest() || puzzle?.kind !== "crossword" || puzzle.id !== puzzleInstanceId) return false;
+      const current = crosswordProgressRef.current;
+      const next = current && moveCrosswordHistory(puzzle, current, action);
+      if (!next) return false;
+      updateCrosswordProgress(next);
+      saveCurrentSessionRef.current();
+      return true;
+    },
     wordSearchProgress: puzzle?.kind === "word-search" && wordSearchProgress?.baselineChecksum === puzzle.checksum ? wordSearchProgress : null,
     onWordSearchSelection: (puzzleInstanceId: string, start: number, end: number) => {
       if (generation.hasActiveRequest() || puzzle?.kind !== "word-search" || puzzle.id !== puzzleInstanceId) return false;
@@ -976,6 +1018,7 @@ export const App = () => {
     gridCells: grid.gridCells,
     cardStacks: solitaire.cardStacks,
     solitaireStats: solitaire.solitaireStats,
+    crosswordProgress: crosswordProgressRef.current,
     wordSearchProgress: wordSearchProgressRef.current,
     jigsawRuntime: jigsawRuntimeRef.current?.puzzleInstanceId === puzzle.id
       ? jigsawRuntimeRef.current.runtime : null,

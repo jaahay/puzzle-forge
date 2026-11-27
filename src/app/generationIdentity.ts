@@ -85,6 +85,8 @@ export const generatedPuzzleMatchesIdentity = (
     return false;
   }
 
+  if (puzzle.kind === "crossword") return puzzle.format === "mini" && puzzle.width === identity.width && puzzle.height === identity.height;
+
   if (puzzle.kind === "word-search") return puzzle.difficulty === identity.difficulty &&
     puzzle.theme === (identity.wordSearchTheme ?? defaultWordSearchTheme) &&
     puzzle.width === identity.width && puzzle.height === identity.height;

@@ -41,5 +41,8 @@ jobs:
       - name: Verify compiled Word Guess assets
         run: python3 scripts/build_word_guess_lexicon.py --verify
 
+      - name: Verify compiled Crossword assets
+        run: python3 scripts/build_crossword_lexicon.py --verify
+
       - name: Build
         run: pnpm build

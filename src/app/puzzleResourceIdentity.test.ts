@@ -111,6 +111,10 @@ describe("canonical puzzle generation identity", () => {
         case "nonogram":
           expect(decoded.identity).toMatchObject({ width, height, difficulty: "Expert", requireUniqueSolution: false });
           break;
+        case "crossword":
+          expect(decoded.identity.width).toBe(5);
+          expect(decoded.identity.height).toBe(5);
+          break;
         case "word-search":
           expect(decoded.identity).toMatchObject({ width, height, difficulty: "Expert", wordSearchTheme: "ocean" });
           break;

@@ -1,3 +1,4 @@
+import { cloneCrosswordProgress, createCrosswordProgress, restoreCrosswordProgress, type CrosswordProgress } from "../games/crossword/progress";
 import { createWordSearchProgress, restoreWordSearchProgress, type WordSearchProgress } from "../games/wordSearch/progress";
 import { useRef } from "preact/hooks";
 import type { CardGeneratedPuzzle, CardStack, GeneratedPuzzle, GridGeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
@@ -35,6 +36,7 @@ export type RuntimeSessionDraft = {
   jigsawRuntime?: JigsawActionRuntime | null;
   imageTileRuntime?: ImageTileActionRuntime | null;
   wordSearchProgress?: WordSearchProgress | null;
+  crosswordProgress?: CrosswordProgress | null;
 };
 
 const cloneSessionGridCell = (puzzleId: PuzzleId, cell: PuzzleCell): PuzzleCell => {
@@ -97,6 +99,12 @@ const cloneTilePuzzle = (puzzle: Extract<GeneratedPuzzle, { kind: "tiles" }>) =>
 };
 
 export const clonePuzzleSession = (session: PuzzleSession): PuzzleSession => {
+  if (session.kind === "crossword") return {
+    kind: "crossword",
+    puzzle: { ...session.puzzle, blocks: [...session.puzzle.blocks], numbers: [...session.puzzle.numbers],
+      entries: session.puzzle.entries.map(entry => ({ ...entry, cells: [...entry.cells] })) },
+    progress: { kind: "crossword", ...cloneCrosswordProgress(session.progress) },
+  };
   if (session.kind === "word-search") return {
     kind: "word-search",
     puzzle: { ...session.puzzle, letters: [...session.puzzle.letters], targets: session.puzzle.targets.map(target => ({ ...target })) },
@@ -163,7 +171,12 @@ export const buildRuntimeSession = ({
   jigsawRuntime,
   imageTileRuntime,
   wordSearchProgress,
+  crosswordProgress,
 }: RuntimeSessionDraft): PuzzleSession => {
+  if (puzzle.kind === "crossword") {
+    const progress = restoreCrosswordProgress(puzzle, crosswordProgress) ?? createCrosswordProgress(puzzle);
+    return { kind: "crossword", puzzle, progress: { kind: "crossword", ...progress } };
+  }
   if (puzzle.kind === "word-search") {
     const progress = restoreWordSearchProgress(puzzle, wordSearchProgress) ?? createWordSearchProgress(puzzle);
     return { kind: "word-search", puzzle, progress: { kind: "word-search", ...progress } };
@@ -214,6 +227,7 @@ export const buildRuntimeSession = ({
 };
 
 export const buildFreshSessionForGeneratedPuzzle = (generatedPuzzle: GeneratedPuzzle): PuzzleSession => {
+  if (generatedPuzzle.kind === "crossword") return { kind: "crossword", puzzle: generatedPuzzle, progress: { kind: "crossword", ...createCrosswordProgress(generatedPuzzle) } };
   if (generatedPuzzle.kind === "word-search") return { kind: "word-search", puzzle: generatedPuzzle, progress: { kind: "word-search", ...createWordSearchProgress(generatedPuzzle) } };
   if (generatedPuzzle.kind === "cards") {
     return {

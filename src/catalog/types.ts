@@ -1,3 +1,4 @@
+import type { CrosswordBoard } from "../games/crossword/model";
 import type { WordSearchBoard } from "../games/wordSearch/model";
 import type { WordSearchTheme } from "../games/wordSearch/themes";
 
@@ -6,6 +7,7 @@ export type PuzzleId =
   | "nonogram"
   | "word-guess"
   | "word-search"
+  | "crossword"
   | "logic-grid"
   | "klondike-solitaire"
   | "peg-solitaire"
@@ -394,7 +396,13 @@ export type WordSearchGeneratedPuzzle = BaseGeneratedPuzzle & WordSearchBoard & 
   puzzleId: "word-search";
 };
 
+export type CrosswordGeneratedPuzzle = BaseGeneratedPuzzle & CrosswordBoard & {
+  kind: "crossword";
+  puzzleId: "crossword";
+};
+
 export type GeneratedPuzzle =
+  | CrosswordGeneratedPuzzle
   | WordSearchGeneratedPuzzle
   | GridGeneratedPuzzle
   | CardGeneratedPuzzle

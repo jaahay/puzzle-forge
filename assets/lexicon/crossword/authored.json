@@ -1,0 +1,4628 @@
+[
+  {
+    "answer": "ABBEY",
+    "senses": [
+      {
+        "meaning": "religious building",
+        "topics": [
+          "architecture"
+        ],
+        "clues": [
+          "A monastery or convent"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ABLE",
+    "senses": [
+      {
+        "meaning": "capable",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Having the skill to do something"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ACE",
+    "senses": [
+      {
+        "meaning": "playing card",
+        "topics": [
+          "games"
+        ],
+        "clues": [
+          "Playing card that may rank high or low",
+          "The card that can complete a royal flush"
+        ]
+      },
+      {
+        "meaning": "expert performer",
+        "topics": [
+          "sports",
+          "work"
+        ],
+        "clues": [
+          "A highly skilled performer",
+          "Top pilot, perhaps"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ACID",
+    "senses": [
+      {
+        "meaning": "chemical substance",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Substance that turns blue litmus red"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AGE",
+    "senses": [
+      {
+        "meaning": "time since birth",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Number of years since birth"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AGED",
+    "senses": [
+      {
+        "meaning": "grew older",
+        "topics": [
+          "time"
+        ],
+        "clues": [
+          "Grew older over time"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AGENT",
+    "senses": [
+      {
+        "meaning": "representative",
+        "topics": [
+          "work"
+        ],
+        "clues": [
+          "Person who negotiates on behalf of an actor"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AGES",
+    "senses": [
+      {
+        "meaning": "long periods",
+        "topics": [
+          "time"
+        ],
+        "clues": [
+          "Eons, informally"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AGILE",
+    "senses": [
+      {
+        "meaning": "nimble",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "Able to move quickly and easily"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AGO",
+    "senses": [
+      {
+        "meaning": "in the past",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Before now, as in two days ___"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AGONY",
+    "senses": [
+      {
+        "meaning": "intense suffering",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Extreme pain or distress"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AHEAD",
+    "senses": [
+      {
+        "meaning": "in front",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "In front rather than behind"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AIR",
+    "senses": [
+      {
+        "meaning": "atmosphere",
+        "topics": [
+          "nature",
+          "science"
+        ],
+        "clues": [
+          "Mixture of gases we breathe"
+        ]
+      },
+      {
+        "meaning": "broadcast",
+        "topics": [
+          "media"
+        ],
+        "clues": [
+          "Transmit a program on television"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AKIN",
+    "senses": [
+      {
+        "meaning": "similar",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Similar in nature"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ALAS",
+    "senses": [
+      {
+        "meaning": "expression of regret",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Old-fashioned way to express regret"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ALERT",
+    "senses": [
+      {
+        "meaning": "attentive",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Awake and attentive"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ALIAS",
+    "senses": [
+      {
+        "meaning": "alternate name",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "A name used in place of one's own"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ALLY",
+    "senses": [
+      {
+        "meaning": "supportive partner",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "Supportive partner"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ALSO",
+    "senses": [
+      {
+        "meaning": "in addition",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "In addition"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AMUSE",
+    "senses": [
+      {
+        "meaning": "entertain",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Make someone laugh or smile"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ANGEL",
+    "senses": [
+      {
+        "meaning": "celestial being",
+        "topics": [
+          "mythology"
+        ],
+        "clues": [
+          "A figure often depicted with a halo"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ANGER",
+    "senses": [
+      {
+        "meaning": "emotion",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Feeling of intense displeasure"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ANGLE",
+    "senses": [
+      {
+        "meaning": "geometric measure",
+        "topics": [
+          "mathematics",
+          "science"
+        ],
+        "clues": [
+          "Measure of the turn between two rays with a common endpoint"
+        ]
+      },
+      {
+        "meaning": "viewpoint",
+        "topics": [
+          "writing",
+          "media"
+        ],
+        "clues": [
+          "A particular way of approaching a story",
+          "A reporter's chosen perspective"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ANT",
+    "senses": [
+      {
+        "meaning": "colony insect",
+        "topics": [
+          "nature",
+          "animals"
+        ],
+        "clues": [
+          "Insect that lives in colonies",
+          "Tiny worker in a huge colony"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ANY",
+    "senses": [
+      {
+        "meaning": "unrestricted choice",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "One or another without restriction"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "APT",
+    "senses": [
+      {
+        "meaning": "appropriate",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Well suited to the occasion"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ARCH",
+    "senses": [
+      {
+        "meaning": "curved structure",
+        "topics": [
+          "architecture"
+        ],
+        "clues": [
+          "Curved structural opening",
+          "A doorway might have one overhead"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ARE",
+    "senses": [
+      {
+        "meaning": "plural present of be",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Verb in They ___ ready"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AREA",
+    "senses": [
+      {
+        "meaning": "surface measure",
+        "topics": [
+          "mathematics"
+        ],
+        "clues": [
+          "Amount of surface covered"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ARENA",
+    "senses": [
+      {
+        "meaning": "event venue",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "Place where a basketball championship might be held"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ARISE",
+    "senses": [
+      {
+        "meaning": "come into existence",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Come up, as a new problem might"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ART",
+    "senses": [
+      {
+        "meaning": "creative expression",
+        "topics": [
+          "arts"
+        ],
+        "clues": [
+          "Creative work such as painting"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ASH",
+    "senses": [
+      {
+        "meaning": "combustion residue",
+        "topics": [
+          "nature",
+          "science"
+        ],
+        "clues": [
+          "Powder left after a fire",
+          "What's left in a cold fireplace"
+        ]
+      },
+      {
+        "meaning": "tree",
+        "topics": [
+          "nature",
+          "garden"
+        ],
+        "clues": [
+          "Tree with compound leaves and winged seeds"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BASE",
+    "senses": [
+      {
+        "meaning": "bottom support",
+        "topics": [
+          "engineering"
+        ],
+        "clues": [
+          "Part of a statue that rests on the ground"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BASED",
+    "senses": [
+      {
+        "meaning": "founded on",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Founded on, as a theory"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BASES",
+    "senses": [
+      {
+        "meaning": "starting points in baseball",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "Four stops on a baseball diamond"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BASIL",
+    "senses": [
+      {
+        "meaning": "culinary herb",
+        "topics": [
+          "garden"
+        ],
+        "clues": [
+          "Herb often used in pesto"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BED",
+    "senses": [
+      {
+        "meaning": "sleeping furniture",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Furniture for sleeping"
+        ]
+      },
+      {
+        "meaning": "garden plot",
+        "topics": [
+          "garden"
+        ],
+        "clues": [
+          "Plot prepared for flowers"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BEE",
+    "senses": [
+      {
+        "meaning": "honey-making insect",
+        "topics": [
+          "nature",
+          "animals"
+        ],
+        "clues": [
+          "Insect that makes honey",
+          "A flower visitor with a sweet trade"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BIG",
+    "senses": [
+      {
+        "meaning": "large",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Opposite of small"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BLEW",
+    "senses": [
+      {
+        "meaning": "expelled air",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Sent air out, as into a balloon"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BLISS",
+    "senses": [
+      {
+        "meaning": "great happiness",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "A state of perfect happiness"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BOGUS",
+    "senses": [
+      {
+        "meaning": "not genuine",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Fake, informally"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BOOST",
+    "senses": [
+      {
+        "meaning": "increase",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Give a lift to"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BORES",
+    "senses": [
+      {
+        "meaning": "uninteresting people",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "People who make a party tedious"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BOUND",
+    "senses": [
+      {
+        "meaning": "heading toward",
+        "topics": [
+          "transport"
+        ],
+        "clues": [
+          "Like a train headed for Chicago: Chicago-___"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BUS",
+    "senses": [
+      {
+        "meaning": "passenger vehicle",
+        "topics": [
+          "transport"
+        ],
+        "clues": [
+          "Large road vehicle for passengers"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CAB",
+    "senses": [
+      {
+        "meaning": "taxi",
+        "topics": [
+          "transport"
+        ],
+        "clues": [
+          "Taxi"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CAKES",
+    "senses": [
+      {
+        "meaning": "baked sweets",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Desserts often served at birthdays"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CAMEL",
+    "senses": [
+      {
+        "meaning": "humped mammal",
+        "topics": [
+          "nature",
+          "animals"
+        ],
+        "clues": [
+          "Desert animal with humps",
+          "Desert traveler with built-in humps"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CAP",
+    "senses": [
+      {
+        "meaning": "headwear",
+        "topics": [
+          "clothing"
+        ],
+        "clues": [
+          "Hat with a visor",
+          "A baseball fan might wear one"
+        ]
+      },
+      {
+        "meaning": "upper limit",
+        "topics": [
+          "money",
+          "mathematics"
+        ],
+        "clues": [
+          "Maximum permitted amount"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CARE",
+    "senses": [
+      {
+        "meaning": "concern",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Concern for someone's well-being"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CARRY",
+    "senses": [
+      {
+        "meaning": "hold and transport",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Transport by holding"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CAUSE",
+    "senses": [
+      {
+        "meaning": "reason",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Reason something happens"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CAW",
+    "senses": [
+      {
+        "meaning": "crow call",
+        "topics": [
+          "nature",
+          "animals"
+        ],
+        "clues": [
+          "Crow's call"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CIRCA",
+    "senses": [
+      {
+        "meaning": "approximate date",
+        "topics": [
+          "history",
+          "language"
+        ],
+        "clues": [
+          "Approximately, before a year"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CITED",
+    "senses": [
+      {
+        "meaning": "quoted as evidence",
+        "topics": [
+          "writing"
+        ],
+        "clues": [
+          "Referred to as a source"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CLAY",
+    "senses": [
+      {
+        "meaning": "pottery material",
+        "topics": [
+          "arts",
+          "nature"
+        ],
+        "clues": [
+          "Material used to make pottery",
+          "What a potter shapes on a wheel"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "COLD",
+    "senses": [
+      {
+        "meaning": "low temperature",
+        "topics": [
+          "science",
+          "weather"
+        ],
+        "clues": [
+          "Opposite of hot"
+        ]
+      },
+      {
+        "meaning": "common illness",
+        "topics": [
+          "health"
+        ],
+        "clues": [
+          "Minor respiratory illness with a runny nose"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "COP",
+    "senses": [
+      {
+        "meaning": "police officer",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "Police officer, informally"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "COPES",
+    "senses": [
+      {
+        "meaning": "manages",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Manages in difficult circumstances"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "COPY",
+    "senses": [
+      {
+        "meaning": "duplicate",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Duplicate of an original"
+        ]
+      },
+      {
+        "meaning": "advertising text",
+        "topics": [
+          "writing",
+          "business"
+        ],
+        "clues": [
+          "Text written for an advertisement"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "COUNT",
+    "senses": [
+      {
+        "meaning": "enumerate",
+        "topics": [
+          "mathematics"
+        ],
+        "clues": [
+          "Determine how many there are"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "COURT",
+    "senses": [
+      {
+        "meaning": "sports playing area",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "Where a tennis match takes place"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DARED",
+    "senses": [
+      {
+        "meaning": "challenged",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Challenged someone to do something bold"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DEALT",
+    "senses": [
+      {
+        "meaning": "distributed cards",
+        "topics": [
+          "games"
+        ],
+        "clues": [
+          "Handed out playing cards"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DELAY",
+    "senses": [
+      {
+        "meaning": "postponement",
+        "topics": [
+          "transport"
+        ],
+        "clues": [
+          "An airport announcement you may dread"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DEN",
+    "senses": [
+      {
+        "meaning": "animal shelter",
+        "topics": [
+          "nature",
+          "animals"
+        ],
+        "clues": [
+          "Shelter of a fox",
+          "Where a fox might raise its young"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DIALS",
+    "senses": [
+      {
+        "meaning": "rotary controls",
+        "topics": [
+          "technology"
+        ],
+        "clues": [
+          "Knobs used to tune some radios"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DIARY",
+    "senses": [
+      {
+        "meaning": "daily record",
+        "topics": [
+          "writing"
+        ],
+        "clues": [
+          "Personal record of daily events",
+          "A book of yesterdays"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DICE",
+    "senses": [
+      {
+        "meaning": "gaming cubes",
+        "topics": [
+          "games"
+        ],
+        "clues": [
+          "Cubes rolled in many board games"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DIE",
+    "senses": [
+      {
+        "meaning": "numbered cube",
+        "topics": [
+          "games"
+        ],
+        "clues": [
+          "Cube with pips used in board games",
+          "One of a pair tossed in a board game"
+        ]
+      },
+      {
+        "meaning": "stop living",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "Cease to live"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DINED",
+    "senses": [
+      {
+        "meaning": "ate a meal",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Ate a meal"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DIRE",
+    "senses": [
+      {
+        "meaning": "grave",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Extremely serious"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DONE",
+    "senses": [
+      {
+        "meaning": "finished",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Finished"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DOSES",
+    "senses": [
+      {
+        "meaning": "medicine portions",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Measured quantities of medicine"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DRAW",
+    "senses": [
+      {
+        "meaning": "tie",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "A match with no winner"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DUB",
+    "senses": [
+      {
+        "meaning": "give a name",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Give a nickname to"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DYE",
+    "senses": [
+      {
+        "meaning": "coloring substance",
+        "topics": [
+          "arts",
+          "clothing"
+        ],
+        "clues": [
+          "Substance used to color fabric"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EARN",
+    "senses": [
+      {
+        "meaning": "receive for work",
+        "topics": [
+          "work",
+          "money"
+        ],
+        "clues": [
+          "Receive in return for work"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EASE",
+    "senses": [
+      {
+        "meaning": "freedom from difficulty",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Absence of difficulty"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EATEN",
+    "senses": [
+      {
+        "meaning": "consumed",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Consumed as food"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EATER",
+    "senses": [
+      {
+        "meaning": "person consuming food",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "One who consumes a meal"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EATS",
+    "senses": [
+      {
+        "meaning": "consumes food",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Consumes food"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EEL",
+    "senses": [
+      {
+        "meaning": "elongated fish",
+        "topics": [
+          "nature",
+          "animals"
+        ],
+        "clues": [
+          "Long, snake-shaped fish",
+          "A fish with a serpentine silhouette"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EGOS",
+    "senses": [
+      {
+        "meaning": "self-importance",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Senses of personal importance"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ELF",
+    "senses": [
+      {
+        "meaning": "mythical being",
+        "topics": [
+          "mythology"
+        ],
+        "clues": [
+          "Small magical being of folklore"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ELSE",
+    "senses": [
+      {
+        "meaning": "other",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Word after something or someone to mean another"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "END",
+    "senses": [
+      {
+        "meaning": "final part",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Final part"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ERA",
+    "senses": [
+      {
+        "meaning": "historical period",
+        "topics": [
+          "history"
+        ],
+        "clues": [
+          "Distinct period in history"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ERASE",
+    "senses": [
+      {
+        "meaning": "remove marks",
+        "topics": [
+          "writing"
+        ],
+        "clues": [
+          "Remove a pencil mark"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ERR",
+    "senses": [
+      {
+        "meaning": "make a mistake",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Make a mistake"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EVEN",
+    "senses": [
+      {
+        "meaning": "divisible by two",
+        "topics": [
+          "mathematics"
+        ],
+        "clues": [
+          "Like 24 but not 25"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EVENT",
+    "senses": [
+      {
+        "meaning": "occasion",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "A scheduled occasion"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EVER",
+    "senses": [
+      {
+        "meaning": "at any time",
+        "topics": [
+          "time"
+        ],
+        "clues": [
+          "At any time"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EWE",
+    "senses": [
+      {
+        "meaning": "female sheep",
+        "topics": [
+          "nature",
+          "animals"
+        ],
+        "clues": [
+          "Female sheep"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EXIT",
+    "senses": [
+      {
+        "meaning": "way out",
+        "topics": [
+          "architecture"
+        ],
+        "clues": [
+          "Sign above a way out"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EYE",
+    "senses": [
+      {
+        "meaning": "organ of sight",
+        "topics": [
+          "anatomy"
+        ],
+        "clues": [
+          "Organ of sight",
+          "One of a pair behind many glasses"
+        ]
+      },
+      {
+        "meaning": "needle opening",
+        "topics": [
+          "crafts"
+        ],
+        "clues": [
+          "Opening that thread passes through"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FAME",
+    "senses": [
+      {
+        "meaning": "renown",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Widespread public recognition"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FARM",
+    "senses": [
+      {
+        "meaning": "agricultural property",
+        "topics": [
+          "agriculture"
+        ],
+        "clues": [
+          "Place where crops are grown"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FATAL",
+    "senses": [
+      {
+        "meaning": "causing death",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Not survivable"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FAVOR",
+    "senses": [
+      {
+        "meaning": "kind deed",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "Kind act for someone"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FEAR",
+    "senses": [
+      {
+        "meaning": "apprehension",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Feeling of apprehension"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FEE",
+    "senses": [
+      {
+        "meaning": "service charge",
+        "topics": [
+          "money"
+        ],
+        "clues": [
+          "Charge for a service"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FINED",
+    "senses": [
+      {
+        "meaning": "monetary penalty",
+        "topics": [
+          "law",
+          "money"
+        ],
+        "clues": [
+          "Charged a monetary penalty"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FIT",
+    "senses": [
+      {
+        "meaning": "be the right size",
+        "topics": [
+          "clothing"
+        ],
+        "clues": [
+          "Be the right size"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FLUTE",
+    "senses": [
+      {
+        "meaning": "wind instrument",
+        "topics": [
+          "music"
+        ],
+        "clues": [
+          "Woodwind played by blowing across an opening",
+          "Instrument held sideways in an orchestra"
+        ]
+      },
+      {
+        "meaning": "glassware",
+        "topics": [
+          "food",
+          "design"
+        ],
+        "clues": [
+          "Tall narrow glass for sparkling wine"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FOE",
+    "senses": [
+      {
+        "meaning": "enemy",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "Enemy"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FOR",
+    "senses": [
+      {
+        "meaning": "in support of",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "On the side of"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FORCE",
+    "senses": [
+      {
+        "meaning": "physical interaction",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Push or pull in physics"
+        ]
+      },
+      {
+        "meaning": "compel",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Make someone do something against their will"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FORUM",
+    "senses": [
+      {
+        "meaning": "discussion venue",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "A place for exchanging ideas"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FOUND",
+    "senses": [
+      {
+        "meaning": "establish",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Establish an organization"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FREE",
+    "senses": [
+      {
+        "meaning": "without cost",
+        "topics": [
+          "money"
+        ],
+        "clues": [
+          "Costs nothing"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FRESH",
+    "senses": [
+      {
+        "meaning": "recently made",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Like bread just out of the oven"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FRY",
+    "senses": [
+      {
+        "meaning": "cook in oil",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Cook in hot oil"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GAMES",
+    "senses": [
+      {
+        "meaning": "play activities",
+        "topics": [
+          "games"
+        ],
+        "clues": [
+          "Chess and checkers, for example"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GAS",
+    "senses": [
+      {
+        "meaning": "state of matter",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "State of matter that fills its container"
+        ]
+      },
+      {
+        "meaning": "fuel",
+        "topics": [
+          "transport"
+        ],
+        "clues": [
+          "Fuel sold by the gallon in the US"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GEARS",
+    "senses": [
+      {
+        "meaning": "toothed wheels",
+        "topics": [
+          "engineering"
+        ],
+        "clues": [
+          "Interlocking wheels that transfer motion"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GEL",
+    "senses": [
+      {
+        "meaning": "semisolid substance",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Thick, jellylike substance"
+        ]
+      },
+      {
+        "meaning": "become cohesive",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Come together as a team, figuratively"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GEM",
+    "senses": [
+      {
+        "meaning": "precious stone",
+        "topics": [
+          "nature",
+          "jewelry"
+        ],
+        "clues": [
+          "A ruby or an emerald, for example",
+          "A jewel in the rough, perhaps"
+        ]
+      },
+      {
+        "meaning": "outstanding example",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "An especially delightful discovery"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GENES",
+    "senses": [
+      {
+        "meaning": "units of inheritance",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Inherited instructions encoded in DNA"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GET",
+    "senses": [
+      {
+        "meaning": "obtain",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Obtain or receive"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GLAD",
+    "senses": [
+      {
+        "meaning": "pleased",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Happy to hear good news"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GOO",
+    "senses": [
+      {
+        "meaning": "sticky substance",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Sticky, messy stuff"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GOODS",
+    "senses": [
+      {
+        "meaning": "merchandise",
+        "topics": [
+          "commerce"
+        ],
+        "clues": [
+          "Items offered for sale"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HAS",
+    "senses": [
+      {
+        "meaning": "possesses",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Possesses"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HER",
+    "senses": [
+      {
+        "meaning": "object pronoun",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Object pronoun corresponding to she"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HID",
+    "senses": [
+      {
+        "meaning": "concealed",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Put out of sight"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HIRED",
+    "senses": [
+      {
+        "meaning": "employed",
+        "topics": [
+          "work"
+        ],
+        "clues": [
+          "Took on as an employee"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HOLE",
+    "senses": [
+      {
+        "meaning": "opening",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "Opening in the ground or a wall"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HONOR",
+    "senses": [
+      {
+        "meaning": "respect",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "Great respect or esteem"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "IDEA",
+    "senses": [
+      {
+        "meaning": "suggestion",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Thought or suggestion"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "IDLE",
+    "senses": [
+      {
+        "meaning": "inactive",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Not working or active"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "INCH",
+    "senses": [
+      {
+        "meaning": "unit of length",
+        "topics": [
+          "measurement"
+        ],
+        "clues": [
+          "One-twelfth of a foot",
+          "Twelve of these make a foot"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ION",
+    "senses": [
+      {
+        "meaning": "charged particle",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Atom or molecule with an electric charge",
+          "A particle with an electric plus or minus"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "IRATE",
+    "senses": [
+      {
+        "meaning": "very angry",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Furious"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "IRE",
+    "senses": [
+      {
+        "meaning": "anger",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Anger or wrath"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "IRK",
+    "senses": [
+      {
+        "meaning": "annoy",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Annoy or irritate"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "JELLY",
+    "senses": [
+      {
+        "meaning": "fruit preserve",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Clear fruit preserve made from juice"
+        ]
+      },
+      {
+        "meaning": "gelatin dessert",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Wobbly gelatin dessert"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "JOB",
+    "senses": [
+      {
+        "meaning": "paid position",
+        "topics": [
+          "work"
+        ],
+        "clues": [
+          "Paid position"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "JOINS",
+    "senses": [
+      {
+        "meaning": "connects",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Connects two pieces together"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "KEYS",
+    "senses": [
+      {
+        "meaning": "keyboard parts",
+        "topics": [
+          "music"
+        ],
+        "clues": [
+          "The black and white parts of a piano"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "KNEE",
+    "senses": [
+      {
+        "meaning": "leg joint",
+        "topics": [
+          "anatomy"
+        ],
+        "clues": [
+          "Joint between thigh and lower leg"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "KNEES",
+    "senses": [
+      {
+        "meaning": "leg joints",
+        "topics": [
+          "anatomy"
+        ],
+        "clues": [
+          "Joints that bend when you kneel"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "KNOW",
+    "senses": [
+      {
+        "meaning": "be aware",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Be aware of"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LABS",
+    "senses": [
+      {
+        "meaning": "research facilities",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Places where experiments are conducted"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LARGE",
+    "senses": [
+      {
+        "meaning": "big",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Bigger than medium"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LAWN",
+    "senses": [
+      {
+        "meaning": "managed grass",
+        "topics": [
+          "garden",
+          "home"
+        ],
+        "clues": [
+          "Area of closely cut grass",
+          "A mower's usual territory"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LIMIT",
+    "senses": [
+      {
+        "meaning": "maximum",
+        "topics": [
+          "mathematics",
+          "language"
+        ],
+        "clues": [
+          "Maximum permitted amount"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LIT",
+    "senses": [
+      {
+        "meaning": "illuminated",
+        "topics": [
+          "light"
+        ],
+        "clues": [
+          "Made bright with a lamp"
+        ]
+      },
+      {
+        "meaning": "literature",
+        "topics": [
+          "writing"
+        ],
+        "clues": [
+          "Literature, informally, in a course title"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LIVE",
+    "senses": [
+      {
+        "meaning": "happening now",
+        "topics": [
+          "media"
+        ],
+        "clues": [
+          "Broadcast as it happens"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LOGO",
+    "senses": [
+      {
+        "meaning": "brand symbol",
+        "topics": [
+          "design",
+          "business"
+        ],
+        "clues": [
+          "Symbol representing a brand"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LOSES",
+    "senses": [
+      {
+        "meaning": "fails to win",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "Finishes second in a two-player match"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LUG",
+    "senses": [
+      {
+        "meaning": "carry laboriously",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Carry with effort"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MADE",
+    "senses": [
+      {
+        "meaning": "created",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Manufactured or created"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MANIA",
+    "senses": [
+      {
+        "meaning": "intense enthusiasm",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "An overwhelming craze"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MEANS",
+    "senses": [
+      {
+        "meaning": "method",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "A way of achieving an end"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MEANT",
+    "senses": [
+      {
+        "meaning": "intended",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Had in mind"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MEETS",
+    "senses": [
+      {
+        "meaning": "encounters",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Runs into someone"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MEN",
+    "senses": [
+      {
+        "meaning": "adult males",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "Plural of man"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MENU",
+    "senses": [
+      {
+        "meaning": "restaurant listing",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Restaurant's list of dishes",
+          "Reading material before dinner"
+        ]
+      },
+      {
+        "meaning": "software choices",
+        "topics": [
+          "technology"
+        ],
+        "clues": [
+          "List of available commands on a screen"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MERE",
+    "senses": [
+      {
+        "meaning": "nothing more than",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Nothing more than"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MERIT",
+    "senses": [
+      {
+        "meaning": "worthiness",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Quality deserving recognition"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MESS",
+    "senses": [
+      {
+        "meaning": "disorder",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "An untidy state"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MESSY",
+    "senses": [
+      {
+        "meaning": "untidy",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Like a desk covered in loose papers"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MET",
+    "senses": [
+      {
+        "meaning": "encountered",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "Encountered for the first time, perhaps"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MILL",
+    "senses": [
+      {
+        "meaning": "grain-processing building",
+        "topics": [
+          "engineering",
+          "food"
+        ],
+        "clues": [
+          "Building where grain is ground"
+        ]
+      },
+      {
+        "meaning": "grind",
+        "topics": [
+          "food",
+          "engineering"
+        ],
+        "clues": [
+          "Grind grain into flour"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MINOR",
+    "senses": [
+      {
+        "meaning": "musical mode",
+        "topics": [
+          "music"
+        ],
+        "clues": [
+          "Like a key often associated with melancholy"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MOANS",
+    "senses": [
+      {
+        "meaning": "sounds of distress",
+        "topics": [
+          "sound",
+          "human experience"
+        ],
+        "clues": [
+          "Low sounds of pain"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MONEY",
+    "senses": [
+      {
+        "meaning": "medium of exchange",
+        "topics": [
+          "money"
+        ],
+        "clues": [
+          "Cash in a wallet"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MOP",
+    "senses": [
+      {
+        "meaning": "cleaning tool",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Tool for washing a floor",
+          "A spill's usual adversary"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MOVED",
+    "senses": [
+      {
+        "meaning": "changed position",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Changed position"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MUG",
+    "senses": [
+      {
+        "meaning": "drinking vessel",
+        "topics": [
+          "home",
+          "food"
+        ],
+        "clues": [
+          "Cup with a handle",
+          "A coffee lover's vessel"
+        ]
+      },
+      {
+        "meaning": "face",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Face, in informal speech"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MUSIC",
+    "senses": [
+      {
+        "meaning": "organized sound",
+        "topics": [
+          "music"
+        ],
+        "clues": [
+          "What an orchestra performs"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "NAME",
+    "senses": [
+      {
+        "meaning": "designation",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "What you might write first on a form"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "NOD",
+    "senses": [
+      {
+        "meaning": "head gesture",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Dip of the head in agreement"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "NONE",
+    "senses": [
+      {
+        "meaning": "not any",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Not a single one"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "NOR",
+    "senses": [
+      {
+        "meaning": "negative conjunction",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Partner of neither"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "NOSES",
+    "senses": [
+      {
+        "meaning": "organs of smell",
+        "topics": [
+          "anatomy"
+        ],
+        "clues": [
+          "Parts of the face that detect scents"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "NOVEL",
+    "senses": [
+      {
+        "meaning": "fiction book",
+        "topics": [
+          "writing"
+        ],
+        "clues": [
+          "A book-length work of fiction"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ONCE",
+    "senses": [
+      {
+        "meaning": "one time",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "A single time"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ONES",
+    "senses": [
+      {
+        "meaning": "dollar bills",
+        "topics": [
+          "money"
+        ],
+        "clues": [
+          "Single-dollar bills"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ONLY",
+    "senses": [
+      {
+        "meaning": "exclusively",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Exclusively"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ONUS",
+    "senses": [
+      {
+        "meaning": "burden",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Responsibility, as in the ___ is on you"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "OPTS",
+    "senses": [
+      {
+        "meaning": "chooses",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Chooses"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ORAL",
+    "senses": [
+      {
+        "meaning": "spoken",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Like an exam conducted by speaking"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ORBIT",
+    "senses": [
+      {
+        "meaning": "path around a body",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "The path of a satellite around Earth"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ORE",
+    "senses": [
+      {
+        "meaning": "mineral source",
+        "topics": [
+          "nature",
+          "science"
+        ],
+        "clues": [
+          "Rock from which metal can be extracted"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "OWE",
+    "senses": [
+      {
+        "meaning": "be indebted",
+        "topics": [
+          "money"
+        ],
+        "clues": [
+          "Be in debt"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "OWED",
+    "senses": [
+      {
+        "meaning": "was indebted",
+        "topics": [
+          "money"
+        ],
+        "clues": [
+          "Was obliged to repay"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "OWES",
+    "senses": [
+      {
+        "meaning": "is indebted",
+        "topics": [
+          "money"
+        ],
+        "clues": [
+          "Is in debt to"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "OWN",
+    "senses": [
+      {
+        "meaning": "possess",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Have as one's property"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PAN",
+    "senses": [
+      {
+        "meaning": "cooking vessel",
+        "topics": [
+          "food",
+          "home"
+        ],
+        "clues": [
+          "Vessel used on a stovetop"
+        ]
+      },
+      {
+        "meaning": "criticize harshly",
+        "topics": [
+          "arts",
+          "writing"
+        ],
+        "clues": [
+          "Give a harsh review to"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PANT",
+    "senses": [
+      {
+        "meaning": "breathe rapidly",
+        "topics": [
+          "anatomy"
+        ],
+        "clues": [
+          "Breathe hard after a run"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PARSE",
+    "senses": [
+      {
+        "meaning": "analyze grammar",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Analyze the grammatical structure of a sentence"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PARTY",
+    "senses": [
+      {
+        "meaning": "social gathering",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "Gathering for a celebration"
+        ]
+      },
+      {
+        "meaning": "political organization",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "Organization that nominates candidates for office"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PASS",
+    "senses": [
+      {
+        "meaning": "transfer",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "Send the ball to a teammate"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PEA",
+    "senses": [
+      {
+        "meaning": "edible seed",
+        "topics": [
+          "food",
+          "garden"
+        ],
+        "clues": [
+          "Small green seed in a pod",
+          "One of a pod's little green residents"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PEACE",
+    "senses": [
+      {
+        "meaning": "absence of conflict",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "What a ceasefire may lead to"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PENS",
+    "senses": [
+      {
+        "meaning": "writing instruments",
+        "topics": [
+          "writing"
+        ],
+        "clues": [
+          "Writing tools that use ink"
+        ]
+      },
+      {
+        "meaning": "animal enclosures",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "Small enclosures for livestock"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PEP",
+    "senses": [
+      {
+        "meaning": "enthusiasm",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Energy and enthusiasm"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PET",
+    "senses": [
+      {
+        "meaning": "companion animal",
+        "topics": [
+          "animals",
+          "home"
+        ],
+        "clues": [
+          "Animal kept for companionship"
+        ]
+      },
+      {
+        "meaning": "stroke gently",
+        "topics": [
+          "animals",
+          "actions"
+        ],
+        "clues": [
+          "Stroke a cat or dog affectionately"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PIE",
+    "senses": [
+      {
+        "meaning": "baked pastry",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Dessert with a crust and filling",
+          "Dessert that might be sliced into wedges"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PINS",
+    "senses": [
+      {
+        "meaning": "bowling targets",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "Ten targets at the end of a bowling lane"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PINT",
+    "senses": [
+      {
+        "meaning": "volume unit",
+        "topics": [
+          "measurement"
+        ],
+        "clues": [
+          "Half a quart"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PIPE",
+    "senses": [
+      {
+        "meaning": "hollow tube",
+        "topics": [
+          "engineering"
+        ],
+        "clues": [
+          "A tube carrying water"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PLACE",
+    "senses": [
+      {
+        "meaning": "location",
+        "topics": [
+          "geography"
+        ],
+        "clues": [
+          "Particular location"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PLAN",
+    "senses": [
+      {
+        "meaning": "intention",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Intended course of action"
+        ]
+      },
+      {
+        "meaning": "drawing",
+        "topics": [
+          "architecture",
+          "design"
+        ],
+        "clues": [
+          "Drawing showing the arrangement of rooms"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PLAY",
+    "senses": [
+      {
+        "meaning": "stage work",
+        "topics": [
+          "arts"
+        ],
+        "clues": [
+          "A drama performed on stage"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "POLAR",
+    "senses": [
+      {
+        "meaning": "relating to poles",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Like the regions around Earth's poles"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "POP",
+    "senses": [
+      {
+        "meaning": "bursting sound",
+        "topics": [
+          "sound"
+        ],
+        "clues": [
+          "Sound of a bursting bubble"
+        ]
+      },
+      {
+        "meaning": "popular music",
+        "topics": [
+          "music"
+        ],
+        "clues": [
+          "Genre of catchy radio hits"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PRAY",
+    "senses": [
+      {
+        "meaning": "address a deity",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "Offer a prayer"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PROVE",
+    "senses": [
+      {
+        "meaning": "demonstrate truth",
+        "topics": [
+          "mathematics"
+        ],
+        "clues": [
+          "Demonstrate that a theorem holds"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PURE",
+    "senses": [
+      {
+        "meaning": "unmixed",
+        "topics": [
+          "science",
+          "language"
+        ],
+        "clues": [
+          "Free of impurities"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PUTTS",
+    "senses": [
+      {
+        "meaning": "golf strokes",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "Short strokes on a golf green"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RABID",
+    "senses": [
+      {
+        "meaning": "extremely zealous",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Fanatically enthusiastic"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RACE",
+    "senses": [
+      {
+        "meaning": "speed contest",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "Contest of speed"
+        ]
+      },
+      {
+        "meaning": "move swiftly",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Hurry at great speed"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RARE",
+    "senses": [
+      {
+        "meaning": "uncommon",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Not often encountered"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RATED",
+    "senses": [
+      {
+        "meaning": "evaluated",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Given a score or ranking"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RAVED",
+    "senses": [
+      {
+        "meaning": "praised enthusiastically",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Spoke enthusiastically in praise"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RAW",
+    "senses": [
+      {
+        "meaning": "uncooked",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Uncooked"
+        ]
+      },
+      {
+        "meaning": "unprocessed data",
+        "topics": [
+          "technology"
+        ],
+        "clues": [
+          "Not yet processed, as data"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RED",
+    "senses": [
+      {
+        "meaning": "color",
+        "topics": [
+          "art"
+        ],
+        "clues": [
+          "Color of a stop sign",
+          "The color that says stop"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RENEW",
+    "senses": [
+      {
+        "meaning": "make valid again",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Extend the validity of a subscription"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RESET",
+    "senses": [
+      {
+        "meaning": "restore initial state",
+        "topics": [
+          "technology",
+          "games"
+        ],
+        "clues": [
+          "Return a device to its starting state"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RESTS",
+    "senses": [
+      {
+        "meaning": "pauses",
+        "topics": [
+          "music"
+        ],
+        "clues": [
+          "Silent intervals in a musical score"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RISE",
+    "senses": [
+      {
+        "meaning": "move upward",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Move upward"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ROD",
+    "senses": [
+      {
+        "meaning": "thin bar",
+        "topics": [
+          "engineering"
+        ],
+        "clues": [
+          "Long, thin bar",
+          "A long slender piece of metal"
+        ]
+      },
+      {
+        "meaning": "fishing equipment",
+        "topics": [
+          "sports",
+          "nature"
+        ],
+        "clues": [
+          "Pole used for angling"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RODE",
+    "senses": [
+      {
+        "meaning": "traveled mounted",
+        "topics": [
+          "transport"
+        ],
+        "clues": [
+          "Traveled on horseback"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ROLE",
+    "senses": [
+      {
+        "meaning": "part",
+        "topics": [
+          "arts"
+        ],
+        "clues": [
+          "Part played by an actor"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ROLL",
+    "senses": [
+      {
+        "meaning": "bread portion",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Small bread served beside a bowl of soup"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ROUTE",
+    "senses": [
+      {
+        "meaning": "journey course",
+        "topics": [
+          "transport",
+          "geography"
+        ],
+        "clues": [
+          "Course taken on a journey"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RUIN",
+    "senses": [
+      {
+        "meaning": "destroy",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Spoil beyond repair"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SAKE",
+    "senses": [
+      {
+        "meaning": "rice wine",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Japanese alcoholic drink made from rice"
+        ]
+      },
+      {
+        "meaning": "benefit",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Benefit, as in for your own ___"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SCARE",
+    "senses": [
+      {
+        "meaning": "frighten",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Give someone a fright"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SCOPE",
+    "senses": [
+      {
+        "meaning": "range",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Extent or range of an activity"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SEED",
+    "senses": [
+      {
+        "meaning": "plant reproduction",
+        "topics": [
+          "nature",
+          "garden"
+        ],
+        "clues": [
+          "Plant's reproductive unit",
+          "What a garden can begin with"
+        ]
+      },
+      {
+        "meaning": "tournament ranking",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "Ranked entrant in a tournament"
+        ]
+      },
+      {
+        "meaning": "generation input",
+        "topics": [
+          "technology",
+          "games"
+        ],
+        "clues": [
+          "Value that determines a procedural puzzle's starting randomness"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SET",
+    "senses": [
+      {
+        "meaning": "matching collection",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Group of matching objects"
+        ]
+      },
+      {
+        "meaning": "tennis segment",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "Part of a tennis match"
+        ]
+      },
+      {
+        "meaning": "stage scenery",
+        "topics": [
+          "arts"
+        ],
+        "clues": [
+          "Scenery on a stage"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SHARE",
+    "senses": [
+      {
+        "meaning": "portion",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "One person's portion of a divided whole"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SHARP",
+    "senses": [
+      {
+        "meaning": "pointed",
+        "topics": [
+          "tools"
+        ],
+        "clues": [
+          "Like a freshly honed knife"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SHEDS",
+    "senses": [
+      {
+        "meaning": "small outbuildings",
+        "topics": [
+          "architecture"
+        ],
+        "clues": [
+          "Garden buildings for storing tools"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SHINE",
+    "senses": [
+      {
+        "meaning": "emit light",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "Give off light"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SHOUT",
+    "senses": [
+      {
+        "meaning": "loud call",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "A cry at full volume"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SHY",
+    "senses": [
+      {
+        "meaning": "socially reserved",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Reluctant to approach strangers"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SIDE",
+    "senses": [
+      {
+        "meaning": "polygon edge",
+        "topics": [
+          "mathematics"
+        ],
+        "clues": [
+          "One of the edges of a polygon"
+        ]
+      },
+      {
+        "meaning": "accompaniment",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Dish served alongside a main course"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SINGS",
+    "senses": [
+      {
+        "meaning": "performs vocally",
+        "topics": [
+          "music"
+        ],
+        "clues": [
+          "Performs a song"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SIS",
+    "senses": [
+      {
+        "meaning": "sister",
+        "topics": [
+          "family"
+        ],
+        "clues": [
+          "Female sibling, informally"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SKY",
+    "senses": [
+      {
+        "meaning": "visible heavens",
+        "topics": [
+          "nature",
+          "space"
+        ],
+        "clues": [
+          "Expanse above the horizon",
+          "A blue backdrop for clouds"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SLY",
+    "senses": [
+      {
+        "meaning": "sneaky",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Clever in a sneaky way"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SPA",
+    "senses": [
+      {
+        "meaning": "wellness facility",
+        "topics": [
+          "health"
+        ],
+        "clues": [
+          "Place offering wellness treatments"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SPENT",
+    "senses": [
+      {
+        "meaning": "used up",
+        "topics": [
+          "money"
+        ],
+        "clues": [
+          "Used up, as a budget"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SPORT",
+    "senses": [
+      {
+        "meaning": "athletic activity",
+        "topics": [
+          "sports"
+        ],
+        "clues": [
+          "Tennis or soccer, for instance"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SPY",
+    "senses": [
+      {
+        "meaning": "secret agent",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "Person who secretly gathers information"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "STAGE",
+    "senses": [
+      {
+        "meaning": "performance platform",
+        "topics": [
+          "arts"
+        ],
+        "clues": [
+          "Where a theater cast performs"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "STALL",
+    "senses": [
+      {
+        "meaning": "horse compartment",
+        "topics": [
+          "animals"
+        ],
+        "clues": [
+          "Compartment for a horse"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "STAR",
+    "senses": [
+      {
+        "meaning": "luminous celestial body",
+        "topics": [
+          "space",
+          "science"
+        ],
+        "clues": [
+          "Luminous celestial object such as the Sun",
+          "Our sun is one"
+        ]
+      },
+      {
+        "meaning": "celebrity",
+        "topics": [
+          "arts"
+        ],
+        "clues": [
+          "Lead performer in a movie"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "STAY",
+    "senses": [
+      {
+        "meaning": "remain",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Command to a well-trained dog"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "STEER",
+    "senses": [
+      {
+        "meaning": "guide",
+        "topics": [
+          "transport"
+        ],
+        "clues": [
+          "Control the direction of a vehicle"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "STRIP",
+    "senses": [
+      {
+        "meaning": "narrow material",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Long, narrow piece of material"
+        ]
+      },
+      {
+        "meaning": "remove covering",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Remove paint or wallpaper from"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "STUN",
+    "senses": [
+      {
+        "meaning": "surprise greatly",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Leave speechless with surprise"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "STUNT",
+    "senses": [
+      {
+        "meaning": "acrobatic feat",
+        "topics": [
+          "arts"
+        ],
+        "clues": [
+          "A daring feat performed for an action film"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TAKE",
+    "senses": [
+      {
+        "meaning": "accept",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Accept, as an offered gift"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TAKEN",
+    "senses": [
+      {
+        "meaning": "occupied",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Like a seat that is unavailable"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TAXI",
+    "senses": [
+      {
+        "meaning": "hired vehicle",
+        "topics": [
+          "transport"
+        ],
+        "clues": [
+          "A ride hailed at the curb"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TEA",
+    "senses": [
+      {
+        "meaning": "leaf infusion",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Drink brewed from leaves",
+          "A drink traditionally served with scones"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TEAR",
+    "senses": [
+      {
+        "meaning": "drop from the eye",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "A drop that may accompany a sad farewell"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TENS",
+    "senses": [
+      {
+        "meaning": "groups of ten",
+        "topics": [
+          "mathematics"
+        ],
+        "clues": [
+          "Groups that each contain ten"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TEST",
+    "senses": [
+      {
+        "meaning": "trial",
+        "topics": [
+          "science"
+        ],
+        "clues": [
+          "A trial to see whether something works"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "THAN",
+    "senses": [
+      {
+        "meaning": "comparison conjunction",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Word in the phrase taller ___ me"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "THREE",
+    "senses": [
+      {
+        "meaning": "number",
+        "topics": [
+          "mathematics"
+        ],
+        "clues": [
+          "Number of sides on a triangle"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TIRE",
+    "senses": [
+      {
+        "meaning": "wheel covering",
+        "topics": [
+          "transport"
+        ],
+        "clues": [
+          "Rubber covering that meets the road"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TOE",
+    "senses": [
+      {
+        "meaning": "digit of foot",
+        "topics": [
+          "anatomy"
+        ],
+        "clues": [
+          "One of five digits on a foot"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TORE",
+    "senses": [
+      {
+        "meaning": "ripped",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Ripped, as paper"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TOSS",
+    "senses": [
+      {
+        "meaning": "throw lightly",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Flip a coin, for example"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TREAT",
+    "senses": [
+      {
+        "meaning": "special pleasure",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "A little reward, perhaps a cookie"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TREE",
+    "senses": [
+      {
+        "meaning": "woody plant",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "A plant with a trunk and branches"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TRUE",
+    "senses": [
+      {
+        "meaning": "accurate",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "In accordance with fact"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TRY",
+    "senses": [
+      {
+        "meaning": "attempt",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Make an attempt"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TUNE",
+    "senses": [
+      {
+        "meaning": "melody",
+        "topics": [
+          "music"
+        ],
+        "clues": [
+          "A melody you might hum"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "UNITE",
+    "senses": [
+      {
+        "meaning": "join together",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Bring together into one group"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "URGE",
+    "senses": [
+      {
+        "meaning": "strong desire",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "A strong impulse to do something"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "URN",
+    "senses": [
+      {
+        "meaning": "vessel",
+        "topics": [
+          "home",
+          "arts"
+        ],
+        "clues": [
+          "Decorative vase or vessel"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "USE",
+    "senses": [
+      {
+        "meaning": "put into service",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Put into service"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "USED",
+    "senses": [
+      {
+        "meaning": "secondhand",
+        "topics": [
+          "commerce"
+        ],
+        "clues": [
+          "Secondhand"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "USES",
+    "senses": [
+      {
+        "meaning": "applications",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Practical applications"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "USUAL",
+    "senses": [
+      {
+        "meaning": "customary",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "As expected or customary"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "VERSE",
+    "senses": [
+      {
+        "meaning": "poetry unit",
+        "topics": [
+          "writing"
+        ],
+        "clues": [
+          "A line of poetry"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WAD",
+    "senses": [
+      {
+        "meaning": "compact mass",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "A crumpled mass of paper"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WAS",
+    "senses": [
+      {
+        "meaning": "past tense of be",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Past tense of am or is"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WEARS",
+    "senses": [
+      {
+        "meaning": "has on",
+        "topics": [
+          "clothing"
+        ],
+        "clues": [
+          "Sports, as a favorite jacket"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WED",
+    "senses": [
+      {
+        "meaning": "marry",
+        "topics": [
+          "society"
+        ],
+        "clues": [
+          "Get married"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WERE",
+    "senses": [
+      {
+        "meaning": "past tense of be",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Past-tense verb in we ___ there"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WEST",
+    "senses": [
+      {
+        "meaning": "direction",
+        "topics": [
+          "geography"
+        ],
+        "clues": [
+          "Direction of sunset, approximately"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WET",
+    "senses": [
+      {
+        "meaning": "covered with liquid",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "Covered with liquid"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WILLS",
+    "senses": [
+      {
+        "meaning": "inheritance documents",
+        "topics": [
+          "law"
+        ],
+        "clues": [
+          "Legal documents directing inheritance"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WINE",
+    "senses": [
+      {
+        "meaning": "fermented grapes",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Drink made by fermenting grapes"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WIPED",
+    "senses": [
+      {
+        "meaning": "cleaned by rubbing",
+        "topics": [
+          "actions"
+        ],
+        "clues": [
+          "Cleaned with a cloth"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WISE",
+    "senses": [
+      {
+        "meaning": "sound judgment",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Showing sound judgment"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WITTY",
+    "senses": [
+      {
+        "meaning": "cleverly amusing",
+        "topics": [
+          "human experience"
+        ],
+        "clues": [
+          "Clever and amusing in conversation"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "YEAST",
+    "senses": [
+      {
+        "meaning": "bread-leavening organism",
+        "topics": [
+          "food",
+          "science"
+        ],
+        "clues": [
+          "Organism that makes bread dough rise",
+          "What gives a loaf its lift"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "YES",
+    "senses": [
+      {
+        "meaning": "affirmative reply",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Answer of agreement"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "YOU",
+    "senses": [
+      {
+        "meaning": "second-person pronoun",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Second-person pronoun"
+        ]
+      }
+    ]
+  }
+]

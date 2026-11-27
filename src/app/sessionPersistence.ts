@@ -1,3 +1,4 @@
+import { isCrosswordHistory, restoreCrosswordProgress, type CrosswordHistory } from "../games/crossword/progress";
 import { restoreWordSearchProgress } from "../games/wordSearch/progress";
 import type { GeneratedPuzzle, GridGeneratedPuzzle, ImageTileGeneratedPuzzle, PuzzleCell, PuzzleId } from "../catalog/types";
 import {
@@ -90,7 +91,7 @@ export type PersistedGridProgress = {
 };
 
 export type PersistedPuzzleProgress =
-  PersistedCardProgress | PersistedTileProgress | PersistedJigsawProgress | PersistedGridProgress | { kind: "word-search"; found: readonly string[] };
+  PersistedCardProgress | PersistedTileProgress | PersistedJigsawProgress | PersistedGridProgress | { kind: "word-search"; found: readonly string[] } | { kind: "crossword"; letters: string; history?: CrosswordHistory };
 
 export type PersistedPuzzleSession = {
   puzzleId: PuzzleId;
@@ -260,6 +261,10 @@ const clonePersistedCompactGridHistory = (history: PersistedCompactGridHistory):
 });
 
 const buildPersistedPuzzleProgress = (session: PuzzleSession): PersistedPuzzleProgress | null => {
+  if (session.kind === "crossword") {
+    const progress = restoreCrosswordProgress(session.puzzle, session.progress);
+    return progress ? { kind: "crossword", letters: progress.letters, ...(progress.history ? { history: progress.history } : {}) } : null;
+  }
   if (session.kind === "word-search") {
     const progress = restoreWordSearchProgress(session.puzzle, session.progress);
     return progress ? { kind: "word-search", found: [...progress.found] } : null;
@@ -369,6 +374,8 @@ const isPersistedGridProgress = (value: Record<string, unknown>): value is Persi
 
 const isPersistedPuzzleProgress = (value: unknown): value is PersistedPuzzleProgress => {
   if (!isRecord(value)) return false;
+  if (value.kind === "crossword") return typeof value.letters === "string" && /^[#.A-Z]{25}$/.test(value.letters)
+    && (value.history === undefined || isCrosswordHistory(value.history, value.letters));
   if (value.kind === "word-search") return Array.isArray(value.found) &&
     value.found.every(word => typeof word === "string") && new Set(value.found).size === value.found.length;
   if (value.kind === "cards") return isPersistedCardProgress(value);
@@ -394,6 +401,7 @@ const isPersistedPuzzleSession = (value: unknown): value is PersistedPuzzleSessi
   if (value.puzzleId === "jigsaw") {
     if (progress.kind !== "jigsaw") return false;
   } else if (progress.kind === "jigsaw") return false;
+  if ((value.puzzleId === "crossword") !== (progress.kind === "crossword")) return false;
   if ((value.puzzleId === "word-search") !== (progress.kind === "word-search")) return false;
 
   return decodeGenerationId(value.puzzleId, value.generationId).ok;
@@ -410,6 +418,8 @@ const isPersistedPuzzleSessionMetadata = (value: unknown): value is PersistedPuz
   typeof value.updatedAt === "string";
 
 const clonePersistedPuzzleProgress = (progress: PersistedPuzzleProgress): PersistedPuzzleProgress => {
+  if (progress.kind === "crossword") return { kind: "crossword", letters: progress.letters,
+    ...(progress.history ? { history: { undo: [...progress.history.undo], redo: [...progress.history.redo] } } : {}) };
   if (progress.kind === "word-search") return { kind: "word-search", found: [...progress.found] };
   if (progress.kind === "cards") {
     return {
@@ -590,6 +600,11 @@ export const restorePuzzleSessionFromPersisted = (
     generatedPuzzle.puzzleId !== persisted.puzzleId ||
     generatedPuzzle.checksum !== persisted.baselineChecksum
   ) return null;
+
+  if (persisted.progress.kind === "crossword" && generatedPuzzle.kind === "crossword") {
+    const progress = restoreCrosswordProgress(generatedPuzzle, { baselineChecksum: persisted.baselineChecksum, letters: persisted.progress.letters, history: persisted.progress.history });
+    return progress ? { kind: "crossword", puzzle: generatedPuzzle, progress: { kind: "crossword", ...progress } } : null;
+  }
 
   if (persisted.progress.kind === "word-search" && generatedPuzzle.kind === "word-search") {
     const progress = restoreWordSearchProgress(generatedPuzzle, { baselineChecksum: persisted.baselineChecksum, found: persisted.progress.found });
