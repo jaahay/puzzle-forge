@@ -6,7 +6,7 @@ import {
   type CrosswordSelection,
 } from "../games/crossword/interaction";
 import { getCrosswordIncorrectCells, isCrosswordComplete, type CrosswordHistoryAction, type CrosswordProgress } from "../games/crossword/progress";
-import { isPuzzleModalOpen } from "../interactions/keyboardOwnership";
+import { isPuzzleModalOpen, shouldHandlePuzzleShortcut } from "../interactions/keyboardOwnership";
 import { getPuzzleHistoryShortcutAction } from "./PuzzleHistoryActions";
 import "../site/crossword.css";
 
@@ -58,6 +58,21 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, onHistory, d
     select(action.selection, focus || isCrosswordComplete(board, action.progress));
     return true;
   };
+  // Like Word Guess, the selected cell is ready even before DOM focus enters
+  // the board. Claim only ordinary letters from an otherwise unowned page;
+  // the existing cell handler owns focused editing and navigation.
+  useEffect(() => {
+    if (disabled || solved) return;
+    const onPageKeyDown = (event: KeyboardEvent) => {
+      if (!/^[a-zA-Z]$/.test(event.key) || !shouldHandlePuzzleShortcut(event, {
+        modalOpen: isPuzzleModalOpen(),
+      })) return;
+      if (applyKey(event.key)) event.preventDefault();
+    };
+    document.addEventListener("keydown", onPageKeyDown);
+    return () => document.removeEventListener("keydown", onPageKeyDown);
+  });
+
   const onCellKeyDown = (event: JSX.TargetedKeyboardEvent<HTMLInputElement>, cell: number) => {
     if (event.defaultPrevented || event.isComposing || isPuzzleModalOpen()) return;
     const history = getPuzzleHistoryShortcutAction(event);
@@ -129,7 +144,7 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, onHistory, d
             </div>;
           })}
         </div>
-        <p id={helpId} class="sr-only">Type letters to fill the active clue. Filling an empty cell skips existing letters; replacing a letter moves one cell forward. Arrow keys move between cells and set direction. Enter or Space changes direction without moving. Backspace clears a letter. Choose a clue to change the active entry. Tab moves to the next control.</p>
+        <p id={helpId} class="sr-only">Type letters to fill the active clue, even before selecting a cell. Filling an empty cell skips existing letters; replacing a letter moves one cell forward. Arrow keys move between cells and set direction. Enter or Space changes direction without moving. Backspace clears a letter. Choose a clue to change the active entry. Tab moves to the next control.</p>
       <aside class="crossword-clue-list" aria-label="Clues">
         {directions.map(direction => <section key={direction} aria-label={directionLabel(direction)}>
           <h3>{directionLabel(direction)}</h3>
