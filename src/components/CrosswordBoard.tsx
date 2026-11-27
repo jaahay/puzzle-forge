@@ -71,7 +71,7 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
 
   const onCellInput = (event: JSX.TargetedEvent<HTMLInputElement, Event>, cell: number) => {
     const input = event.currentTarget;
-    if ((event as InputEvent).isComposing) return;
+    if ("isComposing" in event && event.isComposing) return;
     const value = input.value;
     const letter = value.match(/[A-Za-z]/g)?.at(-1);
     // Native keyboards may emit input rather than keydown. Restore the
