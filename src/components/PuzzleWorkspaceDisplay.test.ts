@@ -81,7 +81,7 @@ describe("universal workspace display composition", () => {
     expect(numeric).toContain('target.closest(`${gridSelectionScopeSelector}, .puzzle-workspace-display-tools`)');
     expect(layout).toContain('event.detail > 0 && mouseActivation.current');
     expect(layout).toContain('event.pointerType === "mouse"');
-    expect(layout).toContain('origin.closest(".workspace-layout-play-surface")');
+    expect(layout).toContain('origin?.closest(".workspace-layout-play-surface") && canFocus(origin)');
     expect(layout).toContain('!target.closest("[inert]")');
     expect(layout).toContain('[data-workspace-play-focus]');
     expect(layout).toContain('document.activeElement !== trigger');

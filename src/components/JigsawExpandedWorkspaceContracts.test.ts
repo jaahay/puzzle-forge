@@ -172,8 +172,9 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).toContain('aria-label="Jigsaw tools"');
     expect(jigsawPreviewSource).toContain("<JigsawToolsIcon />");
     expect(jigsawPreviewSource).toContain("aria-expanded={showCompactTools}");
-    expect(jigsawPreviewSource).toContain('doc.addEventListener("pointerdown", onOutsidePointer, true)');
-    expect(jigsawPreviewSource).toContain('doc.addEventListener("focusin", onOutsideFocus, true)');
+    expect(jigsawPreviewSource).toContain('doc.addEventListener("pointerdown", dismissOutside, true)');
+    expect(jigsawPreviewSource).toContain('doc.addEventListener("focusin", dismissOutside, true)');
+    expect(jigsawPreviewSource).toContain('!isPuzzleModalOpen() && !isInsideTools(event.target)');
     expect(jigsawPreviewSource).toContain('doc.addEventListener("keydown", onEscape)');
     expect(jigsawPreviewSource).not.toContain("aria-pressed={showPreview}");
     expect(jigsawPreviewSource).toContain('onClick={() => setPlayerPreferences((current) => ({ ...current, showPreview: !current.showPreview }))}');
