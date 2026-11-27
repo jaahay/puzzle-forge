@@ -31,7 +31,7 @@ export const CrosswordWorkspace = ({
   const newControl = <NewPuzzleCommand puzzleTitle="Crossword" currentSeed={board?.seed ?? ""}
     configurationSummary="Mini" seedLoadInput={seedLoadInput} disabled={disabled}
     onSeedLoadInputChange={onSeedLoadInputChange} onNewPuzzle={onNewPuzzle} onToday={onToday} onLoadSeed={onLoadSeed}
-    info={<p>Use clues to fill intersecting Across and Down answers. Select a cell twice to change direction, or choose a clue. Every crossing shares one letter.</p>} />;
+    info={<p>Use clues to fill intersecting Across and Down answers. Choose either highlighted clue to change direction, or press Enter or Space on the grid. Every crossing shares one letter.</p>} />;
   const controls = board && progress ? (
     <div class="completion-control-stage crossword-controls" data-phase={completion.phase}>
       <div class="completion-control-layer completion-control-playing" inert={solved} aria-hidden={solved || undefined}>

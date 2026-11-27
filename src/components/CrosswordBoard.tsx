@@ -2,7 +2,7 @@ import type { ComponentChildren, JSX } from "preact";
 import { useEffect, useId, useRef, useState } from "preact/hooks";
 import type { CrosswordBoard as Board, CrosswordDirection } from "../games/crossword/model";
 import {
-  activeCrosswordEntry, applyCrosswordKey, initialCrosswordSelection, moveCrosswordClue, selectCrosswordCell, selectCrosswordEntry,
+  activeCrosswordEntry, applyCrosswordKey, initialCrosswordSelection, crossingCrosswordEntry, selectCrosswordCell, selectCrosswordEntry,
   type CrosswordSelection,
 } from "../games/crossword/interaction";
 import { getCrosswordIncorrectCells, isCrosswordComplete, type CrosswordProgress } from "../games/crossword/progress";
@@ -35,8 +35,23 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
   }, [identity, board]);
   const grid = useRef<HTMLDivElement>(null);
   const clueId = useId();
+  const clueLists = useRef<HTMLElement>(null);
   const helpId = useId();
   const entry = activeCrosswordEntry(board, selection);
+  const crossing = crossingCrosswordEntry(board, selection);
+  const entryId = (clue: NonNullable<typeof entry>) => `${clueId}-${clue.direction}-${clue.number}`;
+  const describedBy = [entry, crossing].flatMap(clue => clue ? [entryId(clue)] : []).join(" ");
+  useEffect(() => {
+    // Keep each applicable clue visible inside its own list without scrolling the page.
+    for (const list of clueLists.current?.querySelectorAll<HTMLUListElement>("ul") ?? []) {
+      const item = list.querySelector<HTMLElement>("button.active, button.crossing");
+      if (!item) continue;
+      const bounds = list.getBoundingClientRect();
+      const target = item.getBoundingClientRect();
+      if (target.top < bounds.top) list.scrollTop += target.top - bounds.top;
+      else if (target.bottom > bounds.bottom) list.scrollTop += target.bottom - bounds.bottom;
+    }
+  }, [entry, crossing, identity]);
   const activeCells = new Set(entry?.cells ?? []);
   const solved = isCrosswordComplete(board, progress);
   const filled = !progress.letters.includes(".");
@@ -55,9 +70,6 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
     select(action.selection, focus || isCrosswordComplete(board, action.progress));
     return true;
   };
-  const moveClue = (offset: -1 | 1) => {
-    if (!disabled && !isPuzzleModalOpen()) select(moveCrosswordClue(board, progress, selection, offset));
-  };
   const onCellKeyDown = (event: JSX.TargetedKeyboardEvent<HTMLButtonElement>, cell: number) => {
     if (event.defaultPrevented || event.isComposing || event.ctrlKey || event.metaKey || event.altKey || isPuzzleModalOpen()) return;
     if (event.shiftKey && !/^[A-Z]$/.test(event.key)) return;
@@ -75,15 +87,6 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
     <section class="crossword-surface" aria-label="Crossword">
       <div class="crossword-play">
       <div class="crossword-board-column">
-        <div class="crossword-clue-navigation">
-          <div class="crossword-active-clue" id={clueId} aria-live="polite" aria-atomic="true">
-            {entry && <><strong>{entry.number} {directionLabel(entry.direction)}</strong><span>{entry.clue}</span></>}
-          </div>
-          <div class="crossword-clue-step" aria-label="Clue navigation" role="group">
-            <button type="button" disabled={disabled} onClick={() => moveClue(-1)}>Previous clue</button>
-            <button type="button" disabled={disabled} onClick={() => moveClue(1)}>Next clue</button>
-          </div>
-        </div>
         <div class="crossword-grid" ref={grid} role="group" aria-label="Crossword letter cells"
           aria-describedby={helpId} style={{ "--crossword-columns": board.width } as JSX.CSSProperties}>
           {board.blocks.map((block, cell) => {
@@ -91,11 +94,11 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
             const letter = progress.letters[cell] === "." ? "" : progress.letters[cell];
             const number = board.numbers[cell];
             const selected = cell === selection.cell;
-            return <button key={cell} type="button" class={`crossword-cell${activeCells.has(cell) ? " in-entry" : ""}${selected ? " selected" : ""}${incorrect.has(cell) ? " incorrect" : ""}`}
+            return <button key={cell} type="button" class={`crossword-cell${activeCells.has(cell) ? " in-entry" : ""}${selected ? ` selected direction-${selection.direction}` : ""}${incorrect.has(cell) ? " incorrect" : ""}`}
               data-crossword-cell={cell} disabled={disabled} tabIndex={selected ? 0 : -1}
               aria-label={`Row ${Math.floor(cell / board.width) + 1}, column ${cell % board.width + 1}, ${number !== null ? "number " + number + ", " : ""}${letter || "empty"}${incorrect.has(cell) ? ", incorrect" : ""}`}
               aria-current={selected ? "true" : undefined}
-              aria-describedby={selected ? clueId : undefined}
+              aria-describedby={selected ? describedBy : undefined}
               onClick={() => { if (!disabled && !isPuzzleModalOpen()) select(selectCrosswordCell(board, selection, cell)); }}
               onKeyDown={event => onCellKeyDown(event, cell)}>
               {number !== null && <span class="crossword-cell-number" aria-hidden="true">{number}</span>}
@@ -104,7 +107,26 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
             </button>;
           })}
         </div>
-        <p id={helpId} class="sr-only">Type letters to fill the active entry. Arrow keys move between cells. Enter or Space changes direction. Backspace clears a letter. Choose any clue to jump to its entry.</p>
+        <p id={helpId} class="sr-only">Type letters to fill the active entry. Arrow keys move between cells. Enter or Space changes direction. Backspace clears a letter. The two highlighted clues intersect at the selected cell. Choose a clue to change the active entry.</p>
+      <aside class="crossword-clue-list" ref={clueLists} aria-label="Clues">
+        {directions.map(direction => <section key={direction} aria-label={directionLabel(direction)}>
+          <h3>{directionLabel(direction)}</h3>
+          <ul>
+            {board.entries.filter(candidate => candidate.direction === direction).map(candidate => {
+              const active = candidate === entry;
+              const intersects = candidate === crossing;
+              return <li key={candidate.number}>
+                <button id={entryId(candidate)} type="button" disabled={disabled} aria-current={active ? "true" : undefined}
+                  class={active ? "active" : intersects ? "crossing" : undefined}
+                  aria-label={`${candidate.number} ${directionLabel(direction)}: ${candidate.clue}${active ? ", active clue" : intersects ? ", intersecting clue" : ""}`}
+                  onClick={() => { if (!disabled && !isPuzzleModalOpen()) select(selectCrosswordEntry(board, progress, selection, candidate.number, direction), true, true); }}>
+                  <strong>{candidate.number}</strong><span>{candidate.clue}</span>
+                </button>
+              </li>;
+            })}
+          </ul>
+        </section>)}
+      </aside>
         {!solved && <div class="crossword-keyboard" role="group" aria-label="Letter keyboard">
           {keyboardRows.map(row => <div class="crossword-keyboard-row" key={row}>
             {[...row].map(letter => <button key={letter} type="button" disabled={disabled}
@@ -118,23 +140,7 @@ export const CrosswordBoard = ({ board, progress, onProgressChange, disabled = f
           : filled && !solved ? "Grid filled — review your answers." : ""}</div>
         {controls}
       </div>
-      <aside class="crossword-clue-list" aria-label="Clues">
-        {directions.map(direction => <section key={direction} aria-label={directionLabel(direction)}>
-          <h3>{directionLabel(direction)}</h3>
-          <ul>
-            {board.entries.filter(candidate => candidate.direction === direction).map(candidate => {
-              const active = candidate === entry;
-              return <li key={candidate.number}>
-                <button type="button" disabled={disabled} aria-current={active ? "true" : undefined}
-                  class={active ? "active" : undefined}
-                  onClick={() => { if (!disabled && !isPuzzleModalOpen()) select(selectCrosswordEntry(board, progress, selection, candidate.number, direction), true, true); }}>
-                  <strong>{candidate.number}</strong><span>{candidate.clue}</span>
-                </button>
-              </li>;
-            })}
-          </ul>
-        </section>)}
-      </aside>
+
       </div>
     </section>
   );

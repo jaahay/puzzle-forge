@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildCrosswordTopology, type CrosswordBoard } from "./model";
 import { createCrosswordProgress, getCrosswordIncorrectCells, isCrosswordComplete, restoreCrosswordProgress, writeCrosswordLetter } from "./progress";
-import { activeCrosswordEntry, applyCrosswordKey, initialCrosswordSelection, moveCrosswordClue, selectCrosswordCell, selectCrosswordEntry } from "./interaction";
+import { activeCrosswordEntry, applyCrosswordKey, initialCrosswordSelection, crossingCrosswordEntry, selectCrosswordCell, selectCrosswordEntry } from "./interaction";
 
 const topology = buildCrosswordTopology(["##...", "#....", ".....", "....#", "...##"]);
 const board: CrosswordBoard = {
@@ -54,7 +54,9 @@ describe("Crossword selection and input", () => {
   it("distinguishes the active direction from the shared cell", () => {
     expect(first).toEqual({ cell: 2, direction: "across" });
     expect(activeCrosswordEntry(board, first)?.cells).toEqual([2, 3, 4]);
-    const down = selectCrosswordCell(board, first, 2);
+    expect(selectCrosswordCell(board, first, 2)).toBe(first);
+    expect(crossingCrosswordEntry(board, first)?.cells).toEqual([2, 7, 12, 17, 22]);
+    const down = selectCrosswordEntry(board, fresh, first, 1, "down");
     expect(down).toEqual({ cell: 2, direction: "down" });
     expect(activeCrosswordEntry(board, down)?.cells).toEqual([2, 7, 12, 17, 22]);
     expect(selectCrosswordCell(board, down, 3)).toEqual({ cell: 3, direction: "down" });
@@ -67,8 +69,8 @@ describe("Crossword selection and input", () => {
     expect(typed.progress.letters[2]).toBe("A");
     expect(typed.selection).toEqual({ cell: 3, direction: "across" });
     const down = selectCrosswordEntry(board, typed.progress, typed.selection, 1, "down");
-    expect(down).toEqual({ cell: 7, direction: "down" });
-    const next = applyCrosswordKey(board, typed.progress, down, "n")!;
+    expect(down).toEqual({ cell: 2, direction: "down" });
+    const next = applyCrosswordKey(board, typed.progress, { ...down, cell: 7 }, "n")!;
     expect(next.selection.cell).toBe(12);
     expect(next.progress.letters[2]).toBe("A");
     expect(next.progress.letters[7]).toBe("N");
@@ -90,7 +92,7 @@ describe("Crossword selection and input", () => {
 
   it("uses spatial arrows without wrapping or editing, and selects clues by number and direction", () => {
     expect(applyCrosswordKey(board, fresh, first, "ArrowLeft")?.selection).toEqual(first);
-    expect(applyCrosswordKey(board, fresh, first, "ArrowUp")?.selection).toEqual({ cell: 2, direction: "down" });
+    expect(applyCrosswordKey(board, fresh, first, "ArrowUp")?.selection).toEqual(first);
     expect(applyCrosswordKey(board, fresh, { cell: 4, direction: "across" }, "ArrowRight")?.selection.cell).toBe(4);
     expect(applyCrosswordKey(board, fresh, { cell: 22, direction: "down" }, "ArrowDown")?.selection.cell).toBe(22);
     const lower = applyCrosswordKey(board, fresh, first, "ArrowDown")!;
@@ -103,22 +105,16 @@ describe("Crossword selection and input", () => {
     expect(applyCrosswordKey(board, fresh, first, "ß")).toBeNull();
   });
 
-  it("moves through the displayed clues, wrapping across directions and selecting an unfilled cell", () => {
-    expect(moveCrosswordClue(board, fresh, first, 1)).toEqual({ cell: 6, direction: "across" });
-    const last = moveCrosswordClue(board, fresh, first, -1);
-    expect(activeCrosswordEntry(board, last)?.direction).toBe("down");
-    expect(moveCrosswordClue(board, fresh, last, 1)).toEqual(first);
+  it("selects the crossing without moving the cell, and jumps to the first blank in other entries", () => {
+    const cell = { cell: 3, direction: "across" as const };
+    expect(crossingCrosswordEntry(board, cell)?.number).toBe(2);
+    const down = selectCrosswordEntry(board, fresh, cell, 2, "down");
+    expect(down).toEqual({ cell: 3, direction: "down" });
+    expect(crossingCrosswordEntry(board, down)?.number).toBe(1);
+    expect(selectCrosswordCell(board, down, 3)).toBe(down);
+    expect(selectCrosswordCell(board, down, 2)).toEqual({ cell: 2, direction: "down" });
     const partial = writeCrosswordLetter(board, fresh, 6, "K");
-    expect(moveCrosswordClue(board, partial, first, 1)).toEqual({ cell: 7, direction: "across" });
-    let current = first;
-    const entries = new Set<string>();
-    for (let i = 0; i < board.entries.length; i++) {
-      const entry = activeCrosswordEntry(board, current)!;
-      entries.add(entry.number + entry.direction);
-      current = moveCrosswordClue(board, fresh, current, 1);
-    }
-    expect(entries.size).toBe(board.entries.length);
-    expect(current).toEqual(first);
+    expect(selectCrosswordEntry(board, partial, first, 4, "across")).toEqual({ cell: 7, direction: "across" });
   });
 
   it("allows inspection but not edits once solved", () => {

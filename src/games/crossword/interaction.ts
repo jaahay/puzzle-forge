@@ -14,11 +14,14 @@ const opposite = (direction: CrosswordDirection): CrosswordDirection =>
 export const activeCrosswordEntry = (board: CrosswordBoard, selection: CrosswordSelection) =>
   board.entries.find(entry => entry.direction === selection.direction && entry.cells.includes(selection.cell));
 
+export const crossingCrosswordEntry = (board: CrosswordBoard, selection: CrosswordSelection) =>
+  activeCrosswordEntry(board, { ...selection, direction: opposite(selection.direction) });
+
 export const selectCrosswordCell = (
   board: CrosswordBoard, selection: CrosswordSelection, cell: number,
 ): CrosswordSelection => {
   if (!isCrosswordCell(board, cell)) return selection;
-  return { cell, direction: cell === selection.cell ? opposite(selection.direction) : selection.direction };
+  return cell === selection.cell ? selection : { cell, direction: selection.direction };
 };
 
 export const selectCrosswordEntry = (
@@ -27,23 +30,10 @@ export const selectCrosswordEntry = (
 ): CrosswordSelection => {
   const entry = board.entries.find(candidate => candidate.number === number && candidate.direction === direction);
   if (!entry) return selection;
-  const cell = entry.cells.find(index => progress.letters[index] === ".") ?? entry.cells[0];
+  const cell = entry.cells.includes(selection.cell)
+    ? selection.cell
+    : entry.cells.find(index => progress.letters[index] === ".") ?? entry.cells[0];
   return { cell, direction };
-};
-
-// Clue traversal follows the visible list: Across first, then Down.
-export const moveCrosswordClue = (
-  board: CrosswordBoard, progress: CrosswordProgress, selection: CrosswordSelection, offset: -1 | 1,
-): CrosswordSelection => {
-  const entries = [
-    ...board.entries.filter(entry => entry.direction === "across"),
-    ...board.entries.filter(entry => entry.direction === "down"),
-  ];
-  const current = activeCrosswordEntry(board, selection);
-  const index = current ? entries.indexOf(current) : -1;
-  if (index < 0) return selection;
-  const next = entries[(index + offset + entries.length) % entries.length];
-  return selectCrosswordEntry(board, progress, selection, next.number, next.direction);
 };
 
 const moveSpatially = (board: CrosswordBoard, selection: CrosswordSelection, key: string): CrosswordSelection | null => {
@@ -63,7 +53,7 @@ const moveSpatially = (board: CrosswordBoard, selection: CrosswordSelection, key
     const cell = y * width + x;
     if (isCrosswordCell(board, cell)) return { cell, direction };
   }
-  return { ...selection, direction };
+  return selection;
 };
 
 // Both hardware and on-screen keys use the same transition. Navigation is
