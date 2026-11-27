@@ -284,7 +284,7 @@ export const SudokuWorkspace = ({
   const playComposition = sudokuPuzzle && gridCells ? (
     <div class="sudoku-play-composition" inert={isGenerating}>
       <section class="sudoku-play-board" aria-label="Puzzle board">{board}</section>
-      <section class="sudoku-play-controls" aria-label="Gameplay controls">{gameplay}</section>
+      <section class="sudoku-play-controls" aria-label="Gameplay controls" data-board-controls>{gameplay}</section>
     </div>
   ) : null;
 

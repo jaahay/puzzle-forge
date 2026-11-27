@@ -101,7 +101,8 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, disabled = fal
   const hasValidationError = cells.some((cell) => !cell.locked && cell.tone === "hint");
 
   return (
-    <BoardViewport kind="square-grid" columns={puzzle.width} rows={puzzle.height}>
+    <div class="futoshiki-composition">
+      <BoardViewport kind="square-grid" columns={puzzle.width} rows={puzzle.height}>
       <div
         aria-describedby="futoshiki-rule"
         aria-label={`${puzzle.width} by ${puzzle.height} Futoshiki board`}
@@ -157,6 +158,8 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, disabled = fal
           );
         })}
       </div>
+      </BoardViewport>
+      <div class="futoshiki-controls" data-board-controls>
       <NumericGridDigitPad
         title={puzzle.title}
         digits={input.digits}
@@ -172,6 +175,7 @@ export const FutoshikiBoard = ({ puzzle, cells, selectedGridCell, disabled = fal
           Use each digit once per row and column. The narrow side of each inequality points to the smaller number.
         </p>
       </details>
-    </BoardViewport>
+      </div>
+    </div>
   );
 };

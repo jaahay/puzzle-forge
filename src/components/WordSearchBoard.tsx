@@ -77,9 +77,11 @@ const WordSearchBoardSurface = ({ board, progress, onSelectEndpoints, disabled =
     if (choice.selection) commit(choice.selection);
   };
 
-  const focusAt = (cell: number) => {
+  const focusAt = (cell: number, reveal = false) => {
     setFocusCell(cell);
-    gridRef.current?.querySelector<HTMLButtonElement>(`[data-word-search-cell="${cell}"]`)?.focus({ preventScroll: true });
+    const target = gridRef.current?.querySelector<HTMLButtonElement>(`[data-word-search-cell="${cell}"]`);
+    target?.focus({ preventScroll: true });
+    if (reveal) target?.scrollIntoView({ block: "nearest", inline: "nearest" });
   };
 
   const onPointerDown = (event: JSX.TargetedPointerEvent<HTMLDivElement>) => {
@@ -142,7 +144,7 @@ const WordSearchBoardSurface = ({ board, progress, onSelectEndpoints, disabled =
     const next = moveWordSearchFocus(size, cell, event.key);
     if (next !== null) {
       event.preventDefault();
-      focusAt(next);
+      focusAt(next, true);
     }
     // Native button keyboard activation and assistive technology use click.
   };

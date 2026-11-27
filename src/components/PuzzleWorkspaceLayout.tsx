@@ -100,10 +100,13 @@ export const PuzzleWorkspaceDisplayControls = () => {
       // Don't steal focus from a dialog or a control selected during the native transition.
       if (!workspace.isConnected || isPuzzleModalOpen() ||
           (document.activeElement !== trigger && document.activeElement !== document.body)) return;
-      const previousPlayControl = origin?.isConnected && workspace.contains(origin) &&
-        origin.closest(".workspace-layout-play-surface") &&
-        !origin.closest("[inert]") && !origin.matches(":disabled");
-      (previousPlayControl ? origin : workspace)?.focus({ preventScroll: true });
+      const canFocus = (target: HTMLElement | null) => target?.isConnected &&
+        workspace.contains(target) && !target.closest("[inert]") &&
+        !target.matches(":disabled") && target.getClientRects().length > 0 &&
+        getComputedStyle(target).visibility === "visible";
+      const previousPlayControl = origin?.closest(".workspace-layout-play-surface") && canFocus(origin);
+      const fallback = workspace.querySelector<HTMLElement>("[data-workspace-play-focus]");
+      (previousPlayControl ? origin : canFocus(fallback) ? fallback : workspace)?.focus({ preventScroll: true });
     });
   };
   const label = mode.isExpanded ? "Exit expanded workspace" : "Expand workspace";
@@ -295,7 +298,7 @@ export const PuzzleWorkspaceLayout = ({
         </div>
       ) : null}
 
-      {!play && gameplay ? <section class="workspace-layout-gameplay" aria-label="Gameplay controls">{gameplay}</section> : null}
+      {!play && gameplay ? <section class="workspace-layout-gameplay" aria-label="Gameplay controls" data-board-controls>{gameplay}</section> : null}
 
       {help ? <section class="workspace-layout-help" aria-label="Puzzle help">{help}</section> : null}
 

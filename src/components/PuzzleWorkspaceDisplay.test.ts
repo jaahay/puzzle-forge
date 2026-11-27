@@ -82,7 +82,8 @@ describe("universal workspace display composition", () => {
     expect(layout).toContain('event.detail > 0 && mouseActivation.current');
     expect(layout).toContain('event.pointerType === "mouse"');
     expect(layout).toContain('origin.closest(".workspace-layout-play-surface")');
-    expect(layout).toContain('!origin.closest("[inert]")');
+    expect(layout).toContain('!target.closest("[inert]")');
+    expect(layout).toContain('[data-workspace-play-focus]');
     expect(layout).toContain('document.activeElement !== trigger');
     expect(layout).toContain('focus({ preventScroll: true })');
     expect(css).toContain('scroll-padding-block-start: calc(var(--workspace-crown-height');
@@ -95,7 +96,8 @@ describe("universal workspace display composition", () => {
     expect(wordSearch).toContain("@container (min-width: 36rem)");
     expect(wordSearch).toContain("grid-template-columns: minmax(0, var(--word-search-board-limit)) minmax(9rem, 1fr)");
     expect(crossword).toContain("@container (min-width: 36rem)");
-    expect(read("./CrosswordBoard.tsx")).toContain('class="crossword-active-clue"');
+    const crosswordBoard = read("./CrosswordBoard.tsx");
+    expect(crosswordBoard.indexOf('class="crossword-grid"')).toBeLessThan(crosswordBoard.indexOf('class="crossword-active-clue"'));
     expect(wordGuess).toContain("@media (any-pointer: coarse)");
     expect(wordGuess).toContain(".word-guess-keyboard { display: grid; }");
     expect(read("./WordGuessGame.tsx")).toContain('"--word-guess-rows": puzzle.height');

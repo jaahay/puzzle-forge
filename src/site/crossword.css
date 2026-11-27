@@ -224,7 +224,7 @@
 .crossword-active-clue {
   display: block;
   width: min(100%, 26rem);
-  margin: 0 auto 0.45rem;
+  margin: 0.45rem auto 0;
   color: #cbd5e1;
   font-size: 0.85rem;
   overflow-wrap: anywhere;

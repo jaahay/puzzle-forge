@@ -6,7 +6,7 @@ const read = (path: string) => readFileSync(new URL(path, import.meta.url), "utf
 describe("mobile board composition", () => {
   it("fits all seven Solitaire tableau columns without required horizontal scrolling", () => {
     const css = read("../site/solitaire.css");
-    const compact = css.slice(css.indexOf("@media (max-width: 940px)"), css.indexOf("@media (max-width: 700px)"));
+    const compact = css.slice(css.indexOf("@container solitaire-board (max-width: 58.75rem)"), css.indexOf("@container solitaire-board (max-width: 43.75rem)"));
     expect(compact).toContain("grid-template-columns: repeat(7, minmax(0, 1fr));");
     expect(compact).toContain("overflow-x: visible;");
     expect(compact).toContain(".tableau-row .card-stack");

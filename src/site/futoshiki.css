@@ -142,34 +142,41 @@
   }
 }
 
-/* The same numeric controls stay reachable in a short touch viewport. */
+/* The board viewport measures its own column; the composition owns the rail. */
+.futoshiki-composition {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  gap: 0.75rem;
+  justify-items: center;
+}
+.futoshiki-controls {
+  width: min(100%, 42rem);
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+}
+.futoshiki-controls .numeric-grid-digit-pad {
+  width: min(100%, 22rem);
+}
 .futoshiki-workspace .workspace-layout-play-surface {
   container-type: inline-size;
 }
 @media (max-height: 48rem) and (any-pointer: coarse) {
   @container (min-width: 40rem) {
-    .futoshiki-workspace .square-grid-board-viewport .board-viewport-inner {
-      width: 100%;
-      min-width: 0;
+    .futoshiki-composition {
       grid-template-columns: minmax(0, 1fr) minmax(10rem, 14rem);
-      grid-template-rows: auto 1fr;
       align-items: start;
-      gap: 0.75rem;
     }
-    .futoshiki-board {
-      grid-column: 1;
-      grid-row: 1 / span 2;
-      justify-self: center;
+    .futoshiki-controls {
+      width: 100%;
     }
-    .futoshiki-workspace .board-viewport-inner > .numeric-grid-digit-pad {
-      grid-column: 2;
-      grid-row: 1;
+    .futoshiki-controls .numeric-grid-digit-pad {
       width: 100%;
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
-    .futoshiki-workspace .grid-rule-help {
-      grid-column: 2;
-      grid-row: 2;
+    .futoshiki-controls .grid-rule-help {
       width: 100%;
     }
   }

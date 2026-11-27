@@ -23,6 +23,7 @@
 }
 
 .word-search-board {
+  container-type: inline-size;
   isolation: isolate;
   position: relative;
   display: grid;
@@ -69,7 +70,7 @@
   color: #f8fafc;
   background: transparent;
   border-radius: 0.35rem;
-  font-size: clamp(0.82rem, 3.8vw, 1.5rem);
+  font-size: min(1.5rem, calc(70cqw / var(--word-search-size)));
   font-weight: 750;
   line-height: 1;
   cursor: crosshair;
@@ -192,7 +193,7 @@
 @media (max-height: 48rem) {
   @container (min-width: 36rem) {
     .word-search-play {
-      --word-search-board-limit: min(36rem, max(14rem, calc(100dvh - 9rem)));
+      --word-search-board-limit: min(36rem, max(18rem, calc(100dvh - 9rem)));
     }
   }
 }

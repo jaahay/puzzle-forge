@@ -1,4 +1,7 @@
 .cards-layout {
+  container: solitaire-board / inline-size;
+  min-width: 0;
+  width: 100%;
   display: grid;
   gap: 0.65rem;
 }
@@ -311,7 +314,7 @@
   opacity: 0.8;
 }
 
-@media (max-width: 940px) {
+@container solitaire-board (max-width: 58.75rem) {
   .solitaire-summary {
     align-items: stretch;
   }
@@ -337,12 +340,6 @@
 
   /* Six top slots and seven tableau columns fit compact play widths;
      card overlap remains vertical rather than introducing horizontal scrolling. */
-  .cards-layout {
-    min-width: 0;
-    width: 100%;
-    overflow-x: visible;
-  }
-
   .card-board-top-row {
     min-width: 0;
     grid-template-columns: minmax(0, 2fr) minmax(0, 4fr);
@@ -410,14 +407,14 @@
   }
 }
 
-@media (max-width: 700px) {
+@container solitaire-board (max-width: 43.75rem) {
   .playing-card {
     border-radius: 0.38rem;
-    font-size: clamp(0.68rem, 2.4vw, 0.92rem);
+    font-size: clamp(0.68rem, 2.4cqw, 0.92rem);
   }
 
   .card-corner {
-    font-size: clamp(0.58rem, 2vw, 0.72rem);
+    font-size: clamp(0.58rem, 2cqw, 0.72rem);
   }
 
   .card-corner-top {
@@ -431,7 +428,7 @@
   }
 
   .card-center-suit {
-    font-size: clamp(0.85rem, 3vw, 1.35rem);
+    font-size: clamp(0.85rem, 3cqw, 1.35rem);
   }
 
   .card-back-mark {

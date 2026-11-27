@@ -19,6 +19,7 @@ import {
   type JigsawDragAction,
 } from "../games/jigsaw/dragAction";
 import { resolveJigsawAssistanceActivation } from "../games/jigsaw/interaction";
+import { isPuzzleModalOpen } from "../interactions/keyboardOwnership";
 import { advanceJigsawKeyboardPiece } from "../games/jigsaw/keyboardAction";
 import { getJigsawWheelGesture } from "../games/jigsaw/wheelInput";
 import {
@@ -390,24 +391,22 @@ export const TilePuzzlePreview = ({
       target instanceof Node && Boolean(
         toolsPanelRef.current?.contains(target) || toolsToggleRef.current?.contains(target)
       );
-    const onOutsidePointer = (event: PointerEvent) => {
-      if (!isInsideTools(event.target)) setShowCompactTools(false);
-    };
-    const onOutsideFocus = (event: FocusEvent) => {
-      if (!isInsideTools(event.target)) setShowCompactTools(false);
+    // Confirmation is a continuation of the Tools interaction.
+    const dismissOutside = (event: Event) => {
+      if (!isPuzzleModalOpen() && !isInsideTools(event.target)) setShowCompactTools(false);
     };
     const onEscape = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
+      if (event.key !== "Escape" || event.defaultPrevented || isPuzzleModalOpen()) return;
       setShowCompactTools(false);
       toolsToggleRef.current?.focus();
       event.preventDefault();
     };
-    doc.addEventListener("pointerdown", onOutsidePointer, true);
-    doc.addEventListener("focusin", onOutsideFocus, true);
+    doc.addEventListener("pointerdown", dismissOutside, true);
+    doc.addEventListener("focusin", dismissOutside, true);
     doc.addEventListener("keydown", onEscape);
     return () => {
-      doc.removeEventListener("pointerdown", onOutsidePointer, true);
-      doc.removeEventListener("focusin", onOutsideFocus, true);
+      doc.removeEventListener("pointerdown", dismissOutside, true);
+      doc.removeEventListener("focusin", dismissOutside, true);
       doc.removeEventListener("keydown", onEscape);
     };
   }, [showCompactTools, puzzle.id]);
@@ -1524,6 +1523,7 @@ export const TilePuzzlePreview = ({
       <div
         class={`jigsaw-freeform-stage ${isSolved ? "solved" : ""} completion-${completionPhase} ${isPanning ? "panning" : ""}`}
         ref={stageRef}
+        data-workspace-play-focus
         onPointerDownCapture={beginTouchPinch}
         onPointerMoveCapture={moveTouchPinch}
         onPointerUpCapture={endTouchPinch}

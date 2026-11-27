@@ -49,16 +49,13 @@ export const usePuzzleViewportSize = <T extends HTMLElement>(
     if (!element) return;
 
     const workspace = element.closest<HTMLElement>(".puzzle-workspace-layout");
-    const trailingControls = () => Array.from(workspace?.querySelectorAll<HTMLElement>(
-      ".workspace-layout-gameplay, .sudoku-play-controls, .futoshiki-workspace .numeric-grid-digit-pad",
-    ) ?? []);
+    // Composition owners identify the trailing control lanes.
+    const trailingControls = () => Array.from(workspace?.querySelectorAll<HTMLElement>("[data-board-controls]") ?? []);
     const measure = () => {
       const rect = element.getBoundingClientRect();
-      const boardRect = element.querySelector(".futoshiki-board")?.getBoundingClientRect() ?? rect;
-      // Reserve the actual control lane only when it shares the board's column.
-      // A side rail does not consume vertical board space.
-      const reserve = getBoardControlReserve(boardRect, trailingControls().map(control => control.getBoundingClientRect()));
-      const scrollOffset = workspace?.classList.contains("is-immersive") ? workspace.scrollTop : 0;
+      // The measured element is the board column, not a board-plus-rail composition.
+      const reserve = getBoardControlReserve(rect, trailingControls().map(control => control.getBoundingClientRect()));
+      const scrollOffset = isExpanded ? workspace?.scrollTop ?? 0 : window.scrollY;
       const measured = measurePuzzleViewportSize(
         { width: rect.width, top: rect.top + scrollOffset },
         getViewportHeight(),
@@ -79,10 +76,18 @@ export const usePuzzleViewportSize = <T extends HTMLElement>(
     const observer = typeof ResizeObserver === "undefined"
       ? null
       : new ResizeObserver(measure);
-    observer?.observe(element);
-    const crown = workspace?.querySelector(".workspace-layout-crown");
-    if (crown) observer?.observe(crown);
-    trailingControls().forEach(control => observer?.observe(control));
+    const observeComposition = () => {
+      observer?.disconnect();
+      observer?.observe(element);
+      if (workspace) {
+        for (const region of Array.from(workspace.children)) observer?.observe(region);
+      }
+      trailingControls().forEach(control => observer?.observe(control));
+    };
+    observeComposition();
+    const compositionObserver = workspace && typeof MutationObserver !== "undefined"
+      ? new MutationObserver(() => { observeComposition(); measure(); }) : null;
+    if (workspace) compositionObserver?.observe(workspace, { childList: true });
 
     window.addEventListener("resize", measure);
     document.addEventListener("fullscreenchange", measure);
@@ -90,6 +95,7 @@ export const usePuzzleViewportSize = <T extends HTMLElement>(
 
     return () => {
       observer?.disconnect();
+      compositionObserver?.disconnect();
       window.removeEventListener("resize", measure);
       document.removeEventListener("fullscreenchange", measure);
       window.visualViewport?.removeEventListener("resize", measure);
