@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getBoardViewportNaturalWidth, makeBoardViewportMetrics } from "./BoardViewport";
-import { measurePuzzleViewportSize } from "./usePuzzleViewportSize";
+import { getBoardControlReserve, measurePuzzleViewportSize } from "./usePuzzleViewportSize";
 
 describe("board viewport sizing", () => {
   it("sizes Sudoku from available inline width", () => {
@@ -149,5 +149,17 @@ describe("puzzle viewport measurement", () => {
       inlineSize: 360,
       blockSize: 0,
     });
+  });
+});
+
+describe("board control height reservation", () => {
+  it("reserves same-column controls, not a side rail or hidden controls", () => {
+    const board = { left: 0, right: 360, width: 360, height: 360 };
+    expect(getBoardControlReserve(board, [
+      { left: 0, right: 360, width: 360, height: 80 },
+      { left: 380, right: 600, width: 220, height: 200 },
+      { left: 0, right: 360, width: 360, height: 0 },
+    ])).toBe(92);
+    expect(getBoardControlReserve(board, [{ left: 350, right: 500, width: 150, height: 50 }])).toBe(0);
   });
 });

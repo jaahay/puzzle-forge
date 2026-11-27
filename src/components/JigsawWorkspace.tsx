@@ -18,7 +18,6 @@ export const JigsawWorkspace = ({
   puzzle,
   nextPuzzleDraft,
   seedLoadInput,
-  statusMessage,
   onStatusMessageChange,
   isGenerating,
   onReset,
@@ -43,7 +42,6 @@ export const JigsawWorkspace = ({
   const puzzleInstanceId = jigsawPuzzle?.id ?? null;
   const puzzleArrivalIdentity = jigsawPuzzle ? getPuzzleArrivalIdentity(jigsawPuzzle) : null;
   const isPuzzleArriving = usePuzzleArrival(puzzleArrivalIdentity);
-  const showStatus = Boolean(statusMessage);
   const isSolved = Boolean(
     puzzleInstanceId &&
     completionState?.puzzleInstanceId === puzzleInstanceId &&
@@ -157,7 +155,7 @@ export const JigsawWorkspace = ({
 
   const loadingBoard = (
     <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label="Jigsaw is generating">
-      <div class="puzzle-loading-copy"><strong>Generating Jigsaw</strong><span>{statusMessage}</span></div>
+      <div class="puzzle-loading-copy"><strong>Generating Jigsaw</strong></div>
       <div class="puzzle-loading-grid" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <span key={index} />)}</div>
     </section>
   );
@@ -172,6 +170,7 @@ export const JigsawWorkspace = ({
         puzzle={jigsawPuzzle}
         inputSuspended={isGenerating}
         resetVersion={resetVersion}
+        onReset={() => resetJigsaw()}
         initialRuntime={jigsawRuntime}
         onRuntimeChange={(runtime: JigsawActionRuntime) => {
           if (puzzleInstanceId) onJigsawRuntimeChange(puzzleInstanceId, runtime);
@@ -189,22 +188,12 @@ export const JigsawWorkspace = ({
     </section>
   ) : isGenerating ? loadingBoard : null;
 
-  const gameplay = jigsawPuzzle && !isSolved ? (
-    <div class="puzzle-actions">
-      <button type="button" onClick={() => resetJigsaw()} disabled={isGenerating}>Reset</button>
-    </div>
-  ) : null;
-
   return (
     <PuzzleWorkspaceLayout
       className="jigsaw-workspace"
       crown={crown}
-      status={showStatus ? <p class="status-line" aria-live="polite">{statusMessage}</p> : null}
+      pendingReplacement={isGenerating && Boolean(jigsawPuzzle)}
       board={board}
-      gameplay={gameplay}
-      enableImmersive
-      immersiveEntry="descendant"
-      immersiveFullscreenControl="descendant"
     />
   );
 };

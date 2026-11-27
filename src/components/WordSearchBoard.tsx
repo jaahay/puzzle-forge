@@ -77,9 +77,11 @@ const WordSearchBoardSurface = ({ board, progress, onSelectEndpoints, disabled =
     if (choice.selection) commit(choice.selection);
   };
 
-  const focusAt = (cell: number) => {
+  const focusAt = (cell: number, reveal = false) => {
     setFocusCell(cell);
-    gridRef.current?.querySelector<HTMLButtonElement>(`[data-word-search-cell="${cell}"]`)?.focus({ preventScroll: true });
+    const target = gridRef.current?.querySelector<HTMLButtonElement>(`[data-word-search-cell="${cell}"]`);
+    target?.focus({ preventScroll: true });
+    if (reveal) target?.scrollIntoView({ block: "nearest", inline: "nearest" });
   };
 
   const onPointerDown = (event: JSX.TargetedPointerEvent<HTMLDivElement>) => {
@@ -142,7 +144,7 @@ const WordSearchBoardSurface = ({ board, progress, onSelectEndpoints, disabled =
     const next = moveWordSearchFocus(size, cell, event.key);
     if (next !== null) {
       event.preventDefault();
-      focusAt(next);
+      focusAt(next, true);
     }
     // Native button keyboard activation and assistive technology use click.
   };
@@ -183,9 +185,7 @@ const WordSearchBoardSurface = ({ board, progress, onSelectEndpoints, disabled =
             >{letter}</button>
           ))}
         </div>
-        <p class="word-search-instructions" id={instructionsId}>Drag across a word or select its two endpoints.
-          <span class="sr-only"> Use arrow keys to move between letters, Enter or Space to select endpoints, and Escape to cancel.</span>
-        </p>
+        <p class="sr-only" id={instructionsId}>Drag across a word or select its two endpoints. Use arrow keys to move between letters, Enter or Space to select endpoints, and Escape to cancel.</p>
     </>
   );
 };

@@ -294,7 +294,7 @@
   margin: 0.75rem 0 0;
 }
 
-@media (min-width: 701px) {
+@media (min-width: 701px) and (pointer: fine) and (hover: hover) {
   .word-guess-keyboard {
     display: none;
   }
@@ -305,4 +305,21 @@
   .word-guess-candidate-steps li {
     grid-template-columns: 1fr;
   }
+}
+
+@media (max-height: 48rem) {
+  .word-guess-board-shell {
+    --word-guess-input-reserve: 16rem;
+    width: min(100%, var(--word-guess-ideal-width),
+      max(calc(var(--word-guess-columns) * 1.65rem),
+        calc((100dvh - var(--word-guess-input-reserve)) / var(--word-guess-rows) * var(--word-guess-columns))));
+  }
+}
+@media (min-width: 701px) and (pointer: fine) and (hover: hover) {
+  .word-guess-board-shell { --word-guess-input-reserve: 9rem; }
+}
+/* A connected mouse does not remove the touch input path on hybrid devices. */
+@media (any-pointer: coarse) {
+  .word-guess-keyboard { display: grid; }
+  .word-guess-board-shell { --word-guess-input-reserve: 16rem; }
 }

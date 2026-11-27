@@ -40,28 +40,24 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(mobileLayer).toBeLessThan(immersiveLayer);
   });
 
-  it("keeps Close in the shared shell but delegates fullscreen to Jigsaw's view dock", () => {
+  it("uses one shared display action group in the crown for every puzzle", () => {
     expect(layoutSource).toContain("usePuzzleWorkspaceDisplayMode");
-    expect(layoutSource).toContain('immersiveEntry?: "workspace" | "descendant"');
-    expect(layoutSource).toContain('enableImmersive && (isExpanded || immersiveEntry === "workspace")');
-    expect(layoutSource).toContain('aria-label="Exit expanded workspace"');
+    expect(layoutSource).toContain("PuzzleWorkspaceDisplayControls");
+    expect(layoutSource).toContain('mode.isExpanded ? "Exit expanded workspace" : "Expand workspace"');
     expect(layoutSource).toContain('"Exit fullscreen" : "Enter fullscreen"');
-    expect(layoutSource).toContain("FullscreenIcon");
-    expect(layoutSource).toContain("ExitExpandedIcon");
-
-    expect(jigsawWorkspaceSource).toContain('immersiveEntry="descendant"');
-    expect(jigsawWorkspaceSource).toContain('immersiveFullscreenControl="descendant"');
-    expect(layoutSource).toContain('fullscreenAvailable && immersiveFullscreenControl === "workspace"');
+    expect(layoutSource).toContain("mode.isExpanded && mode.fullscreenAvailable");
+    expect(identitySource).toContain("<PuzzleWorkspaceDisplayControls />");
+    expect(layoutSource).not.toContain("enableImmersive");
+    expect(layoutSource).not.toContain("immersiveEntry");
+    expect(layoutSource).not.toContain("immersiveFullscreenControl");
+    expect(layoutSource).not.toContain("PuzzleShareButton");
+    expect(imageTileWorkspaceSource).not.toContain("enableImmersive");
+    expect(jigsawWorkspaceSource).not.toContain("immersiveEntry");
     expect(jigsawPreviewSource).toContain("usePuzzleWorkspaceDisplayMode");
-    expect(jigsawPreviewSource).toContain("displayMode.enterExpanded");
-    expect(jigsawPreviewSource).toContain('aria-label="Expand workspace"');
-    expect(jigsawPreviewSource).toContain("JigsawExpandIcon");
-    expect(jigsawPreviewSource).toContain('class="jigsaw-expand-workspace"');
-    expect(jigsawCss).toContain(".jigsaw-camera-tools .jigsaw-expand-workspace");
-    expect(jigsawPreviewSource).not.toContain("displayMode.exitExpanded");
-    expect(jigsawPreviewSource).toContain("displayMode.toggleBrowserFullscreen()");
-    expect(jigsawPreviewSource).toContain('class="jigsaw-fullscreen-action"');
-    expect(jigsawPreviewSource).toContain('aria-label={displayMode.isBrowserFullscreen ? "Exit fullscreen" : "Enter fullscreen"}');
+    expect(jigsawPreviewSource).not.toContain("JigsawExpandIcon");
+    expect(jigsawPreviewSource).not.toContain("JigsawFullscreenIcon");
+    expect(jigsawPreviewSource).not.toContain("displayMode.toggleBrowserFullscreen()");
+    expect(jigsawCss).not.toContain(".jigsaw-expand-workspace");
   });
 
   it("opens a new or restaged puzzle in All pieces until the player chooses Work view", () => {
@@ -102,7 +98,7 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawCss).not.toContain(".jigsaw-section-tools");
     expect(jigsawCss).not.toContain(".tile-puzzle-summary");
     expect(jigsawPreviewSource).not.toContain(".tile-puzzle-summary");
-    expect(jigsawPreviewSource).toContain(".jigsaw-camera-tools, .puzzle-workspace-display-tools");
+    expect(jigsawPreviewSource).toContain(".jigsaw-tools-toggle, .tile-puzzle-tools, .jigsaw-camera-tools");
     expect(jigsawPreviewSource).toContain("getCurrentFitInsets(),\n        ),");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .jigsaw-workbench-toolbar {\n  display: contents;");
   });
@@ -118,15 +114,19 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).toContain('class="tile-puzzle-preview"');
   });
 
-  it("keeps the shared immersive shell generic while Jigsaw alone takes the one-row overlay composition", () => {
-    expect(imageTileWorkspaceSource).toContain("enableImmersive");
+  it("preserves the shared playing surface and gives Jigsaw the remaining canvas height", () => {
     const sharedLayoutRule = cssRule(immersiveCss, ".puzzle-workspace-layout.is-immersive {");
-    expect(sharedLayoutRule).toContain("grid-template-rows: auto minmax(0, 1fr);");
+    expect(sharedLayoutRule).toContain("grid-auto-rows: max-content;");
     expect(sharedLayoutRule).toContain("overflow: auto;");
     const jigsawLayoutRule = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive {");
-    expect(jigsawLayoutRule).toContain("grid-template-rows: minmax(0, 1fr);");
-    expect(jigsawLayoutRule).toContain("overflow: hidden;");
-    expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive > .puzzle-workspace-display-tools");
+    expect(jigsawLayoutRule).toContain("flex-direction: column;");
+    expect(jigsawLayoutRule).toContain("overflow: auto;");
+    const canvas = cssRule(immersiveCss, ".jigsaw-workspace.is-immersive .workspace-layout-play-surface {");
+    expect(canvas).toContain("flex: 1 1 0;");
+    expect(immersiveCss).not.toContain(".is-immersive .workspace-layout-gameplay");
+    expect(immersiveCss).not.toContain(".is-immersive .workspace-layout-status");
+    expect(immersiveCss).not.toContain(".is-immersive .current-puzzle-context");
+    expect(layoutSource).toContain("!play && gameplay ?");
   });
 
   it("gives the expanded Jigsaw stage the layout while moving controls into overlay chrome", () => {
@@ -145,10 +145,10 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .jigsaw-camera-tools");
     const persistentNavigation = cssRule(
       immersiveCss,
-      ".puzzle-workspace-layout.jigsaw-workspace.is-immersive .workspace-layout-header.workspace-layout-crown {",
+      ".puzzle-workspace-layout.is-immersive > .workspace-layout-header.workspace-layout-crown {",
     );
-    expect(persistentNavigation).toContain("display: grid;");
-    expect(persistentNavigation).toContain("z-index: 2100;");
+    expect(persistentNavigation).toContain("position: sticky;");
+    expect(persistentNavigation).toContain("top: 0;");
     expect(jigsawWorkspaceSource).toContain("newPuzzleControl={newPuzzleControl}");
     expect(immersiveCss).not.toContain(".jigsaw-solved-presentation.is-completed");
     expect(immersiveCss).toContain(".jigsaw-workspace.is-immersive .jigsaw-freeform-stage");
@@ -172,8 +172,9 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).toContain('aria-label="Jigsaw tools"');
     expect(jigsawPreviewSource).toContain("<JigsawToolsIcon />");
     expect(jigsawPreviewSource).toContain("aria-expanded={showCompactTools}");
-    expect(jigsawPreviewSource).toContain('doc.addEventListener("pointerdown", onOutsidePointer, true)');
-    expect(jigsawPreviewSource).toContain('doc.addEventListener("focusin", onOutsideFocus, true)');
+    expect(jigsawPreviewSource).toContain('doc.addEventListener("pointerdown", dismissOutside, true)');
+    expect(jigsawPreviewSource).toContain('doc.addEventListener("focusin", dismissOutside, true)');
+    expect(jigsawPreviewSource).toContain('!isPuzzleModalOpen() && !isInsideTools(event.target)');
     expect(jigsawPreviewSource).toContain('doc.addEventListener("keydown", onEscape)');
     expect(jigsawPreviewSource).not.toContain("aria-pressed={showPreview}");
     expect(jigsawPreviewSource).toContain('onClick={() => setPlayerPreferences((current) => ({ ...current, showPreview: !current.showPreview }))}');
@@ -193,7 +194,7 @@ describe("Jigsaw expanded workspace contracts", () => {
     expect(jigsawPreviewSource).not.toContain('aria-pressed={fitIsOverview}');
     expect(jigsawPreviewSource).not.toContain("jigsaw-view-action-label");
     expect(jigsawPreviewSource).toContain('title={fitIsOverview ? "Return to working view" : "Show all pieces"}');
-    expect(jigsawPreviewSource).toContain('title="Expand workspace"');
+    expect(layoutSource).toContain("title={label}");
     expect(jigsawPreviewSource).toContain('<rect x="2.5" y="3.5" width="19" height="17" rx="2.5" />');
     expect(jigsawPreviewSource).not.toContain('<circle cx="12" cy="12" r="2.5" />');
     expect(jigsawCss).not.toContain('.jigsaw-camera-tools .jigsaw-fit-action[aria-pressed="true"]');
@@ -201,19 +202,10 @@ describe("Jigsaw expanded workspace contracts", () => {
     const compactFitRule = cssRule(jigsawCss, ".jigsaw-camera-tools .jigsaw-fit-action {");
     expect(compactFitRule).toContain("width: 2.6rem;");
     expect(compactFitRule).toContain("padding: 0;");
-    const expansionControl = cssRule(jigsawCss, ".jigsaw-camera-tools .jigsaw-expand-workspace,");
-    const workspaceSeparator = cssRule(jigsawCss, ".jigsaw-camera-tools .jigsaw-expand-workspace::before,");
-    const sharedCameraButton = cssRule(jigsawCss, "\n.jigsaw-camera-tools button {\n  border: 0;");
-    expect(expansionControl).toContain("width: 2.6rem;");
-    expect(expansionControl).toContain("margin-left: 0.35rem;");
-    expect(expansionControl).toContain("position: relative;");
-    expect(expansionControl).not.toMatch(/border-left:|border-radius:|background:|box-shadow:/);
-    expect(workspaceSeparator).toContain('content: "";');
-    expect(workspaceSeparator).toContain("width: 1px;");
-    expect(workspaceSeparator).toContain("pointer-events: none;");
-    expect(workspaceSeparator).toContain(".jigsaw-camera-tools .jigsaw-fullscreen-action::before");
-    expect(sharedCameraButton).toContain("background: transparent;");
-    expect(sharedCameraButton).toContain("border: 0;");
+    const sharedDisplayButton = cssRule(immersiveCss, ".puzzle-workspace-display-tools button {");
+    expect(sharedDisplayButton).toContain("min-height: 2.75rem;");
+    expect(sharedDisplayButton).toContain("width: 2.75rem;");
+    expect(jigsawCss).not.toContain(".jigsaw-fullscreen-action");
     expect(jigsawPreviewSource).toContain("createJigsawOccupiedFitCamera(layout, viewport, placements, 28, insets, puzzle.tiles)");
     expect(jigsawPreviewSource).toContain('class="jigsaw-zoom-level"');
     expect(jigsawPreviewSource).not.toContain("setZoomAtCenter(1)");

@@ -141,3 +141,43 @@
     border-radius: 0.14rem;
   }
 }
+
+/* The board viewport measures its own column; the composition owns the rail. */
+.futoshiki-composition {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  gap: 0.75rem;
+  justify-items: center;
+}
+.futoshiki-controls {
+  width: min(100%, 42rem);
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+}
+.futoshiki-controls .numeric-grid-digit-pad {
+  width: min(100%, 22rem);
+}
+.futoshiki-workspace .workspace-layout-play-surface {
+  container-type: inline-size;
+}
+@media (max-height: 48rem) and (any-pointer: coarse) {
+  @container (min-width: 40rem) {
+    .futoshiki-composition {
+      grid-template-columns: minmax(0, 1fr) minmax(10rem, 14rem);
+      align-items: start;
+    }
+    .futoshiki-controls {
+      width: 100%;
+    }
+    .futoshiki-controls .numeric-grid-digit-pad {
+      width: 100%;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .futoshiki-controls .grid-rule-help {
+      width: 100%;
+    }
+  }
+}

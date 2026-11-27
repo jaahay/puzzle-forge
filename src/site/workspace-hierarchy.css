@@ -12,17 +12,36 @@
 }
 
 .workspace-layout-crown {
+  container-type: inline-size;
   position: relative;
   z-index: 20;
   overflow: visible;
 }
 
 .workspace-layout-play-surface {
+  position: relative;
   display: grid;
   width: 100%;
   min-width: 0;
   gap: 0.5rem;
   justify-items: center;
+}
+
+.workspace-generation-progress {
+  position: absolute;
+  inset-block-start: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  max-width: calc(100% - 1.5rem);
+  box-sizing: border-box;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 0.65rem;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  pointer-events: none;
 }
 
 .sudoku-workspace .workspace-layout-play-surface {
@@ -541,5 +560,41 @@
   .nonogram-current-actions button {
     flex: 1 1 0;
     min-width: 0;
+  }
+}
+
+/* A short crown can retain identity and full-size actions in two intentional
+   rows instead of wrapping the display controls onto a third. */
+@container (max-width: 24rem) {
+  .current-puzzle-header:has(.workspace-fullscreen-action) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .current-puzzle-header:has(.workspace-fullscreen-action) .current-puzzle-context {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .current-puzzle-header:has(.workspace-fullscreen-action) .current-puzzle-crown-actions {
+    display: contents;
+  }
+  .current-puzzle-header:has(.workspace-fullscreen-action) .puzzle-history-actions {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+  .current-puzzle-header:has(.workspace-fullscreen-action):not(:has(.puzzle-history-actions)) .current-puzzle-context {
+    grid-column: 1 / -1;
+  }
+  .current-puzzle-header:has(.workspace-fullscreen-action) .current-puzzle-new-action {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+  .current-puzzle-header:has(.workspace-fullscreen-action) .puzzle-workspace-display-tools {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
   }
 }

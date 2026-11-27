@@ -37,6 +37,14 @@ The app header orients the player within Puzzle Forge. The current-puzzle crown 
 
 Identity and actions should stay visually subordinate to the board. Prospective settings belong behind the New-puzzle disclosure, not inline with the puzzle identity. The crown should retain the same actions before and after completion. A contextual Next-puzzle shortcut may appear near the result when the crown is outside the visible viewport; it invokes the same generation behavior rather than creating another configuration owner.
 
+## Expanded workspace and browser fullscreen
+
+Expanded workspace is a display choice for every playable puzzle, not a different game or session. The common crown provides the same expand/restore control beside Share and New. Browser fullscreen is a distinct optional enhancement to expanded mode, requested only by an explicit action; leaving browser fullscreen returns to expanded mode. A rejected request leaves a usable workspace.
+
+The expanded composition removes ordinary site navigation, retains the current puzzle crown and essential board, gameplay, status and completion controls, and permits scrolling where the full composition cannot fit. The crown stays reachable while scrolling. Jigsaw keeps its camera and Tools on the canvas and fits the remaining measured space beneath its crown; the normal and expanded layouts use the same gameplay state. Avoid duplicating Share, New, or display actions for individual modes. Mouse-operated display transitions return focus to a visible previous play control, the puzzle's designated play surface, or the workspace; keyboard-operated display controls keep focus. Touch does not forcibly reopen native text keyboards. Numeric selection is not cleared by display actions. Narrow expanded crowns use two intentional rows, preserving full-size controls. Jigsaw Reset lives in Tools, avoiding a separate action row; confirmation retains the invoking Tools context.
+
+Responsive compositions also apply outside expanded mode: Word Search and Crossword place their lists beside the board when the surface is wide enough, with the current clue immediately below a constrained crossword grid so clue changes do not move the board. Word Search letters scale with the actual board cells. Touch-capable wide devices retain letter and numeric input paths. Fixed boards measure their own board column; composition owners identify trailing control lanes for height reservation when they share that column. Solitaire responds to the available card-board width. Minimum playable dimensions and scrolling remain fallbacks. This is an implementation direction, not evidence that every viewport has been visually validated. Test portrait, short landscape, desktop, keyboard focus, touch, modal precedence, and browser fullscreen availability with real devices.
+
 ## Status semantics
 
 Do not treat every message as the same kind of status. Distinguish three classes:

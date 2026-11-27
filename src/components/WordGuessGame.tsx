@@ -410,6 +410,7 @@ export const WordGuessGame = ({ puzzle, cells, statusMessage, onCellInput, onSub
         class="word-guess-board-shell"
         style={{
           "--word-guess-columns": puzzle.width,
+          "--word-guess-rows": puzzle.height,
           "--word-guess-ideal-width": `${puzzle.width * 3.85}rem`,
         } as JSX.CSSProperties}
         onClick={focusNativeInput}

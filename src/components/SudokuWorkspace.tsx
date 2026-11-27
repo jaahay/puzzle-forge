@@ -255,7 +255,7 @@ export const SudokuWorkspace = ({
 
   const loadingBoard = (
     <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label="Sudoku is being prepared">
-      <div class="puzzle-loading-copy"><strong>Preparing Sudoku</strong><span>Restoring or preparing your puzzle.</span></div>
+      <div class="puzzle-loading-copy"><strong>Preparing Sudoku</strong></div>
       <div class="puzzle-loading-grid" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <span key={index} />)}</div>
     </section>
   );
@@ -284,7 +284,7 @@ export const SudokuWorkspace = ({
   const playComposition = sudokuPuzzle && gridCells ? (
     <div class="sudoku-play-composition" inert={isGenerating}>
       <section class="sudoku-play-board" aria-label="Puzzle board">{board}</section>
-      <section class="sudoku-play-controls" aria-label="Gameplay controls">{gameplay}</section>
+      <section class="sudoku-play-controls" aria-label="Gameplay controls" data-board-controls>{gameplay}</section>
     </div>
   ) : null;
 
@@ -292,6 +292,7 @@ export const SudokuWorkspace = ({
     <PuzzleWorkspaceLayout
       className="sudoku-workspace"
       crown={currentPuzzleCrown}
+      pendingReplacement={isGenerating && Boolean(playComposition)}
       play={playComposition}
       board={playComposition ? null : board}
     />

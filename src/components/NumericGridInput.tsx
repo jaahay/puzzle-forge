@@ -107,7 +107,7 @@ export const useNumericGridInput = ({
     const clearSelectionFromOutsideClick = (event: PointerEvent) => {
       const target = event.target;
 
-      if (target instanceof Element && target.closest(gridSelectionScopeSelector)) {
+      if (target instanceof Element && target.closest(`${gridSelectionScopeSelector}, .puzzle-workspace-display-tools`)) {
         return;
       }
 

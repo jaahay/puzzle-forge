@@ -1,4 +1,7 @@
 .cards-layout {
+  container: solitaire-board / inline-size;
+  min-width: 0;
+  width: 100%;
   display: grid;
   gap: 0.65rem;
 }
@@ -311,30 +314,7 @@
   opacity: 0.8;
 }
 
-@media (max-width: 940px) {
-  .cards-layout {
-    overflow-x: auto;
-    padding-bottom: 0.3rem;
-    scrollbar-color: #475569 transparent;
-  }
-
-  .card-board-top-row {
-    min-width: 31rem;
-    grid-template-columns: minmax(10rem, 0.55fr) minmax(20rem, 1fr);
-  }
-
-  .foundation-row {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(4.6rem, 1fr));
-  }
-
-  .tableau-row {
-    min-width: 39rem;
-    grid-template-columns: repeat(7, minmax(4.5rem, 1fr));
-  }
-}
-
-@media (max-width: 700px) {
+@container solitaire-board (max-width: 58.75rem) {
   .solitaire-summary {
     align-items: stretch;
   }
@@ -358,14 +338,8 @@
     min-width: 0;
   }
 
-  /* Six top slots and seven tableau columns fit the phone width;
+  /* Six top slots and seven tableau columns fit compact play widths;
      card overlap remains vertical rather than introducing horizontal scrolling. */
-  .cards-layout {
-    min-width: 0;
-    width: 100%;
-    overflow-x: visible;
-  }
-
   .card-board-top-row {
     min-width: 0;
     grid-template-columns: minmax(0, 2fr) minmax(0, 4fr);
@@ -402,8 +376,6 @@
     width: 100%;
     min-height: 0;
     aspect-ratio: 0.72;
-    border-radius: 0.38rem;
-    font-size: clamp(0.68rem, 2.4vw, 0.92rem);
   }
 
   .stock .playing-card-list,
@@ -430,8 +402,19 @@
     padding-bottom: clamp(3.5rem, 12vw, 5rem);
   }
 
+  .solitaire-action-row button {
+    min-height: 2.75rem;
+  }
+}
+
+@container solitaire-board (max-width: 43.75rem) {
+  .playing-card {
+    border-radius: 0.38rem;
+    font-size: clamp(0.68rem, 2.4cqw, 0.92rem);
+  }
+
   .card-corner {
-    font-size: clamp(0.58rem, 2vw, 0.72rem);
+    font-size: clamp(0.58rem, 2cqw, 0.72rem);
   }
 
   .card-corner-top {
@@ -445,7 +428,7 @@
   }
 
   .card-center-suit {
-    font-size: clamp(0.85rem, 3vw, 1.35rem);
+    font-size: clamp(0.85rem, 3cqw, 1.35rem);
   }
 
   .card-back-mark {
@@ -455,7 +438,18 @@
     font-size: 0.54rem;
   }
 
-  .solitaire-action-row button {
-    min-height: 2.75rem;
+}
+
+/* Extra width should not make every card taller than the play viewport. */
+.solitaire-workspace .cards-layout {
+  width: min(100%, 64rem);
+  margin-inline: auto;
+}
+@media (min-width: 701px) and (max-height: 48rem) {
+  .solitaire-workspace .cards-layout {
+    width: min(100%, max(39rem, calc(100dvh * 1.5)));
+  }
+  .tableau .playing-card-list {
+    grid-auto-rows: clamp(0.85rem, 2.7dvh, 1.25rem);
   }
 }

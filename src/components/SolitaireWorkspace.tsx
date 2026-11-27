@@ -90,7 +90,7 @@ export const SolitaireWorkspace = ({
 
   const loadingBoard = (
     <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label="Klondike Solitaire is generating">
-      <div class="puzzle-loading-copy"><strong>Generating Klondike Solitaire</strong><span>{statusMessage}</span></div>
+      <div class="puzzle-loading-copy"><strong>Generating Klondike Solitaire</strong></div>
       <div class="puzzle-loading-grid" aria-hidden="true">{Array.from({ length: 12 }, (_, index) => <span key={index} />)}</div>
     </section>
   );
@@ -120,7 +120,8 @@ export const SolitaireWorkspace = ({
     <PuzzleWorkspaceLayout
       className="solitaire-workspace"
       crown={crown}
-      status={statusMessage ? <p class="status-line" aria-live="polite">{statusMessage}</p> : null}
+      status={!isGenerating && statusMessage ? <p class="status-line" aria-live="polite">{statusMessage}</p> : null}
+      pendingReplacement={isGenerating && Boolean(solitairePuzzle && cardStacks)}
       board={board}
     />
   );

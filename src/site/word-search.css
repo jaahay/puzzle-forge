@@ -3,6 +3,7 @@
 }
 
 .word-search-panel {
+  container-type: inline-size;
   width: 100%;
   box-sizing: border-box;
 }
@@ -22,6 +23,7 @@
 }
 
 .word-search-board {
+  container-type: inline-size;
   isolation: isolate;
   position: relative;
   display: grid;
@@ -68,7 +70,7 @@
   color: #f8fafc;
   background: transparent;
   border-radius: 0.35rem;
-  font-size: clamp(0.82rem, 3.8vw, 1.5rem);
+  font-size: min(1.5rem, calc(70cqw / var(--word-search-size)));
   font-weight: 750;
   line-height: 1;
   cursor: crosshair;
@@ -87,14 +89,6 @@
 
 .word-search-letter[aria-disabled="true"] {
   cursor: default;
-}
-
-.word-search-instructions {
-  width: min(100%, 36rem);
-  margin: 0.65rem auto 0;
-  color: #94a3b8;
-  text-align: center;
-  font-size: 0.8rem;
 }
 
 .word-search-word-list {
@@ -174,4 +168,24 @@
 
 @keyframes word-search-complete {
   50% { stroke: #4c997e; }
+}
+
+/* Words to find are a second working surface, not a footer. */
+@container (min-width: 36rem) {
+  .word-search-play {
+    --word-search-board-limit: 36rem;
+    width: 100%;
+    grid-template-columns: minmax(0, var(--word-search-board-limit)) minmax(9rem, 1fr);
+    gap: 1rem;
+  }
+  .word-search-word-list {
+    align-self: start;
+  }
+}
+@media (max-height: 48rem) {
+  @container (min-width: 36rem) {
+    .word-search-play {
+      --word-search-board-limit: min(36rem, max(18rem, calc(100dvh - 9rem)));
+    }
+  }
 }

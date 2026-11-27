@@ -1,6 +1,7 @@
 import { createCrosswordProgress, isCrosswordComplete, recordCrosswordEdit, moveCrosswordHistory, canMoveCrosswordHistory, type CrosswordHistoryAction, type CrosswordProgress } from "./games/crossword/progress";
 import { createWordSearchProgress, isWordSearchComplete, selectWordSearchEndpoints, type WordSearchProgress } from "./games/wordSearch/progress";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { createPortal } from "preact/compat";
 import { getPuzzleAvailability } from "./catalog/puzzleAvailability";
 import { planAbandonmentAction, type IdentifiedWorkspaceProgress, type PendingAbandonmentAction, type WorkspaceProgressReport } from "./app/abandonmentPolicy";
 import { getPuzzleDefinition, isGeneratable } from "./catalog/puzzleCatalog";
@@ -86,6 +87,25 @@ const generatedBaselinesMatch = (left: GeneratedPuzzle, right: GeneratedPuzzle) 
   left.width === right.width &&
   left.height === right.height &&
   left.checksum === right.checksum;
+
+const GenerationFailureNotice = ({ message, onDismiss }: { message: string; onDismiss: () => void }) => {
+  const [host, setHost] = useState<Element | null>(
+    () => typeof document === "undefined" ? null : document.fullscreenElement,
+  );
+  useEffect(() => {
+    const sync = () => setHost(document.fullscreenElement);
+    document.addEventListener("fullscreenchange", sync);
+    sync();
+    return () => document.removeEventListener("fullscreenchange", sync);
+  }, []);
+  const notice = (
+    <div class="generation-failure-notice" role="alert">
+      <span>{message}</span>
+      <button type="button" onClick={onDismiss}>Dismiss</button>
+    </div>
+  );
+  return host ? createPortal(notice, host) : notice;
+};
 
 export const App = () => {
   const initialPersistedSessions = useMemo(loadPersistedPuzzleSessions, []);
@@ -402,7 +422,7 @@ export const App = () => {
       return;
     }
 
-    const { request, title } = result;
+    const { request } = result;
     pendingGenerationResourceRef.current = {
       identity,
       route: {
@@ -428,7 +448,7 @@ export const App = () => {
       jigsawSpecialPiecesMode: identity.jigsawSpecialPiecesMode,
     });
     if (puzzle?.puzzleId !== request.puzzleId) resetRuntimePuzzleState();
-    setStatusMessage(`Generating ${title}...`);
+    setStatusMessage("");
   };
 
   const recoverGenerationFailure = (message: string) => {
@@ -437,12 +457,11 @@ export const App = () => {
     if (fallback) {
       restoreSession(fallback.session, fallback.route);
       setGenerationFailureNotice(`Could not create the requested puzzle. Your previous puzzle has been restored. ${message}`);
-      setStatusMessage(`Could not generate the requested puzzle. ${message}`);
       return;
     }
     resetRuntimePuzzleState();
     setPuzzleLinkError(`Could not generate puzzle. ${message}`);
-    setStatusMessage(message);
+    setStatusMessage("");
     restoreScrollPosition();
   };
   generationErrorHandlerRef.current = recoverGenerationFailure;
@@ -1069,10 +1088,7 @@ export const App = () => {
     <AppShell activeView={activeView} headerControls={puzzleNavigation} onHomeSelect={() => selectHome()} onViewSelect={(view) => selectSiteView(view)}>
       {content}
       {generationFailureNotice && !puzzleLinkError ? (
-        <div class="generation-failure-notice" role="alert">
-          <span>{generationFailureNotice}</span>
-          <button type="button" onClick={() => setGenerationFailureNotice(null)}>Dismiss</button>
-        </div>
+        <GenerationFailureNotice message={generationFailureNotice} onDismiss={() => setGenerationFailureNotice(null)} />
       ) : null}
       {pendingAbandonment ? (
         <AbandonmentDialog

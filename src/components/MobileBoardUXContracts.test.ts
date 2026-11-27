@@ -6,12 +6,12 @@ const read = (path: string) => readFileSync(new URL(path, import.meta.url), "utf
 describe("mobile board composition", () => {
   it("fits all seven Solitaire tableau columns without required horizontal scrolling", () => {
     const css = read("../site/solitaire.css");
-    const mobile = css.slice(css.indexOf("@media (max-width: 700px)"));
-    expect(mobile).toContain("grid-template-columns: repeat(7, minmax(0, 1fr));");
-    expect(mobile).toContain("overflow-x: visible;");
-    expect(mobile).toContain(".tableau-row .card-stack");
-    expect(mobile).not.toContain("min-width: 37rem;");
-    expect(mobile).not.toContain("min-width: 29rem;");
+    const compact = css.slice(css.indexOf("@container solitaire-board (max-width: 58.75rem)"), css.indexOf("@container solitaire-board (max-width: 43.75rem)"));
+    expect(compact).toContain("grid-template-columns: repeat(7, minmax(0, 1fr));");
+    expect(compact).toContain("overflow-x: visible;");
+    expect(compact).toContain(".tableau-row .card-stack");
+    expect(compact).not.toContain("min-width: 37rem;");
+    expect(compact).not.toContain("min-width: 29rem;");
   });
 
   it("uses the configured Word Guess column count and exposes Hard mode outside Solver", () => {

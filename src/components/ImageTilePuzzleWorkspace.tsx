@@ -161,7 +161,7 @@ export const ImageTilePuzzleWorkspace = ({
 
   const loadingBoard = (
     <section class="puzzle-panel puzzle-loading-panel" aria-live="polite" aria-label={`${selectedDefinition.title} is generating`}>
-      <div class="puzzle-loading-copy"><strong>Generating {selectedDefinition.title}</strong><span>{statusMessage}</span></div>
+      <div class="puzzle-loading-copy"><strong>Generating {selectedDefinition.title}</strong></div>
       <div class="puzzle-loading-grid" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <span key={index} />)}</div>
     </section>
   );
@@ -210,10 +210,10 @@ export const ImageTilePuzzleWorkspace = ({
     <PuzzleWorkspaceLayout
       className="image-tile-workspace"
       crown={crown}
-      status={statusMessage ? <p class="status-line" aria-live="polite">{statusMessage}</p> : null}
+      status={!isGenerating && statusMessage ? <p class="status-line" aria-live="polite">{statusMessage}</p> : null}
+      pendingReplacement={isGenerating && Boolean(imagePuzzle)}
       board={board}
       gameplay={gameplay}
-      enableImmersive
     />
   );
 };
