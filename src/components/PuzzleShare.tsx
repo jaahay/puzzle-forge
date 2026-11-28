@@ -115,19 +115,20 @@ const PuzzleShareDialog = ({ request, onClose }: { request: ShareRequest; onClos
     setFeedback("");
   };
 
-  const copy = async () => {
+  const copy = async (linkOnly = false) => {
     if (busyRef.current) return;
     busyRef.current = true;
     setBusy(true);
-    const success = await copyPuzzleShare(navigator, payload.copyText);
+    const success = await copyPuzzleShare(navigator, linkOnly ? request.resource.url : payload.copyText);
     busyRef.current = false;
     setBusy(false);
-    if (success) setFeedback(intent === "puzzle" ? "Link copied." : "Progress and link copied.");
+    if (success) setFeedback(linkOnly ? "Link copied." : "Message copied.");
     else {
       setFeedback("Could not copy automatically. Select and copy the share text.");
       if (disclosure.current) disclosure.current.open = true;
       shareText.current?.focus();
-      shareText.current?.select();
+      if (linkOnly) shareText.current?.setSelectionRange(payload.copyText.length - request.resource.url.length, payload.copyText.length);
+      else shareText.current?.select();
     }
   };
 
@@ -169,12 +170,13 @@ const PuzzleShareDialog = ({ request, onClose }: { request: ShareRequest; onClos
       <details ref={disclosure} class="puzzle-share-disclosure">
         <summary>View share text</summary>
         <textarea ref={shareText} class="puzzle-share-preview" aria-label="Share text"
-          readOnly rows={intent === "progress" ? 6 : 2} value={payload.copyText} />
+          readOnly rows={intent === "progress" ? 8 : 5} value={payload.copyText} />
+        <button type="button" onClick={() => void copy(true)} disabled={busy}>Copy link only</button>
       </details>
       <div class="puzzle-share-feedback" role="status">{feedback}</div>
       <div class="puzzle-share-actions">
         <button type="button" onClick={() => void copy()} disabled={busy}>
-          {intent === "progress" ? "Copy report + link" : "Copy link"}
+          Copy message
         </button>
         {canUseNativePuzzleShare(navigator, payload.native) ? (
           <button type="button" class="puzzle-share-native" onClick={() => void share()} disabled={busy}>Share…</button>
