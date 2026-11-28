@@ -265,6 +265,20 @@
     ]
   },
   {
+    "answer": "ADHOC",
+    "senses": [
+      {
+        "meaning": "for a specific purpose",
+        "topics": [
+          "borrowed expressions"
+        ],
+        "clues": [
+          "Like a committee formed for one particular assignment"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ADIEU",
     "senses": [
       {
@@ -274,6 +288,20 @@
         ],
         "clues": [
           "A French-derived goodbye"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ADLIB",
+    "senses": [
+      {
+        "meaning": "without preparation",
+        "topics": [
+          "borrowed expressions"
+        ],
+        "clues": [
+          "Off the cuff, as an actor might speak"
         ]
       }
     ]
@@ -1208,6 +1236,20 @@
     ]
   },
   {
+    "answer": "ANGST",
+    "senses": [
+      {
+        "meaning": "existential anxiety",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Uneasy feeling about one's place in the world"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ANNOY",
     "senses": [
       {
@@ -1444,6 +1486,20 @@
         ],
         "clues": [
           "Express opposing views heatedly"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ARGUS",
+    "senses": [
+      {
+        "meaning": "many-eyed giant",
+        "topics": [
+          "mythology"
+        ],
+        "clues": [
+          "Many-eyed guardian of Io, in Greek myth"
         ]
       }
     ]
@@ -4232,6 +4288,20 @@
     ]
   },
   {
+    "answer": "BRAVO",
+    "senses": [
+      {
+        "meaning": "approval cry",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Shout of appreciation after a fine performance"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "BRAWN",
     "senses": [
       {
@@ -6057,6 +6127,20 @@
         ],
         "clues": [
           "Approximately, before a year"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CIRCE",
+    "senses": [
+      {
+        "meaning": "mythic sorceress",
+        "topics": [
+          "mythology"
+        ],
+        "clues": [
+          "Sorceress who transformed Odysseus's companions into pigs"
         ]
       }
     ]
@@ -8739,6 +8823,20 @@
     ]
   },
   {
+    "answer": "DIVA",
+    "senses": [
+      {
+        "meaning": "female opera star",
+        "topics": [
+          "culture"
+        ],
+        "clues": [
+          "Leading female opera singer"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "DIVE",
     "senses": [
       {
@@ -9388,6 +9486,20 @@
         ],
         "clues": [
           "Ready to come off the clothesline"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DRYAD",
+    "senses": [
+      {
+        "meaning": "wood nymph",
+        "topics": [
+          "mythology"
+        ],
+        "clues": [
+          "Tree or woodland nymph in classical myth"
         ]
       }
     ]
@@ -13392,6 +13504,20 @@
     ]
   },
   {
+    "answer": "FUTON",
+    "senses": [
+      {
+        "meaning": "padded mattress",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Japanese-style mattress placed on the floor, traditionally"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "GAG",
     "senses": [
       {
@@ -15528,6 +15654,20 @@
     ]
   },
   {
+    "answer": "HARPY",
+    "senses": [
+      {
+        "meaning": "winged mythic monster",
+        "topics": [
+          "mythology"
+        ],
+        "clues": [
+          "Winged creature often depicted with a woman's head and a bird's body"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "HAS",
     "senses": [
       {
@@ -16887,6 +17027,20 @@
     ]
   },
   {
+    "answer": "HYDRA",
+    "senses": [
+      {
+        "meaning": "regenerating mythic monster",
+        "topics": [
+          "mythology"
+        ],
+        "clues": [
+          "Monster that grew new heads when old ones were cut off"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "HYMN",
     "senses": [
       {
@@ -17675,6 +17829,20 @@
     ]
   },
   {
+    "answer": "ISLAM",
+    "senses": [
+      {
+        "meaning": "monotheistic religion",
+        "topics": [
+          "religion"
+        ],
+        "clues": [
+          "Religion whose scripture is the Quran"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ISLE",
     "senses": [
       {
@@ -18396,6 +18564,20 @@
     ]
   },
   {
+    "answer": "JUDO",
+    "senses": [
+      {
+        "meaning": "Japanese grappling sport",
+        "topics": [
+          "culture"
+        ],
+        "clues": [
+          "Japanese martial art with throws and grappling techniques"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "JUG",
     "senses": [
       {
@@ -18545,6 +18727,20 @@
         ],
         "clues": [
           "Mexican painter known for her self-portraits"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "KARMA",
+    "senses": [
+      {
+        "meaning": "consequences of actions",
+        "topics": [
+          "religion"
+        ],
+        "clues": [
+          "Principle linking one's actions with one's future destiny in Indian religious traditions"
         ]
       }
     ]
@@ -20036,6 +20232,20 @@
         ],
         "clues": [
           "Stop holding on"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LETO",
+    "senses": [
+      {
+        "meaning": "mythic mother",
+        "topics": [
+          "mythology"
+        ],
+        "clues": [
+          "Mother of Apollo and Artemis"
         ]
       }
     ]
@@ -24050,6 +24260,20 @@
     ]
   },
   {
+    "answer": "NINJA",
+    "senses": [
+      {
+        "meaning": "historical Japanese covert agent",
+        "topics": [
+          "culture"
+        ],
+        "clues": [
+          "Covert operative associated with feudal Japan"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "NIP",
     "senses": [
       {
@@ -24343,6 +24567,20 @@
         ],
         "clues": [
           "Parts of the face that detect scents"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "NOSH",
+    "senses": [
+      {
+        "meaning": "snack",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Have a little something to eat, informally"
         ]
       }
     ]
@@ -26738,6 +26976,20 @@
     ]
   },
   {
+    "answer": "PERSE",
+    "senses": [
+      {
+        "meaning": "in itself",
+        "topics": [
+          "borrowed expressions"
+        ],
+        "clues": [
+          "In and of itself"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "PERU",
     "senses": [
       {
@@ -28481,6 +28733,20 @@
         ],
         "clues": [
           "Get rid of unwanted material"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PURIM",
+    "senses": [
+      {
+        "meaning": "Jewish festival",
+        "topics": [
+          "religion"
+        ],
+        "clues": [
+          "Jewish festival recalling deliverance from Haman's plot"
         ]
       }
     ]
@@ -34005,6 +34271,20 @@
     ]
   },
   {
+    "answer": "SPIEL",
+    "senses": [
+      {
+        "meaning": "glib sales talk",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Well-rehearsed pitch from a salesperson"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SPIN",
     "senses": [
       {
@@ -35152,6 +35432,20 @@
         ],
         "clues": [
           "Result of addition"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SUMO",
+    "senses": [
+      {
+        "meaning": "Japanese wrestling",
+        "topics": [
+          "culture"
+        ],
+        "clues": [
+          "Japanese wrestling sport contested in a ring"
         ]
       }
     ]
@@ -37285,6 +37579,20 @@
         ],
         "clues": [
           "Subject under discussion"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TORAH",
+    "senses": [
+      {
+        "meaning": "scriptural scroll",
+        "topics": [
+          "religion"
+        ],
+        "clues": [
+          "Scriptural scroll read during synagogue services"
         ]
       }
     ]
