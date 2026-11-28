@@ -1,0 +1,7127 @@
+[
+  {
+    "answer": "ABITMUCH",
+    "senses": [
+      {
+        "meaning": "excessive",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "More than seems reasonable"
+        ],
+        "expression": "a bit much"
+      }
+    ]
+  },
+  {
+    "answer": "ABOVEBOARD",
+    "senses": [
+      {
+        "meaning": "honest",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Open and honest in one's dealings"
+        ],
+        "expression": "above board"
+      }
+    ]
+  },
+  {
+    "answer": "ABREATHOFFRESHAIR",
+    "senses": [
+      {
+        "meaning": "welcome change",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Welcome contrast to a stale routine"
+        ],
+        "expression": "a breath of fresh air"
+      }
+    ]
+  },
+  {
+    "answer": "ACROSSTHEBOARD",
+    "senses": [
+      {
+        "meaning": "uniformly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Without exception among categories"
+        ],
+        "expression": "across the board"
+      }
+    ]
+  },
+  {
+    "answer": "ADDFUELTOTHEFIRE",
+    "senses": [
+      {
+        "meaning": "worsen conflict",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Make an already heated disagreement worse"
+        ],
+        "expression": "add fuel to the fire"
+      }
+    ]
+  },
+  {
+    "answer": "ADROPINTHEBUCKET",
+    "senses": [
+      {
+        "meaning": "insignificant quantity",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Tiny contribution to a very large need"
+        ],
+        "expression": "a drop in the bucket"
+      }
+    ]
+  },
+  {
+    "answer": "AFARCRY",
+    "senses": [
+      {
+        "meaning": "marked difference",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "___ from the original: markedly different"
+        ],
+        "expression": "a far cry"
+      }
+    ]
+  },
+  {
+    "answer": "AFISHOUTOFWATER",
+    "senses": [
+      {
+        "meaning": "uncomfortable outsider",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Someone thoroughly out of their element"
+        ],
+        "expression": "a fish out of water"
+      }
+    ]
+  },
+  {
+    "answer": "AFLASHINTHEPAN",
+    "senses": [
+      {
+        "meaning": "short-lived success",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Promising start that comes to very little"
+        ],
+        "expression": "a flash in the pan"
+      }
+    ]
+  },
+  {
+    "answer": "AFOOTINTHEDOOR",
+    "senses": [
+      {
+        "meaning": "initial opportunity",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Small opening that may lead to a career"
+        ],
+        "expression": "a foot in the door"
+      }
+    ]
+  },
+  {
+    "answer": "AFTERALL",
+    "senses": [
+      {
+        "meaning": "taking everything into account",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "When everything has been considered"
+        ],
+        "expression": "after all"
+      }
+    ]
+  },
+  {
+    "answer": "AGAINSTTHEGRAIN",
+    "senses": [
+      {
+        "meaning": "contrary to inclination",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Contrary to one's natural inclinations"
+        ],
+        "expression": "against the grain"
+      }
+    ]
+  },
+  {
+    "answer": "AHARDNUTTOCRACK",
+    "senses": [
+      {
+        "meaning": "difficult problem",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Problem that resists every easy solution"
+        ],
+        "expression": "a hard nut to crack"
+      }
+    ]
+  },
+  {
+    "answer": "AHEADOFTHECURVE",
+    "senses": [
+      {
+        "meaning": "advanced",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "More advanced than the prevailing trend"
+        ],
+        "expression": "ahead of the curve"
+      }
+    ]
+  },
+  {
+    "answer": "ALITTLEBIRDTOLDME",
+    "senses": [
+      {
+        "meaning": "playful refusal to reveal source",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Playful explanation for knowing a secret"
+        ],
+        "expression": "a little bird told me"
+      }
+    ]
+  },
+  {
+    "answer": "ALLATONCE",
+    "senses": [
+      {
+        "meaning": "simultaneously",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "At exactly the same time"
+        ],
+        "expression": "all at once"
+      }
+    ]
+  },
+  {
+    "answer": "ALLBETSAREOFF",
+    "senses": [
+      {
+        "meaning": "uncertain outcome",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "No earlier prediction can be relied upon"
+        ],
+        "expression": "all bets are off"
+      }
+    ]
+  },
+  {
+    "answer": "ALLEARS",
+    "senses": [
+      {
+        "meaning": "eager to listen",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Ready to hear every word"
+        ],
+        "expression": "all ears"
+      }
+    ]
+  },
+  {
+    "answer": "ALLEYESON",
+    "senses": [
+      {
+        "meaning": "focus of attention",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Everyone watching closely, as in ___ the stage"
+        ],
+        "expression": "all eyes on"
+      }
+    ]
+  },
+  {
+    "answer": "ALLHANDSONDECK",
+    "senses": [
+      {
+        "meaning": "call for universal assistance",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Call for everyone to lend a hand immediately"
+        ],
+        "expression": "all hands on deck"
+      }
+    ]
+  },
+  {
+    "answer": "ALLTHUMBS",
+    "senses": [
+      {
+        "meaning": "clumsy",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Especially awkward when handling things"
+        ],
+        "expression": "all thumbs"
+      }
+    ]
+  },
+  {
+    "answer": "ALONGTHEWAY",
+    "senses": [
+      {
+        "meaning": "during progress",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "During the course of a journey"
+        ],
+        "expression": "along the way"
+      }
+    ]
+  },
+  {
+    "answer": "AMATTEROFTIME",
+    "senses": [
+      {
+        "meaning": "inevitable outcome",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Something that is sure to happen eventually"
+        ],
+        "expression": "a matter of time"
+      }
+    ]
+  },
+  {
+    "answer": "ANAXETOGRIND",
+    "senses": [
+      {
+        "meaning": "personal grievance",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Private grievance motivating one's criticism"
+        ],
+        "expression": "an axe to grind"
+      }
+    ]
+  },
+  {
+    "answer": "ANOTHERKETTLEOFFISH",
+    "senses": [
+      {
+        "meaning": "different matter",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "A rather different matter altogether"
+        ],
+        "expression": "another kettle of fish"
+      }
+    ]
+  },
+  {
+    "answer": "APENNYFORYOURTHOUGHTS",
+    "senses": [
+      {
+        "meaning": "request to share thoughts",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Invitation to tell someone what one is thinking"
+        ],
+        "expression": "a penny for your thoughts"
+      }
+    ]
+  },
+  {
+    "answer": "APLACEINTHESUN",
+    "senses": [
+      {
+        "meaning": "favorable position",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Favorable position one has long sought"
+        ],
+        "expression": "a place in the sun"
+      }
+    ]
+  },
+  {
+    "answer": "APPLEOFONESEYE",
+    "senses": [
+      {
+        "meaning": "cherished person",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Especially cherished person"
+        ],
+        "expression": "apple of one's eye"
+      }
+    ]
+  },
+  {
+    "answer": "ASARULE",
+    "senses": [
+      {
+        "meaning": "usually",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Generally speaking"
+        ],
+        "expression": "as a rule"
+      }
+    ]
+  },
+  {
+    "answer": "ASGOODASGOLD",
+    "senses": [
+      {
+        "meaning": "well behaved",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Like an exceptionally well-behaved child"
+        ],
+        "expression": "as good as gold"
+      }
+    ]
+  },
+  {
+    "answer": "ASLAPONTHEWRIST",
+    "senses": [
+      {
+        "meaning": "minor punishment",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Rather mild punishment for wrongdoing"
+        ],
+        "expression": "a slap on the wrist"
+      }
+    ]
+  },
+  {
+    "answer": "ASLUCKWOULDHAVEIT",
+    "senses": [
+      {
+        "meaning": "by chance",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "By a fortuitous turn of events"
+        ],
+        "expression": "as luck would have it"
+      }
+    ]
+  },
+  {
+    "answer": "ASTITCHINTIME",
+    "senses": [
+      {
+        "meaning": "timely intervention",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Start of a proverb about preventing more work later"
+        ],
+        "expression": "a stitch in time"
+      }
+    ]
+  },
+  {
+    "answer": "ASTORMINATEACUP",
+    "senses": [
+      {
+        "meaning": "minor controversy",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Great commotion over a trivial matter, in Britain"
+        ],
+        "expression": "a storm in a teacup"
+      }
+    ]
+  },
+  {
+    "answer": "ATACROSSROADS",
+    "senses": [
+      {
+        "meaning": "facing major choice",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Facing a decision that will change one's direction"
+        ],
+        "expression": "at a crossroads"
+      }
+    ]
+  },
+  {
+    "answer": "ATANYRATE",
+    "senses": [
+      {
+        "meaning": "in any case",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Whatever else may be true"
+        ],
+        "expression": "at any rate"
+      }
+    ]
+  },
+  {
+    "answer": "ATASNAILSPACE",
+    "senses": [
+      {
+        "meaning": "very slowly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Very slowly indeed"
+        ],
+        "expression": "at a snail's pace"
+      }
+    ]
+  },
+  {
+    "answer": "ATEASE",
+    "senses": [
+      {
+        "meaning": "comfortable",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Relaxed rather than nervous"
+        ],
+        "expression": "at ease"
+      }
+    ]
+  },
+  {
+    "answer": "ATFIRSTSIGHT",
+    "senses": [
+      {
+        "meaning": "upon initial observation",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "The instant one first sees something"
+        ],
+        "expression": "at first sight"
+      }
+    ]
+  },
+  {
+    "answer": "ATONESWITSEND",
+    "senses": [
+      {
+        "meaning": "unable to cope",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Having exhausted one's ideas for what to do"
+        ],
+        "expression": "at one's wits' end"
+      }
+    ]
+  },
+  {
+    "answer": "ATOUGHCOOKIE",
+    "senses": [
+      {
+        "meaning": "resilient person",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Someone not easily discouraged"
+        ],
+        "expression": "a tough cookie"
+      }
+    ]
+  },
+  {
+    "answer": "ATTHEDROPOFAHAT",
+    "senses": [
+      {
+        "meaning": "immediately and willingly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Without needing any advance warning"
+        ],
+        "expression": "at the drop of a hat"
+      }
+    ]
+  },
+  {
+    "answer": "ATTHEELEVENTHHOUR",
+    "senses": [
+      {
+        "meaning": "at the last moment",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Just before the deadline"
+        ],
+        "expression": "at the eleventh hour"
+      }
+    ]
+  },
+  {
+    "answer": "BACKANDFORTH",
+    "senses": [
+      {
+        "meaning": "alternately in opposite directions",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "In one direction and then the other, repeatedly"
+        ],
+        "expression": "back and forth"
+      }
+    ]
+  },
+  {
+    "answer": "BACKINTHESADDLE",
+    "senses": [
+      {
+        "meaning": "resuming activity",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Returning to a familiar role after an absence"
+        ],
+        "expression": "back in the saddle"
+      }
+    ]
+  },
+  {
+    "answer": "BACKOFBEYOND",
+    "senses": [
+      {
+        "meaning": "remote location",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Remote place far from civilization"
+        ],
+        "expression": "back of beyond"
+      }
+    ]
+  },
+  {
+    "answer": "BACKTOBASICS",
+    "senses": [
+      {
+        "meaning": "return to fundamentals",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Return to the fundamentals of a task"
+        ],
+        "expression": "back to basics"
+      }
+    ]
+  },
+  {
+    "answer": "BADBLOOD",
+    "senses": [
+      {
+        "meaning": "ill feeling",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Long-standing resentment between people"
+        ],
+        "expression": "bad blood"
+      }
+    ]
+  },
+  {
+    "answer": "BARKINGUPTHEWRONGTREE",
+    "senses": [
+      {
+        "meaning": "mistaken line of inquiry",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Pursuing an entirely mistaken line of investigation"
+        ],
+        "expression": "barking up the wrong tree"
+      }
+    ]
+  },
+  {
+    "answer": "BATANEYELID",
+    "senses": [
+      {
+        "meaning": "show surprise",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Show the slightest sign of surprise, often after not"
+        ],
+        "expression": "bat an eyelid"
+      }
+    ]
+  },
+  {
+    "answer": "BEALLANDENDALL",
+    "senses": [
+      {
+        "meaning": "ultimate consideration",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "The one thing that supposedly matters most"
+        ],
+        "expression": "be all and end all"
+      }
+    ]
+  },
+  {
+    "answer": "BEATAROUNDTHEBUSH",
+    "senses": [
+      {
+        "meaning": "avoid main point",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Talk at length without addressing the real issue"
+        ],
+        "expression": "beat around the bush"
+      }
+    ]
+  },
+  {
+    "answer": "BEATTHECLOCK",
+    "senses": [
+      {
+        "meaning": "finish before deadline",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Complete a task before time runs out"
+        ],
+        "expression": "beat the clock"
+      }
+    ]
+  },
+  {
+    "answer": "BEHINDCLOSEDDOORS",
+    "senses": [
+      {
+        "meaning": "privately",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Away from public view"
+        ],
+        "expression": "behind closed doors"
+      }
+    ]
+  },
+  {
+    "answer": "BEHINDTHESCENES",
+    "senses": [
+      {
+        "meaning": "out of public view",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Where unseen preparations take place"
+        ],
+        "expression": "behind the scenes"
+      }
+    ]
+  },
+  {
+    "answer": "BENDOVERBACKWARDS",
+    "senses": [
+      {
+        "meaning": "make great effort",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Make every effort to accommodate someone"
+        ],
+        "expression": "bend over backwards"
+      }
+    ]
+  },
+  {
+    "answer": "BEYONDASHADOWOFADOUBT",
+    "senses": [
+      {
+        "meaning": "certainly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "With no room for doubt whatsoever"
+        ],
+        "expression": "beyond a shadow of a doubt"
+      }
+    ]
+  },
+  {
+    "answer": "BIGPICTURE",
+    "senses": [
+      {
+        "meaning": "overall perspective",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Overall view rather than the finer details"
+        ],
+        "expression": "big picture"
+      }
+    ]
+  },
+  {
+    "answer": "BITTERPILL",
+    "senses": [
+      {
+        "meaning": "unpleasant reality",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Unpleasant fact one has to accept"
+        ],
+        "expression": "bitter pill"
+      }
+    ]
+  },
+  {
+    "answer": "BLOODISTHICKERTHANWATER",
+    "senses": [
+      {
+        "meaning": "family loyalty proverb",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Proverb asserting the strength of family ties"
+        ],
+        "expression": "blood is thicker than water"
+      }
+    ]
+  },
+  {
+    "answer": "BLOWOFFSTEAM",
+    "senses": [
+      {
+        "meaning": "release pent-up feelings",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Release pent-up frustration"
+        ],
+        "expression": "blow off steam"
+      }
+    ]
+  },
+  {
+    "answer": "BLOWONESOWNTRUMPET",
+    "senses": [
+      {
+        "meaning": "boast",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Publicize one's own achievements, in Britain"
+        ],
+        "expression": "blow one's own trumpet"
+      }
+    ]
+  },
+  {
+    "answer": "BLUEINTHEFACE",
+    "senses": [
+      {
+        "meaning": "exhausted from effort",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Exhausted from arguing or trying"
+        ],
+        "expression": "blue in the face"
+      }
+    ]
+  },
+  {
+    "answer": "BOILINGPOINT",
+    "senses": [
+      {
+        "meaning": "limit of patience",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Point at which someone's patience finally runs out"
+        ],
+        "expression": "boiling point"
+      }
+    ]
+  },
+  {
+    "answer": "BONEOFCONTENTION",
+    "senses": [
+      {
+        "meaning": "subject of dispute",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Particular matter that causes a quarrel"
+        ],
+        "expression": "bone of contention"
+      }
+    ]
+  },
+  {
+    "answer": "BORNYESTERDAY",
+    "senses": [
+      {
+        "meaning": "naive",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Easily fooled, as in I wasn't ___"
+        ],
+        "expression": "born yesterday"
+      }
+    ]
+  },
+  {
+    "answer": "BOTTOMLINE",
+    "senses": [
+      {
+        "meaning": "essential conclusion",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Most important conclusion after considering the details"
+        ],
+        "expression": "bottom line"
+      }
+    ]
+  },
+  {
+    "answer": "BREAKALEG",
+    "senses": [
+      {
+        "meaning": "wish for success",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Traditional good-luck wish for an actor"
+        ],
+        "expression": "break a leg"
+      }
+    ]
+  },
+  {
+    "answer": "BREAKEVEN",
+    "senses": [
+      {
+        "meaning": "neither profit nor loss",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Earn just enough to cover one's expenses"
+        ],
+        "expression": "break even"
+      }
+    ]
+  },
+  {
+    "answer": "BREAKNEWGROUND",
+    "senses": [
+      {
+        "meaning": "innovate",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Do something genuinely new"
+        ],
+        "expression": "break new ground"
+      }
+    ]
+  },
+  {
+    "answer": "BRINGHOMETHEBACON",
+    "senses": [
+      {
+        "meaning": "earn a living",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Earn money to support the household"
+        ],
+        "expression": "bring home the bacon"
+      }
+    ]
+  },
+  {
+    "answer": "BRINGTOLIGHT",
+    "senses": [
+      {
+        "meaning": "reveal",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Make previously hidden facts known"
+        ],
+        "expression": "bring to light"
+      }
+    ]
+  },
+  {
+    "answer": "BRUSHUPON",
+    "senses": [
+      {
+        "meaning": "refresh knowledge",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Review a subject one used to know well"
+        ],
+        "expression": "brush up on"
+      }
+    ]
+  },
+  {
+    "answer": "BURNBRIDGES",
+    "senses": [
+      {
+        "meaning": "destroy opportunities to return",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Destroy one's chances of returning to a former situation"
+        ],
+        "expression": "burn bridges"
+      }
+    ]
+  },
+  {
+    "answer": "BURNTHEMIDNIGHTOIL",
+    "senses": [
+      {
+        "meaning": "work late",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Work long after bedtime"
+        ],
+        "expression": "burn the midnight oil"
+      }
+    ]
+  },
+  {
+    "answer": "BURYTHEHATCHET",
+    "senses": [
+      {
+        "meaning": "reconcile",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Put an old quarrel behind oneself"
+        ],
+        "expression": "bury the hatchet"
+      }
+    ]
+  },
+  {
+    "answer": "BYANDLARGE",
+    "senses": [
+      {
+        "meaning": "generally",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Taking the situation as a whole"
+        ],
+        "expression": "by and large"
+      }
+    ]
+  },
+  {
+    "answer": "BYHEART",
+    "senses": [
+      {
+        "meaning": "from memory",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Without consulting the printed words"
+        ],
+        "expression": "by heart"
+      }
+    ]
+  },
+  {
+    "answer": "BYTHESKINOFONESTEETH",
+    "senses": [
+      {
+        "meaning": "barely",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "By the narrowest of margins"
+        ],
+        "expression": "by the skin of one's teeth"
+      }
+    ]
+  },
+  {
+    "answer": "CALLASPADEASPADE",
+    "senses": [
+      {
+        "meaning": "speak plainly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Describe an unpleasant matter without euphemisms"
+        ],
+        "expression": "call a spade a spade"
+      }
+    ]
+  },
+  {
+    "answer": "CALLTHESHOTS",
+    "senses": [
+      {
+        "meaning": "make decisions",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Be the person making the decisions"
+        ],
+        "expression": "call the shots"
+      }
+    ]
+  },
+  {
+    "answer": "CANTHAVEITBOTHWAYS",
+    "senses": [
+      {
+        "meaning": "incompatible choices",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Reminder that two conflicting benefits cannot both be had"
+        ],
+        "expression": "can't have it both ways"
+      }
+    ]
+  },
+  {
+    "answer": "CARRYTHEDAY",
+    "senses": [
+      {
+        "meaning": "prevail",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Win the argument or contest"
+        ],
+        "expression": "carry the day"
+      }
+    ]
+  },
+  {
+    "answer": "CASTLESINTHEAIR",
+    "senses": [
+      {
+        "meaning": "impractical dreams",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Grand plans with little basis in reality"
+        ],
+        "expression": "castles in the air"
+      }
+    ]
+  },
+  {
+    "answer": "CATCHONESBREATH",
+    "senses": [
+      {
+        "meaning": "recover breathing",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Rest briefly after exertion"
+        ],
+        "expression": "catch one's breath"
+      }
+    ]
+  },
+  {
+    "answer": "CATCHSOMEONEREDHANDED",
+    "senses": [
+      {
+        "meaning": "discover in act",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Discover someone actually committing the offense"
+        ],
+        "expression": "catch someone red-handed"
+      }
+    ]
+  },
+  {
+    "answer": "CHANGEOFHEART",
+    "senses": [
+      {
+        "meaning": "changed attitude",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Reversal of one's feelings about a matter"
+        ],
+        "expression": "change of heart"
+      }
+    ]
+  },
+  {
+    "answer": "CHASEONESTAIL",
+    "senses": [
+      {
+        "meaning": "unproductive activity",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Stay busy without getting anywhere"
+        ],
+        "expression": "chase one's tail"
+      }
+    ]
+  },
+  {
+    "answer": "CHEWTHEFAT",
+    "senses": [
+      {
+        "meaning": "chat",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Chat casually for a while"
+        ],
+        "expression": "chew the fat"
+      }
+    ]
+  },
+  {
+    "answer": "CHIPOFFTHEOLDBLOCK",
+    "senses": [
+      {
+        "meaning": "similar child",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Child remarkably like a parent"
+        ],
+        "expression": "chip off the old block"
+      }
+    ]
+  },
+  {
+    "answer": "CLEANBILLOFHEALTH",
+    "senses": [
+      {
+        "meaning": "favorable health assessment",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Medical verdict finding no significant problem"
+        ],
+        "expression": "clean bill of health"
+      }
+    ]
+  },
+  {
+    "answer": "CLEARTHEAIR",
+    "senses": [
+      {
+        "meaning": "resolve tension",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Discuss a grievance to restore friendly relations"
+        ],
+        "expression": "clear the air"
+      }
+    ]
+  },
+  {
+    "answer": "CLIMBTHEWALLS",
+    "senses": [
+      {
+        "meaning": "be extremely restless",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Become extremely restless from confinement"
+        ],
+        "expression": "climb the walls"
+      }
+    ]
+  },
+  {
+    "answer": "CLOAKANDDAGGER",
+    "senses": [
+      {
+        "meaning": "secret intrigue",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Like a story full of spies and intrigue"
+        ],
+        "expression": "cloak and dagger"
+      }
+    ]
+  },
+  {
+    "answer": "COMECLEAN",
+    "senses": [
+      {
+        "meaning": "confess",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Finally admit what one has been hiding"
+        ],
+        "expression": "come clean"
+      }
+    ]
+  },
+  {
+    "answer": "COMETOGRIPSWITH",
+    "senses": [
+      {
+        "meaning": "begin to handle",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Start dealing seriously with a difficult problem"
+        ],
+        "expression": "come to grips with"
+      }
+    ]
+  },
+  {
+    "answer": "COMETOTERMSWITH",
+    "senses": [
+      {
+        "meaning": "accept",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Learn to accept a difficult reality"
+        ],
+        "expression": "come to terms with"
+      }
+    ]
+  },
+  {
+    "answer": "COOKTHEBOOKS",
+    "senses": [
+      {
+        "meaning": "falsify accounts",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Fraudulently alter financial records"
+        ],
+        "expression": "cook the books"
+      }
+    ]
+  },
+  {
+    "answer": "COOLASACUCUMBER",
+    "senses": [
+      {
+        "meaning": "unflustered",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Remarkably calm under pressure"
+        ],
+        "expression": "cool as a cucumber"
+      }
+    ]
+  },
+  {
+    "answer": "COUNTONESBLESSINGS",
+    "senses": [
+      {
+        "meaning": "appreciate good fortune",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Reflect on the good things one has"
+        ],
+        "expression": "count one's blessings"
+      }
+    ]
+  },
+  {
+    "answer": "CRACKOFDAWN",
+    "senses": [
+      {
+        "meaning": "daybreak",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Very beginning of the morning"
+        ],
+        "expression": "crack of dawn"
+      }
+    ]
+  },
+  {
+    "answer": "CROSSONESFINGERS",
+    "senses": [
+      {
+        "meaning": "hope for success",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Make a traditional gesture for luck"
+        ],
+        "expression": "cross one's fingers"
+      }
+    ]
+  },
+  {
+    "answer": "CRYOVERSPILLEDMILK",
+    "senses": [
+      {
+        "meaning": "regret irreversibly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Lament something that cannot be undone"
+        ],
+        "expression": "cry over spilled milk"
+      }
+    ]
+  },
+  {
+    "answer": "CURIOSITYKILLEDTHECAT",
+    "senses": [
+      {
+        "meaning": "warning against prying",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Proverb warning against excessive inquisitiveness"
+        ],
+        "expression": "curiosity killed the cat"
+      }
+    ]
+  },
+  {
+    "answer": "CUTANDDRIED",
+    "senses": [
+      {
+        "meaning": "settled",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Already settled with no room for debate"
+        ],
+        "expression": "cut and dried"
+      }
+    ]
+  },
+  {
+    "answer": "CUTCORNERS",
+    "senses": [
+      {
+        "meaning": "take shortcuts",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Sacrifice quality to save time or money"
+        ],
+        "expression": "cut corners"
+      }
+    ]
+  },
+  {
+    "answer": "CUTFROMTHESAMECLOTH",
+    "senses": [
+      {
+        "meaning": "very similar",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Remarkably similar in character"
+        ],
+        "expression": "cut from the same cloth"
+      }
+    ]
+  },
+  {
+    "answer": "DAYINDAYOUT",
+    "senses": [
+      {
+        "meaning": "repeated daily",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Every day without variation"
+        ],
+        "expression": "day in day out"
+      }
+    ]
+  },
+  {
+    "answer": "DEADASADOORNAIL",
+    "senses": [
+      {
+        "meaning": "lifeless",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Completely and unmistakably lifeless"
+        ],
+        "expression": "dead as a doornail"
+      }
+    ]
+  },
+  {
+    "answer": "DEVILSADVOCATE",
+    "senses": [
+      {
+        "meaning": "deliberate opposing argument",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Person arguing the opposite side for the sake of discussion"
+        ],
+        "expression": "devil's advocate"
+      }
+    ]
+  },
+  {
+    "answer": "DIAMONDINTHEROUGH",
+    "senses": [
+      {
+        "meaning": "unpolished talent",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Person with great potential but little polish"
+        ],
+        "expression": "diamond in the rough"
+      }
+    ]
+  },
+  {
+    "answer": "DIGONESHEELSIN",
+    "senses": [
+      {
+        "meaning": "refuse to yield",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Stubbornly refuse to change one's position"
+        ],
+        "expression": "dig one's heels in"
+      }
+    ]
+  },
+  {
+    "answer": "DONTCOUNTYOURCHICKENS",
+    "senses": [
+      {
+        "meaning": "avoid premature confidence",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Start of a proverb warning against assuming success too soon"
+        ],
+        "expression": "don't count your chickens"
+      }
+    ]
+  },
+  {
+    "answer": "DOTHETRICK",
+    "senses": [
+      {
+        "meaning": "achieve desired effect",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Accomplish exactly what is needed"
+        ],
+        "expression": "do the trick"
+      }
+    ]
+  },
+  {
+    "answer": "DOWNINTHEDUMPS",
+    "senses": [
+      {
+        "meaning": "dejected",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Feeling rather miserable"
+        ],
+        "expression": "down in the dumps"
+      }
+    ]
+  },
+  {
+    "answer": "DOWNTHEDRAIN",
+    "senses": [
+      {
+        "meaning": "wasted",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Gone to waste, as money might be"
+        ],
+        "expression": "down the drain"
+      }
+    ]
+  },
+  {
+    "answer": "DRAWABLANK",
+    "senses": [
+      {
+        "meaning": "fail to recall",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Try to remember something without success"
+        ],
+        "expression": "draw a blank"
+      }
+    ]
+  },
+  {
+    "answer": "DRESSEDTOTHENINES",
+    "senses": [
+      {
+        "meaning": "elaborately dressed",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Wearing one's most impressive finery"
+        ],
+        "expression": "dressed to the nines"
+      }
+    ]
+  },
+  {
+    "answer": "DRIVEAHARDBARGAIN",
+    "senses": [
+      {
+        "meaning": "negotiate firmly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Insist on very favorable terms in a negotiation"
+        ],
+        "expression": "drive a hard bargain"
+      }
+    ]
+  },
+  {
+    "answer": "DROPTHEBALL",
+    "senses": [
+      {
+        "meaning": "fail responsibility",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Fail to carry out an important responsibility"
+        ],
+        "expression": "drop the ball"
+      }
+    ]
+  },
+  {
+    "answer": "EAGERBEAVER",
+    "senses": [
+      {
+        "meaning": "enthusiastic worker",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Especially enthusiastic worker"
+        ],
+        "expression": "eager beaver"
+      }
+    ]
+  },
+  {
+    "answer": "EASIERSAIDTHANDONE",
+    "senses": [
+      {
+        "meaning": "difficult in practice",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Easy to propose but difficult to accomplish"
+        ],
+        "expression": "easier said than done"
+      }
+    ]
+  },
+  {
+    "answer": "EATHUMBLEPIE",
+    "senses": [
+      {
+        "meaning": "admit error",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Admit one's mistake rather sheepishly"
+        ],
+        "expression": "eat humble pie"
+      }
+    ]
+  },
+  {
+    "answer": "ELBOWGREASE",
+    "senses": [
+      {
+        "meaning": "physical effort",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Good old-fashioned effort applied to a scrubbing job"
+        ],
+        "expression": "elbow grease"
+      }
+    ]
+  },
+  {
+    "answer": "EVERYDOGHASITSDAY",
+    "senses": [
+      {
+        "meaning": "eventual opportunity proverb",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Proverb suggesting everyone gets a turn at success"
+        ],
+        "expression": "every dog has its day"
+      }
+    ]
+  },
+  {
+    "answer": "FAIRANDSQUARE",
+    "senses": [
+      {
+        "meaning": "honestly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Without cheating"
+        ],
+        "expression": "fair and square"
+      }
+    ]
+  },
+  {
+    "answer": "FALLFLAT",
+    "senses": [
+      {
+        "meaning": "fail to impress",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Fail to get a laugh, as a joke might"
+        ],
+        "expression": "fall flat"
+      }
+    ]
+  },
+  {
+    "answer": "FALLINTOPLACE",
+    "senses": [
+      {
+        "meaning": "become orderly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Begin to make sense as the parts fit together"
+        ],
+        "expression": "fall into place"
+      }
+    ]
+  },
+  {
+    "answer": "FALLONDEAFEARS",
+    "senses": [
+      {
+        "meaning": "be ignored",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Go unheeded, as an earnest warning might"
+        ],
+        "expression": "fall on deaf ears"
+      }
+    ]
+  },
+  {
+    "answer": "FEATHERINONESCAP",
+    "senses": [
+      {
+        "meaning": "achievement",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Achievement one may be proud of"
+        ],
+        "expression": "feather in one's cap"
+      }
+    ]
+  },
+  {
+    "answer": "FEELATHOME",
+    "senses": [
+      {
+        "meaning": "be comfortable",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Feel entirely comfortable in unfamiliar surroundings"
+        ],
+        "expression": "feel at home"
+      }
+    ]
+  },
+  {
+    "answer": "FEWANDFARBETWEEN",
+    "senses": [
+      {
+        "meaning": "rare",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Uncommon and separated by long intervals"
+        ],
+        "expression": "few and far between"
+      }
+    ]
+  },
+  {
+    "answer": "FIGHTFIREWITHFIRE",
+    "senses": [
+      {
+        "meaning": "retaliate similarly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Counter an opponent using similar methods"
+        ],
+        "expression": "fight fire with fire"
+      }
+    ]
+  },
+  {
+    "answer": "FINELINE",
+    "senses": [
+      {
+        "meaning": "subtle distinction",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Narrow distinction between two alternatives"
+        ],
+        "expression": "fine line"
+      }
+    ]
+  },
+  {
+    "answer": "FINGERONTHEPULSE",
+    "senses": [
+      {
+        "meaning": "awareness of trends",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Close awareness of what is currently happening"
+        ],
+        "expression": "finger on the pulse"
+      }
+    ]
+  },
+  {
+    "answer": "FITASAFIDDLE",
+    "senses": [
+      {
+        "meaning": "healthy",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "In excellent physical condition"
+        ],
+        "expression": "fit as a fiddle"
+      }
+    ]
+  },
+  {
+    "answer": "FLYOFFTHEHANDLE",
+    "senses": [
+      {
+        "meaning": "lose temper",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Suddenly lose one's temper"
+        ],
+        "expression": "fly off the handle"
+      }
+    ]
+  },
+  {
+    "answer": "FOODFORTHOUGHT",
+    "senses": [
+      {
+        "meaning": "matter worth considering",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Something worth pondering"
+        ],
+        "expression": "food for thought"
+      }
+    ]
+  },
+  {
+    "answer": "FOOLSERRAND",
+    "senses": [
+      {
+        "meaning": "pointless task",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Task doomed to accomplish nothing worthwhile"
+        ],
+        "expression": "fool's errand"
+      }
+    ]
+  },
+  {
+    "answer": "FOOTTHEBILL",
+    "senses": [
+      {
+        "meaning": "pay expenses",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Be the one who pays"
+        ],
+        "expression": "foot the bill"
+      }
+    ]
+  },
+  {
+    "answer": "FORTHEBIRDS",
+    "senses": [
+      {
+        "meaning": "worthless informal",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Not worth taking seriously, informally"
+        ],
+        "expression": "for the birds"
+      }
+    ]
+  },
+  {
+    "answer": "FORTHERECORD",
+    "senses": [
+      {
+        "meaning": "for clarity or official account",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "To make one's position clear for future reference"
+        ],
+        "expression": "for the record"
+      }
+    ]
+  },
+  {
+    "answer": "FROMSCRATCH",
+    "senses": [
+      {
+        "meaning": "from basic ingredients",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Without relying on something already prepared"
+        ],
+        "expression": "from scratch"
+      }
+    ]
+  },
+  {
+    "answer": "FROMTHEHORSESMOUTH",
+    "senses": [
+      {
+        "meaning": "directly from source",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Directly from the most authoritative source"
+        ],
+        "expression": "from the horse's mouth"
+      }
+    ]
+  },
+  {
+    "answer": "GETAGRIP",
+    "senses": [
+      {
+        "meaning": "regain composure",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Regain one's self-control"
+        ],
+        "expression": "get a grip"
+      }
+    ]
+  },
+  {
+    "answer": "GETCOLDFEET",
+    "senses": [
+      {
+        "meaning": "lose nerve",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Become too nervous to go ahead"
+        ],
+        "expression": "get cold feet"
+      }
+    ]
+  },
+  {
+    "answer": "GETDOWNTOBUSINESS",
+    "senses": [
+      {
+        "meaning": "begin serious work",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Stop chatting and begin the task in earnest"
+        ],
+        "expression": "get down to business"
+      }
+    ]
+  },
+  {
+    "answer": "GETONESACTTOGETHER",
+    "senses": [
+      {
+        "meaning": "become organized",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Become organized enough to perform effectively"
+        ],
+        "expression": "get one's act together"
+      }
+    ]
+  },
+  {
+    "answer": "GETONESFEETWET",
+    "senses": [
+      {
+        "meaning": "gain initial experience",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Try something unfamiliar for the first time"
+        ],
+        "expression": "get one's feet wet"
+      }
+    ]
+  },
+  {
+    "answer": "GETTHEBALLROLLING",
+    "senses": [
+      {
+        "meaning": "start activity",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Set a process in motion"
+        ],
+        "expression": "get the ball rolling"
+      }
+    ]
+  },
+  {
+    "answer": "GETTHEHANGOF",
+    "senses": [
+      {
+        "meaning": "learn technique",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Acquire a feel for how something is done"
+        ],
+        "expression": "get the hang of"
+      }
+    ]
+  },
+  {
+    "answer": "GETWINDOF",
+    "senses": [
+      {
+        "meaning": "hear about secretly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Hear about something not yet publicly announced"
+        ],
+        "expression": "get wind of"
+      }
+    ]
+  },
+  {
+    "answer": "GOAGAINSTTHEFLOW",
+    "senses": [
+      {
+        "meaning": "resist prevailing trend",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Act contrary to the prevailing trend"
+        ],
+        "expression": "go against the flow"
+      }
+    ]
+  },
+  {
+    "answer": "GOBACKALONGWAY",
+    "senses": [
+      {
+        "meaning": "have long association",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Have known each other for many years"
+        ],
+        "expression": "go back a long way"
+      }
+    ]
+  },
+  {
+    "answer": "GOBROKE",
+    "senses": [
+      {
+        "meaning": "lose money",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Run out of money"
+        ],
+        "expression": "go broke"
+      }
+    ]
+  },
+  {
+    "answer": "GODOWNINFLAMES",
+    "senses": [
+      {
+        "meaning": "fail spectacularly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Fail in a spectacular manner"
+        ],
+        "expression": "go down in flames"
+      }
+    ]
+  },
+  {
+    "answer": "GOLDENOPPORTUNITY",
+    "senses": [
+      {
+        "meaning": "excellent chance",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Excellent chance not to be missed"
+        ],
+        "expression": "golden opportunity"
+      }
+    ]
+  },
+  {
+    "answer": "GOODASNEW",
+    "senses": [
+      {
+        "meaning": "restored condition",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Like something repaired to its original condition"
+        ],
+        "expression": "good as new"
+      }
+    ]
+  },
+  {
+    "answer": "GOOUTONALIMB",
+    "senses": [
+      {
+        "meaning": "take personal risk",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Take a risk by committing to an uncertain position"
+        ],
+        "expression": "go out on a limb"
+      }
+    ]
+  },
+  {
+    "answer": "GOPEARSHAPED",
+    "senses": [
+      {
+        "meaning": "go wrong",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Go unexpectedly wrong, in British slang"
+        ],
+        "expression": "go pear-shaped"
+      }
+    ]
+  },
+  {
+    "answer": "GOWITHTHEFLOW",
+    "senses": [
+      {
+        "meaning": "adapt",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Accept things as they develop"
+        ],
+        "expression": "go with the flow"
+      }
+    ]
+  },
+  {
+    "answer": "GRASPATSTRAWS",
+    "senses": [
+      {
+        "meaning": "try desperate measures",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Seize upon even the weakest hope"
+        ],
+        "expression": "grasp at straws"
+      }
+    ]
+  },
+  {
+    "answer": "GREASETHEWHEELS",
+    "senses": [
+      {
+        "meaning": "facilitate",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Make a difficult process run more smoothly"
+        ],
+        "expression": "grease the wheels"
+      }
+    ]
+  },
+  {
+    "answer": "GRINANDBEARIT",
+    "senses": [
+      {
+        "meaning": "endure stoically",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Endure something unpleasant without complaint"
+        ],
+        "expression": "grin and bear it"
+      }
+    ]
+  },
+  {
+    "answer": "GROUNDRULES",
+    "senses": [
+      {
+        "meaning": "basic conditions",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Basic rules agreed upon before an activity"
+        ],
+        "expression": "ground rules"
+      }
+    ]
+  },
+  {
+    "answer": "GROWINGPAINS",
+    "senses": [
+      {
+        "meaning": "development difficulties",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Temporary difficulties accompanying rapid development"
+        ],
+        "expression": "growing pains"
+      }
+    ]
+  },
+  {
+    "answer": "HAIROFTHEDOG",
+    "senses": [
+      {
+        "meaning": "hangover drink",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Drink taken as a supposed remedy for a hangover"
+        ],
+        "expression": "hair of the dog"
+      }
+    ]
+  },
+  {
+    "answer": "HANGINTHERE",
+    "senses": [
+      {
+        "meaning": "persevere",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Encouragement to keep going despite difficulties"
+        ],
+        "expression": "hang in there"
+      }
+    ]
+  },
+  {
+    "answer": "HARDFEELINGS",
+    "senses": [
+      {
+        "meaning": "resentment",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Lingering resentment after a disagreement"
+        ],
+        "expression": "hard feelings"
+      }
+    ]
+  },
+  {
+    "answer": "HAVEABLAST",
+    "senses": [
+      {
+        "meaning": "enjoy oneself",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Have an exceptionally good time, informally"
+        ],
+        "expression": "have a blast"
+      }
+    ]
+  },
+  {
+    "answer": "HAVEABONETOPICK",
+    "senses": [
+      {
+        "meaning": "have grievance",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Have a particular grievance to discuss"
+        ],
+        "expression": "have a bone to pick"
+      }
+    ]
+  },
+  {
+    "answer": "HAVEAFIELDDAY",
+    "senses": [
+      {
+        "meaning": "enjoy opportunity",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Make the most of an especially favorable opportunity"
+        ],
+        "expression": "have a field day"
+      }
+    ]
+  },
+  {
+    "answer": "HAVEAHUNCH",
+    "senses": [
+      {
+        "meaning": "intuit",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Suspect something without solid evidence"
+        ],
+        "expression": "have a hunch"
+      }
+    ]
+  },
+  {
+    "answer": "HAVEONESHANDSFULL",
+    "senses": [
+      {
+        "meaning": "be very busy",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Be occupied with as much work as one can handle"
+        ],
+        "expression": "have one's hands full"
+      }
+    ]
+  },
+  {
+    "answer": "HAVETHELASTLAUGH",
+    "senses": [
+      {
+        "meaning": "ultimately prevail",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Come out on top after initially being ridiculed"
+        ],
+        "expression": "have the last laugh"
+      }
+    ]
+  },
+  {
+    "answer": "HEADINTHECLOUDS",
+    "senses": [
+      {
+        "meaning": "daydreaming",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Absorbed in dreams rather than practical matters"
+        ],
+        "expression": "head in the clouds"
+      }
+    ]
+  },
+  {
+    "answer": "HEARTOFGOLD",
+    "senses": [
+      {
+        "meaning": "kind nature",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Especially generous and kindly nature"
+        ],
+        "expression": "heart of gold"
+      }
+    ]
+  },
+  {
+    "answer": "HEARTTOHEART",
+    "senses": [
+      {
+        "meaning": "frank private talk",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Frank intimate conversation"
+        ],
+        "expression": "heart-to-heart"
+      }
+    ]
+  },
+  {
+    "answer": "HEATOFTHEMOMENT",
+    "senses": [
+      {
+        "meaning": "moment of intense emotion",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Time of intense feeling when judgment may be clouded"
+        ],
+        "expression": "heat of the moment"
+      }
+    ]
+  },
+  {
+    "answer": "HEAVYHEART",
+    "senses": [
+      {
+        "meaning": "sadness",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Feeling of deep sadness"
+        ],
+        "expression": "heavy heart"
+      }
+    ]
+  },
+  {
+    "answer": "HIGHANDDRY",
+    "senses": [
+      {
+        "meaning": "stranded",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Left without the expected help"
+        ],
+        "expression": "high and dry"
+      }
+    ]
+  },
+  {
+    "answer": "HIGHTIME",
+    "senses": [
+      {
+        "meaning": "overdue moment",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Well past the point when something should have happened"
+        ],
+        "expression": "high time"
+      }
+    ]
+  },
+  {
+    "answer": "HITTHEBOOKS",
+    "senses": [
+      {
+        "meaning": "study",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Get down to some serious studying"
+        ],
+        "expression": "hit the books"
+      }
+    ]
+  },
+  {
+    "answer": "HITTHENAILONTHEHEAD",
+    "senses": [
+      {
+        "meaning": "be exactly right",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Identify the exact cause of a problem"
+        ],
+        "expression": "hit the nail on the head"
+      }
+    ]
+  },
+  {
+    "answer": "HITTHESACK",
+    "senses": [
+      {
+        "meaning": "go to bed",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Turn in for the night, informally"
+        ],
+        "expression": "hit the sack"
+      }
+    ]
+  },
+  {
+    "answer": "HOLDACANDLETO",
+    "senses": [
+      {
+        "meaning": "compare favorably",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Compare favorably with, usually after can't"
+        ],
+        "expression": "hold a candle to"
+      }
+    ]
+  },
+  {
+    "answer": "HOLDONESBREATH",
+    "senses": [
+      {
+        "meaning": "wait anxiously",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Wait anxiously for an uncertain outcome"
+        ],
+        "expression": "hold one's breath"
+      }
+    ]
+  },
+  {
+    "answer": "HOMESTRETCH",
+    "senses": [
+      {
+        "meaning": "final stage",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Final stage of a long undertaking"
+        ],
+        "expression": "home stretch"
+      }
+    ]
+  },
+  {
+    "answer": "HOTPOTATO",
+    "senses": [
+      {
+        "meaning": "controversial issue",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Controversial matter nobody wants to handle"
+        ],
+        "expression": "hot potato"
+      }
+    ]
+  },
+  {
+    "answer": "HOUSEOFCARDS",
+    "senses": [
+      {
+        "meaning": "fragile structure",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Arrangement liable to collapse if one part fails"
+        ],
+        "expression": "house of cards"
+      }
+    ]
+  },
+  {
+    "answer": "HUSHHUSH",
+    "senses": [
+      {
+        "meaning": "secret",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Kept strictly secret, informally"
+        ],
+        "expression": "hush-hush"
+      }
+    ]
+  },
+  {
+    "answer": "INABIND",
+    "senses": [
+      {
+        "meaning": "in difficulty",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Caught in a difficult situation"
+        ],
+        "expression": "in a bind"
+      }
+    ]
+  },
+  {
+    "answer": "INAJIFFY",
+    "senses": [
+      {
+        "meaning": "very soon",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "In almost no time"
+        ],
+        "expression": "in a jiffy"
+      }
+    ]
+  },
+  {
+    "answer": "INARUT",
+    "senses": [
+      {
+        "meaning": "stuck in routine",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Trapped in a monotonous routine"
+        ],
+        "expression": "in a rut"
+      }
+    ]
+  },
+  {
+    "answer": "INBLACKANDWHITE",
+    "senses": [
+      {
+        "meaning": "in writing",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Set down unmistakably in writing"
+        ],
+        "expression": "in black and white"
+      }
+    ]
+  },
+  {
+    "answer": "INBROADDAYLIGHT",
+    "senses": [
+      {
+        "meaning": "during day openly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "In the middle of the day without any concealment"
+        ],
+        "expression": "in broad daylight"
+      }
+    ]
+  },
+  {
+    "answer": "INDEEPWATER",
+    "senses": [
+      {
+        "meaning": "in serious trouble",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "In a difficult situation well beyond one's abilities"
+        ],
+        "expression": "in deep water"
+      }
+    ]
+  },
+  {
+    "answer": "INFINEFETTLE",
+    "senses": [
+      {
+        "meaning": "in good condition",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "In excellent form, in British usage"
+        ],
+        "expression": "in fine fettle"
+      }
+    ]
+  },
+  {
+    "answer": "INGOODHANDS",
+    "senses": [
+      {
+        "meaning": "well cared for",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Entrusted to someone capable"
+        ],
+        "expression": "in good hands"
+      }
+    ]
+  },
+  {
+    "answer": "INGOODTIME",
+    "senses": [
+      {
+        "meaning": "without hurry or delay",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Early enough without undue haste"
+        ],
+        "expression": "in good time"
+      }
+    ]
+  },
+  {
+    "answer": "INONEEARANDOUTTHEOTHER",
+    "senses": [
+      {
+        "meaning": "quickly forgotten",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Like advice that is immediately forgotten"
+        ],
+        "expression": "in one ear and out the other"
+      }
+    ]
+  },
+  {
+    "answer": "INONESELEMENT",
+    "senses": [
+      {
+        "meaning": "comfortable in familiar activity",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Doing something in which one is naturally at home"
+        ],
+        "expression": "in one's element"
+      }
+    ]
+  },
+  {
+    "answer": "INTHEBAG",
+    "senses": [
+      {
+        "meaning": "virtually assured",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "As good as secured, as a victory may be"
+        ],
+        "expression": "in the bag"
+      }
+    ]
+  },
+  {
+    "answer": "INTHEBLINKOFANEYE",
+    "senses": [
+      {
+        "meaning": "almost instantly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "In an almost imperceptibly short time"
+        ],
+        "expression": "in the blink of an eye"
+      }
+    ]
+  },
+  {
+    "answer": "INTHEDARK",
+    "senses": [
+      {
+        "meaning": "uninformed",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Unaware of what is really going on"
+        ],
+        "expression": "in the dark"
+      }
+    ]
+  },
+  {
+    "answer": "INTHEDRIVERSSEAT",
+    "senses": [
+      {
+        "meaning": "in control",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "In a position to direct what happens"
+        ],
+        "expression": "in the driver's seat"
+      }
+    ]
+  },
+  {
+    "answer": "INTHELONGRUN",
+    "senses": [
+      {
+        "meaning": "eventually",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "When the eventual outcome is considered"
+        ],
+        "expression": "in the long run"
+      }
+    ]
+  },
+  {
+    "answer": "INTHENICKOFTIME",
+    "senses": [
+      {
+        "meaning": "just in time",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "With not a moment to spare"
+        ],
+        "expression": "in the nick of time"
+      }
+    ]
+  },
+  {
+    "answer": "INTHESAMEBOAT",
+    "senses": [
+      {
+        "meaning": "sharing predicament",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Facing the same difficulties as someone else"
+        ],
+        "expression": "in the same boat"
+      }
+    ]
+  },
+  {
+    "answer": "INTHETHICKOFIT",
+    "senses": [
+      {
+        "meaning": "deeply involved",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Right at the center of the action"
+        ],
+        "expression": "in the thick of it"
+      }
+    ]
+  },
+  {
+    "answer": "INTOTHINAIR",
+    "senses": [
+      {
+        "meaning": "without trace",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Without leaving any trace, as something might vanish"
+        ],
+        "expression": "into thin air"
+      }
+    ]
+  },
+  {
+    "answer": "ITCHYFEET",
+    "senses": [
+      {
+        "meaning": "urge to travel",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Restless desire to move on somewhere new"
+        ],
+        "expression": "itchy feet"
+      }
+    ]
+  },
+  {
+    "answer": "ITSALLGREEKTOME",
+    "senses": [
+      {
+        "meaning": "incomprehensible",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Playful admission that something is incomprehensible"
+        ],
+        "expression": "it's all Greek to me"
+      }
+    ]
+  },
+  {
+    "answer": "ITSNOTROCKETSCIENCE",
+    "senses": [
+      {
+        "meaning": "not complicated",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Reassurance that a task is not particularly complicated"
+        ],
+        "expression": "it's not rocket science"
+      }
+    ]
+  },
+  {
+    "answer": "KEEPALOWPROFILE",
+    "senses": [
+      {
+        "meaning": "avoid attention",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Try not to attract notice"
+        ],
+        "expression": "keep a low profile"
+      }
+    ]
+  },
+  {
+    "answer": "KEEPANEYEON",
+    "senses": [
+      {
+        "meaning": "watch",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Watch over something attentively"
+        ],
+        "expression": "keep an eye on"
+      }
+    ]
+  },
+  {
+    "answer": "KEEPONESCOOL",
+    "senses": [
+      {
+        "meaning": "remain composed",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Remain calm under pressure"
+        ],
+        "expression": "keep one's cool"
+      }
+    ]
+  },
+  {
+    "answer": "KEEPONESFINGERSCROSSED",
+    "senses": [
+      {
+        "meaning": "hope for favorable outcome",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Hope that things will work out"
+        ],
+        "expression": "keep one's fingers crossed"
+      }
+    ]
+  },
+  {
+    "answer": "KEEPONESHEADABOVEWATER",
+    "senses": [
+      {
+        "meaning": "manage financially",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Barely manage to meet one's obligations"
+        ],
+        "expression": "keep one's head above water"
+      }
+    ]
+  },
+  {
+    "answer": "KEEPTHEWOLFFROMTHEDOOR",
+    "senses": [
+      {
+        "meaning": "avoid destitution",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Earn enough to stave off poverty"
+        ],
+        "expression": "keep the wolf from the door"
+      }
+    ]
+  },
+  {
+    "answer": "KICKTHEBUCKET",
+    "senses": [
+      {
+        "meaning": "die informally",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Die, in a flippant idiom"
+        ],
+        "expression": "kick the bucket"
+      }
+    ]
+  },
+  {
+    "answer": "KNOCKONWOOD",
+    "senses": [
+      {
+        "meaning": "ward off bad luck",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "What a superstitious person might say after mentioning good fortune"
+        ],
+        "expression": "knock on wood"
+      }
+    ]
+  },
+  {
+    "answer": "KNOWTHEROPES",
+    "senses": [
+      {
+        "meaning": "be experienced",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Understand how things work through experience"
+        ],
+        "expression": "know the ropes"
+      }
+    ]
+  },
+  {
+    "answer": "LASTBUTNOTLEAST",
+    "senses": [
+      {
+        "meaning": "final yet important",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Introduction to a final item of equal importance"
+        ],
+        "expression": "last but not least"
+      }
+    ]
+  },
+  {
+    "answer": "LAUGHINGSTOCK",
+    "senses": [
+      {
+        "meaning": "object of ridicule",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Someone made the object of widespread ridicule"
+        ],
+        "expression": "laughing stock"
+      }
+    ]
+  },
+  {
+    "answer": "LAYITONTHICK",
+    "senses": [
+      {
+        "meaning": "exaggerate",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Exaggerate one's praise rather obviously"
+        ],
+        "expression": "lay it on thick"
+      }
+    ]
+  },
+  {
+    "answer": "LEAVENOSTONEUNTURNED",
+    "senses": [
+      {
+        "meaning": "search exhaustively",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Search every possible avenue"
+        ],
+        "expression": "leave no stone unturned"
+      }
+    ]
+  },
+  {
+    "answer": "LEAVEWELLENOUGHALONE",
+    "senses": [
+      {
+        "meaning": "avoid needless interference",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Refrain from changing something that already works"
+        ],
+        "expression": "leave well enough alone"
+      }
+    ]
+  },
+  {
+    "answer": "LENDANEAR",
+    "senses": [
+      {
+        "meaning": "listen sympathetically",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Listen to someone's troubles"
+        ],
+        "expression": "lend an ear"
+      }
+    ]
+  },
+  {
+    "answer": "LETBYGONESBEBYGONES",
+    "senses": [
+      {
+        "meaning": "forgive past disputes",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Put past disagreements behind oneself"
+        ],
+        "expression": "let bygones be bygones"
+      }
+    ]
+  },
+  {
+    "answer": "LETSLEEPINGDOGSLIE",
+    "senses": [
+      {
+        "meaning": "avoid stirring trouble",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Avoid reopening a dormant dispute"
+        ],
+        "expression": "let sleeping dogs lie"
+      }
+    ]
+  },
+  {
+    "answer": "LEVELPLAYINGFIELD",
+    "senses": [
+      {
+        "meaning": "fair conditions",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Situation giving everyone comparable opportunities"
+        ],
+        "expression": "level playing field"
+      }
+    ]
+  },
+  {
+    "answer": "LICKONESWOUNDS",
+    "senses": [
+      {
+        "meaning": "recover from defeat",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Recover after a humiliating setback"
+        ],
+        "expression": "lick one's wounds"
+      }
+    ]
+  },
+  {
+    "answer": "LIGHTATTHEENDOFTHETUNNEL",
+    "senses": [
+      {
+        "meaning": "hope of improvement",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Sign that a long difficult period may soon end"
+        ],
+        "expression": "light at the end of the tunnel"
+      }
+    ]
+  },
+  {
+    "answer": "LIKEFATHERLIKESON",
+    "senses": [
+      {
+        "meaning": "family resemblance saying",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Saying about a boy resembling his dad in behavior"
+        ],
+        "expression": "like father like son"
+      }
+    ]
+  },
+  {
+    "answer": "LINEINTHESAND",
+    "senses": [
+      {
+        "meaning": "firm limit",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Boundary beyond which one will not compromise"
+        ],
+        "expression": "line in the sand"
+      }
+    ]
+  },
+  {
+    "answer": "LIVEANDLETLIVE",
+    "senses": [
+      {
+        "meaning": "tolerant attitude",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Motto of accepting others' choices"
+        ],
+        "expression": "live and let live"
+      }
+    ]
+  },
+  {
+    "answer": "LIVEFROMHANDTOMOUTH",
+    "senses": [
+      {
+        "meaning": "barely subsist",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Have only enough money for immediate necessities"
+        ],
+        "expression": "live from hand to mouth"
+      }
+    ]
+  },
+  {
+    "answer": "LOOKBEFOREYOULEAP",
+    "senses": [
+      {
+        "meaning": "caution proverb",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Proverb advising careful thought before acting"
+        ],
+        "expression": "look before you leap"
+      }
+    ]
+  },
+  {
+    "answer": "LOOKONTHEBRIGHTSIDE",
+    "senses": [
+      {
+        "meaning": "focus on good aspects",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Try to find the favorable aspects of a situation"
+        ],
+        "expression": "look on the bright side"
+      }
+    ]
+  },
+  {
+    "answer": "LOOKTHEOTHERWAY",
+    "senses": [
+      {
+        "meaning": "ignore",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Deliberately pretend not to notice"
+        ],
+        "expression": "look the other way"
+      }
+    ]
+  },
+  {
+    "answer": "LOOSECANNON",
+    "senses": [
+      {
+        "meaning": "unpredictable person",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Unpredictable person whose actions may cause trouble"
+        ],
+        "expression": "loose cannon"
+      }
+    ]
+  },
+  {
+    "answer": "LOSEONESMARBLES",
+    "senses": [
+      {
+        "meaning": "lose good sense",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Lose one's mental faculties, in a jocular expression"
+        ],
+        "expression": "lose one's marbles"
+      }
+    ]
+  },
+  {
+    "answer": "LOSEONESTOUCH",
+    "senses": [
+      {
+        "meaning": "lose skill",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Become less adept at something one used to do well"
+        ],
+        "expression": "lose one's touch"
+      }
+    ]
+  },
+  {
+    "answer": "LOVEATFIRSTSIGHT",
+    "senses": [
+      {
+        "meaning": "immediate attraction",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Romantic attraction at the very first meeting"
+        ],
+        "expression": "love at first sight"
+      }
+    ]
+  },
+  {
+    "answer": "LOWHANGINGFRUIT",
+    "senses": [
+      {
+        "meaning": "easy opportunity",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Opportunities requiring relatively little effort"
+        ],
+        "expression": "low-hanging fruit"
+      }
+    ]
+  },
+  {
+    "answer": "LUCKOFTHEDRAW",
+    "senses": [
+      {
+        "meaning": "chance selection",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Outcome determined by random selection"
+        ],
+        "expression": "luck of the draw"
+      }
+    ]
+  },
+  {
+    "answer": "MAKEABEELINEFOR",
+    "senses": [
+      {
+        "meaning": "head straight toward",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Head directly toward a destination"
+        ],
+        "expression": "make a beeline for"
+      }
+    ]
+  },
+  {
+    "answer": "MAKEANAMEFORONESELF",
+    "senses": [
+      {
+        "meaning": "earn reputation",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Earn a reputation through one's accomplishments"
+        ],
+        "expression": "make a name for oneself"
+      }
+    ]
+  },
+  {
+    "answer": "MAKEHAYWHILETHESUNSHINES",
+    "senses": [
+      {
+        "meaning": "seize opportunity",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Take advantage of favorable circumstances while they last"
+        ],
+        "expression": "make hay while the sun shines"
+      }
+    ]
+  },
+  {
+    "answer": "MAKELIGHTOF",
+    "senses": [
+      {
+        "meaning": "minimize seriousness",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Treat something serious as though it were unimportant"
+        ],
+        "expression": "make light of"
+      }
+    ]
+  },
+  {
+    "answer": "MAKEONESBLOODBOIL",
+    "senses": [
+      {
+        "meaning": "enrage",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Cause someone to become furious"
+        ],
+        "expression": "make one's blood boil"
+      }
+    ]
+  },
+  {
+    "answer": "MAKEUPONESMIND",
+    "senses": [
+      {
+        "meaning": "decide",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Reach a decision"
+        ],
+        "expression": "make up one's mind"
+      }
+    ]
+  },
+  {
+    "answer": "MEANBUSINESS",
+    "senses": [
+      {
+        "meaning": "be serious",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Be serious about carrying out one's intentions"
+        ],
+        "expression": "mean business"
+      }
+    ]
+  },
+  {
+    "answer": "MEETHALFWAY",
+    "senses": [
+      {
+        "meaning": "compromise",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Make mutual concessions"
+        ],
+        "expression": "meet halfway"
+      }
+    ]
+  },
+  {
+    "answer": "MENDFENCES",
+    "senses": [
+      {
+        "meaning": "repair relationship",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Repair a damaged relationship"
+        ],
+        "expression": "mend fences"
+      }
+    ]
+  },
+  {
+    "answer": "METHODTOONESMADNESS",
+    "senses": [
+      {
+        "meaning": "rationale behind odd behavior",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Underlying logic behind seemingly eccentric behavior"
+        ],
+        "expression": "method to one's madness"
+      }
+    ]
+  },
+  {
+    "answer": "MINDOVERMATTER",
+    "senses": [
+      {
+        "meaning": "willpower over physical difficulty",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Use of determination to overcome physical discomfort"
+        ],
+        "expression": "mind over matter"
+      }
+    ]
+  },
+  {
+    "answer": "MISSTHEMARK",
+    "senses": [
+      {
+        "meaning": "fail to achieve aim",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Fail to achieve the intended effect"
+        ],
+        "expression": "miss the mark"
+      }
+    ]
+  },
+  {
+    "answer": "MIXEDBLESSING",
+    "senses": [
+      {
+        "meaning": "both good and bad",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Something bringing advantages as well as disadvantages"
+        ],
+        "expression": "mixed blessing"
+      }
+    ]
+  },
+  {
+    "answer": "MONEYDOESNTGROWONTREES",
+    "senses": [
+      {
+        "meaning": "financial caution saying",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Parental reminder that money is not inexhaustible"
+        ],
+        "expression": "money doesn't grow on trees"
+      }
+    ]
+  },
+  {
+    "answer": "MUCHADOABOUTNOTHING",
+    "senses": [
+      {
+        "meaning": "unnecessary commotion",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "A great fuss over something trivial"
+        ],
+        "expression": "much ado about nothing"
+      }
+    ]
+  },
+  {
+    "answer": "MYWAYORTHEHIGHWAY",
+    "senses": [
+      {
+        "meaning": "uncompromising ultimatum",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Ultimatum allowing no room for negotiation"
+        ],
+        "expression": "my way or the highway"
+      }
+    ]
+  },
+  {
+    "answer": "NECKANDNECK",
+    "senses": [
+      {
+        "meaning": "evenly matched",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "So closely matched that neither competitor is ahead"
+        ],
+        "expression": "neck and neck"
+      }
+    ]
+  },
+  {
+    "answer": "NIPINTHEBUD",
+    "senses": [
+      {
+        "meaning": "stop early",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Prevent a problem before it can develop"
+        ],
+        "expression": "nip in the bud"
+      }
+    ]
+  },
+  {
+    "answer": "NOHARMDONE",
+    "senses": [
+      {
+        "meaning": "reassurance after mishap",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Reassurance after a mistake with no lasting consequences"
+        ],
+        "expression": "no harm done"
+      }
+    ]
+  },
+  {
+    "answer": "NOPAINNOGAIN",
+    "senses": [
+      {
+        "meaning": "effort proverb",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Slogan linking improvement to hard work"
+        ],
+        "expression": "no pain no gain"
+      }
+    ]
+  },
+  {
+    "answer": "NOSTRINGSATTACHED",
+    "senses": [
+      {
+        "meaning": "without obligations",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Without conditions or hidden obligations"
+        ],
+        "expression": "no strings attached"
+      }
+    ]
+  },
+  {
+    "answer": "NOTHINGTOWRITEHOMEABOUT",
+    "senses": [
+      {
+        "meaning": "unremarkable",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Not particularly impressive"
+        ],
+        "expression": "nothing to write home about"
+      }
+    ]
+  },
+  {
+    "answer": "NOTOUTOFTHEWOODS",
+    "senses": [
+      {
+        "meaning": "still in difficulty",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Not yet safe from the remaining dangers"
+        ],
+        "expression": "not out of the woods"
+      }
+    ]
+  },
+  {
+    "answer": "NOWWERETALKING",
+    "senses": [
+      {
+        "meaning": "approval",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Expression of approval when a proposal finally sounds appealing"
+        ],
+        "expression": "now we're talking"
+      }
+    ]
+  },
+  {
+    "answer": "OFFONESROCKER",
+    "senses": [
+      {
+        "meaning": "irrational informal",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Utterly irrational, in a colloquial idiom"
+        ],
+        "expression": "off one's rocker"
+      }
+    ]
+  },
+  {
+    "answer": "OFFTHEBEATENPATH",
+    "senses": [
+      {
+        "meaning": "away from usual routes",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Away from the routes usually taken by visitors"
+        ],
+        "expression": "off the beaten path"
+      }
+    ]
+  },
+  {
+    "answer": "OFFTHECUFF",
+    "senses": [
+      {
+        "meaning": "improvised",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Without having prepared what to say"
+        ],
+        "expression": "off the cuff"
+      }
+    ]
+  },
+  {
+    "answer": "OFFTHERECORD",
+    "senses": [
+      {
+        "meaning": "not for publication",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Not intended for public quotation"
+        ],
+        "expression": "off the record"
+      }
+    ]
+  },
+  {
+    "answer": "ONALLFOURS",
+    "senses": [
+      {
+        "meaning": "on hands and knees",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Like a person crawling across the floor"
+        ],
+        "expression": "on all fours"
+      }
+    ]
+  },
+  {
+    "answer": "ONAROLL",
+    "senses": [
+      {
+        "meaning": "enjoying successive success",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Experiencing a winning streak"
+        ],
+        "expression": "on a roll"
+      }
+    ]
+  },
+  {
+    "answer": "ONBENDEDKNEE",
+    "senses": [
+      {
+        "meaning": "kneeling",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "In the traditional posture of a marriage proposal"
+        ],
+        "expression": "on bended knee"
+      }
+    ]
+  },
+  {
+    "answer": "ONCEBITTENTWICESHY",
+    "senses": [
+      {
+        "meaning": "caution after bad experience",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Proverb about becoming cautious after a bad experience"
+        ],
+        "expression": "once bitten twice shy"
+      }
+    ]
+  },
+  {
+    "answer": "ONEDGE",
+    "senses": [
+      {
+        "meaning": "tense",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Nervous and easily startled"
+        ],
+        "expression": "on edge"
+      }
+    ]
+  },
+  {
+    "answer": "ONESTEPATATIME",
+    "senses": [
+      {
+        "meaning": "gradually",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "By dealing with each stage in turn"
+        ],
+        "expression": "one step at a time"
+      }
+    ]
+  },
+  {
+    "answer": "ONGOODTERMS",
+    "senses": [
+      {
+        "meaning": "friendly relationship",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Enjoying a friendly relationship"
+        ],
+        "expression": "on good terms"
+      }
+    ]
+  },
+  {
+    "answer": "ONPINSANDNEEDLES",
+    "senses": [
+      {
+        "meaning": "anxious anticipation",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Anxiously awaiting an important result"
+        ],
+        "expression": "on pins and needles"
+      }
+    ]
+  },
+  {
+    "answer": "ONSECONDTHOUGHT",
+    "senses": [
+      {
+        "meaning": "reconsideration",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Words introducing a change of mind"
+        ],
+        "expression": "on second thought"
+      }
+    ]
+  },
+  {
+    "answer": "ONTHEBALL",
+    "senses": [
+      {
+        "meaning": "alert and competent",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Alert and quick to respond"
+        ],
+        "expression": "on the ball"
+      }
+    ]
+  },
+  {
+    "answer": "ONTHEDOT",
+    "senses": [
+      {
+        "meaning": "exactly on time",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "At precisely the agreed time"
+        ],
+        "expression": "on the dot"
+      }
+    ]
+  },
+  {
+    "answer": "ONTHEFLY",
+    "senses": [
+      {
+        "meaning": "without preparation",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Improvised as events unfold"
+        ],
+        "expression": "on the fly"
+      }
+    ]
+  },
+  {
+    "answer": "ONTHEHORIZON",
+    "senses": [
+      {
+        "meaning": "approaching",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Likely to happen before long"
+        ],
+        "expression": "on the horizon"
+      }
+    ]
+  },
+  {
+    "answer": "ONTHEMEND",
+    "senses": [
+      {
+        "meaning": "recovering",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Recovering from an illness or injury"
+        ],
+        "expression": "on the mend"
+      }
+    ]
+  },
+  {
+    "answer": "ONTHEOTHERHAND",
+    "senses": [
+      {
+        "meaning": "contrasting consideration",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Words introducing an alternative viewpoint"
+        ],
+        "expression": "on the other hand"
+      }
+    ]
+  },
+  {
+    "answer": "ONTHESAMEPAGE",
+    "senses": [
+      {
+        "meaning": "in agreement",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Sharing a common understanding"
+        ],
+        "expression": "on the same page"
+      }
+    ]
+  },
+  {
+    "answer": "ONTHESPUROFTHEMOMENT",
+    "senses": [
+      {
+        "meaning": "impulsively",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Without having planned it in advance"
+        ],
+        "expression": "on the spur of the moment"
+      }
+    ]
+  },
+  {
+    "answer": "ONTHETIPOFONESTONGUE",
+    "senses": [
+      {
+        "meaning": "nearly recalled",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Like a name one can almost remember"
+        ],
+        "expression": "on the tip of one's tongue"
+      }
+    ]
+  },
+  {
+    "answer": "ONTHEWARPATH",
+    "senses": [
+      {
+        "meaning": "angry",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Angrily looking to confront someone"
+        ],
+        "expression": "on the warpath"
+      }
+    ]
+  },
+  {
+    "answer": "OUTANDABOUT",
+    "senses": [
+      {
+        "meaning": "away from home active",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Away from home and going about one's activities"
+        ],
+        "expression": "out and about"
+      }
+    ]
+  },
+  {
+    "answer": "OUTOFCHARACTER",
+    "senses": [
+      {
+        "meaning": "untypical",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Not like someone's usual behavior"
+        ],
+        "expression": "out of character"
+      }
+    ]
+  },
+  {
+    "answer": "OUTOFONESDEPTH",
+    "senses": [
+      {
+        "meaning": "unable to cope",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "In a situation beyond one's knowledge or ability"
+        ],
+        "expression": "out of one's depth"
+      }
+    ]
+  },
+  {
+    "answer": "OUTOFPOCKET",
+    "senses": [
+      {
+        "meaning": "personally paid expenses",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Having paid the expenses oneself"
+        ],
+        "expression": "out of pocket"
+      }
+    ]
+  },
+  {
+    "answer": "OUTOFTHEFRYINGPAN",
+    "senses": [
+      {
+        "meaning": "escape into worse trouble",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Start of an expression about escaping one danger for a worse one"
+        ],
+        "expression": "out of the frying pan"
+      }
+    ]
+  },
+  {
+    "answer": "OUTOFTHEWOODS",
+    "senses": [
+      {
+        "meaning": "past danger",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Through the worst of a dangerous situation"
+        ],
+        "expression": "out of the woods"
+      }
+    ]
+  },
+  {
+    "answer": "OUTONALIMB",
+    "senses": [
+      {
+        "meaning": "in exposed position",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "In a risky position without much support"
+        ],
+        "expression": "out on a limb"
+      }
+    ]
+  },
+  {
+    "answer": "OVERTHEHILL",
+    "senses": [
+      {
+        "meaning": "past prime",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Past one's prime, in a jocular idiom"
+        ],
+        "expression": "over the hill"
+      }
+    ]
+  },
+  {
+    "answer": "OVERTHEMOON",
+    "senses": [
+      {
+        "meaning": "delighted",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Absolutely thrilled, in British usage"
+        ],
+        "expression": "over the moon"
+      }
+    ]
+  },
+  {
+    "answer": "PACKAPUNCH",
+    "senses": [
+      {
+        "meaning": "have powerful effect",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Have a surprisingly powerful effect"
+        ],
+        "expression": "pack a punch"
+      }
+    ]
+  },
+  {
+    "answer": "PAPERTIGER",
+    "senses": [
+      {
+        "meaning": "apparent threat without power",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Threatening-looking opponent with little real power"
+        ],
+        "expression": "paper tiger"
+      }
+    ]
+  },
+  {
+    "answer": "PASSTHEBUCK",
+    "senses": [
+      {
+        "meaning": "shift responsibility",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Shift responsibility to somebody else"
+        ],
+        "expression": "pass the buck"
+      }
+    ]
+  },
+  {
+    "answer": "PATONTHEBACK",
+    "senses": [
+      {
+        "meaning": "praise",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Friendly acknowledgment of a job well done"
+        ],
+        "expression": "pat on the back"
+      }
+    ]
+  },
+  {
+    "answer": "PAYONESDUES",
+    "senses": [
+      {
+        "meaning": "earn standing",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Put in the necessary time and effort to earn a position"
+        ],
+        "expression": "pay one's dues"
+      }
+    ]
+  },
+  {
+    "answer": "PAYTHEPIPER",
+    "senses": [
+      {
+        "meaning": "bear consequences",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Bear the cost of one's choices"
+        ],
+        "expression": "pay the piper"
+      }
+    ]
+  },
+  {
+    "answer": "PEASINAPOD",
+    "senses": [
+      {
+        "meaning": "very similar people",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Two people remarkably similar to each other"
+        ],
+        "expression": "peas in a pod"
+      }
+    ]
+  },
+  {
+    "answer": "PENNYWISEANDPOUNDFOOLISH",
+    "senses": [
+      {
+        "meaning": "misguided thrift",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Saving little sums while wasting large ones"
+        ],
+        "expression": "penny wise and pound foolish"
+      }
+    ]
+  },
+  {
+    "answer": "PICKUPTHEPIECES",
+    "senses": [
+      {
+        "meaning": "recover after disaster",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Start restoring things after a disastrous setback"
+        ],
+        "expression": "pick up the pieces"
+      }
+    ]
+  },
+  {
+    "answer": "PINCHOFSALT",
+    "senses": [
+      {
+        "meaning": "skepticism",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "What one should take a dubious story with, in Britain"
+        ],
+        "expression": "pinch of salt"
+      }
+    ]
+  },
+  {
+    "answer": "PLAYBYEAR",
+    "senses": [
+      {
+        "meaning": "improvise",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Proceed without a fixed plan, adapting as necessary"
+        ],
+        "expression": "play by ear"
+      }
+    ]
+  },
+  {
+    "answer": "PLAYONESCARDSRIGHT",
+    "senses": [
+      {
+        "meaning": "act strategically",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Handle opportunities cleverly to obtain a desired outcome"
+        ],
+        "expression": "play one's cards right"
+      }
+    ]
+  },
+  {
+    "answer": "PLAYSECONDFIDDLE",
+    "senses": [
+      {
+        "meaning": "take subordinate role",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Occupy a less important role than someone else"
+        ],
+        "expression": "play second fiddle"
+      }
+    ]
+  },
+  {
+    "answer": "POINTOFNORETURN",
+    "senses": [
+      {
+        "meaning": "irreversible stage",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Stage beyond which it is impossible to turn back"
+        ],
+        "expression": "point of no return"
+      }
+    ]
+  },
+  {
+    "answer": "POISONPEN",
+    "senses": [
+      {
+        "meaning": "malicious writing",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Malicious anonymous letter, as a modifier"
+        ],
+        "expression": "poison pen"
+      }
+    ]
+  },
+  {
+    "answer": "POPTHEQUESTION",
+    "senses": [
+      {
+        "meaning": "propose marriage",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Ask someone to marry one"
+        ],
+        "expression": "pop the question"
+      }
+    ]
+  },
+  {
+    "answer": "POTCALLINGTHEKETTLEBLACK",
+    "senses": [
+      {
+        "meaning": "hypocritical criticism",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Expression for criticizing someone for a fault one shares"
+        ],
+        "expression": "pot calling the kettle black"
+      }
+    ]
+  },
+  {
+    "answer": "POURCOLDWATERON",
+    "senses": [
+      {
+        "meaning": "discourage",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Dampen enthusiasm for a proposal"
+        ],
+        "expression": "pour cold water on"
+      }
+    ]
+  },
+  {
+    "answer": "PRICKUPONESEARS",
+    "senses": [
+      {
+        "meaning": "listen attentively",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Suddenly become alert to what is being said"
+        ],
+        "expression": "prick up one's ears"
+      }
+    ]
+  },
+  {
+    "answer": "PULLAFASTONE",
+    "senses": [
+      {
+        "meaning": "deceive",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Deceive someone with a clever trick"
+        ],
+        "expression": "pull a fast one"
+      }
+    ]
+  },
+  {
+    "answer": "PULLONESWEIGHT",
+    "senses": [
+      {
+        "meaning": "do fair share",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Do one's fair share of the work"
+        ],
+        "expression": "pull one's weight"
+      }
+    ]
+  },
+  {
+    "answer": "PULLTHEPLUG",
+    "senses": [
+      {
+        "meaning": "terminate",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Bring a project to an abrupt end"
+        ],
+        "expression": "pull the plug"
+      }
+    ]
+  },
+  {
+    "answer": "PUSHONESLUCK",
+    "senses": [
+      {
+        "meaning": "take excessive risks",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Risk spoiling an already fortunate outcome"
+        ],
+        "expression": "push one's luck"
+      }
+    ]
+  },
+  {
+    "answer": "PUTALLONESEGGSINONEBASKET",
+    "senses": [
+      {
+        "meaning": "risk everything together",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Depend entirely on a single plan or investment"
+        ],
+        "expression": "put all one's eggs in one basket"
+      }
+    ]
+  },
+  {
+    "answer": "PUTASOCKINIT",
+    "senses": [
+      {
+        "meaning": "be quiet",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Rather rude instruction to stop talking"
+        ],
+        "expression": "put a sock in it"
+      }
+    ]
+  },
+  {
+    "answer": "PUTONESBESTFOOTFORWARD",
+    "senses": [
+      {
+        "meaning": "make good impression",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Make one's most favorable impression"
+        ],
+        "expression": "put one's best foot forward"
+      }
+    ]
+  },
+  {
+    "answer": "PUTONESFOOTDOWN",
+    "senses": [
+      {
+        "meaning": "assert authority",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Refuse to allow something to continue"
+        ],
+        "expression": "put one's foot down"
+      }
+    ]
+  },
+  {
+    "answer": "PUTONESFOOTINONESMOUTH",
+    "senses": [
+      {
+        "meaning": "say tactless thing",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Say something embarrassingly inappropriate"
+        ],
+        "expression": "put one's foot in one's mouth"
+      }
+    ]
+  },
+  {
+    "answer": "PUTTHECARTBEFORETHEHORSE",
+    "senses": [
+      {
+        "meaning": "reverse proper order",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Do things in the wrong logical order"
+        ],
+        "expression": "put the cart before the horse"
+      }
+    ]
+  },
+  {
+    "answer": "QUICKONTHEDRAW",
+    "senses": [
+      {
+        "meaning": "rapid reaction",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Very quick to react"
+        ],
+        "expression": "quick on the draw"
+      }
+    ]
+  },
+  {
+    "answer": "RAGSTORICHES",
+    "senses": [
+      {
+        "meaning": "rise from poverty to wealth",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Describing a story of rising from poverty to wealth"
+        ],
+        "expression": "rags to riches"
+      }
+    ]
+  },
+  {
+    "answer": "RAISETHEBAR",
+    "senses": [
+      {
+        "meaning": "increase standard",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Set a higher standard for achievement"
+        ],
+        "expression": "raise the bar"
+      }
+    ]
+  },
+  {
+    "answer": "READBETWEENTHELINES",
+    "senses": [
+      {
+        "meaning": "infer hidden meaning",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Infer a message that has not been stated explicitly"
+        ],
+        "expression": "read between the lines"
+      }
+    ]
+  },
+  {
+    "answer": "READTHEROOM",
+    "senses": [
+      {
+        "meaning": "assess social mood",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Notice the prevailing mood before speaking"
+        ],
+        "expression": "read the room"
+      }
+    ]
+  },
+  {
+    "answer": "REDTAPE",
+    "senses": [
+      {
+        "meaning": "bureaucracy",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Exasperating administrative formalities"
+        ],
+        "expression": "red tape"
+      }
+    ]
+  },
+  {
+    "answer": "REELOFF",
+    "senses": [
+      {
+        "meaning": "recite rapidly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Recite a long list without hesitation"
+        ],
+        "expression": "reel off"
+      }
+    ]
+  },
+  {
+    "answer": "RESTONONESLAURELS",
+    "senses": [
+      {
+        "meaning": "rely on past achievements",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Stop striving because of past successes"
+        ],
+        "expression": "rest on one's laurels"
+      }
+    ]
+  },
+  {
+    "answer": "RIGHTASRAIN",
+    "senses": [
+      {
+        "meaning": "healthy or satisfactory",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Perfectly well again, in a British idiom"
+        ],
+        "expression": "right as rain"
+      }
+    ]
+  },
+  {
+    "answer": "RISEANDSHINE",
+    "senses": [
+      {
+        "meaning": "wake-up call",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Cheerful instruction to get out of bed"
+        ],
+        "expression": "rise and shine"
+      }
+    ]
+  },
+  {
+    "answer": "RISETOTHEOCCASION",
+    "senses": [
+      {
+        "meaning": "meet challenge",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Perform well when circumstances demand it"
+        ],
+        "expression": "rise to the occasion"
+      }
+    ]
+  },
+  {
+    "answer": "ROBPETERTOPAYPAUL",
+    "senses": [
+      {
+        "meaning": "transfer financial shortfall",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Cover one debt by creating another"
+        ],
+        "expression": "rob Peter to pay Paul"
+      }
+    ]
+  },
+  {
+    "answer": "ROCKTHEBOAT",
+    "senses": [
+      {
+        "meaning": "disrupt situation",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Disturb an established arrangement"
+        ],
+        "expression": "rock the boat"
+      }
+    ]
+  },
+  {
+    "answer": "ROLLWITHTHEPUNCHES",
+    "senses": [
+      {
+        "meaning": "adapt to setbacks",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Adapt to difficulties as they arise"
+        ],
+        "expression": "roll with the punches"
+      }
+    ]
+  },
+  {
+    "answer": "RUBSALTINTHEWOUND",
+    "senses": [
+      {
+        "meaning": "worsen distress",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Make someone feel even worse about a setback"
+        ],
+        "expression": "rub salt in the wound"
+      }
+    ]
+  },
+  {
+    "answer": "RUNATIGHTSHIP",
+    "senses": [
+      {
+        "meaning": "manage efficiently",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Manage an organization with discipline and efficiency"
+        ],
+        "expression": "run a tight ship"
+      }
+    ]
+  },
+  {
+    "answer": "RUNINCIRCLES",
+    "senses": [
+      {
+        "meaning": "act unproductively",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Stay busy without making meaningful progress"
+        ],
+        "expression": "run in circles"
+      }
+    ]
+  },
+  {
+    "answer": "RUNOFTHEMILL",
+    "senses": [
+      {
+        "meaning": "ordinary",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Entirely ordinary and unexceptional"
+        ],
+        "expression": "run of the mill"
+      }
+    ]
+  },
+  {
+    "answer": "SAVEDBYTHEBELL",
+    "senses": [
+      {
+        "meaning": "rescued at last moment",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Rescued by a timely interruption"
+        ],
+        "expression": "saved by the bell"
+      }
+    ]
+  },
+  {
+    "answer": "SCRATCHTHESURFACE",
+    "senses": [
+      {
+        "meaning": "begin superficial exploration",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Explore only the most obvious part of a complex subject"
+        ],
+        "expression": "scratch the surface"
+      }
+    ]
+  },
+  {
+    "answer": "SEALOFAPPROVAL",
+    "senses": [
+      {
+        "meaning": "endorsement",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Sign that something has been officially endorsed"
+        ],
+        "expression": "seal of approval"
+      }
+    ]
+  },
+  {
+    "answer": "SEEEYETOEYE",
+    "senses": [
+      {
+        "meaning": "agree",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Be in complete agreement"
+        ],
+        "expression": "see eye to eye"
+      }
+    ]
+  },
+  {
+    "answer": "SEETHELIGHT",
+    "senses": [
+      {
+        "meaning": "understand",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Finally recognize what is really true"
+        ],
+        "expression": "see the light"
+      }
+    ]
+  },
+  {
+    "answer": "SETINSTONE",
+    "senses": [
+      {
+        "meaning": "unchangeable",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Fixed and not open to alteration"
+        ],
+        "expression": "set in stone"
+      }
+    ]
+  },
+  {
+    "answer": "SETTHERECORDSTRAIGHT",
+    "senses": [
+      {
+        "meaning": "correct misconception",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Correct a misleading account of events"
+        ],
+        "expression": "set the record straight"
+      }
+    ]
+  },
+  {
+    "answer": "SHAKEALEG",
+    "senses": [
+      {
+        "meaning": "hurry",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Hurry up, informally"
+        ],
+        "expression": "shake a leg"
+      }
+    ]
+  },
+  {
+    "answer": "SHAPEUPORSHIPOUT",
+    "senses": [
+      {
+        "meaning": "ultimatum to improve",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Ultimatum demanding better behavior or departure"
+        ],
+        "expression": "shape up or ship out"
+      }
+    ]
+  },
+  {
+    "answer": "SHEDLIGHTON",
+    "senses": [
+      {
+        "meaning": "clarify",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Help make an obscure matter understandable"
+        ],
+        "expression": "shed light on"
+      }
+    ]
+  },
+  {
+    "answer": "SHOEISONTHEOTHERFOOT",
+    "senses": [
+      {
+        "meaning": "reversed circumstances",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Expression indicating that roles have been reversed"
+        ],
+        "expression": "shoe is on the other foot"
+      }
+    ]
+  },
+  {
+    "answer": "SHOOTFORTHEMOON",
+    "senses": [
+      {
+        "meaning": "aim high",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Set oneself an exceptionally ambitious goal"
+        ],
+        "expression": "shoot for the moon"
+      }
+    ]
+  },
+  {
+    "answer": "SHOOTTHEBREEZE",
+    "senses": [
+      {
+        "meaning": "chat",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Chat about unimportant things"
+        ],
+        "expression": "shoot the breeze"
+      }
+    ]
+  },
+  {
+    "answer": "SHORTANDSWEET",
+    "senses": [
+      {
+        "meaning": "brief and pleasant",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Pleasantly brief"
+        ],
+        "expression": "short and sweet"
+      }
+    ]
+  },
+  {
+    "answer": "SHOWONESTRUECOLORS",
+    "senses": [
+      {
+        "meaning": "reveal character",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Reveal one's actual character"
+        ],
+        "expression": "show one's true colors"
+      }
+    ]
+  },
+  {
+    "answer": "SICKANDTIRED",
+    "senses": [
+      {
+        "meaning": "fed up",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Thoroughly weary of something irritating"
+        ],
+        "expression": "sick and tired"
+      }
+    ]
+  },
+  {
+    "answer": "SIGNONTHEDOTTEDLINE",
+    "senses": [
+      {
+        "meaning": "sign agreement",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Put one's signature on a formal agreement"
+        ],
+        "expression": "sign on the dotted line"
+      }
+    ]
+  },
+  {
+    "answer": "SKELETONINTHECLOSET",
+    "senses": [
+      {
+        "meaning": "shameful secret",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Embarrassing secret from one's past"
+        ],
+        "expression": "skeleton in the closet"
+      }
+    ]
+  },
+  {
+    "answer": "SLEEPONIT",
+    "senses": [
+      {
+        "meaning": "delay decision overnight",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Wait until the next day to make a decision"
+        ],
+        "expression": "sleep on it"
+      }
+    ]
+  },
+  {
+    "answer": "SLOWANDSTEADYWINSTHERACE",
+    "senses": [
+      {
+        "meaning": "perseverance proverb",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Moral of the fable about a tortoise and a hare"
+        ],
+        "expression": "slow and steady wins the race"
+      }
+    ]
+  },
+  {
+    "answer": "SMOOTHSAILING",
+    "senses": [
+      {
+        "meaning": "easy progress",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Progress without significant obstacles"
+        ],
+        "expression": "smooth sailing"
+      }
+    ]
+  },
+  {
+    "answer": "SNOWEDUNDER",
+    "senses": [
+      {
+        "meaning": "overwhelmed with work",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Buried under a large amount of work, figuratively"
+        ],
+        "expression": "snowed under"
+      }
+    ]
+  },
+  {
+    "answer": "SOFTSPOT",
+    "senses": [
+      {
+        "meaning": "affection",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Particular fondness for someone or something"
+        ],
+        "expression": "soft spot"
+      }
+    ]
+  },
+  {
+    "answer": "SOURGRAPES",
+    "senses": [
+      {
+        "meaning": "disparagement after failure",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Disparaging something merely because one cannot obtain it"
+        ],
+        "expression": "sour grapes"
+      }
+    ]
+  },
+  {
+    "answer": "SPEAKOFTHEDEVIL",
+    "senses": [
+      {
+        "meaning": "remark on arrival",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Words spoken when the person just mentioned unexpectedly appears"
+        ],
+        "expression": "speak of the devil"
+      }
+    ]
+  },
+  {
+    "answer": "SPICKANDSPAN",
+    "senses": [
+      {
+        "meaning": "very clean",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Immaculately clean and tidy"
+        ],
+        "expression": "spick and span"
+      }
+    ]
+  },
+  {
+    "answer": "SPINONESWHEELS",
+    "senses": [
+      {
+        "meaning": "make no progress",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Expend effort without moving forward"
+        ],
+        "expression": "spin one's wheels"
+      }
+    ]
+  },
+  {
+    "answer": "SPLITHAIRS",
+    "senses": [
+      {
+        "meaning": "quibble",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Argue over exceedingly fine distinctions"
+        ],
+        "expression": "split hairs"
+      }
+    ]
+  },
+  {
+    "answer": "SPRINGCHICKEN",
+    "senses": [
+      {
+        "meaning": "young person",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Young person, often in a jocular negative expression"
+        ],
+        "expression": "spring chicken"
+      }
+    ]
+  },
+  {
+    "answer": "SQUAREPEGINAROUNDHOLE",
+    "senses": [
+      {
+        "meaning": "ill-fitting person",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Person unsuited to the role assigned to them"
+        ],
+        "expression": "square peg in a round hole"
+      }
+    ]
+  },
+  {
+    "answer": "STANDONESGROUND",
+    "senses": [
+      {
+        "meaning": "refuse to retreat",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Refuse to yield one's position"
+        ],
+        "expression": "stand one's ground"
+      }
+    ]
+  },
+  {
+    "answer": "STARTFROMSCRATCH",
+    "senses": [
+      {
+        "meaning": "begin anew",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Begin without relying on previous work"
+        ],
+        "expression": "start from scratch"
+      }
+    ]
+  },
+  {
+    "answer": "STEALSOMEONESTHUNDER",
+    "senses": [
+      {
+        "meaning": "take attention",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Divert attention from someone else's achievement"
+        ],
+        "expression": "steal someone's thunder"
+      }
+    ]
+  },
+  {
+    "answer": "STEPONONESTOES",
+    "senses": [
+      {
+        "meaning": "offend by encroaching",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Offend someone by encroaching on their responsibilities"
+        ],
+        "expression": "step on one's toes"
+      }
+    ]
+  },
+  {
+    "answer": "STICKONESNECKOUT",
+    "senses": [
+      {
+        "meaning": "take risk",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Expose oneself to criticism by taking a risk"
+        ],
+        "expression": "stick one's neck out"
+      }
+    ]
+  },
+  {
+    "answer": "STICKTOONESGUNS",
+    "senses": [
+      {
+        "meaning": "remain firm",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Maintain one's position despite opposition"
+        ],
+        "expression": "stick to one's guns"
+      }
+    ]
+  },
+  {
+    "answer": "STRAIGHTFROMTHESHOULDER",
+    "senses": [
+      {
+        "meaning": "frankly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Frankly and without evasion"
+        ],
+        "expression": "straight from the shoulder"
+      }
+    ]
+  },
+  {
+    "answer": "STRIKEWHILETHEIRONISHOT",
+    "senses": [
+      {
+        "meaning": "act at opportunity",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Act promptly while conditions are favorable"
+        ],
+        "expression": "strike while the iron is hot"
+      }
+    ]
+  },
+  {
+    "answer": "SWEEPUNDERTHERUG",
+    "senses": [
+      {
+        "meaning": "conceal problem",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Hide a problem rather than deal with it"
+        ],
+        "expression": "sweep under the rug"
+      }
+    ]
+  },
+  {
+    "answer": "SWEETTOOTH",
+    "senses": [
+      {
+        "meaning": "fondness for sweets",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Special fondness for sugary foods"
+        ],
+        "expression": "sweet tooth"
+      }
+    ]
+  },
+  {
+    "answer": "TAKEABACKSEAT",
+    "senses": [
+      {
+        "meaning": "assume lesser role",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Let someone else take the more prominent role"
+        ],
+        "expression": "take a back seat"
+      }
+    ]
+  },
+  {
+    "answer": "TAKEAHIKE",
+    "senses": [
+      {
+        "meaning": "go away",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Dismissive instruction to go away"
+        ],
+        "expression": "take a hike"
+      }
+    ]
+  },
+  {
+    "answer": "TAKEARAINCHECK",
+    "senses": [
+      {
+        "meaning": "postpone acceptance",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Ask to accept an invitation another time"
+        ],
+        "expression": "take a rain check"
+      }
+    ]
+  },
+  {
+    "answer": "TAKEASHINETO",
+    "senses": [
+      {
+        "meaning": "develop fondness",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Develop a liking for someone"
+        ],
+        "expression": "take a shine to"
+      }
+    ]
+  },
+  {
+    "answer": "TAKEITEASY",
+    "senses": [
+      {
+        "meaning": "relax",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Don't exert yourself too much"
+        ],
+        "expression": "take it easy"
+      }
+    ]
+  },
+  {
+    "answer": "TAKEITORLEAVEIT",
+    "senses": [
+      {
+        "meaning": "nonnegotiable offer",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Words indicating an offer will not be improved"
+        ],
+        "expression": "take it or leave it"
+      }
+    ]
+  },
+  {
+    "answer": "TAKETHEBULLBYTHEHORNS",
+    "senses": [
+      {
+        "meaning": "confront difficulty",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Tackle a difficult problem directly"
+        ],
+        "expression": "take the bull by the horns"
+      }
+    ]
+  },
+  {
+    "answer": "TAKETHECAKE",
+    "senses": [
+      {
+        "meaning": "be outstandingly outrageous",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Be the most outrageous example, informally"
+        ],
+        "expression": "take the cake"
+      }
+    ]
+  },
+  {
+    "answer": "TAKETHEPLUNGE",
+    "senses": [
+      {
+        "meaning": "commit to decision",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Make a decisive commitment despite uncertainty"
+        ],
+        "expression": "take the plunge"
+      }
+    ]
+  },
+  {
+    "answer": "TAKETHEWINDOUTOFONESSAILS",
+    "senses": [
+      {
+        "meaning": "discourage",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Deprive someone of their confidence or enthusiasm"
+        ],
+        "expression": "take the wind out of one's sails"
+      }
+    ]
+  },
+  {
+    "answer": "TALKOFTHETOWN",
+    "senses": [
+      {
+        "meaning": "topic of local discussion",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Subject of widespread local conversation"
+        ],
+        "expression": "talk of the town"
+      }
+    ]
+  },
+  {
+    "answer": "TALLTALE",
+    "senses": [
+      {
+        "meaning": "exaggerated story",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Wildly exaggerated story"
+        ],
+        "expression": "tall tale"
+      }
+    ]
+  },
+  {
+    "answer": "TASTEOFONESOWNMEDICINE",
+    "senses": [
+      {
+        "meaning": "reciprocal mistreatment",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Experiencing the unpleasant treatment one normally gives others"
+        ],
+        "expression": "taste of one's own medicine"
+      }
+    ]
+  },
+  {
+    "answer": "TEARONESHAIROUT",
+    "senses": [
+      {
+        "meaning": "be frustrated",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Become extremely frustrated"
+        ],
+        "expression": "tear one's hair out"
+      }
+    ]
+  },
+  {
+    "answer": "TELLITLIKEITIS",
+    "senses": [
+      {
+        "meaning": "speak frankly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Describe the facts without sugarcoating them"
+        ],
+        "expression": "tell it like it is"
+      }
+    ]
+  },
+  {
+    "answer": "TESTTHEWATERS",
+    "senses": [
+      {
+        "meaning": "gauge reaction",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Try a small experiment before making a commitment"
+        ],
+        "expression": "test the waters"
+      }
+    ]
+  },
+  {
+    "answer": "THEBALLISINYOURCOURT",
+    "senses": [
+      {
+        "meaning": "next action is yours",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Expression indicating it is now up to you to act"
+        ],
+        "expression": "the ball is in your court"
+      }
+    ]
+  },
+  {
+    "answer": "THEBEESKNEES",
+    "senses": [
+      {
+        "meaning": "excellent informal",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Something considered exceptionally fine, in old-fashioned slang"
+        ],
+        "expression": "the bee's knees"
+      }
+    ]
+  },
+  {
+    "answer": "THEBESTOFBOTHWORLDS",
+    "senses": [
+      {
+        "meaning": "combined advantages",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Benefits of two normally separate alternatives"
+        ],
+        "expression": "the best of both worlds"
+      }
+    ]
+  },
+  {
+    "answer": "THECOASTISCLEAR",
+    "senses": [
+      {
+        "meaning": "safe to proceed",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Signal that it is safe to proceed unnoticed"
+        ],
+        "expression": "the coast is clear"
+      }
+    ]
+  },
+  {
+    "answer": "THECREAMOFTHECROP",
+    "senses": [
+      {
+        "meaning": "the finest",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "The very best of a group"
+        ],
+        "expression": "the cream of the crop"
+      }
+    ]
+  },
+  {
+    "answer": "THEICINGONTHECAKE",
+    "senses": [
+      {
+        "meaning": "extra benefit",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Additional benefit that makes a good situation even better"
+        ],
+        "expression": "the icing on the cake"
+      }
+    ]
+  },
+  {
+    "answer": "THEJURYISSTILLOUT",
+    "senses": [
+      {
+        "meaning": "undecided",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "No conclusion has yet been reached"
+        ],
+        "expression": "the jury is still out"
+      }
+    ]
+  },
+  {
+    "answer": "THELIONSSHARE",
+    "senses": [
+      {
+        "meaning": "largest portion",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "By far the largest portion"
+        ],
+        "expression": "the lion's share"
+      }
+    ]
+  },
+  {
+    "answer": "THEOTHERSIDEOFTHECOIN",
+    "senses": [
+      {
+        "meaning": "contrasting aspect",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Contrasting aspect of the same situation"
+        ],
+        "expression": "the other side of the coin"
+      }
+    ]
+  },
+  {
+    "answer": "THEPENNYDROPPED",
+    "senses": [
+      {
+        "meaning": "realization",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Expression indicating something has finally dawned on someone, in Britain"
+        ],
+        "expression": "the penny dropped"
+      }
+    ]
+  },
+  {
+    "answer": "THESKYSTHELIMIT",
+    "senses": [
+      {
+        "meaning": "unlimited possibility",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Expression suggesting there is no upper bound to what can be achieved"
+        ],
+        "expression": "the sky's the limit"
+      }
+    ]
+  },
+  {
+    "answer": "THEWRITINGONTHEWALL",
+    "senses": [
+      {
+        "meaning": "sign of impending trouble",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Unmistakable sign of an impending downfall"
+        ],
+        "expression": "the writing on the wall"
+      }
+    ]
+  },
+  {
+    "answer": "THROUGHTHICKANDTHIN",
+    "senses": [
+      {
+        "meaning": "in all circumstances",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "During good times and bad alike"
+        ],
+        "expression": "through thick and thin"
+      }
+    ]
+  },
+  {
+    "answer": "THROWCAUTIONTOTHEWIND",
+    "senses": [
+      {
+        "meaning": "act recklessly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Proceed without regard for the usual precautions"
+        ],
+        "expression": "throw caution to the wind"
+      }
+    ]
+  },
+  {
+    "answer": "THROWINTHETOWEL",
+    "senses": [
+      {
+        "meaning": "give up",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Concede defeat"
+        ],
+        "expression": "throw in the towel"
+      }
+    ]
+  },
+  {
+    "answer": "THROWONESHATINTHERING",
+    "senses": [
+      {
+        "meaning": "enter competition",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Declare oneself a candidate in a contest"
+        ],
+        "expression": "throw one's hat in the ring"
+      }
+    ]
+  },
+  {
+    "answer": "TICKLEDPINK",
+    "senses": [
+      {
+        "meaning": "delighted",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Extremely pleased"
+        ],
+        "expression": "tickled pink"
+      }
+    ]
+  },
+  {
+    "answer": "TIETHEKNOT",
+    "senses": [
+      {
+        "meaning": "marry",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Get married, informally"
+        ],
+        "expression": "tie the knot"
+      }
+    ]
+  },
+  {
+    "answer": "TILLTHECOWSCOMEHOME",
+    "senses": [
+      {
+        "meaning": "for a very long time",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "For an indefinitely long time"
+        ],
+        "expression": "till the cows come home"
+      }
+    ]
+  },
+  {
+    "answer": "TIMEANDAGAIN",
+    "senses": [
+      {
+        "meaning": "repeatedly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "On repeated occasions"
+        ],
+        "expression": "time and again"
+      }
+    ]
+  },
+  {
+    "answer": "TIMEISMONEY",
+    "senses": [
+      {
+        "meaning": "value of time proverb",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Proverb reminding us that wasted time has an economic cost"
+        ],
+        "expression": "time is money"
+      }
+    ]
+  },
+  {
+    "answer": "TIPOFTHEICEBERG",
+    "senses": [
+      {
+        "meaning": "small visible portion",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Small visible part of a much larger matter"
+        ],
+        "expression": "tip of the iceberg"
+      }
+    ]
+  },
+  {
+    "answer": "TOETHELINE",
+    "senses": [
+      {
+        "meaning": "obey rules",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Conform to established rules"
+        ],
+        "expression": "toe the line"
+      }
+    ]
+  },
+  {
+    "answer": "TONGUEINCHEEK",
+    "senses": [
+      {
+        "meaning": "not entirely serious",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Like a remark intended to be humorously insincere"
+        ],
+        "expression": "tongue in cheek"
+      }
+    ]
+  },
+  {
+    "answer": "TOOMANYCOOKSSPOILTHEBROTH",
+    "senses": [
+      {
+        "meaning": "excess coordination proverb",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Proverb warning that too many people directing a task can ruin it"
+        ],
+        "expression": "too many cooks spoil the broth"
+      }
+    ]
+  },
+  {
+    "answer": "TOPOFTHEWORLD",
+    "senses": [
+      {
+        "meaning": "extreme happiness",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Feeling of supreme happiness, after on"
+        ],
+        "expression": "top of the world"
+      }
+    ]
+  },
+  {
+    "answer": "TOUCHANDGO",
+    "senses": [
+      {
+        "meaning": "uncertain",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "So precarious that success is uncertain"
+        ],
+        "expression": "touch and go"
+      }
+    ]
+  },
+  {
+    "answer": "TOUCHBASE",
+    "senses": [
+      {
+        "meaning": "make contact",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Make brief contact to exchange news"
+        ],
+        "expression": "touch base"
+      }
+    ]
+  },
+  {
+    "answer": "TOUCHWOOD",
+    "senses": [
+      {
+        "meaning": "ward off bad luck",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "British expression used to avert supposed bad luck"
+        ],
+        "expression": "touch wood"
+      }
+    ]
+  },
+  {
+    "answer": "TRAILBLAZER",
+    "senses": [
+      {
+        "meaning": "pioneer",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Person who opens the way for others"
+        ],
+        "expression": "trailblazer"
+      }
+    ]
+  },
+  {
+    "answer": "TURNACORNER",
+    "senses": [
+      {
+        "meaning": "improve after difficulty",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Begin to improve after a difficult period"
+        ],
+        "expression": "turn a corner"
+      }
+    ]
+  },
+  {
+    "answer": "TURNOVERANEWLEAF",
+    "senses": [
+      {
+        "meaning": "change for better",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Make a fresh resolution to behave better"
+        ],
+        "expression": "turn over a new leaf"
+      }
+    ]
+  },
+  {
+    "answer": "TURNTHETABLES",
+    "senses": [
+      {
+        "meaning": "reverse advantage",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Reverse a situation to one's advantage"
+        ],
+        "expression": "turn the tables"
+      }
+    ]
+  },
+  {
+    "answer": "TWISTSOMEONESARM",
+    "senses": [
+      {
+        "meaning": "persuade by pressure",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Pressure someone into agreeing"
+        ],
+        "expression": "twist someone's arm"
+      }
+    ]
+  },
+  {
+    "answer": "TWOHEADSAREBETTERTHANONE",
+    "senses": [
+      {
+        "meaning": "collaboration proverb",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Proverb favoring joint problem solving"
+        ],
+        "expression": "two heads are better than one"
+      }
+    ]
+  },
+  {
+    "answer": "TWOPEASINAPOD",
+    "senses": [
+      {
+        "meaning": "very similar pair",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Pair of people who are strikingly alike"
+        ],
+        "expression": "two peas in a pod"
+      }
+    ]
+  },
+  {
+    "answer": "UNDERACLOUD",
+    "senses": [
+      {
+        "meaning": "under suspicion",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Viewed with suspicion or disapproval"
+        ],
+        "expression": "under a cloud"
+      }
+    ]
+  },
+  {
+    "answer": "UNDERONESBELT",
+    "senses": [
+      {
+        "meaning": "already achieved",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Already achieved or experienced"
+        ],
+        "expression": "under one's belt"
+      }
+    ]
+  },
+  {
+    "answer": "UNDERTHEGUN",
+    "senses": [
+      {
+        "meaning": "under pressure",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Under intense pressure to act quickly"
+        ],
+        "expression": "under the gun"
+      }
+    ]
+  },
+  {
+    "answer": "UNDERTHERADAR",
+    "senses": [
+      {
+        "meaning": "unnoticed",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Without attracting much attention"
+        ],
+        "expression": "under the radar"
+      }
+    ]
+  },
+  {
+    "answer": "UPACREEK",
+    "senses": [
+      {
+        "meaning": "in trouble",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "In a difficult predicament, colloquially"
+        ],
+        "expression": "up a creek"
+      }
+    ]
+  },
+  {
+    "answer": "UPINARMS",
+    "senses": [
+      {
+        "meaning": "protesting angrily",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Angrily protesting"
+        ],
+        "expression": "up in arms"
+      }
+    ]
+  },
+  {
+    "answer": "UPONESSLEEVE",
+    "senses": [
+      {
+        "meaning": "held in reserve",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Kept in reserve as a secret advantage"
+        ],
+        "expression": "up one's sleeve"
+      }
+    ]
+  },
+  {
+    "answer": "UPTOSCRATCH",
+    "senses": [
+      {
+        "meaning": "of required standard",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Meeting the required standard"
+        ],
+        "expression": "up to scratch"
+      }
+    ]
+  },
+  {
+    "answer": "VARIETYISTHESPICEOFLIFE",
+    "senses": [
+      {
+        "meaning": "variety proverb",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Proverb celebrating the pleasures of change"
+        ],
+        "expression": "variety is the spice of life"
+      }
+    ]
+  },
+  {
+    "answer": "WAITFORTHEDUSTTOSETTLE",
+    "senses": [
+      {
+        "meaning": "allow things to calm",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Allow a confused situation to become clearer before acting"
+        ],
+        "expression": "wait for the dust to settle"
+      }
+    ]
+  },
+  {
+    "answer": "WAKEUPCALL",
+    "senses": [
+      {
+        "meaning": "warning",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Event that alerts someone to a neglected problem"
+        ],
+        "expression": "wake-up call"
+      }
+    ]
+  },
+  {
+    "answer": "WALKATIGHTROPE",
+    "senses": [
+      {
+        "meaning": "balance conflicting demands",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Balance competing demands with great care"
+        ],
+        "expression": "walk a tightrope"
+      }
+    ]
+  },
+  {
+    "answer": "WALKONEGGSHELLS",
+    "senses": [
+      {
+        "meaning": "act cautiously",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Act with extreme caution to avoid upsetting someone"
+        ],
+        "expression": "walk on eggshells"
+      }
+    ]
+  },
+  {
+    "answer": "WASHONESHANDSOF",
+    "senses": [
+      {
+        "meaning": "renounce responsibility",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Refuse to take any further responsibility for something"
+        ],
+        "expression": "wash one's hands of"
+      }
+    ]
+  },
+  {
+    "answer": "WATCHONESSTEP",
+    "senses": [
+      {
+        "meaning": "be careful",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Be careful about how one proceeds"
+        ],
+        "expression": "watch one's step"
+      }
+    ]
+  },
+  {
+    "answer": "WATEROFFADUCKSBACK",
+    "senses": [
+      {
+        "meaning": "criticism without effect",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Criticism that has no effect whatsoever"
+        ],
+        "expression": "water off a duck's back"
+      }
+    ]
+  },
+  {
+    "answer": "WATERUNDERTHEBRIDGE",
+    "senses": [
+      {
+        "meaning": "past irrelevant events",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Past events no longer worth worrying about"
+        ],
+        "expression": "water under the bridge"
+      }
+    ]
+  },
+  {
+    "answer": "WEARONESHEARTONONESSLEEVE",
+    "senses": [
+      {
+        "meaning": "show feelings openly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Make one's emotions apparent to everyone"
+        ],
+        "expression": "wear one's heart on one's sleeve"
+      }
+    ]
+  },
+  {
+    "answer": "WEATHERTHESTORM",
+    "senses": [
+      {
+        "meaning": "endure difficulties",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Survive a difficult period"
+        ],
+        "expression": "weather the storm"
+      }
+    ]
+  },
+  {
+    "answer": "WETBEHINDTHEEARS",
+    "senses": [
+      {
+        "meaning": "inexperienced",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Still inexperienced, informally"
+        ],
+        "expression": "wet behind the ears"
+      }
+    ]
+  },
+  {
+    "answer": "WHENITRAINSITPOURS",
+    "senses": [
+      {
+        "meaning": "events cluster proverb",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Proverb about difficulties or good fortune arriving all at once"
+        ],
+        "expression": "when it rains it pours"
+      }
+    ]
+  },
+  {
+    "answer": "WHITEELEPHANT",
+    "senses": [
+      {
+        "meaning": "costly burden",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Costly possession of little practical use"
+        ],
+        "expression": "white elephant"
+      }
+    ]
+  },
+  {
+    "answer": "WILDCARD",
+    "senses": [
+      {
+        "meaning": "unpredictable factor",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Unpredictable factor that could change an outcome"
+        ],
+        "expression": "wild card"
+      }
+    ]
+  },
+  {
+    "answer": "WINHANDSDOWN",
+    "senses": [
+      {
+        "meaning": "win easily",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Win with little difficulty"
+        ],
+        "expression": "win hands down"
+      }
+    ]
+  },
+  {
+    "answer": "WITHFLYINGCOLORS",
+    "senses": [
+      {
+        "meaning": "with great success",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "With distinction, as one might pass an exam"
+        ],
+        "expression": "with flying colors"
+      }
+    ]
+  },
+  {
+    "answer": "WORDOFMOUTH",
+    "senses": [
+      {
+        "meaning": "oral communication",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Personal recommendations passed from one person to another"
+        ],
+        "expression": "word of mouth"
+      }
+    ]
+  },
+  {
+    "answer": "WORKLIKEACHARM",
+    "senses": [
+      {
+        "meaning": "work perfectly",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Function remarkably well"
+        ],
+        "expression": "work like a charm"
+      }
+    ]
+  },
+  {
+    "answer": "WORTHITSWEIGHTINGOLD",
+    "senses": [
+      {
+        "meaning": "very valuable",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Of exceptionally great practical value"
+        ],
+        "expression": "worth its weight in gold"
+      }
+    ]
+  },
+  {
+    "answer": "WORTHONESSALT",
+    "senses": [
+      {
+        "meaning": "competent",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Competent enough to deserve one's pay"
+        ],
+        "expression": "worth one's salt"
+      }
+    ]
+  },
+  {
+    "answer": "WRAPONESHEADAROUND",
+    "senses": [
+      {
+        "meaning": "understand",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Come to understand a difficult concept"
+        ],
+        "expression": "wrap one's head around"
+      }
+    ]
+  },
+  {
+    "answer": "YOUCANSAYTHATAGAIN",
+    "senses": [
+      {
+        "meaning": "strong agreement",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Emphatic expression of agreement"
+        ],
+        "expression": "you can say that again"
+      }
+    ]
+  },
+  {
+    "answer": "YOURGUESSISASGOODASMINE",
+    "senses": [
+      {
+        "meaning": "shared uncertainty",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Admission that neither person has reliable knowledge"
+        ],
+        "expression": "your guess is as good as mine"
+      }
+    ]
+  },
+  {
+    "answer": "ZEROINON",
+    "senses": [
+      {
+        "meaning": "focus",
+        "topics": [
+          "phrases"
+        ],
+        "clues": [
+          "Focus increasingly closely on a target"
+        ],
+        "expression": "zero in on"
+      }
+    ]
+  }
+]
