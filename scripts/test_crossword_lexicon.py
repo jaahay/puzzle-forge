@@ -54,6 +54,45 @@ class CandidateProjectionTest(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "Duplicate authored answer"):
                     compiler.compile_bank([])
 
+    def test_draft_queue_preserves_senses_and_excludes_admitted_forms(self):
+        def entry(spelling, synset, pos="n"):
+            return {"spelling": spelling, "answer": compiler.candidate_grid_form(spelling),
+                    "synset": synset, "partOfSpeech": pos}
+        entries = {
+            "cat": entry("cat", "animal"),
+            "feline": entry("feline", "animal"),
+            "catalog": entry("catalog", "animal"),
+            "adj": entry("felid", "animal", "a"),
+            "union": entry("unionized", "labor", "a"),
+            "un-ion": entry("un-ionized", "chemistry", "a"),
+            "dice": entry("No dice", "refusal"),
+            "unsupported": entry("R2-D2", "other"),
+        }
+        synsets = {entry["synset"]: {"definitions": [entry["synset"]], "examples": []}
+                   for entry in entries.values()}
+        queue = list(compiler.draft_queue(entries, synsets, {"CAT", "FELINE", "NO DICE"}, {"FELINE"}))
+        self.assertEqual([r["answer"] for r in queue[:2]], ["CAT", "NODICE"])
+        self.assertNotIn("FELINE", [r["answer"] for r in queue])
+        self.assertNotIn(None, [r["answer"] for r in queue])
+        self.assertEqual(queue[0]["senses"][0]["synonymHints"], ["feline"])
+        collision = next(r for r in queue if r["answer"] == "UNIONIZED")
+        self.assertEqual({s["expression"] for s in collision["senses"]}, {"unionized", "un-ionized"})
+        self.assertEqual({s["senseId"] for s in collision["senses"]}, {"union", "un-ion"})
+
+    def test_wordnet_shard_retains_expression_and_rejects_duplicate_sense(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            primary = root / "wordnet-clues.tsv"
+            primary.write_text("CAT|oewn-cat|animal|animals|Feline pet\n", encoding="utf8")
+            shard = root / "wordnet-clues-test.tsv"
+            shard.write_text("NODICE|oewn-no_dice|refusal|phrases|Not a chance!|No dice\n", encoding="utf8")
+            with patch.object(compiler, "EDITORIAL", root):
+                rows = compiler.wordnet_rows()
+                self.assertEqual(rows[1][2]["expression"], "No dice")
+                shard.write_text("CAT|oewn-cat|other|animals|Different clue|cat\n", encoding="utf8")
+                with self.assertRaisesRegex(ValueError, "Duplicate source sense"):
+                    compiler.wordnet_rows()
+
     def test_full_archive_evidence_retains_collisions_and_unsupported_forms(self):
         expressions = ["cat", "unionized", "un-ionized", "a dime a dozen", "R2-D2", "caf\u00e9"]
         records = []
@@ -100,6 +139,14 @@ class CandidateProjectionTest(unittest.TestCase):
             with patch.object(compiler, "ROOT", root), contextlib.redirect_stdout(io.StringIO()):
                 with self.assertRaisesRegex(ValueError, "Unresolved or mismatched"):
                     compiler.inspect_archive(archive, manifest, [("DOG", "oewn-test-0", {})], None)
+                with self.assertRaisesRegex(ValueError, "Unresolved or mismatched"):
+                    compiler.inspect_archive(archive, manifest,
+                                             [("CAT", "oewn-test-0", {"expression": "Cat"})], None)
+                drafts = root / "drafts.jsonl"
+                compiler.inspect_archive(archive, manifest, [("CAT", "oewn-test-0", {"expression": "cat"})],
+                                         None, drafts, {"CAT"})
+                records = [json.loads(line) for line in drafts.read_text(encoding="utf8").splitlines()]
+                self.assertEqual([r["answer"] for r in records], ["UNIONIZED", "ADIMEADOZEN"])
 
 
 if __name__ == "__main__":

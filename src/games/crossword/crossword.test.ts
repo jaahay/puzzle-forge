@@ -38,6 +38,12 @@ describe("Crossword clue inventory", () => {
       .flatMap(name => JSON.parse(readFileSync(new URL(name, editorial), "utf8")) as { answer: string; senses: { expression?: string }[] }[]);
     const explicitForms = new Map(authored.filter(record => record.senses.some(sense => sense.expression))
       .map(record => [record.answer, record.senses.flatMap(sense => sense.expression ? [sense.expression] : [])]));
+    for (const name of readdirSync(editorial).filter(name => /^wordnet-clues(?:-.*)?\.tsv$/.test(name))) {
+      for (const line of readFileSync(new URL(name, editorial), "utf8").trimEnd().split("\n")) {
+        const [answer, , , , , expression] = line.split("|");
+        if (expression) explicitForms.set(answer, [...(explicitForms.get(answer) ?? []), expression]);
+      }
+    }
     for (const n of [4, 5]) {
       const spelling = JSON.parse(readFileSync(new URL(`../../../public/lexicon/word-guess/banks/${n}.json`, import.meta.url), "utf8")) as { validGuesses: string[] };
       const accepted = new Set(spelling.validGuesses);

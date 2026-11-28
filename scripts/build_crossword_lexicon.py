@@ -6,6 +6,7 @@ import hashlib
 import json
 import re
 import xml.etree.ElementTree as ET
+from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,14 +31,22 @@ def wordnet_rows():
     """Read exact source sense IDs without reconstructing them from spellings."""
     rows = []
     seen = set()
-    for line in (EDITORIAL / "wordnet-clues.tsv").read_text(encoding="utf8").splitlines():
-        answer, sense_id, meaning, topic, clue = line.split("|")
-        if not re.fullmatch(r"[A-Z]{3,}", answer) or not sense_id.startswith("oewn-") or not all((meaning, topic, clue)):
-            raise ValueError(f"Invalid WordNet editorial record: {answer}")
-        if sense_id in seen:
-            raise ValueError(f"Duplicate source sense: {sense_id}")
-        seen.add(sense_id)
-        rows.append((answer, sense_id, {"meaning": meaning, "topics": [topic], "clues": [clue]}))
+    paths = [EDITORIAL / "wordnet-clues.tsv", *sorted(EDITORIAL.glob("wordnet-clues-*.tsv"))]
+    for path in paths:
+        for line in path.read_text(encoding="utf8").splitlines():
+            parts = line.split("|")
+            if len(parts) not in (5, 6):
+                raise ValueError(f"Invalid WordNet editorial row in {path.name}")
+            answer, sense_id, meaning, topic, clue = parts[:5]
+            if not re.fullmatch(r"[A-Z]{3,}", answer) or not sense_id.startswith("oewn-") or not all((meaning, topic, clue)):
+                raise ValueError(f"Invalid WordNet editorial record: {answer}")
+            if sense_id in seen:
+                raise ValueError(f"Duplicate source sense: {sense_id}")
+            seen.add(sense_id)
+            sense = {"meaning": meaning, "topics": [topic], "clues": [clue]}
+            if len(parts) == 6:
+                sense["expression"] = parts[5]
+            rows.append((answer, sense_id, sense))
     if not rows:
         raise ValueError("Empty WordNet editorial batch.")
     return rows
@@ -81,7 +90,59 @@ def compile_bank(rows):
     ]
 
 
-def inspect_archive(archive, manifest, rows, candidates):
+def draft_queue(entries, synsets, familiarity, admitted_forms):
+    """Yield source-grounded editorial work, never automatically approved clues.
+
+    Group by grid projection so a reviewer can compare competing natural
+    expressions and senses. Favor familiar expressions, but retain every
+    supported, not-yet-admitted form regardless of length or synonym count.
+    """
+    members = defaultdict(set)
+    groups = defaultdict(list)
+    for sense_id, entry in entries.items():
+        members[entry["synset"], entry["partOfSpeech"]].add(entry["spelling"])
+        if entry["answer"] is not None and entry["answer"] not in admitted_forms:
+            groups[entry["answer"]].append(sense_id)
+
+    def familiar(spelling):
+        return spelling.upper() in familiarity
+
+    def hints(entry):
+        answer = entry["answer"]
+        alternatives = []
+        for spelling in members[entry["synset"], entry["partOfSpeech"]]:
+            other = candidate_grid_form(spelling)
+            if other and other not in answer and answer not in other:
+                alternatives.append(spelling)
+        return sorted(alternatives, key=lambda spelling: (not familiar(spelling), spelling))
+
+    def group_key(answer):
+        senses = groups[answer]
+        return (not any(familiar(entries[sense_id]["spelling"]) for sense_id in senses),
+                len(senses), answer)
+
+    for answer in sorted(groups, key=group_key):
+        evidence = []
+        for sense_id in sorted(groups[answer]):
+            entry = entries[sense_id]
+            synset = synsets[entry["synset"]]
+            evidence.append({
+                "senseId": sense_id,
+                "expression": entry["spelling"],
+                "partOfSpeech": entry["partOfSpeech"],
+                "synset": entry["synset"],
+                "familiar": familiar(entry["spelling"]),
+                "definitions": synset["definitions"],
+                "examples": synset["examples"],
+                "synonymHints": hints(entry),
+            })
+        evidence.sort(key=lambda sense: (not sense["familiar"],
+                                        not any(familiar(s) for s in sense["synonymHints"]),
+                                        not sense["synonymHints"], sense["senseId"]))
+        yield {"answer": answer, "senses": evidence}
+
+
+def inspect_archive(archive, manifest, rows, candidates, drafts=None, admitted_forms=()):
     data = archive.read_bytes()
     source = manifest["wordnet"]
     if len(data) != source["bytes"] or hashlib.sha256(data).hexdigest() != source["sha256"]:
@@ -125,9 +186,10 @@ def inspect_archive(archive, manifest, rows, candidates):
         "license": "https://creativecommons.org/licenses/by/4.0",
     }.items()):
         raise ValueError("Unexpected WordNet lexicon metadata.")
-    for answer, sense_id, _ in rows:
+    for answer, sense_id, sense in rows:
         record = entries.get(sense_id)
-        if not record or record["answer"] != answer or record["synset"] not in synsets:
+        if (not record or record["answer"] != answer or record["synset"] not in synsets
+                or ("expression" in sense and record["spelling"] != sense["expression"])):
             raise ValueError(f"Unresolved or mismatched source sense: {answer} {sense_id}")
 
     familiarity = set()
@@ -162,11 +224,11 @@ def inspect_archive(archive, manifest, rows, candidates):
         "gridFormsWithMultipleExpressions": sum(len(forms) > 1 for forms in expressions_by_answer.values()),
         "sensesWithoutGridForm": sum(record["answer"] is None for record in entries.values()),
     }))
-    if candidates:
-        # This is editorial evidence, not approved fill. Keep it outside public/.
-        public = ROOT / "public"
-        if candidates.resolve().is_relative_to(public.resolve()):
+    # Both outputs are editorial evidence, not approved fill.
+    for path in (candidates, drafts):
+        if path and path.resolve().is_relative_to((ROOT / "public").resolve()):
             raise ValueError("Do not publish raw WordNet evidence in public/.")
+    if candidates:
         with candidates.open("w", encoding="utf8", newline="\n") as stream:
             for sense_id, record in sorted(entries.items()):
                 synset = synsets[record["synset"]]
@@ -176,6 +238,13 @@ def inspect_archive(archive, manifest, rows, candidates):
                     "definitions": synset["definitions"], "examples": synset["examples"],
                     "synsetRelations": synset["relations"],
                 }, ensure_ascii=False) + "\n")
+    if drafts:
+        count = 0
+        with drafts.open("w", encoding="utf8", newline="\n") as stream:
+            for record in draft_queue(entries, synsets, familiarity, set(admitted_forms)):
+                stream.write(json.dumps(record, ensure_ascii=False) + "\n")
+                count += 1
+        print(f"{count} not-yet-admitted grid forms in the editorial draft queue.")
     print(f"Verified {len(rows)} source sense references against the pinned archive.")
 
 
@@ -183,15 +252,20 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--archive", type=Path, help="Exact pinned OEWN XML gzip archive")
     parser.add_argument("--candidates", type=Path, help="Optional offline editorial evidence JSONL output")
+    parser.add_argument("--drafts", type=Path, help="Optional ranked offline editorial work queue (JSONL)")
     parser.add_argument("--verify", action="store_true", help="Check committed runtime asset without rewriting")
     args = parser.parse_args()
-    if args.candidates and not args.archive:
-        parser.error("--candidates requires --archive")
+    if (args.candidates or args.drafts) and not args.archive:
+        parser.error("--candidates and --drafts require --archive")
+    evidence_paths = [p.resolve() for p in (args.archive, args.candidates, args.drafts) if p]
+    if len(evidence_paths) != len(set(evidence_paths)):
+        parser.error("Archive and evidence paths must be distinct")
     manifest = read_json(ASSETS / "sources.json")
     rows = wordnet_rows()
-    if args.archive:
-        inspect_archive(args.archive, manifest, rows, args.candidates)
     corpus = compile_bank(rows)
+    if args.archive:
+        inspect_archive(args.archive, manifest, rows, args.candidates, args.drafts,
+                        {record["answer"] for record in corpus})
     bank = [record for record in corpus if 3 <= len(record["answer"]) <= 5]
     print(f"{len(corpus)} distinct editorial grid forms across all lengths.")
     encoded = (json.dumps(bank, ensure_ascii=False, indent=2) + "\n").encode("utf8")
