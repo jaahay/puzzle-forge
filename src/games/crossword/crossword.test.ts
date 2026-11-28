@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { buildCrosswordTopology } from "./model";
 import { parseMiniClueBank } from "./clues";
@@ -32,7 +32,10 @@ describe("Crossword clue inventory", () => {
     for (const n of [3, 4, 5]) expect(bank.filter(record => record.answer.length === n).length).toBeGreaterThan(15);
     // Crossword may deliberately admit expressions and names absent from the
     // broad spelling reference. Those must have an explicit editorial source form.
-    const authored = JSON.parse(readFileSync(new URL("../../../assets/lexicon/crossword/authored.json", import.meta.url), "utf8")) as { answer: string; senses: { expression?: string }[] }[];
+    const editorial = new URL("../../../assets/lexicon/crossword/", import.meta.url);
+    const authored = readdirSync(editorial)
+      .filter(name => name === "authored.json" || /^authored-.*\.json$/.test(name))
+      .flatMap(name => JSON.parse(readFileSync(new URL(name, editorial), "utf8")) as { answer: string; senses: { expression?: string }[] }[]);
     const explicitForms = new Map(authored.filter(record => record.senses.some(sense => sense.expression))
       .map(record => [record.answer, record.senses.flatMap(sense => sense.expression ? [sense.expression] : [])]));
     for (const n of [4, 5]) {
