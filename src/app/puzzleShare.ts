@@ -5,7 +5,7 @@ import { isImageTileSolved } from "../games/imageTiles/state";
 import { isJigsawAssemblySolved } from "../games/jigsaw/assembly";
 import type { JigsawActionRuntime } from "../games/jigsaw/history";
 import { isGridPuzzleSolved } from "../interactions/gridChecking";
-import { isWordSearchComplete, type WordSearchProgress } from "../games/wordSearch/progress";
+import { isWordSearchComplete, restoreWordSearchProgress, type WordSearchProgress } from "../games/wordSearch/progress";
 import { generatedPuzzleMatchesIdentity } from "./generationIdentity";
 import { resolvePuzzleResourceSegment } from "./puzzleResourceIdentity";
 import { appRoutePath, type AppRoute } from "./routes";
@@ -67,8 +67,8 @@ export const formatPuzzleShareProgress = (
     return isCrosswordComplete(puzzle, state) ? "Solved" : `In progress · ${entered} ${entered === 1 ? "letter" : "letters"} entered`;
   }
   if (puzzle.kind === "word-search") {
-    const state = progress.wordSearchProgress;
-    if (!state || state.baselineChecksum !== puzzle.checksum || state.found.length === 0) return null;
+    const state = restoreWordSearchProgress(puzzle, progress.wordSearchProgress);
+    if (!state || state.found.length === 0) return null;
     return `${isWordSearchComplete(puzzle, state) ? "Solved" : "In progress"} · ${state.found.length}/${puzzle.targets.length} words found`;
   }
 
@@ -138,11 +138,13 @@ export const makePuzzleSharePayload = (
   progress: string | null,
 ): PuzzleSharePayload => {
   const title = `Puzzle Forge · ${resource.title}`;
-  const report = intent === "progress" && progress
-    ? [title, ...(resource.description ? [resource.description] : []), "", progress].join("\n") : null;
+  const identity = [title, ...(resource.description ? [resource.description] : [])].join("\n");
+  const text = intent === "progress" && progress ? `${identity}\n\n${progress}` : identity;
   return {
-    native: { title, url: resource.url, ...(report ? { text: report } : {}) },
-    copyText: report ? `${report}\n\nPlay this puzzle: ${resource.url}` : resource.url,
+    // Native targets receive the message and URL separately; clipboard and manual
+    // copy serialize the same content with the link on its own line.
+    native: { title, text, url: resource.url },
+    copyText: `${text}\n\n${resource.url}`,
   };
 };
 

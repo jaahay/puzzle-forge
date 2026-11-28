@@ -64,6 +64,11 @@ describe("canonical puzzle sharing", () => {
       expect(url.search).toBe("");
       expect(url.hash).toBe("");
       expect(parseAppRoute(url.pathname, "")).toEqual(route);
+      const invitation = makePuzzleSharePayload(resource!, "puzzle", "Private progress");
+      expect(invitation.native.text).toContain(resource!.title);
+      expect(invitation.native.url).toBe(resource!.url);
+      expect(invitation.copyText).toBe(`${invitation.native.text}\n\n${resource!.url}`);
+      expect(invitation.copyText).not.toContain("Private progress");
     }
   });
 
@@ -83,7 +88,7 @@ describe("canonical puzzle sharing", () => {
       });
       expect(JSON.stringify(preview)).not.toContain(generationId);
       expect(getPuzzleSharePreview(resource, "progress", report).report).toBe(report);
-      expect(makePuzzleSharePayload(resource, "puzzle", report).copyText).toBe(resource.url);
+      expect(makePuzzleSharePayload(resource, "puzzle", report).copyText).toBe(`Puzzle Forge · ${resource.title}\n${resource.description}\n\n${resource.url}`);
       expect(makePuzzleSharePayload(resource, "progress", report).native.url).toBe(resource.url);
     }
   });
@@ -110,7 +115,7 @@ describe("canonical puzzle sharing", () => {
     expect(getPuzzleSharePreview(resource, "puzzle", null).artwork).toEqual({
       src: puzzle.asset.files.thumbnail, alt: puzzle.asset.alt,
     });
-    expect(makePuzzleSharePayload(resource, "puzzle", null).copyText).toBe(resource.url);
+    expect(makePuzzleSharePayload(resource, "puzzle", null).copyText).toBe(`Puzzle Forge · ${resource.title}\n\n${resource.url}`);
   });
 
   it("does not share an uncommitted or mismatched resource", () => {
@@ -124,16 +129,19 @@ describe("canonical puzzle sharing", () => {
     }, puzzle, origin)).toBeNull();
   });
 
-  it("includes only the URL for a puzzle invitation and the same URL alongside a progress report", () => {
+  it("composes invitations and optional reports with the same canonical URL", () => {
     const resource = { puzzleInstanceId: "local", title: "Word Guess", description: "5 letters · 6 guesses · Daily 2026-11-23", url: `${origin}/word-guess/example` };
     const report = formatWordGuessShareText({ answer: "CRANE",
       guesses: ["SLATE"], maxGuesses: 6, status: "playing" });
     const invitation = makePuzzleSharePayload(resource, "puzzle", report);
-    expect(invitation.copyText).toBe(resource.url);
-    expect(invitation.native).toEqual({ title: "Puzzle Forge · Word Guess", url: resource.url });
+    const identity = `Puzzle Forge · Word Guess\n${resource.description}`;
+    expect(invitation.copyText).toBe(`${identity}\n\n${resource.url}`);
+    expect(invitation.native).toEqual({ title: "Puzzle Forge · Word Guess", text: identity, url: resource.url });
+    expect(invitation.copyText).not.toContain(report);
     const progress = makePuzzleSharePayload(resource, "progress", report);
     expect(progress.native.url).toBe(resource.url);
-    expect(progress.copyText).toContain(resource.url);
+    expect(progress.copyText).toBe(`${identity}\n\n${report}\n\n${resource.url}`);
+    expect(progress.native.text).toBe(`${identity}\n\n${report}`);
     expect(progress.copyText).toContain(resource.description);
     expect(progress.native.text).toContain(resource.description);
     expect(progress.copyText).toContain("🟩");
@@ -170,6 +178,8 @@ describe("spoiler-safe progress reports", () => {
     const progress = { ...emptyProgress(), wordSearchProgress: { baselineChecksum: puzzle.checksum, found } };
     expect(formatPuzzleShareProgress(puzzle, progress)).toBe(`In progress · 1/${puzzle.targets.length} words found`);
     expect(formatPuzzleShareProgress(puzzle, { ...progress, wordSearchProgress: { baselineChecksum: "wrong", found } })).toBeNull();
+    expect(formatPuzzleShareProgress(puzzle, { ...progress, wordSearchProgress: { baselineChecksum: puzzle.checksum, found: [...found, ...found] } })).toBeNull();
+    expect(formatPuzzleShareProgress(puzzle, { ...progress, wordSearchProgress: { baselineChecksum: puzzle.checksum, found: ["INVALID TARGET"] } })).toBeNull();
     expect(formatPuzzleShareProgress(puzzle, { ...progress, wordSearchProgress: { baselineChecksum: puzzle.checksum, found: puzzle.targets.map(target => target.word) } })).toBe(`Solved · ${puzzle.targets.length}/${puzzle.targets.length} words found`);
   });
 
