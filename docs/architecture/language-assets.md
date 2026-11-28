@@ -14,6 +14,7 @@ Initial sources to evaluate and pin:
 
 - **English Speller Database (ESDB; formerly SCOWL)**, https://wordlist.aspell.net/ and https://github.com/en-wl/wordlist — spelling inventory, variants, dialect and commonness classifications. The published 2026.02.25 speller/wordlist artifacts are a starting candidate, not an irrevocable release policy. Retain Kevin Atkinson's required copyright and permission notices in redistributed products and supporting documentation.
 - **Open English WordNet (OEWN)**, https://en-word.net/downloads — word senses, semantic relations and definitions where needed. The regular 2025 edition is pinned in `assets/lexicon/sources.json` and consumed offline for Crossword editorial evidence. It is CC BY 4.0, with underlying Princeton WordNet notices; both are credited in `public/lexicon/NOTICE.txt`. See [Crossword design](crossword-design.md#lexical-content-architecture).
+- **Crossword expansion candidates**: OEWN 2025+ (curated names), Wikidata (structured facts, CC0), and English Wiktionary/Wiktextract (informal vocabulary and phrases, with applicable CC BY-SA/GFDL terms). Evaluate exact releases and source-specific obligations before admission; no new archive is pinned by this design change. See [Crossword design](crossword-design.md#lexical-content-architecture).
 - **wordfreq** is not a default dependency. Its frequency data incorporates CC BY-SA material and additional source notices. Reconsider it only if a demonstrated gain outweighs the licensing and derived-data obligations.
 
 Before shipping any imported dataset, inspect its exact release contents and license/NOTICE files, preserve required notices in the repository and an accessible product attribution surface, and record the acquisition URL and SHA-256 digest. A source URL is provenance, **not** a runtime dependency. Do not infer permission to publish copied crossword clues from permission to use a dictionary.
@@ -51,9 +52,9 @@ Preserve the distinction between accepted guesses and eligible answers. Expand a
 
 Select familiar, meaningfully themed words. Difficulty changes directional/spatial complexity, **not** word obscurity. Guarantee that each listed target appears on one intended valid path and has no accidental second occurrence on the finished board; do not prohibit every incidental English word. Preserve touch dragging, endpoint and keyboard alternatives, completion, and session ownership.
 
-### Mini Crossword
+### Crossword
 
-Begin with a compact, clue-driven layout. Use reviewed content and reject forced obscure fill; cross-checked spellings alone are insufficient proof of quality. Do not scrape copyrighted published crossword clues or require live clue generation. Larger formats may follow once clue and construction quality are established.
+Pursue 100,000+ distinct clue-bearing, construction-eligible grid forms, with broad offline acquisition unconstrained by the current grid sizes. Preserve natural expressions and senses independently of their normalized grid representation; names, slang, colloquialisms and multiword expressions are welcome when fair. Candidate inventories, approved crossword content and other puzzle eligibility remain separate. The compiled Mini bank remains small until reviewed content is integrated. Use original, source-grounded AI-assisted editorial enrichment at scale, and reject forced obscure fill; cross-checked spellings alone are insufficient proof of quality. Do not scrape copyrighted published crossword clues or require live clue generation. See [Crossword design](crossword-design.md#lexical-content-architecture) for the editorial and construction model.
 
 ## Client loading and runtime identity
 
