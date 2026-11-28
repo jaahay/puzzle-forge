@@ -57,6 +57,8 @@ def compile_bank(rows):
         meanings = set()
         clues = set()
         for sense in record["senses"]:
+            if "expression" in sense and candidate_grid_form(sense["expression"]) != answer:
+                raise ValueError(f"Natural expression does not match grid form: {answer}")
             meaning = sense["meaning"]
             topics = sense["topics"]
             texts = sense["clues"]
@@ -68,7 +70,13 @@ def compile_bank(rows):
                 raise ValueError(f"Malformed or duplicate clue/sense: {answer}")
             meanings.add(meaning)
             clues.update(texts)
-    return [bank[answer] for answer in sorted(bank)]
+    return [
+        {"answer": answer, "senses": [
+            {"meaning": sense["meaning"], "topics": sense["topics"], "clues": sense["clues"]}
+            for sense in bank[answer]["senses"]
+        ]}
+        for answer in sorted(bank)
+    ]
 
 
 def inspect_archive(archive, manifest, rows, candidates):

@@ -35,6 +35,18 @@ const fill = (topology: CrosswordTopology, byLength: ReadonlyMap<number, Crosswo
   const letters: string[] = blocks.map(block => block ? "#" : "");
   const assigned: (CrosswordAnswer | undefined)[] = Array(entries.length).fill(undefined);
   const used = new Set<string>();
+  // Index each letter position in the original seeded candidate order.
+  const byPosition = new Map<string, CrosswordAnswer[]>();
+  for (const [length, records] of byLength) {
+    for (const record of records) {
+      for (let position = 0; position < length; position++) {
+        const key = `${length}:${position}:${record.answer[position]}`;
+        const bucket = byPosition.get(key);
+        if (bucket) bucket.push(record);
+        else byPosition.set(key, [record]);
+      }
+    }
+  }
   let remaining = maxSearchNodesPerLayout;
 
   const search = (): boolean => {
@@ -42,13 +54,28 @@ const fill = (topology: CrosswordTopology, byLength: ReadonlyMap<number, Crosswo
     if (used.size === entries.length) return true;
     let next = -1;
     let domain: CrosswordAnswer[] = [];
+    // Compute the same spelling exclusions once per search node.
+    const excluded = new Set(used);
+    for (const answer of used) {
+      for (const suffix of ["S", "ES", "D", "ED"]) {
+        excluded.add(answer + suffix);
+        if (answer.endsWith(suffix)) excluded.add(answer.slice(0, -suffix.length));
+      }
+    }
     // Choose the most constrained unfilled entry and reject empty domains.
+    // Start with the smallest indexed bucket, preserving seeded ordering.
     for (let i = 0; i < entries.length; i++) {
       if (assigned[i]) continue;
       const cells = entries[i].cells;
-      const candidates = (byLength.get(cells.length) ?? []).filter(record =>
-        !used.has(record.answer) && cells.every((cell, index) => !letters[cell] || letters[cell] === record.answer[index])
-        && ![...used].some(answer => areNearDuplicateCrosswordAnswers(answer, record.answer)));
+      let records = byLength.get(cells.length) ?? [];
+      for (let position = 0; position < cells.length; position++) {
+        const letter = letters[cells[position]];
+        if (!letter) continue;
+        const bucket = byPosition.get(`${cells.length}:${position}:${letter}`) ?? [];
+        if (bucket.length < records.length) records = bucket;
+      }
+      const candidates = records.filter(record =>
+        !excluded.has(record.answer) && cells.every((cell, index) => !letters[cell] || letters[cell] === record.answer[index]));
       if (!candidates.length) return false;
       if (next < 0 || candidates.length < domain.length) {
         next = i;

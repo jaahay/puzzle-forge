@@ -30,14 +30,29 @@ describe("Crossword clue inventory", () => {
     expect(bank.filter(record => record.senses.length > 1).length).toBeGreaterThan(25);
     expect(bank.filter(record => record.senses.some(sense => sense.clues.length > 1)).length).toBeGreaterThan(20);
     for (const n of [3, 4, 5]) expect(bank.filter(record => record.answer.length === n).length).toBeGreaterThan(15);
-    // Verify spelling against the broad spelling reference, not another
-    // game's more restrictive answer eligibility.
+    // Crossword may deliberately admit expressions and names absent from the
+    // broad spelling reference. Those must have an explicit editorial source form.
+    const authored = JSON.parse(readFileSync(new URL("../../../assets/lexicon/crossword/authored.json", import.meta.url), "utf8")) as { answer: string; senses: { expression?: string }[] }[];
+    const explicitForms = new Map(authored.filter(record => record.senses.some(sense => sense.expression))
+      .map(record => [record.answer, record.senses.flatMap(sense => sense.expression ? [sense.expression] : [])]));
     for (const n of [4, 5]) {
       const spelling = JSON.parse(readFileSync(new URL(`../../../public/lexicon/word-guess/banks/${n}.json`, import.meta.url), "utf8")) as { validGuesses: string[] };
       const accepted = new Set(spelling.validGuesses);
       for (const record of bank.filter(record => record.answer.length === n)) {
-        expect(accepted.has(record.answer)).toBe(true);
+        if (!accepted.has(record.answer)) {
+          const expressions = explicitForms.get(record.answer);
+          expect(expressions?.length).toBeGreaterThan(0);
+          for (const expression of expressions ?? []) {
+            expect(expression.replace(/[ '\u2019-]/g, "").toUpperCase()).toBe(record.answer);
+          }
+        }
       }
+    }
+  });
+  it("admits familiar names, informal language and normalized phrases deliberately", () => {
+    const answers = new Set(bank.map(record => record.answer));
+    for (const answer of ["ADELE", "LEGO", "YODA", "NOPE", "YEET", "NOCAP", "MYBAD", "OHNO"]) {
+      expect(answers.has(answer)).toBe(true);
     }
   });
   it("rejects malformed records and duplicate answers, senses or clue formulations", () => {
