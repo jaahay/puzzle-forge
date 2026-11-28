@@ -42,7 +42,9 @@ jobs:
         run: python3 scripts/build_word_guess_lexicon.py --verify
 
       - name: Verify compiled Crossword assets
-        run: python3 scripts/build_crossword_lexicon.py --verify
+        run: |
+          python3 -m unittest discover -s scripts -p 'test_crossword_lexicon.py'
+          python3 scripts/build_crossword_lexicon.py --verify
 
       - name: Build
         run: pnpm build
