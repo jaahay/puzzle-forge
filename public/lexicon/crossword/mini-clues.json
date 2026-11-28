@@ -2246,7 +2246,7 @@
           "sports"
         ],
         "clues": [
-          "One of four pitches that can send a batter to first base"
+          "One of four calls that can send a batter to first base"
         ]
       }
     ]
@@ -3352,7 +3352,7 @@
           "language"
         ],
         "clues": [
-          "Color of a moonless night, ideally"
+          "Color of a piece of coal"
         ]
       }
     ]
@@ -3558,7 +3558,7 @@
           "language"
         ],
         "clues": [
-          "What wind does to a flag"
+          "Move as the wind does"
         ]
       }
     ]
@@ -11180,7 +11180,7 @@
           "language"
         ],
         "clues": [
-          "Confidence or religious belief"
+          "Trust in a person or principle"
         ]
       }
     ]
@@ -16247,7 +16247,7 @@
           "music"
         ],
         "clues": [
-          "A song that tops the charts"
+          "A song that becomes widely popular"
         ]
       }
     ]
@@ -22230,18 +22230,11 @@
       {
         "meaning": "measuring device",
         "topics": [
-          "science"
-        ],
-        "clues": [
-          "Instrument for measuring a quantity"
-        ]
-      },
-      {
-        "meaning": "measurement instrument",
-        "topics": [
+          "science",
           "home"
         ],
         "clues": [
+          "Instrument for measuring a quantity",
           "Device showing electricity use, for example"
         ]
       }
@@ -27424,7 +27417,7 @@
           "language"
         ],
         "clues": [
-          "Secretly plan a scheme"
+          "Scheme in secret"
         ]
       }
     ]
@@ -38146,7 +38139,7 @@
           "everyday"
         ],
         "clues": [
-          "Sibling born at the same birth"
+          "One of two siblings born in the same delivery"
         ]
       }
     ]
@@ -39706,7 +39699,7 @@
           "language"
         ],
         "clues": [
-          "Pleasantly above room temperature"
+          "Neither cool nor hot, but comfortably in between"
         ]
       }
     ]

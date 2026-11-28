@@ -2888,7 +2888,7 @@
           "language"
         ],
         "clues": [
-          "Color of a moonless night, ideally"
+          "Color of a piece of coal"
         ],
         "expression": "black"
       }
@@ -2988,7 +2988,7 @@
           "language"
         ],
         "clues": [
-          "What wind does to a flag"
+          "Move as the wind does"
         ],
         "expression": "blow"
       }
@@ -6613,7 +6613,7 @@
           "language"
         ],
         "clues": [
-          "Confidence or religious belief"
+          "Trust in a person or principle"
         ],
         "expression": "faith"
       }
@@ -8498,7 +8498,7 @@
           "music"
         ],
         "clues": [
-          "A song that tops the charts"
+          "A song that becomes widely popular"
         ],
         "expression": "hit"
       }
@@ -10400,19 +10400,11 @@
       {
         "meaning": "measuring device",
         "topics": [
-          "science"
-        ],
-        "clues": [
-          "Instrument for measuring a quantity"
-        ],
-        "expression": "meter"
-      },
-      {
-        "meaning": "measurement instrument",
-        "topics": [
+          "science",
           "home"
         ],
         "clues": [
+          "Instrument for measuring a quantity",
           "Device showing electricity use, for example"
         ],
         "expression": "meter"
@@ -16363,7 +16355,7 @@
           "everyday"
         ],
         "clues": [
-          "Sibling born at the same birth"
+          "One of two siblings born in the same delivery"
         ],
         "expression": "twin"
       }
@@ -16963,7 +16955,7 @@
           "language"
         ],
         "clues": [
-          "Pleasantly above room temperature"
+          "Neither cool nor hot, but comfortably in between"
         ],
         "expression": "warm"
       }
