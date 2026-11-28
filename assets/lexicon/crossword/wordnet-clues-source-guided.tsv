@@ -72,7 +72,7 @@ ASTONISHED|oewn-astonished__5.00.00.surprised.00|amazed|language|Filled with sur
 ASTONISHMENT|oewn-astonishment__1.12.00..|amazement|language|Feeling of overwhelming surprise|astonishment
 ASTOUNDING|oewn-astounding__5.00.00.impressive.00|astonishing|language|So impressive as to leave one amazed|astounding
 ASTRONAUT|oewn-astronaut__1.18.00..|space traveler|space|Person trained to travel beyond Earth's atmosphere|astronaut
-ASTRONOMICALUNIT|oewn-astronomical_unit__1.23.00..|solar-system distance unit|space|Distance unit approximately equal to the Earth-Sun separation|astronomical unit
+ASTRONOMICALUNIT|oewn-astronomical_unit__1.23.00..|solar-system distance unit|space|Distance unit approximately equal to the Earth-Sun separation|Astronomical Unit
 ATOMICNUMBER|oewn-atomic_number__1.23.00..|proton count|science|Number of protons that identifies a chemical element|atomic number
 ATTENTIVE|oewn-attentive__3.00.04..|paying attention|language|Listening closely rather than letting one's mind wander|attentive
 AUTOBIOGRAPHY|oewn-autobiography__1.10.00..|self-written life account|literature|Book in which the author recounts their own life|autobiography
@@ -599,7 +599,7 @@ PERPETUAL|oewn-perpetual__5.00.00.continuous.01|incessant|language|Continuing wi
 PERSONIFICATION|oewn-personification__1.10.00..|human traits for abstractions|literature|Literary device that lets the wind whisper|personification
 PERSPIRATION|oewn-perspiration__1.22.00..|sweating|language|Moisture produced by the skin on a hot day|perspiration
 PERTURBED|oewn-perturbed__5.00.00.discomposed.00|unsettled|language|Troubled or mentally unsettled|perturbed
-PETRIDISH|oewn-petri_dish__1.06.00..|culture vessel|science|Shallow lidded container for growing a bacterial culture|petri dish
+PETRIDISH|oewn-petri_dish__1.06.00..|culture vessel|science|Shallow lidded container for growing a bacterial culture|Petri dish
 PHOTON|oewn-photon__1.17.00..|quantum of light|science|Single quantum of electromagnetic radiation|photon
 PHOTOSPHERE|oewn-photosphere__1.17.00..|visible stellar surface|space|Visible light-emitting surface of the Sun|photosphere
 PICCOLO|oewn-piccolo__1.06.00..|small flute|music|Little flute that sounds an octave higher than its larger relative|piccolo
@@ -757,7 +757,7 @@ SITUATED|oewn-situated__5.00.00.settled.01|located|language|Placed in a particul
 SKATEBOARD|oewn-skateboard__1.06.00..|wheeled board|transport|Short wheeled board used for tricks at a skate park|skateboard
 SKETCHBOOK|oewn-sketchbook__1.06.00..|drawing notebook|art|Book in which an artist records preliminary drawings|sketchbook
 SKILIFT|oewn-ski_lift__1.06.00..|uphill ski transport|transport|Powered conveyance that saves skiers the climb back uphill|ski lift
-SLIGHTLY|oewn-slightly__4.02.00..|somewhat|language|To a small extent|slightly
+SLIGHTLY|oewn-slightly__4.02.01..|somewhat|language|To a small extent|slightly
 SNOWMOBILE|oewn-snowmobile__1.06.00..|motorized snow vehicle|transport|Motorized winter vehicle with a track and steering skis|snowmobile
 SNOWPLOW|oewn-snowplow__1.06.00..|road snow clearing vehicle|transport|Vehicle that clears a road after a snowstorm|snowplow
 SNOWSHOE|oewn-snowshoe__1.06.00..|snow walking device|transport|Footwear that spreads a walker's weight across deep snow|snowshoe
