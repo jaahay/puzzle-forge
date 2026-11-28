@@ -43,6 +43,20 @@
     ]
   },
   {
+    "answer": "ABUT",
+    "senses": [
+      {
+        "meaning": "border",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Share a boundary with"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ACE",
     "senses": [
       {
@@ -92,6 +106,20 @@
         ],
         "clues": [
           "Substance that turns blue litmus red"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ACME",
+    "senses": [
+      {
+        "meaning": "highest point",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Absolute peak of achievement"
         ]
       }
     ]
@@ -153,6 +181,34 @@
     ]
   },
   {
+    "answer": "ADIEU",
+    "senses": [
+      {
+        "meaning": "farewell",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "A French-derived goodbye"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AERIE",
+    "senses": [
+      {
+        "meaning": "high nest",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Nest perched on a cliff"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "AESOP",
     "senses": [
       {
@@ -162,6 +218,48 @@
         ],
         "clues": [
           "Name traditionally associated with the tortoise and the hare"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AFAR",
+    "senses": [
+      {
+        "meaning": "distantly",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "From a long way off"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AFOOT",
+    "senses": [
+      {
+        "meaning": "underway",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Like a plan already in motion"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AGAPE",
+    "senses": [
+      {
+        "meaning": "open wide",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Like a mouth in astonishment"
         ]
       }
     ]
@@ -232,6 +330,20 @@
         ],
         "clues": [
           "Able to move quickly and easily"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AGLOW",
+    "senses": [
+      {
+        "meaning": "radiant",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Shining with a soft light"
         ]
       }
     ]
@@ -495,6 +607,34 @@
     ]
   },
   {
+    "answer": "ALIBI",
+    "senses": [
+      {
+        "meaning": "excuse or proof of absence",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Evidence one was somewhere else"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ALLAY",
+    "senses": [
+      {
+        "meaning": "ease",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Calm someone's fears"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ALLY",
     "senses": [
       {
@@ -518,6 +658,20 @@
         ],
         "clues": [
           "Plant often used in soothing gels"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ALOOF",
+    "senses": [
+      {
+        "meaning": "distant",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Coolly detached from those around one"
         ]
       }
     ]
@@ -552,6 +706,20 @@
     ]
   },
   {
+    "answer": "AMASS",
+    "senses": [
+      {
+        "meaning": "collect",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Gather into a large quantity"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "AMBER",
     "senses": [
       {
@@ -566,6 +734,62 @@
     ]
   },
   {
+    "answer": "AMBLE",
+    "senses": [
+      {
+        "meaning": "walk slowly",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Walk at an unhurried pace"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AMEND",
+    "senses": [
+      {
+        "meaning": "revise",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Make a correction to a document"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AMISS",
+    "senses": [
+      {
+        "meaning": "wrong",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Not quite as it should be"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AMPLE",
+    "senses": [
+      {
+        "meaning": "abundant",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "More than enough"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "AMUSE",
     "senses": [
       {
@@ -575,6 +799,20 @@
         ],
         "clues": [
           "Make someone laugh or smile"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ANEW",
+    "senses": [
+      {
+        "meaning": "again",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Starting over from the beginning"
         ]
       }
     ]
@@ -744,6 +982,20 @@
         "clues": [
           "Curved structural opening",
           "A doorway might have one overhead"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ARDOR",
+    "senses": [
+      {
+        "meaning": "enthusiasm",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Intense enthusiasm for a pursuit"
         ]
       }
     ]
@@ -1000,6 +1252,20 @@
     ]
   },
   {
+    "answer": "ATOLL",
+    "senses": [
+      {
+        "meaning": "island formation",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Ring of coral enclosing a lagoon"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ATOM",
     "senses": [
       {
@@ -1014,6 +1280,20 @@
     ]
   },
   {
+    "answer": "ATTIC",
+    "senses": [
+      {
+        "meaning": "upper storage space",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Room tucked beneath a roof"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "AUDIO",
     "senses": [
       {
@@ -1023,6 +1303,20 @@
         ],
         "clues": [
           "The sound portion of a video transmission"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AUGHT",
+    "senses": [
+      {
+        "meaning": "anything",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Anything, in old-fashioned usage"
         ]
       }
     ]
@@ -1056,6 +1350,20 @@
     ]
   },
   {
+    "answer": "AWRY",
+    "senses": [
+      {
+        "meaning": "off course",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Not going according to plan"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "AXE",
     "senses": [
       {
@@ -1065,6 +1373,20 @@
         ],
         "clues": [
           "Tool a lumberjack swings"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "AXIOM",
+    "senses": [
+      {
+        "meaning": "assumed principle",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Statement accepted as a starting point in reasoning"
         ]
       }
     ]
@@ -1240,6 +1562,34 @@
     ]
   },
   {
+    "answer": "BALK",
+    "senses": [
+      {
+        "meaning": "refuse",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Stop short of agreeing to do something"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BALMY",
+    "senses": [
+      {
+        "meaning": "mild",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Like a pleasantly warm evening"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "BAM",
     "senses": [
       {
@@ -1292,6 +1642,20 @@
         ],
         "clues": [
           "Group of musicians playing together"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BANE",
+    "senses": [
+      {
+        "meaning": "source of distress",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Persistent source of misery"
         ]
       }
     ]
@@ -1432,6 +1796,20 @@
         ],
         "clues": [
           "Fish that may be striped"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BASTE",
+    "senses": [
+      {
+        "meaning": "moisten food",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Spoon juices over roasting meat"
         ]
       }
     ]
@@ -1658,6 +2036,34 @@
     ]
   },
   {
+    "answer": "BEGET",
+    "senses": [
+      {
+        "meaning": "produce",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Bring something into being"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BELAY",
+    "senses": [
+      {
+        "meaning": "secure rope",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Secure a climbing rope"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "BELL",
     "senses": [
       {
@@ -1714,6 +2120,20 @@
     ]
   },
   {
+    "answer": "BERTH",
+    "senses": [
+      {
+        "meaning": "sleeping place",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Bunk on a train or ship"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "BFF",
     "senses": [
       {
@@ -1739,6 +2159,20 @@
           "A baby's mealtime shield",
           "Protection against a messy meal",
           "Small shield against spilled pureed peas"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BIDE",
+    "senses": [
+      {
+        "meaning": "wait",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "___ one's time"
         ]
       }
     ]
@@ -1772,6 +2206,20 @@
     ]
   },
   {
+    "answer": "BILGE",
+    "senses": [
+      {
+        "meaning": "ship interior",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Lowest interior part of a ship's hull"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "BIND",
     "senses": [
       {
@@ -1781,6 +2229,20 @@
         ],
         "clues": [
           "Secure a stack with string"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BIRCH",
+    "senses": [
+      {
+        "meaning": "tree",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "Tree often recognized by pale peeling bark"
         ]
       }
     ]
@@ -1871,6 +2333,20 @@
     ]
   },
   {
+    "answer": "BLEAK",
+    "senses": [
+      {
+        "meaning": "dreary",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Cold and cheerless"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "BLEW",
     "senses": [
       {
@@ -1880,6 +2356,20 @@
         ],
         "clues": [
           "Sent air out, as into a balloon"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BLIMP",
+    "senses": [
+      {
+        "meaning": "airship",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Nonrigid airship seen above a stadium"
         ]
       }
     ]
@@ -1908,6 +2398,34 @@
         ],
         "clues": [
           "A flower in all its glory"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BLUNT",
+    "senses": [
+      {
+        "meaning": "not sharp",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Like a pencil needing sharpening"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BLURT",
+    "senses": [
+      {
+        "meaning": "say impulsively",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Say something before thinking it through"
         ]
       }
     ]
@@ -1950,6 +2468,20 @@
         ],
         "clues": [
           "Small vessel for a trip on a lake"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BODE",
+    "senses": [
+      {
+        "meaning": "portend",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Be a sign of something to come"
         ]
       }
     ]
@@ -2067,6 +2599,20 @@
     ]
   },
   {
+    "answer": "BOON",
+    "senses": [
+      {
+        "meaning": "benefit",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Welcome advantage"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "BOOST",
     "senses": [
       {
@@ -2104,6 +2650,20 @@
         ],
         "clues": [
           "People who make a party tedious"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BOTCH",
+    "senses": [
+      {
+        "meaning": "bungle",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Do a job badly"
         ]
       }
     ]
@@ -2189,6 +2749,20 @@
     ]
   },
   {
+    "answer": "BRAG",
+    "senses": [
+      {
+        "meaning": "boast",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Talk proudly about one's accomplishments"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "BRAIN",
     "senses": [
       {
@@ -2231,6 +2805,20 @@
     ]
   },
   {
+    "answer": "BRASH",
+    "senses": [
+      {
+        "meaning": "impudent",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Bold to the point of rudeness"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "BRASS",
     "senses": [
       {
@@ -2240,6 +2828,20 @@
         ],
         "clues": [
           "Metal alloy of copper and zinc"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BRAWN",
+    "senses": [
+      {
+        "meaning": "physical strength",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Muscle power rather than brainpower"
         ]
       }
     ]
@@ -2268,6 +2870,20 @@
         ],
         "clues": [
           "Make a pot of tea"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BRIAR",
+    "senses": [
+      {
+        "meaning": "thorny plant",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Prickly shrub in a thicket"
         ]
       }
     ]
@@ -2315,6 +2931,34 @@
     ]
   },
   {
+    "answer": "BRINE",
+    "senses": [
+      {
+        "meaning": "salt solution",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Salty liquid used for pickling"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BRISK",
+    "senses": [
+      {
+        "meaning": "quick and energetic",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Like a lively walk on a cool morning"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "BRO",
     "senses": [
       {
@@ -2330,6 +2974,20 @@
     ]
   },
   {
+    "answer": "BROOD",
+    "senses": [
+      {
+        "meaning": "dwell unhappily",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Keep thinking about a grievance"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "BROTH",
     "senses": [
       {
@@ -2339,6 +2997,20 @@
         ],
         "clues": [
           "Liquid base for many soups"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BRUNT",
+    "senses": [
+      {
+        "meaning": "main impact",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Worst part of a blow"
         ]
       }
     ]
@@ -2367,6 +3039,20 @@
         ],
         "clues": [
           "A flower not yet in full bloom"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BUDGE",
+    "senses": [
+      {
+        "meaning": "move slightly",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Move even a tiny amount"
         ]
       }
     ]
@@ -2432,6 +3118,34 @@
         ],
         "clues": [
           "Bread that might hold a burger"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BUOY",
+    "senses": [
+      {
+        "meaning": "floating marker",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Floating marker for boats"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "BURLY",
+    "senses": [
+      {
+        "meaning": "strongly built",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Broad and powerfully built"
         ]
       }
     ]
@@ -2508,6 +3222,20 @@
     ]
   },
   {
+    "answer": "BYLAW",
+    "senses": [
+      {
+        "meaning": "local rule",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Rule adopted by an organization"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "BYNOW",
     "senses": [
       {
@@ -2545,6 +3273,20 @@
         ],
         "clues": [
           "A barred enclosure for a pet bird"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CAIRN",
+    "senses": [
+      {
+        "meaning": "stone pile",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Pile of stones marking a trail"
         ]
       }
     ]
@@ -2607,6 +3349,20 @@
     ]
   },
   {
+    "answer": "CALVE",
+    "senses": [
+      {
+        "meaning": "give birth",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Give birth, as a cow"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "CAMEL",
     "senses": [
       {
@@ -2618,6 +3374,20 @@
         "clues": [
           "Desert animal with humps",
           "Desert traveler with built-in humps"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CAMEO",
+    "senses": [
+      {
+        "meaning": "brief appearance",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Small appearance by a recognizable actor"
         ]
       }
     ]
@@ -2916,6 +3686,34 @@
     ]
   },
   {
+    "answer": "CHAFE",
+    "senses": [
+      {
+        "meaning": "rub sore",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Irritate the skin through rubbing"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CHAFF",
+    "senses": [
+      {
+        "meaning": "grain husks",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Husks separated from grain"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "CHAIN",
     "senses": [
       {
@@ -2925,6 +3723,20 @@
         ],
         "clues": [
           "Connected metal rings"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CHASM",
+    "senses": [
+      {
+        "meaning": "deep gap",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Deep opening in the earth"
         ]
       }
     ]
@@ -2953,6 +3765,20 @@
         ],
         "clues": [
           "Game with bishops and rooks"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CHIDE",
+    "senses": [
+      {
+        "meaning": "scold",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Reprove someone mildly"
         ]
       }
     ]
@@ -3084,6 +3910,34 @@
     ]
   },
   {
+    "answer": "CHORE",
+    "senses": [
+      {
+        "meaning": "routine task",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "One of the jobs on a household to-do list"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CHURN",
+    "senses": [
+      {
+        "meaning": "agitate",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Agitate cream to make butter"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "CIAO",
     "senses": [
       {
@@ -3108,6 +3962,20 @@
         ],
         "clues": [
           "Beverage pressed from apples"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CINCH",
+    "senses": [
+      {
+        "meaning": "easy task",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Something very easy to do"
         ]
       }
     ]
@@ -3156,6 +4024,20 @@
     ]
   },
   {
+    "answer": "CLAD",
+    "senses": [
+      {
+        "meaning": "clothed",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Dressed in"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "CLAM",
     "senses": [
       {
@@ -3165,6 +4047,20 @@
         ],
         "clues": [
           "Shellfish in chowder"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CLANK",
+    "senses": [
+      {
+        "meaning": "metallic sound",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Make a heavy metallic noise"
         ]
       }
     ]
@@ -3195,6 +4091,20 @@
         "clues": [
           "Material used to make pottery",
           "What a potter shapes on a wheel"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CLEFT",
+    "senses": [
+      {
+        "meaning": "split",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Narrow split in a rock"
         ]
       }
     ]
@@ -3270,6 +4180,20 @@
     ]
   },
   {
+    "answer": "CLOVE",
+    "senses": [
+      {
+        "meaning": "garlic segment",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "One segment of a garlic bulb"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "COACH",
     "senses": [
       {
@@ -3321,6 +4245,34 @@
         ],
         "clues": [
           "Outer garment worn on a chilly day"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "COAX",
+    "senses": [
+      {
+        "meaning": "gently persuade",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Encourage a reluctant cat out of hiding"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "COB",
+    "senses": [
+      {
+        "meaning": "corn core",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "What remains after eating corn kernels"
         ]
       }
     ]
@@ -3387,6 +4339,20 @@
         ],
         "clues": [
           "Minor respiratory illness with a runny nose"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "COLT",
+    "senses": [
+      {
+        "meaning": "young horse",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Young male horse"
         ]
       }
     ]
@@ -3485,6 +4451,20 @@
         ],
         "clues": [
           "Manages in difficult circumstances"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "COPSE",
+    "senses": [
+      {
+        "meaning": "small wood",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Small group of trees"
         ]
       }
     ]
@@ -3613,6 +4593,20 @@
     ]
   },
   {
+    "answer": "COY",
+    "senses": [
+      {
+        "meaning": "shy or evasive",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Deliberately reluctant to reveal one's feelings"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "COZY",
     "senses": [
       {
@@ -3636,6 +4630,34 @@
         ],
         "clues": [
           "Seaside creature with pincers"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CRAG",
+    "senses": [
+      {
+        "meaning": "rock outcrop",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Steep rugged rock"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CRAMP",
+    "senses": [
+      {
+        "meaning": "muscle spasm",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Painful involuntary tightening of a muscle"
         ]
       }
     ]
@@ -3678,6 +4700,20 @@
     ]
   },
   {
+    "answer": "CREED",
+    "senses": [
+      {
+        "meaning": "belief system",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Set of guiding beliefs"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "CREPE",
     "senses": [
       {
@@ -3706,6 +4742,20 @@
     ]
   },
   {
+    "answer": "CRIMP",
+    "senses": [
+      {
+        "meaning": "pinch into ridges",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Pinch the edges of a pie crust"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "CRISP",
     "senses": [
       {
@@ -3715,6 +4765,20 @@
         ],
         "clues": [
           "Like a freshly baked cracker"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CROON",
+    "senses": [
+      {
+        "meaning": "sing softly",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Sing in a soft soothing voice"
         ]
       }
     ]
@@ -3758,6 +4822,20 @@
         ],
         "clues": [
           "Edge of a pizza"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "CRUX",
+    "senses": [
+      {
+        "meaning": "central issue",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Heart of the matter"
         ]
       }
     ]
@@ -3933,6 +5011,20 @@
     ]
   },
   {
+    "answer": "DAIS",
+    "senses": [
+      {
+        "meaning": "raised platform",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Raised platform for a speaker"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "DAKAR",
     "senses": [
       {
@@ -3942,6 +5034,20 @@
         ],
         "clues": [
           "Capital of Senegal"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DALLY",
+    "senses": [
+      {
+        "meaning": "linger",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Waste time by lingering"
         ]
       }
     ]
@@ -4045,6 +5151,20 @@
     ]
   },
   {
+    "answer": "DAUB",
+    "senses": [
+      {
+        "meaning": "smear",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Apply paint roughly"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "DAWN",
     "senses": [
       {
@@ -4096,6 +5216,34 @@
         ],
         "clues": [
           "A woodland animal whose males often have antlers"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DEFT",
+    "senses": [
+      {
+        "meaning": "skillful",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Nimble and sure-handed"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DEIGN",
+    "senses": [
+      {
+        "meaning": "condescend",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Consider it worth one's dignity to do something"
         ]
       }
     ]
@@ -4162,6 +5310,20 @@
         ],
         "clues": [
           "The Greek letter after gamma"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DELVE",
+    "senses": [
+      {
+        "meaning": "investigate",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Dig deeply into a subject"
         ]
       }
     ]
@@ -4447,6 +5609,20 @@
     ]
   },
   {
+    "answer": "DIRGE",
+    "senses": [
+      {
+        "meaning": "mournful song",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Song of mourning"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "DIRT",
     "senses": [
       {
@@ -4512,6 +5688,20 @@
         ],
         "clues": [
           "Someone whose workplace may be below the waves"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DODGE",
+    "senses": [
+      {
+        "meaning": "avoid",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Move aside to avoid an incoming ball"
         ]
       }
     ]
@@ -4681,6 +5871,20 @@
     ]
   },
   {
+    "answer": "DOUSE",
+    "senses": [
+      {
+        "meaning": "soak or extinguish",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Extinguish a campfire with water"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "DOVE",
     "senses": [
       {
@@ -4690,6 +5894,34 @@
         ],
         "clues": [
           "Bird often used as a symbol of peace"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DOWEL",
+    "senses": [
+      {
+        "meaning": "wooden peg",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Cylindrical peg joining two pieces of wood"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DRAB",
+    "senses": [
+      {
+        "meaning": "dull",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Lacking color or liveliness"
         ]
       }
     ]
@@ -4760,6 +5992,48 @@
         ],
         "clues": [
           "What a leaky faucet does"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DROLL",
+    "senses": [
+      {
+        "meaning": "oddly amusing",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Amusing in a dry, unusual way"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DROSS",
+    "senses": [
+      {
+        "meaning": "waste",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Worthless material left after refining"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DRUID",
+    "senses": [
+      {
+        "meaning": "ancient religious figure",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Priest in ancient Celtic tradition"
         ]
       }
     ]
@@ -4920,6 +6194,20 @@
     ]
   },
   {
+    "answer": "DUNCE",
+    "senses": [
+      {
+        "meaning": "slow learner insult",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Old-fashioned insult for a poor student"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "DUNE",
     "senses": [
       {
@@ -4963,6 +6251,20 @@
     ]
   },
   {
+    "answer": "DUPE",
+    "senses": [
+      {
+        "meaning": "deceive",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Trick into believing something false"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "DUSK",
     "senses": [
       {
@@ -4986,6 +6288,20 @@
         ],
         "clues": [
           "What gathers on a neglected shelf"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "DUVET",
+    "senses": [
+      {
+        "meaning": "filled bedcover",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Fluffy covering under which one sleeps"
         ]
       }
     ]
@@ -5029,6 +6345,20 @@
         ],
         "clues": [
           "Songwriter who won the 2016 Nobel Prize in Literature"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EAGER",
+    "senses": [
+      {
+        "meaning": "enthusiastic",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Keen to get started"
         ]
       }
     ]
@@ -5212,6 +6542,20 @@
     ]
   },
   {
+    "answer": "EDDY",
+    "senses": [
+      {
+        "meaning": "swirling current",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Little whirlpool in a stream"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "EDGE",
     "senses": [
       {
@@ -5307,6 +6651,20 @@
         ],
         "clues": [
           "Senses of personal importance"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EJECT",
+    "senses": [
+      {
+        "meaning": "expel",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Force something out"
         ]
       }
     ]
@@ -5411,6 +6769,48 @@
     ]
   },
   {
+    "answer": "ELUDE",
+    "senses": [
+      {
+        "meaning": "escape",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Avoid being caught or understood"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EMBER",
+    "senses": [
+      {
+        "meaning": "glowing coal",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Glowing remnant of a fire"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EMERY",
+    "senses": [
+      {
+        "meaning": "abrasive",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Abrasive material used on nail boards"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "EMMA",
     "senses": [
       {
@@ -5453,6 +6853,20 @@
     ]
   },
   {
+    "answer": "ENACT",
+    "senses": [
+      {
+        "meaning": "make law",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Pass into law"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "END",
     "senses": [
       {
@@ -5467,6 +6881,34 @@
     ]
   },
   {
+    "answer": "ENDOW",
+    "senses": [
+      {
+        "meaning": "provide",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Give a permanent source of financial support"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ENSUE",
+    "senses": [
+      {
+        "meaning": "follow",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Happen afterward"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ENYA",
     "senses": [
       {
@@ -5476,6 +6918,20 @@
         ],
         "clues": [
           "Irish singer of Orinoco Flow"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EPOCH",
+    "senses": [
+      {
+        "meaning": "era",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Distinct period in history"
         ]
       }
     ]
@@ -5518,6 +6974,20 @@
         ],
         "clues": [
           "Great Lake downstream of Huron and upstream of Ontario"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ERODE",
+    "senses": [
+      {
+        "meaning": "wear away",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Gradually wear down through wind or water"
         ]
       }
     ]
@@ -5595,6 +7065,20 @@
     ]
   },
   {
+    "answer": "EVADE",
+    "senses": [
+      {
+        "meaning": "avoid",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Avoid answering a question directly"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "EVEN",
     "senses": [
       {
@@ -5637,6 +7121,20 @@
     ]
   },
   {
+    "answer": "EVOKE",
+    "senses": [
+      {
+        "meaning": "call to mind",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Bring back a memory"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "EWE",
     "senses": [
       {
@@ -5647,6 +7145,34 @@
         ],
         "clues": [
           "Female sheep"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EXALT",
+    "senses": [
+      {
+        "meaning": "praise",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Praise very highly"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "EXERT",
+    "senses": [
+      {
+        "meaning": "apply effort",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Put forth one's strength"
         ]
       }
     ]
@@ -5713,6 +7239,20 @@
         ],
         "clues": [
           "Where your nose and mouth are"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FACET",
+    "senses": [
+      {
+        "meaning": "aspect",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "One side of a many-sided issue"
         ]
       }
     ]
@@ -5909,6 +7449,20 @@
     ]
   },
   {
+    "answer": "FEIGN",
+    "senses": [
+      {
+        "meaning": "pretend",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Pretend to be asleep"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "FELLA",
     "senses": [
       {
@@ -5946,6 +7500,20 @@
         ],
         "clues": [
           "Barrier marking a garden boundary"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FEND",
+    "senses": [
+      {
+        "meaning": "ward off",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "___ off an unwanted advance"
         ]
       }
     ]
@@ -5994,6 +7562,20 @@
     ]
   },
   {
+    "answer": "FETE",
+    "senses": [
+      {
+        "meaning": "celebration",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Outdoor festival, especially in Britain"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "FEW",
     "senses": [
       {
@@ -6022,6 +7604,20 @@
     ]
   },
   {
+    "answer": "FIEND",
+    "senses": [
+      {
+        "meaning": "enthusiast",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Obsessive enthusiast, informally"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "FIG",
     "senses": [
       {
@@ -6045,6 +7641,20 @@
         ],
         "clues": [
           "Island nation whose capital is Suva"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FILCH",
+    "senses": [
+      {
+        "meaning": "steal",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Steal something of small value"
         ]
       }
     ]
@@ -6115,6 +7725,20 @@
         ],
         "clues": [
           "A fish's steering aid"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FINCH",
+    "senses": [
+      {
+        "meaning": "bird",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Small seed-eating songbird"
         ]
       }
     ]
@@ -6205,6 +7829,20 @@
     ]
   },
   {
+    "answer": "FLAIR",
+    "senses": [
+      {
+        "meaning": "talent",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Natural knack for something"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "FLAME",
     "senses": [
       {
@@ -6261,6 +7899,20 @@
     ]
   },
   {
+    "answer": "FLECK",
+    "senses": [
+      {
+        "meaning": "speck",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Tiny spot of color"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "FLIP",
     "senses": [
       {
@@ -6270,6 +7922,20 @@
         ],
         "clues": [
           "What you do to a pancake"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FLIT",
+    "senses": [
+      {
+        "meaning": "move lightly",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Move quickly from place to place"
         ]
       }
     ]
@@ -6317,6 +7983,20 @@
     ]
   },
   {
+    "answer": "FLUKE",
+    "senses": [
+      {
+        "meaning": "chance occurrence",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Unexpected stroke of luck"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "FLUTE",
     "senses": [
       {
@@ -6351,6 +8031,20 @@
         ],
         "clues": [
           "A common insect with two wings"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FOAL",
+    "senses": [
+      {
+        "meaning": "young horse",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Newborn horse"
         ]
       }
     ]
@@ -6412,6 +8106,20 @@
     ]
   },
   {
+    "answer": "FOIST",
+    "senses": [
+      {
+        "meaning": "impose",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Palm something unwanted off on someone"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "FOLD",
     "senses": [
       {
@@ -6421,6 +8129,20 @@
         ],
         "clues": [
           "Make a crease in paper"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FOLLY",
+    "senses": [
+      {
+        "meaning": "foolishness",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Lack of good sense"
         ]
       }
     ]
@@ -6534,6 +8256,20 @@
     ]
   },
   {
+    "answer": "FORGO",
+    "senses": [
+      {
+        "meaning": "do without",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Choose to go without"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "FORK",
     "senses": [
       {
@@ -6576,6 +8312,34 @@
     ]
   },
   {
+    "answer": "FOUNT",
+    "senses": [
+      {
+        "meaning": "source",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Source of knowledge, figuratively"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FRAIL",
+    "senses": [
+      {
+        "meaning": "weak",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Delicate and easily injured"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "FRAME",
     "senses": [
       {
@@ -6585,6 +8349,20 @@
         ],
         "clues": [
           "One still image in a movie"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FRAY",
+    "senses": [
+      {
+        "meaning": "unravel",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Become ragged at the edges"
         ]
       }
     ]
@@ -6618,6 +8396,20 @@
     ]
   },
   {
+    "answer": "FRET",
+    "senses": [
+      {
+        "meaning": "worry",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Agonize over a problem"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "FREYA",
     "senses": [
       {
@@ -6646,6 +8438,20 @@
     ]
   },
   {
+    "answer": "FROCK",
+    "senses": [
+      {
+        "meaning": "dress",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Dress, in somewhat old-fashioned usage"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "FROG",
     "senses": [
       {
@@ -6669,6 +8475,20 @@
         ],
         "clues": [
           "White ice crystals on a cold window"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FROTH",
+    "senses": [
+      {
+        "meaning": "foam",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Bubbles atop a freshly poured drink"
         ]
       }
     ]
@@ -6725,6 +8545,20 @@
         ],
         "clues": [
           "Material consumed to release energy"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "FUGUE",
+    "senses": [
+      {
+        "meaning": "musical form",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Composition in which voices enter successively with a theme"
         ]
       }
     ]
@@ -6815,6 +8649,20 @@
     ]
   },
   {
+    "answer": "GAIT",
+    "senses": [
+      {
+        "meaning": "manner of walking",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "A person's way of walking"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "GALE",
     "senses": [
       {
@@ -6852,6 +8700,20 @@
         ],
         "clues": [
           "Chess and checkers, for example"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GAMUT",
+    "senses": [
+      {
+        "meaning": "full range",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Entire range of possibilities"
         ]
       }
     ]
@@ -6908,6 +8770,48 @@
     ]
   },
   {
+    "answer": "GAUZE",
+    "senses": [
+      {
+        "meaning": "thin fabric",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Loose-weave material used in wound dressings"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GAVEL",
+    "senses": [
+      {
+        "meaning": "small mallet",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Mallet used by an auctioneer"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GAWK",
+    "senses": [
+      {
+        "meaning": "stare",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Look open-mouthed in astonishment"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "GDAY",
     "senses": [
       {
@@ -6945,6 +8849,20 @@
         ],
         "clues": [
           "Interlocking wheels that transfer motion"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GECKO",
+    "senses": [
+      {
+        "meaning": "reptile",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "Lizard whose toes may cling to smooth walls"
         ]
       }
     ]
@@ -7040,6 +8958,20 @@
     ]
   },
   {
+    "answer": "GENIE",
+    "senses": [
+      {
+        "meaning": "magical spirit",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Wish granter released from a magical lamp"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "GET",
     "senses": [
       {
@@ -7078,6 +9010,20 @@
         "clues": [
           "Suddenly stop replying to someone, in modern slang",
           "Stop communicating without an explanation, slangily"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GIDDY",
+    "senses": [
+      {
+        "meaning": "excited or dizzy",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Almost dizzy with excitement"
         ]
       }
     ]
@@ -7139,6 +9085,20 @@
     ]
   },
   {
+    "answer": "GIRTH",
+    "senses": [
+      {
+        "meaning": "circumference",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Measurement around the waist or trunk"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "GIZA",
     "senses": [
       {
@@ -7182,6 +9142,34 @@
     ]
   },
   {
+    "answer": "GLEAN",
+    "senses": [
+      {
+        "meaning": "gather gradually",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Gather bits of information"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GLIB",
+    "senses": [
+      {
+        "meaning": "slickly insincere",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Fluent in a rather superficial way"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "GLUE",
     "senses": [
       {
@@ -7191,6 +9179,20 @@
         ],
         "clues": [
           "Sticky stuff used to join paper"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GLUM",
+    "senses": [
+      {
+        "meaning": "gloomy",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Looking rather downcast"
         ]
       }
     ]
@@ -7422,6 +9424,20 @@
     ]
   },
   {
+    "answer": "GOURD",
+    "senses": [
+      {
+        "meaning": "hard-shelled fruit",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Fruit that may be hollowed out to make a container"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "GOWN",
     "senses": [
       {
@@ -7445,6 +9461,34 @@
         ],
         "clues": [
           "Spanish artist who painted The Third of May 1808"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GRAFT",
+    "senses": [
+      {
+        "meaning": "plant union",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Shoot joined to another plant"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GRAIL",
+    "senses": [
+      {
+        "meaning": "sought object",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Holy ___"
         ]
       }
     ]
@@ -7520,6 +9564,20 @@
     ]
   },
   {
+    "answer": "GRIME",
+    "senses": [
+      {
+        "meaning": "dirt",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Layer of ingrained dirt"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "GRIN",
     "senses": [
       {
@@ -7563,6 +9621,20 @@
     ]
   },
   {
+    "answer": "GROUT",
+    "senses": [
+      {
+        "meaning": "joint filler",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Material between bathroom tiles"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "GRUB",
     "senses": [
       {
@@ -7572,6 +9644,20 @@
         ],
         "clues": [
           "Something to eat, casually"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GRUFF",
+    "senses": [
+      {
+        "meaning": "rough in manner",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Abrupt and harsh in tone"
         ]
       }
     ]
@@ -7600,6 +9686,48 @@
         ],
         "clues": [
           "Tropical fruit with a pink or white interior"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GUILD",
+    "senses": [
+      {
+        "meaning": "association",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Association of people with a shared trade"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GUISE",
+    "senses": [
+      {
+        "meaning": "appearance",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Outward appearance that may disguise the truth"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "GULCH",
+    "senses": [
+      {
+        "meaning": "ravine",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Narrow steep-sided ravine"
         ]
       }
     ]
@@ -7699,6 +9827,20 @@
         ],
         "clues": [
           "A brief laugh"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HAIKU",
+    "senses": [
+      {
+        "meaning": "poetic form",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Short Japanese verse form"
         ]
       }
     ]
@@ -7830,6 +9972,20 @@
     ]
   },
   {
+    "answer": "HARK",
+    "senses": [
+      {
+        "meaning": "listen",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Old-fashioned command to listen"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "HARP",
     "senses": [
       {
@@ -7872,6 +10028,34 @@
     ]
   },
   {
+    "answer": "HASP",
+    "senses": [
+      {
+        "meaning": "fastening device",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Hinged metal fitting secured with a padlock"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HASTY",
+    "senses": [
+      {
+        "meaning": "too quick",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Done without adequate thought"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "HAT",
     "senses": [
       {
@@ -7881,6 +10065,20 @@
         ],
         "clues": [
           "Something you might take off indoors"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HAVOC",
+    "senses": [
+      {
+        "meaning": "destruction",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Widespread disorder or damage"
         ]
       }
     ]
@@ -7956,6 +10154,34 @@
     ]
   },
   {
+    "answer": "HEATH",
+    "senses": [
+      {
+        "meaning": "open land",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Uncultivated land with low shrubs"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HEAVE",
+    "senses": [
+      {
+        "meaning": "lift heavily",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Lift with considerable effort"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "HEEL",
     "senses": [
       {
@@ -7965,6 +10191,48 @@
         ],
         "clues": [
           "Part of a foot behind the arch"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HEFTY",
+    "senses": [
+      {
+        "meaning": "heavy or substantial",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Considerable in weight or size"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HEIST",
+    "senses": [
+      {
+        "meaning": "robbery",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Robbery planned by a group, often"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HELIX",
+    "senses": [
+      {
+        "meaning": "spiral shape",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Shape of a coil winding around an axis"
         ]
       }
     ]
@@ -7980,6 +10248,20 @@
         "clues": [
           "Very, in Northern California slang",
           "Intensifier in the phrase ___ cool, slangily"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HEM",
+    "senses": [
+      {
+        "meaning": "garment edge",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Folded and stitched edge of a skirt"
         ]
       }
     ]
@@ -8056,6 +10338,20 @@
     ]
   },
   {
+    "answer": "HERON",
+    "senses": [
+      {
+        "meaning": "wading bird",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Long-legged bird seen fishing in shallow water"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "HID",
     "senses": [
       {
@@ -8093,6 +10389,20 @@
         ],
         "clues": [
           "A small rise in the landscape"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HILT",
+    "senses": [
+      {
+        "meaning": "sword handle",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Handle of a sword"
         ]
       }
     ]
@@ -8141,6 +10451,20 @@
     ]
   },
   {
+    "answer": "HOARD",
+    "senses": [
+      {
+        "meaning": "accumulate",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Keep a large private stockpile"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "HOG",
     "senses": [
       {
@@ -8155,6 +10479,20 @@
     ]
   },
   {
+    "answer": "HOIST",
+    "senses": [
+      {
+        "meaning": "raise",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Raise a flag up a pole"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "HOLE",
     "senses": [
       {
@@ -8164,6 +10502,20 @@
         ],
         "clues": [
           "Opening in the ground or a wall"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HOLLY",
+    "senses": [
+      {
+        "meaning": "plant",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Prickly-leaved plant with red berries"
         ]
       }
     ]
@@ -8207,6 +10559,20 @@
         ],
         "clues": [
           "Japanese maker of the Civic"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HONE",
+    "senses": [
+      {
+        "meaning": "sharpen",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Sharpen a blade"
         ]
       }
     ]
@@ -8283,6 +10649,20 @@
     ]
   },
   {
+    "answer": "HORDE",
+    "senses": [
+      {
+        "meaning": "large crowd",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Large crowd descending on a place"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "HORUS",
     "senses": [
       {
@@ -8348,6 +10728,20 @@
         ],
         "clues": [
           "One twenty-fourth of a day"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HOVEL",
+    "senses": [
+      {
+        "meaning": "poor dwelling",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Small wretched dwelling"
         ]
       }
     ]
@@ -8424,6 +10818,20 @@
     ]
   },
   {
+    "answer": "HULL",
+    "senses": [
+      {
+        "meaning": "ship body",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Main body of a ship"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "HUM",
     "senses": [
       {
@@ -8452,6 +10860,20 @@
     ]
   },
   {
+    "answer": "HUSH",
+    "senses": [
+      {
+        "meaning": "quiet",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Make a noisy room fall silent"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "HUT",
     "senses": [
       {
@@ -8461,6 +10883,20 @@
         ],
         "clues": [
           "A simple cabin on a beach"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "HYMN",
+    "senses": [
+      {
+        "meaning": "religious song",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Song sung during worship"
         ]
       }
     ]
@@ -8531,6 +10967,20 @@
         ],
         "clues": [
           "What melts in a cold drink"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ICILY",
+    "senses": [
+      {
+        "meaning": "coldly",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "In a distinctly unfriendly manner"
         ]
       }
     ]
@@ -8620,6 +11070,20 @@
     ]
   },
   {
+    "answer": "IDLER",
+    "senses": [
+      {
+        "meaning": "inactive person",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Person who spends time doing very little"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "IDO",
     "senses": [
       {
@@ -8658,6 +11122,20 @@
         ],
         "clues": [
           "Text shorthand introducing a personal view"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "IMPEL",
+    "senses": [
+      {
+        "meaning": "urge",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Drive someone to act"
         ]
       }
     ]
@@ -8706,6 +11184,20 @@
     ]
   },
   {
+    "answer": "INERT",
+    "senses": [
+      {
+        "meaning": "inactive",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Not moving or reacting"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ININK",
     "senses": [
       {
@@ -8734,6 +11226,20 @@
     ]
   },
   {
+    "answer": "INLET",
+    "senses": [
+      {
+        "meaning": "water indentation",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Narrow body of water leading inland"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "INN",
     "senses": [
       {
@@ -8757,6 +11263,34 @@
         ],
         "clues": [
           "Privy to, as a secret"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "INSET",
+    "senses": [
+      {
+        "meaning": "inserted section",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Small map within a larger map"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "INTER",
+    "senses": [
+      {
+        "meaning": "bury",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Place in a grave"
         ]
       }
     ]
@@ -8974,6 +11508,20 @@
     ]
   },
   {
+    "answer": "ISLET",
+    "senses": [
+      {
+        "meaning": "small island",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Tiny island"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ITALY",
     "senses": [
       {
@@ -9123,6 +11671,20 @@
     ]
   },
   {
+    "answer": "JAPE",
+    "senses": [
+      {
+        "meaning": "joke",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Playful jest, in old-fashioned language"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "JAR",
     "senses": [
       {
@@ -9132,6 +11694,20 @@
         ],
         "clues": [
           "Container for a batch of preserves"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "JAUNT",
+    "senses": [
+      {
+        "meaning": "short trip",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Little trip for pleasure"
         ]
       }
     ]
@@ -9246,6 +11822,20 @@
     ]
   },
   {
+    "answer": "JEWEL",
+    "senses": [
+      {
+        "meaning": "gem",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Precious stone set in a ring"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "JIFFY",
     "senses": [
       {
@@ -9255,6 +11845,20 @@
         ],
         "clues": [
           "I'll be there in a ___"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "JILT",
+    "senses": [
+      {
+        "meaning": "reject lover",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Abruptly end a romantic relationship"
         ]
       }
     ]
@@ -9270,6 +11874,20 @@
         "clues": [
           "Something thought to bring bad luck",
           "Supposed bringer of misfortune"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "JIVE",
+    "senses": [
+      {
+        "meaning": "dance",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Lively dance associated with swing music"
         ]
       }
     ]
@@ -9331,6 +11949,20 @@
     ]
   },
   {
+    "answer": "JOIST",
+    "senses": [
+      {
+        "meaning": "support beam",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Horizontal beam supporting a floor"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "JOLIE",
     "senses": [
       {
@@ -9382,6 +12014,20 @@
         ],
         "clues": [
           "Put down a quick note"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "JOUST",
+    "senses": [
+      {
+        "meaning": "mounted contest",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Contest between knights on horseback"
         ]
       }
     ]
@@ -9457,6 +12103,20 @@
     ]
   },
   {
+    "answer": "JUTE",
+    "senses": [
+      {
+        "meaning": "fiber",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Coarse plant fiber used for sacks"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "KABUL",
     "senses": [
       {
@@ -9494,6 +12154,20 @@
         ],
         "clues": [
           "Mexican painter known for her self-portraits"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "KEEL",
+    "senses": [
+      {
+        "meaning": "ship structure",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Longitudinal structural member along a ship's bottom"
         ]
       }
     ]
@@ -9597,6 +12271,20 @@
     ]
   },
   {
+    "answer": "KIOSK",
+    "senses": [
+      {
+        "meaning": "small booth",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Small booth selling newspapers or snacks"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "KIRBY",
     "senses": [
       {
@@ -9683,6 +12371,34 @@
     ]
   },
   {
+    "answer": "KNACK",
+    "senses": [
+      {
+        "meaning": "skill",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Natural aptitude for a particular task"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "KNAVE",
+    "senses": [
+      {
+        "meaning": "dishonest person",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Dishonest fellow, in old-fashioned language"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "KNEAD",
     "senses": [
       {
@@ -9725,6 +12441,34 @@
     ]
   },
   {
+    "answer": "KNELL",
+    "senses": [
+      {
+        "meaning": "funeral bell",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Sound of a bell announcing a death"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "KNOLL",
+    "senses": [
+      {
+        "meaning": "small hill",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Little rounded hill"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "KNOT",
     "senses": [
       {
@@ -9748,6 +12492,20 @@
         ],
         "clues": [
           "Be aware of"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "KOALA",
+    "senses": [
+      {
+        "meaning": "mammal",
+        "topics": [
+          "nature"
+        ],
+        "clues": [
+          "Tree-dwelling marsupial that feeds on eucalyptus leaves"
         ]
       }
     ]
@@ -9833,6 +12591,20 @@
         ],
         "clues": [
           "Delicate fabric on a wedding veil"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LADLE",
+    "senses": [
+      {
+        "meaning": "serving utensil",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Deep spoon used to serve soup"
         ]
       }
     ]
@@ -9937,6 +12709,20 @@
     ]
   },
   {
+    "answer": "LANKY",
+    "senses": [
+      {
+        "meaning": "tall and thin",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Long-limbed and rather awkward"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "LAOS",
     "senses": [
       {
@@ -9979,6 +12765,20 @@
     ]
   },
   {
+    "answer": "LARCH",
+    "senses": [
+      {
+        "meaning": "tree",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Conifer that sheds its needles in autumn"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "LARGE",
     "senses": [
       {
@@ -10002,6 +12802,34 @@
         ],
         "clues": [
           "Hair along the eyelid"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LATCH",
+    "senses": [
+      {
+        "meaning": "fastener",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Simple device for keeping a gate shut"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LATHE",
+    "senses": [
+      {
+        "meaning": "machine tool",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Machine that spins a workpiece for shaping"
         ]
       }
     ]
@@ -10051,6 +12879,20 @@
     ]
   },
   {
+    "answer": "LAX",
+    "senses": [
+      {
+        "meaning": "not strict",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Not enforcing rules very firmly"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "LAY",
     "senses": [
       {
@@ -10060,6 +12902,20 @@
         ],
         "clues": [
           "Place a book flat on a table"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LEACH",
+    "senses": [
+      {
+        "meaning": "wash out",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Remove soluble material by passing liquid through"
         ]
       }
     ]
@@ -10107,6 +12963,20 @@
     ]
   },
   {
+    "answer": "LEDGE",
+    "senses": [
+      {
+        "meaning": "projecting shelf",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Narrow shelf jutting from a cliff"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "LEEK",
     "senses": [
       {
@@ -10116,6 +12986,20 @@
         ],
         "clues": [
           "Long green vegetable in potato soup"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LEERY",
+    "senses": [
+      {
+        "meaning": "wary",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Suspicious of an offer that sounds too good"
         ]
       }
     ]
@@ -10234,6 +13118,20 @@
     ]
   },
   {
+    "answer": "LIAR",
+    "senses": [
+      {
+        "meaning": "dishonest speaker",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Someone who knowingly tells falsehoods"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "LICE",
     "senses": [
       {
@@ -10290,6 +13188,20 @@
     ]
   },
   {
+    "answer": "LIEN",
+    "senses": [
+      {
+        "meaning": "legal claim",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Claim against property as security for a debt"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "LIFT",
     "senses": [
       {
@@ -10299,6 +13211,34 @@
         ],
         "clues": [
           "Pick up"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LIKEN",
+    "senses": [
+      {
+        "meaning": "compare",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Compare one thing to another"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LILT",
+    "senses": [
+      {
+        "meaning": "rhythmic cadence",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Pleasant rising and falling rhythm in speech"
         ]
       }
     ]
@@ -10327,6 +13267,20 @@
         ],
         "clues": [
           "Capital of Peru"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LIMBO",
+    "senses": [
+      {
+        "meaning": "uncertain state",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "State of waiting with no clear resolution"
         ]
       }
     ]
@@ -10540,6 +13494,20 @@
     ]
   },
   {
+    "answer": "LOAM",
+    "senses": [
+      {
+        "meaning": "fertile soil",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Soil containing a useful mixture of sand, silt and clay"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "LOAN",
     "senses": [
       {
@@ -10568,6 +13536,20 @@
     ]
   },
   {
+    "answer": "LODE",
+    "senses": [
+      {
+        "meaning": "ore deposit",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Vein of valuable mineral"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "LODGE",
     "senses": [
       {
@@ -10591,6 +13573,20 @@
         ],
         "clues": [
           "Space just beneath a roof"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LOFTY",
+    "senses": [
+      {
+        "meaning": "high",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Like a ceiling well above one's head"
         ]
       }
     ]
@@ -10696,6 +13692,20 @@
     ]
   },
   {
+    "answer": "LORE",
+    "senses": [
+      {
+        "meaning": "traditional knowledge",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Body of stories and traditions"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "LOSES",
     "senses": [
       {
@@ -10724,6 +13734,20 @@
     ]
   },
   {
+    "answer": "LOUSE",
+    "senses": [
+      {
+        "meaning": "parasitic insect",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Small insect that may infest hair"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "LOW",
     "senses": [
       {
@@ -10733,6 +13757,20 @@
         ],
         "clues": [
           "Near the floor, in height"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LOWLY",
+    "senses": [
+      {
+        "meaning": "humble",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Of modest rank"
         ]
       }
     ]
@@ -10752,6 +13790,20 @@
     ]
   },
   {
+    "answer": "LUCID",
+    "senses": [
+      {
+        "meaning": "clear",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Easy to understand, as an explanation"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "LUG",
     "senses": [
       {
@@ -10761,6 +13813,20 @@
         ],
         "clues": [
           "Carry with effort"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "LUMEN",
+    "senses": [
+      {
+        "meaning": "light unit",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Unit of luminous flux"
         ]
       }
     ]
@@ -10809,6 +13875,34 @@
     ]
   },
   {
+    "answer": "LYRE",
+    "senses": [
+      {
+        "meaning": "string instrument",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Ancient stringed instrument with two upright arms"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MACAW",
+    "senses": [
+      {
+        "meaning": "bird",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Large colorful parrot"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "MAD",
     "senses": [
       {
@@ -10832,6 +13926,20 @@
         ],
         "clues": [
           "Manufactured or created"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MAGMA",
+    "senses": [
+      {
+        "meaning": "molten rock",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Molten rock beneath Earth's surface"
         ]
       }
     ]
@@ -10893,6 +14001,20 @@
     ]
   },
   {
+    "answer": "MALT",
+    "senses": [
+      {
+        "meaning": "germinated grain",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Grain prepared for brewing"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "MALTA",
     "senses": [
       {
@@ -10916,6 +14038,20 @@
         ],
         "clues": [
           "Hair along a horse's neck"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MANGE",
+    "senses": [
+      {
+        "meaning": "animal skin condition",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Skin disease caused by mites"
         ]
       }
     ]
@@ -10958,6 +14094,20 @@
         ],
         "clues": [
           "A guide to finding your way"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MAR",
+    "senses": [
+      {
+        "meaning": "damage",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Spoil an otherwise perfect surface"
         ]
       }
     ]
@@ -11006,6 +14156,20 @@
     ]
   },
   {
+    "answer": "MARSH",
+    "senses": [
+      {
+        "meaning": "wetland",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Wetland with grasses or reeds"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "MASH",
     "senses": [
       {
@@ -11048,6 +14212,20 @@
     ]
   },
   {
+    "answer": "MAUVE",
+    "senses": [
+      {
+        "meaning": "color",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Pale purple shade"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "MAY",
     "senses": [
       {
@@ -11057,6 +14235,20 @@
         ],
         "clues": [
           "___ I come in?"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MEAD",
+    "senses": [
+      {
+        "meaning": "honey beverage",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Traditional fermented honey drink"
         ]
       }
     ]
@@ -11355,6 +14547,20 @@
     ]
   },
   {
+    "answer": "MIDGE",
+    "senses": [
+      {
+        "meaning": "small fly",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Tiny fly that may swarm near water"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "MILAN",
     "senses": [
       {
@@ -11464,6 +14670,34 @@
     ]
   },
   {
+    "answer": "MIRTH",
+    "senses": [
+      {
+        "meaning": "merriment",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Cheerful laughter"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MISER",
+    "senses": [
+      {
+        "meaning": "hoarder of money",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Person unwilling to spend even on necessities"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "MIST",
     "senses": [
       {
@@ -11536,6 +14770,20 @@
     ]
   },
   {
+    "answer": "MOAT",
+    "senses": [
+      {
+        "meaning": "defensive ditch",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Water-filled ditch around a castle"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "MOB",
     "senses": [
       {
@@ -11578,6 +14826,20 @@
     ]
   },
   {
+    "answer": "MODEM",
+    "senses": [
+      {
+        "meaning": "communications device",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Device for converting signals for data transmission"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "MOJO",
     "senses": [
       {
@@ -11587,6 +14849,20 @@
         ],
         "clues": [
           "What someone may lose when out of form"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MOLAR",
+    "senses": [
+      {
+        "meaning": "tooth",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Back tooth for grinding food"
         ]
       }
     ]
@@ -11734,6 +15010,34 @@
     ]
   },
   {
+    "answer": "MOPED",
+    "senses": [
+      {
+        "meaning": "small motor vehicle",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Low-powered motorized two-wheeler"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MORES",
+    "senses": [
+      {
+        "meaning": "social customs",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Accepted customs of a society"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "MOSES",
     "senses": [
       {
@@ -11776,6 +15080,48 @@
     ]
   },
   {
+    "answer": "MOTIF",
+    "senses": [
+      {
+        "meaning": "recurring design",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Repeated element in a design"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MOUND",
+    "senses": [
+      {
+        "meaning": "heap",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Small raised heap of earth"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MOURN",
+    "senses": [
+      {
+        "meaning": "grieve",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Feel sorrow for someone who has died"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "MOVE",
     "senses": [
       {
@@ -11799,6 +15145,20 @@
         ],
         "clues": [
           "Changed position"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MUCK",
+    "senses": [
+      {
+        "meaning": "dirt",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Wet dirt or filth"
         ]
       }
     ]
@@ -11886,6 +15246,48 @@
     ]
   },
   {
+    "answer": "MURAL",
+    "senses": [
+      {
+        "meaning": "wall art",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Painting covering a wall"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MURK",
+    "senses": [
+      {
+        "meaning": "darkness",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Gloom that makes things difficult to see"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "MUSE",
+    "senses": [
+      {
+        "meaning": "reflect",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Think about something in a dreamy way"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "MUSIC",
     "senses": [
       {
@@ -11938,6 +15340,20 @@
         ],
         "clues": [
           "Snag, casually"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "NADIR",
+    "senses": [
+      {
+        "meaning": "lowest point",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Opposite of a zenith"
         ]
       }
     ]
@@ -12014,6 +15430,34 @@
     ]
   },
   {
+    "answer": "NAVE",
+    "senses": [
+      {
+        "meaning": "church interior",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Main central space of a church"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "NAVEL",
+    "senses": [
+      {
+        "meaning": "belly button",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Scar left where the umbilical cord was attached"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "NEAT",
     "senses": [
       {
@@ -12051,6 +15495,20 @@
         ],
         "clues": [
           "Cannot do without"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "NEIGH",
+    "senses": [
+      {
+        "meaning": "horse sound",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Call made by a horse"
         ]
       }
     ]
@@ -12169,6 +15627,34 @@
     ]
   },
   {
+    "answer": "NICHE",
+    "senses": [
+      {
+        "meaning": "recess",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Small recess in a wall"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "NIFTY",
+    "senses": [
+      {
+        "meaning": "handy",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Clever and useful, informally"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "NIGER",
     "senses": [
       {
@@ -12178,6 +15664,20 @@
         ],
         "clues": [
           "Country with Niamey as its capital"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "NIGH",
+    "senses": [
+      {
+        "meaning": "near",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Close at hand, in old-fashioned language"
         ]
       }
     ]
@@ -12220,6 +15720,20 @@
         ],
         "clues": [
           "A quick little bite"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "NIX",
+    "senses": [
+      {
+        "meaning": "reject",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Informally, put a stop to a proposal"
         ]
       }
     ]
@@ -12349,6 +15863,20 @@
         "clues": [
           "Twelve when the morning ends",
           "Twelve p.m."
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "NOOSE",
+    "senses": [
+      {
+        "meaning": "sliding loop",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Loop that tightens when pulled"
         ]
       }
     ]
@@ -12495,6 +16023,20 @@
     ]
   },
   {
+    "answer": "NYMPH",
+    "senses": [
+      {
+        "meaning": "immature insect",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Young stage of a grasshopper"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "OAHU",
     "senses": [
       {
@@ -12523,6 +16065,20 @@
     ]
   },
   {
+    "answer": "OAKEN",
+    "senses": [
+      {
+        "meaning": "made of oak",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Like a barrel made from oak wood"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "OAR",
     "senses": [
       {
@@ -12546,6 +16102,34 @@
         ],
         "clues": [
           "Grain in many breakfast cereals"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "OBOE",
+    "senses": [
+      {
+        "meaning": "woodwind instrument",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Double-reed instrument with a penetrating tone"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "OCHRE",
+    "senses": [
+      {
+        "meaning": "earth pigment",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Yellowish earth pigment"
         ]
       }
     ]
@@ -12616,6 +16200,34 @@
         ],
         "clues": [
           "In earlier times"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "OGLE",
+    "senses": [
+      {
+        "meaning": "stare",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Look at someone with obvious admiration or desire"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "OGRE",
+    "senses": [
+      {
+        "meaning": "monster",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Giant in many fairy tales"
         ]
       }
     ]
@@ -12917,6 +16529,20 @@
     ]
   },
   {
+    "answer": "ONYX",
+    "senses": [
+      {
+        "meaning": "gemstone",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Gemstone often seen in a black variety"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "OOF",
     "senses": [
       {
@@ -12955,6 +16581,20 @@
         "clues": [
           "Reaction to a small blunder",
           "Word after an accidental spill"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "OOZE",
+    "senses": [
+      {
+        "meaning": "seep",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Flow slowly through a crack"
         ]
       }
     ]
@@ -13054,6 +16694,20 @@
         ],
         "clues": [
           "The path of a satellite around Earth"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ORC",
+    "senses": [
+      {
+        "meaning": "fantasy creature",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Monstrous humanoid in fantasy stories"
         ]
       }
     ]
@@ -13173,6 +16827,20 @@
     ]
   },
   {
+    "answer": "OUST",
+    "senses": [
+      {
+        "meaning": "remove",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Drive someone out of a position"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "OUT",
     "senses": [
       {
@@ -13224,6 +16892,34 @@
         ],
         "clues": [
           "Roman poet who wrote Metamorphoses"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "OVOID",
+    "senses": [
+      {
+        "meaning": "egg-shaped",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Having the shape of an egg"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "OVULE",
+    "senses": [
+      {
+        "meaning": "plant structure",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Structure that develops into a seed"
         ]
       }
     ]
@@ -13313,6 +17009,20 @@
     ]
   },
   {
+    "answer": "PACER",
+    "senses": [
+      {
+        "meaning": "one who paces",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Person walking back and forth"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "PACK",
     "senses": [
       {
@@ -13397,6 +17107,20 @@
     ]
   },
   {
+    "answer": "PALL",
+    "senses": [
+      {
+        "meaning": "gloom",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "What a tragedy may cast over a celebration"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "PAN",
     "senses": [
       {
@@ -13450,6 +17174,34 @@
     ]
   },
   {
+    "answer": "PAPAL",
+    "senses": [
+      {
+        "meaning": "relating to pope",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Of the pope"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PARER",
+    "senses": [
+      {
+        "meaning": "peeling implement",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Small tool used to trim or peel"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "PARIS",
     "senses": [
       {
@@ -13473,6 +17225,20 @@
         ],
         "clues": [
           "Place with paths and benches, often"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PARRY",
+    "senses": [
+      {
+        "meaning": "deflect",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Turn aside an opponent's thrust"
         ]
       }
     ]
@@ -13552,6 +17318,20 @@
         ],
         "clues": [
           "A reassuring touch on the shoulder"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PATE",
+    "senses": [
+      {
+        "meaning": "head",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Top of the head, humorously"
         ]
       }
     ]
@@ -13657,6 +17437,20 @@
     ]
   },
   {
+    "answer": "PEAL",
+    "senses": [
+      {
+        "meaning": "ringing sound",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Loud ringing of bells"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "PEAR",
     "senses": [
       {
@@ -13680,6 +17474,20 @@
         ],
         "clues": [
           "Fuel cut from some bogs"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PECAN",
+    "senses": [
+      {
+        "meaning": "nut",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Nut featured in a classic Southern pie"
         ]
       }
     ]
@@ -13727,6 +17535,20 @@
     ]
   },
   {
+    "answer": "PEKOE",
+    "senses": [
+      {
+        "meaning": "tea grade",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Grade of black tea"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "PELT",
     "senses": [
       {
@@ -13751,6 +17573,20 @@
         "clues": [
           "Tool that usually needs ink",
           "A writer's tool that may be mightier than the sword"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PENNE",
+    "senses": [
+      {
+        "meaning": "pasta",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Short pasta tubes cut at an angle"
         ]
       }
     ]
@@ -13821,6 +17657,48 @@
     ]
   },
   {
+    "answer": "PERCH",
+    "senses": [
+      {
+        "meaning": "sit high",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Settle on a branch"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PERIL",
+    "senses": [
+      {
+        "meaning": "danger",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Exposure to serious danger"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PERKY",
+    "senses": [
+      {
+        "meaning": "cheerfully energetic",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Bright and full of energy"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "PERU",
     "senses": [
       {
@@ -13830,6 +17708,20 @@
         ],
         "clues": [
           "Country containing Machu Picchu"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PEST",
+    "senses": [
+      {
+        "meaning": "nuisance",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Unwelcome creature in a garden"
         ]
       }
     ]
@@ -13869,6 +17761,34 @@
         ],
         "clues": [
           "Stroke a cat or dog affectionately"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PETAL",
+    "senses": [
+      {
+        "meaning": "flower part",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "One of the colorful parts of a flower"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PETTY",
+    "senses": [
+      {
+        "meaning": "trivial",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Too minor to justify an argument"
         ]
       }
     ]
@@ -14085,6 +18005,34 @@
     ]
   },
   {
+    "answer": "PITH",
+    "senses": [
+      {
+        "meaning": "plant tissue",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Soft spongy tissue inside some stems"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PIVOT",
+    "senses": [
+      {
+        "meaning": "turning point",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Point about which something rotates"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "PIZZA",
     "senses": [
       {
@@ -14113,6 +18061,20 @@
     ]
   },
   {
+    "answer": "PLAIT",
+    "senses": [
+      {
+        "meaning": "braid",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Interweave three strands of hair"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "PLAN",
     "senses": [
       {
@@ -14132,6 +18094,20 @@
         ],
         "clues": [
           "Drawing showing the arrangement of rooms"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PLANK",
+    "senses": [
+      {
+        "meaning": "board",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Long flat piece of timber"
         ]
       }
     ]
@@ -14166,6 +18142,20 @@
     ]
   },
   {
+    "answer": "PLOD",
+    "senses": [
+      {
+        "meaning": "walk heavily",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Trudge along with weary steps"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "PLUG",
     "senses": [
       {
@@ -14189,6 +18179,20 @@
         ],
         "clues": [
           "Fruit with purple skin, often"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PLUME",
+    "senses": [
+      {
+        "meaning": "feather",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Showy feather on a hat"
         ]
       }
     ]
@@ -14251,6 +18255,20 @@
     ]
   },
   {
+    "answer": "POISE",
+    "senses": [
+      {
+        "meaning": "composure",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Graceful self-possession"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "POLAR",
     "senses": [
       {
@@ -14260,6 +18278,48 @@
         ],
         "clues": [
           "Like the regions around Earth's poles"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "POLKA",
+    "senses": [
+      {
+        "meaning": "dance",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Lively dance in two-four time"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "POLYP",
+    "senses": [
+      {
+        "meaning": "animal form",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Attached body form of a coral animal"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "POMP",
+    "senses": [
+      {
+        "meaning": "ceremony",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Elaborate ceremonial display"
         ]
       }
     ]
@@ -14358,6 +18418,20 @@
     ]
   },
   {
+    "answer": "PORCH",
+    "senses": [
+      {
+        "meaning": "covered entrance",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Place to sit outside one's front door"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "PORE",
     "senses": [
       {
@@ -14414,6 +18488,20 @@
     ]
   },
   {
+    "answer": "PRANK",
+    "senses": [
+      {
+        "meaning": "practical joke",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Trick played on April Fools' Day"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "PRAY",
     "senses": [
       {
@@ -14437,6 +18525,48 @@
         ],
         "clues": [
           "What a predator seeks"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PRIM",
+    "senses": [
+      {
+        "meaning": "formal and proper",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Very particular about proper behavior"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PRIMP",
+    "senses": [
+      {
+        "meaning": "groom",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Spend time adjusting one's appearance"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PRISM",
+    "senses": [
+      {
+        "meaning": "optical solid",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Glass solid that may split white light into colors"
         ]
       }
     ]
@@ -14470,6 +18600,34 @@
     ]
   },
   {
+    "answer": "PROWL",
+    "senses": [
+      {
+        "meaning": "move stealthily",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Move about quietly in search of prey"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PRUDE",
+    "senses": [
+      {
+        "meaning": "overly modest person",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Person considered excessively concerned with propriety"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "PRUNE",
     "senses": [
       {
@@ -14494,6 +18652,20 @@
         "clues": [
           "Sound used to attract someone discreetly",
           "Quiet summons in a library, perhaps"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PUCK",
+    "senses": [
+      {
+        "meaning": "sports object",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Rubber disk slid across hockey ice"
         ]
       }
     ]
@@ -14584,6 +18756,20 @@
     ]
   },
   {
+    "answer": "PUPIL",
+    "senses": [
+      {
+        "meaning": "eye opening",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Dark opening at the center of the iris"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "PURE",
     "senses": [
       {
@@ -14594,6 +18780,20 @@
         ],
         "clues": [
           "Free of impurities"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "PURGE",
+    "senses": [
+      {
+        "meaning": "remove",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Get rid of unwanted material"
         ]
       }
     ]
@@ -14655,6 +18855,20 @@
     ]
   },
   {
+    "answer": "PYLON",
+    "senses": [
+      {
+        "meaning": "tower",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Tall structure supporting power lines"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "QATAR",
     "senses": [
       {
@@ -14669,6 +18883,76 @@
     ]
   },
   {
+    "answer": "QUAIL",
+    "senses": [
+      {
+        "meaning": "bird",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Small game bird related to pheasants"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "QUASH",
+    "senses": [
+      {
+        "meaning": "suppress",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Put an end to a rumor"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "QUELL",
+    "senses": [
+      {
+        "meaning": "subdue",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Bring a disturbance under control"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "QUILL",
+    "senses": [
+      {
+        "meaning": "feather pen",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Feather formerly used for writing"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "QUILT",
+    "senses": [
+      {
+        "meaning": "stitched coverlet",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Bedcover made from stitched layers"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "QUIRK",
     "senses": [
       {
@@ -14678,6 +18962,20 @@
         ],
         "clues": [
           "A little personal oddity"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "QUOTA",
+    "senses": [
+      {
+        "meaning": "allocation",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Set number of places or items allotted"
         ]
       }
     ]
@@ -14720,6 +19018,20 @@
     ]
   },
   {
+    "answer": "RADON",
+    "senses": [
+      {
+        "meaning": "element",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Radioactive noble gas"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "RAG",
     "senses": [
       {
@@ -14757,6 +19069,20 @@
         ],
         "clues": [
           "What umbrellas fend off"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RAKE",
+    "senses": [
+      {
+        "meaning": "garden tool",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Tool with teeth for gathering fallen leaves"
         ]
       }
     ]
@@ -14818,6 +19144,20 @@
     ]
   },
   {
+    "answer": "RAPT",
+    "senses": [
+      {
+        "meaning": "absorbed",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Giving one's complete attention"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "RARE",
     "senses": [
       {
@@ -14827,6 +19167,20 @@
         ],
         "clues": [
           "Not often encountered"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RASH",
+    "senses": [
+      {
+        "meaning": "reckless",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Made too quickly without considering consequences"
         ]
       }
     ]
@@ -14953,6 +19307,48 @@
     ]
   },
   {
+    "answer": "REALM",
+    "senses": [
+      {
+        "meaning": "domain",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Sphere of activity or kingdom"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "REBAR",
+    "senses": [
+      {
+        "meaning": "reinforcing steel",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Steel rods embedded in concrete"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "REBUS",
+    "senses": [
+      {
+        "meaning": "picture puzzle",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Puzzle using pictures or symbols in place of words"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "RECAP",
     "senses": [
       {
@@ -14996,6 +19392,20 @@
     ]
   },
   {
+    "answer": "REEDY",
+    "senses": [
+      {
+        "meaning": "thin sounding",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Like a thin high-pitched voice"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "REEF",
     "senses": [
       {
@@ -15019,6 +19429,34 @@
         ],
         "clues": [
           "Spool attached to a fishing rod"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "REIGN",
+    "senses": [
+      {
+        "meaning": "rule",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Period of a monarch's rule"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RELIC",
+    "senses": [
+      {
+        "meaning": "surviving object",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Object remaining from a bygone era"
         ]
       }
     ]
@@ -15319,6 +19757,20 @@
     ]
   },
   {
+    "answer": "RIVET",
+    "senses": [
+      {
+        "meaning": "fastener",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Metal pin permanently fastening plates together"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "RIZZ",
     "senses": [
       {
@@ -15343,6 +19795,34 @@
         ],
         "clues": [
           "What a car travels on"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ROAM",
+    "senses": [
+      {
+        "meaning": "wander",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Travel freely without a fixed route"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ROAN",
+    "senses": [
+      {
+        "meaning": "horse coat",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Coat with white hairs mixed among colored hairs"
         ]
       }
     ]
@@ -15528,6 +20008,20 @@
     ]
   },
   {
+    "answer": "ROOK",
+    "senses": [
+      {
+        "meaning": "chess piece",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Chess piece that moves along ranks and files"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ROOM",
     "senses": [
       {
@@ -15537,6 +20031,20 @@
         ],
         "clues": [
           "Kitchen or bedroom, for example"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ROOST",
+    "senses": [
+      {
+        "meaning": "bird resting place",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Place a bird settles for the night"
         ]
       }
     ]
@@ -15613,6 +20121,20 @@
     ]
   },
   {
+    "answer": "ROUSE",
+    "senses": [
+      {
+        "meaning": "awaken",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Wake someone from sleep"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ROUTE",
     "senses": [
       {
@@ -15642,6 +20164,20 @@
     ]
   },
   {
+    "answer": "ROWDY",
+    "senses": [
+      {
+        "meaning": "boisterous",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Noisily disruptive"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "RUB",
     "senses": [
       {
@@ -15651,6 +20187,20 @@
         ],
         "clues": [
           "Massage gently"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RUE",
+    "senses": [
+      {
+        "meaning": "regret",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Wish one had not done something"
         ]
       }
     ]
@@ -15684,6 +20234,34 @@
     ]
   },
   {
+    "answer": "RULER",
+    "senses": [
+      {
+        "meaning": "measuring implement",
+        "topics": [
+          "home"
+        ],
+        "clues": [
+          "Straight edge marked in units of length"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RUNE",
+    "senses": [
+      {
+        "meaning": "letter",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Character in an old Germanic alphabet"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "RUNG",
     "senses": [
       {
@@ -15693,6 +20271,20 @@
         ],
         "clues": [
           "One step on a ladder"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "RUSE",
+    "senses": [
+      {
+        "meaning": "trick",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Deceptive scheme"
         ]
       }
     ]
@@ -15726,6 +20318,20 @@
     ]
   },
   {
+    "answer": "SABLE",
+    "senses": [
+      {
+        "meaning": "animal",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Marten prized for its dark fur"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SAD",
     "senses": [
       {
@@ -15754,6 +20360,20 @@
     ]
   },
   {
+    "answer": "SAG",
+    "senses": [
+      {
+        "meaning": "droop",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Droop under one's own weight"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SAGAN",
     "senses": [
       {
@@ -15764,6 +20384,20 @@
         "clues": [
           "Astronomer who presented the original Cosmos series",
           "Astronomer associated with the Voyager Golden Record"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SAGE",
+    "senses": [
+      {
+        "meaning": "herb",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Herb often used in stuffing"
         ]
       }
     ]
@@ -15905,6 +20539,20 @@
     ]
   },
   {
+    "answer": "SATIN",
+    "senses": [
+      {
+        "meaning": "fabric",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Fabric with a smooth glossy face"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SAUCE",
     "senses": [
       {
@@ -15961,6 +20609,48 @@
     ]
   },
   {
+    "answer": "SCALD",
+    "senses": [
+      {
+        "meaning": "burn with hot liquid",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Burn skin with boiling water"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SCALP",
+    "senses": [
+      {
+        "meaning": "head skin",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Skin beneath one's hair"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SCANT",
+    "senses": [
+      {
+        "meaning": "barely sufficient",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Less than generous"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SCARE",
     "senses": [
       {
@@ -15970,6 +20660,20 @@
         ],
         "clues": [
           "Give someone a fright"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SCION",
+    "senses": [
+      {
+        "meaning": "descendant",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Descendant of a notable family"
         ]
       }
     ]
@@ -16032,6 +20736,20 @@
     ]
   },
   {
+    "answer": "SCORN",
+    "senses": [
+      {
+        "meaning": "contempt",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Open contempt"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SCRAM",
     "senses": [
       {
@@ -16041,6 +20759,20 @@
         ],
         "clues": [
           "Get lost!"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SCRAP",
+    "senses": [
+      {
+        "meaning": "small piece",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Little leftover bit of material"
         ]
       }
     ]
@@ -16117,6 +20849,34 @@
     ]
   },
   {
+    "answer": "SEDAN",
+    "senses": [
+      {
+        "meaning": "car",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Passenger car with a separate trunk, usually"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SEDGE",
+    "senses": [
+      {
+        "meaning": "plant",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Grasslike plant common in wetlands"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SEE",
     "senses": [
       {
@@ -16166,6 +20926,20 @@
     ]
   },
   {
+    "answer": "SEGUE",
+    "senses": [
+      {
+        "meaning": "transition",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Move smoothly to another topic"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SEOUL",
     "senses": [
       {
@@ -16175,6 +20949,20 @@
         ],
         "clues": [
           "Capital of South Korea"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SERF",
+    "senses": [
+      {
+        "meaning": "feudal laborer",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Peasant bound to land under feudalism"
         ]
       }
     ]
@@ -16235,6 +21023,48 @@
         ],
         "clues": [
           "Work with needle and thread"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SHALE",
+    "senses": [
+      {
+        "meaning": "rock",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Sedimentary rock that splits into thin layers"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SHANK",
+    "senses": [
+      {
+        "meaning": "lower leg",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Lower portion of a leg"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SHARD",
+    "senses": [
+      {
+        "meaning": "fragment",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Jagged fragment of broken glass"
         ]
       }
     ]
@@ -16324,6 +21154,20 @@
     ]
   },
   {
+    "answer": "SHIRK",
+    "senses": [
+      {
+        "meaning": "avoid duty",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Avoid doing one's share of the work"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SHIVA",
     "senses": [
       {
@@ -16333,6 +21177,20 @@
         ],
         "clues": [
           "Hindu deity associated with destruction and transformation"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SHOAL",
+    "senses": [
+      {
+        "meaning": "shallow water",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Shallow area that may be hazardous to boats"
         ]
       }
     ]
@@ -16380,6 +21238,20 @@
     ]
   },
   {
+    "answer": "SHORN",
+    "senses": [
+      {
+        "meaning": "sheared",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Like a sheep after shearing"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SHOUT",
     "senses": [
       {
@@ -16404,6 +21276,20 @@
         "clues": [
           "Green ogre voiced by Mike Myers",
           "Ogre who lives in a swamp"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SHREW",
+    "senses": [
+      {
+        "meaning": "mammal",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Tiny insect-eating mammal with a pointed snout"
         ]
       }
     ]
@@ -16460,6 +21346,20 @@
     ]
   },
   {
+    "answer": "SIEVE",
+    "senses": [
+      {
+        "meaning": "strainer",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Mesh implement for separating flour lumps"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SILL",
     "senses": [
       {
@@ -16498,6 +21398,20 @@
         "clues": [
           "Lion cub who becomes king in a Disney film",
           "Mufasa's son"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SINEW",
+    "senses": [
+      {
+        "meaning": "tendon",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Tough tissue connecting muscle to bone"
         ]
       }
     ]
@@ -16629,6 +21543,34 @@
     ]
   },
   {
+    "answer": "SKIFF",
+    "senses": [
+      {
+        "meaning": "boat",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Small light boat"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SKULK",
+    "senses": [
+      {
+        "meaning": "hide",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Keep out of sight in a furtive way"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SKY",
     "senses": [
       {
@@ -16659,6 +21601,34 @@
     ]
   },
   {
+    "answer": "SLATE",
+    "senses": [
+      {
+        "meaning": "rock",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Fine-grained rock used for roofing tiles"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SLEW",
+    "senses": [
+      {
+        "meaning": "large number",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "A whole bunch, informally"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SLICE",
     "senses": [
       {
@@ -16673,6 +21643,34 @@
     ]
   },
   {
+    "answer": "SLINK",
+    "senses": [
+      {
+        "meaning": "move stealthily",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Move away quietly as if ashamed"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SLOOP",
+    "senses": [
+      {
+        "meaning": "sailboat",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Single-masted sailboat typically carrying two main sails"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SLOT",
     "senses": [
       {
@@ -16682,6 +21680,20 @@
         ],
         "clues": [
           "Where a coin goes in a vending machine"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SLOTH",
+    "senses": [
+      {
+        "meaning": "animal",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Slow-moving tree-dwelling mammal"
         ]
       }
     ]
@@ -16715,6 +21727,20 @@
     ]
   },
   {
+    "answer": "SMELT",
+    "senses": [
+      {
+        "meaning": "extract metal",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Extract metal from ore by heating"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SMIRK",
     "senses": [
       {
@@ -16724,6 +21750,20 @@
         ],
         "clues": [
           "Smug little grin"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SMOCK",
+    "senses": [
+      {
+        "meaning": "protective garment",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Loose garment worn over clothes while painting"
         ]
       }
     ]
@@ -16757,6 +21797,20 @@
     ]
   },
   {
+    "answer": "SNAG",
+    "senses": [
+      {
+        "meaning": "obstacle",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Unexpected hitch in a plan"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SNAKE",
     "senses": [
       {
@@ -16766,6 +21820,20 @@
         ],
         "clues": [
           "A reptile without legs"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SNARE",
+    "senses": [
+      {
+        "meaning": "trap",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Loop used as a trap"
         ]
       }
     ]
@@ -16785,6 +21853,20 @@
     ]
   },
   {
+    "answer": "SNARL",
+    "senses": [
+      {
+        "meaning": "growl",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Make a threatening growling sound"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SNOW",
     "senses": [
       {
@@ -16799,6 +21881,20 @@
     ]
   },
   {
+    "answer": "SNUB",
+    "senses": [
+      {
+        "meaning": "ignore",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Deliberately treat someone dismissively"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SOAP",
     "senses": [
       {
@@ -16808,6 +21904,20 @@
         ],
         "clues": [
           "What lathers in a shower"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SOAR",
+    "senses": [
+      {
+        "meaning": "fly high",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Rise high into the air"
         ]
       }
     ]
@@ -16982,6 +22092,34 @@
     ]
   },
   {
+    "answer": "SOOT",
+    "senses": [
+      {
+        "meaning": "black residue",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Black residue from smoke"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SOP",
+    "senses": [
+      {
+        "meaning": "concession",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Small concession meant to appease someone"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SOSO",
     "senses": [
       {
@@ -17066,6 +22204,34 @@
     ]
   },
   {
+    "answer": "SPATE",
+    "senses": [
+      {
+        "meaning": "sudden flood",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Sudden large outpouring of events"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SPECK",
+    "senses": [
+      {
+        "meaning": "tiny spot",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Tiny spot of dust"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SPENT",
     "senses": [
       {
@@ -17089,6 +22255,20 @@
         ],
         "clues": [
           "Cumin or cinnamon, for example"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SPIRE",
+    "senses": [
+      {
+        "meaning": "tapered tower",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Pointed structure above a church tower"
         ]
       }
     ]
@@ -17166,6 +22346,34 @@
     ]
   },
   {
+    "answer": "SPRIG",
+    "senses": [
+      {
+        "meaning": "small twig",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Little stem of mint used as a garnish"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SPRY",
+    "senses": [
+      {
+        "meaning": "active and agile",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Surprisingly nimble for one's age"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SPUD",
     "senses": [
       {
@@ -17175,6 +22383,20 @@
         ],
         "clues": [
           "Tater"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SPURN",
+    "senses": [
+      {
+        "meaning": "reject",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Reject with contempt"
         ]
       }
     ]
@@ -17289,6 +22511,20 @@
     ]
   },
   {
+    "answer": "STAVE",
+    "senses": [
+      {
+        "meaning": "barrel slat",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "One of the curved boards of a barrel"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "STAY",
     "senses": [
       {
@@ -17298,6 +22534,20 @@
         ],
         "clues": [
           "Command to a well-trained dog"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "STEAD",
+    "senses": [
+      {
+        "meaning": "place",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "In one's ___"
         ]
       }
     ]
@@ -17331,6 +22581,20 @@
     ]
   },
   {
+    "answer": "STERN",
+    "senses": [
+      {
+        "meaning": "ship rear",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Back end of a ship"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "STEW",
     "senses": [
       {
@@ -17340,6 +22604,20 @@
         ],
         "clues": [
           "Hearty dish simmered in liquid"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "STINT",
+    "senses": [
+      {
+        "meaning": "period of work",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Limited period spent at a job"
         ]
       }
     ]
@@ -17359,6 +22637,48 @@
     ]
   },
   {
+    "answer": "STOAT",
+    "senses": [
+      {
+        "meaning": "mammal",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Small weasel that may turn white in winter"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "STOKE",
+    "senses": [
+      {
+        "meaning": "fuel fire",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Add fuel to a fire"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "STOMP",
+    "senses": [
+      {
+        "meaning": "stamp",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Walk with loud heavy steps"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "STONE",
     "senses": [
       {
@@ -17373,6 +22693,20 @@
     ]
   },
   {
+    "answer": "STOUT",
+    "senses": [
+      {
+        "meaning": "sturdy",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Strongly built"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "STOW",
     "senses": [
       {
@@ -17382,6 +22716,20 @@
         ],
         "clues": [
           "Put luggage in an overhead bin"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "STREW",
+    "senses": [
+      {
+        "meaning": "scatter",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Scatter petals across a path"
         ]
       }
     ]
@@ -17537,6 +22885,34 @@
     ]
   },
   {
+    "answer": "SULK",
+    "senses": [
+      {
+        "meaning": "be resentfully silent",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Withdraw in a bad mood"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SULLY",
+    "senses": [
+      {
+        "meaning": "tarnish",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Damage someone's good reputation"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SUM",
     "senses": [
       {
@@ -17588,6 +22964,20 @@
         ],
         "clues": [
           "What a board rider rides"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SURGE",
+    "senses": [
+      {
+        "meaning": "sudden increase",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Sudden rise in demand"
         ]
       }
     ]
@@ -17649,6 +23039,48 @@
     ]
   },
   {
+    "answer": "SWATH",
+    "senses": [
+      {
+        "meaning": "strip",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Broad strip of cut grass or grain"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SWAY",
+    "senses": [
+      {
+        "meaning": "move side to side",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Rock gently with the music"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "SWOON",
+    "senses": [
+      {
+        "meaning": "faint",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Faint from overwhelming emotion"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "SYRIA",
     "senses": [
       {
@@ -17686,6 +23118,20 @@
         ],
         "clues": [
           "What a bartender may ask you to settle"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TACIT",
+    "senses": [
+      {
+        "meaning": "unspoken",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Understood without being stated"
         ]
       }
     ]
@@ -17804,6 +23250,20 @@
     ]
   },
   {
+    "answer": "TAME",
+    "senses": [
+      {
+        "meaning": "domesticated",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "No longer wild"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "TAN",
     "senses": [
       {
@@ -17841,6 +23301,48 @@
         ],
         "clues": [
           "What seals a shipping box"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TAPER",
+    "senses": [
+      {
+        "meaning": "narrow",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Become gradually narrower"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TARE",
+    "senses": [
+      {
+        "meaning": "container weight",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Weight of packaging excluded from the net weight"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TAROT",
+    "senses": [
+      {
+        "meaning": "cards",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Cards with a major and minor arcana"
         ]
       }
     ]
@@ -17945,6 +23447,34 @@
     ]
   },
   {
+    "answer": "TEAK",
+    "senses": [
+      {
+        "meaning": "wood",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Durable tropical hardwood used for outdoor furniture"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TEAL",
+    "senses": [
+      {
+        "meaning": "color",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Deep blue-green shade"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "TEAR",
     "senses": [
       {
@@ -17959,6 +23489,20 @@
     ]
   },
   {
+    "answer": "TEEM",
+    "senses": [
+      {
+        "meaning": "abound",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Be full of activity"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "TEN",
     "senses": [
       {
@@ -17968,6 +23512,34 @@
         ],
         "clues": [
           "Fingers on two typical hands, counting thumbs"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TENET",
+    "senses": [
+      {
+        "meaning": "principle",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Belief held as a guiding principle"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TENOR",
+    "senses": [
+      {
+        "meaning": "singing voice",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Male singing voice above baritone"
         ]
       }
     ]
@@ -18071,6 +23643,20 @@
     ]
   },
   {
+    "answer": "THINE",
+    "senses": [
+      {
+        "meaning": "possessive pronoun",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Yours, in archaic speech"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "THOR",
     "senses": [
       {
@@ -18100,6 +23686,76 @@
     ]
   },
   {
+    "answer": "THROB",
+    "senses": [
+      {
+        "meaning": "pulse",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Beat with a strong rhythm"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "THRUM",
+    "senses": [
+      {
+        "meaning": "vibration sound",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Make a low continuous vibrating sound"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "THUD",
+    "senses": [
+      {
+        "meaning": "dull sound",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Sound of a heavy book hitting the floor"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "THYME",
+    "senses": [
+      {
+        "meaning": "herb",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Herb with tiny aromatic leaves"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TIARA",
+    "senses": [
+      {
+        "meaning": "head ornament",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Jeweled ornament worn on the head"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "TIBER",
     "senses": [
       {
@@ -18110,6 +23766,34 @@
         "clues": [
           "River flowing through Rome",
           "River associated with Romulus and Remus"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TIBIA",
+    "senses": [
+      {
+        "meaning": "bone",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Larger bone of the lower leg"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TIDAL",
+    "senses": [
+      {
+        "meaning": "relating to tides",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Like movements caused by the rise and fall of the sea"
         ]
       }
     ]
@@ -18199,6 +23883,20 @@
     ]
   },
   {
+    "answer": "TIMID",
+    "senses": [
+      {
+        "meaning": "fearful",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Easily frightened or hesitant"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "TIMON",
     "senses": [
       {
@@ -18250,6 +23948,20 @@
         ],
         "clues": [
           "Rubber covering that meets the road"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TITHE",
+    "senses": [
+      {
+        "meaning": "one-tenth contribution",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Traditional contribution of one tenth"
         ]
       }
     ]
@@ -18312,6 +24024,34 @@
     ]
   },
   {
+    "answer": "TOIL",
+    "senses": [
+      {
+        "meaning": "work",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Labor hard for a long time"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TOME",
+    "senses": [
+      {
+        "meaning": "book",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Large scholarly-looking book"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "TON",
     "senses": [
       {
@@ -18349,6 +24089,20 @@
         ],
         "clues": [
           "Pacific kingdom with Nuku'alofa as its capital"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TONIC",
+    "senses": [
+      {
+        "meaning": "restorative",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Something that invigorates"
         ]
       }
     ]
@@ -18410,6 +24164,20 @@
     ]
   },
   {
+    "answer": "TORTE",
+    "senses": [
+      {
+        "meaning": "cake",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Rich layered cake often made with ground nuts"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "TOSS",
     "senses": [
       {
@@ -18419,6 +24187,20 @@
         ],
         "clues": [
           "Flip a coin, for example"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TOTEM",
+    "senses": [
+      {
+        "meaning": "symbol",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Emblem representing a group or lineage"
         ]
       }
     ]
@@ -18494,6 +24276,48 @@
     ]
   },
   {
+    "answer": "TREK",
+    "senses": [
+      {
+        "meaning": "long journey",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Arduous journey on foot"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TRESS",
+    "senses": [
+      {
+        "meaning": "lock of hair",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Long lock of hair"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TRICE",
+    "senses": [
+      {
+        "meaning": "instant",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "In a ___: very quickly"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "TRIM",
     "senses": [
       {
@@ -18503,6 +24327,20 @@
         ],
         "clues": [
           "What a barber does to a fringe"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TRIPE",
+    "senses": [
+      {
+        "meaning": "food",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Edible stomach lining of an animal"
         ]
       }
     ]
@@ -18518,6 +24356,34 @@
         "clues": [
           "Someone deliberately posting to provoke others online",
           "Online commenter looking to stir up trouble"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TROPE",
+    "senses": [
+      {
+        "meaning": "recurring device",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Familiar recurring device in storytelling"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TROUT",
+    "senses": [
+      {
+        "meaning": "fish",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Freshwater fish prized by anglers"
         ]
       }
     ]
@@ -18574,6 +24440,20 @@
         ],
         "clues": [
           "Check whether clothes fit"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TRYST",
+    "senses": [
+      {
+        "meaning": "meeting",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Secret romantic meeting"
         ]
       }
     ]
@@ -18691,6 +24571,20 @@
     ]
   },
   {
+    "answer": "TUNIC",
+    "senses": [
+      {
+        "meaning": "garment",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Loose garment extending below the waist"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "TUNIS",
     "senses": [
       {
@@ -18747,6 +24641,34 @@
     ]
   },
   {
+    "answer": "TWANG",
+    "senses": [
+      {
+        "meaning": "resonant sound",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Sound of a plucked taut string"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TWEAK",
+    "senses": [
+      {
+        "meaning": "adjust",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Make a slight adjustment"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "TWO",
     "senses": [
       {
@@ -18756,6 +24678,34 @@
         ],
         "clues": [
           "Number of shoes in a pair"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "TYKE",
+    "senses": [
+      {
+        "meaning": "child",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Small child, informally"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "UDDER",
+    "senses": [
+      {
+        "meaning": "mammary organ",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Milk-producing organ of a cow"
         ]
       }
     ]
@@ -18790,6 +24740,76 @@
     ]
   },
   {
+    "answer": "ULNA",
+    "senses": [
+      {
+        "meaning": "bone",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Forearm bone on the little-finger side"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "UMBER",
+    "senses": [
+      {
+        "meaning": "pigment",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Earthy brown pigment"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "UNCUT",
+    "senses": [
+      {
+        "meaning": "not trimmed",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Like a gemstone before shaping"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "UNFIT",
+    "senses": [
+      {
+        "meaning": "unsuitable",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Not qualified for a particular task"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "UNIFY",
+    "senses": [
+      {
+        "meaning": "combine",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Bring separate parts into one whole"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "UNITE",
     "senses": [
       {
@@ -18799,6 +24819,34 @@
         ],
         "clues": [
           "Bring together into one group"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "UNTIE",
+    "senses": [
+      {
+        "meaning": "undo knot",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Undo a shoelace knot"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "UPEND",
+    "senses": [
+      {
+        "meaning": "turn over",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Turn upside down"
         ]
       }
     ]
@@ -18903,6 +24951,20 @@
     ]
   },
   {
+    "answer": "USHER",
+    "senses": [
+      {
+        "meaning": "guide",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Guide someone to a seat"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "USUAL",
     "senses": [
       {
@@ -18912,6 +24974,20 @@
         ],
         "clues": [
           "As expected or customary"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "USURP",
+    "senses": [
+      {
+        "meaning": "seize power",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Take over a position without rightful authority"
         ]
       }
     ]
@@ -18946,6 +25022,48 @@
     ]
   },
   {
+    "answer": "VALE",
+    "senses": [
+      {
+        "meaning": "valley",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Valley, in poetic language"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "VALET",
+    "senses": [
+      {
+        "meaning": "attendant",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Person who parks a visitor's car"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "VAMP",
+    "senses": [
+      {
+        "meaning": "shoe part",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Upper front part of a shoe"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "VAN",
     "senses": [
       {
@@ -18955,6 +25073,34 @@
         ],
         "clues": [
           "What a delivery driver might drive"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "VANE",
+    "senses": [
+      {
+        "meaning": "wind indicator",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Device showing which way the wind blows"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "VAPID",
+    "senses": [
+      {
+        "meaning": "dull",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Lacking liveliness or interest"
         ]
       }
     ]
@@ -18983,6 +25129,34 @@
         ],
         "clues": [
           "Container for brewing a large batch"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "VAULT",
+    "senses": [
+      {
+        "meaning": "arched roof",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Arched ceiling of masonry"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "VENOM",
+    "senses": [
+      {
+        "meaning": "toxin",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Toxic secretion delivered by a snakebite"
         ]
       }
     ]
@@ -19017,6 +25191,20 @@
     ]
   },
   {
+    "answer": "VERGE",
+    "senses": [
+      {
+        "meaning": "edge",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "On the ___ of tears"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "VERNE",
     "senses": [
       {
@@ -19040,6 +25228,20 @@
         ],
         "clues": [
           "A line of poetry"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "VERVE",
+    "senses": [
+      {
+        "meaning": "energy",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Lively spirit and enthusiasm"
         ]
       }
     ]
@@ -19073,6 +25275,20 @@
     ]
   },
   {
+    "answer": "VEX",
+    "senses": [
+      {
+        "meaning": "annoy",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Cause irritation"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "VIA",
     "senses": [
       {
@@ -19082,6 +25298,62 @@
         ],
         "clues": [
           "Travel through, in itinerary wording"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "VIAL",
+    "senses": [
+      {
+        "meaning": "small container",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Small bottle for a laboratory sample"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "VICAR",
+    "senses": [
+      {
+        "meaning": "clergyperson",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Parish priest in the Church of England"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "VIGIL",
+    "senses": [
+      {
+        "meaning": "watch",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Period of keeping watch when others sleep"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "VIM",
+    "senses": [
+      {
+        "meaning": "energy",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Vigor and enthusiasm"
         ]
       }
     ]
@@ -19116,6 +25388,48 @@
     ]
   },
   {
+    "answer": "VIPER",
+    "senses": [
+      {
+        "meaning": "snake",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Venomous snake with hinged fangs"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "VISTA",
+    "senses": [
+      {
+        "meaning": "view",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Broad scenic view"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "VIXEN",
+    "senses": [
+      {
+        "meaning": "female fox",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Female fox"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "VOLGA",
     "senses": [
       {
@@ -19125,6 +25439,20 @@
         ],
         "clues": [
           "Europe's longest river"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "VOUCH",
+    "senses": [
+      {
+        "meaning": "attest",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Guarantee the reliability of someone"
         ]
       }
     ]
@@ -19172,6 +25500,20 @@
     ]
   },
   {
+    "answer": "WADE",
+    "senses": [
+      {
+        "meaning": "walk in water",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Walk through a shallow stream"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "WAFER",
     "senses": [
       {
@@ -19181,6 +25523,34 @@
         ],
         "clues": [
           "Thin crisp layer in a candy bar, perhaps"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WAFT",
+    "senses": [
+      {
+        "meaning": "drift",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Float gently through the air"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WAIF",
+    "senses": [
+      {
+        "meaning": "stray child",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Thin neglected child in an old-fashioned story"
         ]
       }
     ]
@@ -19271,6 +25641,34 @@
     ]
   },
   {
+    "answer": "WARP",
+    "senses": [
+      {
+        "meaning": "distort",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Bend out of shape"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WARY",
+    "senses": [
+      {
+        "meaning": "cautious",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Careful about possible danger"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "WAS",
     "senses": [
       {
@@ -19308,6 +25706,20 @@
         ],
         "clues": [
           "Insect with a narrow waist, often"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WAVER",
+    "senses": [
+      {
+        "meaning": "hesitate",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Go back and forth about a decision"
         ]
       }
     ]
@@ -19369,6 +25781,20 @@
     ]
   },
   {
+    "answer": "WEARY",
+    "senses": [
+      {
+        "meaning": "tired",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Worn out after a long day"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "WEB",
     "senses": [
       {
@@ -19411,6 +25837,20 @@
     ]
   },
   {
+    "answer": "WELD",
+    "senses": [
+      {
+        "meaning": "join metal",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Join metal parts by fusion"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "WELL",
     "senses": [
       {
@@ -19420,6 +25860,20 @@
         ],
         "clues": [
           "Contracted form of we will"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WELT",
+    "senses": [
+      {
+        "meaning": "raised mark",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Raised ridge on the skin"
         ]
       }
     ]
@@ -19510,6 +25964,20 @@
     ]
   },
   {
+    "answer": "WHISK",
+    "senses": [
+      {
+        "meaning": "mixing utensil",
+        "topics": [
+          "food"
+        ],
+        "clues": [
+          "Wire-loop tool for beating eggs"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "WHIZ",
     "senses": [
       {
@@ -19552,6 +26020,20 @@
     ]
   },
   {
+    "answer": "WHORL",
+    "senses": [
+      {
+        "meaning": "spiral pattern",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Spiral pattern like one in a fingerprint"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "WHOS",
     "senses": [
       {
@@ -19589,6 +26071,20 @@
         ],
         "clues": [
           "Part of a candle that burns"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WIELD",
+    "senses": [
+      {
+        "meaning": "handle",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Hold and use a tool or weapon"
         ]
       }
     ]
@@ -19660,6 +26156,20 @@
         ],
         "clues": [
           "Come out on top"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WINCE",
+    "senses": [
+      {
+        "meaning": "recoil slightly",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Make a pained facial expression"
         ]
       }
     ]
@@ -19763,6 +26273,20 @@
     ]
   },
   {
+    "answer": "WISP",
+    "senses": [
+      {
+        "meaning": "thin strand",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Little streak of smoke"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "WIT",
     "senses": [
       {
@@ -19805,6 +26329,20 @@
     ]
   },
   {
+    "answer": "WOMB",
+    "senses": [
+      {
+        "meaning": "uterus",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Organ in which a fetus develops"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "WON",
     "senses": [
       {
@@ -19842,6 +26380,20 @@
         ],
         "clues": [
           "What a carpenter works with"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WOOF",
+    "senses": [
+      {
+        "meaning": "dog sound",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Sound made by a dog"
         ]
       }
     ]
@@ -19912,6 +26464,48 @@
         ],
         "clues": [
           "Small songbird"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WRING",
+    "senses": [
+      {
+        "meaning": "twist",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Twist a wet cloth to remove water"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WRIT",
+    "senses": [
+      {
+        "meaning": "legal order",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Formal written order issued by a court"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "WRY",
+    "senses": [
+      {
+        "meaning": "dryly humorous",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Dryly amused, especially by irony"
         ]
       }
     ]
@@ -20002,6 +26596,20 @@
     ]
   },
   {
+    "answer": "YAW",
+    "senses": [
+      {
+        "meaning": "deviate sideways",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Rotate about a vertical axis"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "YAY",
     "senses": [
       {
@@ -20011,6 +26619,20 @@
         ],
         "clues": [
           "Cheer of approval"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "YEARN",
+    "senses": [
+      {
+        "meaning": "long for",
+        "topics": [
+          "everyday"
+        ],
+        "clues": [
+          "Feel a strong longing for something"
         ]
       }
     ]
@@ -20056,6 +26678,20 @@
         ],
         "clues": [
           "Answer of agreement"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "YEW",
+    "senses": [
+      {
+        "meaning": "tree",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Evergreen tree often found in churchyards"
         ]
       }
     ]
@@ -20118,6 +26754,20 @@
     ]
   },
   {
+    "answer": "YOKE",
+    "senses": [
+      {
+        "meaning": "harness",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Crosspiece joining two draft animals"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "YOKO",
     "senses": [
       {
@@ -20155,6 +26805,20 @@
         ],
         "clues": [
           "Acronym used to justify taking a chance"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "YORE",
+    "senses": [
+      {
+        "meaning": "former times",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Days of ___"
         ]
       }
     ]
@@ -20330,6 +26994,20 @@
     ]
   },
   {
+    "answer": "ZINC",
+    "senses": [
+      {
+        "meaning": "metal",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Metal used to galvanize steel"
+        ]
+      }
+    ]
+  },
+  {
     "answer": "ZING",
     "senses": [
       {
@@ -20353,6 +27031,20 @@
         ],
         "clues": [
           "Close a jacket with a sliding fastener"
+        ]
+      }
+    ]
+  },
+  {
+    "answer": "ZONAL",
+    "senses": [
+      {
+        "meaning": "relating to zones",
+        "topics": [
+          "language"
+        ],
+        "clues": [
+          "Arranged in distinct regions"
         ]
       }
     ]

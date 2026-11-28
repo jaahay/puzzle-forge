@@ -31,6 +31,29 @@ class CandidateProjectionTest(unittest.TestCase):
             with self.subTest(expression=expression):
                 self.assertEqual(compiler.candidate_grid_form(expression), expected)
 
+    def test_compile_validates_all_lengths_and_loads_editorial_shards(self):
+        def record(answer, expression):
+            return {"answer": answer, "senses": [{
+                "meaning": "test meaning", "topics": ["test"],
+                "clues": ["A test clue"], "expression": expression,
+            }]}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "authored.json").write_text(json.dumps([record("CAT", "cat")]), encoding="utf8")
+            shard = root / "authored-test.json"
+            shard.write_text(json.dumps([record("NODICE", "No dice")]), encoding="utf8")
+            with patch.object(compiler, "EDITORIAL", root):
+                bank = compiler.compile_bank([])
+                self.assertEqual([r["answer"] for r in bank], ["CAT", "NODICE"])
+                self.assertEqual([r["answer"] for r in bank if len(r["answer"]) <= 5], ["CAT"])
+                self.assertNotIn("expression", bank[1]["senses"][0])
+                shard.write_text(json.dumps([record("NODICE", "No chance")]), encoding="utf8")
+                with self.assertRaisesRegex(ValueError, "Natural expression"):
+                    compiler.compile_bank([])
+                shard.write_text(json.dumps([record("CAT", "cat")]), encoding="utf8")
+                with self.assertRaisesRegex(ValueError, "Duplicate authored answer"):
+                    compiler.compile_bank([])
+
     def test_full_archive_evidence_retains_collisions_and_unsupported_forms(self):
         expressions = ["cat", "unionized", "un-ionized", "a dime a dozen", "R2-D2", "caf\u00e9"]
         records = []

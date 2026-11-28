@@ -32,7 +32,7 @@ def wordnet_rows():
     seen = set()
     for line in (EDITORIAL / "wordnet-clues.tsv").read_text(encoding="utf8").splitlines():
         answer, sense_id, meaning, topic, clue = line.split("|")
-        if not re.fullmatch(r"[A-Z]{3,5}", answer) or not sense_id.startswith("oewn-") or not all((meaning, topic, clue)):
+        if not re.fullmatch(r"[A-Z]{3,}", answer) or not sense_id.startswith("oewn-") or not all((meaning, topic, clue)):
             raise ValueError(f"Invalid WordNet editorial record: {answer}")
         if sense_id in seen:
             raise ValueError(f"Duplicate source sense: {sense_id}")
@@ -45,6 +45,8 @@ def wordnet_rows():
 
 def compile_bank(rows):
     authored = read_json(EDITORIAL / "authored.json")
+    for path in sorted(EDITORIAL.glob("authored-*.json")):
+        authored.extend(read_json(path))
     bank = {record["answer"]: record for record in authored}
     if len(bank) != len(authored):
         raise ValueError("Duplicate authored answer.")
@@ -52,7 +54,7 @@ def compile_bank(rows):
         record = bank.setdefault(answer, {"answer": answer, "senses": []})
         record["senses"].append(sense)
     for answer, record in bank.items():
-        if not re.fullmatch(r"[A-Z]{3,5}", answer) or not record["senses"]:
+        if not re.fullmatch(r"[A-Z]{3,}", answer) or not record["senses"]:
             raise ValueError(f"Malformed answer: {answer}")
         meanings = set()
         clues = set()
@@ -189,7 +191,9 @@ def main():
     rows = wordnet_rows()
     if args.archive:
         inspect_archive(args.archive, manifest, rows, args.candidates)
-    bank = compile_bank(rows)
+    corpus = compile_bank(rows)
+    bank = [record for record in corpus if 3 <= len(record["answer"]) <= 5]
+    print(f"{len(corpus)} distinct editorial grid forms across all lengths.")
     encoded = (json.dumps(bank, ensure_ascii=False, indent=2) + "\n").encode("utf8")
     if args.verify:
         if OUTPUT.read_bytes() != encoded:
